@@ -252,6 +252,7 @@
   "mobile.extension.file_limit": "Sharing is limited to a maximum of 5 files.",
   "mobile.extension.max_file_size": "File attachments shared in Mattermost must be less than {size}.",
   "mobile.extension.permission": "Mattermost needs access to the device storage to share files.",
+  "mobile.extension.team_required": "You must belong to a team before you can share files.",
   "mobile.extension.title": "Share in Mattermost",
   "mobile.failed_network_action.retry": "try again",
   "mobile.failed_network_action.shortDescription": "Messages will load when you have an internet connection or {tryAgainAction}.",
