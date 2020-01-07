@@ -1,0 +1,1 @@
+export const ConditionalWrapper = ({conditional, wrapper, children}) => conditional ? wrapper(children) : children;
