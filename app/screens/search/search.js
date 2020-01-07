@@ -518,7 +518,6 @@ export default class Search extends PureComponent {
         this.setState({isLoading: true, isLoaded: false, status: 'isLoading'});
         const {error} = await actions.searchPostsWithParams(currentTeamId, params, true);
 
-        // actions.searchPostsWithParams(currentTeamId, params, true);
         if (!recent.find((r) => r.terms === terms)) {
             recent.push({
                 terms,
