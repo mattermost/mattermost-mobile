@@ -78,6 +78,8 @@
 	<string>Save downloaded Photos and Videos from your Mattermost instance to your device</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Send voice messages to your Mattermost instance</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Mattermost uses Face ID to restrict unauthorized users from accessing the app.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>
