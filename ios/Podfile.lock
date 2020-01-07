@@ -206,7 +206,7 @@ PODS:
     - React
   - react-native-document-picker (3.2.4):
     - React
-  - react-native-hw-keyboard-event (0.0.2):
+  - react-native-hw-keyboard-event (0.0.4):
     - React
   - react-native-image-picker (0.28.1):
     - React
@@ -516,7 +516,7 @@ SPEC CHECKSUMS:
   react-native-cameraroll: ad20f5a93c25cb83a76455df57a2c62fbb63aaed
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
   react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
-  react-native-hw-keyboard-event: fd309b4317286c559fab0d84f149815e6cf47058
+  react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: fd93361c666f397bdf72f9c6c23f13d2685b9173
   react-native-local-auth: 5081a70211643de74bb207e007401a0c81b37a20
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
