@@ -208,9 +208,13 @@ PODS:
     - React
   - react-native-image-picker (0.28.1):
     - React
+  - react-native-local-auth (1.5.0):
+    - React
   - react-native-netinfo (4.4.0):
     - React
   - react-native-notifications (2.0.6):
+    - React
+  - react-native-passcode-status (1.1.2):
     - React
   - react-native-safe-area (0.5.1):
     - React
@@ -326,8 +330,10 @@ DEPENDENCIES:
   - react-native-cookies (from `../node_modules/react-native-cookies/ios`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-local-auth (from `../node_modules/react-native-local-auth`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
+  - react-native-passcode-status (from `../node_modules/react-native-passcode-status`)
   - react-native-safe-area (from `../node_modules/react-native-safe-area`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -416,10 +422,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-document-picker"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-local-auth:
+    :path: "../node_modules/react-native-local-auth"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-notifications:
     :path: "../node_modules/react-native-notifications"
+  react-native-passcode-status:
+    :path: "../node_modules/react-native-passcode-status"
   react-native-safe-area:
     :path: "../node_modules/react-native-safe-area"
   react-native-video:
@@ -502,8 +512,10 @@ SPEC CHECKSUMS:
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
   react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
   react-native-image-picker: fd93361c666f397bdf72f9c6c23f13d2685b9173
+  react-native-local-auth: 5081a70211643de74bb207e007401a0c81b37a20
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
+  react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
   react-native-video: 961749da457e73bf0b5565edfbaffc25abfb8974
   react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
