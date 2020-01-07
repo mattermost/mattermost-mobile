@@ -237,13 +237,19 @@ export default class PostTextBoxBase extends PureComponent {
 
         let button = null;
         const buttonStyle = [];
-        const slashDisabled = this.state.value.length > 0;
+        let iconColor = theme.centerChannelColor;
+        let isDisabled = false;
 
         if (!channelIsReadOnly) {
             switch (actionType) {
             case 'at':
+                isDisabled = this.state.value[this.state.value.length - 1] === '@';
+                if (isDisabled) {
+                    iconColor = changeOpacity(theme.centerChannelColor, 0.6);
+                }
                 button = (
                     <TouchableOpacity
+                        disabled={isDisabled}
                         onPress={() => {
                             this.handleTextChange(`${this.state.value}@`, true);
                             this.focus();
@@ -251,7 +257,7 @@ export default class PostTextBoxBase extends PureComponent {
                         style={style.iconWrapper}
                     >
                         <MaterialCommunityIcons
-                            color={theme.centerChannelColor}
+                            color={iconColor}
                             name='at'
                             size={20}
                         />
@@ -259,15 +265,16 @@ export default class PostTextBoxBase extends PureComponent {
                 );
                 break;
             case 'slash':
+                isDisabled = this.state.value.length > 0;
                 buttonStyle.push(style.slashIcon);
-                if (slashDisabled) {
-                    buttonStyle.push(style.slashIconDisabled);
+                if (isDisabled) {
+                    buttonStyle.push(style.iconDisabled);
                 }
 
                 button = (
                     <TouchableOpacity
-                        disabled={slashDisabled}
-                        onPress={slashDisabled ? null : () => {
+                        disabled={isDisabled}
+                        onPress={() => {
                             this.handleTextChange('/', true);
                             this.focus();
                         }}
@@ -910,7 +917,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             opacity: 1,
             tintColor: theme.centerChannelColor,
         },
-        slashIconDisabled: {
+        iconDisabled: {
             tintColor: changeOpacity(theme.centerChannelColor, 0.6),
         },
         iconWrapper: {
