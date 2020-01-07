@@ -90,6 +90,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         >
           <TouchableOpacity
             activeOpacity={0.2}
+            disabled={false}
             onPress={[Function]}
             style={
               Object {
