@@ -58,7 +58,7 @@ export class PasteableTextInput extends React.Component {
         return (
             <ConditionalWrapper
                 conditional={Platform.OS === 'ios'}
-                wrapper={children => <Animated.View style={[{flex: 1, height: inputHeight}]}>{children}</Animated.View>}
+                wrapper={(children) => <Animated.View style={[{flex: 1, height: inputHeight}]}>{children}</Animated.View>}
             >
                 <CustomTextInput
                     {...props}
