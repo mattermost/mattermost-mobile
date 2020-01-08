@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -22,22 +22,34 @@ describe('ProgressiveImage', () => {
         tintDefaultSource: false,
     };
 
-    test('should match snapshot when just a image loads', () => {
-        const wrapper = shallow(
-            <ProgressiveImage {...baseProps}/>
-        );
+    test('should match snapshot', () => {
+        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when no thumbnail', () => {
-        const props = {
-            ...baseProps,
-            thumbnailUri: null,
-        };
+    test('should load image', () => {
+        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
+        const instance = wrapper.instance();
+        const load = jest.spyOn(instance, 'load');
+        load();
+        expect(load).toHaveBeenCalled();
+    });
 
-        const wrapper = shallow(
-            <ProgressiveImage {...props}/>
-        );
-        expect(wrapper.getElement()).toMatchSnapshot();
+    test('should set image state', () => {
+        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
+        const instance = wrapper.instance();
+        const setImage = jest.spyOn(instance, 'setImage');
+        setImage('test.png');
+        expect(setImage).toHaveBeenCalled();
+        expect(wrapper.state().uri).toMatch('test.png');
+    });
+
+    test('should set thumbnail state', () => {
+        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
+        const instance = wrapper.instance();
+        const setThumbnail = jest.spyOn(instance, 'setThumbnail');
+        setThumbnail('test.png');
+        expect(setThumbnail).toHaveBeenCalled();
+        expect(wrapper.state().thumb).toMatch('test.png');
     });
 });
