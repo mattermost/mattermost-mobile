@@ -236,16 +236,31 @@ export default class PostList extends PureComponent {
     };
 
     renderItem = ({item, index}) => {
+        const {
+            highlightPinnedOrFlagged,
+            highlightPostId,
+            isSearchResult,
+            lastPostIndex,
+            location,
+            onHashtagPress,
+            onPostPress,
+            postIds,
+            renderReplies,
+            shouldRenderReplyButton,
+            theme,
+        } = this.props;
+
         if (PostListUtils.isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
-            const moreNewMessages = this.props.postIds.length === index + 2;
+            const moreNewMessages = postIds.length === index + 2;
+            const checkForPostId = index < postIds.length - 3;
 
             return (
                 <NewMessagesDivider
                     index={index}
-                    theme={this.props.theme}
-                    moreMessages={moreNewMessages}
+                    theme={theme}
+                    moreMessages={moreNewMessages && checkForPostId}
                 />
             );
         } else if (PostListUtils.isDateLine(item)) {
@@ -259,22 +274,22 @@ export default class PostList extends PureComponent {
 
         // Remember that the list is rendered with item 0 at the bottom so the "previous" post
         // comes after this one in the list
-        const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
-        const beforePrevPostId = index < this.props.postIds.length - 2 ? this.props.postIds[index + 2] : null;
-        const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
+        const previousPostId = index < postIds.length - 1 ? postIds[index + 1] : null;
+        const beforePrevPostId = index < postIds.length - 2 ? postIds[index + 2] : null;
+        const nextPostId = index > 0 ? postIds[index - 1] : null;
 
         const postProps = {
             previousPostId,
             nextPostId,
-            highlightPinnedOrFlagged: this.props.highlightPinnedOrFlagged,
-            isSearchResult: this.props.isSearchResult,
-            location: this.props.location,
+            highlightPinnedOrFlagged,
+            isSearchResult,
+            location,
             managedConfig: mattermostManaged.getCachedConfig(),
-            onHashtagPress: this.props.onHashtagPress,
+            onHashtagPress,
             onPermalinkPress: this.handlePermalinkPress,
-            onPress: this.props.onPostPress,
-            renderReplies: this.props.renderReplies,
-            shouldRenderReplyButton: this.props.shouldRenderReplyButton,
+            onPress: onPostPress,
+            renderReplies,
+            shouldRenderReplyButton,
             beforePrevPostId,
         };
 
@@ -292,8 +307,8 @@ export default class PostList extends PureComponent {
         return (
             <Post
                 postId={postId}
-                highlight={this.props.highlightPostId === postId}
-                isLastPost={this.props.lastPostIndex === index}
+                highlight={highlightPostId === postId}
+                isLastPost={lastPostIndex === index}
                 {...postProps}
             />
         );
