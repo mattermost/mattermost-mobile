@@ -36,8 +36,9 @@ export class PasteableTextInput extends React.Component {
         return onPaste?.(null, event);
     }
 
-    animateHeight = (height) => {
+    animateHeight = (event) => {
         if (Platform.OS === 'ios') {
+            const height = event.nativeEvent.contentSize.height;
             const {...props} = this.props;
             const {inputHeight} = this.state;
             const newHeight = height > props.style.maxHeight ? inputHeight : height + 16;
@@ -51,19 +52,23 @@ export class PasteableTextInput extends React.Component {
         }
     }
 
+    wrapperLayout = (children) => {
+        const {inputHeight} = this.state;
+        return <Animated.View style={[{flex: 1, height: inputHeight}]}>{children}</Animated.View>;
+    }
+
     render() {
         const {forwardRef, ...props} = this.props;
-        const {inputHeight} = this.state;
 
         return (
             <ConditionalWrapper
                 conditional={Platform.OS === 'ios'}
-                wrapper={(children) => <Animated.View style={[{flex: 1, height: inputHeight}]}>{children}</Animated.View>}
+                wrapper={this.wrapperLayout.bind(this)}
             >
                 <CustomTextInput
                     {...props}
                     ref={forwardRef}
-                    onContentSizeChange={(e) => this.animateHeight(e.nativeEvent.contentSize.height)}
+                    onContentSizeChange={this.animateHeight.bind(this)}
                 />
             </ConditionalWrapper>
         );
