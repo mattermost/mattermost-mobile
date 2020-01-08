@@ -12,7 +12,7 @@ export default class NoResults extends PureComponent {
     static propTypes = {
         description: PropTypes.string,
         iconName: PropTypes.string,
-        image: PropTypes.number,
+        image: PropTypes.object,
         theme: PropTypes.object.isRequired,
         title: PropTypes.string.isRequired,
     };

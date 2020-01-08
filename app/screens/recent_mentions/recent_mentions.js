@@ -210,7 +210,7 @@ export default class RecentMentions extends PureComponent {
     };
 
     retry = () => {
-        this.props.actions.getRecentMentions();
+        this.getRecentMentions();
     };
 
     render() {
