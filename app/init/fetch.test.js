@@ -12,12 +12,12 @@ import {
 describe('Fetch', () => {
     test('doFetchWithResponse handles empty headers', async () => {
         const setToken = jest.spyOn(Client4, 'setToken');
-        const jsonResponse = {
+        const response = {
             json: () => Promise.resolve('data'),
             headers: {},
             ok: true,
         };
-        global.fetch.mockReturnValueOnce(jsonResponse);
+        global.fetch.mockReturnValueOnce(response);
         await Client4.doFetchWithResponse('https://mattermost.com', {method: 'GET'});
         expect(Client4.serverVersion).toEqual('');
         expect(Client4.clusterId).toEqual('');
@@ -31,12 +31,12 @@ describe('Fetch', () => {
             [HEADER_X_CLUSTER_ID]: 'ClusterId',
             [HEADER_TOKEN]: 'Token',
         };
-        const jsonResponse = {
+        const response = {
             json: () => Promise.resolve('data'),
             ok: true,
             headers,
         };
-        global.fetch.mockReturnValueOnce(jsonResponse);
+        global.fetch.mockReturnValueOnce(response);
         await Client4.doFetchWithResponse('https://mattermost.com', {method: 'GET'});
         expect(Client4.serverVersion).toEqual(headers[HEADER_X_VERSION_ID]);
         expect(Client4.clusterId).toEqual(headers[HEADER_X_CLUSTER_ID]);
@@ -50,12 +50,12 @@ describe('Fetch', () => {
             [HEADER_X_CLUSTER_ID.toLowerCase()]: 'clusterid',
             [HEADER_TOKEN.toLowerCase()]: 'token',
         };
-        const jsonResponse = {
+        const response = {
             json: () => Promise.resolve('data'),
             ok: true,
             headers,
         };
-        global.fetch.mockReturnValueOnce(jsonResponse);
+        global.fetch.mockReturnValueOnce(response);
         await Client4.doFetchWithResponse('https://mattermost.com', {method: 'GET'});
         expect(Client4.serverVersion).toEqual(headers[HEADER_X_VERSION_ID.toLowerCase()]);
         expect(Client4.clusterId).toEqual(headers[HEADER_X_CLUSTER_ID.toLowerCase()]);
