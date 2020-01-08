@@ -261,7 +261,7 @@
   "mobile.file_upload.camera_video": "Take Video",
   "mobile.file_upload.library": "Photo Library",
   "mobile.file_upload.max_warning": "Uploads limited to 5 files maximum.",
-  "mobile.file_upload.unsupportedMimeType": "Only files of the following MIME type can be uploaded:\n{mimeTypes}",
+  "mobile.file_upload.unsupportedMimeType": "Only BMP, JPG or PNG images may be used for profile pictures.",
   "mobile.file_upload.video": "Video Library",
   "mobile.files_paste.error_description": "An error occurred while pasting the file(s). Please try again.",
   "mobile.files_paste.error_dismiss": "Dismiss",
