@@ -5,6 +5,7 @@ export BRANCH_TO_BUILD=master
 export GIT_LOCAL_BRANCH=build
 
 export APP_NAME="Mattermost Beta"
+export APP_SCHEME=mattermost-beta
 
 #export INCREMENT_BUILD_NUMBER=false
 ## This sets the version number ex: 1.22.0 if not set it uses the one in the code base

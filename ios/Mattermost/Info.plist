@@ -29,7 +29,7 @@
 			<string>com.mattermost</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>mattermost</string>
+				<string>mattermost-beta</string>
 			</array>
 		</dict>
 	</array>
