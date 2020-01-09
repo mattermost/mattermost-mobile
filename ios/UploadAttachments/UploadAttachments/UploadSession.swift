@@ -82,11 +82,13 @@ import os.log
         guard let identifier = session.configuration.identifier else {return}
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: data, options: []) as! NSDictionary
-            let fileInfos = jsonObject.object(forKey: "file_infos") as! NSArray
-            if fileInfos.count > 0 {
-                let fileInfoData = fileInfos[0] as! NSDictionary
-                let fileId = fileInfoData.object(forKey: "id") as! String
-                UploadSessionManager.shared.appendCompletedUploadToSession(identifier: identifier, fileId: fileId)
+            if jsonObject.object(forKey: "file_infos") != nil {
+                let fileInfos = jsonObject.object(forKey: "file_infos") as! NSArray
+                if fileInfos.count > 0 {
+                    let fileInfoData = fileInfos[0] as! NSDictionary
+                    let fileId = fileInfoData.object(forKey: "id") as! String
+                    UploadSessionManager.shared.appendCompletedUploadToSession(identifier: identifier, fileId: fileId)
+                }
             }
         } catch {
             if #available(iOS 12.0, *) {
