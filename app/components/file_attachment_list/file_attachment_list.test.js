@@ -69,7 +69,7 @@ describe('FileAttachmentList', () => {
 
     test('should match snapshot with a single image file', () => {
         const wrapper = shallow(
-            <FileAttachment {...baseProps}/>
+            <FileAttachment {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -82,7 +82,7 @@ describe('FileAttachmentList', () => {
         };
 
         const wrapper = shallow(
-            <FileAttachment {...props}/>
+            <FileAttachment {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -96,7 +96,7 @@ describe('FileAttachmentList', () => {
         };
 
         const wrapper = shallow(
-            <FileAttachment {...props}/>
+            <FileAttachment {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -112,7 +112,7 @@ describe('FileAttachmentList', () => {
         };
 
         const wrapper = shallow(
-            <FileAttachment {...props}/>
+            <FileAttachment {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -130,7 +130,7 @@ describe('FileAttachmentList', () => {
         };
 
         const wrapper = shallow(
-            <FileAttachment {...props}/>
+            <FileAttachment {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -143,7 +143,7 @@ describe('FileAttachmentList', () => {
         };
 
         const wrapper = shallow(
-            <FileAttachment {...props}/>
+            <FileAttachment {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -156,7 +156,7 @@ describe('FileAttachmentList', () => {
         };
 
         const wrapper = shallow(
-            <FileAttachment {...props}/>
+            <FileAttachment {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -168,14 +168,10 @@ describe('FileAttachmentList', () => {
             files: undefined,
         };
 
-        const wrapper = shallow(
-            <FileAttachment {...props}/>
+        shallow(
+            <FileAttachment {...props}/>,
         );
-        expect(wrapper.state('loadingFiles')).toBe(true);
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
-        await loadFilesForPostIfNecessary();
-        wrapper.setProps({files: baseProps.files});
-        expect(wrapper.state('loadingFiles')).toBe(false);
     });
 
     test('should call loadFilesForPostIfNecessary on componentUpdate and when files does not exist', async () => {
@@ -188,17 +184,50 @@ describe('FileAttachmentList', () => {
             },
         };
 
-        const wrapper = shallow(
-            <FileAttachment {...props}/>
+        shallow(
+            <FileAttachment {...props}/>,
         );
-        expect(wrapper.state('loadingFiles')).toBe(true);
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
         await loadFilesForPostIfNecessaryMock();
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(2);
         expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
-        await loadFilesForPostIfNecessaryMock();
-        wrapper.setProps({files: baseProps.files});
-        expect(wrapper.state('loadingFiles')).toBe(false);
+    });
+
+    test('should call getFilesForGallery on props change', async () => {
+        const loadFilesForPostIfNecessaryMock = jest.fn().mockImplementationOnce(() => Promise.resolve({data: {}}));
+        const props = {
+            ...baseProps,
+            actions: {
+                loadFilesForPostIfNecessary: loadFilesForPostIfNecessaryMock,
+            },
+        };
+
+        const wrapper = shallow(
+            <FileAttachment {...props}/>,
+        );
+
+        wrapper.instance().getFilesForGallery = jest.fn().mockImplementationOnce(() => []);
+        wrapper.setProps({files: [files[0], files[1]]});
+        expect(wrapper.instance().getFilesForGallery).toHaveBeenCalled();
+    });
+
+    test('should call loadFilesForPostIfNecessary when files object empty', async () => {
+        const loadFilesForPostIfNecessaryMock = jest.fn().mockImplementationOnce(() => Promise.resolve({data: {}}));
+        const props = {
+            ...baseProps,
+            actions: {
+                loadFilesForPostIfNecessary: loadFilesForPostIfNecessaryMock,
+            },
+        };
+
+        const wrapper = shallow(
+            <FileAttachment {...props}/>,
+        );
+        wrapper.setProps({files: []});
+        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
+        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
+        wrapper.setProps({test: 'test'});
+        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
     });
 });
