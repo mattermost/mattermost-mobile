@@ -42,7 +42,7 @@ describe('RecentMentions', () => {
             ...baseProps,
             actions: {
                 ...baseProps.actions,
-                getRecentMentions: jest.fn(async () => ({error})),
+                getRecentMentions: jest.fn().mockResolvedValue({error}),
             },
         };
         const wrapper = shallowWithIntl(
@@ -61,7 +61,7 @@ describe('RecentMentions', () => {
             ...baseProps,
             actions: {
                 ...baseProps.actions,
-                getRecentMentions: jest.fn(async () => ({error})),
+                getRecentMentions: jest.fn().mockResolvedValue({error}),
             },
         };
         const wrapper = shallowWithIntl(

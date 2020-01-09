@@ -42,7 +42,7 @@ describe('FlaggedPosts', () => {
             ...baseProps,
             actions: {
                 ...baseProps.actions,
-                getFlaggedPosts: jest.fn(async () => ({error})),
+                getFlaggedPosts: jest.fn().mockResolvedValue({error}),
             },
         };
         const wrapper = shallowWithIntl(
@@ -61,7 +61,7 @@ describe('FlaggedPosts', () => {
             ...baseProps,
             actions: {
                 ...baseProps.actions,
-                getFlaggedPosts: jest.fn(async () => ({error})),
+                getFlaggedPosts: jest.fn().mockResolvedValue({error}),
             },
         };
         const wrapper = shallowWithIntl(

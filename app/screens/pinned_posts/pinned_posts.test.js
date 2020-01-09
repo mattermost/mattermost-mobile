@@ -42,7 +42,7 @@ describe('PinnedPosts', () => {
             ...baseProps,
             actions: {
                 ...baseProps.actions,
-                getPinnedPosts: jest.fn(async () => ({error})),
+                getPinnedPosts: jest.fn().mockResolvedValue({error}),
             },
         };
         const wrapper = shallowWithIntl(
@@ -61,7 +61,7 @@ describe('PinnedPosts', () => {
             ...baseProps,
             actions: {
                 ...baseProps.actions,
-                getPinnedPosts: jest.fn(async () => ({error})),
+                getPinnedPosts: jest.fn().mockResolvedValue({error}),
             },
         };
         const wrapper = shallowWithIntl(
