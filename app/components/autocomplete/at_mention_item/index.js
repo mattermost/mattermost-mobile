@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
@@ -23,6 +23,7 @@ function mapStateToProps(state, ownProps) {
         isGuest: isGuest(user),
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        isCurrentUser: getCurrentUserId(state) === user.id,
     };
 }
 

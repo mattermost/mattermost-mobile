@@ -96,16 +96,12 @@ export default class PostList extends PureComponent {
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.channelId !== nextProps.channelId) {
-            this.contentOffsetY = 0;
-            this.hasDoneInitialScroll = false;
-            this.setState({contentHeight: 0});
-        }
-    }
-
     componentDidUpdate(prevProps) {
         const {actions, channelId, deepLinkURL, postIds} = this.props;
+
+        if (this.props.channelId !== prevProps.channelId) {
+            this.resetPostList();
+        }
 
         if (deepLinkURL && deepLinkURL !== prevProps.deepLinkURL) {
             this.handleDeepLink(deepLinkURL);
@@ -119,6 +115,16 @@ export default class PostList extends PureComponent {
 
         if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight) {
             this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+        }
+
+        if (
+            this.props.channelId === prevProps.channelId &&
+            this.props.postIds.length &&
+            this.state.contentHeight &&
+            this.state.contentHeight < this.state.postListHeight &&
+            this.props.extraData
+        ) {
+            this.loadToFillContent();
         }
     }
 
@@ -235,6 +241,12 @@ export default class PostList extends PureComponent {
         return item;
     };
 
+    loadToFillContent = () => {
+        setTimeout(() => {
+            this.handleContentSizeChange(0, this.state.contentHeight);
+        });
+    };
+
     renderItem = ({item, index}) => {
         if (PostListUtils.isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
@@ -314,6 +326,12 @@ export default class PostList extends PureComponent {
             viewOffset: 0,
             viewPosition: 1, // 0 is at bottom
         });
+    }
+
+    resetPostList = () => {
+        this.contentOffsetY = 0;
+        this.hasDoneInitialScroll = false;
+        this.setState({contentHeight: 0});
     }
 
     scrollToIndex = (index) => {
