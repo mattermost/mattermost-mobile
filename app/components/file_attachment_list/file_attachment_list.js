@@ -48,6 +48,7 @@ export default class FileAttachmentList extends PureComponent {
 
         this.items = [];
         this.filesForGallery = this.getFilesForGallery(props);
+        this.state = {};
 
         this.buildGalleryFiles().then((results) => {
             this.galleryFiles = results;
