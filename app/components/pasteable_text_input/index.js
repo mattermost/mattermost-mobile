@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {Animated, Easing, NativeEventEmitter, NativeModules, Platform, TextInput} from 'react-native';
 import CustomTextInput from './custom_text_input';
 import {ConditionalWrapper} from 'app/components/conditionalWrapper';
+import {ViewTypes} from 'app/constants';
 
 const {OnPasteEventManager} = NativeModules;
 const OnPasteEventEmitter = new NativeEventEmitter(OnPasteEventManager);
@@ -38,11 +39,11 @@ export class PasteableTextInput extends React.Component {
 
     animateHeight = (event) => {
         if (Platform.OS === 'ios') {
-            const height = event.nativeEvent.contentSize.height;
-            const {...props} = this.props;
+            const {height} = event.nativeEvent.contentSize;
+            const {style} = this.props;
             const {inputHeight} = this.state;
-            const newHeight = height > props.style.maxHeight ? inputHeight : height + 16;
-            const transitionSpeed = height === 17 ? 500 : 100;
+            const newHeight = height > style.maxHeight ? inputHeight : height + ViewTypes.INPUT_VERTICAL_PADDING;
+            const transitionSpeed = height === ViewTypes.INPUT_LINE_HEIGHT ? 500 : 100;
 
             Animated.timing(inputHeight, {
                 toValue: newHeight,
@@ -54,7 +55,7 @@ export class PasteableTextInput extends React.Component {
 
     wrapperLayout = (children) => {
         const {inputHeight} = this.state;
-        return <Animated.View style={[{flex: 1, height: inputHeight}]}>{children}</Animated.View>;
+        return <Animated.View style={{flex: 1, height: inputHeight}}>{children}</Animated.View>;
     }
 
     render() {
@@ -63,12 +64,12 @@ export class PasteableTextInput extends React.Component {
         return (
             <ConditionalWrapper
                 conditional={Platform.OS === 'ios'}
-                wrapper={this.wrapperLayout.bind(this)}
+                wrapper={this.wrapperLayout}
             >
                 <CustomTextInput
                     {...props}
                     ref={forwardRef}
-                    onContentSizeChange={this.animateHeight.bind(this)}
+                    onContentSizeChange={this.animateHeight}
                 />
             </ConditionalWrapper>
         );
