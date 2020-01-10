@@ -254,6 +254,10 @@ export default class PostList extends PureComponent {
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
             const moreNewMessages = postIds.length === index + 2;
+
+            // The date line and new message line each count for a line. So the
+            // goal of this is to check for the 3rd previous, which for the start
+            // of a thread would be null as it doesn't exist.
             const checkForPostId = index < postIds.length - 3;
 
             return (
