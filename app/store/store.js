@@ -175,6 +175,7 @@ export default function configureAppStore(initialState) {
                         const entities = {
                             ...state.entities,
                             general: {
+                                ...state.entities.general,
                                 credentials: {
                                     url,
                                 },
