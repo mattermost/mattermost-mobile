@@ -32,7 +32,7 @@ export default class ChannelInfo extends PureComponent {
             closeGMChannel: PropTypes.func.isRequired,
             convertChannelToPrivate: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
-            undeleteChannel: PropTypes.func.isRequired,
+            unarchiveChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
             leaveChannel: PropTypes.func.isRequired,
@@ -49,7 +49,7 @@ export default class ChannelInfo extends PureComponent {
         componentId: PropTypes.string,
         viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
-        canUndeleteChannel: PropTypes.bool.isRequired,
+        canUnarchiveChannel: PropTypes.bool.isRequired,
         canUseUnarchiveFeature: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -236,6 +236,7 @@ export default class ChannelInfo extends PureComponent {
     });
 
     handleDelete = preventDoubleTap(() => {
+        const channel = this.props.currentChannel;
         const title = {id: t('mobile.channel_info.alertTitleDeleteChannel'), defaultMessage: 'Archive {term}'};
         const message = {
             id: t('mobile.channel_info.alertMessageDeleteChannel'),
@@ -269,27 +270,28 @@ export default class ChannelInfo extends PureComponent {
         this.alertAndHandleYesAction(title, message, onPressAction);
     });
 
-    handleUndelete = preventDoubleTap(() => {
-        const title = {id: t('mobile.channel_info.alertTitleUndeleteChannel'), defaultMessage: 'Unarchive {term}'};
+    handleUnarchive = preventDoubleTap(() => {
+        const channel = this.props.currentChannel;	
+        const title = {id: t('mobile.channel_info.alertTitleUnarchiveChannel'), defaultMessage: 'Unarchive {term}'};
         const message = {
-            id: t('mobile.channel_info.alertMessageUndeleteChannel'),
+            id: t('mobile.channel_info.alertMessageUnarchiveChannel'),
             defaultMessage: 'Are you sure you want to unarchive the {term} {name}?',
         };
         const onPressAction = async () => {
-            const result = await this.props.actions.undeleteChannel(channel.id);
+            const result = await this.props.actions.unarchiveChannel(channel.id);
             if (result.error) {
                 alertErrorWithFallback(
                     this.context.intl,
                     result.error,
                     {
-                        id: t('mobile.channel_info.undelete_failed'),
+                        id: t('mobile.channel_info.unarchive_failed'),
                         defaultMessage: "We couldn't unarchive the channel {displayName}. Please check your connection and try again.",
                     },
                     {
                         displayName: channel.display_name.trim(),
                     }
                 );
-                if (result.error.server_error_id === 'api.channel.undelete_channel.undeleted.app_error') {
+                if (result.error.server_error_id === 'api.channel.unarchive_channel.unarchive.app_error') {
                     this.props.actions.getChannel(channel.id);
                 }
             } else {
@@ -430,9 +432,9 @@ export default class ChannelInfo extends PureComponent {
     };
 
     renderUnarchiveChannel = () => {
-        const {canUndeleteChannel} = this.props;
+        const {canUnarchiveChannel} = this.props;
         const {canUseUnarchiveFeature} = this.props;
-        if (!canUseUnarchiveFeature || !canUndeleteChannel) {
+        if (!canUseUnarchiveFeature || !canUnarchiveChannel) {
             return false;
         }
         const channel = this.props.currentChannel;
@@ -663,10 +665,10 @@ export default class ChannelInfo extends PureComponent {
                             <React.Fragment>
                                 <View style={style.separator}/>
                                 <ChannelInfoRow
-                                    action={this.handleUndelete}
+                                    action={this.handleUnarchive}
                                     defaultMessage='Unarchive Channel'
                                     icon='archive' // might need to change the icon...
-                                    textId={t('mobile.routes.channelInfo.undelete_channel')}
+                                    textId={t('mobile.routes.channelInfo.unarchive_channel')}
                                     theme={theme}
                                     isLandscape={isLandscape}
                                 />

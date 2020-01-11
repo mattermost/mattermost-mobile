@@ -162,7 +162,7 @@ const systemMessageRenderers = {
     [Posts.POST_TYPES.DISPLAYNAME_CHANGE]: renderDisplayNameChangeMessage,
     [Posts.POST_TYPES.PURPOSE_CHANGE]: renderPurposeChangeMessage,
     [Posts.POST_TYPES.CHANNEL_DELETED]: renderArchivedMessage,
-    [Posts.POST_TYPES.CHANNEL_UNDELETED]: renderUnarchivedMessage,
+    [Posts.POST_TYPES.CHANNEL_UNARCHIVED]: renderUnarchivedMessage,
 };
 
 export const renderSystemMessage = (postBodyProps, styles, intl) => {

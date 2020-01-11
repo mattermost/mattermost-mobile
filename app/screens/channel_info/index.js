@@ -10,7 +10,7 @@ import {
     getChannelStats,
     getChannel,
     deleteChannel,
-    undeleteChannel,
+    unarchiveChannel,
     unfavoriteChannel,
     updateChannelNotifyProps,
 } from 'mattermost-redux/actions/channels';
@@ -106,9 +106,9 @@ function mapStateToProps(state) {
         timeZone = getUserCurrentTimezone(currentUser.timezone);
     }
 
-    let canUndeleteChannel = false;
+    let canUnarchiveChannel = false;
     if (hasNewPermissions(state)) {
-        canUndeleteChannel = haveITeamPermission(state, {
+        canUnarchiveChannel = haveITeamPermission(state, {
             team: getCurrentTeamId(state),
             permission: Permissions.MANAGE_TEAM,
         });
@@ -118,7 +118,7 @@ function mapStateToProps(state) {
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
-        canUndeleteChannel,
+        canUnarchiveChannel,
         canUseUnarchiveFeature,
         canConvertChannel: isAdmin,
         viewArchivedChannels,
@@ -152,7 +152,7 @@ function mapDispatchToProps(dispatch) {
             closeGMChannel,
             convertChannelToPrivate,
             deleteChannel,
-            undeleteChannel,
+            unarchiveChannel,
             getChannelStats,
             getChannel,
             leaveChannel,

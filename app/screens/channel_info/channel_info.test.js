@@ -34,7 +34,7 @@ describe('channel_info', () => {
     };
     const baseProps = {
         canDeleteChannel: true,
-        canUndeleteChannel: false,
+        canUnarchiveChannel: false,
         canUseUnarchiveFeature: false,
         canConvertChannel: true,
         canManageUsers: true,
@@ -70,7 +70,7 @@ describe('channel_info', () => {
             closeGMChannel: jest.fn(),
             convertChannelToPrivate: jest.fn(),
             deleteChannel: jest.fn(),
-            undeleteChannel: jest.fn(),
+            unarchiveChannel: jest.fn(),
             getChannelStats: jest.fn(),
             getChannel: jest.fn(),
             leaveChannel: jest.fn(),
@@ -155,7 +155,7 @@ describe('channel_info', () => {
 
     test('should render unarchive channel button when currentChannel is an archived channel', async () => {
         const props = Object.assign({}, baseProps);
-        props.canUndeleteChannel = true;
+        props.canUnarchiveChannel = true;
         props.canUseUnarchiveFeature = true;
         props.currentChannel.delete_at = 1234566;
 
@@ -173,7 +173,7 @@ describe('channel_info', () => {
 
     test('should not render unarchive channel button when currentChannel is an active channel', async () => {
         const props = Object.assign({}, baseProps);
-        props.canUndeleteChannel = false;
+        props.canUnarchiveChannel = false;
         props.canUseUnarchiveFeature = true;
         props.currentChannel.delete_at = 0;
 
