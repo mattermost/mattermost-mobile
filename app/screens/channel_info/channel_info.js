@@ -271,7 +271,7 @@ export default class ChannelInfo extends PureComponent {
     });
 
     handleUnarchive = preventDoubleTap(() => {
-        const channel = this.props.currentChannel;	
+        const channel = this.props.currentChannel;
         const title = {id: t('mobile.channel_info.alertTitleUnarchiveChannel'), defaultMessage: 'Unarchive {term}'};
         const message = {
             id: t('mobile.channel_info.alertMessageUnarchiveChannel'),
@@ -475,7 +475,6 @@ export default class ChannelInfo extends PureComponent {
                         theme={theme}
                         isLandscape={isLandscape}
                     />
-                    <View style={style.separator}/>
                 </View>);
         }
 
