@@ -167,6 +167,14 @@ lane :configure do
   # Save the config.json file
   save_config_json('../dist/assets/config.json', json)
 
+  # Set deep link prefix for URL lookups
+  app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
+  find_replace_string(
+    path_to_file: './app/utils/url.js',
+    old_string: "APP_SCHEME = 'mattermost-beta'",
+    new_string: "APP_SCHEME = '#{app_scheme}'",
+  )
+
   configured = true
 end
 
@@ -276,7 +284,7 @@ end
 desc 'Create GitHub release'
 lane :github do
   tag = ENV['CIRCLE_TAG'] || ENV['TAG']
-  
+
   if tag
     version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
     build = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
@@ -330,6 +338,7 @@ platform :ios do
     ENV['APP_NAME'] = 'Mattermost'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost-mobile'
 
     update_identifiers
     replace_assets
@@ -392,6 +401,17 @@ platform :ios do
         new_string: app_bundle_id
     )
 
+    # Set the deep link prefix
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
+    update_info_plist(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        block: proc do |plist|
+          urlScheme = plist["CFBundleURLTypes"].find{|scheme| scheme["CFBundleURLName"] == "com.mattermost"}
+          urlScheme[:CFBundleURLSchemes] = [app_scheme]
+        end
+    )
+
     # If set update the development team
     unless ENV['FASTLANE_TEAM_ID'].nil? || ENV['FASTLANE_TEAM_ID'].empty?
     update_project_team(
@@ -419,7 +439,6 @@ platform :ios do
         old_string: 'group.com.mattermost.rnbeta',
         new_string: app_group_id
     )
-
 
     update_app_group_identifiers(
         entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
@@ -490,7 +509,7 @@ platform :ios do
     end
   end
 
-  def build_ios()
+  def build_ios
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
@@ -538,6 +557,7 @@ platform :android do
     ENV['APP_NAME'] = 'Mattermost'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost-mobile'
 
     update_identifiers
     replace_assets
@@ -584,6 +604,13 @@ platform :android do
     package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
     android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
+
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
+    find_replace_string(
+      path_to_file: "./android/app/src/main/AndroidManifest.xml",
+      old_string: 'scheme="mattermost-beta"',
+      new_string: "scheme=\'#{app_scheme}\'"
+    )
 
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
     release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
@@ -661,7 +688,7 @@ platform :android do
                               })
   end
 
-  def build_android()
+  def build_android
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
 
     gradle(

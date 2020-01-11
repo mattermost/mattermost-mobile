@@ -1,12 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PasteableTextInput should render pasteable text input 1`] = `
-<TextInput
-  allowFontScaling={true}
-  onPaste={[MockFunction]}
-  rejectResponderTermination={true}
-  underlineColorAndroid="transparent"
+<ConditionalWrapper
+  conditional={true}
+  wrapper={[Function]}
 >
-  My Text
-</TextInput>
+  <TextInput
+    allowFontScaling={true}
+    onContentSizeChange={[Function]}
+    onPaste={[MockFunction]}
+    rejectResponderTermination={true}
+    underlineColorAndroid="transparent"
+  >
+    My Text
+  </TextInput>
+</ConditionalWrapper>
 `;

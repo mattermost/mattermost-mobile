@@ -9,6 +9,7 @@ import {Files} from 'mattermost-redux/constants';
 import {DeepLinkTypes} from 'app/constants';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
+const APP_SCHEME = 'mattermost-beta';
 
 export function isValidUrl(url = '') {
     const regex = /^https?:\/\//i;
@@ -103,7 +104,7 @@ export function matchDeepLink(url, serverURL, siteURL) {
         return null;
     }
 
-    const linkRoot = `(?:${escapeRegex('mattermost:/')}|${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
+    const linkRoot = `(?:${escapeRegex(APP_SCHEME)}:\\/|${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
 
     let match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
 
