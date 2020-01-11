@@ -187,13 +187,9 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     id='channel_info.purpose'
                                     defaultMessage='Purpose'
                                 />
-                                <Markdown
-                                    onPermalinkPress={onPermalinkPress}
-                                    baseTextStyle={baseTextStyle}
-                                    textStyles={textStyles}
-                                    blockStyles={blockStyles}
-                                    value={purpose}
-                                />
+                                <Text style={baseTextStyle}>
+                                    {purpose}
+                                </Text>
                             </View>
                         </TouchableHighlight>
                     </View>
