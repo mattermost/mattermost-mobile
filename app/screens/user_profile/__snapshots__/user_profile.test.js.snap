@@ -9,7 +9,7 @@ exports[`user_profile should match snapshot 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <ScrollViewMock
+  <ScrollView
     style={
       Object {
         "backgroundColor": "#ffffff",
@@ -240,6 +240,6 @@ exports[`user_profile should match snapshot 1`] = `
       }
       togglable={false}
     />
-  </ScrollViewMock>
+  </ScrollView>
 </View>
 `;
