@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import ProgressiveImage from './progressive_image';
+
+jest.useFakeTimers();
 
 describe('ProgressiveImage', () => {
     const baseProps = {
@@ -23,33 +25,60 @@ describe('ProgressiveImage', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
+        const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should load image', () => {
-        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
+        const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
         const instance = wrapper.instance();
-        const load = jest.spyOn(instance, 'load');
-        load();
-        expect(load).toHaveBeenCalled();
+        jest.spyOn(instance, 'load');
+
+        // should load image on componentDidMount
+        instance.componentDidMount();
+        expect(instance.load).toHaveBeenCalledTimes(1);
+
+        // should not re-load image on componentDidUpdate with same props
+        instance.componentDidUpdate(baseProps);
+        expect(instance.load).toHaveBeenCalledTimes(1);
+
+        // should re-load image on componentDidUpdate when props changed
+        wrapper.setProps({filename: 'newImage'});
+        expect(instance.load).toHaveBeenCalledTimes(2);
+
+        wrapper.setProps({imageUri: 'https://images.com/new_image.png'});
+        expect(instance.load).toHaveBeenCalledTimes(3);
+
+        wrapper.setProps({thumbnailUri: 'https://images.com/new_image.png'});
+        expect(instance.load).toHaveBeenCalledTimes(4);
     });
 
-    test('should set image state', () => {
-        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
+    test('should set image when imageUri is set but not the thumbnailUri', () => {
+        const wrapper = shallow(
+            <ProgressiveImage
+                {...baseProps}
+                thumbnailUri={null}
+            />
+        );
         const instance = wrapper.instance();
-        const setImage = jest.spyOn(instance, 'setImage');
-        setImage('test.png');
-        expect(setImage).toHaveBeenCalled();
-        expect(wrapper.state().uri).toMatch('test.png');
+        jest.spyOn(instance, 'setImage');
+
+        instance.componentDidMount();
+        jest.runAllTimers();
+        expect(instance.setImage).toHaveBeenCalledTimes(1);
     });
 
-    test('should set thumbnail state', () => {
-        const wrapper = shallowWithIntl(<ProgressiveImage {...baseProps}/>);
+    test('should set thumbnail when thumbnailUri is set', () => {
+        const wrapper = shallow(
+            <ProgressiveImage
+                {...baseProps}
+                imageUri={null}
+            />
+        );
         const instance = wrapper.instance();
-        const setThumbnail = jest.spyOn(instance, 'setThumbnail');
-        setThumbnail('test.png');
-        expect(setThumbnail).toHaveBeenCalled();
-        expect(wrapper.state().thumb).toMatch('test.png');
+        jest.spyOn(instance, 'setThumbnail');
+
+        jest.runAllTimers();
+        expect(instance.setThumbnail).toHaveBeenCalledTimes(1);
     });
 });
