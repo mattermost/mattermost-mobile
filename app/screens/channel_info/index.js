@@ -114,12 +114,9 @@ function mapStateToProps(state) {
         });
     }
 
-    const canUseUnarchiveFeature = isMinimumServerVersion(serverVersion, 5, 18);
-
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
         canUnarchiveChannel,
-        canUseUnarchiveFeature,
         canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,

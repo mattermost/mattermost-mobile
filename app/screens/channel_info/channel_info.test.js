@@ -35,7 +35,6 @@ describe('channel_info', () => {
     const baseProps = {
         canDeleteChannel: true,
         canUnarchiveChannel: false,
-        canUseUnarchiveFeature: false,
         canConvertChannel: true,
         canManageUsers: true,
         viewArchivedChannels: true,
@@ -156,7 +155,6 @@ describe('channel_info', () => {
     test('should render unarchive channel button when currentChannel is an archived channel', async () => {
         const props = Object.assign({}, baseProps);
         props.canUnarchiveChannel = true;
-        props.canUseUnarchiveFeature = true;
         props.currentChannel.delete_at = 1234566;
 
         const wrapper = shallow(
@@ -174,7 +172,6 @@ describe('channel_info', () => {
     test('should not render unarchive channel button when currentChannel is an active channel', async () => {
         const props = Object.assign({}, baseProps);
         props.canUnarchiveChannel = false;
-        props.canUseUnarchiveFeature = true;
         props.currentChannel.delete_at = 0;
 
         const wrapper = shallow(

@@ -50,7 +50,6 @@ export default class ChannelInfo extends PureComponent {
         viewArchivedChannels: PropTypes.bool.isRequired,
         canDeleteChannel: PropTypes.bool.isRequired,
         canUnarchiveChannel: PropTypes.bool.isRequired,
-        canUseUnarchiveFeature: PropTypes.bool.isRequired,
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
         currentChannelMemberCount: PropTypes.number,
@@ -433,8 +432,7 @@ export default class ChannelInfo extends PureComponent {
 
     renderUnarchiveChannel = () => {
         const {canUnarchiveChannel} = this.props;
-        const {canUseUnarchiveFeature} = this.props;
-        if (!canUseUnarchiveFeature || !canUnarchiveChannel) {
+        if (!canUnarchiveChannel) {
             return false;
         }
         const channel = this.props.currentChannel;
