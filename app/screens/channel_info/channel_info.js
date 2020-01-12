@@ -523,6 +523,7 @@ export default class ChannelInfo extends PureComponent {
                     isLandscape={isLandscape}
                 />
                 {
+
                     /**
                      <ChannelInfoRow
                      action={() => true}
