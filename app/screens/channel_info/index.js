@@ -107,7 +107,7 @@ function mapStateToProps(state) {
     }
 
     let canUnarchiveChannel = false;
-    if (hasNewPermissions(state)) {
+    if (hasNewPermissions(state) && isMinimumServerVersion(serverVersion, 5, 20)) {
         canUnarchiveChannel = haveITeamPermission(state, {
             team: getCurrentTeamId(state),
             permission: Permissions.MANAGE_TEAM,
