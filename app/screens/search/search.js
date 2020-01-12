@@ -15,7 +15,6 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
-import {RequestStatus} from 'mattermost-redux/constants';
 import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
 
 import Autocomplete from 'app/components/autocomplete';
@@ -49,6 +48,7 @@ const RECENT_SEPARATOR_HEIGHT = 3;
 const SCROLL_UP_MULTIPLIER = 6;
 const SEARCHING = 'searching';
 const NO_RESULTS = 'no results';
+const FAILURE = 'failure';
 
 export default class Search extends PureComponent {
     static propTypes = {
@@ -70,7 +70,6 @@ export default class Search extends PureComponent {
         postIds: PropTypes.array,
         archivedPostIds: PropTypes.arrayOf(PropTypes.string),
         recent: PropTypes.array.isRequired,
-        searchingStatus: PropTypes.string,
         isSearchGettingMore: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         enableDateSuggestion: PropTypes.bool,
@@ -98,6 +97,10 @@ export default class Search extends PureComponent {
             cursorPosition: 0,
             value: props.initialValue,
             recent: props.recent,
+            didFail: false,
+            isLoading: false,
+            isLoaded: false,
+            status: 'not_started',
         };
     }
 
@@ -116,11 +119,11 @@ export default class Search extends PureComponent {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        const {searchingStatus: status, enableDateSuggestion} = this.props;
-        const {recent} = this.state;
-        const {searchingStatus: prevStatus} = prevProps;
+        const {enableDateSuggestion} = this.props;
+        const {recent, didFail, isLoaded, status} = this.state;
+        const {status: prevStatus} = prevState;
         const shouldScroll = prevStatus !== status &&
-            (status === RequestStatus.SUCCESS || status === RequestStatus.FAILURE) &&
+            (isLoaded || didFail) &&
             !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore && prevState.recent.length === recent.length;
 
         if (this.props.isLandscape !== prevProps.isLandscape) {
@@ -273,11 +276,13 @@ export default class Search extends PureComponent {
     });
 
     handleTextChanged = (value, selectionChanged) => {
-        const {actions, searchingStatus, isSearchGettingMore} = this.props;
+        const {actions, isSearchGettingMore} = this.props;
+        const {isLoaded} = this.state;
+
         this.setState({value});
         actions.handleSearchDraftChanged(value);
 
-        if (!value && searchingStatus === RequestStatus.SUCCESS && !isSearchGettingMore) {
+        if (!value && isLoaded && !isSearchGettingMore) {
             actions.clearSearch();
             this.scrollToTop();
         }
@@ -485,7 +490,7 @@ export default class Search extends PureComponent {
         }
     };
 
-    search = (text, isOrSearch) => {
+    search = async (text, isOrSearch) => {
         const {actions, currentTeamId, viewArchivedChannels} = this.props;
         const recent = [...this.state.recent];
         const terms = text.trim();
@@ -510,13 +515,21 @@ export default class Search extends PureComponent {
             per_page: 20,
             include_deleted_channels: viewArchivedChannels,
         };
-        actions.searchPostsWithParams(currentTeamId, params, true);
+        this.setState({isLoading: true, isLoaded: false, status: 'isLoading'});
+        const {error} = await actions.searchPostsWithParams(currentTeamId, params, true);
+
         if (!recent.find((r) => r.terms === terms)) {
             recent.push({
                 terms,
             });
             this.setState({recent});
         }
+        this.setState({
+            isLoading: false,
+            didFail: Boolean(error),
+            isLoaded: true,
+            status: error ? 'didFail' : 'isLoaded',
+        });
     };
 
     setModifierValue = preventDoubleTap((modifier) => {
@@ -549,7 +562,6 @@ export default class Search extends PureComponent {
         const {
             isLandscape,
             postIds,
-            searchingStatus,
             theme,
             isSearchGettingMore,
         } = this.props;
@@ -559,6 +571,9 @@ export default class Search extends PureComponent {
             cursorPosition,
             recent,
             value,
+            didFail,
+            isLoading,
+            isLoaded,
         } = this.state;
         const style = getStyleFromTheme(theme);
 
@@ -627,8 +642,23 @@ export default class Search extends PureComponent {
         }
 
         let results;
-        switch (searchingStatus) {
-        case RequestStatus.STARTED:
+        if (didFail) {
+            if (postIds.length) {
+                results = postIds;
+            } else {
+                results = [{
+                    id: FAILURE,
+                    component: (
+                        <View style={style.searching}>
+                            <PostListRetry
+                                retry={this.retry}
+                                theme={theme}
+                            />
+                        </View>
+                    ),
+                }];
+            }
+        } else if (isLoading) {
             if (isSearchGettingMore) {
                 results = postIds;
             } else {
@@ -641,8 +671,7 @@ export default class Search extends PureComponent {
                     ),
                 }];
             }
-            break;
-        case RequestStatus.SUCCESS:
+        } else if (isLoaded) {
             if (postIds.length) {
                 results = postIds;
             } else if (this.state.value) {
@@ -657,24 +686,6 @@ export default class Search extends PureComponent {
                     ),
                 }];
             }
-            break;
-        case RequestStatus.FAILURE:
-            if (postIds.length) {
-                results = postIds;
-            } else {
-                results = [{
-                    id: RequestStatus.FAILURE,
-                    component: (
-                        <View style={style.searching}>
-                            <PostListRetry
-                                retry={this.retry}
-                                theme={theme}
-                            />
-                        </View>
-                    ),
-                }];
-            }
-            break;
         }
 
         if (results) {

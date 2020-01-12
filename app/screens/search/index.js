@@ -43,7 +43,6 @@ function makeMapStateToProps() {
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const {recent} = state.entities.search;
-        const {searchPosts: searchRequest} = state.requests.search;
 
         const currentUser = getCurrentUser(state);
         const enableTimezone = isTimezoneEnabled(state);
@@ -62,7 +61,6 @@ function makeMapStateToProps() {
             postIds,
             archivedPostIds,
             recent: recent[currentTeamId],
-            searchingStatus: searchRequest.status,
             isSearchGettingMore,
             theme: getTheme(state),
             enableDateSuggestion,
