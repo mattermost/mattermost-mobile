@@ -44,14 +44,14 @@ class RadioButton extends PureComponent {
             {
                 toValue: 1,
                 duration: 150,
-            }
+            },
         ).start();
         Animated.timing(
             this.state.opacityValue,
             {
                 toValue: 0.1,
                 duration: 100,
-            }
+            },
         ).start();
     };
 
@@ -61,13 +61,13 @@ class RadioButton extends PureComponent {
             {
                 toValue: 0.001,
                 duration: 1500,
-            }
+            },
         ).start();
         Animated.timing(
             this.state.opacityValue,
             {
                 toValue: 0,
-            }
+            },
         ).start();
     };
 

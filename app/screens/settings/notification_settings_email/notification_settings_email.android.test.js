@@ -30,7 +30,7 @@ describe('NotificationSettingsEmailAndroid', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>,
         );
 
         const style = {
@@ -53,7 +53,7 @@ describe('NotificationSettingsEmailAndroid', () => {
 
     test('should match state on setEmailInterval', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>,
         );
 
         wrapper.setState({interval: '0'});
@@ -72,7 +72,7 @@ describe('NotificationSettingsEmailAndroid', () => {
             <NotificationSettingsEmailAndroid
                 {...baseProps}
                 sendEmailNotifications={false}
-            />
+            />,
         );
         expect(wrapper.find(RadioButtonGroup).exists()).toBe(false);
         wrapper.setProps({sendEmailNotifications: true});
@@ -92,7 +92,7 @@ describe('NotificationSettingsEmailAndroid', () => {
 
     test('should match state on handleClose', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>,
         );
 
         wrapper.setState({showEmailNotificationsModal: true, interval: '30', newInterval: '3600'});
@@ -103,7 +103,7 @@ describe('NotificationSettingsEmailAndroid', () => {
 
     test('should saveEmailNotifyProps and handleClose on handleSaveEmailNotification', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>,
         );
 
         const instance = wrapper.instance();
@@ -118,7 +118,7 @@ describe('NotificationSettingsEmailAndroid', () => {
         const updateMe = jest.fn();
         const props = {...baseProps, actions: {savePreferences, updateMe}};
         const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...props}/>
+            <NotificationSettingsEmailAndroid {...props}/>,
         );
 
         wrapper.setState({email: 'true', newInterval: 30});
@@ -133,7 +133,7 @@ describe('NotificationSettingsEmailAndroid', () => {
 
     test('should match state on showEmailModal', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>,
         );
 
         wrapper.setState({showEmailNotificationsModal: false});
@@ -143,7 +143,7 @@ describe('NotificationSettingsEmailAndroid', () => {
 
     test('should not save preference on back button on Android', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsEmailAndroid {...baseProps}/>
+            <NotificationSettingsEmailAndroid {...baseProps}/>,
         );
 
         const instance = wrapper.instance();

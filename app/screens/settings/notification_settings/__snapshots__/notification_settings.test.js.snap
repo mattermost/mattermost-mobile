@@ -141,6 +141,7 @@ NotificationSettings {
         "useCallback": [Function],
         "useContext": [Function],
         "useDebugValue": [Function],
+        "useDeferredValue": [Function],
         "useEffect": [Function],
         "useImperativeHandle": [Function],
         "useLayoutEffect": [Function],
@@ -149,6 +150,7 @@ NotificationSettings {
         "useRef": [Function],
         "useResponder": [Function],
         "useState": [Function],
+        "useTransition": [Function],
       },
       "_element": <NotificationSettings
         actions={

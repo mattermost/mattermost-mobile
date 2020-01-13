@@ -34,6 +34,10 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
+  - Permission-Camera (2.0.9):
+    - RNPermissions
+  - Permission-PhotoLibrary (2.0.9):
+    - RNPermissions
   - RCTRequired (0.61.5)
   - RCTTypeSafety (0.61.5):
     - FBLazyVector (= 0.61.5)
@@ -314,6 +318,8 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - jail-monkey (from `../node_modules/jail-monkey`)
   - KeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
+  - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera.podspec`)
+  - Permission-PhotoLibrary (from `../node_modules/react-native-permissions/ios/PhotoLibrary.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
   - RCTYouTube (from `../node_modules/react-native-youtube`)
@@ -394,6 +400,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   KeyboardTrackingView:
     :path: "../node_modules/react-native-keyboard-tracking-view"
+  Permission-Camera:
+    :path: "../node_modules/react-native-permissions/ios/Camera.podspec"
+  Permission-PhotoLibrary:
+    :path: "../node_modules/react-native-permissions/ios/PhotoLibrary.podspec"
   RCTRequired:
     :path: "../node_modules/react-native/Libraries/RCTRequired"
   RCTTypeSafety:
@@ -498,6 +508,8 @@ SPEC CHECKSUMS:
   jail-monkey: 8eb1b5d4ab5f2a55937dd123e6450cbbff0c8032
   KeyboardTrackingView: d4d7236123b401ed9b1e02869e7943117740c522
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
+  Permission-Camera: b0fec577b27488314a885f9c74433e02f3585b9b
+  Permission-PhotoLibrary: 51718ddf8c0baf1cebf323c68cedcb2ff0cf304a
   RCTRequired: b153add4da6e7dbc44aebf93f3cf4fcae392ddf1
   RCTTypeSafety: 9aa1b91d7f9310fc6eadc3cf95126ffe818af320
   RCTYouTube: 5e94bfa005371c41d307f3f93c51b3e8eabfb0c8
@@ -551,6 +563,6 @@ SPEC CHECKSUMS:
   Yoga: f2a7cd4280bfe2cca5a7aed98ba0eb3d1310f18b
   YoutubePlayer-in-WKWebView: af2f5929fc78882d94bfdfeea999b661b78d9717
 
-PODFILE CHECKSUM: 5d115a6e48c4a1683c49388094e119a6e4679c8f
+PODFILE CHECKSUM: 8199a7b8e5d4cc8c741ea6292c067c33ad835da9
 
 COCOAPODS: 1.7.5

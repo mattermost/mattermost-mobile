@@ -57,7 +57,7 @@ export default class MarkdownCodeBlock extends React.PureComponent {
                 },
                 {
                     language: languageDisplayName,
-                }
+                },
             );
         } else {
             title = intl.formatMessage({

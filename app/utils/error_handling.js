@@ -68,7 +68,7 @@ class JavascriptAndNativeErrorHandler {
                         dispatch(purgeOfflineStore());
                     },
                 }],
-                {cancelable: false}
+                {cancelable: false},
             );
         }
     };

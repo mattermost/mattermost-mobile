@@ -23,7 +23,7 @@ export function createThunkMiddleware() {
                         captureMessage(
                             `Caught Client4 error "${error.message}" from "${cleanUrlForLogging(error.url)}"`,
                             LOGGER_JAVASCRIPT_WARNING,
-                            store
+                            store,
                         );
 
                         return {error};

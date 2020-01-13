@@ -194,7 +194,7 @@ export default class ChannelInfo extends PureComponent {
                 }, {
                     text: formatMessage({id: 'mobile.terms_of_service.alert_retry', defaultMessage: 'Try Again'}),
                     onPress: this.handleConfirmConvertToPrivate,
-                }]
+                }],
             );
         } else {
             Alert.alert(
@@ -264,7 +264,7 @@ export default class ChannelInfo extends PureComponent {
                         },
                         {
                             displayName: channel.display_name.trim(),
-                        }
+                        },
                     );
                     if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
                         this.props.actions.getChannel(channel.id);
@@ -286,7 +286,7 @@ export default class ChannelInfo extends PureComponent {
                 {
                     term: term.toLowerCase(),
                     name: channel.display_name.trim(),
-                }
+                },
             ),
             [{
                 text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),

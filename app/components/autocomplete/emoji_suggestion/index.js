@@ -25,7 +25,7 @@ const getEmojisByName = createSelector(
         }
 
         return Array.from(emoticons).sort(compareEmojis);
-    }
+    },
 );
 
 function mapStateToProps(state) {

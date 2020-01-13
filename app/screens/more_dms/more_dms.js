@@ -230,7 +230,7 @@ export default class MoreDirectMessages extends PureComponent {
                 },
                 {
                     displayName,
-                }
+                },
             );
         }
 
@@ -257,7 +257,7 @@ export default class MoreDirectMessages extends PureComponent {
                 {
                     id: t('mobile.open_gm.error'),
                     defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
-                }
+                },
             );
         }
 

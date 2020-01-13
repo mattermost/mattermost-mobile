@@ -29,7 +29,7 @@ describe('RecentMentions', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <RecentMentions {...baseProps}/>
+            <RecentMentions {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -80,7 +80,7 @@ describe('RecentMentions', () => {
 
         const hashtag = 'test';
         const wrapper = shallowWithIntl(
-            <RecentMentions {...baseProps}/>
+            <RecentMentions {...baseProps}/>,
         );
 
         dismissModal.mockImplementation(async () => {

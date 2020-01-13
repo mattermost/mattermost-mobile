@@ -21,7 +21,7 @@ describe('PostPreHeader', () => {
 
     test('should match snapshot when not flagged or pinned post', () => {
         const wrapper = shallow(
-            <PostPreHeader {...baseProps}/>
+            <PostPreHeader {...baseProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.type()).toBeNull();
@@ -35,7 +35,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.type()).toBeNull();
@@ -49,7 +49,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.type()).toBeNull();
@@ -62,7 +62,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('#flagIcon').exists()).toEqual(true);
@@ -77,7 +77,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('#flagIcon').exists()).toEqual(false);
@@ -93,7 +93,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('#flagIcon').exists()).toEqual(true);
@@ -110,7 +110,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('#flagIcon').exists()).toEqual(true);
@@ -127,7 +127,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('#flagIcon').exists()).toEqual(false);
@@ -145,7 +145,7 @@ describe('PostPreHeader', () => {
         };
 
         const wrapper = shallow(
-            <PostPreHeader {...props}/>
+            <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.type()).toBeNull();

@@ -130,7 +130,7 @@ export default class ClientUpgradeListener extends PureComponent {
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.message',
                     defaultMessage: 'An error occurred while trying to open the download link.',
-                })
+                }),
             );
 
             return false;

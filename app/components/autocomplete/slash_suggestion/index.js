@@ -23,7 +23,7 @@ const mobileCommandsSelector = createSelector(
     getAutocompleteCommandsList,
     (commands) => {
         return commands.filter((command) => !COMMANDS_TO_HIDE_ON_MOBILE.includes(command.trigger));
-    }
+    },
 );
 
 function mapStateToProps(state) {

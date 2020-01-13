@@ -28,7 +28,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import {DeviceTypes, NavigationTypes, PermissionTypes} from 'app/constants';
+import {DeviceTypes, NavigationTypes} from 'app/constants';
 import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
@@ -475,24 +475,21 @@ export default class ImagePreview extends PureComponent {
         const actions = [];
         let permissionRequest;
 
-        const hasPermissionToStorage = await Permissions.check('photo');
+        const photo = Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
+        const hasPermissionToStorage = await Permissions.check(photo);
 
         switch (hasPermissionToStorage) {
-        case PermissionTypes.UNDETERMINED:
-            permissionRequest = await Permissions.request('photo');
-            if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+        case Permissions.RESULTS.DENIED:
+            permissionRequest = await Permissions.request(photo);
+            if (permissionRequest !== Permissions.RESULTS.GRANTED) {
                 return;
             }
             break;
-        case PermissionTypes.DENIED: {
-            const canOpenSettings = await Permissions.canOpenSettings();
-            let grantOption = null;
-            if (canOpenSettings) {
-                grantOption = {
-                    text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
-                    onPress: () => Permissions.openSettings(),
-                };
-            }
+        case Permissions.RESULTS.BLOCKED: {
+            const grantOption = {
+                text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
+                onPress: () => Permissions.openSettings(),
+            };
 
             const applicationName = DeviceInfo.getApplicationName();
             Alert.alert(
@@ -507,7 +504,7 @@ export default class ImagePreview extends PureComponent {
                 [
                     grantOption,
                     {text: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'})},
-                ]
+                ],
             );
             return;
         }
@@ -568,7 +565,7 @@ export default class ImagePreview extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK',
                 }),
-            }]
+            }],
         );
     };
 

@@ -23,7 +23,7 @@ describe('DialogElement', () => {
                 {...baseDialogProps}
                 theme={theme}
                 subtype='password'
-            />
+            />,
         );
         expect(wrapper.find({secureTextEntry: true}).exists()).toBe(true);
         expect(wrapper.find({multiline: false}).exists()).toBe(true);
@@ -34,7 +34,7 @@ describe('DialogElement', () => {
                 {...baseDialogProps}
                 theme={theme}
                 subtype='email'
-            />
+            />,
         );
         expect(wrapper.find({secureTextEntry: false}).exists()).toBe(true);
     });
@@ -53,7 +53,7 @@ describe('DialogElement', () => {
                     type='radio'
                     options={radioOptions}
                     value={radioOptions[1].value}
-                />
+                />,
             );
             expect(wrapper.find(RadioSetting).find({options: radioOptions, default: radioOptions[1].value}).exists()).toBe(true);
         });

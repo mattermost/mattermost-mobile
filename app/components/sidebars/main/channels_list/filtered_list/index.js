@@ -29,7 +29,7 @@ const DEFAULT_SEARCH_ORDER = ['unreads', 'dms', 'channels', 'members', 'nonmembe
 
 const pastDirectMessages = createSelector(
     getDirectShowPreferences,
-    (directChannelsFromPreferences) => directChannelsFromPreferences.filter((d) => d.value === 'false').map((d) => d.name)
+    (directChannelsFromPreferences) => directChannelsFromPreferences.filter((d) => d.value === 'false').map((d) => d.name),
 );
 
 const getTeamProfiles = createSelector(
@@ -40,7 +40,7 @@ const getTeamProfiles = createSelector(
 
             return memberProfiles;
         }, {});
-    }
+    },
 );
 
 // Fill an object for each group channel with concatenated strings for username, email, fullname, and nickname
@@ -93,7 +93,7 @@ const getGroupChannelMemberDetails = createSelector(
     getUserIdsInChannels,
     getUsers,
     getGroupChannels,
-    getGroupDetails
+    getGroupDetails,
 );
 
 function mapStateToProps(state) {

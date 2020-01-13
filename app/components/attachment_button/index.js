@@ -21,7 +21,6 @@ import Permissions from 'react-native-permissions';
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {PermissionTypes} from 'app/constants';
 import emmProvider from 'app/init/emm_provider';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -210,7 +209,7 @@ export default class AttachmentButton extends PureComponent {
             options.mediaType = 'mixed';
         }
 
-        const hasPhotoPermission = await this.hasPhotoPermission('photo');
+        const hasPhotoPermission = await this.hasPhotoPermission('photo', 'photo');
 
         if (hasPhotoPermission) {
             ImagePicker.launchImageLibrary(options, (response) => {
@@ -288,28 +287,21 @@ export default class AttachmentButton extends PureComponent {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const targetSource = source || 'photo';
+            const targetSource = source === 'camera' ? Permissions.PERMISSIONS.IOS.CAMERA : Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
             const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
-            case PermissionTypes.UNDETERMINED:
+            case Permissions.RESULTS.DENIED:
                 permissionRequest = await Permissions.request(targetSource);
-                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                if (permissionRequest !== Permissions.RESULTS.GRANTED) {
                     return false;
                 }
                 break;
-            case PermissionTypes.DENIED: {
-                const canOpenSettings = await Permissions.canOpenSettings();
-                let grantOption = null;
-                if (canOpenSettings) {
-                    grantOption = {
-                        text: formatMessage({
-                            id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Settings',
-                        }),
-                        onPress: () => Permissions.openSettings(),
-                    };
-                }
+            case Permissions.RESULTS.BLOCKED: {
+                const grantOption = {
+                    text: formatMessage({id: 'mobile.permission_denied_retry', defaultMessage: 'Settings'}),
+                    onPress: () => Permissions.openSettings(),
+                };
 
                 const {title, text} = this.getPermissionDeniedMessage(source, mediaType);
 
@@ -341,13 +333,13 @@ export default class AttachmentButton extends PureComponent {
             const hasPermissionToStorage = await Permissions.check('storage');
 
             switch (hasPermissionToStorage) {
-            case PermissionTypes.UNDETERMINED:
+            case Permissions.RESULTS.DENIED:
                 permissionRequest = await Permissions.request('storage');
-                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                if (permissionRequest !== Permissions.RESULTS.GRANTED) {
                     return false;
                 }
                 break;
-            case PermissionTypes.DENIED: {
+            case Permissions.RESULTS.BLOCKED: {
                 const {title, text} = this.getPermissionDeniedMessage('storage');
 
                 Alert.alert(
