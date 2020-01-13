@@ -1,12 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ProgressiveImage should match snapshot when just a image loads 1`] = `
-<View
-  style={Object {}}
-/>
-`;
-
-exports[`ProgressiveImage should match snapshot when no thumbnail 1`] = `
+exports[`ProgressiveImage should match snapshot 1`] = `
 <View
   style={Object {}}
 />
