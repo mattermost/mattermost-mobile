@@ -766,6 +766,7 @@ export default class PostTextBoxBase extends PureComponent {
                 {this.getAttachmentButton()}
                 <View style={this.getInputContainerStyle()}>
                     <PasteableTextInput
+                        {...accessibilityProps('post textbox input')}
                         ref={this.input}
                         value={textValue}
                         onChangeText={this.handleTextChange}

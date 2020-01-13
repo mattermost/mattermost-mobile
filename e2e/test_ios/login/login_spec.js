@@ -7,12 +7,13 @@
 // - Use accessibility ID when selecting an element. Create one if none.
 // *********************************************************************
 
-import PermissionDialog from '../screen_objects/alert_permission_dialog';
-import SelectServerScreen from '../screen_objects/select_server_screen';
-import LoginScreen from '../screen_objects/login_screen';
-import ChannelScreen from '../screen_objects/channel_screen';
+import SelectServerScreen from '../../screen_objects/select_server_screen';
+import LoginScreen from '../../screen_objects/login_screen';
+import ChannelScreen from '../../screen_objects/channel_screen';
 
-import users from '../fixtures/users.json';
+import PermissionDialog from '../../screen_objects/components/permission_dialog';
+
+import users from '../../fixtures/users.json';
 
 describe('Login', () => {
     it('should be able to email login successfully', () => {
@@ -21,13 +22,14 @@ describe('Login', () => {
         browser.pause(2000);
 
         // # Click permission allow button if shown
-        if (PermissionDialog.allowButton != null) {
+        const dialogButton = PermissionDialog.allowButton;
+        if (!dialogButton.error) {
             PermissionDialog.clickAllowButton();
         }
 
         SelectServerScreen.connectToServer(browser.config.serverUrl);
 
-        // * Check if login screen in shown
+        // * Check if login screen is shown
         LoginScreen.waitForIsShown(true);
 
         // # Fill out email and password and sign in

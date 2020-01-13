@@ -8,9 +8,10 @@ exports.config = {
     // Configuration
     // ====================
     runner: 'local',
-    framework: 'jasmine',
-    jasmineNodeOpts: {
-        defaultTimeoutInterval: 90000,
+    framework: 'mocha',
+    mochaOpts: {
+        ui: 'bdd',
+        timeout: 90000,
     },
     sync: true,
     logLevel: 'silent',
@@ -40,5 +41,6 @@ exports.config = {
     // ====================
     beforeSession: () => {
         require('@babel/register');
+        global.expect = require('chai').expect;
     },
 };

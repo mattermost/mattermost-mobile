@@ -6,6 +6,7 @@ import {Platform, View} from 'react-native';
 import PropTypes from 'prop-types';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import {accessibilityProps} from 'app/utils/accessibility';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 let PaperPlane = null;
@@ -38,6 +39,7 @@ function SendButton(props) {
 
     return (
         <TouchableWithFeedback
+            {...accessibilityProps('send button')}
             onPress={props.handleSendMessage}
             style={style.sendButtonContainer}
             type={'opacity'}

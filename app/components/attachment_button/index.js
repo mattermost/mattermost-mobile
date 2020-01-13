@@ -22,6 +22,7 @@ import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {PermissionTypes} from 'app/constants';
+import {accessibilityProps} from 'app/utils/accessibility';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {showModalOverCurrentContext} from 'app/actions/navigation';
@@ -498,6 +499,7 @@ export default class AttachmentButton extends PureComponent {
 
         return (
             <TouchableWithFeedback
+                {...accessibilityProps('attachment button')}
                 onPress={this.showFileAttachmentOptions}
                 style={style.buttonContainer}
                 type={'opacity'}

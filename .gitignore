@@ -87,6 +87,7 @@ ios/sentry.properties
 # Testing
 .nyc_output
 coverage
+e2e/.env
 
 # Bundle artifact
 *.jsbundle
