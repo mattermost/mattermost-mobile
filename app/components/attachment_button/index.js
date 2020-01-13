@@ -22,6 +22,7 @@ import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {PermissionTypes} from 'app/constants';
+import emmProvider from 'app/init/emm_provider';
 import {changeOpacity} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {showModalOverCurrentContext} from 'app/actions/navigation';
@@ -178,6 +179,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (hasCameraPermission) {
             ImagePicker.launchCamera(options, (response) => {
+                emmProvider.inBackgroundSince = null;
                 if (response.error || response.didCancel) {
                     return;
                 }
@@ -212,6 +214,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (hasPhotoPermission) {
             ImagePicker.launchImageLibrary(options, (response) => {
+                emmProvider.inBackgroundSince = null;
                 if (response.error || response.didCancel) {
                     return;
                 }
@@ -244,6 +247,7 @@ export default class AttachmentButton extends PureComponent {
         };
 
         ImagePicker.launchImageLibrary(options, (response) => {
+            emmProvider.inBackgroundSince = null;
             if (response.error || response.didCancel) {
                 return;
             }
@@ -259,6 +263,7 @@ export default class AttachmentButton extends PureComponent {
         if (hasPermission) {
             try {
                 const res = await DocumentPicker.pick({type: [browseFileTypes]});
+                emmProvider.inBackgroundSince = null;
                 if (Platform.OS === 'android') {
                     // For android we need to retrieve the realPath in case the file being imported is from the cloud
                     const newUri = await ShareExtension.getFilePath(res.uri);
@@ -319,7 +324,7 @@ export default class AttachmentButton extends PureComponent {
                                 defaultMessage: 'Don\'t Allow',
                             }),
                         },
-                    ]
+                    ],
                 );
                 return false;
             }
@@ -362,7 +367,7 @@ export default class AttachmentButton extends PureComponent {
                             }),
                             onPress: () => AndroidOpenSettings.appDetailsSettings(),
                         },
-                    ]
+                    ],
                 );
                 return false;
             }
