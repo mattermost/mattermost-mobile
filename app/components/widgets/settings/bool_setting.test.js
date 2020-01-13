@@ -26,10 +26,10 @@ describe('components/widgets/settings/TextSetting', () => {
 
         wrapper.instance().handleChange(false);
         expect(onChange).toHaveBeenCalledTimes(1);
-        expect(onChange).toHaveBeenCalledWith('elementid', false);
+        expect(onChange).toHaveBeenCalledWith('elementid', 'false');
 
         wrapper.instance().handleChange(true);
         expect(onChange).toHaveBeenCalledTimes(2);
-        expect(onChange).toHaveBeenCalledWith('elementid', true);
+        expect(onChange).toHaveBeenCalledWith('elementid', 'true');
     });
 });

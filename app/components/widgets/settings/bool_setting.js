@@ -41,7 +41,7 @@ export default class BoolSetting extends PureComponent {
     };
 
     handleChange = (value) => {
-        this.props.onChange(this.props.id, Boolean(value));
+        this.props.onChange(this.props.id, `${value}`);
     };
 
     render() {
