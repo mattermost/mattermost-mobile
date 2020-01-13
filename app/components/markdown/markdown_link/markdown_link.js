@@ -3,7 +3,7 @@
 
 import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Linking, Text} from 'react-native';
+import {Alert, Clipboard, Linking, Text} from 'react-native';
 import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
 
@@ -52,7 +52,8 @@ export default class MarkdownLink extends PureComponent {
             serverUrl = await getCurrentServerUrl();
         }
 
-        const match = matchDeepLink(url, serverUrl, siteURL);
+        const match = matchDeepLink(url, serverURL, siteURL);
+
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
                 this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);
@@ -63,6 +64,18 @@ export default class MarkdownLink extends PureComponent {
             Linking.canOpenURL(url).then((supported) => {
                 if (supported) {
                     Linking.openURL(url);
+                } else {
+                    const {formatMessage} = this.context.intl;
+                    Alert.alert(
+                        formatMessage({
+                            id: 'mobile.server_link.error.title',
+                            defaultMessage: 'Link Error',
+                        }),
+                        formatMessage({
+                            id: 'mobile.server_link.error.text',
+                            defaultMessage: 'The link could not be found on this server.',
+                        }),
+                    );
                 }
             });
         }
