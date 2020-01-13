@@ -10,7 +10,7 @@ exports[`channel_info should match snapshot 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <ScrollViewMock
+  <ScrollView
     style={
       Object {
         "backgroundColor": undefined,
@@ -577,6 +577,6 @@ exports[`channel_info should match snapshot 1`] = `
         togglable={false}
       />
     </View>
-  </ScrollViewMock>
+  </ScrollView>
 </View>
 `;
