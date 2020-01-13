@@ -167,7 +167,7 @@ NotificationSettingsMentionsKeywords {
         }
       >
         <Connect(StatusBar) />
-        <ScrollViewMock
+        <ScrollView
           alwaysBounceVertical={false}
           contentContainerStyle={
             Object {
@@ -243,7 +243,7 @@ NotificationSettingsMentionsKeywords {
               }
             />
           </View>
-        </ScrollViewMock>
+        </ScrollView>
       </View>,
       "_rendering": false,
       "_updater": [Circular],

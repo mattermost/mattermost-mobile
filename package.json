@@ -87,6 +87,7 @@
     "@babel/plugin-transform-runtime": "7.6.2",
     "@babel/preset-env": "7.6.3",
     "@babel/register": "7.6.2",
+    "@testing-library/react-native": "5.0.3",
     "babel-eslint": "10.0.3",
     "babel-jest": "24.9.0",
     "babel-plugin-module-resolver": "3.2.0",
@@ -139,7 +140,7 @@
       "lcov",
       "text-summary"
     ],
-    "preset": "react-native",
+    "preset": "@testing-library/react-native",
     "setupFilesAfterEnv": [
       "<rootDir>/test/setup.js",
       "<rootDir>/node_modules/jest-enzyme/lib/index.js"
