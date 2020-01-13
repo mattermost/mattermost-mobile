@@ -19,31 +19,6 @@ index 7dffc17..548e7bb 100644
    },
    horizontallyInverted: {
      transform: [{scaleX: -1}],
-diff --git a/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m b/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
-index 1543bca..a4502b7 100644
---- a/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
-+++ b/node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.m
-@@ -177,6 +177,12 @@ - (void)postprocessAttributedText:(NSMutableAttributedString *)attributedText
- 
- - (NSAttributedString *)attributedTextWithMeasuredAttachmentsThatFitSize:(CGSize)size
- {
-+  static UIImage *placeholderImage;
-+  static dispatch_once_t onceToken;
-+  dispatch_once(&onceToken, ^{
-+    placeholderImage = [UIImage new];
-+  });
-+
-   NSMutableAttributedString *attributedText =
-     [[NSMutableAttributedString alloc] initWithAttributedString:[self attributedTextWithBaseTextAttributes:nil]];
- 
-@@ -195,6 +201,7 @@ - (NSAttributedString *)attributedTextWithMeasuredAttachmentsThatFitSize:(CGSize
-                                                    maximumSize:size];
-       NSTextAttachment *attachment = [NSTextAttachment new];
-       attachment.bounds = (CGRect){CGPointZero, fittingSize};
-+      attachment.image = placeholderImage;
-       [attributedText addAttribute:NSAttachmentAttributeName value:attachment range:range];
-     }
-   ];
 diff --git a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
 index 1b17cff..9efa98e 100644
 --- a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
