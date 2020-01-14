@@ -20,7 +20,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       ]
     }
   >
-    <ScrollViewMock
+    <ScrollView
       contentContainerStyle={
         Object {
           "alignItems": "stretch",
@@ -303,7 +303,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           }
         />
       </View>
-    </ScrollViewMock>
+    </ScrollView>
   </View>
 </React.Fragment>
 `;
