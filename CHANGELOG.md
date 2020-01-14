@@ -10,13 +10,18 @@
 
 ### Bug Fixes
  - Fixed an issue where flaky networks caused users to miss messages when at the top of the channel.
+ - Fixed an issue where joining a user's first team from the mobile apps failed.
+ - Fixed an issue where an unexpected `More New Messages Above` line appeared when marking a first post as unread in a Direct Message or Group Message channel.
  - Fixed an issue where disagreeing with custom Terms of Service gives users a glimpse of the app.
  - Fixed an issue on Android where the Back button did not dismiss the modal before dismissing the sidebar.
  - Fixed an issue where a message draft was lost after attempting to post an invalid slash command.
- - Fixed an issue where bool values from interactive dialogs were sent as strings to integrations.
+ - Fixed an issue where timestamps on 12-hour format had a leading zero.
  - Fixed an issue where the display name of a post was truncated even when there was enough space to render it on landscape.
  - Fixed an issue where the post input field icon was mis-aligned.
  - Fixed an issue where system message mentions were not at 100% opacity compared to non-system messages.
+ 
+### Known Issues
+ - Text box obstructs bottom part of the message when opened from a notification banner. [MM-21276](https://mattermost.atlassian.net/browse/MM-21276)
 
 ## 1.26.2 Release
 - Release Date: January 7, 2020
