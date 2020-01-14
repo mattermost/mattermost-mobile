@@ -68,7 +68,7 @@ describe('PostTextBox', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallowWithIntl(
-            <PostTextbox {...baseProps}/>
+            <PostTextbox {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -76,7 +76,7 @@ describe('PostTextBox', () => {
 
     test('should emit the event but no text is save to draft', () => {
         const wrapper = shallowWithIntl(
-            <PostTextbox {...baseProps}/>
+            <PostTextbox {...baseProps}/>,
         );
 
         wrapper.setState({value: 'some text'});
@@ -90,7 +90,7 @@ describe('PostTextBox', () => {
 
     test('should emit the event and text is save to draft', () => {
         const wrapper = shallowWithIntl(
-            <PostTextbox {...baseProps}/>
+            <PostTextbox {...baseProps}/>,
         );
 
         const instance = wrapper.instance();
@@ -104,7 +104,7 @@ describe('PostTextBox', () => {
 
     test('should not send multiple alerts when message is too long', () => {
         const wrapper = shallowWithIntl(
-            <PostTextbox {...baseProps}/>
+            <PostTextbox {...baseProps}/>,
         );
 
         const instance = wrapper.instance();
@@ -265,7 +265,7 @@ describe('PostTextBox', () => {
             },
         ]) {
             const wrapper = shallowWithIntl(
-                <PostTextbox {...baseProps}/>
+                <PostTextbox {...baseProps}/>,
             );
             const containsAtChannel = wrapper.instance().textContainsAtAllAtChannel(data.text);
             assert.equal(containsAtChannel, data.result, data.text);
@@ -275,7 +275,7 @@ describe('PostTextBox', () => {
     describe('send button', () => {
         test('should initially disable and hide the send button', () => {
             const wrapper = shallowWithIntl(
-                <PostTextbox {...baseProps}/>
+                <PostTextbox {...baseProps}/>,
             );
 
             expect(wrapper.find(SendButton).prop('disabled')).toBe(true);
@@ -288,7 +288,7 @@ describe('PostTextBox', () => {
             };
 
             const wrapper = shallowWithIntl(
-                <PostTextbox {...props}/>
+                <PostTextbox {...props}/>,
             );
 
             expect(wrapper.find(SendButton).prop('disabled')).toBe(true);
@@ -301,7 +301,7 @@ describe('PostTextBox', () => {
             };
 
             const wrapper = shallowWithIntl(
-                <PostTextbox {...props}/>
+                <PostTextbox {...props}/>,
             );
 
             expect(wrapper.find(SendButton).prop('disabled')).toBe(false);
@@ -314,7 +314,7 @@ describe('PostTextBox', () => {
             };
 
             const wrapper = shallowWithIntl(
-                <PostTextbox {...props}/>
+                <PostTextbox {...props}/>,
             );
 
             expect(wrapper.find(SendButton).prop('disabled')).toBe(false);
@@ -327,7 +327,7 @@ describe('PostTextBox', () => {
             };
 
             const wrapper = shallowWithIntl(
-                <PostTextbox {...props}/>
+                <PostTextbox {...props}/>,
             );
 
             wrapper.setState({sendingMessage: true});
@@ -425,7 +425,7 @@ describe('PostTextBox', () => {
                 <PostTextbox
                     {...baseProps}
                     maxFileSize={50 * 1024 * 1024}
-                />
+                />,
             );
             wrapper.find(PasteableTextInput).first().simulate('paste', null, [
                 {
@@ -512,6 +512,13 @@ describe('PostTextBox', () => {
             expect(wrapper.find(ImageUploadButton).exists()).toBe(false);
             expect(wrapper.find(CameraButton).exists()).toBe(false);
         });
+    });
+
+    test('should change state value on props change', () => {
+        const wrapper = shallowWithIntl(<PostTextbox {...baseProps}/>);
+        expect(wrapper.state('value')).toEqual('');
+        wrapper.setProps({value: 'value', channelId: 'channel-id2'});
+        expect(wrapper.state('value')).toEqual('value');
     });
 });
 

@@ -87,17 +87,39 @@ describe('UrlUtils', () => {
         });
     });
 
+    describe('removeProtocol', () => {
+        const tests = [
+            {name: 'should return url without http protocol prefix', url: 'http://localhost:8065', expected: 'localhost:8065'},
+            {name: 'should return url without https protocol prefix', url: 'https://localhost:8065', expected: 'localhost:8065'},
+            {name: 'should return null', url: '', expected: ''},
+            {name: 'should return url without arbitrary protocol prefix', url: 'udp://localhost:8065', expected: 'localhost:8065'},
+        ];
+
+        for (const test of tests) {
+            const {name, url, expected} = test;
+
+            it(name, () => {
+                expect(UrlUtils.removeProtocol(url)).toEqual(expected);
+            });
+        }
+    });
+
     describe('matchDeepLink', () => {
         const SITE_URL = 'http://localhost:8065';
         const SERVER_URL = 'http://localhost:8065';
+        const DEEPLINK_URL_ROOT = 'mattermost-beta://localhost:8065';
+
         const tests = [
             {name: 'should return null if all inputs are empty', input: {url: '', serverURL: '', siteURL: ''}, expected: null},
             {name: 'should return null if any of the input is null', input: {url: '', serverURL: '', siteURL: null}, expected: null},
             {name: 'should return null if any of the input is null', input: {url: '', serverURL: null, siteURL: ''}, expected: null},
             {name: 'should return null if any of the input is null', input: {url: null, serverURL: '', siteURL: ''}, expected: null},
-            {name: 'should return null for not supported link', input: {url: 'https://mattermost.com', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: null},
+            {name: 'should return null for not supported link', input: {url: 'https://otherserver.com', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: null},
+            {name: 'should return null despite url subset match', input: {url: 'http://myserver.com', serverURL: 'http://myserver.co'}, expected: null},
             {name: 'should match channel link', input: {url: SITE_URL + '/ad-1/channels/town-square', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {channelName: 'town-square', teamName: 'ad-1', type: 'channel'}},
             {name: 'should match permalink', input: {url: SITE_URL + '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {postId: 'qe93kkfd7783iqwuwfcwcxbsgy', teamName: 'ad-1', type: 'permalink'}},
+            {name: 'should match channel link with deeplink prefix', input: {url: DEEPLINK_URL_ROOT + '/ad-1/channels/town-square', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {channelName: 'town-square', teamName: 'ad-1', type: 'channel'}},
+            {name: 'should match permalink with depplink prefix', input: {url: DEEPLINK_URL_ROOT + '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {postId: 'qe93kkfd7783iqwuwfcwcxbsgy', teamName: 'ad-1', type: 'permalink'}},
         ];
 
         for (const test of tests) {

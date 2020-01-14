@@ -103,15 +103,18 @@ export function matchDeepLink(url, serverURL, siteURL) {
         return null;
     }
 
-    const linkRoot = `(?:${escapeRegex('mattermost:/')}|${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
+    const serverURLWithoutProtocol = removeProtocol(serverURL);
+    const siteURLWithoutProtocol = removeProtocol(siteURL);
 
-    let match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+    const linkRoot = `(?:${escapeRegex(serverURLWithoutProtocol || siteURLWithoutProtocol)})`;
+
+    let match = new RegExp(linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
 
     if (match) {
         return {type: DeepLinkTypes.CHANNEL, teamName: match[1], channelName: match[2]};
     }
 
-    match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
     if (match) {
         return {type: DeepLinkTypes.PERMALINK, teamName: match[1], postId: match[2]};
     }

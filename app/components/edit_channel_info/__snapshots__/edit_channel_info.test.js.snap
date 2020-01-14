@@ -3,7 +3,7 @@
 exports[`EditChannelInfo should match snapshot 1`] = `
 <React.Fragment>
   <Connect(StatusBar) />
-  <KeyboardAwareScrollViewMock
+  <KeyboardAwareScrollView
     enableAutomaticScroll={true}
     enableOnAndroid={false}
     enableResetScrollToCoords={true}
@@ -319,6 +319,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
         </View>
       </View>
     </TouchableWithoutFeedback>
-  </KeyboardAwareScrollViewMock>
+  </KeyboardAwareScrollView>
 </React.Fragment>
 `;

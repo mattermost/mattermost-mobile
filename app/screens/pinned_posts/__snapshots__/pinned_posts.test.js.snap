@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`RecentMentions should match snapshot 1`] = `
+exports[`PinnedPosts should match snapshot 1`] = `
 <View
   style={
     Object {
@@ -15,7 +15,7 @@ exports[`RecentMentions should match snapshot 1`] = `
 </View>
 `;
 
-exports[`RecentMentions should match snapshot when component waiting for response 1`] = `
+exports[`PinnedPosts should match snapshot when component waiting for response 1`] = `
 <View
   style={
     Object {
@@ -30,7 +30,7 @@ exports[`RecentMentions should match snapshot when component waiting for respons
 </View>
 `;
 
-exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] = `
+exports[`PinnedPosts should match snapshot when getPinnedPosts failed 1`] = `
 <View
   style={
     Object {

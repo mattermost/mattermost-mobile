@@ -90,6 +90,8 @@ class ShareViewController: SLComposeServiceViewController {
     
     if sessionToken == nil || serverURL == nil {
       showErrorMessage(title: "", message: "Authentication required: Please first login using the app.", VC: self)
+    } else if store.getCurrentTeamId() == "" {
+      showErrorMessage(title: "", message: "You must belong to a team before you can share files.", VC: self)
     }
   }
   
