@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     ScrollView,
     Text,
     View,
@@ -140,7 +141,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         warning: {
             color: theme.errorTextColor,
             marginLeft: 14,
-            marginBottom: 10,
+            marginBottom: Platform.select({
+                android: 14,
+                ios: 0,
+            }),
         },
     };
 });
