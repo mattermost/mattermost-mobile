@@ -22,7 +22,7 @@
  - Fixed an issue where system message mentions were not at 100% opacity compared to non-system messages.
  
 ### Known Issues
- - Text box obstructs bottom part of the message when opened from a notification banner. [MM-21276](https://mattermost.atlassian.net/browse/MM-21276)
+ - Text box obstructs bottom part of messages in Direct Message channels when opened from a notification banner. [MM-21276](https://mattermost.atlassian.net/browse/MM-21276)
 
 ## 1.26.2 Release
 - Release Date: January 7, 2020
