@@ -278,8 +278,8 @@ lane :github do
   tag = ENV['CIRCLE_TAG'] || ENV['TAG']
   
   if tag
-    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
-    build = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    version = android_get_version_name(gradle_file: './android/app/build.gradle')
+    build = android_get_version_code(gradle_file: './android/app/build.gradle')
     changelog = File.read("metadata/changelog")
     changelog.concat("* Android [Mattermost.apk](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.apk)\n")
     changelog.concat("* iOS [Mattermost.ipa](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
