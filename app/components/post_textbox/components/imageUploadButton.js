@@ -80,9 +80,10 @@ export default class ImageUploadButton extends PureComponent {
 
     attachFileFromLibrary = async () => {
         const {formatMessage} = this.context.intl;
-        const {title, text} = this.getPermissionDeniedMessage('photo');
+        const {title, text} = this.getPermissionDeniedMessage();
         const options = {
             quality: 0.8,
+            mediaType: 'mixed',
             noData: true,
             permissionDenied: {
                 title,
@@ -95,11 +96,7 @@ export default class ImageUploadButton extends PureComponent {
             },
         };
 
-        if (Platform.OS === 'ios') {
-            options.mediaType = 'mixed';
-        }
-
-        const hasPhotoPermission = await this.hasPhotoPermission('photo');
+        const hasPhotoPermission = await this.hasPhotoPermission();
 
         if (hasPhotoPermission) {
             ImagePicker.launchImageLibrary(options, (response) => {
@@ -112,11 +109,11 @@ export default class ImageUploadButton extends PureComponent {
         }
     };
 
-    hasPhotoPermission = async (source, mediaType = '') => {
+    hasPhotoPermission = async () => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const targetSource = source || 'photo';
+            const targetSource = 'photo';
             const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
@@ -139,7 +136,7 @@ export default class ImageUploadButton extends PureComponent {
                     };
                 }
 
-                const {title, text} = this.getPermissionDeniedMessage(source, mediaType);
+                const {title, text} = this.getPermissionDeniedMessage();
 
                 Alert.alert(
                     title,
@@ -152,7 +149,7 @@ export default class ImageUploadButton extends PureComponent {
                                 defaultMessage: 'Don\'t Allow',
                             }),
                         },
-                    ]
+                    ],
                 );
                 return false;
             }

@@ -67,8 +67,6 @@ export default class AttachmentButton extends PureComponent {
             onShowFileMaxWarning,
         } = this.props;
 
-        const mediaType = 'mixed';
-        const source = 'camera';
         const {title, text} = this.getPermissionDeniedMessage();
 
         if (fileCount === maxFileCount) {
@@ -80,7 +78,7 @@ export default class AttachmentButton extends PureComponent {
             quality: 0.8,
             videoQuality: 'high',
             noData: true,
-            mediaType,
+            mediaType: 'mixed',
             storageOptions: {
                 cameraRoll: true,
                 waitUntilSaved: true,
@@ -96,7 +94,7 @@ export default class AttachmentButton extends PureComponent {
             },
         };
 
-        const hasCameraPermission = await this.hasPhotoPermission(source);
+        const hasCameraPermission = await this.hasCameraPermission();
 
         if (hasCameraPermission) {
             ImagePicker.launchCamera(options, (response) => {
@@ -109,11 +107,11 @@ export default class AttachmentButton extends PureComponent {
         }
     };
 
-    hasPhotoPermission = async (source) => {
+    hasCameraPermission = async () => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const targetSource = source || 'photo';
+            const targetSource = 'camera';
             const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
@@ -149,7 +147,7 @@ export default class AttachmentButton extends PureComponent {
                                 defaultMessage: 'Don\'t Allow',
                             }),
                         },
-                    ]
+                    ],
                 );
                 return false;
             }
