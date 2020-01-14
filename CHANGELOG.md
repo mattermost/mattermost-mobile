@@ -10,6 +10,7 @@
 
 ### Bug Fixes
  - Fixed an issue where flaky networks caused users to miss messages when at the top of the channel.
+ - Fixed an issue where uploading image attachments in the mobile app was not working in some cases.
  - Fixed an issue where joining a user's first team from the mobile apps failed.
  - Fixed an issue where an unexpected `More New Messages Above` line appeared when marking a first post as unread in a Direct Message or Group Message channel.
  - Fixed an issue where disagreeing with custom Terms of Service gives users a glimpse of the app.
