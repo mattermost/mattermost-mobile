@@ -6,6 +6,7 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     Clipboard,
+    Keyboard,
     StyleSheet,
     Text,
     View,
@@ -66,7 +67,10 @@ export default class MarkdownCodeBlock extends React.PureComponent {
             });
         }
 
-        goToScreen(screen, title, passProps);
+        Keyboard.dismiss();
+        requestAnimationFrame(() => {
+            goToScreen(screen, title, passProps);
+        });
     });
 
     handleLongPress = async () => {
