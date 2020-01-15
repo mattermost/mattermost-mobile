@@ -8,7 +8,7 @@ exports[`InteractiveDialog should display introduction text if present 1`] = `
     }
   }
 >
-  <ScrollViewMock
+  <ScrollView
     style={
       Object {
         "marginBottom": 20,
@@ -50,6 +50,6 @@ exports[`InteractiveDialog should display introduction text if present 1`] = `
       }
       value="**Some** _introduction_ text"
     />
-  </ScrollViewMock>
+  </ScrollView>
 </View>
 `;

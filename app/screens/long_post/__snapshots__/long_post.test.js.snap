@@ -320,7 +320,7 @@ LongPost {
                 />
               </View>
             </View>
-            <ScrollViewMock
+            <ScrollView
               style={
                 Object {
                   "backgroundColor": "#ffffff",
@@ -336,7 +336,7 @@ LongPost {
                 showAddReaction={false}
                 showLongPost={true}
               />
-            </ScrollViewMock>
+            </ScrollView>
             <View
               style={
                 Object {

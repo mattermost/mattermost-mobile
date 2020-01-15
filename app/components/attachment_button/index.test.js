@@ -4,8 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-// import Permissions from 'react-native-permissions';
-// import {Alert} from 'react-native';
+import Permissions from 'react-native-permissions';
+import {Alert} from 'react-native';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -16,7 +16,7 @@ import AttachmentButton from './index';
 jest.mock('react-intl');
 
 describe('AttachmentButton', () => {
-    // const formatMessage = jest.fn();
+    const formatMessage = jest.fn();
     const baseProps = {
         theme: Preferences.THEMES.default,
         blurTextBox: jest.fn(),
@@ -70,18 +70,35 @@ describe('AttachmentButton', () => {
         });
     });
 
-    // test('should show permission denied alert if permission is denied in iOS', async () => {
-    //     expect.assertions(1);
+    test('should return permission false if permission is denied in iOS', async () => {
+        jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.DENIED);
+        jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
-    //     jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.DENIED);
-    //     jest.spyOn(Alert, 'alert').mockReturnValue(true);
+        const wrapper = shallow(
+            <AttachmentButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
 
-    //     const wrapper = shallow(
-    //         <AttachmentButton {...baseProps}/>,
-    //         {context: {intl: {formatMessage}}},
-    //     );
+        const hasPhotoPermission = await wrapper.instance().hasPhotoPermission('camera');
+        expect(Permissions.check).toHaveBeenCalled();
+        expect(Permissions.request).toHaveBeenCalled();
+        expect(Alert.alert).not.toHaveBeenCalled();
+        expect(hasPhotoPermission).toBe(false);
+    });
 
-    //     await wrapper.instance().hasPhotoPermission('camera');
-    //     expect(Alert.alert).toBeCalled();
-    // });
+    test('should show permission denied alert and return permission false if permission is blocked in iOS', async () => {
+        jest.spyOn(Permissions, 'check').mockReturnValue(Permissions.RESULTS.BLOCKED);
+        jest.spyOn(Alert, 'alert').mockReturnValue(true);
+
+        const wrapper = shallow(
+            <AttachmentButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const hasPhotoPermission = await wrapper.instance().hasPhotoPermission('camera');
+        expect(Permissions.check).toHaveBeenCalled();
+        expect(Permissions.request).not.toHaveBeenCalled();
+        expect(Alert.alert).toHaveBeenCalled();
+        expect(hasPhotoPermission).toBe(false);
+    });
 });

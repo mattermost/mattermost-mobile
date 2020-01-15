@@ -445,6 +445,7 @@
   "mobile.select_team.no_teams": "There are no available teams for you to join.",
   "mobile.server_link.error.text": "The link could not be found on this server.",
   "mobile.server_link.error.title": "Link Error",
+  "mobile.server_link.private_channel.error": "You are not a member of this private channel.",
   "mobile.server_upgrade.button": "OK",
   "mobile.server_upgrade.description": "\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n",
   "mobile.server_upgrade.title": "Server upgrade required",
