@@ -37,6 +37,8 @@ import {
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
+import {getChannelReachable} from 'app/selectors/channel';
+
 import telemetry from 'app/telemetry';
 
 import {
@@ -62,11 +64,15 @@ export function loadChannelsIfNecessary(teamId) {
     };
 }
 
-export function loadChannelsByTeamName(teamName) {
+export function loadChannelsByTeamName(teamName, errorHandler) {
     return async (dispatch, getState) => {
         const state = getState();
         const {currentTeamId} = state.entities.teams;
         const team = getTeamByName(state, teamName);
+
+        if (!team && errorHandler) {
+            errorHandler();
+        }
 
         if (team && team.id !== currentTeamId) {
             await dispatch(fetchMyChannelsAndMembers(team.id));
@@ -400,7 +406,7 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
     };
 }
 
-export function handleSelectChannelByName(channelName, teamName) {
+export function handleSelectChannelByName(channelName, teamName, errorHandler) {
     return async (dispatch, getState) => {
         const state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
@@ -409,7 +415,13 @@ export function handleSelectChannelByName(channelName, teamName) {
         const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const {error, data: channel} = response;
         const currentChannelId = getCurrentChannelId(state);
+        const reachable = getChannelReachable(state, channelName, teamName);
 
+        if (!reachable && errorHandler) {
+            errorHandler();
+        }
+
+        // Fallback to API response error, if any.
         if (error) {
             return {error};
         }
