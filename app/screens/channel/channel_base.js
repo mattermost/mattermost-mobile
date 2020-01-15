@@ -26,7 +26,7 @@ import EphemeralStore from 'app/store/ephemeral_store';
 import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
 import {
-    goToScreen,
+    showModal,
     showModalOverCurrentContext,
 } from 'app/actions/navigation';
 
@@ -68,6 +68,10 @@ export default class ChannelBase extends PureComponent {
 
         this.postTextbox = React.createRef();
         this.keyboardTracker = React.createRef();
+
+        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
+            this.closeButton = source;
+        });
 
         setNavigatorStyles(props.componentId, props.theme);
 
@@ -198,11 +202,19 @@ export default class ChannelBase extends PureComponent {
         const {intl} = this.context;
         const screen = 'ChannelInfo';
         const title = intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'});
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-info',
+                    icon: this.closeButton,
+                }],
+            },
+        };
 
         Keyboard.dismiss();
 
         requestAnimationFrame(() => {
-            goToScreen(screen, title);
+            showModal(screen, title, null, options);
         });
     });
 
