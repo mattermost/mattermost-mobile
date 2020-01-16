@@ -844,6 +844,12 @@ export default class PostTextBoxBase extends PureComponent {
                     style={this.getInputContainerStyle()}
                     contentContainerStyle={style.inputContentContainer}
                     keyboardShouldPersistTaps={'always'}
+                    scrollEnabled={false}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                    pinchGestureEnabled={false}
+                    overScrollMode={'never'}
+                    disableScrollViewPanResponder={true}
                 >
                     <PasteableTextInput
                         ref={this.input}
@@ -922,20 +928,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            flex: 0,
             fontSize: 14,
             paddingBottom: 8,
             paddingLeft: 12,
             paddingRight: 12,
             paddingTop: 8,
-        },
-        hidden: {
-            position: 'absolute',
-            top: 10000, // way off screen
-            left: 10000, // way off screen
-            backgroundColor: 'transparent',
-            borderColor: 'transparent',
-            color: 'transparent',
+            maxHeight: 150,
         },
         inputContainer: {
             flex: 1,

@@ -26,7 +26,13 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "alignItems": "stretch",
         }
       }
+      disableScrollViewPanResponder={true}
       keyboardShouldPersistTaps="always"
+      overScrollMode="never"
+      pinchGestureEnabled={false}
+      scrollEnabled={false}
+      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
       style={
         Array [
           Object {
@@ -55,8 +61,8 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         style={
           Object {
             "color": "#3d3c40",
-            "flex": 0,
             "fontSize": 14,
+            "maxHeight": 150,
             "paddingBottom": 8,
             "paddingLeft": 12,
             "paddingRight": 12,
