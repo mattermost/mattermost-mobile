@@ -113,16 +113,16 @@ index ef62bed..7379605 100644
 -        permissionsGranted = writePermission == PackageManager.PERMISSION_GRANTED;
 -        break;
 +        selfCheckResult = ActivityCompat
++          .checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
++      break;
+       case REQUEST_PERMISSIONS_FOR_CAMERA:
+-        permissionsGranted = cameraPermission == PackageManager.PERMISSION_GRANTED;
++        selfCheckResult = ActivityCompat
 +          .checkSelfPermission(activity, Manifest.permission.CAMERA);
 +        if (selfCheckResult == PackageManager.PERMISSION_GRANTED) {
 +          selfCheckResult = ActivityCompat
 +             .checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 +        }
-+      break;
-       case REQUEST_PERMISSIONS_FOR_CAMERA:
--        permissionsGranted = cameraPermission == PackageManager.PERMISSION_GRANTED;
-+        selfCheckResult = ActivityCompat
-+          .checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
          break;
      }
  
