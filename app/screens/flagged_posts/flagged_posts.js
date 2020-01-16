@@ -41,8 +41,6 @@ export default class FlaggedPosts extends PureComponent {
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
-        didFail: PropTypes.bool,
-        isLoading: PropTypes.bool,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
     };
@@ -59,11 +57,28 @@ export default class FlaggedPosts extends PureComponent {
         super(props);
 
         props.actions.clearSearch();
-        props.actions.getFlaggedPosts();
+
+        this.state = {
+            didFail: false,
+            isLoading: false,
+        };
+    }
+
+    getFlaggedPosts = async () => {
+        const {actions} = this.props;
+        this.setState({isLoading: true});
+        const {error} = await actions.getFlaggedPosts();
+
+        this.setState({
+            isLoading: false,
+            didFail: Boolean(error),
+        });
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+
+        this.getFlaggedPosts();
     }
 
     navigationButtonPressed({buttonId}) {
@@ -195,11 +210,12 @@ export default class FlaggedPosts extends PureComponent {
     };
 
     retry = () => {
-        this.props.actions.getFlaggedPosts();
+        this.getFlaggedPosts();
     };
 
     render() {
-        const {didFail, isLoading, postIds, theme} = this.props;
+        const {postIds, theme} = this.props;
+        const {didFail, isLoading} = this.state;
 
         let component;
         if (didFail) {

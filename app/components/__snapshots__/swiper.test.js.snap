@@ -13,7 +13,7 @@ exports[`Swiper should match snapshot 1`] = `
     ]
   }
 >
-  <ScrollViewMock
+  <ScrollView
     automaticallyAdjustContentInsets={true}
     bounces={false}
     contentContainerStyle={

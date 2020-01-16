@@ -13,7 +13,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
       }
     }
   >
-    <ScrollViewMock
+    <ScrollView
       alwaysBounceHorizontal={false}
       horizontal={true}
       overScrollMode="never"
@@ -89,7 +89,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
           }
         }
       />
-    </ScrollViewMock>
+    </ScrollView>
   </AnimatedComponent>
 </NativeViewGestureHandler>
 `;
