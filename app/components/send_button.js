@@ -18,19 +18,15 @@ function SendButton(props) {
         PaperPlane = require('app/components/paper_plane').default;
     }
 
-    const icon = (
-        <PaperPlane
-            height={13}
-            width={15}
-            color={theme.buttonColor}
-        />
-    );
-
     if (props.disabled) {
         return (
             <View style={style.sendButtonContainer}>
                 <View style={[style.sendButton, style.disableButton]}>
-                    {icon}
+                    <PaperPlane
+                        height={16}
+                        width={19}
+                        color={changeOpacity(theme.buttonColor, 0.5)}
+                    />
                 </View>
             </View>
         );
@@ -43,7 +39,11 @@ function SendButton(props) {
             type={'opacity'}
         >
             <View style={style.sendButton}>
-                {icon}
+                <PaperPlane
+                    height={16}
+                    width={19}
+                    color={theme.buttonColor}
+                />
             </View>
         </TouchableWithFeedback>
     );
@@ -62,20 +62,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         sendButtonContainer: {
             justifyContent: 'flex-end',
-            paddingHorizontal: 5,
-            paddingVertical: Platform.select({
-                android: 8,
-                ios: 2,
-            }),
+            paddingRight: 8,
         },
         sendButton: {
             backgroundColor: theme.buttonBg,
             borderRadius: 4,
-            height: 28,
-            width: 72,
+            height: 32,
+            width: 80,
             alignItems: 'center',
             justifyContent: 'center',
-            paddingLeft: 3,
         },
     };
 });

@@ -245,7 +245,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         let button = null;
         const buttonStyle = [];
-        let iconColor = theme.centerChannelColor;
+        let iconColor = changeOpacity(theme.centerChannelColor, 0.64);
         let isDisabled = false;
 
         if (!channelIsReadOnly) {
@@ -253,7 +253,7 @@ export default class PostTextBoxBase extends PureComponent {
             case 'at':
                 isDisabled = this.state.value[this.state.value.length - 1] === '@';
                 if (isDisabled) {
-                    iconColor = changeOpacity(theme.centerChannelColor, 0.6);
+                    iconColor = changeOpacity(theme.centerChannelColor, 0.16);
                 }
                 button = (
                     <TouchableOpacity
@@ -913,14 +913,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 20,
             height: 20,
             opacity: 1,
-            tintColor: theme.centerChannelColor,
+            tintColor: changeOpacity(theme.centerChannelColor, 0.64),
         },
         iconDisabled: {
-            tintColor: changeOpacity(theme.centerChannelColor, 0.6),
+            tintColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
         iconWrapper: {
-            paddingLeft: 10,
-            paddingRight: 10,
+            marginLeft: 10,
+            marginRight: 10,
+            padding: 2,
         },
         quickActionsContainer: {
             display: 'flex',
@@ -928,19 +929,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 14,
+            fontSize: 16,
+            lineHeight: 22,
             paddingBottom: 8,
             paddingLeft: 12,
-            paddingRight: 12,
+            paddingRight: 58,
             paddingTop: 8,
             maxHeight: 150,
         },
         inputContainer: {
             flex: 1,
             flexDirection: 'column',
-            backgroundColor: theme.centerChannelBg,
-            marginRight: 10,
-            marginLeft: 10,
         },
         inputContentContainer: {
             alignItems: 'stretch',
@@ -949,7 +948,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'flex-end',
             flexDirection: 'row',
             justifyContent: 'center',
-            paddingVertical: 4,
+            paddingBottom: 8,
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),

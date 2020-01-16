@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
@@ -198,8 +198,8 @@ export default class FileUploadItem extends PureComponent {
                 <FileAttachmentIcon
                     file={file}
                     theme={theme}
-                    wrapperHeight={100}
-                    wrapperWidth={100}
+                    wrapperHeight={64}
+                    wrapperWidth={64}
                 />
             );
         }
@@ -209,7 +209,7 @@ export default class FileUploadItem extends PureComponent {
                 key={file.clientId}
                 style={styles.preview}
             >
-                <View style={styles.previewShadow}>
+                <View style={styles.previewContainer}>
                     {filePreviewComponent}
                     {file.failed &&
                     <FileUploadRetry
@@ -220,7 +220,7 @@ export default class FileUploadItem extends PureComponent {
                     {file.loading && !file.failed &&
                     <View style={styles.progressCircleContent}>
                         <AnimatedCircularProgress
-                            size={100}
+                            size={64}
                             fill={progress}
                             width={4}
                             backgroundColor='rgba(255, 255, 255, 0.5)'
@@ -248,26 +248,14 @@ export default class FileUploadItem extends PureComponent {
 const styles = StyleSheet.create({
     preview: {
         justifyContent: 'flex-end',
-        height: 115,
-        width: 115,
+        height: 81,
+        width: 81,
     },
-    previewShadow: {
-        height: 100,
-        width: 100,
+    previewContainer: {
+        height: 64,
+        width: 64,
         elevation: 10,
-        borderRadius: 5,
-        ...Platform.select({
-            ios: {
-                backgroundColor: '#fff',
-                shadowColor: '#000',
-                shadowOpacity: 0.5,
-                shadowRadius: 4,
-                shadowOffset: {
-                    width: 0,
-                    height: 0,
-                },
-            },
-        }),
+        borderRadius: 4,
     },
     progressCircle: {
         alignItems: 'center',
@@ -278,10 +266,10 @@ const styles = StyleSheet.create({
     progressCircleContent: {
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        height: 100,
+        height: 64,
         justifyContent: 'center',
         position: 'absolute',
-        width: 100,
+        width: 64,
     },
     progressCirclePercentage: {
         alignItems: 'center',

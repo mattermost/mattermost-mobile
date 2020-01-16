@@ -35,8 +35,7 @@ export default class FileUploadRemove extends PureComponent {
                 <Icon
                     name='close-circle'
                     color={this.props.theme.centerChannelColor}
-                    size={20}
-                    style={style.removeButtonIcon}
+                    size={16}
                 />
             </TouchableWithFeedback>
         );
@@ -45,25 +44,24 @@ export default class FileUploadRemove extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        removeButtonIcon: Platform.select({
-            ios: {
-                marginTop: 2,
-            },
-        }),
         removeButtonWrapper: {
             alignItems: 'center',
             justifyContent: 'center',
             position: 'absolute',
             overflow: 'hidden',
             elevation: 11,
-            top: 7,
-            right: 7,
-            width: 24,
-            height: 24,
+            top: 12,
+            right: 12,
+            width: 19,
+            height: 19,
             borderRadius: 12,
             backgroundColor: theme.centerChannelBg,
-            borderWidth: 2,
-            borderColor: theme.centerChannelBg,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 1,
+                    paddingTop: 2,
+                },
+            }),
         },
     };
 });

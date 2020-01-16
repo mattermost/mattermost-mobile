@@ -16,6 +16,7 @@ import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {PermissionTypes} from 'app/constants';
@@ -207,7 +208,7 @@ export default class ImageUploadButton extends PureComponent {
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
-                    color={theme.centerChannelColor}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
                     name='image-outline'
                     size={20}
                 />
@@ -218,7 +219,8 @@ export default class ImageUploadButton extends PureComponent {
 
 const style = StyleSheet.create({
     buttonContainer: {
-        paddingLeft: 10,
-        paddingRight: 10,
+        marginLeft: 10,
+        marginRight: 10,
+        padding: 2,
     },
 });
