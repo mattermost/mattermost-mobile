@@ -162,3 +162,23 @@ index ef62bed..7379605 100644
 +      cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraCaptureURI);
 +  }
  }
+diff --git a/node_modules/react-native-image-picker/ios/ImagePickerManager.m b/node_modules/react-native-image-picker/ios/ImagePickerManager.m
+index 46b2c11..70bb8a5 100644
+--- a/node_modules/react-native-image-picker/ios/ImagePickerManager.m
++++ b/node_modules/react-native-image-picker/ios/ImagePickerManager.m
+@@ -460,7 +460,14 @@ - (void)imagePickerController:(UIImagePickerController *)picker didFinishPicking
+ 
+                 if (videoURL) { // Protect against reported crash
+                   NSError *error = nil;
+-                  [fileManager moveItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                  
++                  // If we have write access to the source file, move it. Otherwise use copy. 
++                  if ([fileManager isWritableFileAtPath:[videoURL path]]) {
++                    [fileManager moveItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                  } else {
++                    [fileManager copyItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                  }
++
+                   if (error) {
+                       self.callback(@[@{@"error": error.localizedFailureReason}]);
+                       return;
