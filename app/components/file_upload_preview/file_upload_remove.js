@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform} from 'react-native';
+import {Platform, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -28,15 +28,17 @@ export default class FileUploadRemove extends PureComponent {
         const style = getStyleSheet(this.props.theme);
         return (
             <TouchableWithFeedback
-                style={style.removeButtonWrapper}
+                style={style.tappableContainer}
                 onPress={this.handleOnPress}
                 type={'opacity'}
             >
-                <Icon
-                    name='close-circle'
-                    color={this.props.theme.centerChannelColor}
-                    size={16}
-                />
+                <View style={style.removeButton}>
+                    <Icon
+                        name='close-circle'
+                        color={this.props.theme.centerChannelColor}
+                        size={20}
+                    />
+                </View>
             </TouchableWithFeedback>
         );
     }
@@ -44,22 +46,28 @@ export default class FileUploadRemove extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        removeButtonWrapper: {
+        tappableContainer: {
             alignItems: 'center',
             justifyContent: 'center',
             position: 'absolute',
-            overflow: 'hidden',
             elevation: 11,
-            top: 12,
-            right: 12,
-            width: 19,
-            height: 19,
+            top: 4,
+            right: 4,
+            width: 35,
+            height: 35,
+        },
+        removeButton: {
+            width: 24,
+            height: 24,
             borderRadius: 12,
+            paddingTop: 2,
             backgroundColor: theme.centerChannelBg,
             ...Platform.select({
                 ios: {
+                    paddingLeft: 2,
+                },
+                android: {
                     paddingLeft: 1,
-                    paddingTop: 2,
                 },
             }),
         },

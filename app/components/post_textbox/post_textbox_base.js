@@ -35,7 +35,7 @@ import FormattedText from 'app/components/formatted_text';
 import PasteableTextInput from 'app/components/pasteable_text_input';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import SendButton from 'app/components/send_button';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_FILE_COUNT, ICON_SIZE} from 'app/constants/post_textbox';
 import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
 import FileUploadPreview from 'app/components/file_upload_preview';
 
@@ -267,7 +267,7 @@ export default class PostTextBoxBase extends PureComponent {
                         <MaterialCommunityIcons
                             color={iconColor}
                             name='at'
-                            size={20}
+                            size={ICON_SIZE}
                         />
                     </TouchableOpacity>
                 );
@@ -303,6 +303,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     getMediaButton = (actionType) => {
         const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme} = this.props;
+        const style = getStyleSheet(theme);
         let button = null;
         const props = {
             blurTextBox: this.blur,
@@ -313,6 +314,7 @@ export default class PostTextBoxBase extends PureComponent {
             uploadFiles: this.handleUploadFiles,
             maxFileSize,
             theme,
+            buttonContainerStyle: style.iconWrapper,
         };
 
         if (canUploadFiles && !channelIsReadOnly) {
@@ -835,6 +837,12 @@ export default class PostTextBoxBase extends PureComponent {
         const textValue = channelIsLoading ? '' : value;
         const placeholder = this.getPlaceHolder();
 
+        let maxHeight = 150;
+
+        if (isLandscape) {
+            maxHeight = 88;
+        }
+
         return (
             <View
                 style={[style.inputWrapper, padding(isLandscape)]}
@@ -861,7 +869,7 @@ export default class PostTextBoxBase extends PureComponent {
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
-                        style={style.input}
+                        style={{...style.input, maxHeight}}
                         keyboardType={this.state.keyboardType}
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
@@ -910,8 +918,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
         },
         slashIcon: {
-            width: 20,
-            height: 20,
+            width: ICON_SIZE,
+            height: ICON_SIZE,
             opacity: 1,
             tintColor: changeOpacity(theme.centerChannelColor, 0.64),
         },
@@ -919,9 +927,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             tintColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
         iconWrapper: {
-            marginLeft: 10,
-            marginRight: 10,
-            padding: 2,
+            marginLeft: 5,
+            marginRight: 5,
+            padding: 5,
         },
         quickActionsContainer: {
             display: 'flex',
@@ -935,7 +943,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 12,
             paddingRight: 58,
             paddingTop: 8,
-            maxHeight: 150,
         },
         inputContainer: {
             flex: 1,

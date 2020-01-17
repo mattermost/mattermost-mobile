@@ -6,10 +6,10 @@ import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
-    StyleSheet,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
+import {ICON_SIZE} from 'app/constants/post_textbox';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePicker from 'react-native-image-picker';
@@ -32,6 +32,7 @@ export default class AttachmentButton extends PureComponent {
         onShowUnsupportedMimeTypeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
+        buttonContainerStyle: PropTypes.object,
     };
 
     static defaultProps = {
@@ -182,28 +183,19 @@ export default class AttachmentButton extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
-
+        const {theme, buttonContainerStyle} = this.props;
         return (
             <TouchableWithFeedback
                 onPress={this.attachFileFromCamera}
-                style={style.buttonContainer}
+                style={buttonContainerStyle}
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
                     color={changeOpacity(theme.centerChannelColor, 0.64)}
                     name='camera-outline'
-                    size={20}
+                    size={ICON_SIZE}
                 />
             </TouchableWithFeedback>
         );
     }
 }
-
-const style = StyleSheet.create({
-    buttonContainer: {
-        marginLeft: 10,
-        marginRight: 10,
-        padding: 2,
-    },
-});
