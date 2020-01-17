@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
@@ -25,7 +25,8 @@ export default class FileUploadRemove extends PureComponent {
     };
 
     render() {
-        const style = getStyleSheet(this.props.theme);
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
         return (
             <TouchableWithFeedback
                 style={style.tappableContainer}
@@ -35,7 +36,7 @@ export default class FileUploadRemove extends PureComponent {
                 <View style={style.removeButton}>
                     <Icon
                         name='close-circle'
-                        color={this.props.theme.centerChannelColor}
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
                         size={20}
                     />
                 </View>
