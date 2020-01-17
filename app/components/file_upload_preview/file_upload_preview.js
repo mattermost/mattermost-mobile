@@ -4,11 +4,12 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     ScrollView,
-    StyleSheet,
     Text,
     View,
 } from 'react-native';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -20,7 +21,6 @@ export default class FileUploadPreview extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
-        deviceHeight: PropTypes.number.isRequired,
         files: PropTypes.array.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
         rootId: PropTypes.string,
@@ -75,10 +75,10 @@ export default class FileUploadPreview extends PureComponent {
         const {
             channelIsLoading,
             filesUploadingForCurrentChannel,
-            deviceHeight,
             files,
         } = this.props;
         const {fileSizeWarning, showFileMaxWarning} = this.state;
+        const style = getStyleSheet(this.props.theme);
         if (
             !fileSizeWarning && !showFileMaxWarning &&
             (channelIsLoading || (!files.length && !filesUploadingForCurrentChannel))
@@ -87,8 +87,8 @@ export default class FileUploadPreview extends PureComponent {
         }
 
         return (
-            <View>
-                <View style={[style.container, {height: deviceHeight}]}>
+            <View style={style.previewContainer}>
+                <View style={style.fileContainer}>
                     <ScrollView
                         horizontal={true}
                         style={style.scrollView}
@@ -97,6 +97,8 @@ export default class FileUploadPreview extends PureComponent {
                     >
                         {this.buildFilePreviews()}
                     </ScrollView>
+                </View>
+                <View style={style.errorContainer}>
                     {showFileMaxWarning && (
                         <FormattedText
                             style={style.warning}
@@ -115,25 +117,34 @@ export default class FileUploadPreview extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        left: 0,
-        bottom: 0,
-        position: 'absolute',
-        width: '100%',
-    },
-    scrollView: {
-        flex: 1,
-        marginBottom: 10,
-    },
-    scrollViewContent: {
-        alignItems: 'flex-end',
-        marginLeft: 14,
-    },
-    warning: {
-        color: 'white',
-        marginLeft: 14,
-        marginBottom: 10,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        fileContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+        },
+        errorContainer: {
+            height: 18,
+        },
+        previewContainer: {
+            display: 'flex',
+            flexDirection: 'column',
+        },
+        scrollView: {
+            flex: 1,
+            marginBottom: 10,
+        },
+        scrollViewContent: {
+            alignItems: 'flex-end',
+            marginLeft: 14,
+        },
+        warning: {
+            color: theme.errorTextColor,
+            marginLeft: 14,
+            marginBottom: Platform.select({
+                android: 14,
+                ios: 0,
+            }),
+        },
+    };
 });

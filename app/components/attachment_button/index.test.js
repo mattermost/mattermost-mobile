@@ -14,6 +14,9 @@ import {PermissionTypes} from 'app/constants';
 import AttachmentButton from './index';
 
 jest.mock('react-intl');
+jest.mock('react-native-image-picker', () => ({
+    launchCamera: jest.fn(),
+}));
 
 describe('AttachmentButton', () => {
     const formatMessage = jest.fn();

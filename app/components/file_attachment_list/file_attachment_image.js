@@ -186,6 +186,12 @@ const style = StyleSheet.create({
     smallImageOverlay: {
         ...StyleSheet.absoluteFill,
         justifyContent: 'center',
+        borderRadius: 4,
+    },
+    loaderContainer: {
+        position: 'absolute',
+        height: '100%',
+        width: '100%',
         alignItems: 'center',
     },
     singleSmallImageWrapper: {

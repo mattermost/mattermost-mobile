@@ -70,9 +70,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         sendButton: {
             backgroundColor: theme.buttonBg,
-            borderRadius: 18,
+            borderRadius: 4,
             height: 28,
-            width: 28,
+            width: 72,
             alignItems: 'center',
             justifyContent: 'center',
             paddingLeft: 3,

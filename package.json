@@ -45,7 +45,7 @@
     "react-native-fast-image": "7.0.2",
     "react-native-haptic-feedback": "1.8.2",
     "react-native-image-gallery": "github:mattermost/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
-    "react-native-image-picker": "0.28.1",
+    "react-native-image-picker": "2.0.0",
     "react-native-keyboard-aware-scroll-view": "0.9.1",
     "react-native-keyboard-tracking-view": "github:mattermost/react-native-keyboard-tracking-view#169676811a32f82cb674a52d7857a14043f7b8f7",
     "react-native-keychain": "4.0.1",

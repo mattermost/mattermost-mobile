@@ -1,0 +1,184 @@
+diff --git a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
+index ef62bed..7379605 100644
+--- a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
++++ b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
+@@ -49,6 +49,7 @@ import java.io.InputStream;
+ import java.io.OutputStream;
+ import java.lang.ref.WeakReference;
+ import java.util.List;
++import java.util.ArrayList;
+ 
+ import com.facebook.react.modules.core.PermissionListener;
+ import com.facebook.react.modules.core.PermissionAwareActivity;
+@@ -69,6 +70,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+   public static final int REQUEST_LAUNCH_IMAGE_LIBRARY    = 13002;
+   public static final int REQUEST_LAUNCH_VIDEO_LIBRARY    = 13003;
+   public static final int REQUEST_LAUNCH_VIDEO_CAPTURE    = 13004;
++  public static final int REQUEST_LAUNCH_MIXED_CAPTURE    = 13005;
+   public static final int REQUEST_PERMISSIONS_FOR_CAMERA  = 14001;
+   public static final int REQUEST_PERMISSIONS_FOR_LIBRARY = 14002;
+ 
+@@ -266,26 +268,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+         cameraIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, videoDurationLimit);
+       }
+     }
++    else if (pickBoth) {
++      Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
++      this.setImageCaptureUri(takePictureIntent);
++      Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
++      cameraIntent = new Intent(Intent.ACTION_CHOOSER);
++      Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
++      Intent[] intentArray = new Intent[]{takePictureIntent,takeVideoIntent};
++      cameraIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
++      cameraIntent.putExtra(Intent.EXTRA_TITLE, "Choose an action");
++      cameraIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
++      requestCode  = REQUEST_LAUNCH_MIXED_CAPTURE;
++    }
+     else
+     {
+       requestCode = REQUEST_LAUNCH_IMAGE_CAPTURE;
+       cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);      
+-
+-      final File original = createNewFile(reactContext, this.options, false);
+-      imageConfig = imageConfig.withOriginalFile(original);
+-
+-      if (imageConfig.original != null) {
+-        cameraCaptureURI = RealPathUtil.compatUriFromFile(reactContext, imageConfig.original);
+-      }else {
+-        responseHelper.invokeError(callback, "Couldn't get file path for photo");
+-        return;
+-      }
+-      if (cameraCaptureURI == null)
+-      {
+-        responseHelper.invokeError(callback, "Couldn't get file path for photo");
+-        return;
+-      }
+-      cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraCaptureURI);
++      this.setImageCaptureUri(cameraIntent);
+     }
+ 
+     if (cameraIntent.resolveActivity(reactContext.getPackageManager()) == null)
+@@ -444,14 +443,20 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+         callback = null;
+         return;
+ 
++      case REQUEST_LAUNCH_MIXED_CAPTURE:
+       case REQUEST_LAUNCH_VIDEO_CAPTURE:
+-        final String path = getRealPathFromURI(data.getData());
+-        responseHelper.putString("uri", data.getData().toString());
+-        responseHelper.putString("path", path);
+-        fileScan(reactContext, path);
+-        responseHelper.invokeResponse(callback);
+-        callback = null;
+-        return;
++      if (data == null || data.getData() == null) {
++          uri = cameraCaptureURI;
++          break;
++        } else {
++            final String path = getRealPathFromURI(data.getData());
++          responseHelper.putString("uri", data.getData().toString());
++          responseHelper.putString("path", path);
++          fileScan(reactContext, path);
++          responseHelper.invokeResponse(callback);
++          callback = null;
++          return;
++        }
+     }
+ 
+     final ReadExifResult result = readExifInterface(responseHelper, imageConfig);
+@@ -551,7 +556,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+   {
+     return callback == null || (cameraCaptureURI == null && requestCode == REQUEST_LAUNCH_IMAGE_CAPTURE)
+             || (requestCode != REQUEST_LAUNCH_IMAGE_CAPTURE && requestCode != REQUEST_LAUNCH_IMAGE_LIBRARY
+-            && requestCode != REQUEST_LAUNCH_VIDEO_LIBRARY && requestCode != REQUEST_LAUNCH_VIDEO_CAPTURE);
++            && requestCode != REQUEST_LAUNCH_VIDEO_LIBRARY && requestCode != REQUEST_LAUNCH_VIDEO_CAPTURE
++            && requestCode != REQUEST_LAUNCH_MIXED_CAPTURE);
+   }
+ 
+   private void updatedResultResponse(@Nullable final Uri uri,
+@@ -571,22 +577,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+                                    @NonNull final Callback callback,
+                                    @NonNull final int requestCode)
+   {
+-    final int writePermission = ActivityCompat
+-            .checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+-    final int cameraPermission = ActivityCompat
+-            .checkSelfPermission(activity, Manifest.permission.CAMERA);
+-
+-    boolean permissionsGranted = false;
+-
++    int selfCheckResult = 0;
+     switch (requestCode) {
+       case REQUEST_PERMISSIONS_FOR_LIBRARY:
+-        permissionsGranted = writePermission == PackageManager.PERMISSION_GRANTED;
+-        break;
++        selfCheckResult = ActivityCompat
++          .checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
++      break;
+       case REQUEST_PERMISSIONS_FOR_CAMERA:
+-        permissionsGranted = cameraPermission == PackageManager.PERMISSION_GRANTED;
++        selfCheckResult = ActivityCompat
++          .checkSelfPermission(activity, Manifest.permission.CAMERA);
++        if (selfCheckResult == PackageManager.PERMISSION_GRANTED) {
++          selfCheckResult = ActivityCompat
++             .checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
++        }
+         break;
+     }
+ 
++    final boolean permissionsGranted = selfCheckResult == PackageManager.PERMISSION_GRANTED;
+     if (!permissionsGranted)
+     {
+       final Boolean dontAskAgain = ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) && ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA);
+@@ -641,7 +648,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+             PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+             break;
+           case REQUEST_PERMISSIONS_FOR_CAMERA:
+-            PERMISSIONS = new String[]{Manifest.permission.CAMERA};
++            PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
+             break;
+           default:
+             PERMISSIONS = new String[]{};
+@@ -781,4 +788,22 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+       videoDurationLimit = options.getInt("durationLimit");
+     }
+   }
++
++  private void setImageCaptureUri(Intent cameraIntent) {
++    final File original = createNewFile(reactContext, this.options, false);
++      imageConfig = imageConfig.withOriginalFile(original);
++
++      if (imageConfig.original != null) {
++        cameraCaptureURI = RealPathUtil.compatUriFromFile(reactContext, imageConfig.original);
++      }else {
++        responseHelper.invokeError(callback, "Couldn't get file path for photo");
++        return;
++      }
++      if (cameraCaptureURI == null)
++      {
++        responseHelper.invokeError(callback, "Couldn't get file path for photo");
++        return;
++      }
++      cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraCaptureURI);
++  }
+ }
+diff --git a/node_modules/react-native-image-picker/ios/ImagePickerManager.m b/node_modules/react-native-image-picker/ios/ImagePickerManager.m
+index 46b2c11..70bb8a5 100644
+--- a/node_modules/react-native-image-picker/ios/ImagePickerManager.m
++++ b/node_modules/react-native-image-picker/ios/ImagePickerManager.m
+@@ -460,7 +460,14 @@ - (void)imagePickerController:(UIImagePickerController *)picker didFinishPicking
+ 
+                 if (videoURL) { // Protect against reported crash
+                   NSError *error = nil;
+-                  [fileManager moveItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                  
++                  // If we have write access to the source file, move it. Otherwise use copy. 
++                  if ([fileManager isWritableFileAtPath:[videoURL path]]) {
++                    [fileManager moveItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                  } else {
++                    [fileManager copyItemAtURL:videoURL toURL:videoDestinationURL error:&error];
++                  }
++
+                   if (error) {
+                       self.callback(@[@{@"error": error.localizedFailureReason}]);
+                       return;
