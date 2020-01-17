@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {memo} from 'react';
-import {Platform, View} from 'react-native';
+import {View} from 'react-native';
 import PropTypes from 'prop-types';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';

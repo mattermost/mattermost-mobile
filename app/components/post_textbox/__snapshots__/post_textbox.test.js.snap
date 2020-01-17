@@ -14,7 +14,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "borderTopWidth": 1,
           "flexDirection": "row",
           "justifyContent": "center",
-          "paddingVertical": 4,
+          "paddingBottom": 8,
         },
         null,
       ]
@@ -36,11 +36,8 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       style={
         Array [
           Object {
-            "backgroundColor": "#ffffff",
             "flex": 1,
             "flexDirection": "column",
-            "marginLeft": 10,
-            "marginRight": 10,
           },
         ]
       }
@@ -61,11 +58,12 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         style={
           Object {
             "color": "#3d3c40",
-            "fontSize": 14,
+            "fontSize": 16,
+            "lineHeight": 22,
             "maxHeight": 150,
             "paddingBottom": 8,
             "paddingLeft": 12,
-            "paddingRight": 12,
+            "paddingRight": 58,
             "paddingTop": 8,
           }
         }
@@ -100,16 +98,17 @@ exports[`PostTextBox should match, full snapshot 1`] = `
             onPress={[Function]}
             style={
               Object {
-                "paddingLeft": 10,
-                "paddingRight": 10,
+                "marginLeft": 5,
+                "marginRight": 5,
+                "padding": 5,
               }
             }
           >
             <Icon
               allowFontScaling={false}
-              color="#3d3c40"
+              color="rgba(61,60,64,0.64)"
               name="at"
-              size={20}
+              size={22}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -118,8 +117,9 @@ exports[`PostTextBox should match, full snapshot 1`] = `
             onPress={[Function]}
             style={
               Object {
-                "paddingLeft": 10,
-                "paddingRight": 10,
+                "marginLeft": 5,
+                "marginRight": 5,
+                "padding": 5,
               }
             }
           >
@@ -132,10 +132,10 @@ exports[`PostTextBox should match, full snapshot 1`] = `
               style={
                 Array [
                   Object {
-                    "height": 20,
+                    "height": 22,
                     "opacity": 1,
-                    "tintColor": "#3d3c40",
-                    "width": 20,
+                    "tintColor": "rgba(61,60,64,0.64)",
+                    "width": 22,
                   },
                 ]
               }
@@ -144,6 +144,13 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           <FileUploadButton
             blurTextBox={[Function]}
             browseFileTypes="public.item"
+            buttonContainerStyle={
+              Object {
+                "marginLeft": 5,
+                "marginRight": 5,
+                "padding": 5,
+              }
+            }
             canBrowseFiles={true}
             canBrowsePhotoLibrary={true}
             canBrowseVideoLibrary={true}
@@ -190,6 +197,13 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           <ImageUploadButton
             blurTextBox={[Function]}
             browseFileTypes="public.item"
+            buttonContainerStyle={
+              Object {
+                "marginLeft": 5,
+                "marginRight": 5,
+                "padding": 5,
+              }
+            }
             canBrowseFiles={true}
             canBrowsePhotoLibrary={true}
             canBrowseVideoLibrary={true}
@@ -235,6 +249,13 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           />
           <AttachmentButton
             blurTextBox={[Function]}
+            buttonContainerStyle={
+              Object {
+                "marginLeft": 5,
+                "marginRight": 5,
+                "padding": 5,
+              }
+            }
             canTakePhoto={true}
             canTakeVideo={true}
             fileCount={0}
