@@ -19,6 +19,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import RNFetchBlob from 'rn-fetch-blob';
 import Button from 'react-native-button';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
@@ -506,8 +507,20 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handleUploadFiles = (files) => {
-        this.props.actions.initUploadFiles(files, this.props.rootId);
+    handleUploadFiles = async (files) => {
+        const file = files[0];
+        if (!file.fileSize | !file.fileName) {
+            const path = (file.path || file.uri).replace('file://', '');
+            const fileInfo = await RNFetchBlob.fs.stat(path);
+            file.fileSize = fileInfo.size;
+            file.fileName = fileInfo.filename;
+        }
+
+        if (file.fileSize > this.props.maxFileSize) {
+            this.onShowFileSizeWarning(file.fileName);
+        } else {
+            this.props.actions.initUploadFiles(files, this.props.rootId);
+        }
     };
 
     isFileLoading = () => {

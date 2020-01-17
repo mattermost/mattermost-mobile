@@ -8,7 +8,6 @@ import {
     NativeModules,
     Platform,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
 import {ICON_SIZE} from 'app/constants/post_textbox';
 import AndroidOpenSettings from 'react-native-android-open-settings';
@@ -17,7 +16,6 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import DocumentPicker from 'react-native-document-picker';
 import Permissions from 'react-native-permissions';
 
-import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 import {changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
@@ -29,13 +27,9 @@ export default class FileUploadButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
-        validMimeTypes: PropTypes.array,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
-        maxFileSize: PropTypes.number.isRequired,
         onShowFileMaxWarning: PropTypes.func,
-        onShowFileSizeWarning: PropTypes.func,
-        onShowUnsupportedMimeTypeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
         buttonContainerStyle: PropTypes.object,
@@ -92,7 +86,7 @@ export default class FileUploadButton extends PureComponent {
                 // Decode file uri to get the actual path
                 res.uri = decodeURIComponent(res.uri);
 
-                this.uploadFiles([res]);
+                this.props.uploadFiles([res]);
             } catch (error) {
                 // Do nothing
             }
@@ -140,29 +134,6 @@ export default class FileUploadButton extends PureComponent {
         }
 
         return true;
-    };
-
-    uploadFiles = async (files) => {
-        const file = files[0];
-        if (!file.fileSize | !file.fileName) {
-            const path = (file.path || file.uri).replace('file://', '');
-            const fileInfo = await RNFetchBlob.fs.stat(path);
-            file.fileSize = fileInfo.size;
-            file.fileName = fileInfo.filename;
-        }
-
-        if (!file.type) {
-            file.type = lookupMimeType(file.fileName);
-        }
-
-        const {validMimeTypes} = this.props;
-        if (validMimeTypes.length && !validMimeTypes.includes(file.type)) {
-            this.props.onShowUnsupportedMimeTypeWarning();
-        } else if (file.fileSize > this.props.maxFileSize) {
-            this.props.onShowFileSizeWarning(file.fileName);
-        } else {
-            this.props.uploadFiles(files);
-        }
     };
 
     handleButtonPress = () => {
