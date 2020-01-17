@@ -10,10 +10,23 @@
  
 ### Highlights
 
+#### Hermes
+
+#### Deep Linking
+
 ### Improvements
+ - Added a post menu item to mark posts as unread.
+ - Removed markdown rendering from Channel Purpose in channel info screen.
+ - Improved channel info transition so that it opens up as a modal rather than as a drawer from the right.
+ - Clicking on the time in the iOS status bar now scrolls center channel up.
+ - Improved the left-hand sidebar on iOS so that it slides into place as the sidebar is opened while becoming visible as content over it is moved.
+ - Added more responsiveness to markdown tables.
+ - Your own username with a suffix 'you' is now shown in the autocomplete.
+ - Improved sorting of emojis in the emoji picker so that thumbsup is sorted first, then thumbsdown, and then custom emoji.
 
 ### Bug Fixes
-
+ - Fixed an issue where combined system messages with many users listed hid posts above them.
+ - Fixed an issue where explicit links to teams and channels on the same server currently logged in to didn't switch to that team and channel.
 
 ## 1.27.0 Release
 - Release Date: January 16, 2020
