@@ -66,10 +66,7 @@ describe('Fetch', () => {
 
     test('doFetchWithResponse handles server version change', async () => {
         const emit = jest.spyOn(EventEmitter, 'emit');
-
         const serverVersion1 = 'version1';
-        const serverVersion2 = 'version2';
-
         const response = {
             json: () => Promise.resolve('data'),
             ok: true,
