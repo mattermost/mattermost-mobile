@@ -240,6 +240,16 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
+    startAtMention = () => {
+        this.handleTextChange(`${this.state.value}@`, true);
+        this.focus();
+    };
+
+    startSlashCommand = () => {
+        this.handleTextChange('/', true);
+        this.focus();
+    };
+
     getTextInputButton = (actionType) => {
         const {channelIsReadOnly, theme} = this.props;
         const style = getStyleSheet(theme);
@@ -259,10 +269,7 @@ export default class PostTextBoxBase extends PureComponent {
                 button = (
                     <TouchableOpacity
                         disabled={isDisabled}
-                        onPress={() => {
-                            this.handleTextChange(`${this.state.value}@`, true);
-                            this.focus();
-                        }}
+                        onPress={this.startAtMention}
                         style={style.iconWrapper}
                     >
                         <MaterialCommunityIcons
@@ -283,10 +290,7 @@ export default class PostTextBoxBase extends PureComponent {
                 button = (
                     <TouchableOpacity
                         disabled={isDisabled}
-                        onPress={() => {
-                            this.handleTextChange('/', true);
-                            this.focus();
-                        }}
+                        onPress={this.startSlashCommand}
                         style={style.iconWrapper}
                     >
                         <Image
@@ -737,7 +741,7 @@ export default class PostTextBoxBase extends PureComponent {
         EventEmitter.emit('fileSizeWarning', fileSizeWarning);
         setTimeout(() => {
             EventEmitter.emit('fileSizeWarning', null);
-        }, 3000);
+        }, 5000);
     };
 
     onCloseChannelPress = () => {
@@ -890,32 +894,35 @@ export default class PostTextBoxBase extends PureComponent {
                         onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
-
-                    <FileUploadPreview
-                        files={files}
-                        rootId={rootId}
-                    />
-
-                    <View style={style.buttonsContainer}>
-                        <View style={style.quickActionsContainer}>
-
-                            {this.getTextInputButton('at')}
-
-                            {this.getTextInputButton('slash')}
-
-                            {this.getMediaButton('file')}
-
-                            {this.getMediaButton('image')}
-
-                            {this.getMediaButton('camera')}
-
-                        </View>
-                        <SendButton
-                            disabled={!this.isSendButtonEnabled()}
-                            handleSendMessage={this.handleSendMessage}
-                            theme={theme}
+                    {!channelIsReadOnly &&
+                    <React.Fragment>
+                        <FileUploadPreview
+                            files={files}
+                            rootId={rootId}
                         />
-                    </View>
+
+                        <View style={style.buttonsContainer}>
+                            <View style={style.quickActionsContainer}>
+
+                                {this.getTextInputButton('at')}
+
+                                {this.getTextInputButton('slash')}
+
+                                {this.getMediaButton('file')}
+
+                                {this.getMediaButton('image')}
+
+                                {this.getMediaButton('camera')}
+
+                            </View>
+                            <SendButton
+                                disabled={!this.isSendButtonEnabled()}
+                                handleSendMessage={this.handleSendMessage}
+                                theme={theme}
+                            />
+                        </View>
+                    </React.Fragment>
+                    }
                 </ScrollView>
             </View>
         );
@@ -940,22 +947,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             tintColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
         iconWrapper: {
-            marginLeft: 5,
-            marginRight: 5,
-            padding: 5,
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 10,
         },
         quickActionsContainer: {
             display: 'flex',
             flexDirection: 'row',
+            height: 44,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 16,
-            lineHeight: 22,
-            paddingBottom: 8,
-            paddingLeft: 12,
-            paddingRight: 58,
-            paddingTop: 8,
+            paddingHorizontal: 12,
+            paddingTop: 12,
+            paddingBottom: 6,
         },
         inputContainer: {
             flex: 1,

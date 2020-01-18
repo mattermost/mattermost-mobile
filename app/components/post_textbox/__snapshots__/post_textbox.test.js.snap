@@ -59,109 +59,246 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           Object {
             "color": "#3d3c40",
             "fontSize": 16,
-            "lineHeight": 22,
             "maxHeight": 150,
-            "paddingBottom": 8,
-            "paddingLeft": 12,
-            "paddingRight": 58,
-            "paddingTop": 8,
+            "paddingBottom": 6,
+            "paddingHorizontal": 12,
+            "paddingTop": 12,
           }
         }
         underlineColorAndroid="transparent"
         value=""
       />
-      <Connect(FileUploadPreview)
-        files={Array []}
-        rootId=""
-      />
-      <View
-        style={
-          Object {
-            "alignItems": "center",
-            "display": "flex",
-            "flexDirection": "row",
-            "justifyContent": "space-between",
-          }
-        }
-      >
+      <React.Fragment>
+        <Connect(FileUploadPreview)
+          files={Array []}
+          rootId=""
+        />
         <View
           style={
             Object {
+              "alignItems": "center",
               "display": "flex",
               "flexDirection": "row",
+              "justifyContent": "space-between",
             }
           }
         >
-          <TouchableOpacity
-            activeOpacity={0.2}
-            disabled={false}
-            onPress={[Function]}
+          <View
             style={
               Object {
-                "marginLeft": 5,
-                "marginRight": 5,
-                "padding": 5,
+                "display": "flex",
+                "flexDirection": "row",
+                "height": 44,
               }
             }
           >
-            <Icon
-              allowFontScaling={false}
-              color="rgba(61,60,64,0.64)"
-              name="at"
-              size={22}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.2}
-            disabled={false}
-            onPress={[Function]}
-            style={
-              Object {
-                "marginLeft": 5,
-                "marginRight": 5,
-                "padding": 5,
-              }
-            }
-          >
-            <Image
-              source={
+            <TouchableOpacity
+              activeOpacity={0.2}
+              disabled={false}
+              onPress={[Function]}
+              style={
                 Object {
-                  "testUri": "../../../dist/assets/images/icons/slash-forward-box.png",
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 10,
                 }
               }
+            >
+              <Icon
+                allowFontScaling={false}
+                color="rgba(61,60,64,0.64)"
+                name="at"
+                size={24}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.2}
+              disabled={false}
+              onPress={[Function]}
               style={
-                Array [
+                Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 10,
+                }
+              }
+            >
+              <Image
+                source={
                   Object {
-                    "height": 22,
-                    "opacity": 1,
-                    "tintColor": "rgba(61,60,64,0.64)",
-                    "width": 22,
-                  },
-                ]
+                    "testUri": "../../../dist/assets/images/icons/slash-forward-box.png",
+                  }
+                }
+                style={
+                  Array [
+                    Object {
+                      "height": 24,
+                      "opacity": 1,
+                      "tintColor": "rgba(61,60,64,0.64)",
+                      "width": 24,
+                    },
+                  ]
+                }
+              />
+            </TouchableOpacity>
+            <FileUploadButton
+              blurTextBox={[Function]}
+              browseFileTypes="public.item"
+              buttonContainerStyle={
+                Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 10,
+                }
               }
+              canBrowseFiles={true}
+              canBrowsePhotoLibrary={true}
+              canBrowseVideoLibrary={true}
+              canTakePhoto={true}
+              canTakeVideo={true}
+              extraOptions={null}
+              fileCount={0}
+              maxFileCount={5}
+              maxFileSize={1024}
+              onShowFileMaxWarning={[Function]}
+              onShowFileSizeWarning={[Function]}
+              theme={
+                Object {
+                  "awayIndicator": "#ffbc42",
+                  "buttonBg": "#166de0",
+                  "buttonColor": "#ffffff",
+                  "centerChannelBg": "#ffffff",
+                  "centerChannelColor": "#3d3c40",
+                  "codeTheme": "github",
+                  "dndIndicator": "#f74343",
+                  "errorTextColor": "#fd5960",
+                  "linkColor": "#2389d7",
+                  "mentionBg": "#ffffff",
+                  "mentionBj": "#ffffff",
+                  "mentionColor": "#145dbf",
+                  "mentionHighlightBg": "#ffe577",
+                  "mentionHighlightLink": "#166de0",
+                  "newMessageSeparator": "#ff8800",
+                  "onlineIndicator": "#06d6a0",
+                  "sidebarBg": "#145dbf",
+                  "sidebarHeaderBg": "#1153ab",
+                  "sidebarHeaderTextColor": "#ffffff",
+                  "sidebarText": "#ffffff",
+                  "sidebarTextActiveBorder": "#579eff",
+                  "sidebarTextActiveColor": "#ffffff",
+                  "sidebarTextHoverBg": "#4578bf",
+                  "sidebarUnreadText": "#ffffff",
+                  "type": "Mattermost",
+                }
+              }
+              uploadFiles={[Function]}
+              validMimeTypes={Array []}
             />
-          </TouchableOpacity>
-          <FileUploadButton
-            blurTextBox={[Function]}
-            browseFileTypes="public.item"
-            buttonContainerStyle={
-              Object {
-                "marginLeft": 5,
-                "marginRight": 5,
-                "padding": 5,
+            <ImageUploadButton
+              blurTextBox={[Function]}
+              browseFileTypes="public.item"
+              buttonContainerStyle={
+                Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 10,
+                }
               }
-            }
-            canBrowseFiles={true}
-            canBrowsePhotoLibrary={true}
-            canBrowseVideoLibrary={true}
-            canTakePhoto={true}
-            canTakeVideo={true}
-            extraOptions={null}
-            fileCount={0}
-            maxFileCount={5}
-            maxFileSize={1024}
-            onShowFileMaxWarning={[Function]}
-            onShowFileSizeWarning={[Function]}
+              canBrowseFiles={true}
+              canBrowsePhotoLibrary={true}
+              canBrowseVideoLibrary={true}
+              canTakePhoto={true}
+              canTakeVideo={true}
+              extraOptions={null}
+              fileCount={0}
+              maxFileCount={5}
+              maxFileSize={1024}
+              onShowFileMaxWarning={[Function]}
+              onShowFileSizeWarning={[Function]}
+              theme={
+                Object {
+                  "awayIndicator": "#ffbc42",
+                  "buttonBg": "#166de0",
+                  "buttonColor": "#ffffff",
+                  "centerChannelBg": "#ffffff",
+                  "centerChannelColor": "#3d3c40",
+                  "codeTheme": "github",
+                  "dndIndicator": "#f74343",
+                  "errorTextColor": "#fd5960",
+                  "linkColor": "#2389d7",
+                  "mentionBg": "#ffffff",
+                  "mentionBj": "#ffffff",
+                  "mentionColor": "#145dbf",
+                  "mentionHighlightBg": "#ffe577",
+                  "mentionHighlightLink": "#166de0",
+                  "newMessageSeparator": "#ff8800",
+                  "onlineIndicator": "#06d6a0",
+                  "sidebarBg": "#145dbf",
+                  "sidebarHeaderBg": "#1153ab",
+                  "sidebarHeaderTextColor": "#ffffff",
+                  "sidebarText": "#ffffff",
+                  "sidebarTextActiveBorder": "#579eff",
+                  "sidebarTextActiveColor": "#ffffff",
+                  "sidebarTextHoverBg": "#4578bf",
+                  "sidebarUnreadText": "#ffffff",
+                  "type": "Mattermost",
+                }
+              }
+              uploadFiles={[Function]}
+              validMimeTypes={Array []}
+            />
+            <AttachmentButton
+              blurTextBox={[Function]}
+              buttonContainerStyle={
+                Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "padding": 10,
+                }
+              }
+              canTakePhoto={true}
+              canTakeVideo={true}
+              fileCount={0}
+              maxFileCount={5}
+              maxFileSize={1024}
+              onShowFileMaxWarning={[Function]}
+              onShowFileSizeWarning={[Function]}
+              theme={
+                Object {
+                  "awayIndicator": "#ffbc42",
+                  "buttonBg": "#166de0",
+                  "buttonColor": "#ffffff",
+                  "centerChannelBg": "#ffffff",
+                  "centerChannelColor": "#3d3c40",
+                  "codeTheme": "github",
+                  "dndIndicator": "#f74343",
+                  "errorTextColor": "#fd5960",
+                  "linkColor": "#2389d7",
+                  "mentionBg": "#ffffff",
+                  "mentionBj": "#ffffff",
+                  "mentionColor": "#145dbf",
+                  "mentionHighlightBg": "#ffe577",
+                  "mentionHighlightLink": "#166de0",
+                  "newMessageSeparator": "#ff8800",
+                  "onlineIndicator": "#06d6a0",
+                  "sidebarBg": "#145dbf",
+                  "sidebarHeaderBg": "#1153ab",
+                  "sidebarHeaderTextColor": "#ffffff",
+                  "sidebarText": "#ffffff",
+                  "sidebarTextActiveBorder": "#579eff",
+                  "sidebarTextActiveColor": "#ffffff",
+                  "sidebarTextHoverBg": "#4578bf",
+                  "sidebarUnreadText": "#ffffff",
+                  "type": "Mattermost",
+                }
+              }
+              uploadFiles={[Function]}
+              validMimeTypes={Array []}
+            />
+          </View>
+          <SendButton
+            disabled={true}
+            handleSendMessage={[Function]}
             theme={
               Object {
                 "awayIndicator": "#ffbc42",
@@ -191,145 +328,9 @@ exports[`PostTextBox should match, full snapshot 1`] = `
                 "type": "Mattermost",
               }
             }
-            uploadFiles={[Function]}
-            validMimeTypes={Array []}
-          />
-          <ImageUploadButton
-            blurTextBox={[Function]}
-            browseFileTypes="public.item"
-            buttonContainerStyle={
-              Object {
-                "marginLeft": 5,
-                "marginRight": 5,
-                "padding": 5,
-              }
-            }
-            canBrowseFiles={true}
-            canBrowsePhotoLibrary={true}
-            canBrowseVideoLibrary={true}
-            canTakePhoto={true}
-            canTakeVideo={true}
-            extraOptions={null}
-            fileCount={0}
-            maxFileCount={5}
-            maxFileSize={1024}
-            onShowFileMaxWarning={[Function]}
-            onShowFileSizeWarning={[Function]}
-            theme={
-              Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
-                "buttonColor": "#ffffff",
-                "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
-                "codeTheme": "github",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
-                "mentionBg": "#ffffff",
-                "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
-                "sidebarHeaderTextColor": "#ffffff",
-                "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
-                "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
-                "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
-              }
-            }
-            uploadFiles={[Function]}
-            validMimeTypes={Array []}
-          />
-          <AttachmentButton
-            blurTextBox={[Function]}
-            buttonContainerStyle={
-              Object {
-                "marginLeft": 5,
-                "marginRight": 5,
-                "padding": 5,
-              }
-            }
-            canTakePhoto={true}
-            canTakeVideo={true}
-            fileCount={0}
-            maxFileCount={5}
-            maxFileSize={1024}
-            onShowFileMaxWarning={[Function]}
-            onShowFileSizeWarning={[Function]}
-            theme={
-              Object {
-                "awayIndicator": "#ffbc42",
-                "buttonBg": "#166de0",
-                "buttonColor": "#ffffff",
-                "centerChannelBg": "#ffffff",
-                "centerChannelColor": "#3d3c40",
-                "codeTheme": "github",
-                "dndIndicator": "#f74343",
-                "errorTextColor": "#fd5960",
-                "linkColor": "#2389d7",
-                "mentionBg": "#ffffff",
-                "mentionBj": "#ffffff",
-                "mentionColor": "#145dbf",
-                "mentionHighlightBg": "#ffe577",
-                "mentionHighlightLink": "#166de0",
-                "newMessageSeparator": "#ff8800",
-                "onlineIndicator": "#06d6a0",
-                "sidebarBg": "#145dbf",
-                "sidebarHeaderBg": "#1153ab",
-                "sidebarHeaderTextColor": "#ffffff",
-                "sidebarText": "#ffffff",
-                "sidebarTextActiveBorder": "#579eff",
-                "sidebarTextActiveColor": "#ffffff",
-                "sidebarTextHoverBg": "#4578bf",
-                "sidebarUnreadText": "#ffffff",
-                "type": "Mattermost",
-              }
-            }
-            uploadFiles={[Function]}
-            validMimeTypes={Array []}
           />
         </View>
-        <SendButton
-          disabled={true}
-          handleSendMessage={[Function]}
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-        />
-      </View>
+      </React.Fragment>
     </ScrollView>
   </View>
 </React.Fragment>

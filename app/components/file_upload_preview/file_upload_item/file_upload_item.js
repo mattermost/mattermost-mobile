@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
@@ -17,6 +17,7 @@ import mattermostBucket from 'app/mattermost_bucket';
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 export default class FileUploadItem extends PureComponent {
     static propTypes = {
@@ -163,6 +164,7 @@ export default class FileUploadItem extends PureComponent {
     };
 
     renderProgress = (fill) => {
+        const styles = getStyleSheet(this.props.theme);
         const realFill = Number(fill.toFixed(0));
 
         return (
@@ -184,6 +186,7 @@ export default class FileUploadItem extends PureComponent {
             theme,
         } = this.props;
         const {progress} = this.state;
+        const styles = getStyleSheet(theme);
         let filePreviewComponent;
 
         if (this.isImageType()) {
@@ -195,12 +198,14 @@ export default class FileUploadItem extends PureComponent {
             );
         } else {
             filePreviewComponent = (
-                <FileAttachmentIcon
-                    file={file}
-                    theme={theme}
-                    wrapperHeight={64}
-                    wrapperWidth={64}
-                />
+                <View style={styles.filePreview}>
+                    <FileAttachmentIcon
+                        file={file}
+                        theme={theme}
+                        wrapperHeight={60}
+                        wrapperWidth={60}
+                    />
+                </View>
             );
         }
 
@@ -245,11 +250,10 @@ export default class FileUploadItem extends PureComponent {
     }
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     preview: {
-        justifyContent: 'flex-end',
-        height: 81,
-        width: 81,
+        paddingTop: 12,
+        marginLeft: 12,
     },
     previewContainer: {
         height: 64,
@@ -288,4 +292,13 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
     },
-});
+    filePreview: {
+        borderColor: changeOpacity(theme.centerChannelColor, 0.6),
+        borderRadius: 5,
+        borderWidth: 1,
+        width: 64,
+        height: 64,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+}));
