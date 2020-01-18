@@ -191,10 +191,12 @@ export default class FileUploadItem extends PureComponent {
 
         if (this.isImageType()) {
             filePreviewComponent = (
-                <FileAttachmentImage
-                    file={file}
-                    theme={theme}
-                />
+                <View style={styles.filePreview}>
+                    <FileAttachmentImage
+                        file={file}
+                        theme={theme}
+                    />
+                </View>
             );
         } else {
             filePreviewComponent = (
@@ -293,12 +295,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         fontSize: 18,
     },
     filePreview: {
-        borderColor: changeOpacity(theme.centerChannelColor, 0.6),
+        borderColor: changeOpacity(theme.centerChannelColor, 0.15),
         borderRadius: 5,
         borderWidth: 1,
         width: 64,
         height: 64,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
 }));

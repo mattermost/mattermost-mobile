@@ -20,7 +20,7 @@ import FileUploadItem from './file_upload_item';
 
 const initial = {opacity: 0, height: 0, translateX: -100};
 const final = {opacity: 1, height: 20, translateX: 0};
-const showFiles = {opacity: 1, height: 76};
+const showFiles = {opacity: 1, height: 81};
 const hideFiles = {opacity: 0, height: 0};
 
 export default class FileUploadPreview extends PureComponent {
@@ -179,6 +179,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             display: 'flex',
             flexDirection: 'row',
             height: 0,
+            alignItems: 'center',
         },
         errorContainer: {
             marginTop: 5,

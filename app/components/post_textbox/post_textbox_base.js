@@ -959,7 +959,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         input: {
             color: theme.centerChannelColor,
             fontSize: 16,
-            lineHeight: 16,
+            lineHeight: 20,
             paddingHorizontal: 12,
             paddingTop: 12,
             paddingBottom: 6,
