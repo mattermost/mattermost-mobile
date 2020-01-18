@@ -59,6 +59,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           Object {
             "color": "#3d3c40",
             "fontSize": 16,
+            "lineHeight": 16,
             "maxHeight": 150,
             "paddingBottom": 6,
             "paddingHorizontal": 12,
