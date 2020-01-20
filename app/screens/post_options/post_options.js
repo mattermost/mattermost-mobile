@@ -357,7 +357,7 @@ export default class PostOptions extends PureComponent {
                         actions.removePost(post);
                     });
                 },
-            }]
+            }],
         );
     };
 

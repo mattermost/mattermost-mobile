@@ -23,7 +23,7 @@ describe('FormattedTime', () => {
         console.error = jest.fn();
 
         let wrapper = renderWithIntl(
-            <FormattedTime {...baseProps}/>
+            <FormattedTime {...baseProps}/>,
         );
 
         expect(wrapper.baseElement).toMatchSnapshot();
@@ -33,7 +33,7 @@ describe('FormattedTime', () => {
             <FormattedTime
                 {...baseProps}
                 hour12={false}
-            />
+            />,
         );
 
         expect(wrapper.getByText('19:02')).toBeTruthy();
@@ -81,7 +81,7 @@ describe('FormattedTime', () => {
                 {...baseProps}
                 timeZone='NZ-CHAT'
                 hour12={false}
-            />
+            />,
         );
 
         expect(wrapper.getByText('08:47')).toBeTruthy();

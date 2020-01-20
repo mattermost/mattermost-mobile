@@ -223,7 +223,7 @@ export default class ExtensionPost extends PureComponent {
                         style: 'cancel',
                     },
                 ],
-                {onDismiss: resolve}
+                {onDismiss: resolve},
             );
         });
     }
@@ -324,7 +324,7 @@ export default class ExtensionPost extends PureComponent {
         let granted;
         if (!hasPermission) {
             granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
             );
         }
 
@@ -420,7 +420,7 @@ export default class ExtensionPost extends PureComponent {
                 }, {
                     count: value.length,
                     max: MAX_MESSAGE_LENGTH,
-                })
+                }),
             );
         } else {
             const data = {

@@ -42,7 +42,7 @@ export default class AttachmentActions extends PureComponent {
                         options={action.options}
                         postId={postId}
                         disabled={action.disabled}
-                    />
+                    />,
                 );
                 break;
             case 'button':
@@ -55,7 +55,7 @@ export default class AttachmentActions extends PureComponent {
                         name={action.name}
                         postId={postId}
                         disabled={action.disabled}
-                    />
+                    />,
                 );
                 break;
             }

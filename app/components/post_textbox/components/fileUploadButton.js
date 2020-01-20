@@ -7,20 +7,18 @@ import {
     Alert,
     NativeModules,
     Platform,
-    StyleSheet,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
+import {ICON_SIZE} from 'app/constants/post_textbox';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import DocumentPicker from 'react-native-document-picker';
 import Permissions from 'react-native-permissions';
 
-import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {PermissionTypes} from 'app/constants';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -28,15 +26,12 @@ export default class FileUploadButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
-        validMimeTypes: PropTypes.array,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
-        maxFileSize: PropTypes.number.isRequired,
         onShowFileMaxWarning: PropTypes.func,
-        onShowFileSizeWarning: PropTypes.func,
-        onShowUnsupportedMimeTypeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
+        buttonContainerStyle: PropTypes.object,
     };
 
     static defaultProps = {
@@ -90,7 +85,7 @@ export default class FileUploadButton extends PureComponent {
                 // Decode file uri to get the actual path
                 res.uri = decodeURIComponent(res.uri);
 
-                this.uploadFiles([res]);
+                this.props.uploadFiles([res]);
             } catch (error) {
                 // Do nothing
             }
@@ -104,13 +99,13 @@ export default class FileUploadButton extends PureComponent {
             const hasPermissionToStorage = await Permissions.check('storage');
 
             switch (hasPermissionToStorage) {
-            case PermissionTypes.UNDETERMINED:
+            case Permissions.RESULTS.UNAVAILABLE:
                 permissionRequest = await Permissions.request('storage');
-                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
                     return false;
                 }
                 break;
-            case PermissionTypes.DENIED: {
+            case Permissions.RESULTS.BLOCKED: {
                 const {title, text} = this.getPermissionDeniedMessage();
 
                 Alert.alert(
@@ -130,7 +125,7 @@ export default class FileUploadButton extends PureComponent {
                             }),
                             onPress: () => AndroidOpenSettings.appDetailsSettings(),
                         },
-                    ]
+                    ],
                 );
                 return false;
             }
@@ -138,29 +133,6 @@ export default class FileUploadButton extends PureComponent {
         }
 
         return true;
-    };
-
-    uploadFiles = async (files) => {
-        const file = files[0];
-        if (!file.fileSize | !file.fileName) {
-            const path = (file.path || file.uri).replace('file://', '');
-            const fileInfo = await RNFetchBlob.fs.stat(path);
-            file.fileSize = fileInfo.size;
-            file.fileName = fileInfo.filename;
-        }
-
-        if (!file.type) {
-            file.type = lookupMimeType(file.fileName);
-        }
-
-        const {validMimeTypes} = this.props;
-        if (validMimeTypes.length && !validMimeTypes.includes(file.type)) {
-            this.props.onShowUnsupportedMimeTypeWarning();
-        } else if (file.fileSize > this.props.maxFileSize) {
-            this.props.onShowFileSizeWarning(file.fileName);
-        } else {
-            this.props.uploadFiles(files);
-        }
     };
 
     handleButtonPress = () => {
@@ -179,26 +151,19 @@ export default class FileUploadButton extends PureComponent {
     };
 
     render() {
-        const {theme} = this.props;
+        const {theme, buttonContainerStyle} = this.props;
         return (
             <TouchableWithFeedback
                 onPress={this.handleButtonPress}
-                style={style.buttonContainer}
+                style={buttonContainerStyle}
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
-                    color={theme.centerChannelColor}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
                     name='file-document-outline'
-                    size={20}
+                    size={ICON_SIZE}
                 />
             </TouchableWithFeedback>
         );
     }
 }
-
-const style = StyleSheet.create({
-    buttonContainer: {
-        paddingLeft: 10,
-        paddingRight: 10,
-    },
-});

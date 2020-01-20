@@ -24,7 +24,7 @@ describe('Fade', () => {
                 {...props}
             >
                 <Text>{dummyText}</Text>
-            </Fade>
+            </Fade>,
         );
     }
 

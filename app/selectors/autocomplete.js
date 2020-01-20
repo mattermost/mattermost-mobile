@@ -83,7 +83,7 @@ export const filterMembersInChannel = createSelector(
 
         // already sorted
         return profiles.map((p) => p.id);
-    }
+    },
 );
 
 export const filterMembersNotInChannel = createSelector(
@@ -111,7 +111,7 @@ export const filterMembersNotInChannel = createSelector(
         return profiles.map((p) => {
             return p.id;
         });
-    }
+    },
 );
 
 export const filterMembersInCurrentTeam = createSelector(
@@ -135,7 +135,7 @@ export const filterMembersInCurrentTeam = createSelector(
         }
 
         return profiles.sort(sortByUsername).map((p) => p.id);
-    }
+    },
 );
 
 export const filterMyChannels = createSelector(
@@ -159,7 +159,7 @@ export const filterMyChannels = createSelector(
         }
 
         return channels.map((c) => c.id);
-    }
+    },
 );
 
 export const filterOtherChannels = createSelector(
@@ -180,7 +180,7 @@ export const filterOtherChannels = createSelector(
         }
 
         return channels.map((c) => c.id);
-    }
+    },
 );
 
 export const filterPublicChannels = createSelector(
@@ -200,7 +200,7 @@ export const filterPublicChannels = createSelector(
                 return c.type === General.OPEN_CHANNEL &&
                     (c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm));
             }).concat(
-                otherChannels.filter((c) => c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm))
+                otherChannels.filter((c) => c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().startsWith(matchTerm)),
             );
         } else {
             channels = myChannels.filter((c) => {
@@ -214,7 +214,7 @@ export const filterPublicChannels = createSelector(
         }
 
         return channels.sort(sortChannelsByDisplayName.bind(null, locale)).map((c) => c.id);
-    }
+    },
 );
 
 export const filterPrivateChannels = createSelector(
@@ -244,7 +244,7 @@ export const filterPrivateChannels = createSelector(
         }
 
         return channels.map((c) => c.id);
-    }
+    },
 );
 
 export const filterDirectAndGroupMessages = createSelector(
@@ -274,7 +274,7 @@ export const filterDirectAndGroupMessages = createSelector(
         }
 
         return channels.map((c) => c.id);
-    }
+    },
 );
 
 export const makeGetMatchTermForDateMention = () => {

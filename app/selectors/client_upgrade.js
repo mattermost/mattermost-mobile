@@ -29,7 +29,7 @@ const getClientUpgrade = createSelector(
             latestVersion,
             minVersion,
         };
-    }
+    },
 );
 
 export default getClientUpgrade;

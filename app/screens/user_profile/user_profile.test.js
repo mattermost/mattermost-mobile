@@ -83,7 +83,7 @@ describe('user_profile', () => {
             <BotTag
                 show={true}
                 theme={baseProps.theme}
-            />
+            />,
         )).toEqual(true);
     });
 
@@ -109,7 +109,7 @@ describe('user_profile', () => {
             <GuestTag
                 show={true}
                 theme={baseProps.theme}
-            />
+            />,
         )).toEqual(true);
     });
 

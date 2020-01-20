@@ -29,7 +29,7 @@ describe('ChannelPostList', () => {
 
     test('should call increasePostVisibilityByOne', () => {
         shallow(
-            <ChannelPostList {...baseProps}/>
+            <ChannelPostList {...baseProps}/>,
         );
 
         expect(baseProps.actions.increasePostVisibilityByOne).toHaveBeenCalledTimes(0);

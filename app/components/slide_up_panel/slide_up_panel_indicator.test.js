@@ -13,7 +13,7 @@ describe('SlideUpPanelIndicator', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <SlideUpPanelIndicator {...baseProps}/>
+            <SlideUpPanelIndicator {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
