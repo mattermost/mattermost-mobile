@@ -14,7 +14,7 @@ jest.mock('react-intl');
 
 describe('PostList', () => {
     const serverURL = 'https://server-url.fake';
-    const deeplinkRoot = 'mattermost-beta://server-url.fake';
+    const deeplinkRoot = 'mattermost://server-url.fake';
 
     const baseProps = {
         actions: {
