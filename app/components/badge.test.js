@@ -18,7 +18,7 @@ describe('Badge', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <Badge {...baseProps}/>
+            <Badge {...baseProps}/>,
         );
 
         expect(wrapper.instance().renderText()).toMatchSnapshot();

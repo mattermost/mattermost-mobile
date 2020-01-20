@@ -146,7 +146,7 @@ export default class ChannelAddMembers extends PureComponent {
                     currentChannelId,
                     currentChannelGroupConstrained,
                     this.page + 1,
-                    General.PROFILE_CHUNK_SIZE
+                    General.PROFILE_CHUNK_SIZE,
                 ).then(this.onProfilesLoaded);
             });
         }
@@ -164,7 +164,7 @@ export default class ChannelAddMembers extends PureComponent {
                 formatMessage({
                     id: 'mobile.channel_members.add_members_alert',
                     defaultMessage: 'You must select at least one member to add to the channel.',
-                })
+                }),
             );
 
             return;

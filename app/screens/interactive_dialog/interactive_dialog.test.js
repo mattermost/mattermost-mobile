@@ -158,7 +158,7 @@ describe('InteractiveDialog', () => {
             };
 
             const wrapper = shallow(
-                <InteractiveDialog {...props}/>
+                <InteractiveDialog {...props}/>,
             );
             wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
 
@@ -169,7 +169,7 @@ describe('InteractiveDialog', () => {
 
         test('should show no error when submit does not return an error', async () => {
             const wrapper = shallow(
-                <InteractiveDialog {...baseProps}/>
+                <InteractiveDialog {...baseProps}/>,
             );
             wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
 
@@ -214,9 +214,7 @@ describe('InteractiveDialog', () => {
                 element.default = testCase.default;
             }
 
-            const wrapper = shallow(
-                <InteractiveDialog {...props}/>
-            );
+            const wrapper = shallow(<InteractiveDialog {...props}/>);
             wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
 
             expect(wrapper.find(DialogElement).at(1).props().value).toBe(testCase.expectedChecked);

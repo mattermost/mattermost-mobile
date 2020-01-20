@@ -33,7 +33,7 @@ describe('SelectedUsers', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <SelectedUsers {...baseProps}/>
+            <SelectedUsers {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -49,7 +49,7 @@ describe('SelectedUsers', () => {
         };
 
         const wrapper = shallow(
-            <SelectedUsers {...props}/>
+            <SelectedUsers {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -62,7 +62,7 @@ describe('SelectedUsers', () => {
         };
 
         const wrapper = shallow(
-            <SelectedUsers {...props}/>
+            <SelectedUsers {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

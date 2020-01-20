@@ -111,7 +111,7 @@ export default class RadioSetting extends PureComponent {
                         {this.renderCheckMark(value, style.checkMark)}
                     </View>
                     {this.renderRowSeparator(i, style.separator)}
-                </TouchableOpacity>
+                </TouchableOpacity>,
             );
         }
         return (

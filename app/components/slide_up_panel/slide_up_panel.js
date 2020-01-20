@@ -111,13 +111,13 @@ export default class SlideUpPanel extends PureComponent {
 
         this.reverseLastScrollY = Animated.multiply(
             new Animated.Value(-1),
-            this.lastScrollY
+            this.lastScrollY,
         );
 
         this.translateYOffset = new Animated.Value(containerHeight);
         this.translateY = Animated.add(
             this.translateYOffset,
-            Animated.add(this.dragY, this.reverseLastScrollY)
+            Animated.add(this.dragY, this.reverseLastScrollY),
         ).interpolate({
             inputRange: [marginFromTop, containerHeight],
             outputRange: [marginFromTop, containerHeight],

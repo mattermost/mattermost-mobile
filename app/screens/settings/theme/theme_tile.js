@@ -32,7 +32,7 @@ const ThemeTile = (props) => {
 
     const labelComponent = React.cloneElement(
         label,
-        {style: style.label}
+        {style: style.label},
     );
 
     const tilesPerLine = isLandscape || isTablet ? 4 : 2;

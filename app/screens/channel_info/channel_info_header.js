@@ -114,7 +114,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const {header} = this.props;
         this.handleLongPress(
             header,
-            formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'})
+            formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'}),
         );
     }
 
@@ -123,7 +123,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const {purpose} = this.props;
         this.handleLongPress(
             purpose,
-            formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'})
+            formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'}),
         );
     }
 

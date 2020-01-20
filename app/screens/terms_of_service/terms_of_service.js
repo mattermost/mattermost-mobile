@@ -156,7 +156,7 @@ export default class TermsOfService extends PureComponent {
             () => {
                 dismissModal();
             },
-            this.handleAcceptTerms
+            this.handleAcceptTerms,
         );
     };
 
@@ -181,7 +181,7 @@ export default class TermsOfService extends PureComponent {
                     }],
                 );
             },
-            this.handleRejectTerms
+            this.handleRejectTerms,
         );
     };
 

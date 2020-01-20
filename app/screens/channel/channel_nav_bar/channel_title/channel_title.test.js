@@ -20,7 +20,7 @@ describe('ChannelTitle', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <ChannelTitle {...baseProps}/>
+            <ChannelTitle {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

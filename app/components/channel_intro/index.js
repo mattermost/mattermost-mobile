@@ -24,7 +24,7 @@ function makeMapStateToProps() {
         (currentUserId, profilesInChannel) => {
             const currentChannelMembers = profilesInChannel || [];
             return currentChannelMembers.filter((m) => m.id !== currentUserId);
-        }
+        },
     );
 
     return function mapStateToProps(state, ownProps) {

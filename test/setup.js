@@ -83,6 +83,7 @@ jest.doMock('react-native', () => {
         RNDocumentPicker: {
             pick: jest.fn(),
         },
+        RNPermissions: {},
     };
 
     return Object.setPrototypeOf({

@@ -32,7 +32,7 @@ export default function ActionButtonText({message, style}) {
                     literal={match[0]}
                     emojiName={match[1]}
                     textStyle={style}
-                />
+                />,
             );
             text = text.substring(match[0].length);
             continue;
@@ -48,7 +48,7 @@ export default function ActionButtonText({message, style}) {
                         literal={match[0]}
                         emojiName={emoticonName}
                         textStyle={style}
-                    />
+                    />,
                 );
                 text = text.substring(match[0].length);
                 continue;
@@ -65,7 +65,7 @@ export default function ActionButtonText({message, style}) {
                 style={style}
             >
                 {match[0]}
-            </Text>
+            </Text>,
         );
         text = text.substring(match[0].length);
     }

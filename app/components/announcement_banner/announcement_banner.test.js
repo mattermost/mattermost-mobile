@@ -23,7 +23,7 @@ describe('AnnouncementBanner', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <AnnouncementBanner {...baseProps}/>
+            <AnnouncementBanner {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

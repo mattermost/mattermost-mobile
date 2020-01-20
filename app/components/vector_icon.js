@@ -16,7 +16,7 @@ import icoMoonConfig from 'assets/mattermost-fonts.json';
 const Mattermost = createIconSetFromIcoMoon(
     icoMoonConfig,
     'Mattermost',
-    'Mattermost-Regular.otf'
+    'Mattermost-Regular.otf',
 );
 
 export default class VectorIcon extends PureComponent {

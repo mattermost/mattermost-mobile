@@ -111,7 +111,7 @@ export default class SafeAreaIos extends PureComponent {
                     if (this.mounted) {
                         this.setState({statusBarHeight: statusBarFrameData.height});
                     }
-                }
+                },
             );
         } catch (e) {
             // not needed

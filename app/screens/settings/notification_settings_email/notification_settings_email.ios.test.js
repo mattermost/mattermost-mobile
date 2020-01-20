@@ -38,7 +38,7 @@ describe('NotificationSettingsEmailIos', () => {
 
     test('should match snapshot, renderEmailSection', () => {
         const wrapper = shallow(
-            <NotificationSettingsEmailIos {...baseProps}/>
+            <NotificationSettingsEmailIos {...baseProps}/>,
         );
 
         expect(wrapper.instance().renderEmailSection()).toMatchSnapshot();
@@ -46,7 +46,7 @@ describe('NotificationSettingsEmailIos', () => {
 
     test('should save preference on back button only if email interval has changed', () => {
         const wrapper = shallow(
-            <NotificationSettingsEmailIos {...baseProps}/>
+            <NotificationSettingsEmailIos {...baseProps}/>,
         );
 
         const instance = wrapper.instance();
@@ -68,7 +68,7 @@ describe('NotificationSettingsEmailIos', () => {
         const updateMe = jest.fn();
         const props = {...baseProps, actions: {savePreferences, updateMe}};
         const wrapper = shallow(
-            <NotificationSettingsEmailIos {...props}/>
+            <NotificationSettingsEmailIos {...props}/>,
         );
 
         wrapper.setState({email: 'true', newInterval: 30});
@@ -83,7 +83,7 @@ describe('NotificationSettingsEmailIos', () => {
 
     test('should match state on setEmailInterval', () => {
         const wrapper = shallow(
-            <NotificationSettingsEmailIos {...baseProps}/>
+            <NotificationSettingsEmailIos {...baseProps}/>,
         );
 
         wrapper.setState({interval: '0'});
@@ -103,7 +103,7 @@ describe('NotificationSettingsEmailIos', () => {
                 {...baseProps}
                 sendEmailNotifications={false}
                 enableEmailBatching={false}
-            />
+            />,
         );
 
         expect(wrapper.find(SectionItem).exists()).toBe(false);
@@ -131,7 +131,7 @@ describe('NotificationSettingsEmailIos', () => {
     test('should call props.actions.savePreferences on saveUserNotifyProps', () => {
         const props = {...baseProps, actions: {savePreferences: jest.fn(), updateMe: jest.fn()}};
         const wrapper = shallow(
-            <NotificationSettingsEmailIos {...props}/>
+            <NotificationSettingsEmailIos {...props}/>,
         );
 
         wrapper.setState({email: 'true', newInterval: '3600'});

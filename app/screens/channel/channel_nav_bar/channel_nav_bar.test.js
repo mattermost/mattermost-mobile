@@ -23,7 +23,7 @@ describe('ChannelNavBar', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallow(
-            <ChannelNavBar {...baseProps}/>
+            <ChannelNavBar {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -31,7 +31,7 @@ describe('ChannelNavBar', () => {
 
     test('should not set the permanentSidebar state if not Tablet', () => {
         const wrapper = shallow(
-            <ChannelNavBar {...baseProps}/>
+            <ChannelNavBar {...baseProps}/>,
         );
 
         wrapper.instance().handlePermanentSidebar();
@@ -40,7 +40,7 @@ describe('ChannelNavBar', () => {
 
     test('should set the permanentSidebar state if Tablet', async () => {
         const wrapper = shallow(
-            <ChannelNavBar {...baseProps}/>
+            <ChannelNavBar {...baseProps}/>,
         );
 
         DeviceTypes.IS_TABLET = true;

@@ -138,7 +138,7 @@ export default class ChannelMembers extends PureComponent {
                 actions.getProfilesInChannel(
                     currentChannelId,
                     this.page + 1,
-                    General.PROFILE_CHUNK_SIZE
+                    General.PROFILE_CHUNK_SIZE,
                 ).then(this.loadedProfiles);
             });
         }
@@ -158,7 +158,7 @@ export default class ChannelMembers extends PureComponent {
                 formatMessage({
                     id: 'mobile.routes.channel_members.action_message',
                     defaultMessage: 'You must select at least one member to remove from the channel.',
-                })
+                }),
             );
             return;
         }
@@ -178,7 +178,7 @@ export default class ChannelMembers extends PureComponent {
                 }, {
                     text: formatMessage({id: 'mobile.channel_list.alertYes', defaultMessage: 'Yes'}),
                     onPress: () => this.removeMembers(membersToRemove),
-                }]
+                }],
             );
         }
     };

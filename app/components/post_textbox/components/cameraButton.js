@@ -6,31 +6,26 @@ import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
-    StyleSheet,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
+import {ICON_SIZE} from 'app/constants/post_textbox';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
-import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {PermissionTypes} from 'app/constants';
 
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
-        validMimeTypes: PropTypes.array,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
-        maxFileSize: PropTypes.number.isRequired,
         onShowFileMaxWarning: PropTypes.func,
-        onShowFileSizeWarning: PropTypes.func,
-        onShowUnsupportedMimeTypeWarning: PropTypes.func,
         theme: PropTypes.object.isRequired,
         uploadFiles: PropTypes.func.isRequired,
+        buttonContainerStyle: PropTypes.object,
     };
 
     static defaultProps = {
@@ -102,7 +97,7 @@ export default class AttachmentButton extends PureComponent {
                     return;
                 }
 
-                this.uploadFiles([response]);
+                this.props.uploadFiles([response]);
             });
         }
     };
@@ -115,13 +110,13 @@ export default class AttachmentButton extends PureComponent {
             const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
-            case PermissionTypes.UNDETERMINED:
+            case Permissions.RESULTS.UNAVAILABLE:
                 permissionRequest = await Permissions.request(targetSource);
-                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
                     return false;
                 }
                 break;
-            case PermissionTypes.DENIED: {
+            case Permissions.RESULTS.BLOCKED: {
                 const canOpenSettings = await Permissions.canOpenSettings();
                 let grantOption = null;
                 if (canOpenSettings) {
@@ -157,51 +152,20 @@ export default class AttachmentButton extends PureComponent {
         return true;
     };
 
-    uploadFiles = async (files) => {
-        const file = files[0];
-        if (!file.fileSize | !file.fileName) {
-            const path = (file.path || file.uri).replace('file://', '');
-            const fileInfo = await RNFetchBlob.fs.stat(path);
-            file.fileSize = fileInfo.size;
-            file.fileName = fileInfo.filename;
-        }
-
-        if (!file.type) {
-            file.type = lookupMimeType(file.fileName);
-        }
-
-        const {validMimeTypes} = this.props;
-        if (validMimeTypes.length && !validMimeTypes.includes(file.type)) {
-            this.props.onShowUnsupportedMimeTypeWarning();
-        } else if (file.fileSize > this.props.maxFileSize) {
-            this.props.onShowFileSizeWarning(file.fileName);
-        } else {
-            this.props.uploadFiles(files);
-        }
-    };
-
     render() {
-        const {theme} = this.props;
-
+        const {theme, buttonContainerStyle} = this.props;
         return (
             <TouchableWithFeedback
                 onPress={this.attachFileFromCamera}
-                style={style.buttonContainer}
+                style={buttonContainerStyle}
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
-                    color={theme.centerChannelColor}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
                     name='camera-outline'
-                    size={20}
+                    size={ICON_SIZE}
                 />
             </TouchableWithFeedback>
         );
     }
 }
-
-const style = StyleSheet.create({
-    buttonContainer: {
-        paddingLeft: 10,
-        paddingRight: 10,
-    },
-});

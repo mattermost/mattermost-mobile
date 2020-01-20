@@ -34,7 +34,7 @@ describe('MainSidebar', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -42,7 +42,7 @@ describe('MainSidebar', () => {
 
     test('should not set the permanentSidebar state if not Tablet', () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
 
         wrapper.instance().handlePermanentSidebar();
@@ -51,7 +51,7 @@ describe('MainSidebar', () => {
 
     test('should set the permanentSidebar state if Tablet', async () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
 
         DeviceTypes.IS_TABLET = true;
@@ -73,7 +73,7 @@ describe('MainSidebar', () => {
         };
 
         const wrapper = shallow(
-            <MainSidebar {...props}/>
+            <MainSidebar {...props}/>,
         );
 
         const instance = wrapper.instance();
@@ -88,7 +88,7 @@ describe('MainSidebar', () => {
         Platform.OS = 'ios';
 
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
         const drawer = wrapper.dive().childAt(1);
         const drawerStyle = drawer.props().style.reduce((acc, obj) => ({...acc, ...obj}));
@@ -99,7 +99,7 @@ describe('MainSidebar', () => {
         Platform.OS = 'android';
 
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
         const drawer = wrapper.dive().childAt(1);
         const drawerStyle = drawer.props().style.reduce((acc, obj) => ({...acc, ...obj}));

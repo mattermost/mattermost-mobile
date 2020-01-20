@@ -374,7 +374,7 @@ export default class ChannelSidebar extends Component {
                     drawerOpened={this.state.drawerOpened}
                     previewChannel={previewChannel}
                 />
-            </View>
+            </View>,
         );
 
         return (
