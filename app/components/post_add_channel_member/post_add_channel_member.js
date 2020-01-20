@@ -71,7 +71,7 @@ export default class PostAddChannelMember extends React.PureComponent {
                         {
                             username: currentUser.username,
                             addedUsername: usernames[index],
-                        }
+                        },
                     );
 
                     actions.sendAddToChannelEphemeralPost(currentUser, usernames[index], message, post.channel_id, post.root_id);

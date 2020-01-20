@@ -344,7 +344,7 @@ describe('PostTextBox', () => {
             mockResolvedValue({data: 'success'});
 
         const wrapper = shallowWithIntl(
-            <PostTextbox {...props}/>
+            <PostTextbox {...props}/>,
         );
 
         const msg = '/fail preserve this text in the post draft';

@@ -37,7 +37,7 @@ describe('FileAttachment', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <FileAttachment {...baseProps}/>
+            <FileAttachment {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

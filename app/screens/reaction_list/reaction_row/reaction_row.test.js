@@ -18,7 +18,7 @@ describe('ReactionRow', () => {
 
     test('should match snapshot, renderContent', () => {
         const wrapper = shallow(
-            <ReactionRow {...baseProps}/>
+            <ReactionRow {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

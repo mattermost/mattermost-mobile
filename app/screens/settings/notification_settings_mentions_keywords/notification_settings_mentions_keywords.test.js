@@ -20,7 +20,7 @@ describe('NotificationSettingsMentionsKeywords', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMentionsKeywords {...baseProps}/>
+            <NotificationSettingsMentionsKeywords {...baseProps}/>,
         );
 
         expect(wrapper.instance()).toMatchSnapshot();

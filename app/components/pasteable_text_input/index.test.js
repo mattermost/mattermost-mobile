@@ -13,7 +13,7 @@ describe('PasteableTextInput', () => {
         const onPaste = jest.fn();
         const text = 'My Text';
         const component = shallow(
-            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>
+            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>,
         );
         expect(component).toMatchSnapshot();
     });
@@ -23,7 +23,7 @@ describe('PasteableTextInput', () => {
         const event = {someData: 'data'};
         const text = 'My Text';
         shallow(
-            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>
+            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>,
         );
         nativeEventEmitter.emit('onPaste', event);
         expect(onPaste).toHaveBeenCalledWith(null, event);
@@ -34,7 +34,7 @@ describe('PasteableTextInput', () => {
         const onPaste = jest.fn();
         const text = 'My Text';
         const component = shallow(
-            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>
+            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>,
         );
 
         component.instance().subscription.remove = mockRemove;

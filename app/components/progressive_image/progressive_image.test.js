@@ -58,7 +58,7 @@ describe('ProgressiveImage', () => {
             <ProgressiveImage
                 {...baseProps}
                 thumbnailUri={null}
-            />
+            />,
         );
         const instance = wrapper.instance();
         jest.spyOn(instance, 'setImage');
@@ -73,7 +73,7 @@ describe('ProgressiveImage', () => {
             <ProgressiveImage
                 {...baseProps}
                 imageUri={null}
-            />
+            />,
         );
         const instance = wrapper.instance();
         jest.spyOn(instance, 'setThumbnail');

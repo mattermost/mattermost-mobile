@@ -8,6 +8,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 import InteractiveDialog from './interactive_dialog';
 
 import ErrorText from 'app/components/error_text';
+import DialogElement from 'app/screens/interactive_dialog/dialog_element';
 
 describe('InteractiveDialog', () => {
     const baseProps = {
@@ -157,7 +158,7 @@ describe('InteractiveDialog', () => {
             };
 
             const wrapper = shallow(
-                <InteractiveDialog {...props}/>
+                <InteractiveDialog {...props}/>,
             );
             wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
 
@@ -168,7 +169,7 @@ describe('InteractiveDialog', () => {
 
         test('should show no error when submit does not return an error', async () => {
             const wrapper = shallow(
-                <InteractiveDialog {...baseProps}/>
+                <InteractiveDialog {...baseProps}/>,
             );
             wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
 
@@ -176,5 +177,47 @@ describe('InteractiveDialog', () => {
             expect(wrapper.find(ErrorText)).not.toExist();
             expect(wrapper.instance().scrollView.current.scrollTo).not.toHaveBeenCalled();
         });
+    });
+
+    describe('bool element should handle', () => {
+        const element = {
+            data_source: '',
+            display_name: 'Boolean Selector',
+            name: 'somebool',
+            optional: false,
+            type: 'bool',
+            placeholder: 'Subscribe?',
+        };
+        const {elements, ...rest} = baseProps;
+        const props = {
+            ...rest,
+            elements: [
+                ...elements,
+                element,
+            ],
+        };
+
+        const testCases = [
+            {description: 'no default', expectedChecked: false},
+            {description: 'unknown default', default: 'unknown', expectedChecked: false},
+            {description: 'default of "false"', default: 'false', expectedChecked: false},
+            {description: 'default of true', default: true, expectedChecked: true},
+            {description: 'default of "true"', default: 'True', expectedChecked: true},
+            {description: 'default of "True"', default: 'True', expectedChecked: true},
+            {description: 'default of "TRUE"', default: 'TRUE', expectedChecked: true},
+        ];
+
+        testCases.forEach((testCase) => test(`should interpret ${testCase.description}`, () => {
+            if (testCase.default === undefined) {
+                delete element.default;
+            } else {
+                element.default = testCase.default;
+            }
+
+            const wrapper = shallow(<InteractiveDialog {...props}/>);
+            wrapper.instance().scrollView = {current: {scrollTo: jest.fn()}};
+
+            expect(wrapper.find(DialogElement).at(1).props().value).toBe(testCase.expectedChecked);
+        }));
     });
 });

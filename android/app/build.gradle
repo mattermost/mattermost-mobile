@@ -267,6 +267,7 @@ dependencies {
     implementation project(':@sentry_react-native')
     implementation project(':react-native-android-open-settings')
     implementation project(':react-native-haptic-feedback')
+    implementation project(':react-native-permissions')
 
     implementation project(':react-native-fast-image')
     // For animated GIF support

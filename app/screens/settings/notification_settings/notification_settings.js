@@ -57,7 +57,7 @@ export default class NotificationSettings extends PureComponent {
                 intl.formatMessage({
                     id: 'mobile.notification_settings.save_failed_description',
                     defaultMessage: 'The notification settings failed to save due to a connection issue, please try again.',
-                })
+                }),
             );
         }
     }

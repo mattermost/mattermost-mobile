@@ -19,7 +19,6 @@ import Permissions from 'react-native-permissions';
 import {changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {PermissionTypes} from 'app/constants';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -100,13 +99,13 @@ export default class FileUploadButton extends PureComponent {
             const hasPermissionToStorage = await Permissions.check('storage');
 
             switch (hasPermissionToStorage) {
-            case PermissionTypes.UNDETERMINED:
+            case Permissions.RESULTS.UNAVAILABLE:
                 permissionRequest = await Permissions.request('storage');
-                if (permissionRequest !== PermissionTypes.AUTHORIZED) {
+                if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
                     return false;
                 }
                 break;
-            case PermissionTypes.DENIED: {
+            case Permissions.RESULTS.BLOCKED: {
                 const {title, text} = this.getPermissionDeniedMessage();
 
                 Alert.alert(
@@ -126,7 +125,7 @@ export default class FileUploadButton extends PureComponent {
                             }),
                             onPress: () => AndroidOpenSettings.appDetailsSettings(),
                         },
-                    ]
+                    ],
                 );
                 return false;
             }
