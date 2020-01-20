@@ -394,7 +394,7 @@ platform :ios do
     )
 
     # Set the deep link prefix
-    app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
@@ -597,10 +597,10 @@ platform :android do
     android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
 
-    app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
     find_replace_string(
       path_to_file: "./android/app/src/main/AndroidManifest.xml",
-      old_string: 'scheme="mattermost-beta"',
+      old_string: 'scheme="mattermost"',
       new_string: "scheme=\'#{app_scheme}\'"
     )
 

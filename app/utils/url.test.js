@@ -107,7 +107,7 @@ describe('UrlUtils', () => {
     describe('matchDeepLink', () => {
         const SITE_URL = 'http://localhost:8065';
         const SERVER_URL = 'http://localhost:8065';
-        const DEEPLINK_URL_ROOT = 'mattermost-beta://localhost:8065';
+        const DEEPLINK_URL_ROOT = 'mattermost://localhost:8065';
 
         const tests = [
             {name: 'should return null if all inputs are empty', input: {url: '', serverURL: '', siteURL: ''}, expected: null},
