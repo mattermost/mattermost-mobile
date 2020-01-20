@@ -20,60 +20,26 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       ]
     }
   >
-    <AttachmentButton
-      blurTextBox={[Function]}
-      browseFileTypes="public.item"
-      canBrowseFiles={true}
-      canBrowsePhotoLibrary={true}
-      canBrowseVideoLibrary={true}
-      canTakePhoto={true}
-      canTakeVideo={true}
-      extraOptions={null}
-      fileCount={0}
-      maxFileCount={5}
-      maxFileSize={1024}
-      onShowFileMaxWarning={[Function]}
-      onShowFileSizeWarning={[Function]}
-      theme={
+    <ScrollView
+      contentContainerStyle={
         Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
+          "alignItems": "stretch",
         }
       }
-      uploadFiles={[Function]}
-      validMimeTypes={Array []}
-    />
-    <View
+      disableScrollViewPanResponder={true}
+      keyboardShouldPersistTaps="always"
+      overScrollMode="never"
+      pinchGestureEnabled={false}
+      scrollEnabled={false}
+      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
       style={
         Array [
           Object {
-            "alignItems": "stretch",
             "backgroundColor": "#ffffff",
             "flex": 1,
-            "flexDirection": "row",
+            "flexDirection": "column",
+            "marginLeft": 10,
             "marginRight": 10,
           },
         ]
@@ -95,9 +61,8 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         style={
           Object {
             "color": "#3d3c40",
-            "flex": 1,
             "fontSize": 14,
-            "maxHeight": 100,
+            "maxHeight": 150,
             "paddingBottom": 8,
             "paddingLeft": 12,
             "paddingRight": 12,
@@ -107,9 +72,209 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         underlineColorAndroid="transparent"
         value=""
       />
-      <Fade
-        visible={false}
+      <Connect(FileUploadPreview)
+        files={Array []}
+        rootId=""
+      />
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "display": "flex",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
+          }
+        }
       >
+        <View
+          style={
+            Object {
+              "display": "flex",
+              "flexDirection": "row",
+            }
+          }
+        >
+          <TouchableOpacity
+            activeOpacity={0.2}
+            disabled={false}
+            onPress={[Function]}
+            style={
+              Object {
+                "paddingLeft": 10,
+                "paddingRight": 10,
+              }
+            }
+          >
+            <Icon
+              allowFontScaling={false}
+              color="#3d3c40"
+              name="at"
+              size={20}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.2}
+            disabled={false}
+            onPress={[Function]}
+            style={
+              Object {
+                "paddingLeft": 10,
+                "paddingRight": 10,
+              }
+            }
+          >
+            <Image
+              source={
+                Object {
+                  "testUri": "../../../dist/assets/images/icons/slash-forward-box.png",
+                }
+              }
+              style={
+                Array [
+                  Object {
+                    "height": 20,
+                    "opacity": 1,
+                    "tintColor": "#3d3c40",
+                    "width": 20,
+                  },
+                ]
+              }
+            />
+          </TouchableOpacity>
+          <FileUploadButton
+            blurTextBox={[Function]}
+            browseFileTypes="public.item"
+            canBrowseFiles={true}
+            canBrowsePhotoLibrary={true}
+            canBrowseVideoLibrary={true}
+            canTakePhoto={true}
+            canTakeVideo={true}
+            extraOptions={null}
+            fileCount={0}
+            maxFileCount={5}
+            maxFileSize={1024}
+            onShowFileMaxWarning={[Function]}
+            onShowFileSizeWarning={[Function]}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            uploadFiles={[Function]}
+            validMimeTypes={Array []}
+          />
+          <ImageUploadButton
+            blurTextBox={[Function]}
+            browseFileTypes="public.item"
+            canBrowseFiles={true}
+            canBrowsePhotoLibrary={true}
+            canBrowseVideoLibrary={true}
+            canTakePhoto={true}
+            canTakeVideo={true}
+            extraOptions={null}
+            fileCount={0}
+            maxFileCount={5}
+            maxFileSize={1024}
+            onShowFileMaxWarning={[Function]}
+            onShowFileSizeWarning={[Function]}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            uploadFiles={[Function]}
+            validMimeTypes={Array []}
+          />
+          <AttachmentButton
+            blurTextBox={[Function]}
+            canTakePhoto={true}
+            canTakeVideo={true}
+            fileCount={0}
+            maxFileCount={5}
+            maxFileSize={1024}
+            onShowFileMaxWarning={[Function]}
+            onShowFileSizeWarning={[Function]}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
+            }
+            uploadFiles={[Function]}
+            validMimeTypes={Array []}
+          />
+        </View>
         <SendButton
           disabled={true}
           handleSendMessage={[Function]}
@@ -143,8 +308,8 @@ exports[`PostTextBox should match, full snapshot 1`] = `
             }
           }
         />
-      </Fade>
-    </View>
+      </View>
+    </ScrollView>
   </View>
 </React.Fragment>
 `;

@@ -11,7 +11,6 @@ import {autocompleteCustomEmojis} from 'mattermost-redux/actions/emojis';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {EmojiIndicesByAlias} from 'app/utils/emojis';
-import {compareEmojis} from 'app/utils/emoji_utils';
 
 import EmojiSuggestion from './emoji_suggestion';
 import Fuse from 'fuse.js';
@@ -24,7 +23,7 @@ const getEmojisByName = createSelector(
             emoticons.add(key);
         }
 
-        return Array.from(emoticons).sort(compareEmojis);
+        return Array.from(emoticons);
     },
 );
 

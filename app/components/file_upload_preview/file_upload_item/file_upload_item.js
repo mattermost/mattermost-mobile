@@ -234,6 +234,7 @@ export default class FileUploadItem extends PureComponent {
                     }
                 </View>
                 <FileUploadRemove
+                    theme={this.props.theme}
                     channelId={channelId}
                     clientId={file.clientId}
                     onPress={this.handleRemoveFile}

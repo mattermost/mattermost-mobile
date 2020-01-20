@@ -11,7 +11,7 @@ import {ViewTypes} from 'app/constants';
 const {OnPasteEventManager} = NativeModules;
 const OnPasteEventEmitter = new NativeEventEmitter(OnPasteEventManager);
 
-export class PasteableTextInput extends React.Component {
+export class PasteableTextInput extends React.PureComponent {
     static propTypes = {
         ...TextInput.PropTypes,
         onPaste: PropTypes.func,
@@ -42,8 +42,8 @@ export class PasteableTextInput extends React.Component {
             const {height} = event.nativeEvent.contentSize;
             const {style} = this.props;
             const {inputHeight} = this.state;
-            const newHeight = height > style.maxHeight ? inputHeight : height + ViewTypes.INPUT_VERTICAL_PADDING;
-            const transitionSpeed = height === ViewTypes.INPUT_LINE_HEIGHT ? 500 : 100;
+            const newHeight = Math.min(style.maxHeight, height + ViewTypes.INPUT_VERTICAL_PADDING);
+            const transitionSpeed = height === ViewTypes.INPUT_LINE_HEIGHT ? 500 : 1;
 
             Animated.timing(inputHeight, {
                 toValue: newHeight,

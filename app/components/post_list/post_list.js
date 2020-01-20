@@ -98,7 +98,15 @@ export default class PostList extends PureComponent {
     }
 
     componentDidMount() {
+        const {actions, deepLinkURL} = this.props;
+
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
+
+        // Invoked when hitting a deep link and app is not already running.
+        if (deepLinkURL) {
+            this.handleDeepLink(deepLinkURL);
+            actions.setDeepLinkURL('');
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -108,6 +116,7 @@ export default class PostList extends PureComponent {
             this.resetPostList();
         }
 
+        // Invoked when hitting a deep link and app is already running.
         if (deepLinkURL && deepLinkURL !== prevProps.deepLinkURL) {
             this.handleDeepLink(deepLinkURL);
             actions.setDeepLinkURL('');

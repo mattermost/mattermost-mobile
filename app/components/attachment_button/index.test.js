@@ -14,6 +14,9 @@ import {VALID_MIME_TYPES} from 'app/screens/edit_profile/edit_profile';
 import AttachmentButton from './index';
 
 jest.mock('react-intl');
+jest.mock('react-native-image-picker', () => ({
+    launchCamera: jest.fn(),
+}));
 
 describe('AttachmentButton', () => {
     const formatMessage = jest.fn();

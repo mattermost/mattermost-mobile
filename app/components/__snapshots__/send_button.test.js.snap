@@ -16,11 +16,11 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
         Object {
           "alignItems": "center",
           "backgroundColor": "#166de0",
-          "borderRadius": 18,
+          "borderRadius": 4,
           "height": 28,
           "justifyContent": "center",
           "paddingLeft": 3,
-          "width": 28,
+          "width": 72,
         },
         Object {
           "backgroundColor": "rgba(22,109,224,0.3)",
@@ -54,11 +54,11 @@ exports[`SendButton should match snapshot 1`] = `
       Object {
         "alignItems": "center",
         "backgroundColor": "#166de0",
-        "borderRadius": 18,
+        "borderRadius": 4,
         "height": 28,
         "justifyContent": "center",
         "paddingLeft": 3,
-        "width": 28,
+        "width": 72,
       }
     }
   >
@@ -88,11 +88,11 @@ exports[`SendButton should render theme backgroundColor 1`] = `
       Object {
         "alignItems": "center",
         "backgroundColor": "#166de0",
-        "borderRadius": 18,
+        "borderRadius": 4,
         "height": 28,
         "justifyContent": "center",
         "paddingLeft": 3,
-        "width": 28,
+        "width": 72,
       }
     }
   >

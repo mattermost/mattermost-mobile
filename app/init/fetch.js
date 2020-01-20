@@ -8,6 +8,8 @@ import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
 import {ClientError, HEADER_X_VERSION_ID} from 'mattermost-redux/client/client4';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {General} from 'mattermost-redux/constants';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
@@ -112,6 +114,7 @@ Client4.doFetchWithResponse = async (url, options) => {
     const serverVersion = headers[HEADER_X_VERSION_ID] || headers[HEADER_X_VERSION_ID.toLowerCase()];
     if (serverVersion && !headers['Cache-Control'] && Client4.serverVersion !== serverVersion) {
         Client4.serverVersion = serverVersion; /* eslint-disable-line require-atomic-updates */
+        EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
     }
 
     if (response.ok) {
