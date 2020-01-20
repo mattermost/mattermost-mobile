@@ -96,11 +96,12 @@ export default class FileUploadButton extends PureComponent {
         if (Platform.OS === 'android') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const hasPermissionToStorage = await Permissions.check('storage');
+            const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+            const hasPermissionToStorage = await Permissions.check(storagePermission);
 
             switch (hasPermissionToStorage) {
             case Permissions.RESULTS.UNAVAILABLE:
-                permissionRequest = await Permissions.request('storage');
+                permissionRequest = await Permissions.request(storagePermission);
                 if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
                     return false;
                 }

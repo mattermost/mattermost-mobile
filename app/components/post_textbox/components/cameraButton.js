@@ -106,7 +106,7 @@ export default class AttachmentButton extends PureComponent {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const targetSource = 'camera';
+            const targetSource = Permissions.PERMISSIONS.IOS.CAMERA;
             const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
