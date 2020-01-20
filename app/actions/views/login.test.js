@@ -4,11 +4,14 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
+import * as GeneralActions from 'mattermost-redux/actions/general';
+
 import {ViewTypes} from 'app/constants';
 
 import {
     handleLoginIdChanged,
     handlePasswordChanged,
+    handleSuccessfulLogin,
 } from 'app/actions/views/login';
 
 jest.mock('app/init/credentials', () => ({
@@ -36,7 +39,16 @@ describe('Actions.Views.Login', () => {
     let store;
 
     beforeEach(() => {
-        store = mockStore({});
+        store = mockStore({
+            entities: {
+                users: {
+                    currentUserId: 'current-user-id',
+                },
+                general: {
+                    config: {},
+                },
+            },
+        });
     });
 
     test('handleLoginIdChanged', () => {
@@ -59,5 +71,14 @@ describe('Actions.Views.Login', () => {
 
         store.dispatch(handlePasswordChanged(password));
         expect(store.getActions()).toEqual([action]);
+    });
+
+    test('handleSuccessfulLogin gets config and license ', async () => {
+        const getClientConfig = jest.spyOn(GeneralActions, 'getClientConfig');
+        const getLicenseConfig = jest.spyOn(GeneralActions, 'getLicenseConfig');
+
+        await store.dispatch(handleSuccessfulLogin());
+        expect(getClientConfig).toHaveBeenCalled();
+        expect(getLicenseConfig).toHaveBeenCalled();
     });
 });
