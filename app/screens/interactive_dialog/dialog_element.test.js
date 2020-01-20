@@ -6,6 +6,7 @@ import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 import RadioSetting from 'app/components/widgets/settings/radio_setting';
+import BoolSetting from 'app/components/widgets/settings/bool_setting';
 import DialogElement from './dialog_element.js';
 
 describe('DialogElement', () => {
@@ -56,6 +57,44 @@ describe('DialogElement', () => {
                 />
             );
             expect(wrapper.find(RadioSetting).find({options: radioOptions, default: radioOptions[1].value}).exists()).toBe(true);
+        });
+    });
+
+    describe('boolSetting', () => {
+        test('propagates when false', () => {
+            const wrapper = shallow(
+                <DialogElement
+                    {...baseDialogProps}
+                    theme={theme}
+                    type='bool'
+                    value={false}
+                />
+            );
+            expect(wrapper.find(BoolSetting).find({value: false}).exists()).toBe(true);
+        });
+
+        test('propagates when true', () => {
+            const wrapper = shallow(
+                <DialogElement
+                    {...baseDialogProps}
+                    theme={theme}
+                    type='bool'
+                    value={true}
+                />
+            );
+            expect(wrapper.find(BoolSetting).find({value: true}).exists()).toBe(true);
+        });
+
+        test('propagates when null', () => {
+            const wrapper = shallow(
+                <DialogElement
+                    {...baseDialogProps}
+                    theme={theme}
+                    type='bool'
+                    value={null}
+                />
+            );
+            expect(wrapper.find(BoolSetting).find({value: false}).exists()).toBe(true);
         });
     });
 });
