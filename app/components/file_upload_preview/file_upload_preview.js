@@ -71,12 +71,8 @@ export default class FileUploadPreview extends PureComponent {
             filesUploadingForCurrentChannel,
             files,
         } = this.props;
-        const {fileSizeWarning, showFileMaxWarning} = this.state;
 
-        if (
-            !fileSizeWarning && !showFileMaxWarning &&
-            (channelIsLoading || (!files.length && !filesUploadingForCurrentChannel))
-        ) {
+        if ((channelIsLoading || (!files.length && !filesUploadingForCurrentChannel))) {
             this.containerRef.current.transition(showFiles, hideFiles, 150, 'ease-out');
             this.shown = false;
         } else if (files.length && !this.shown) {
