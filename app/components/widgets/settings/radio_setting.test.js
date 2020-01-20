@@ -26,7 +26,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 default={'Administration'}
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
         wrapper.find(TouchableOpacity).at(1).props().onPress();
 
@@ -45,7 +45,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 default={'Administration'}
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -61,7 +61,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 default={'invalid-option-value'}
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
 
         expect(wrapper.find(CheckMark)).toHaveLength(0);

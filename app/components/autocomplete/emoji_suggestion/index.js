@@ -24,7 +24,7 @@ const getEmojisByName = createSelector(
         }
 
         return Array.from(emoticons);
-    }
+    },
 );
 
 function mapStateToProps(state) {

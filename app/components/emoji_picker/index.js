@@ -125,7 +125,7 @@ const getEmojisBySection = createSelector(
         }
 
         return emoticons;
-    }
+    },
 );
 
 const getEmojisByName = createSelector(
@@ -137,7 +137,7 @@ const getEmojisByName = createSelector(
         }
 
         return Array.from(emoticons);
-    }
+    },
 );
 
 function mapStateToProps(state) {

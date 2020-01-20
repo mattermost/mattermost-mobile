@@ -24,7 +24,7 @@ describe('SidebarSettings', () => {
 
     test('should match, full snapshot', async () => {
         const wrapper = shallow(
-            <SidebarSettings {...baseProps}/>
+            <SidebarSettings {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -35,7 +35,7 @@ describe('SidebarSettings', () => {
 
     test('should set the Permanent Sidebar value to false', async () => {
         const wrapper = shallow(
-            <SidebarSettings {...baseProps}/>
+            <SidebarSettings {...baseProps}/>,
         );
 
         await wrapper.instance().loadSetting();
@@ -46,7 +46,7 @@ describe('SidebarSettings', () => {
         DeviceTypes.IS_TABLET = true;
 
         const wrapper = shallow(
-            <SidebarSettings {...baseProps}/>
+            <SidebarSettings {...baseProps}/>,
         );
 
         const mainProps = {
@@ -68,7 +68,7 @@ describe('SidebarSettings', () => {
         };
 
         const mainSidebar = shallow(
-            <MainSidebar {...mainProps}/>
+            <MainSidebar {...mainProps}/>,
         );
 
         await wrapper.instance().loadSetting();

@@ -38,7 +38,7 @@ describe('Reducers.channel', () => {
                 lastChannelViewTime: {},
                 keepChannelIdAsUnread: null,
             },
-            {}
+            {},
         );
 
         expect(nextState).toEqual(initialState);
@@ -66,7 +66,7 @@ describe('Reducers.channel', () => {
                 type: ViewTypes.INCREASE_POST_VISIBILITY,
                 data: channelId,
                 amount,
-            }
+            },
         );
 
         expect(nextState).toEqual({
@@ -101,7 +101,7 @@ describe('Reducers.channel', () => {
                 type: ViewTypes.INCREASE_POST_VISIBILITY,
                 data: channelId,
                 amount,
-            }
+            },
         );
 
         expect(nextState).toEqual({

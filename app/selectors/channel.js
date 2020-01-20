@@ -14,7 +14,7 @@ const getOtherUserIdForDm = createSelector(
         }
 
         return channel.name.split('__').find((m) => m !== currentUserId) || currentUserId;
-    }
+    },
 );
 
 export const getChannelMembersForDm = createSelector(
@@ -25,7 +25,7 @@ export const getChannelMembersForDm = createSelector(
         }
 
         return [otherUser];
-    }
+    },
 );
 
 export const getChannelNameForSearchAutocomplete = createSelector(
@@ -35,5 +35,5 @@ export const getChannelNameForSearchAutocomplete = createSelector(
             return channel.display_name;
         }
         return '';
-    }
+    },
 );
