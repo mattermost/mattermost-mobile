@@ -963,6 +963,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 12,
             paddingTop: 12,
             paddingBottom: 6,
+            minHeight: 38,
         },
         inputContainer: {
             flex: 1,
