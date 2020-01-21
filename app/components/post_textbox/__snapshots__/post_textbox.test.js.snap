@@ -61,6 +61,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
             "fontSize": 16,
             "lineHeight": 20,
             "maxHeight": 150,
+            "minHeight": 38,
             "paddingBottom": 6,
             "paddingHorizontal": 12,
             "paddingTop": 12,
