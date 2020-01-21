@@ -108,7 +108,7 @@ export default class ImageUploadButton extends PureComponent {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const targetSource = 'photo';
+            const targetSource = Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
             const hasPermissionToStorage = await Permissions.check(targetSource);
 
             switch (hasPermissionToStorage) {
