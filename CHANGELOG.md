@@ -9,7 +9,8 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixed an issue where all previously closed Direct Messages were listed in the channel sidebar.
+ - Fixed an issue where all previously auto-closed Direct Message channels were listed in the channel sidebar.
+ - Fixed a regression affecting webapp and mobile apps where some users were experiencing client-side performance issues. This was mainly affecting users with more than 100 channels listed in the channel sidebar and with channels sorted alphabetically.
 
 ## 1.27.0 Release
 - Release Date: January 16, 2020
