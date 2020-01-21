@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     FlatList,
     Platform,
 } from 'react-native';
-
-import {RequestStatus} from 'mattermost-redux/constants';
 
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -18,14 +16,13 @@ import SlashSuggestionItem from './slash_suggestion_item';
 const SLASH_REGEX = /(^\/)([a-zA-Z-]*)$/;
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
-export default class SlashSuggestion extends Component {
+export default class SlashSuggestion extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getAutocompleteCommands: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         commands: PropTypes.array,
-        commandsRequest: PropTypes.object.isRequired,
         isSearch: PropTypes.bool,
         maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
@@ -56,7 +53,6 @@ export default class SlashSuggestion extends Component {
         const {currentTeamId} = this.props;
         const {
             commands: nextCommands,
-            commandsRequest: nextCommandsRequest,
             currentTeamId: nextTeamId,
             value: nextValue,
         } = nextProps;
@@ -81,7 +77,7 @@ export default class SlashSuggestion extends Component {
 
         const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
 
-        if ((!nextCommands.length || dataIsStale) && nextCommandsRequest.status !== RequestStatus.STARTED) {
+        if ((!nextCommands.length || dataIsStale)) {
             this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
             this.setState({
                 lastCommandRequest: Date.now(),
