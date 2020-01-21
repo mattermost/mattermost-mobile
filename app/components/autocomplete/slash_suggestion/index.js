@@ -29,7 +29,6 @@ const mobileCommandsSelector = createSelector(
 function mapStateToProps(state) {
     return {
         commands: mobileCommandsSelector(state),
-        commandsRequest: state.requests.integrations.getAutocompleteCommands,
         currentTeamId: getCurrentTeamId(state),
         theme: getTheme(state),
         isLandscape: isLandscape(state),
