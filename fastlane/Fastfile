@@ -89,6 +89,10 @@ lane :set_app_version do
     package['version'] = version_number
     save_config_json('../package.json', package)
 
+    lock = load_config_json('../package-lock.json')
+    lock['version'] = version_number
+    save_config_json('../package-lock.json', lock)
+
     android_set_version_name(
         gradle_file: './android/app/build.gradle',
         version_name: version_number
@@ -728,6 +732,7 @@ end
 def save_config_json(json_path, json)
   File.open(json_path, 'w') do |f|
     f.write(JSON.pretty_generate(json))
+    f.write("\n")
   end
 end
 
