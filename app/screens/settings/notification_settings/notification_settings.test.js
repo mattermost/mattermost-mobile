@@ -28,7 +28,7 @@ describe('NotificationSettings', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettings {...baseProps}/>
+            <NotificationSettings {...baseProps}/>,
         );
 
         expect(wrapper.instance()).toMatchSnapshot();
@@ -36,7 +36,7 @@ describe('NotificationSettings', () => {
 
     test('should include previous notification props when saving new ones', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettings {...baseProps}/>
+            <NotificationSettings {...baseProps}/>,
         );
 
         const instance = wrapper.instance();

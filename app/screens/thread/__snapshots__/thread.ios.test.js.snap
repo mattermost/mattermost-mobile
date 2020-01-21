@@ -42,9 +42,6 @@ exports[`thread should match snapshot, has root post 1`] = `
       <View
         nativeID="threadAccessoriesContainer"
       >
-        <Connect(FileUploadPreview)
-          rootId="root_id"
-        />
         <ForwardRef(forwardConnectRef)
           cursorPositionEvent="onThreadTextBoxCursorChange"
           maxHeight={200}

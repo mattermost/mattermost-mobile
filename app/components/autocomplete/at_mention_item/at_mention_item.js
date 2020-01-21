@@ -13,6 +13,7 @@ import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone
 import {BotTag, GuestTag} from 'app/components/tag';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import FormattedText from 'app/components/formatted_text';
 
 export default class AtMentionItem extends PureComponent {
     static propTypes = {
@@ -25,6 +26,7 @@ export default class AtMentionItem extends PureComponent {
         isBot: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        isCurrentUser: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -47,6 +49,7 @@ export default class AtMentionItem extends PureComponent {
             isBot,
             isLandscape,
             isGuest,
+            isCurrentUser,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -78,6 +81,12 @@ export default class AtMentionItem extends PureComponent {
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
                 {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
+                {isCurrentUser &&
+                    <FormattedText
+                        style={style.rowFullname}
+                        id='suggestion.mention.you'
+                        defaultMessage='(you)'
+                    />}
             </TouchableWithFeedback>
         );
     }

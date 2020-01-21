@@ -299,6 +299,7 @@ jobs:
     steps:
       - checkout:
           path: ~/mattermost-mobile
+      - ruby-setup
       - npm-dependencies
       - pods-dependencies
       - assets
@@ -308,8 +309,13 @@ jobs:
           working_directory: fastlane
           name: Run fastlane to build unsigned iOS
           no_output_timeout: 30m
-          command: bundle exec fastlane ios unsigned
-      - persist
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+            bundle exec fastlane ios unsigned
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - mattermost-mobile/Mattermost-unsigned.ipa
       - save:
           filename: "Mattermost-unsigned.ipa"
 
@@ -358,6 +364,7 @@ jobs:
       name: android
       resource_class: medium
     steps:
+      - ruby-setup
       - attach_workspace:
           at: ~/
       - run:
@@ -478,7 +485,7 @@ workflows:
             tags:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
             branches:
-              ignore: /.*/
+              only: unsigned
       - build-ios-unsigned:
           context: mattermost-mobile-unsigned
           requires:
@@ -487,7 +494,7 @@ workflows:
             tags:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
             branches:
-              ignore: /.*/
+              only: unsigned
       - github-release:
           context: mattermost-mobile-unsigned
           requires:
@@ -497,4 +504,4 @@ workflows:
             tags:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
             branches:
-              ignore: /.*/
+              only: unsigned

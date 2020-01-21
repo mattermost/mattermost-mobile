@@ -19,7 +19,7 @@ describe('DialogIntroductionText', () => {
         const wrapper = shallow(
             <DialogIntroductionText
                 {...baseProps}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -31,7 +31,7 @@ describe('DialogIntroductionText', () => {
         const wrapper = shallow(
             <DialogIntroductionText
                 {...baseProps}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

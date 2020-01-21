@@ -9,6 +9,7 @@ import {
     ScrollView,
     View,
 } from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import {General, Users} from 'mattermost-redux/constants';
 
@@ -17,7 +18,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-import {goToScreen, popTopScreen, showModalOverCurrentContext} from 'app/actions/navigation';
+import {dismissModal, goToScreen, popTopScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 
 import pinIcon from 'assets/images/channel_info/pin.png';
 
@@ -102,8 +103,15 @@ export default class ChannelInfo extends PureComponent {
     }
 
     componentDidMount() {
+        this.navigationEventListener = Navigation.events().bindComponent(this);
         this.props.actions.getChannelStats(this.props.currentChannel.id);
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
+    }
+
+    navigationButtonPressed({buttonId}) {
+        if (buttonId === 'close-info') {
+            dismissModal();
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -194,7 +202,7 @@ export default class ChannelInfo extends PureComponent {
                 }, {
                     text: formatMessage({id: 'mobile.terms_of_service.alert_retry', defaultMessage: 'Try Again'}),
                     onPress: this.handleConfirmConvertToPrivate,
-                }]
+                }],
             );
         } else {
             Alert.alert(
@@ -264,7 +272,7 @@ export default class ChannelInfo extends PureComponent {
                         },
                         {
                             displayName: channel.display_name.trim(),
-                        }
+                        },
                     );
                     if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
                         this.props.actions.getChannel(channel.id);
@@ -286,7 +294,7 @@ export default class ChannelInfo extends PureComponent {
                 {
                     term: term.toLowerCase(),
                     name: channel.display_name.trim(),
-                }
+                },
             ),
             [{
                 text: formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),

@@ -8,7 +8,6 @@ import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
-import FileUploadPreview from 'app/components/file_upload_preview';
 import Loading from 'app/components/loading';
 import PostList from 'app/components/post_list';
 import PostTextbox from 'app/components/post_textbox';
@@ -52,9 +51,6 @@ export default class ThreadIOS extends ThreadBase {
                         scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <FileUploadPreview
-                            rootId={rootId}
-                        />
                         <Autocomplete
                             maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                             onChangeText={this.handleAutoComplete}

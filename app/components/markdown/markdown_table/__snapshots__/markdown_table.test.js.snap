@@ -10,7 +10,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
   }
   type="opacity"
 >
-  <ScrollViewMock
+  <ScrollView
     onContentSizeChange={[Function]}
     onLayout={[Function]}
     scrollEnabled={false}
@@ -132,7 +132,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
         />
       </>
     </View>
-  </ScrollViewMock>
+  </ScrollView>
   <LinearGradient
     colors={
       Array [

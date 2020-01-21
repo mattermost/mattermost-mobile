@@ -19,7 +19,7 @@ describe('MarkdownEmoji', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <MarkdownEmoji {...baseProps}/>
+            <MarkdownEmoji {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

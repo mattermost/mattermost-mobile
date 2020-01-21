@@ -17,7 +17,7 @@ exports[`PostList setting channel deep link 1`] = `
   disableVirtualization={false}
   extraData={
     Array [
-      undefined,
+      "channel-id",
       undefined,
       undefined,
     ]
@@ -42,13 +42,13 @@ exports[`PostList setting channel deep link 1`] = `
   onScroll={[Function]}
   onScrollToIndexFailed={[Function]}
   refreshControl={
-    <RefreshControlMock
+    <RefreshControl
       colors={
         Array [
           "#3d3c40",
         ]
       }
-      onRefresh={null}
+      onRefresh={[Function]}
       refreshing={false}
       tintColor="#3d3c40"
     />
@@ -78,7 +78,7 @@ exports[`PostList setting permalink deep link 1`] = `
   disableVirtualization={false}
   extraData={
     Array [
-      undefined,
+      "channel-id",
       undefined,
       undefined,
     ]
@@ -103,13 +103,13 @@ exports[`PostList setting permalink deep link 1`] = `
   onScroll={[Function]}
   onScrollToIndexFailed={[Function]}
   refreshControl={
-    <RefreshControlMock
+    <RefreshControl
       colors={
         Array [
           "#3d3c40",
         ]
       }
-      onRefresh={null}
+      onRefresh={[Function]}
       refreshing={false}
       tintColor="#3d3c40"
     />
@@ -139,7 +139,7 @@ exports[`PostList should match snapshot 1`] = `
   disableVirtualization={false}
   extraData={
     Array [
-      undefined,
+      "channel-id",
       undefined,
       undefined,
     ]
@@ -164,13 +164,13 @@ exports[`PostList should match snapshot 1`] = `
   onScroll={[Function]}
   onScrollToIndexFailed={[Function]}
   refreshControl={
-    <RefreshControlMock
+    <RefreshControl
       colors={
         Array [
           "#3d3c40",
         ]
       }
-      onRefresh={null}
+      onRefresh={[Function]}
       refreshing={false}
       tintColor="#3d3c40"
     />

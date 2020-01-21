@@ -24,7 +24,7 @@ function makeGetChannelNamesMap() {
             }
 
             return channelsNameMap;
-        }
+        },
     );
 }
 

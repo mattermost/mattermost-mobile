@@ -3,7 +3,7 @@
 
 import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Linking, Text} from 'react-native';
+import {Alert, Clipboard, Linking, Text} from 'react-native';
 import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
 
@@ -12,6 +12,8 @@ import {DeepLinkTypes} from 'app/constants';
 import {getCurrentServerUrl} from 'app/init/credentials';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
+import {alertErrorWithFallback} from 'app/utils/general';
+import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
 import {matchDeepLink, normalizeProtocol} from 'app/utils/url';
 
@@ -52,10 +54,20 @@ export default class MarkdownLink extends PureComponent {
             serverUrl = await getCurrentServerUrl();
         }
 
-        const match = matchDeepLink(url, serverUrl, siteURL);
+        const match = matchDeepLink(url, serverURL, siteURL);
+
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);
+                const error = await this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);
+
+                if (error) {
+                    const linkFailedMessage = {
+                        id: t('mobile.server_link.private_channel.error'),
+                        defaultMessage: 'You are not a member of this private channel.',
+                    };
+
+                    alertErrorWithFallback(this.context.intl, {}, linkFailedMessage);
+                }
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 onPermalinkPress(match.postId, match.teamName);
             }
@@ -63,6 +75,18 @@ export default class MarkdownLink extends PureComponent {
             Linking.canOpenURL(url).then((supported) => {
                 if (supported) {
                     Linking.openURL(url);
+                } else {
+                    const {formatMessage} = this.context.intl;
+                    Alert.alert(
+                        formatMessage({
+                            id: 'mobile.server_link.error.title',
+                            defaultMessage: 'Link Error',
+                        }),
+                        formatMessage({
+                            id: 'mobile.server_link.error.text',
+                            defaultMessage: 'The link could not be found on this server.',
+                        }),
+                    );
                 }
             });
         }

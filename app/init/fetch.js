@@ -8,6 +8,8 @@ import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
 import {ClientError, HEADER_X_VERSION_ID} from 'mattermost-redux/client/client4';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {General} from 'mattermost-redux/constants';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
@@ -17,8 +19,8 @@ import {t} from 'app/utils/i18n';
 
 /* eslint-disable no-throw-literal */
 
-const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
-const HEADER_TOKEN = 'Token';
+export const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
+export const HEADER_TOKEN = 'Token';
 
 let managedConfig;
 
@@ -99,23 +101,20 @@ Client4.doFetchWithResponse = async (url, options) => {
         });
     }
 
-    if (headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()]) {
-        const clusterId = headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()];
-        if (clusterId && Client4.clusterId !== clusterId) {
-            Client4.clusterId = clusterId; /* eslint-disable-line require-atomic-updates */
-        }
+    const clusterId = headers[HEADER_X_CLUSTER_ID] || headers[HEADER_X_CLUSTER_ID.toLowerCase()];
+    if (clusterId && Client4.clusterId !== clusterId) {
+        Client4.clusterId = clusterId; /* eslint-disable-line require-atomic-updates */
     }
 
-    if (headers[HEADER_TOKEN] || headers[HEADER_TOKEN.toLowerCase()]) {
-        const token = headers[HEADER_TOKEN] || headers[HEADER_TOKEN.toLowerCase()];
+    const token = headers[HEADER_TOKEN] || headers[HEADER_TOKEN.toLowerCase()];
+    if (token) {
         Client4.setToken(token);
     }
 
-    if (headers[HEADER_X_VERSION_ID] && !headers['Cache-Control']) {
-        const serverVersion = headers[HEADER_X_VERSION_ID];
-        if (serverVersion && Client4.serverVersion !== serverVersion) {
-            Client4.serverVersion = serverVersion; /* eslint-disable-line require-atomic-updates */
-        }
+    const serverVersion = headers[HEADER_X_VERSION_ID] || headers[HEADER_X_VERSION_ID.toLowerCase()];
+    if (serverVersion && !headers['Cache-Control'] && Client4.serverVersion !== serverVersion) {
+        Client4.serverVersion = serverVersion; /* eslint-disable-line require-atomic-updates */
+        EventEmitter.emit(General.SERVER_VERSION_CHANGED, serverVersion);
     }
 
     if (response.ok) {

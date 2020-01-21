@@ -32,7 +32,7 @@ describe('MarkdownTable', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <MarkdownTable {...baseProps}/>
+            <MarkdownTable {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -40,7 +40,7 @@ describe('MarkdownTable', () => {
 
     test('should slice rows and columns', () => {
         const wrapper = shallowWithIntl(
-            <MarkdownTable {...baseProps}/>
+            <MarkdownTable {...baseProps}/>,
         );
 
         const {maxPreviewColumns} = wrapper.state();

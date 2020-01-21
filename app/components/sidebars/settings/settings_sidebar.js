@@ -178,7 +178,7 @@ export default class SettingsDrawer extends PureComponent {
         this.openModal(
             'EditProfile',
             formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
-            {currentUser, commandType}
+            {currentUser, commandType},
         );
     });
 
@@ -207,7 +207,7 @@ export default class SettingsDrawer extends PureComponent {
         this.openModal(
             'UserProfile',
             formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-            {userId, fromSettings: true}
+            {userId, fromSettings: true},
         );
     });
 

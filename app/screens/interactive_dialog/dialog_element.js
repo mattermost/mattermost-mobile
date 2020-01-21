@@ -158,7 +158,7 @@ export default class DialogElement extends PureComponent {
                 <BoolSetting
                     id={name}
                     label={displayName}
-                    value={value === 'true'}
+                    value={Boolean(value)}
                     placeholder={placeholder}
                     helpText={helpText}
                     errorText={errorText}
