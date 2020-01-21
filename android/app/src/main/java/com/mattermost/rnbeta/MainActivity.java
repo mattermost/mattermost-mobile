@@ -21,7 +21,7 @@ public class MainActivity extends NavigationActivity {
     */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
             String keyPressed = event.isShiftPressed() ? "shift-enter" : "enter";
             HWKeyboardEventModule.getInstance().keyPressed(keyPressed);
             return true;
