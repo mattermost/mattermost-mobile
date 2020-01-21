@@ -329,18 +329,19 @@ export default class AttachmentButton extends PureComponent {
     hasStoragePermission = async () => {
         if (Platform.OS === 'android') {
             const {formatMessage} = this.context.intl;
+            const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
             let permissionRequest;
-            const hasPermissionToStorage = await Permissions.check('storage');
+            const hasPermissionToStorage = await Permissions.check(storagePermission);
 
             switch (hasPermissionToStorage) {
             case Permissions.RESULTS.DENIED:
-                permissionRequest = await Permissions.request('storage');
+                permissionRequest = await Permissions.request(storagePermission);
                 if (permissionRequest !== Permissions.RESULTS.GRANTED) {
                     return false;
                 }
                 break;
             case Permissions.RESULTS.BLOCKED: {
-                const {title, text} = this.getPermissionDeniedMessage('storage');
+                const {title, text} = this.getPermissionDeniedMessage(storagePermission);
 
                 Alert.alert(
                     title,

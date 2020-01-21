@@ -3,9 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform} from 'react-native';
+import {View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
@@ -25,19 +25,21 @@ export default class FileUploadRemove extends PureComponent {
     };
 
     render() {
-        const style = getStyleSheet(this.props.theme);
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
         return (
             <TouchableWithFeedback
-                style={style.removeButtonWrapper}
+                style={style.tappableContainer}
                 onPress={this.handleOnPress}
                 type={'opacity'}
             >
-                <Icon
-                    name='close-circle'
-                    color={this.props.theme.centerChannelColor}
-                    size={20}
-                    style={style.removeButtonIcon}
-                />
+                <View style={style.removeButton}>
+                    <Icon
+                        name='close-circle'
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
+                        size={18}
+                    />
+                </View>
             </TouchableWithFeedback>
         );
     }
@@ -45,25 +47,20 @@ export default class FileUploadRemove extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        removeButtonIcon: Platform.select({
-            ios: {
-                marginTop: 2,
-            },
-        }),
-        removeButtonWrapper: {
-            alignItems: 'center',
-            justifyContent: 'center',
+        tappableContainer: {
             position: 'absolute',
-            overflow: 'hidden',
             elevation: 11,
-            top: 7,
-            right: 7,
-            width: 24,
-            height: 24,
-            borderRadius: 12,
+            top: -2,
+            right: -16,
+            width: 32,
+            height: 32,
+        },
+        removeButton: {
+            borderRadius: 20,
+            alignSelf: 'center',
+            paddingTop: 6,
+            paddingHorizontal: 1,
             backgroundColor: theme.centerChannelBg,
-            borderWidth: 2,
-            borderColor: theme.centerChannelBg,
         },
     };
 });

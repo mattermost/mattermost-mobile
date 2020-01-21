@@ -19,6 +19,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import RNFetchBlob from 'rn-fetch-blob';
 import Button from 'react-native-button';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
@@ -35,7 +36,7 @@ import FormattedText from 'app/components/formatted_text';
 import PasteableTextInput from 'app/components/pasteable_text_input';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import SendButton from 'app/components/send_button';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT, IS_REACTION_REGEX, MAX_FILE_COUNT, ICON_SIZE} from 'app/constants/post_textbox';
 import {NOTIFY_ALL_MEMBERS} from 'app/constants/view';
 import FileUploadPreview from 'app/components/file_upload_preview';
 
@@ -239,13 +240,23 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
+    startAtMention = () => {
+        this.handleTextChange(`${this.state.value}@`, true);
+        this.focus();
+    };
+
+    startSlashCommand = () => {
+        this.handleTextChange('/', true);
+        this.focus();
+    };
+
     getTextInputButton = (actionType) => {
         const {channelIsReadOnly, theme} = this.props;
         const style = getStyleSheet(theme);
 
         let button = null;
         const buttonStyle = [];
-        let iconColor = theme.centerChannelColor;
+        let iconColor = changeOpacity(theme.centerChannelColor, 0.64);
         let isDisabled = false;
 
         if (!channelIsReadOnly) {
@@ -253,21 +264,18 @@ export default class PostTextBoxBase extends PureComponent {
             case 'at':
                 isDisabled = this.state.value[this.state.value.length - 1] === '@';
                 if (isDisabled) {
-                    iconColor = changeOpacity(theme.centerChannelColor, 0.6);
+                    iconColor = changeOpacity(theme.centerChannelColor, 0.16);
                 }
                 button = (
                     <TouchableOpacity
                         disabled={isDisabled}
-                        onPress={() => {
-                            this.handleTextChange(`${this.state.value}@`, true);
-                            this.focus();
-                        }}
+                        onPress={this.startAtMention}
                         style={style.iconWrapper}
                     >
                         <MaterialCommunityIcons
                             color={iconColor}
                             name='at'
-                            size={20}
+                            size={ICON_SIZE}
                         />
                     </TouchableOpacity>
                 );
@@ -282,10 +290,7 @@ export default class PostTextBoxBase extends PureComponent {
                 button = (
                     <TouchableOpacity
                         disabled={isDisabled}
-                        onPress={() => {
-                            this.handleTextChange('/', true);
-                            this.focus();
-                        }}
+                        onPress={this.startSlashCommand}
                         style={style.iconWrapper}
                     >
                         <Image
@@ -303,6 +308,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     getMediaButton = (actionType) => {
         const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme} = this.props;
+        const style = getStyleSheet(theme);
         let button = null;
         const props = {
             blurTextBox: this.blur,
@@ -313,6 +319,7 @@ export default class PostTextBoxBase extends PureComponent {
             uploadFiles: this.handleUploadFiles,
             maxFileSize,
             theme,
+            buttonContainerStyle: style.iconWrapper,
         };
 
         if (canUploadFiles && !channelIsReadOnly) {
@@ -504,8 +511,20 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handleUploadFiles = (files) => {
-        this.props.actions.initUploadFiles(files, this.props.rootId);
+    handleUploadFiles = async (files) => {
+        const file = files[0];
+        if (!file.fileSize | !file.fileName) {
+            const path = (file.path || file.uri).replace('file://', '');
+            const fileInfo = await RNFetchBlob.fs.stat(path);
+            file.fileSize = fileInfo.size;
+            file.fileName = fileInfo.filename;
+        }
+
+        if (file.fileSize > this.props.maxFileSize) {
+            this.onShowFileSizeWarning(file.fileName);
+        } else {
+            this.props.actions.initUploadFiles(files, this.props.rootId);
+        }
     };
 
     isFileLoading = () => {
@@ -722,7 +741,7 @@ export default class PostTextBoxBase extends PureComponent {
         EventEmitter.emit('fileSizeWarning', fileSizeWarning);
         setTimeout(() => {
             EventEmitter.emit('fileSizeWarning', null);
-        }, 3000);
+        }, 5000);
     };
 
     onCloseChannelPress = () => {
@@ -835,6 +854,12 @@ export default class PostTextBoxBase extends PureComponent {
         const textValue = channelIsLoading ? '' : value;
         const placeholder = this.getPlaceHolder();
 
+        let maxHeight = 150;
+
+        if (isLandscape) {
+            maxHeight = 88;
+        }
+
         return (
             <View
                 style={[style.inputWrapper, padding(isLandscape)]}
@@ -861,7 +886,7 @@ export default class PostTextBoxBase extends PureComponent {
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
-                        style={style.input}
+                        style={{...style.input, maxHeight}}
                         keyboardType={this.state.keyboardType}
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
@@ -869,32 +894,35 @@ export default class PostTextBoxBase extends PureComponent {
                         onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
-
-                    <FileUploadPreview
-                        files={files}
-                        rootId={rootId}
-                    />
-
-                    <View style={style.buttonsContainer}>
-                        <View style={style.quickActionsContainer}>
-
-                            {this.getTextInputButton('at')}
-
-                            {this.getTextInputButton('slash')}
-
-                            {this.getMediaButton('file')}
-
-                            {this.getMediaButton('image')}
-
-                            {this.getMediaButton('camera')}
-
-                        </View>
-                        <SendButton
-                            disabled={!this.isSendButtonEnabled()}
-                            handleSendMessage={this.handleSendMessage}
-                            theme={theme}
+                    {!channelIsReadOnly &&
+                    <React.Fragment>
+                        <FileUploadPreview
+                            files={files}
+                            rootId={rootId}
                         />
-                    </View>
+
+                        <View style={style.buttonsContainer}>
+                            <View style={style.quickActionsContainer}>
+
+                                {this.getTextInputButton('at')}
+
+                                {this.getTextInputButton('slash')}
+
+                                {this.getMediaButton('file')}
+
+                                {this.getMediaButton('image')}
+
+                                {this.getMediaButton('camera')}
+
+                            </View>
+                            <SendButton
+                                disabled={!this.isSendButtonEnabled()}
+                                handleSendMessage={this.handleSendMessage}
+                                theme={theme}
+                            />
+                        </View>
+                    </React.Fragment>
+                    }
                 </ScrollView>
             </View>
         );
@@ -910,37 +938,36 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
         },
         slashIcon: {
-            width: 20,
-            height: 20,
+            width: ICON_SIZE,
+            height: ICON_SIZE,
             opacity: 1,
-            tintColor: theme.centerChannelColor,
+            tintColor: changeOpacity(theme.centerChannelColor, 0.64),
         },
         iconDisabled: {
-            tintColor: changeOpacity(theme.centerChannelColor, 0.6),
+            tintColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
         iconWrapper: {
-            paddingLeft: 10,
-            paddingRight: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 10,
         },
         quickActionsContainer: {
             display: 'flex',
             flexDirection: 'row',
+            height: 44,
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 14,
-            paddingBottom: 8,
-            paddingLeft: 12,
-            paddingRight: 12,
-            paddingTop: 8,
-            maxHeight: 150,
+            fontSize: 16,
+            lineHeight: 20,
+            paddingHorizontal: 12,
+            paddingTop: 12,
+            paddingBottom: 6,
+            minHeight: 38,
         },
         inputContainer: {
             flex: 1,
             flexDirection: 'column',
-            backgroundColor: theme.centerChannelBg,
-            marginRight: 10,
-            marginLeft: 10,
         },
         inputContentContainer: {
             alignItems: 'stretch',
@@ -949,7 +976,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'flex-end',
             flexDirection: 'row',
             justifyContent: 'center',
-            paddingVertical: 4,
+            paddingBottom: 8,
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
