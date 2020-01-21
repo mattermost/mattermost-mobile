@@ -98,7 +98,7 @@ class GlobalEventHandler {
             StatusBarManager.getHeight(
                 (data) => {
                     this.onStatusBarHeightChange(data.height);
-                }
+                },
             );
         }
 
@@ -213,7 +213,7 @@ class GlobalEventHandler {
             StatusBarManager.getHeight(
                 (data) => {
                     this.onStatusBarHeightChange(data.height);
-                }
+                },
             );
         }
 
@@ -239,7 +239,7 @@ class GlobalEventHandler {
                         text: translations[t('mobile.server_upgrade.button')],
                         onPress: this.serverUpgradeNeeded,
                     }],
-                    {cancelable: false}
+                    {cancelable: false},
                 );
             } else if (state.entities.users && state.entities.users.currentUserId) {
                 dispatch(setServerVersion(serverVersion));

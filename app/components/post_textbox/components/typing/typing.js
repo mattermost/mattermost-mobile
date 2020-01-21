@@ -27,10 +27,10 @@ export default class Typing extends PureComponent {
         typingHeight: new Animated.Value(0),
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.typing.length && !this.props.typing.length) {
+    componentDidUpdate(prevProps) {
+        if (this.props.typing.length && !prevProps.typing.length) {
             this.animateTyping(true);
-        } else if (!nextProps.typing.length) {
+        } else if (!this.props.typing.length) {
             this.animateTyping();
         }
     }

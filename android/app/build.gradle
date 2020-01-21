@@ -75,7 +75,7 @@ import com.android.build.OutputFile
 project.ext.react = [
     entryFile: "index.js",
     bundleConfig: "metro.config.js",
-    enableHermes: false,
+    enableHermes: true,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -140,8 +140,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative60"
-        versionCode 258
-        versionName "1.27.0"
+        versionCode 260
+        versionName "1.27.1"
         multiDexEnabled = true
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
@@ -268,6 +268,8 @@ dependencies {
     implementation project(':react-native-android-open-settings')
     implementation project(':react-native-haptic-feedback')
     implementation project(':react-native-hw-keyboard-event')
+    implementation project(':react-native-permissions')
+    
 
     implementation project(':react-native-fast-image')
     // For animated GIF support

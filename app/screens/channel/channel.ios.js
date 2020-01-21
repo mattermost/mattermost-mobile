@@ -7,7 +7,6 @@ import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import ChannelLoader from 'app/components/channel_loader';
-import FileUploadPreview from 'app/components/file_upload_preview';
 import NetworkIndicator from 'app/components/network_indicator';
 import PostTextbox from 'app/components/post_textbox';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -57,7 +56,6 @@ export default class ChannelIOS extends ChannelBase {
                         updateNativeScrollView={this.updateNativeScrollView}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <FileUploadPreview/>
                         <Autocomplete
                             maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                             onChangeText={this.handleAutoComplete}

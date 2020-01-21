@@ -34,6 +34,7 @@ import io.sentry.RNSentryModule;
 import com.dylanvann.fastimage.FastImageViewPackage;
 import com.levelasquez.androidopensettings.AndroidOpenSettings;
 import com.mkuczera.RNReactNativeHapticFeedbackModule;
+import com.reactnativecommunity.rnpermissions.RNPermissionsModule;
 
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.brentvatne.react.ReactVideoPackage;
@@ -156,6 +157,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new AndroidOpenSettings(reactContext);
                   case "RNReactNativeHapticFeedbackModule":
                     return new RNReactNativeHapticFeedbackModule(reactContext);
+                  case "RNPermissions":
+                    return new RNPermissionsModule(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                 }
@@ -190,6 +193,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     map.put("RNAndroidOpenSettings", new ReactModuleInfo("RNAndroidOpenSettings", "com.levelasquez.androidopensettings.AndroidOpenSettings", false, false, false, false, false));
                     map.put("RNReactNativeHapticFeedbackModule", new ReactModuleInfo("RNReactNativeHapticFeedback", "com.mkuczera.RNReactNativeHapticFeedbackModule", false, false, false, false, false));
+                    map.put("RNPermissions", new ReactModuleInfo("RNPermissions", "com.reactnativecommunity.rnpermissions.RNPermissionsModule", false, false, false, false, false));
                     return map;
                   }
                 };

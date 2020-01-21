@@ -51,7 +51,7 @@ export default class AttachmentFields extends PureComponent {
                         style={style.field}
                     >
                         {fieldInfos}
-                    </View>
+                    </View>,
                 );
                 fieldInfos = [];
                 rowPos = 0;
@@ -89,7 +89,7 @@ export default class AttachmentFields extends PureComponent {
                             onPermalinkPress={onPermalinkPress}
                         />
                     </View>
-                </View>
+                </View>,
             );
 
             rowPos += 1;
@@ -103,7 +103,7 @@ export default class AttachmentFields extends PureComponent {
                     style={style.table}
                 >
                     {fieldInfos}
-                </View>
+                </View>,
             );
         }
 

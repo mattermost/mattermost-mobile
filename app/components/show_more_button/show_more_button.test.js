@@ -20,7 +20,7 @@ describe('ShowMoreButton', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallow(
-            <ShowMoreButton {...baseProps}/>
+            <ShowMoreButton {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -28,7 +28,7 @@ describe('ShowMoreButton', () => {
 
     test('should match, button snapshot', () => {
         const wrapper = shallow(
-            <ShowMoreButton {...baseProps}/>
+            <ShowMoreButton {...baseProps}/>,
         );
 
         expect(wrapper.instance().renderButton(true, {button: {}, sign: {}, text: {}})).toMatchSnapshot();
@@ -37,7 +37,7 @@ describe('ShowMoreButton', () => {
 
     test('should LinearGradient exists', () => {
         const wrapper = shallow(
-            <ShowMoreButton {...baseProps}/>
+            <ShowMoreButton {...baseProps}/>,
         );
 
         expect(wrapper.find(LinearGradient).exists()).toBe(true);
@@ -51,7 +51,7 @@ describe('ShowMoreButton', () => {
             <ShowMoreButton
                 {...baseProps}
                 onPress={onPress}
-            />
+            />,
         );
 
         wrapper.find(TouchableWithFeedback).props().onPress();

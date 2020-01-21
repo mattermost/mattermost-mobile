@@ -12,6 +12,9 @@ import * as NavigationActions from 'app/actions/navigation';
 import ChannelBase from './channel_base';
 
 jest.mock('react-intl');
+jest.mock('react-native-vector-icons/MaterialIcons', () => ({
+    getImageSource: jest.fn().mockResolvedValue(null),
+}));
 
 describe('ChannelBase', () => {
     const channelBaseComponentId = 'component-0';

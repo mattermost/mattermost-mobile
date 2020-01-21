@@ -129,7 +129,7 @@ export default class VideoPreview extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK',
                 }),
-            }]
+            }],
         );
     };
 

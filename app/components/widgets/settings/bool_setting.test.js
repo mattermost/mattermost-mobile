@@ -21,7 +21,7 @@ describe('components/widgets/settings/TextSetting', () => {
                 theme={theme}
                 onChange={onChange}
                 isLandscape={false}
-            />
+            />,
         );
 
         wrapper.instance().handleChange(false);

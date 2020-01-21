@@ -8,6 +8,8 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import ProgressiveImage from './progressive_image';
 
+jest.useFakeTimers();
+
 describe('ProgressiveImage', () => {
     const baseProps = {
         isBackgroundImage: false,
@@ -22,22 +24,61 @@ describe('ProgressiveImage', () => {
         tintDefaultSource: false,
     };
 
-    test('should match snapshot when just a image loads', () => {
-        const wrapper = shallow(
-            <ProgressiveImage {...baseProps}/>
-        );
+    test('should match snapshot', () => {
+        const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when no thumbnail', () => {
-        const props = {
-            ...baseProps,
-            thumbnailUri: null,
-        };
+    test('should load image', () => {
+        const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'load');
 
+        // should load image on componentDidMount
+        instance.componentDidMount();
+        expect(instance.load).toHaveBeenCalledTimes(1);
+
+        // should not re-load image on componentDidUpdate with same props
+        instance.componentDidUpdate(baseProps);
+        expect(instance.load).toHaveBeenCalledTimes(1);
+
+        // should re-load image on componentDidUpdate when props changed
+        wrapper.setProps({filename: 'newImage'});
+        expect(instance.load).toHaveBeenCalledTimes(2);
+
+        wrapper.setProps({imageUri: 'https://images.com/new_image.png'});
+        expect(instance.load).toHaveBeenCalledTimes(3);
+
+        wrapper.setProps({thumbnailUri: 'https://images.com/new_image.png'});
+        expect(instance.load).toHaveBeenCalledTimes(4);
+    });
+
+    test('should set image when imageUri is set but not the thumbnailUri', () => {
         const wrapper = shallow(
-            <ProgressiveImage {...props}/>
+            <ProgressiveImage
+                {...baseProps}
+                thumbnailUri={null}
+            />,
         );
-        expect(wrapper.getElement()).toMatchSnapshot();
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'setImage');
+
+        instance.componentDidMount();
+        jest.runAllTimers();
+        expect(instance.setImage).toHaveBeenCalledTimes(1);
+    });
+
+    test('should set thumbnail when thumbnailUri is set', () => {
+        const wrapper = shallow(
+            <ProgressiveImage
+                {...baseProps}
+                imageUri={null}
+            />,
+        );
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'setThumbnail');
+
+        jest.runAllTimers();
+        expect(instance.setThumbnail).toHaveBeenCalledTimes(1);
     });
 });

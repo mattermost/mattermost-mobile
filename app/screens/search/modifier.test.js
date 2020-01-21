@@ -23,7 +23,7 @@ describe('Search RecentItem', () => {
 
     test('should match snapshot and respond to events', () => {
         const wrapper = shallow(
-            <Modifier {...baseProps}/>
+            <Modifier {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

@@ -223,7 +223,7 @@ export default class ExtensionPost extends PureComponent {
                         style: 'cancel',
                     },
                 ],
-                {onDismiss: resolve}
+                {onDismiss: resolve},
             );
         });
     }
@@ -324,7 +324,7 @@ export default class ExtensionPost extends PureComponent {
         let granted;
         if (!hasPermission) {
             granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
             );
         }
 
@@ -420,7 +420,7 @@ export default class ExtensionPost extends PureComponent {
                 }, {
                     count: value.length,
                     max: MAX_MESSAGE_LENGTH,
-                })
+                }),
             );
         } else {
             const data = {
@@ -608,7 +608,7 @@ export default class ExtensionPost extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {maxFileSize} = this.props;
-        const {error, hasPermission, files, totalSize, loaded} = this.state;
+        const {error, hasPermission, files, totalSize, loaded, teamId} = this.state;
 
         if (!loaded) {
             return (
@@ -618,6 +618,15 @@ export default class ExtensionPost extends PureComponent {
 
         if (error) {
             return this.renderErrorMessage(error);
+        }
+
+        if (!teamId) {
+            const teamRequired = formatMessage({
+                id: 'mobile.extension.team_required',
+                defaultMessage: 'You must belong to a team before you can share files.',
+            });
+
+            return this.renderErrorMessage(teamRequired);
         }
 
         if (this.token && this.url) {

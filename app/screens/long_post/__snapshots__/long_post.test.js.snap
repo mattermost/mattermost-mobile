@@ -133,6 +133,7 @@ LongPost {
         "useCallback": [Function],
         "useContext": [Function],
         "useDebugValue": [Function],
+        "useDeferredValue": [Function],
         "useEffect": [Function],
         "useImperativeHandle": [Function],
         "useLayoutEffect": [Function],
@@ -141,6 +142,7 @@ LongPost {
         "useRef": [Function],
         "useResponder": [Function],
         "useState": [Function],
+        "useTransition": [Function],
       },
       "_element": <LongPost
         actions={
@@ -318,7 +320,7 @@ LongPost {
                 />
               </View>
             </View>
-            <ScrollViewMock
+            <ScrollView
               style={
                 Object {
                   "backgroundColor": "#ffffff",
@@ -334,7 +336,7 @@ LongPost {
                 showAddReaction={false}
                 showLongPost={true}
               />
-            </ScrollViewMock>
+            </ScrollView>
             <View
               style={
                 Object {

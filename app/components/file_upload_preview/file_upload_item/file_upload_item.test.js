@@ -44,5 +44,17 @@ describe('FileUploadItem', () => {
                 localPath: 'path/to/downloaded/image',
             });
         });
+
+        test('should upload next file when we pass new props', async () => {
+            const component = shallow(<FileUploadItem {...props}/>);
+            component.instance().uploadFile = jest.fn();
+
+            component.setProps({file: {
+                loading: true,
+                failed: false,
+                localPath: 'path/to/downloaded/image',
+            }});
+            expect(component.instance().uploadFile).toHaveBeenCalledTimes(1);
+        });
     });
 });
