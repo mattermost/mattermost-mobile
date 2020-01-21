@@ -18,10 +18,11 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FileUploadItem from './file_upload_item';
 
-const initial = {opacity: 0, height: 0, translateX: -100};
-const final = {opacity: 1, height: 20, translateX: 0};
+const initial = {opacity: 0, scale: 0};
+const final = {opacity: 1, scale: 1};
 const showFiles = {opacity: 1, height: 81};
 const hideFiles = {opacity: 0, height: 0};
+const hideError = {height: 0};
 
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
@@ -42,7 +43,8 @@ export default class FileUploadPreview extends PureComponent {
         showFileMaxWarning: false,
     };
 
-    animationRef = React.createRef();
+    errorRef = React.createRef();
+    errorContainerRef = React.createRef();
     containerRef = React.createRef();
 
     componentDidMount() {
@@ -65,6 +67,74 @@ export default class FileUploadPreview extends PureComponent {
         }
     }
 
+    buildFilePreviews = () => {
+        return this.props.files.map((file) => {
+            return (
+                <FileUploadItem
+                    key={file.clientId}
+                    channelId={this.props.channelId}
+                    file={file}
+                    rootId={this.props.rootId}
+                    theme={this.props.theme}
+                />
+            );
+        });
+    };
+
+    clearErrorsFromState = (delay) => {
+        setTimeout(() => {
+            this.setState({
+                showFileMaxWarning: false,
+                fileSizeWarning: null,
+            });
+        }, delay || 0);
+    }
+
+    handleFileMaxWarning = () => {
+        this.setState({showFileMaxWarning: true});
+        if (this.errorRef.current) {
+            this.makeErrorVisible(true, 20, null, () => {
+                this.errorRef.current.transition(initial, final, 350, 'ease-in');
+            });
+            setTimeout(() => {
+                this.makeErrorVisible(false, 20, 350, () => {
+                    this.errorRef.current.transition(final, initial, 350, 'ease-out');
+                    this.clearErrorsFromState(400);
+                });
+            }, 5000);
+        }
+    };
+
+    handleFileSizeWarning = (message) => {
+        if (this.errorRef.current) {
+            if (message) {
+                this.setState({fileSizeWarning: message});
+                this.makeErrorVisible(true, 42, null, () => {
+                    this.errorRef.current.transition(initial, final, 350, 'ease-in');
+                });
+            } else {
+                this.makeErrorVisible(false, 42, 350, () => {
+                    this.errorRef.current.transition(final, initial, 350, 'ease-out');
+                    this.clearErrorsFromState(400);
+                });
+            }
+        }
+    };
+
+    makeErrorVisible = (visible, height, delay, callback) => {
+        if (this.errorContainerRef.current) {
+            if (visible) {
+                this.errorContainerRef.current.transition(hideError, {height}, 100);
+                setTimeout(callback, delay || 150);
+            } else {
+                callback();
+                setTimeout(() => {
+                    this.errorContainerRef.current.transition({height}, hideError, 300);
+                }, delay || 150);
+            }
+        }
+    }
+
     showOrHideContainer = () => {
         const {
             channelIsLoading,
@@ -80,46 +150,6 @@ export default class FileUploadPreview extends PureComponent {
             this.shown = true;
         }
     }
-
-    buildFilePreviews = () => {
-        return this.props.files.map((file) => {
-            return (
-                <FileUploadItem
-                    key={file.clientId}
-                    channelId={this.props.channelId}
-                    file={file}
-                    rootId={this.props.rootId}
-                    theme={this.props.theme}
-                />
-            );
-        });
-    };
-
-    handleFileMaxWarning = () => {
-        this.setState({showFileMaxWarning: true});
-        if (this.animationRef.current) {
-            this.animationRef.current.transition(initial, final, 350, 'ease-in');
-            setTimeout(() => {
-                this.animationRef.current.transition(final, initial, 350, 'ease-out');
-                InteractionManager.runAfterInteractions(() => this.setState({showFileMaxWarning: false}));
-            }, 5000);
-        }
-    };
-
-    handleFileSizeWarning = (message) => {
-        if (this.animationRef.current) {
-            const newFinal = {...final, height: 42};
-            if (message) {
-                this.setState({fileSizeWarning: message});
-                this.animationRef.current.transition(initial, newFinal, 350, 'ease-in');
-            } else {
-                this.animationRef.current.transition(newFinal, initial, 350, 'ease-out');
-                InteractionManager.runAfterInteractions(() => {
-                    this.setState({fileSizeWarning: message});
-                });
-            }
-        }
-    };
 
     render() {
         const {fileSizeWarning, showFileMaxWarning} = this.state;
@@ -143,22 +173,29 @@ export default class FileUploadPreview extends PureComponent {
                     </ScrollView>
                 </Animatable.View>
                 <Animatable.View
-                    ref={this.animationRef}
-                    isInteraction={true}
+                    ref={this.errorContainerRef}
                     style={style.errorContainer}
+                    isInteraction={true}
                 >
-                    {showFileMaxWarning && (
-                        <FormattedText
-                            style={style.warning}
-                            id='mobile.file_upload.max_warning'
-                            defaultMessage='Uploads limited to 5 files maximum.'
-                        />
-                    )}
-                    {Boolean(fileSizeWarning) &&
-                        <Text style={style.warning}>
-                            {fileSizeWarning}
-                        </Text>
-                    }
+                    <Animatable.View
+                        ref={this.errorRef}
+                        isInteraction={true}
+                        style={style.errorTextContainer}
+                        useNativeDriver={true}
+                    >
+                        {showFileMaxWarning && (
+                            <FormattedText
+                                style={style.warning}
+                                id='mobile.file_upload.max_warning'
+                                defaultMessage='Uploads limited to 5 files maximum.'
+                            />
+                        )}
+                        {Boolean(fileSizeWarning) &&
+                            <Text style={style.warning}>
+                                {fileSizeWarning}
+                            </Text>
+                        }
+                    </Animatable.View>
                 </Animatable.View>
             </View>
         );
@@ -178,6 +215,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
         },
         errorContainer: {
+            height: 0,
+        },
+        errorTextContainer: {
             marginTop: 5,
             marginHorizontal: 12,
             opacity: 0,
