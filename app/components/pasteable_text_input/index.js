@@ -18,9 +18,7 @@ export class PasteableTextInput extends React.PureComponent {
         forwardRef: PropTypes.any,
     }
 
-    state = {
-        inputHeight: new Animated.Value(33),
-    };
+    inputHeight = new Animated.Value(ViewTypes.INPUT_INITIAL_HEIGHT);
 
     componentDidMount() {
         this.subscription = OnPasteEventEmitter.addListener('onPaste', this.onPaste);
@@ -40,22 +38,33 @@ export class PasteableTextInput extends React.PureComponent {
     animateHeight = (event) => {
         if (Platform.OS === 'ios') {
             const {height} = event.nativeEvent.contentSize;
-            const {style} = this.props;
-            const {inputHeight} = this.state;
+            const {style, value} = this.props;
             const newHeight = Math.min(style.maxHeight, height + ViewTypes.INPUT_VERTICAL_PADDING);
-            const transitionSpeed = height === ViewTypes.INPUT_LINE_HEIGHT ? 500 : 1;
 
-            Animated.timing(inputHeight, {
-                toValue: newHeight,
-                duration: transitionSpeed,
-                easing: Easing.inOut(Easing.sin),
-            }).start();
+            if (value) {
+                this.inputHeight.setValue(newHeight);
+            } else {
+                requestAnimationFrame(() => {
+                    Animated.timing(this.inputHeight, {
+                        toValue: ViewTypes.INPUT_INITIAL_HEIGHT,
+                        duration: 350,
+                        delay: 100,
+                        easing: Easing.inOut(Easing.sin),
+                    }).start();
+                });
+            }
         }
     }
 
     wrapperLayout = (children) => {
-        const {inputHeight} = this.state;
-        return <Animated.View style={{flex: 1, height: inputHeight}}>{children}</Animated.View>;
+        return (
+            <Animated.View
+                ref={this.containerRef}
+                style={{height: this.inputHeight}}
+            >
+                {children}
+            </Animated.View>
+        );
     }
 
     render() {
