@@ -18,6 +18,8 @@ import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
 import {showModalOverCurrentContext} from 'app/actions/navigation';
+import {alertErrorWithFallback} from 'app/utils/general';
+import {t} from 'app/utils/i18n';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -180,7 +182,7 @@ export default class PostList extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 this.handlePermalinkPress(match.postId, match.teamName);
             }
@@ -204,6 +206,26 @@ export default class PostList extends PureComponent {
         this.setState({postListHeight: height});
     };
 
+    errorBadTeam = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_team.error'),
+            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
+        };
+
+        alertErrorWithFallback(intl, {}, message);
+    };
+
+    errorBadChannel = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_channel.error'),
+            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
+        };
+
+        alertErrorWithFallback(intl, {}, message);
+    };
+
     handlePermalinkPress = (postId, teamName) => {
         telemetry.start(['post_list:permalink']);
         const {actions, onPermalinkPress} = this.props;
@@ -211,7 +233,7 @@ export default class PostList extends PureComponent {
         if (onPermalinkPress) {
             onPermalinkPress(postId, true);
         } else {
-            actions.loadChannelsByTeamName(teamName);
+            actions.loadChannelsByTeamName(teamName, this.errorBadTeam);
             this.showPermalinkView(postId);
         }
     };
@@ -401,7 +423,7 @@ export default class PostList extends PureComponent {
         }
     };
 
-    showPermalinkView = (postId) => {
+    showPermalinkView = (postId, error = '') => {
         const {actions} = this.props;
 
         actions.selectFocusedPostId(postId);
@@ -411,6 +433,7 @@ export default class PostList extends PureComponent {
             const passProps = {
                 isPermalink: true,
                 onClose: this.handleClosePermalink,
+                error,
             };
             const options = {
                 layout: {

@@ -80,6 +80,7 @@ export default class Permalink extends PureComponent {
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        error: PropTypes.string,
     };
 
     static defaultProps = {
@@ -133,6 +134,7 @@ export default class Permalink extends PureComponent {
             channelId,
             channelName,
             focusedPostId,
+            error,
         } = props;
         let loading = true;
 
@@ -143,7 +145,7 @@ export default class Permalink extends PureComponent {
         this.state = {
             title: channelName,
             loading,
-            error: '',
+            error: error || '',
             retry: false,
             channelIdState: channelId,
             channelNameState: channelName,
@@ -283,8 +285,8 @@ export default class Permalink extends PureComponent {
                             defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
                         }),
                         title: formatMessage({
-                            id: 'mobile.search.no_results',
-                            defaultMessage: 'No Results Found',
+                            id: 'permalink.error.link_not_found',
+                            defaultMessage: 'Link Not Found',
                         }),
                     });
                 } else if (this.mounted) {
