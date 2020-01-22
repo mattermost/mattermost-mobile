@@ -58,6 +58,10 @@ const launchApp = (credentials) => {
 
     telemetry.startSinceLaunch(['start:splash_screen']);
     EphemeralStore.appStarted = true;
+
+    Linking.getInitialURL().then((url) => {
+        store.dispatch(setDeepLinkURL(url));
+    });
 };
 
 const launchAppAndAuthenticateIfNeeded = async (credentials) => {
@@ -73,10 +77,6 @@ const launchAppAndAuthenticateIfNeeded = async (credentials) => {
             await emmProvider.handleAuthentication(store);
         }
     }
-
-    Linking.getInitialURL().then((url) => {
-        store.dispatch(setDeepLinkURL(url));
-    });
 };
 
 Navigation.events().registerAppLaunchedListener(() => {
