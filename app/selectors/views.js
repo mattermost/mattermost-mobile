@@ -23,7 +23,7 @@ export const getCurrentChannelDraft = createSelector(
     getCurrentChannelId,
     (drafts, currentChannelId) => {
         return drafts[currentChannelId] || emptyDraft;
-    }
+    },
 );
 
 export function getDraftForChannel(state, channelId) {
@@ -36,7 +36,7 @@ export const getThreadDraft = createSelector(
     (state, rootId) => rootId,
     (drafts, rootId) => {
         return drafts[rootId] || emptyDraft;
-    }
+    },
 );
 
 export function getProfileImageUri(state) {
@@ -54,5 +54,5 @@ export const getBadgeCount = createSelector(
         }
 
         return badgeCount;
-    }
+    },
 );

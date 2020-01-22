@@ -80,7 +80,7 @@ describe('SafeAreaIos', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -91,7 +91,7 @@ describe('SafeAreaIos', () => {
         mattermostManaged.hasSafeAreaInsets = false;
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(SafeArea.getSafeAreaInsetsForRootView).toHaveBeenCalled();
@@ -104,7 +104,7 @@ describe('SafeAreaIos', () => {
         mattermostManaged.hasSafeAreaInsets = true;
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(SafeArea.getSafeAreaInsetsForRootView).toHaveBeenCalled();
@@ -117,7 +117,7 @@ describe('SafeAreaIos', () => {
         mattermostManaged.hasSafeAreaInsets = false;
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(SafeArea.getSafeAreaInsetsForRootView).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe('SafeAreaIos', () => {
         mattermostManaged.hasSafeAreaInsets = false;
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(TEST_INSETS_2.safeAreaInsets);
@@ -145,7 +145,7 @@ describe('SafeAreaIos', () => {
         mattermostManaged.hasSafeAreaInsets = true;
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(TEST_INSETS_2.safeAreaInsets);
@@ -160,7 +160,7 @@ describe('SafeAreaIos', () => {
         mattermostManaged.hasSafeAreaInsets = false;
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(TEST_INSETS_2.safeAreaInsets);
@@ -175,7 +175,7 @@ describe('SafeAreaIos', () => {
         mattermostManaged.hasSafeAreaInsets = true;
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(TEST_INSETS_2.safeAreaInsets);
@@ -188,7 +188,7 @@ describe('SafeAreaIos', () => {
 
     test('should set portrait safe area insets', () => {
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(PORTRAIT_INSETS.safeAreaInsets);
@@ -205,7 +205,7 @@ describe('SafeAreaIos', () => {
 
     test('should set portrait safe area insets from EphemeralStore', () => {
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         EphemeralStore.safeAreaInsets[PORTRAIT] = PORTRAIT_INSETS.safeAreaInsets;
@@ -221,7 +221,7 @@ describe('SafeAreaIos', () => {
 
     test('should set landscape safe area insets', () => {
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         expect(wrapper.state().safeAreaInsets).not.toEqual(LANDSCAPE_INSETS.safeAreaInsets);
@@ -238,7 +238,7 @@ describe('SafeAreaIos', () => {
 
     test('should set landscape safe area insets from EphemeralStore', () => {
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
 
         EphemeralStore.safeAreaInsets[LANDSCAPE] = LANDSCAPE_INSETS.safeAreaInsets;
@@ -258,7 +258,7 @@ describe('SafeAreaIos', () => {
         expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
         expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
         let wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
         let instance = wrapper.instance();
         expect(addEventListener).toHaveBeenCalledWith('safeAreaInsetsForRootViewDidChange', instance.onSafeAreaInsetsForRootViewChange);
@@ -266,7 +266,7 @@ describe('SafeAreaIos', () => {
 
         EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets;
         wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
         instance = wrapper.instance();
         expect(addEventListener).toHaveBeenCalledWith('safeAreaInsetsForRootViewDidChange', instance.onSafeAreaInsetsForRootViewChange);
@@ -275,7 +275,7 @@ describe('SafeAreaIos', () => {
         EphemeralStore.safeAreaInsets[PORTRAIT] = TEST_INSETS_1.safeAreaInsets;
         EphemeralStore.safeAreaInsets[LANDSCAPE] = TEST_INSETS_1.safeAreaInsets;
         wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
         instance = wrapper.instance();
         expect(addEventListener).not.toHaveBeenCalled();
@@ -285,7 +285,7 @@ describe('SafeAreaIos', () => {
         const removeEventListener = jest.spyOn(SafeArea, 'removeEventListener');
 
         const wrapper = shallow(
-            <SafeAreaIos {...baseProps}/>
+            <SafeAreaIos {...baseProps}/>,
         );
         const instance = wrapper.instance();
         expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);

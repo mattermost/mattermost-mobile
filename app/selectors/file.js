@@ -17,5 +17,5 @@ export const checkForFileUploadingInChannel = createSelector(
         }
 
         return draft.files.some((f) => f.loading);
-    }
+    },
 );

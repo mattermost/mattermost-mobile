@@ -18,7 +18,7 @@ describe('components/widgets/settings/TextSetting', () => {
                 value='some value'
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
 
         wrapper.instance().onChangeText('somenewvalue');

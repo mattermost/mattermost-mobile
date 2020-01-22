@@ -226,7 +226,7 @@ export default class Downloader extends PureComponent {
                     defaultMessage: 'OK',
                 }),
                 onPress: () => this.downloadDidCancel(),
-            }]
+            }],
         );
     };
 

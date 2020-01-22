@@ -256,7 +256,7 @@ export default class FileAttachmentDocument extends PureComponent {
                                     id: 'mobile.server_upgrade.button',
                                     defaultMessage: 'OK',
                                 }),
-                            }]
+                            }],
                         );
                         this.onDonePreviewingFile();
                         RNFetchBlob.fs.unlink(path);
@@ -303,7 +303,7 @@ export default class FileAttachmentDocument extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK',
                 }),
-            }]
+            }],
         );
     };
 
@@ -324,7 +324,7 @@ export default class FileAttachmentDocument extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK',
                 }),
-            }]
+            }],
         );
     };
 

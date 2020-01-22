@@ -60,7 +60,7 @@ describe('PostOptions', () => {
                 {...baseProps}
                 {...props}
             />,
-            {context: {intl: {formatMessage: ({defaultMessage}) => defaultMessage}}}
+            {context: {intl: {formatMessage: ({defaultMessage}) => defaultMessage}}},
         );
     }
 

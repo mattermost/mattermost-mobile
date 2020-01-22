@@ -14,7 +14,7 @@ jest.mock('react-intl');
 
 describe('PostList', () => {
     const serverURL = 'https://server-url.fake';
-    const deeplinkRoot = 'mattermost-beta://server-url.fake';
+    const deeplinkRoot = 'mattermost://server-url.fake';
 
     const baseProps = {
         actions: {
@@ -40,7 +40,7 @@ describe('PostList', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <PostList {...baseProps}/>
+            <PostList {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -49,7 +49,7 @@ describe('PostList', () => {
     test('setting permalink deep link', () => {
         const showModalOverCurrentContext = jest.spyOn(NavigationActions, 'showModalOverCurrentContext');
         const wrapper = shallow(
-            <PostList {...baseProps}/>
+            <PostList {...baseProps}/>,
         );
 
         wrapper.setProps({deepLinkURL: deepLinks.permalink});
@@ -61,7 +61,7 @@ describe('PostList', () => {
 
     test('setting channel deep link', () => {
         const wrapper = shallow(
-            <PostList {...baseProps}/>
+            <PostList {...baseProps}/>,
         );
 
         wrapper.setProps({deepLinkURL: deepLinks.channel});
@@ -74,7 +74,7 @@ describe('PostList', () => {
         jest.spyOn(global, 'requestAnimationFrame').mockImplementation((cb) => cb());
 
         const wrapper = shallow(
-            <PostList {...baseProps}/>
+            <PostList {...baseProps}/>,
         );
         const instance = wrapper.instance();
         const flatListScrollToIndex = jest.spyOn(instance, 'flatListScrollToIndex');
@@ -103,7 +103,7 @@ describe('PostList', () => {
 
     test('should load more posts if available space on the screen', () => {
         const wrapper = shallow(
-            <PostList {...baseProps}/>
+            <PostList {...baseProps}/>,
         );
         const instance = wrapper.instance();
         instance.loadToFillContent = jest.fn();

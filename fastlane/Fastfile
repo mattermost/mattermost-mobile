@@ -89,6 +89,10 @@ lane :set_app_version do
     package['version'] = version_number
     save_config_json('../package.json', package)
 
+    lock = load_config_json('../package-lock.json')
+    lock['version'] = version_number
+    save_config_json('../package-lock.json', lock)
+
     android_set_version_name(
         gradle_file: './android/app/build.gradle',
         version_name: version_number
@@ -394,7 +398,7 @@ platform :ios do
     )
 
     # Set the deep link prefix
-    app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
@@ -597,10 +601,10 @@ platform :android do
     android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
 
-    app_scheme = ENV['APP_SCHEME'] || 'mattermost-beta'
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
     find_replace_string(
       path_to_file: "./android/app/src/main/AndroidManifest.xml",
-      old_string: 'scheme="mattermost-beta"',
+      old_string: 'scheme="mattermost"',
       new_string: "scheme=\'#{app_scheme}\'"
     )
 
@@ -728,6 +732,7 @@ end
 def save_config_json(json_path, json)
   File.open(json_path, 'w') do |f|
     f.write(JSON.pretty_generate(json))
+    f.write("\n")
   end
 end
 

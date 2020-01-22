@@ -3,6 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import {Preferences} from 'mattermost-redux/constants';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import FileUploadItem from './file_upload_item';
 
@@ -18,7 +19,7 @@ describe('FileUploadItem', () => {
         file: {
             loading: false,
         },
-        theme: {},
+        theme: Preferences.THEMES.default,
     };
 
     describe('downloadAndUploadFile', () => {

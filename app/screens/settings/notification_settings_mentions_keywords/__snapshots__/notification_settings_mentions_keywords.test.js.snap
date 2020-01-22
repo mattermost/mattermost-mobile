@@ -80,6 +80,7 @@ NotificationSettingsMentionsKeywords {
         "useCallback": [Function],
         "useContext": [Function],
         "useDebugValue": [Function],
+        "useDeferredValue": [Function],
         "useEffect": [Function],
         "useImperativeHandle": [Function],
         "useLayoutEffect": [Function],
@@ -88,6 +89,7 @@ NotificationSettingsMentionsKeywords {
         "useRef": [Function],
         "useResponder": [Function],
         "useState": [Function],
+        "useTransition": [Function],
       },
       "_element": <NotificationSettingsMentionsKeywords
         componentId="component-id"
