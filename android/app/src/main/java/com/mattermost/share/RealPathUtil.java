@@ -113,7 +113,7 @@ public class RealPathUtil {
             }
 
 
-            File cacheDir = new File(context.getCacheDir(), "mmShare");
+            File cacheDir = new File(context.getCacheDir(), ShareModule.CACHE_DIR_NAME);
             if (!cacheDir.exists()) {
                 cacheDir.mkdirs();
             }
