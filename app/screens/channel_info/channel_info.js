@@ -261,7 +261,7 @@ export default class ChannelInfo extends PureComponent {
                     },
                     {
                         displayName: channel.display_name.trim(),
-                    }
+                    },
                 );
                 if (result.error.server_error_id === 'api.channel.delete_channel.deleted.app_error') {
                     this.props.actions.getChannel(channel.id);
@@ -296,7 +296,7 @@ export default class ChannelInfo extends PureComponent {
                     },
                     {
                         displayName: channel.display_name.trim(),
-                    }
+                    },
                 );
                 if (result.error.server_error_id === 'api.channel.unarchive_channel.unarchive.app_error') {
                     this.props.actions.getChannel(channel.id);
