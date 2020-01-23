@@ -101,6 +101,13 @@ jest.doMock('react-native', () => {
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
+jest.mock('react-native-appearance', () => ({
+    Appearance: {
+        getColorScheme: jest.fn(),
+        addChangeListener: jest.fn(),
+    },
+}));
+
 jest.mock('react-native-device-info', () => {
     return {
         getVersion: () => '0.0.0',

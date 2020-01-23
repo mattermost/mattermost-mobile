@@ -11,24 +11,25 @@ import {
     StyleSheet,
     Text,
 } from 'react-native';
+import {Appearance} from 'react-native-appearance';
 import Button from 'react-native-button';
+import {Navigation} from 'react-native-navigation';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {GlobalStyles} from 'app/styles';
 import {preventDoubleTap} from 'app/utils/tap';
 import {ViewTypes} from 'app/constants';
 import {goToScreen} from 'app/actions/navigation';
-import {getLogo, getStyledGoToScreenOptions} from 'app/utils/appearance';
+import {getColorStyles, getLogo, getStyledNavigationOptions} from 'app/utils/appearance';
 
 import LocalConfig from 'assets/config';
 import gitlab from 'assets/images/gitlab.png';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {
-        colorScheme: PropTypes.string.isRequired,
-        colorStyles: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -38,30 +39,51 @@ export default class LoginOptions extends PureComponent {
         intl: intlShape.isRequired,
     };
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            colorStyles: getColorStyles(Appearance.getColorScheme()),
+            error: null,
+            logo: getLogo(Appearance.getColorScheme()),
+        };
+    }
+
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
+        this.appearanceEventListener = Appearance.addChangeListener(({colorScheme}) => {
+            const colorStyles = getColorStyles(colorScheme);
+            this.setState({
+                colorStyles,
+                logo: getLogo(colorScheme),
+            });
+
+            Navigation.mergeOptions(EphemeralStore.getNavigationTopComponentId(), getStyledNavigationOptions(colorStyles));
+        });
     }
 
     componentWillUnmount() {
         Dimensions.removeEventListener('change', this.orientationDidChange);
+        this.appearanceEventListener.remove();
     }
 
     goToLogin = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {colorStyles} = this.props;
+        const {colorStyles} = this.state;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-        const options = getStyledGoToScreenOptions(colorStyles);
+        const options = getStyledNavigationOptions(colorStyles);
 
         goToScreen(screen, title, {}, options);
     });
 
     goToSSO = (ssoType) => {
         const {intl} = this.context;
+        const {colorStyles} = this.state;
         const screen = 'SSO';
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
 
-        goToScreen(screen, title, {ssoType});
+        goToScreen(screen, title, {ssoType}, getStyledNavigationOptions(colorStyles));
     };
 
     orientationDidChange = () => {
@@ -69,7 +91,8 @@ export default class LoginOptions extends PureComponent {
     };
 
     renderEmailOption = () => {
-        const {colorStyles, config} = this.props;
+        const {config} = this.props;
+        const {colorStyles} = this.state;
         const forceHideFromLocal = LocalConfig.HideEmailLoginExperimental;
 
         if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
@@ -249,7 +272,7 @@ export default class LoginOptions extends PureComponent {
     };
 
     render() {
-        const {colorScheme, colorStyles} = this.props;
+        const {colorStyles, logo} = this.state;
 
         return (
             <ScrollView
@@ -259,7 +282,7 @@ export default class LoginOptions extends PureComponent {
             >
                 <StatusBar/>
                 <Image
-                    source={getLogo(colorScheme)}
+                    source={logo}
                 />
                 <Text style={[GlobalStyles.header, colorStyles.header]}>
                     {this.props.config.SiteName}

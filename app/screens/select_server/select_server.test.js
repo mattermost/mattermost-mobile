@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Appearance} from 'react-native-appearance';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import {darkColors, lightColors} from 'app/styles/colors';
-import {getColorStyles} from 'app/utils/appearance';
 import SelectServer from './select_server';
 
 describe('SelectServer', () => {
@@ -22,33 +22,25 @@ describe('SelectServer', () => {
             setLastUpgradeCheck: jest.fn(),
             setServerVersion: jest.fn(),
         },
-        colorScheme: 'light',
-        colorStyles: getColorStyles('light'),
         hasConfigAndLicense: false,
         serverUrl: '',
     };
 
-    test('should show light background when user has dark color scheme set', () => {
-        const props = {
-            ...baseProps,
-            colorScheme: 'light',
-            colorStyles: getColorStyles('light'),
-        };
+    test('should show light background when user has light color scheme set', () => {
+        Appearance.getColorScheme.mockImplementation(() => 'light');
+        Appearance.addChangeListener.mockImplementation(() => 'light');
 
-        const wrapper = shallowWithIntl(<SelectServer {...props}/>);
+        const wrapper = shallowWithIntl(<SelectServer {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper).toHaveStyle('backgroundColor', lightColors.containerBg);
     });
 
     test('should show dark background when user has dark color scheme set', () => {
-        const props = {
-            ...baseProps,
-            colorScheme: 'dark',
-            colorStyles: getColorStyles('dark'),
-        };
+        Appearance.getColorScheme.mockImplementation(() => 'dark');
+        Appearance.addChangeListener.mockImplementation(() => 'dark');
 
-        const wrapper = shallowWithIntl(<SelectServer {...props}/>);
+        const wrapper = shallowWithIntl(<SelectServer {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper).toHaveStyle('backgroundColor', darkColors.containerBg);

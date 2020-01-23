@@ -20,6 +20,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import {Appearance} from 'react-native-appearance';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
 
@@ -32,7 +33,7 @@ import FormattedText from 'app/components/formatted_text';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import {getLogo, getStyledGoToScreenOptions} from 'app/utils/appearance';
+import {getColorStyles, getLogo, getStyledNavigationOptions} from 'app/utils/appearance';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -58,8 +59,6 @@ export default class SelectServer extends PureComponent {
             setServerVersion: PropTypes.func.isRequired,
         }).isRequired,
         allowOtherServers: PropTypes.bool,
-        colorScheme: PropTypes.string.isRequired,
-        colorStyles: PropTypes.object.isRequired,
         currentVersion: PropTypes.string,
         hasConfigAndLicense: PropTypes.bool.isRequired,
         latestVersion: PropTypes.string,
@@ -75,9 +74,11 @@ export default class SelectServer extends PureComponent {
         super(props);
 
         this.state = {
+            colorStyles: getColorStyles(Appearance.getColorScheme()),
             connected: false,
             connecting: false,
             error: null,
+            logo: getLogo(Appearance.getColorScheme()),
             url: props.serverUrl,
         };
 
@@ -86,6 +87,12 @@ export default class SelectServer extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+        this.appearanceEventListener = Appearance.addChangeListener(({colorScheme}) => {
+            this.setState({
+                colorStyles: getColorStyles(colorScheme),
+                logo: getLogo(colorScheme),
+            });
+        });
 
         const {allowOtherServers, serverUrl} = this.props;
         if (!allowOtherServers && serverUrl) {
@@ -129,6 +136,7 @@ export default class SelectServer extends PureComponent {
         this.certificateListener.remove();
 
         this.navigationEventListener.remove();
+        this.appearanceEventListener.remove();
     }
 
     componentDidDisappear() {
@@ -159,7 +167,7 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
-        const {colorStyles} = this.props;
+        const {colorStyles} = this.state;
         const defaultOptions = {
             popGesture: !LocalConfig.AutoSelectServerUrl,
             topBar: {
@@ -167,7 +175,7 @@ export default class SelectServer extends PureComponent {
                 height: LocalConfig.AutoSelectServerUrl ? 0 : null,
             },
         };
-        const options = merge(getStyledGoToScreenOptions(colorStyles), defaultOptions, navOptions);
+        const options = merge(getStyledNavigationOptions(colorStyles), defaultOptions, navOptions);
 
         goToScreen(screen, title, passProps, options);
     };
@@ -395,17 +403,17 @@ export default class SelectServer extends PureComponent {
 
     onFocus = () => {
         this.textInput.setNativeProps({
-            style: this.props.colorStyles.inputBoxFocused,
+            style: this.state.colorStyles.inputBoxFocused,
         });
     }
     onBlur = () => {
         this.textInput.setNativeProps({
-            style: this.props.colorStyles.inputBox,
+            style: this.state.colorStyles.inputBox,
         });
     }
 
     render() {
-        const {colorScheme, colorStyles} = this.props;
+        const {colorStyles, logo} = this.state;
         const {formatMessage} = this.context.intl;
         const {
             connected,
@@ -472,7 +480,7 @@ export default class SelectServer extends PureComponent {
                     <TouchableWithoutFeedback onPress={this.blur}>
                         <View style={[GlobalStyles.container, GlobalStyles.authContainer, colorStyles.container]}>
                             <Image
-                                source={getLogo(colorScheme)}
+                                source={logo}
                             />
 
                             <View>

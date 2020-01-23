@@ -55,7 +55,7 @@ export function getLogo(colorScheme) {
     return colorScheme === 'light' ? require('assets/images/logo_light.png') : require('assets/images/logo_dark.png');
 }
 
-export function getStyledGoToScreenOptions(colorStyles) {
+export function getStyledNavigationOptions(colorStyles) {
     return {
         layout: {
             backgroundColor: colorStyles.container.backgroundColor,

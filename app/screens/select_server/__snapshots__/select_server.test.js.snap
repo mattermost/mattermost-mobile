@@ -184,7 +184,7 @@ exports[`SelectServer should show dark background when user has dark color schem
 </ForwardRef(_SafeAreaView)>
 `;
 
-exports[`SelectServer should show light background when user has dark color scheme set 1`] = `
+exports[`SelectServer should show light background when user has light color scheme set 1`] = `
 <ForwardRef(_SafeAreaView)
   style={
     Array [

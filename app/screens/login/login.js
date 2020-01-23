@@ -16,8 +16,10 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import {Appearance} from 'react-native-appearance';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {Navigation} from 'react-native-navigation';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -26,7 +28,8 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {resetToChannel, goToScreen} from 'app/actions/navigation';
-import {getLogo} from 'app/utils/appearance';
+import EphemeralStore from 'app/store/ephemeral_store';
+import {getColorStyles, getLogo, getStyledNavigationOptions} from 'app/utils/appearance';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
@@ -46,8 +49,6 @@ export default class Login extends PureComponent {
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
-        colorScheme: PropTypes.string.isRequired,
-        colorStyles: PropTypes.object.isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
@@ -64,12 +65,23 @@ export default class Login extends PureComponent {
         super(props);
 
         this.state = {
+            colorStyles: getColorStyles(Appearance.getColorScheme()),
             error: null,
+            logo: getLogo(Appearance.getColorScheme()),
         };
     }
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
+        this.appearanceEventListener = Appearance.addChangeListener(({colorScheme}) => {
+            const colorStyles = getColorStyles(colorScheme);
+            this.setState({
+                colorStyles,
+                logo: getLogo(colorScheme),
+            });
+
+            Navigation.mergeOptions(EphemeralStore.getNavigationTopComponentId(), getStyledNavigationOptions(colorStyles));
+        });
 
         setMfaPreflightDone(false);
     }
@@ -84,6 +96,7 @@ export default class Login extends PureComponent {
 
     componentWillUnmount() {
         Dimensions.removeEventListener('change', this.orientationDidChange);
+        this.appearanceEventListener.remove();
     }
 
     goToChannel = () => {
@@ -97,11 +110,12 @@ export default class Login extends PureComponent {
     };
 
     goToMfa = () => {
+        const {colorStyles} = this.state;
         const {intl} = this.context;
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, {}, getStyledNavigationOptions(colorStyles));
     };
 
     blur = () => {
@@ -298,11 +312,12 @@ export default class Login extends PureComponent {
     };
 
     forgotPassword = () => {
+        const {colorStyles} = this.state;
         const {intl} = this.context;
         const screen = 'ForgotPassword';
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, {}, getStyledNavigationOptions(colorStyles));
     }
 
     isLoginButtonDisabled = () => {
@@ -311,28 +326,28 @@ export default class Login extends PureComponent {
 
     onLoginFocus = () => {
         this.loginId.setNativeProps({
-            style: this.props.colorStyles.inputBoxFocused,
+            style: this.state.colorStyles.inputBoxFocused,
         });
     }
     onLoginBlur = () => {
         this.loginId.setNativeProps({
-            style: this.props.colorStyles.inputBox,
+            style: this.state.colorStyles.inputBox,
         });
     }
 
     onPasswordFocus = () => {
         this.passwd.setNativeProps({
-            style: this.props.colorStyles.inputBoxFocused,
+            style: this.state.colorStyles.inputBoxFocused,
         });
     }
     onPasswordBlur = () => {
         this.passwd.setNativeProps({
-            style: this.props.colorStyles.inputBox,
+            style: this.state.colorStyles.inputBox,
         });
     }
 
     render() {
-        const {colorScheme, colorStyles} = this.props;
+        const {colorStyles, logo} = this.state;
 
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
 
@@ -418,7 +433,7 @@ export default class Login extends PureComponent {
                         enableOnAndroid={true}
                     >
                         <Image
-                            source={getLogo(colorScheme)}
+                            source={logo}
                         />
                         <View>
                             <Text style={[GlobalStyles.header, colorStyles.header]}>
@@ -455,7 +470,7 @@ export default class Login extends PureComponent {
                             onBlur={this.onPasswordBlur}
                             onChangeText={this.props.actions.handlePasswordChanged}
                             onFocus={this.onPasswordFocus}
-                            style={inputStyle}
+                            style={[GlobalStyles.inputBox, colorStyles.inputBox]}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             placeholderTextColor={colorStyles.inputBoxDisabled.color}
                             secureTextEntry={true}

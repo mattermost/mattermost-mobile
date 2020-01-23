@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Appearance} from 'react-native-appearance';
 
 import {RequestStatus} from 'mattermost-redux/constants';
 
@@ -13,8 +14,8 @@ import * as NavigationActions from 'app/actions/navigation';
 
 import {mfaExpectedErrors} from 'app/screens/login/login';
 import {darkColors, lightColors} from 'app/styles/colors';
-import {getColorStyles} from 'app/utils/appearance';
 import Login from './login';
+import {getColorStyles, getStyledNavigationOptions} from '../../utils/appearance';
 
 describe('Login', () => {
     const baseProps = {
@@ -22,8 +23,6 @@ describe('Login', () => {
             EnableSignInWithEmail: 'true',
             EnableSignInWithUsername: 'true',
         },
-        colorScheme: 'light',
-        colorStyles: getColorStyles('light'),
         license: {
             IsLicensed: 'false',
         },
@@ -136,6 +135,8 @@ describe('Login', () => {
             toHaveBeenCalledWith(
                 'MFA',
                 'Multi-factor Authentication',
+                {},
+                getStyledNavigationOptions(getColorStyles('dark'))
             );
     });
 
@@ -149,30 +150,26 @@ describe('Login', () => {
             toHaveBeenCalledWith(
                 'ForgotPassword',
                 'Password Reset',
+                {},
+                getStyledNavigationOptions(getColorStyles('dark'))
             );
     });
 
-    test('should show light background when user has dark color scheme set', () => {
-        const props = {
-            ...baseProps,
-            colorScheme: 'light',
-            colorStyles: getColorStyles('light'),
-        };
+    test('should show light background when user has light color scheme set', () => {
+        Appearance.getColorScheme.mockImplementation(() => 'light');
+        Appearance.addChangeListener.mockImplementation(() => 'light');
 
-        const wrapper = shallowWithIntl(<Login {...props}/>);
+        const wrapper = shallowWithIntl(<Login {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper).toHaveStyle('backgroundColor', lightColors.containerBg);
     });
 
     test('should show dark background when user has dark color scheme set', () => {
-        const props = {
-            ...baseProps,
-            colorScheme: 'dark',
-            colorStyles: getColorStyles('dark'),
-        };
+        Appearance.getColorScheme.mockImplementation(() => 'dark');
+        Appearance.addChangeListener.mockImplementation(() => 'dark');
 
-        const wrapper = shallowWithIntl(<Login {...props}/>);
+        const wrapper = shallowWithIntl(<Login {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper).toHaveStyle('backgroundColor', darkColors.containerBg);

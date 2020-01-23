@@ -13,22 +13,16 @@ import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/vi
 import {loadConfigAndLicense} from 'app/actions/views/root';
 import {handleServerUrlChanged} from 'app/actions/views/select_server';
 import getClientUpgrade from 'app/selectors/client_upgrade';
-import {getColorScheme} from 'app/selectors/device';
-import {getColorStyles} from 'app/utils/appearance';
 
 import SelectServer from './select_server';
 
 function mapStateToProps(state) {
-    const colorScheme = getColorScheme(state);
-    const colorStyles = getColorStyles(colorScheme);
     const config = getConfig(state);
     const license = getLicense(state);
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
 
     return {
         ...state.views.selectServer,
-        colorScheme,
-        colorStyles,
         config,
         currentVersion,
         hasConfigAndLicense: Object.keys(config).length > 0 && Object.keys(license).length > 0,

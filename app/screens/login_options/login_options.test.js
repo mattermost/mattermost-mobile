@@ -2,16 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Appearance} from 'react-native-appearance';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 import {darkColors, lightColors} from 'app/styles/colors';
-import {getColorStyles} from 'app/utils/appearance';
 import LoginOptions from './login_options';
 
 describe('LoginOptions', () => {
     const baseProps = {
-        colorScheme: 'light',
-        colorStyles: getColorStyles('light'),
         config: {},
         license: {
             IsLicensed: 'false',
@@ -19,27 +17,21 @@ describe('LoginOptions', () => {
         isLandscape: false,
     };
 
-    test('should show light background when user has dark color scheme set', () => {
-        const props = {
-            ...baseProps,
-            colorScheme: 'light',
-            colorStyles: getColorStyles('light'),
-        };
+    test('should show light background when user has light color scheme set', () => {
+        Appearance.getColorScheme.mockImplementation(() => 'light');
+        Appearance.addChangeListener.mockImplementation(() => 'light');
 
-        const wrapper = shallowWithIntl(<LoginOptions {...props}/>);
+        const wrapper = shallowWithIntl(<LoginOptions {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper).toHaveStyle('backgroundColor', lightColors.containerBg);
     });
 
     test('should show dark background when user has dark color scheme set', () => {
-        const props = {
-            ...baseProps,
-            colorScheme: 'dark',
-            colorStyles: getColorStyles('dark'),
-        };
+        Appearance.getColorScheme.mockImplementation(() => 'dark');
+        Appearance.addChangeListener.mockImplementation(() => 'dark');
 
-        const wrapper = shallowWithIntl(<LoginOptions {...props}/>);
+        const wrapper = shallowWithIntl(<LoginOptions {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper).toHaveStyle('backgroundColor', darkColors.containerBg);

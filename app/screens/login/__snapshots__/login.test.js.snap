@@ -238,7 +238,7 @@ exports[`Login should show dark background when user has dark color scheme set 1
 </View>
 `;
 
-exports[`Login should show light background when user has dark color scheme set 1`] = `
+exports[`Login should show light background when user has light color scheme set 1`] = `
 <View
   style={
     Array [

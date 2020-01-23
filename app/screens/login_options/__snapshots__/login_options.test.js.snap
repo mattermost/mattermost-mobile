@@ -94,7 +94,7 @@ exports[`LoginOptions should show dark background when user has dark color schem
 </ScrollViewMock>
 `;
 
-exports[`LoginOptions should show light background when user has dark color scheme set 1`] = `
+exports[`LoginOptions should show light background when user has light color scheme set 1`] = `
 <ScrollViewMock
   contentContainerStyle={
     Array [

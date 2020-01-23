@@ -17,12 +17,6 @@ jest.mock('app/store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
 }));
 
-jest.mock('react-native-appearance', () => ({
-    Appearance: {
-        getColorScheme: jest.fn(),
-    },
-}));
-
 describe('app/actions/navigation', () => {
     const topComponentId = 'top-component-id';
     const name = 'name';
