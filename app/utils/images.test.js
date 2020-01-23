@@ -1,19 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, NativeModules} from 'react-native';
-import {
-    calculateDimensions,
-    isGifTooLarge,
-    getLocalPath,
-} from 'app/utils/images';
+import {calculateDimensions, isGifTooLarge} from 'app/utils/images';
 import {
     IMAGE_MAX_HEIGHT,
     IMAGE_MIN_DIMENSION,
 } from 'app/constants/image';
 
 const PORTRAIT_VIEWPORT = 315;
-const ShareExtension = NativeModules.MattermostShare;
 
 describe('Images calculateDimensions', () => {
     it('image with falsy height should return null height and width', () => {
@@ -139,30 +133,4 @@ describe('isGifTooLarge', () => {
             expect(isGifTooLarge(testCase.imageMetadata)).toBe(testCase.expected);
         });
     }
-});
-
-describe('getLocalPath', () => {
-    it('returns null if localPath is the Android share extension cache directory', () => {
-        const file = {
-            localPath: `/data/${ShareExtension.cacheDirName}/file.gif`,
-        };
-
-        Platform.OS = 'ios';
-        expect(getLocalPath(file)).toBe(file.localPath);
-
-        Platform.OS = 'android';
-        expect(getLocalPath(file)).toBe(null);
-    });
-
-    it('returns localPath if localPath is not the Android share extension cache directory', () => {
-        const file = {
-            localPath: '/data/file.gif',
-        };
-
-        Platform.OS = 'ios';
-        expect(getLocalPath(file)).toBe(file.localPath);
-
-        Platform.OS = 'android';
-        expect(getLocalPath(file)).toBe(file.localPath);
-    });
 });

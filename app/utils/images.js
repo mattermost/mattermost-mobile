@@ -1,19 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {
-    Keyboard,
-    Platform,
-    NativeModules,
-} from 'react-native';
+import {Keyboard} from 'react-native';
 
 import {
     IMAGE_MAX_HEIGHT,
     IMAGE_MIN_DIMENSION,
 } from 'app/constants/image';
 import {showModalOverCurrentContext} from 'app/actions/navigation';
-
-const ShareExtension = NativeModules.MattermostShare;
 
 let previewComponents;
 
@@ -115,11 +109,3 @@ export function isGifTooLarge(imageMetadata) {
     // Try to estimate the in-memory size of the gif to prevent the device out of memory
     return width * height * frameCount > MAX_GIF_SIZE;
 }
-
-export const getLocalPath = (file) => {
-    if (Platform.OS === 'android' && file.localPath?.includes(ShareExtension.cacheDirName)) {
-        return null;
-    }
-
-    return file.localPath;
-};

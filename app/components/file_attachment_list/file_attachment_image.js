@@ -16,7 +16,6 @@ import {isGif} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity} from 'app/utils/theme';
-import {getLocalPath} from 'app/utils/images';
 
 import thumb from 'assets/images/thumb.png';
 
@@ -90,9 +89,8 @@ export default class FileAttachmentImage extends PureComponent {
 
     imageProps = (file) => {
         const imageProps = {};
-        const fileLocalPath = getLocalPath(file);
-        if (fileLocalPath) {
-            imageProps.defaultSource = {uri: fileLocalPath};
+        if (file.localPath) {
+            imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
             imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
@@ -113,8 +111,6 @@ export default class FileAttachmentImage extends PureComponent {
             }
         }
 
-        const fileLocalPath = getLocalPath(file);
-
         return (
             <View
                 ref={this.handleCaptureRef}
@@ -129,7 +125,7 @@ export default class FileAttachmentImage extends PureComponent {
                     <ProgressiveImage
                         style={{height: file.height, width: file.width}}
                         defaultSource={thumb}
-                        tintDefaultSource={!fileLocalPath}
+                        tintDefaultSource={!file.localPath}
                         filename={file.name}
                         resizeMode={'contain'}
                         resizeMethod={resizeMethod}
@@ -152,8 +148,6 @@ export default class FileAttachmentImage extends PureComponent {
             return this.renderSmallImage();
         }
 
-        const fileLocalPath = getLocalPath(file);
-
         return (
             <View
                 ref={this.handleCaptureRef}
@@ -163,7 +157,7 @@ export default class FileAttachmentImage extends PureComponent {
                 <ProgressiveImage
                     style={[this.props.isSingleImage ? null : style.imagePreview, imageDimensions]}
                     defaultSource={thumb}
-                    tintDefaultSource={!fileLocalPath}
+                    tintDefaultSource={!file.localPath}
                     filename={file.name}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
