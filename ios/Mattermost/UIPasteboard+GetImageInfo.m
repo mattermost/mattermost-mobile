@@ -25,6 +25,7 @@
       }
 
       NSString *type = item.allKeys[j];
+    
 
       @try {
         NSString *uri = self.string;
@@ -32,6 +33,8 @@
         
         if ([type isEqual:@"public.jpeg"] || [type isEqual:@"public.heic"] || [type isEqual:@"public.png"]) {
           fileData = [self getDataForImageItem:item[type] type:type];
+        } else if ([type isEqual:@"com.compuserve.gif"]) {
+          fileData = [self dataForPasteboardType:type];
         }
         
         SwimeProxy *swimeProxy = [SwimeProxy shared];
