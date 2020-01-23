@@ -14,7 +14,7 @@ import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {isDocument, isGif, isVideo} from 'app/utils/file';
 import ImageCacheManager from 'app/utils/image_cache_manager';
-import {previewImageAtIndex, getLocalPath} from 'app/utils/images';
+import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
 import {emptyFunction} from 'app/utils/general';
 
@@ -120,9 +120,8 @@ export default class FileAttachmentList extends PureComponent {
                 }
 
                 let uri;
-                const fileLocalPath = getLocalPath(file);
-                if (fileLocalPath) {
-                    uri = fileLocalPath;
+                if (file.localPath) {
+                    uri = file.localPath;
                 } else if (isGif(file)) {
                     uri = await ImageCacheManager.cache(file.name, Client4.getFileUrl(file.id), emptyFunction); // eslint-disable-line no-await-in-loop
                 } else {

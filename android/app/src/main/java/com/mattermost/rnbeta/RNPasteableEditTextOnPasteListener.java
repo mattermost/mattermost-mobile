@@ -16,8 +16,14 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.mattermost.share.RealPathUtil;
+import com.mattermost.share.ShareModule;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.regex.Matcher;
 
 public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteListener {
@@ -83,6 +89,14 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         // Get fileName
         String fileName = URLUtil.guessFileName(uri, null, mimeType);
 
+        if (uri.contains(ShareModule.CACHE_DIR_NAME)) {
+            uri = moveToImagesCache(uri, fileName);
+        }
+
+        if (uri == null) {
+            return;
+        }
+
         // Get fileSize
         long fileSize;
         try {
@@ -118,5 +132,32 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
                         "onPaste",
                         event
                 );
+    }
+
+    private String moveToImagesCache(String src, String fileName) {
+        ReactContext ctx = (ReactContext)mEditText.getContext();
+        String dest = ctx.getCacheDir().getAbsolutePath() + "/Images/" + fileName;
+        File srcFile = new File(src);
+        InputStream in = null;
+        OutputStream out = null;
+
+        try {
+            in = new FileInputStream(srcFile);
+            out = new FileOutputStream(dest);
+
+            byte[] buf = new byte[10240];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            in.close();
+            out.flush();
+
+            srcFile.delete(); //remove original file
+        } catch (Exception err) {
+            return null;
+        }
+
+        return dest;
     }
 }
