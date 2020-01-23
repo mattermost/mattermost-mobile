@@ -72,7 +72,7 @@ if (Platform.OS === 'android') {
 // defined in packager/modulePaths.js so they are included in the main bundle.
 
 /*
-/!* eslint-disable no-console *!/
+//!* eslint-disable no-console *!/
 if (__DEV__) {
     const modules = require.getModules();
     const moduleIds = Object.keys(modules);
