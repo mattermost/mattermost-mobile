@@ -4,10 +4,12 @@
 import {Linking} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Provider} from 'react-redux';
+import urlParse from 'url-parse';
 
 import {loadMe} from 'mattermost-redux/actions/users';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
+import {setServerUrl} from 'app/actions/views/select_server';
 import {setDeepLinkURL} from 'app/actions/views/root';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
@@ -60,6 +62,10 @@ const launchApp = (credentials) => {
     EphemeralStore.appStarted = true;
 
     Linking.getInitialURL().then((url) => {
+        const serverUrl = urlParse(url).host;
+        if (serverUrl) {
+            store.dispatch(setServerUrl('https://' + serverUrl));
+        }
         store.dispatch(setDeepLinkURL(url));
     });
 };

@@ -6,6 +6,7 @@ import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
 import semver from 'semver';
+import urlParse from 'url-parse';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
@@ -20,6 +21,7 @@ import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';
+import {setServerUrl} from 'app/actions/views/select_server';
 import {showOverlay} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
 import {NavigationTypes, ViewTypes} from 'app/constants';
