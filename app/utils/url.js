@@ -62,6 +62,10 @@ export function isImageLink(link) {
     return false;
 }
 
+export function isSvgLink(link) {
+    return link.startsWith('http') && link.endsWith('.svg');
+}
+
 // Converts the protocol of a link (eg. http, ftp) to be lower case since
 // Android doesn't handle uppercase links.
 export function normalizeProtocol(url) {

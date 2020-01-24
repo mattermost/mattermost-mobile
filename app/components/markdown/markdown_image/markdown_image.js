@@ -13,6 +13,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import {SvgUri} from 'react-native-svg';
 
 import FormattedText from 'app/components/formatted_text';
 import ProgressiveImage from 'app/components/progressive_image';
@@ -23,7 +24,7 @@ import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions, isGifTooLarge} from 'app/utils/images';
-import {normalizeProtocol} from 'app/utils/url';
+import {normalizeProtocol, isSvgLink} from 'app/utils/url';
 
 import brokenImageIcon from 'assets/images/icons/brokenimage.png';
 
@@ -268,6 +269,19 @@ export default class MarkdownImage extends React.Component {
                     </TouchableWithFeedback>
                 );
             }
+        } else if (isSvgLink(this.props.source)) {
+            image = (
+                <TouchableWithFeedback
+                    onLongPress={this.handleLinkLongPress}
+                    onPress={this.handlePreviewImage}
+                >
+                    <SvgUri
+                        width='100%'
+                        height='100'
+                        uri={this.props.source}
+                    />
+                </TouchableWithFeedback>
+            );
         } else if (this.state.failed) {
             image = (
                 <Image

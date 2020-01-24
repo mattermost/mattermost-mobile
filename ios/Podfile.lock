@@ -291,7 +291,7 @@ PODS:
   - RNSentry (1.2.1):
     - React
     - Sentry (~> 4.4.0)
-  - RNSVG (10.1.0):
+  - RNSVG (11.0.1):
     - React
   - RNVectorIcons (6.6.0):
     - React
