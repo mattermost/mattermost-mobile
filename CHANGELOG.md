@@ -27,6 +27,7 @@
 
 ### Bug Fixes
  - Fixed an issue where combined system messages with many users listed hid posts above them.
+ - Fixed an issue on iOS where the app crashed when pasting a GIF via the keyboard.
  - Fixed an issue where explicit links to teams and channels on the same server currently logged in to didn't switch to that team and channel.
  - Fixed an issue where the keyboard glitched when returning to the main channel view after viewing a code block in the right-hand side.
  - Fixed an issue with default boolean values in interactive dialogs.
