@@ -442,10 +442,6 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
-                                accessibilityLabel={formatMessage({
-                                    id: 'mobile.components.select_server_view.enterServerUrl',
-                                    defaultMessage: 'Enter Server URL',
-                                })}
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!inputDisabled}
