@@ -51,7 +51,7 @@ exports[`PostHeader should match snapshot when just a base post 1`] = `
           John Smith
         </Text>
       </TouchableWithFeedbackIOS>
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -123,7 +123,7 @@ exports[`PostHeader should match snapshot when just a base post in landscape mod
           John Smith
         </Text>
       </TouchableWithFeedbackIOS>
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -232,7 +232,7 @@ exports[`PostHeader should match snapshot when post is autoresponder 1`] = `
           }
         }
       />
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -297,7 +297,7 @@ exports[`PostHeader should match snapshot when post is from system message 1`] =
           }
         />
       </View>
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -367,7 +367,7 @@ exports[`PostHeader should match snapshot when post is same thread, so dont disp
           John Smith
         </Text>
       </TouchableWithFeedbackIOS>
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -494,7 +494,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           }
         }
       />
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -646,7 +646,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           }
         }
       />
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -758,7 +758,7 @@ exports[`PostHeader should match snapshot when post renders Commented On for new
           John Smith
         </Text>
       </TouchableWithFeedbackIOS>
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
@@ -845,7 +845,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
           John Smith
         </Text>
       </TouchableWithFeedbackIOS>
-      <InjectIntl(FormattedTime)
+      <FormattedTime
         hour12={true}
         style={
           Object {
