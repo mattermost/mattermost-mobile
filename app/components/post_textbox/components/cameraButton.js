@@ -107,9 +107,9 @@ export default class AttachmentButton extends PureComponent {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
             const targetSource = Permissions.PERMISSIONS.IOS.CAMERA;
-            const hasPermissionToStorage = await Permissions.check(targetSource);
+            const hasPermission = await Permissions.check(targetSource);
 
-            switch (hasPermissionToStorage) {
+            switch (hasPermission) {
             case Permissions.RESULTS.UNAVAILABLE:
                 permissionRequest = await Permissions.request(targetSource);
                 if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
@@ -117,17 +117,13 @@ export default class AttachmentButton extends PureComponent {
                 }
                 break;
             case Permissions.RESULTS.BLOCKED: {
-                const canOpenSettings = await Permissions.canOpenSettings();
-                let grantOption = null;
-                if (canOpenSettings) {
-                    grantOption = {
-                        text: formatMessage({
-                            id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Settings',
-                        }),
-                        onPress: () => Permissions.openSettings(),
-                    };
-                }
+                const grantOption = {
+                    text: formatMessage({
+                        id: 'mobile.permission_denied_retry',
+                        defaultMessage: 'Settings',
+                    }),
+                    onPress: () => Permissions.openSettings(),
+                };
 
                 const {title, text} = this.getPermissionDeniedMessage();
 
