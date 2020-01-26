@@ -270,6 +270,11 @@ export default class MarkdownImage extends React.Component {
                 );
             }
         } else if (isSvgLink(this.props.source)) {
+            let source = null;
+            if (uri) {
+                source = uri.startsWith('http') ? uri : `file://${uri}`;
+            }
+
             image = (
                 <TouchableWithFeedback
                     onLongPress={this.handleLinkLongPress}
@@ -278,7 +283,7 @@ export default class MarkdownImage extends React.Component {
                     <SvgUri
                         width='100%'
                         height='100'
-                        uri={this.props.source}
+                        uri={source}
                     />
                 </TouchableWithFeedback>
             );
