@@ -12,15 +12,25 @@ import SelectServer from 'app/screens/select_server';
 
 export function registerScreens(store, Provider) {
     // TODO consolidate this with app/utils/wrap_context_provider
-    const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
-        <Provider store={store}>
-            <AppearanceProvider>
+    const wrapper = (Comp, appearanceEnabled = false) => (props) => {
+        const comps = (
+            <Provider store={store}>
                 <Root>
                     <Comp {...props}/>
                 </Root>
-            </AppearanceProvider>
-        </Provider>
-    );
+            </Provider>
+        );
+
+        if (appearanceEnabled) {
+            return (
+                <AppearanceProvider>
+                    {comps}
+                </AppearanceProvider>
+            );
+        }
+
+        return comps;
+    };
 
     Navigation.registerComponent('About', () => wrapper(require('app/screens/about').default), () => require('app/screens/about').default);
     Navigation.registerComponent('AddReaction', () => wrapper(require('app/screens/add_reaction').default), () => require('app/screens/add_reaction').default);
@@ -40,11 +50,11 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('EditProfile', () => wrapper(require('app/screens/edit_profile').default), () => require('app/screens/edit_profile').default);
     Navigation.registerComponent('ExpandedAnnouncementBanner', () => wrapper(require('app/screens/expanded_announcement_banner').default), () => require('app/screens/expanded_announcement_banner').default);
     Navigation.registerComponent('FlaggedPosts', () => wrapper(require('app/screens/flagged_posts').default), () => require('app/screens/flagged_posts').default);
-    Navigation.registerComponent('ForgotPassword', () => wrapper(require('app/screens/forgot_password').default), () => require('app/screens/forgot_password').default);
+    Navigation.registerComponent('ForgotPassword', () => wrapper(require('app/screens/forgot_password').default, true), () => require('app/screens/forgot_password').default);
     Navigation.registerComponent('ImagePreview', () => wrapper(require('app/screens/image_preview').default), () => require('app/screens/image_preview').default);
     Navigation.registerComponent('InteractiveDialog', () => wrapper(require('app/screens/interactive_dialog').default), () => require('app/screens/interactive_dialog').default);
-    Navigation.registerComponent('Login', () => wrapper(require('app/screens/login').default), () => require('app/screens/login').default);
-    Navigation.registerComponent('LoginOptions', () => wrapper(require('app/screens/login_options').default), () => require('app/screens/login_options').default);
+    Navigation.registerComponent('Login', () => wrapper(require('app/screens/login').default, true), () => require('app/screens/login').default);
+    Navigation.registerComponent('LoginOptions', () => wrapper(require('app/screens/login_options').default, true), () => require('app/screens/login_options').default);
     Navigation.registerComponent('LongPost', () => wrapper(require('app/screens/long_post').default), () => require('app/screens/long_post').default);
     Navigation.registerComponent('MFA', () => wrapper(require('app/screens/mfa').default), () => require('app/screens/mfa').default);
     Navigation.registerComponent('MoreChannels', () => wrapper(require('app/screens/more_channels').default), () => require('app/screens/more_channels').default);
@@ -65,12 +75,12 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('Root', () => wrapper(Root), () => Root);
     Navigation.registerComponent('Search', () => wrapper(require('app/screens/search').default), () => require('app/screens/search').default);
     Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
-    Navigation.registerComponent('SelectServer', () => wrapper(SelectServer), () => SelectServer);
+    Navigation.registerComponent('SelectServer', () => wrapper(SelectServer, true), () => SelectServer);
     Navigation.registerComponent('SelectTeam', () => wrapper(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
     Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/settings/timezone/select_timezone').default), () => require('app/screens/settings/timezone/select_timezone').default);
     Navigation.registerComponent('Settings', () => wrapper(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);
     Navigation.registerComponent('SidebarSettings', () => wrapper(require('app/screens/settings/sidebar').default), () => require('app/screens/settings/sidebar').default);
-    Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default), () => require('app/screens/sso').default);
+    Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default, true), () => require('app/screens/sso').default);
     Navigation.registerComponent('Table', () => wrapper(require('app/screens/table').default), () => require('app/screens/table').default);
     Navigation.registerComponent('TableImage', () => wrapper(require('app/screens/table_image').default), () => require('app/screens/table_image').default);
     Navigation.registerComponent('TermsOfService', () => wrapper(require('app/screens/terms_of_service').default), () => require('app/screens/terms_of_service').default);
