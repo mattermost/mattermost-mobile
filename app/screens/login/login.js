@@ -29,7 +29,14 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {resetToChannel, goToScreen} from 'app/actions/navigation';
 import EphemeralStore from 'app/store/ephemeral_store';
-import {getColorStyles, getLogo, getStyledNavigationOptions} from 'app/utils/appearance';
+import {
+    getButtonStyle,
+    getButtonTextStyle,
+    getColorStyles,
+    getInputStyle,
+    getLogo,
+    getStyledNavigationOptions,
+} from 'app/utils/appearance';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
@@ -333,22 +340,6 @@ export default class Login extends PureComponent {
 
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
 
-        const inputStyle = [GlobalStyles.inputBox, colorStyles.inputBox];
-        if (isLoading) {
-            inputStyle.push(GlobalStyles.inputBoxDisabled);
-            inputStyle.push(colorStyles.inputBoxDisabled);
-        }
-
-        const buttonStyle = [GlobalStyles.authButton, colorStyles.authButton];
-        const buttonTextStyle = [GlobalStyles.authButtonText, colorStyles.authButtonText];
-        if (this.isLoginButtonDisabled()) {
-            buttonStyle.push(colorStyles.buttonDisabled);
-            buttonTextStyle.push(colorStyles.buttonTextDisabled);
-        }
-        if (this.state.error) {
-            buttonStyle.push(GlobalStyles.inputError);
-        }
-
         let proceed;
         if (isLoading) {
             proceed = (
@@ -376,12 +367,12 @@ export default class Login extends PureComponent {
                 <Button
                     disabled={this.isLoginButtonDisabled()}
                     onPress={this.preSignIn}
-                    containerStyle={buttonStyle}
+                    containerStyle={getButtonStyle(this.isLoginButtonDisabled(), colorStyles)}
                 >
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Sign in'
-                        style={buttonTextStyle}
+                        style={getButtonTextStyle(this.isLoginButtonDisabled(), colorStyles)}
                     />
                 </Button>
             );
@@ -433,7 +424,7 @@ export default class Login extends PureComponent {
                             onBlur={this.setLoginStyle.bind(this, colorStyles.inputBox)}
                             onChangeText={this.props.actions.handleLoginIdChanged}
                             onFocus={this.setLoginStyle.bind(this, colorStyles.inputBoxFocused)}
-                            style={inputStyle}
+                            style={getInputStyle(isLoading, colorStyles)}
                             placeholder={this.createLoginPlaceholder()}
                             placeholderTextColor={colorStyles.inputBoxDisabled.color}
                             autoCorrect={false}

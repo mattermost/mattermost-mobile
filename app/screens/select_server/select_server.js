@@ -33,7 +33,14 @@ import FormattedText from 'app/components/formatted_text';
 import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import {getColorStyles, getLogo, getStyledNavigationOptions} from 'app/utils/appearance';
+import {
+    getButtonStyle,
+    getButtonTextStyle,
+    getColorStyles,
+    getInputStyle,
+    getLogo,
+    getStyledNavigationOptions,
+} from 'app/utils/appearance';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
 import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -444,19 +451,6 @@ export default class SelectServer extends PureComponent {
             statusStyle = 'light-content';
         }
 
-        const buttonStyle = [GlobalStyles.authButton, colorStyles.authButton];
-        const buttonTextStyle = [GlobalStyles.authButtonText, colorStyles.authButtonText];
-        if (this.isConnectButtonDisabled()) {
-            buttonStyle.push(colorStyles.buttonDisabled);
-            buttonTextStyle.push(colorStyles.buttonTextDisabled);
-        }
-
-        const inputStyle = [GlobalStyles.inputBox, colorStyles.inputBox];
-        if (this.isInputDisabled()) {
-            inputStyle.push(GlobalStyles.inputBoxDisabled);
-            inputStyle.push(colorStyles.inputBoxDisabled);
-        }
-
         return (
             <SafeAreaView
                 style={[style.container, colorStyles.container]}
@@ -489,7 +483,7 @@ export default class SelectServer extends PureComponent {
                                 onChangeText={this.handleTextChanged}
                                 onFocus={this.setStyle.bind(this, colorStyles.inputBoxFocused)}
                                 onSubmitEditing={this.handleConnect}
-                                style={inputStyle}
+                                style={getInputStyle(this.isInputDisabled(), colorStyles)}
                                 autoCapitalize='none'
                                 autoCorrect={false}
                                 keyboardType='url'
@@ -506,10 +500,10 @@ export default class SelectServer extends PureComponent {
                             <Button
                                 disabled={this.isConnectButtonDisabled()}
                                 onPress={this.handleConnect}
-                                containerStyle={buttonStyle}
+                                containerStyle={getButtonStyle(this.isConnectButtonDisabled(), colorStyles)}
                             >
                                 {buttonIcon}
-                                <Text style={buttonTextStyle}>
+                                <Text style={getButtonTextStyle(this.isConnectButtonDisabled(), colorStyles)}>
                                     {buttonText}
                                 </Text>
                             </Button>

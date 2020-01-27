@@ -3,6 +3,7 @@
 
 import {StyleSheet} from 'react-native';
 
+import {GlobalStyles} from 'app/styles';
 import {darkColors, lightColors} from 'app/styles/colors';
 
 function createStyleSheet(colors) {
@@ -47,8 +48,33 @@ function createStyleSheet(colors) {
     });
 }
 
+export function getButtonStyle(isDisabled, colorStyles) {
+    const buttonStyle = [GlobalStyles.authButton, colorStyles.authButton];
+    if (isDisabled) {
+        buttonStyle.push(colorStyles.buttonDisabled);
+    }
+    return buttonStyle;
+}
+
+export function getButtonTextStyle(isDisabled, colorStyles) {
+    const buttonTextStyle = [GlobalStyles.authButtonText, colorStyles.authButtonText];
+    if (isDisabled) {
+        buttonTextStyle.push(colorStyles.buttonTextDisabled);
+    }
+    return buttonTextStyle;
+}
+
 export function getColorStyles(colorScheme) {
     return colorScheme === 'light' ? createStyleSheet(lightColors) : createStyleSheet(darkColors);
+}
+
+export function getInputStyle(isDisabled, colorStyles) {
+    const inputStyle = [GlobalStyles.inputBox, colorStyles.inputBox];
+    if (isDisabled) {
+        inputStyle.push(GlobalStyles.inputBoxDisabled);
+        inputStyle.push(colorStyles.inputBoxDisabled);
+    }
+    return inputStyle;
 }
 
 export function getLogo(colorScheme) {
