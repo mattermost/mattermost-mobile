@@ -184,12 +184,6 @@ export default class SelectServer extends PureComponent {
         this.blur();
     };
 
-    styleError = () => {
-        this.textInput.setNativeProps({
-            style: GlobalStyles.inputBoxError,
-        });
-    }
-
     handleConnect = preventDoubleTap(async () => {
         const url = this.getUrl();
 
@@ -202,7 +196,7 @@ export default class SelectServer extends PureComponent {
         }
 
         if (!isValidUrl(url)) {
-            this.styleError();
+            this.setErrorStyle();
             this.setState({
                 error: {
                     intl: {
@@ -350,7 +344,7 @@ export default class SelectServer extends PureComponent {
             }
 
             if (result.error) {
-                this.styleError();
+                this.setErrorStyle();
             }
 
             this.setState({
@@ -401,15 +395,12 @@ export default class SelectServer extends PureComponent {
         return !allowOtherServers || connected || connecting;
     };
 
-    onFocus = () => {
-        this.textInput.setNativeProps({
-            style: this.state.colorStyles.inputBoxFocused,
-        });
+    setErrorStyle() {
+        this.setStyle(GlobalStyles.inputBoxError);
     }
-    onBlur = () => {
-        this.textInput.setNativeProps({
-            style: this.state.colorStyles.inputBox,
-        });
+
+    setStyle(style) {
+        this.textInput.setNativeProps({style});
     }
 
     render() {
@@ -494,9 +485,9 @@ export default class SelectServer extends PureComponent {
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!this.isInputDisabled()}
-                                onBlur={this.onBlur}
+                                onBlur={this.setStyle.bind(this, colorStyles.inputBox)}
                                 onChangeText={this.handleTextChanged}
-                                onFocus={this.onFocus}
+                                onFocus={this.setStyle.bind(this, colorStyles.inputBoxFocused)}
                                 onSubmitEditing={this.handleConnect}
                                 style={inputStyle}
                                 autoCapitalize='none'

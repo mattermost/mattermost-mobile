@@ -238,19 +238,10 @@ export default class Login extends PureComponent {
         return '';
     }
 
-    styleError = () => {
-        this.loginId.setNativeProps({
-            style: GlobalStyles.inputBoxError,
-        });
-        this.passwd.setNativeProps({
-            style: GlobalStyles.inputBoxError,
-        });
-    }
-
     getLoginErrorMessage = () => {
         const error = this.getServerErrorForLogin() || this.state.error;
         if (error && this.loginId && this.passwd) {
-            this.styleError();
+            this.setErrorStyle();
         }
         return error;
     };
@@ -324,26 +315,17 @@ export default class Login extends PureComponent {
         return !(this.props.loginId && this.props.password);
     };
 
-    onLoginFocus = () => {
-        this.loginId.setNativeProps({
-            style: this.state.colorStyles.inputBoxFocused,
-        });
-    }
-    onLoginBlur = () => {
-        this.loginId.setNativeProps({
-            style: this.state.colorStyles.inputBox,
-        });
+    setErrorStyle() {
+        this.setLoginStyle(GlobalStyles.inputBoxError);
+        this.setPasswordStyle(GlobalStyles.inputBoxError);
     }
 
-    onPasswordFocus = () => {
-        this.passwd.setNativeProps({
-            style: this.state.colorStyles.inputBoxFocused,
-        });
+    setLoginStyle(style) {
+        this.loginId.setNativeProps({style});
     }
-    onPasswordBlur = () => {
-        this.passwd.setNativeProps({
-            style: this.state.colorStyles.inputBox,
-        });
+
+    setPasswordStyle(style) {
+        this.passwd.setNativeProps({style});
     }
 
     render() {
@@ -448,9 +430,9 @@ export default class Login extends PureComponent {
                         <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}
-                            onBlur={this.onLoginBlur}
+                            onBlur={this.setLoginStyle.bind(this, colorStyles.inputBox)}
                             onChangeText={this.props.actions.handleLoginIdChanged}
-                            onFocus={this.onLoginFocus}
+                            onFocus={this.setLoginStyle.bind(this, colorStyles.inputBoxFocused)}
                             style={inputStyle}
                             placeholder={this.createLoginPlaceholder()}
                             placeholderTextColor={colorStyles.inputBoxDisabled.color}
@@ -467,9 +449,9 @@ export default class Login extends PureComponent {
                         <TextInput
                             ref={this.passwordRef}
                             value={this.props.password}
-                            onBlur={this.onPasswordBlur}
+                            onBlur={this.setPasswordStyle.bind(this, colorStyles.inputBox)}
                             onChangeText={this.props.actions.handlePasswordChanged}
-                            onFocus={this.onPasswordFocus}
+                            onFocus={this.setPasswordStyle.bind(this, colorStyles.inputBoxFocused)}
                             style={[GlobalStyles.inputBox, colorStyles.inputBox]}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             placeholderTextColor={colorStyles.inputBoxDisabled.color}
