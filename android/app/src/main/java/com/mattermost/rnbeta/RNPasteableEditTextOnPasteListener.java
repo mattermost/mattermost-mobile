@@ -24,6 +24,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 
 public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteListener {
@@ -137,23 +139,23 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
     private String moveToImagesCache(String src, String fileName) {
         ReactContext ctx = (ReactContext)mEditText.getContext();
         String dest = ctx.getCacheDir().getAbsolutePath() + "/Images/" + fileName;
-        File srcFile = new File(src);
-        InputStream in = null;
-        OutputStream out = null;
+        // InputStream in = null;
+        // OutputStream out = null;
 
         try {
-            in = new FileInputStream(srcFile);
-            out = new FileOutputStream(dest);
+            // in = new FileInputStream(srcFile);
+            // out = new FileOutputStream(dest);
 
-            byte[] buf = new byte[10240];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            in.close();
-            out.flush();
+            // byte[] buf = new byte[10240];
+            // int len;
+            // while ((len = in.read(buf)) > 0) {
+            //     out.write(buf, 0, len);
+            // }
+            // in.close();
+            // out.flush();
 
-            srcFile.delete(); //remove original file
+            // srcFile.delete(); //remove original file
+            Files.move(Paths.get(src), Paths.get(dest));
         } catch (Exception err) {
             return null;
         }
