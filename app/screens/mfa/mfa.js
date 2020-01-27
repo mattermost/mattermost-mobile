@@ -138,7 +138,7 @@ export default class Mfa extends PureComponent {
             >
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.authContainer]}>
+                    <View style={[GlobalStyles.whiteContainer, GlobalStyles.authContainer]}>
                         <Image
                             source={require('assets/images/logo.png')}
                         />

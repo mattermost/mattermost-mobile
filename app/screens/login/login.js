@@ -395,13 +395,13 @@ export default class Login extends PureComponent {
         }
 
         return (
-            <View style={[style.container, colorStyles.container]}>
+            <View style={[GlobalStyles.container, colorStyles.container]}>
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
-                        style={[style.container, colorStyles.container]}
-                        contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
+                        style={[GlobalStyles.container, colorStyles.container]}
+                        contentContainerStyle={[GlobalStyles.innerContainer, padding(this.props.isLandscape)]}
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >
@@ -466,16 +466,6 @@ export default class Login extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 50,
-    },
     forgotPasswordBtn: {
         borderColor: 'transparent',
         marginTop: 15,

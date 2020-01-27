@@ -453,17 +453,17 @@ export default class SelectServer extends PureComponent {
 
         return (
             <SafeAreaView
-                style={[style.container, colorStyles.container]}
+                style={[GlobalStyles.container, colorStyles.container]}
             >
                 <KeyboardAvoidingView
                     behavior='padding'
-                    style={[style.container, colorStyles.container]}
+                    style={[GlobalStyles.container, colorStyles.container]}
                     keyboardVerticalOffset={0}
                     enabled={Platform.OS === 'ios'}
                 >
                     <StatusBar barStyle={statusStyle}/>
                     <TouchableWithoutFeedback onPress={this.blur}>
-                        <View style={[GlobalStyles.container, GlobalStyles.authContainer, colorStyles.container]}>
+                        <View style={[GlobalStyles.innerContainer, GlobalStyles.authContainer, colorStyles.container]}>
                             <Image
                                 source={logo}
                             />
@@ -516,9 +516,6 @@ export default class SelectServer extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
     connectingIndicator: {
         marginRight: 5,
     },

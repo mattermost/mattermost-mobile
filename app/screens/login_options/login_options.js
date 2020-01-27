@@ -8,7 +8,6 @@ import {
     Dimensions,
     Image,
     ScrollView,
-    StyleSheet,
     Text,
 } from 'react-native';
 import {Appearance} from 'react-native-appearance';
@@ -276,8 +275,8 @@ export default class LoginOptions extends PureComponent {
 
         return (
             <ScrollView
-                style={[style.container, colorStyles.container]}
-                contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
+                style={[GlobalStyles.container, colorStyles.container]}
+                contentContainerStyle={[GlobalStyles.innerContainer, padding(this.props.isLandscape)]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>
@@ -306,16 +305,3 @@ export default class LoginOptions extends PureComponent {
         );
     }
 }
-
-const style = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        flex: 1,
-    },
-});

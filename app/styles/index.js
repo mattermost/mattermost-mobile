@@ -11,6 +11,16 @@ import {error} from 'app/styles/colors';
 export const GlobalStyles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    innerContainer: {
+        flex: 1,
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingHorizontal: 15,
+    },
+    whiteContainer: {
+        flex: 1,
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
