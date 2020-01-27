@@ -6,7 +6,7 @@
 
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
- - iPhone 5s devices and later with iOS 11+ is required.
+ - iPhone 5s devices and later with iOS 12+ is required.
  
 ### Highlights
 
@@ -38,7 +38,7 @@
 
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
- - iPhone 5s devices and later with iOS 11+ is required.
+ - iPhone 5s devices and later with iOS 12+ is required.
 
 ### Bug Fixes
  - Fixed an issue where flaky networks caused users to miss messages when at the top of the channel.
@@ -62,7 +62,7 @@
 
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
- - iPhone 5s devices and later with iOS 11+ is required.
+ - iPhone 5s devices and later with iOS 12+ is required.
 
 ### Bug Fixes
  - Fixed an issue on iOS where the mobile app was not usable if ``inAppPincode`` was enabled.
@@ -73,7 +73,7 @@
 
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
- - iPhone 5s devices and later with iOS 11+ is required.
+ - iPhone 5s devices and later with iOS 12+ is required.
 
 ### Bug Fixes
  - Fixed a crash issue on Android and iOS on server versions prior to the v5.9.0 Extended Support Release (ESR).
@@ -85,7 +85,7 @@
 
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
- - iPhone 5s devices and later with iOS 11+ is required.
+ - iPhone 5s devices and later with iOS 12+ is required.
  
 Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgrading](http://docs.mattermost.com/administration/upgrade.html) is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
 
@@ -138,7 +138,7 @@ Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgr
 
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
- - iPhone 5s devices and later with iOS 11+ is required.
+ - iPhone 5s devices and later with iOS 12+ is required.
 
 ### Bug Fixes
  - Fixed a crash issue on iOS when SSO cookies did not contain an expiration date during login.
@@ -152,7 +152,7 @@ Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgr
 
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
- - iPhone 5s devices and later with iOS 11+ is required.
+ - iPhone 5s devices and later with iOS 12+ is required.
 
 ### Bug Fixes
  - Fixed an issue where Mattermost monokai theme no longer worked properly on mobile apps.
