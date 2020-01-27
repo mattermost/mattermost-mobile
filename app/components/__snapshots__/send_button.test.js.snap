@@ -5,8 +5,7 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
   style={
     Object {
       "justifyContent": "flex-end",
-      "paddingHorizontal": 5,
-      "paddingVertical": 2,
+      "paddingRight": 8,
     }
   }
 >
@@ -17,10 +16,9 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
           "alignItems": "center",
           "backgroundColor": "#166de0",
           "borderRadius": 4,
-          "height": 28,
+          "height": 32,
           "justifyContent": "center",
-          "paddingLeft": 3,
-          "width": 72,
+          "width": 80,
         },
         Object {
           "backgroundColor": "rgba(22,109,224,0.3)",
@@ -29,9 +27,9 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
     }
   >
     <PaperPlane
-      color="#ffffff"
-      height={13}
-      width={15}
+      color="rgba(255,255,255,0.5)"
+      height={16}
+      width={19}
     />
   </View>
 </View>
@@ -44,8 +42,7 @@ exports[`SendButton should match snapshot 1`] = `
   style={
     Object {
       "justifyContent": "flex-end",
-      "paddingHorizontal": 5,
-      "paddingVertical": 2,
+      "paddingRight": 8,
     }
   }
   testID="send button"
@@ -57,17 +54,16 @@ exports[`SendButton should match snapshot 1`] = `
         "alignItems": "center",
         "backgroundColor": "#166de0",
         "borderRadius": 4,
-        "height": 28,
+        "height": 32,
         "justifyContent": "center",
-        "paddingLeft": 3,
-        "width": 72,
+        "width": 80,
       }
     }
   >
     <PaperPlane
       color="#ffffff"
-      height={13}
-      width={15}
+      height={16}
+      width={19}
     />
   </View>
 </TouchableWithFeedbackIOS>
@@ -80,8 +76,7 @@ exports[`SendButton should render theme backgroundColor 1`] = `
   style={
     Object {
       "justifyContent": "flex-end",
-      "paddingHorizontal": 5,
-      "paddingVertical": 2,
+      "paddingRight": 8,
     }
   }
   testID="send button"
@@ -93,17 +88,16 @@ exports[`SendButton should render theme backgroundColor 1`] = `
         "alignItems": "center",
         "backgroundColor": "#166de0",
         "borderRadius": 4,
-        "height": 28,
+        "height": 32,
         "justifyContent": "center",
-        "paddingLeft": 3,
-        "width": 72,
+        "width": 80,
       }
     }
   >
     <PaperPlane
       color="#ffffff"
-      height={13}
-      width={15}
+      height={16}
+      width={19}
     />
   </View>
 </TouchableWithFeedbackIOS>
