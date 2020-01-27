@@ -18,12 +18,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.mattermost.share.RealPathUtil;
 import com.mattermost.share.ShareModule;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
@@ -139,22 +134,8 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
     private String moveToImagesCache(String src, String fileName) {
         ReactContext ctx = (ReactContext)mEditText.getContext();
         String dest = ctx.getCacheDir().getAbsolutePath() + "/Images/" + fileName;
-        // InputStream in = null;
-        // OutputStream out = null;
 
         try {
-            // in = new FileInputStream(srcFile);
-            // out = new FileOutputStream(dest);
-
-            // byte[] buf = new byte[10240];
-            // int len;
-            // while ((len = in.read(buf)) > 0) {
-            //     out.write(buf, 0, len);
-            // }
-            // in.close();
-            // out.flush();
-
-            // srcFile.delete(); //remove original file
             Files.move(Paths.get(src), Paths.get(dest));
         } catch (Exception err) {
             return null;
