@@ -24,6 +24,7 @@ import {
     makeStyleSheetFromTheme,
     changeOpacity,
 } from 'app/utils/theme';
+import {compareEmojis} from 'app/utils/emoji_utils';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import EmojiPickerRow from './emoji_picker_row';
 
@@ -211,7 +212,7 @@ export default class EmojiPicker extends PureComponent {
         }
 
         const results = fuse.search(searchTermLowerCase);
-        const data = results.map((index) => emojis[index]);
+        const data = results.map((index) => emojis[index]).sort(compareEmojis);
         return data;
     };
 
