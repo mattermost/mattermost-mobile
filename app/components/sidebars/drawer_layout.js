@@ -417,7 +417,11 @@ export default class DrawerLayout extends Component {
                     return true;
                 }
             } else {
-                if (moveX <= 35 && dx > 0) {
+                const filter = Platform.select({
+                    ios: moveX > 0 && dx > 35,
+                    android: moveX <= 35 && dx > 0
+                });
+                if (filter) {
                     this._isClosing = false;
                     return true;
                 }
@@ -449,8 +453,9 @@ export default class DrawerLayout extends Component {
         this._emitStateChanged(DRAGGING);
     };
 
-    _panResponderMove = (e: EventType, { moveX }: PanResponderEventType) => {
-        let openValue = this._getOpenValueForX(moveX);
+    _panResponderMove = (e: EventType, { moveX, dx }: PanResponderEventType) => {
+        const useDx = Platform.OS === 'ios' && this.getDrawerPosition() === 'left';
+        let openValue = this._getOpenValueForX(useDx ? dx : moveX);
 
         if (this._isClosing) {
             openValue = 1 - (this._closingAnchorValue - openValue);
