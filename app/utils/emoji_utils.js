@@ -136,9 +136,9 @@ export function compareEmojis(emojiA, emojiB, searchedName) {
     const aName = emojiA.name || (emojiA.aliases ? emojiA.aliases[0] : emojiA);
     const bName = emojiB.name || (emojiB.aliases ? emojiB.aliases[0] : emojiB);
 
-    // Have the emojis that contain the search appear first
-    const aPrefix = aName.startsWith(searchedName);
-    const bPrefix = bName.startsWith(searchedName);
+    // Have the emojis that include the search appear first
+    const aPrefix = aName.includes(searchedName);
+    const bPrefix = bName.includes(searchedName);
 
     if (aPrefix === bPrefix) {
         if (customComparisonRules[aName]) {
