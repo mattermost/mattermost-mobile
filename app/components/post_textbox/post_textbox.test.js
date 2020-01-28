@@ -14,9 +14,9 @@ import PasteableTextInput from 'app/components/pasteable_text_input';
 import EphemeralStore from 'app/store/ephemeral_store';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import FileUploadButton from './components/fileUploadButton';
-import ImageUploadButton from './components/imageUploadButton';
-import CameraButton from './components/cameraButton';
+import FileUploadButton from './components/file_upload_button';
+import ImageUploadButton from './components/image_upload_button';
+import CameraButton from './components/camera_button';
 
 import PostTextbox from './post_textbox.ios';
 
