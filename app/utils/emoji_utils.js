@@ -136,6 +136,14 @@ export function compareEmojis(emojiA, emojiB, searchedName) {
     const aName = emojiA.name || (emojiA.aliases ? emojiA.aliases[0] : emojiA);
     const bName = emojiB.name || (emojiB.aliases ? emojiB.aliases[0] : emojiB);
 
+    if (!searchedName) {
+        if (customComparisonRules[aName]) {
+            return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
+        }
+
+        return defaultComparisonRule(aName, bName);
+    }
+
     // Have the emojis that start with the search appear first
     const aPrefix = aName.startsWith(searchedName);
     const bPrefix = bName.startsWith(searchedName);
@@ -144,15 +152,17 @@ export function compareEmojis(emojiA, emojiB, searchedName) {
     const aIncludes = aName.includes(searchedName);
     const bIncludes = bName.includes(searchedName);
 
-    if (aPrefix && aPrefix === bPrefix) {
+    if (aPrefix && bPrefix) {
         if (customComparisonRules[aName]) {
             return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
         }
 
-        return defaultComparisonRule(aName, bName, searchedName);
+        return defaultComparisonRule(aName, bName);
     } else if (aPrefix) {
         return -1;
-    } else if (aIncludes === bIncludes) {
+    } else if (bPrefix) {
+        return 1;
+    } else if (aIncludes && bIncludes) {
         if (customComparisonRules[aName]) {
             return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
         }
