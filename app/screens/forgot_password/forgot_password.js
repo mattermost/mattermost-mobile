@@ -3,7 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {Appearance} from 'react-native-appearance';
 import Button from 'react-native-button';
+import {Navigation} from 'react-native-navigation';
 import {intlShape} from 'react-intl';
 
 import {
@@ -23,7 +25,9 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 
-import {changeOpacity} from 'app/utils/theme';
+import {getButtonStyle, getButtonTextStyle, getColorStyles, getLogo, getStyledNavigationOptions} from 'app/utils/appearance';
+
+import EphemeralStore from 'app/store/ephemeral_store';
 
 export default class ForgotPassword extends PureComponent {
     static propTypes = {
@@ -40,10 +44,28 @@ export default class ForgotPassword extends PureComponent {
         super(props);
 
         this.state = {
+            colorStyles: getColorStyles(Appearance.getColorScheme()),
             error: null,
             email: '',
+            logo: getLogo(Appearance.getColorScheme()),
             sentPasswordLink: false,
         };
+    }
+
+    componentDidMount() {
+        this.appearanceEventListener = Appearance.addChangeListener(({colorScheme}) => {
+            const colorStyles = getColorStyles(colorScheme);
+            this.setState({
+                colorStyles,
+                logo: getLogo(colorScheme),
+            });
+
+            Navigation.mergeOptions(EphemeralStore.getNavigationTopComponentId(), getStyledNavigationOptions(colorStyles));
+        });
+    }
+
+    componentWillUnmount() {
+        this.appearanceEventListener.remove();
     }
 
     changeEmail = (email) => {
@@ -82,7 +104,20 @@ export default class ForgotPassword extends PureComponent {
         }
     }
 
+    isResetButtonDisabled = () => {
+        return !this.state.email;
+    }
+
+    setErrorStyle() {
+        this.setStyle(GlobalStyles.inputBoxError);
+    }
+
+    setStyle(style) {
+        this.emailId.setNativeProps({style});
+    }
+
     render() {
+        const {colorStyles, logo} = this.state;
         const {formatMessage} = this.context.intl;
         let displayError;
         if (this.state.error) {
@@ -92,6 +127,7 @@ export default class ForgotPassword extends PureComponent {
                     textStyle={style.errorText}
                 />
             );
+            this.setErrorStyle();
         }
 
         let passwordFormView;
@@ -117,16 +153,18 @@ export default class ForgotPassword extends PureComponent {
             passwordFormView = (
                 <View>
                     <FormattedText
-                        style={[GlobalStyles.subheader, style.defaultTopPadding]}
+                        style={[GlobalStyles.subheader, colorStyles.header, style.defaultTopPadding]}
                         id='password_send.description'
                         defaultMessage='To reset your password, enter the email address you used to sign up'
                     />
                     <TextInput
                         ref={this.emailIdRef}
-                        style={GlobalStyles.inputBox}
+                        onBlur={this.setStyle.bind(this, colorStyles.inputBox)}
                         onChangeText={this.changeEmail}
+                        onFocus={this.setStyle.bind(this, colorStyles.inputBoxFocused)}
+                        style={[GlobalStyles.inputBox, colorStyles.inputBox]}
                         placeholder={formatMessage({id: 'login.email', defaultMessage: 'Email'})}
-                        placeholderTextColor={changeOpacity('#000', 0.5)}
+                        placeholderTextColor={colorStyles.inputBoxDisabled.color}
                         autoCorrect={false}
                         autoCapitalize='none'
                         keyboardType='email-address'
@@ -134,31 +172,31 @@ export default class ForgotPassword extends PureComponent {
                         blurOnSubmit={false}
                         disableFullscreenUI={true}
                     />
+                    {displayError}
                     <Button
-                        containerStyle={GlobalStyles.authButton}
-                        disabled={!this.state.email}
+                        containerStyle={getButtonStyle(this.isResetButtonDisabled(), colorStyles)}
+                        disabled={this.isResetButtonDisabled()}
                         onPress={this.submitResetPassword}
                     >
                         <FormattedText
                             id='password_send.reset'
                             defaultMessage='Reset my password'
-                            style={[GlobalStyles.authButtonText]}
+                            style={getButtonTextStyle(this.isResetButtonDisabled(), colorStyles)}
                         />
                     </Button>
                 </View>
             );
         }
         return (
-            <View style={style.container}>
+            <View style={[GlobalStyles.container, colorStyles.container]}>
                 <StatusBar/>
                 <TouchableWithoutFeedback
                     onPress={this.blur}
                 >
-                    <View style={style.innerContainer}>
+                    <View style={GlobalStyles.innerContainer}>
                         <Image
-                            source={require('assets/images/logo.png')}
+                            source={logo}
                         />
-                        {displayError}
                         {passwordFormView}
                     </View>
                 </TouchableWithoutFeedback>
@@ -168,17 +206,6 @@ export default class ForgotPassword extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    container: {
-        backgroundColor: '#FFFFFF',
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 50,
-    },
     forgotPasswordBtn: {
         borderColor: 'transparent',
         marginTop: 15,

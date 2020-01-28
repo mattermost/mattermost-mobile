@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+import {Appearance} from 'react-native-appearance';
 
+import {shallowWithIntl} from 'test/intl-test-helper';
+import {darkColors, lightColors} from 'app/styles/colors';
 import ForgotPassword from './forgot_password.js';
-
-jest.mock('react-intl');
 
 describe('ForgotPassword', () => {
     const actions = {
@@ -17,22 +17,14 @@ describe('ForgotPassword', () => {
         actions,
     };
 
-    const formatMessage = jest.fn();
-
     test('should match snapshot', () => {
-        const wrapper = shallow(
-            <ForgotPassword {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
-        );
+        const wrapper = shallowWithIntl(<ForgotPassword {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('snapshot for error on failure of email regex', () => {
-        const wrapper = shallow(
-            <ForgotPassword {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
-        );
+        const wrapper = shallowWithIntl(<ForgotPassword {...baseProps}/>);
 
         wrapper.setState({email: 'bar'});
         wrapper.instance().submitResetPassword();
@@ -41,10 +33,7 @@ describe('ForgotPassword', () => {
     });
 
     test('Should call sendPasswordResetEmail', () => {
-        const wrapper = shallow(
-            <ForgotPassword {...baseProps}/>,
-            {context: {intl: {formatMessage}}},
-        );
+        const wrapper = shallowWithIntl(<ForgotPassword {...baseProps}/>);
 
         wrapper.setState({email: 'test@test.com'});
         wrapper.instance().submitResetPassword();
@@ -57,20 +46,38 @@ describe('ForgotPassword', () => {
                 data: {},
             };
         };
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ForgotPassword
                 {...baseProps}
                 actions={{
                     ...actions,
                     sendPasswordResetEmail,
                 }}
-            />,
-            {context: {intl: {formatMessage}}},
-        );
+            />);
 
         wrapper.setState({email: 'test@test.com'});
         wrapper.instance().submitResetPassword();
         await sendPasswordResetEmail();
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should show light background when user has light color scheme set', () => {
+        Appearance.getColorScheme.mockImplementation(() => 'light');
+        Appearance.addChangeListener.mockImplementation(() => 'light');
+
+        const wrapper = shallowWithIntl(<ForgotPassword {...baseProps}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper).toHaveStyle('backgroundColor', lightColors.containerBg);
+    });
+
+    test('should show dark background when user has dark color scheme set', () => {
+        Appearance.getColorScheme.mockImplementation(() => 'dark');
+        Appearance.addChangeListener.mockImplementation(() => 'dark');
+
+        const wrapper = shallowWithIntl(<ForgotPassword {...baseProps}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper).toHaveStyle('backgroundColor', darkColors.containerBg);
     });
 });
