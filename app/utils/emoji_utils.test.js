@@ -411,4 +411,18 @@ describe('compareEmojis', () => {
 
         expect(emojiArray).toEqual([thumbsUpEmoji, thumbsDownEmoji, smileEmoji]);
     });
+
+    test('it sorts emojis that start with search term first, then includes search term, then alphabetically', () => {
+        const printerEmoji = 'printer';
+        const pointDownEmoji = 'point_down';
+        const paintBrushEmoji = 'paintbrush';
+        const footPrintsEmoji = 'footprints';
+        const disappointedEmoji = 'disappointed';
+        const sixPointedStarEmoji = 'six_pointed_star';
+
+        const emojiArray = [printerEmoji, pointDownEmoji, paintBrushEmoji, footPrintsEmoji, disappointedEmoji, sixPointedStarEmoji];
+        emojiArray.sort((a, b) => compareEmojis(a, b, 'point'));
+
+        expect(emojiArray).toEqual([pointDownEmoji, disappointedEmoji, sixPointedStarEmoji, footPrintsEmoji, paintBrushEmoji, printerEmoji]);
+    });
 });
