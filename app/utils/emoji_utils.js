@@ -153,11 +153,7 @@ export function compareEmojis(emojiA, emojiB, searchedName) {
     const bPrefix = bName.startsWith(searchedName);
 
     if (aPrefix && bPrefix) {
-        if (customComparisonRules[aName]) {
-            return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
-        }
-
-        return defaultComparisonRule(aName, bName);
+        return doDefaultComparison(aName, bName);
     } else if (aPrefix) {
         return -1;
     } else if (bPrefix) {
@@ -169,11 +165,7 @@ export function compareEmojis(emojiA, emojiB, searchedName) {
     const bIncludes = bName.includes(searchedName);
 
     if (aIncludes && bIncludes) {
-        if (customComparisonRules[aName]) {
-            return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
-        }
-
-        return defaultComparisonRule(aName, bName, searchedName);
+        return doDefaultComparison(aName, bName);
     } else if (aIncludes) {
         return -1;
     } else if (bIncludes) {
