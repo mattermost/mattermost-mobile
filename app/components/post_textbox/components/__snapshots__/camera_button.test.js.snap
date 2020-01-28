@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CameraButton should match snapshot 1`] = `
+<TouchableWithFeedbackIOS
+  onPress={[Function]}
+  style={Object {}}
+  type="opacity"
+>
+  <Icon
+    allowFontScaling={false}
+    color="rgba(61,60,64,0.64)"
+    name="camera-outline"
+    size={24}
+  />
+</TouchableWithFeedbackIOS>
+`;
