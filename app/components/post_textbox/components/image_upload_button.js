@@ -112,6 +112,7 @@ export default class ImageUploadButton extends PureComponent {
             const hasPermission = await Permissions.check(targetSource);
 
             switch (hasPermission) {
+            case Permissions.RESULTS.DENIED:
             case Permissions.RESULTS.UNAVAILABLE:
                 permissionRequest = await Permissions.request(targetSource);
                 if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
