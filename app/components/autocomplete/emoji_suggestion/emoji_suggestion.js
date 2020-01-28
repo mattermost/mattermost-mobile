@@ -94,13 +94,18 @@ export default class EmojiSuggestion extends PureComponent {
 
         const results = await fuse.search(matchTerm.toLowerCase());
         const data = results.map((index) => emojis[index]);
-        this.setEmojiData(data);
+        this.setEmojiData(data, matchTerm);
     };
 
-    setEmojiData = (data) => {
+    setEmojiData = (data, matchTerm = null) => {
+        let sorter = compareEmojis;
+        if (matchTerm) {
+            sorter = (a, b) => compareEmojis(a, b, matchTerm);
+        }
+
         this.setState({
             active: data.length > 0,
-            dataSource: data.sort(compareEmojis),
+            dataSource: data.sort(sorter),
         });
 
         this.props.onResultCountChange(data.length);
