@@ -22,10 +22,10 @@ exports[`Login should show dark background when user has dark color scheme set 1
         Array [
           Object {
             "alignItems": "center",
+            "flex": 1,
             "flexDirection": "column",
             "justifyContent": "center",
             "paddingHorizontal": 15,
-            "paddingVertical": 50,
           },
           null,
         ]
@@ -174,19 +174,22 @@ exports[`Login should show dark background when user has dark color scheme set 1
       <Button
         containerStyle={
           Array [
-            Object {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "borderRadius": 3,
-              "marginTop": 10,
-              "padding": 15,
-            },
-            Object {
-              "backgroundColor": "#399fff",
-            },
-            Object {
-              "backgroundColor": "#2e2e2e",
-            },
+            Array [
+              Object {
+                "alignItems": "center",
+                "alignSelf": "stretch",
+                "borderRadius": 3,
+                "marginTop": 10,
+                "padding": 15,
+              },
+              Object {
+                "backgroundColor": "#399fff",
+              },
+              Object {
+                "backgroundColor": "#2e2e2e",
+              },
+            ],
+            Object {},
           ]
         }
         disabled={true}
@@ -197,17 +200,20 @@ exports[`Login should show dark background when user has dark color scheme set 1
           id="login.signIn"
           style={
             Array [
-              Object {
-                "fontSize": 17,
-                "fontWeight": "500",
-                "textAlign": "center",
-              },
-              Object {
-                "color": "#171717",
-              },
-              Object {
-                "color": "#9b9b9b",
-              },
+              Array [
+                Object {
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                  "textAlign": "center",
+                },
+                Object {
+                  "color": "#171717",
+                },
+                Object {
+                  "color": "#9b9b9b",
+                },
+              ],
+              Object {},
             ]
           }
         />
@@ -260,10 +266,10 @@ exports[`Login should show light background when user has light color scheme set
         Array [
           Object {
             "alignItems": "center",
+            "flex": 1,
             "flexDirection": "column",
             "justifyContent": "center",
             "paddingHorizontal": 15,
-            "paddingVertical": 50,
           },
           null,
         ]
@@ -412,19 +418,22 @@ exports[`Login should show light background when user has light color scheme set
       <Button
         containerStyle={
           Array [
-            Object {
-              "alignItems": "center",
-              "alignSelf": "stretch",
-              "borderRadius": 3,
-              "marginTop": 10,
-              "padding": 15,
-            },
-            Object {
-              "backgroundColor": "#1247b1",
-            },
-            Object {
-              "backgroundColor": "#dbdbdb",
-            },
+            Array [
+              Object {
+                "alignItems": "center",
+                "alignSelf": "stretch",
+                "borderRadius": 3,
+                "marginTop": 10,
+                "padding": 15,
+              },
+              Object {
+                "backgroundColor": "#1247b1",
+              },
+              Object {
+                "backgroundColor": "#dbdbdb",
+              },
+            ],
+            Object {},
           ]
         }
         disabled={true}
@@ -435,17 +444,20 @@ exports[`Login should show light background when user has light color scheme set
           id="login.signIn"
           style={
             Array [
-              Object {
-                "fontSize": 17,
-                "fontWeight": "500",
-                "textAlign": "center",
-              },
-              Object {
-                "color": "#ffffff",
-              },
-              Object {
-                "color": "#5c5c5c",
-              },
+              Array [
+                Object {
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                  "textAlign": "center",
+                },
+                Object {
+                  "color": "#ffffff",
+                },
+                Object {
+                  "color": "#5c5c5c",
+                },
+              ],
+              Object {},
             ]
           }
         />

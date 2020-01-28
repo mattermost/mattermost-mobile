@@ -41,10 +41,10 @@ exports[`SelectServer should show dark background when user has dark color schem
           Array [
             Object {
               "alignItems": "center",
-              "backgroundColor": "white",
               "flex": 1,
               "flexDirection": "column",
               "justifyContent": "center",
+              "paddingHorizontal": 15,
             },
             Object {
               "paddingLeft": 15,
@@ -225,10 +225,10 @@ exports[`SelectServer should show light background when user has light color sch
           Array [
             Object {
               "alignItems": "center",
-              "backgroundColor": "white",
               "flex": 1,
               "flexDirection": "column",
               "justifyContent": "center",
+              "paddingHorizontal": 15,
             },
             Object {
               "paddingLeft": 15,
