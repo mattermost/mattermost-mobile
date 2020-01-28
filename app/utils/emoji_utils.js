@@ -132,16 +132,20 @@ const customComparisonRules = {
     '+1': thumbsUpComparisonRule,
 };
 
+function doDefaultComparison(aName, bName) {
+    if (customComparisonRules[aName]) {
+        return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
+    }
+
+    return defaultComparisonRule(aName, bName);
+}
+
 export function compareEmojis(emojiA, emojiB, searchedName) {
     const aName = emojiA.name || (emojiA.aliases ? emojiA.aliases[0] : emojiA);
     const bName = emojiB.name || (emojiB.aliases ? emojiB.aliases[0] : emojiB);
 
     if (!searchedName) {
-        if (customComparisonRules[aName]) {
-            return customComparisonRules[aName](bName) || defaultComparisonRule(aName, bName);
-        }
-
-        return defaultComparisonRule(aName, bName);
+        return doDefaultComparison(aName, bName);
     }
 
     // Have the emojis that start with the search appear first
@@ -170,7 +174,9 @@ export function compareEmojis(emojiA, emojiB, searchedName) {
         return defaultComparisonRule(aName, bName, searchedName);
     } else if (aIncludes) {
         return -1;
+    } else if (bIncludes) {
+        return 1;
     }
 
-    return 1;
+    return doDefaultComparison(aName, bName);
 }
