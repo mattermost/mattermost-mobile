@@ -163,7 +163,7 @@ export function compareEmojis(emojiA, emojiB, searchedName) {
     } else if (bPrefix) {
         return 1;
     }
-    
+
     // Have the emojis that contain the search appear next
     const aIncludes = aName.includes(searchedName);
     const bIncludes = bName.includes(searchedName);
