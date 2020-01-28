@@ -367,12 +367,12 @@ export default class Login extends PureComponent {
                 <Button
                     disabled={this.isLoginButtonDisabled()}
                     onPress={this.preSignIn}
-                    containerStyle={getButtonStyle(this.isLoginButtonDisabled(), colorStyles)}
+                    containerStyle={[getButtonStyle(this.isLoginButtonDisabled(), colorStyles), additionalStyle]}
                 >
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Sign in'
-                        style={getButtonTextStyle(this.isLoginButtonDisabled(), colorStyles)}
+                        style={[getButtonTextStyle(this.isLoginButtonDisabled(), colorStyles), additionalTextStyle]}
                     />
                 </Button>
             );

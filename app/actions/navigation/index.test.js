@@ -12,7 +12,6 @@ import EphemeralStore from 'app/store/ephemeral_store';
 import * as NavigationActions from 'app/actions/navigation';
 
 jest.unmock('app/actions/navigation');
-
 jest.mock('app/store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
 }));

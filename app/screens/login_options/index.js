@@ -12,7 +12,6 @@ import LoginOptions from './login_options';
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
-
     return {
         config,
         license,
