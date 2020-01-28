@@ -100,6 +100,7 @@ export default class FileUploadButton extends PureComponent {
             const hasPermissionToStorage = await Permissions.check(storagePermission);
 
             switch (hasPermissionToStorage) {
+            case Permissions.RESULTS.DENIED:
             case Permissions.RESULTS.UNAVAILABLE:
                 permissionRequest = await Permissions.request(storagePermission);
                 if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
