@@ -226,7 +226,8 @@ class GlobalEventHandler {
     onServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = this.store;
         const state = getState();
-        const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
+        const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
+        const version = match && match[0];
         const locale = getCurrentLocale(state);
         const translations = getTranslations(locale);
 
