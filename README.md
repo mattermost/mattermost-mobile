@@ -20,7 +20,7 @@ To help with testing app updates before they're released, you can:
 
 1. Sign up to be a beta tester
    - [Android](https://play.google.com/apps/testing/com.mattermost.rnbeta)
-   - [iOS](https://testflight.apple.com/join/Q7Rx7K9P)
+   - [iOS](https://testflight.apple.com/join/Q7Rx7K9P) - Open this link from your phone
 2. Install the `Mattermost Beta` app. New updates in the Beta app are released periodically. You will receive a notification when the new updates are available.
 3. File any bugs you find by filing a [GitHub issue](https://github.com/mattermost/mattermost-mobile/issues) with:
    - Device information
