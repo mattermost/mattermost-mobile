@@ -13,7 +13,7 @@
 #### UI/UX Improvements to the Post Draft Area
 
 #### Deep Linking
- - Links to posts in email notifications now launch to a browser landing page with option to open in the Desktop or Mobile app.
+ - Links to posts in email notifications now launch to a browser landing page with option to open in the Mobile app.
 
 ### Improvements
  - Added a post menu item to mark posts as unread.
