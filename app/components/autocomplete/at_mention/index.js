@@ -17,11 +17,21 @@ import {
 } from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
+import {Permissions} from 'mattermost-redux/constants';
+
 import AtMention from './at_mention';
 
 function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
+    const useChannelMentions = haveIChannelPermission(
+        state,
+        {
+            channel: currentChannelId,
+            permission: Permissions.USE_CHANNEL_MENTIONS,
+        },
+    );
 
     const value = ownProps.value.substring(0, cursorPosition);
     const matchTerm = getMatchTermForAtMention(value, isSearch);
@@ -47,6 +57,7 @@ function mapStateToProps(state, ownProps) {
         requestStatus: state.requests.users.autocompleteUsers.status,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        useChannelMentions,
     };
 }
 
