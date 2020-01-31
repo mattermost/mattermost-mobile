@@ -20,7 +20,7 @@
  - Removed markdown rendering from Channel Purpose in channel info screen.
  - Improved channel info transition so that it opens up as a modal rather than as a drawer from the right.
  - Clicking on the time in the iOS status bar now scrolls up the center channel.
- - Improved the left-hand sidebar on iOS so that it slides into place as the sidebar is opened while becoming visible as content over it is moved.
+ - Improved the sliding behaviour of the left-hand sidebar on iOS.
  - Added more responsiveness to markdown tables.
  - User's own username with a suffix 'you' is now shown in the username autocomplete.
  - Improved sorting of emojis in the emoji picker so that thumbsup is sorted first, then thumbsdown, and then custom emoji.
