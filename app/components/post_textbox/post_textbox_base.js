@@ -28,9 +28,9 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
-import FileUploadButton from './components/fileUploadButton';
-import ImageUploadButton from './components/imageUploadButton';
-import CameraButton from './components/cameraButton';
+import FileUploadButton from './components/file_upload_button';
+import ImageUploadButton from './components/image_upload_button';
+import CameraButton from './components/camera_button';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 import PasteableTextInput from 'app/components/pasteable_text_input';

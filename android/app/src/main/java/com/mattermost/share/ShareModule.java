@@ -39,6 +39,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
     private final OkHttpClient client = new OkHttpClient();
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private final MainApplication mApplication;
+    public static final String CACHE_DIR_NAME = "mmShare";
 
     public ShareModule(MainApplication application, ReactApplicationContext reactContext) {
         super(reactContext);
@@ -67,6 +68,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
     @Override
     public Map<String, Object> getConstants() {
         HashMap<String, Object> constants = new HashMap<>(1);
+        constants.put("cacheDirName", CACHE_DIR_NAME);
         constants.put("isOpened", mApplication.sharedExtensionIsOpened);
         mApplication.sharedExtensionIsOpened = false;
         return constants;
@@ -133,7 +135,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         Activity currentActivity = getCurrentActivity();
 
         if (currentActivity != null) {
-            this.tempFolder = new File(currentActivity.getCacheDir(), "mmShare");
+            this.tempFolder = new File(currentActivity.getCacheDir(), CACHE_DIR_NAME);
             Intent intent = currentActivity.getIntent();
             action = intent.getAction();
             type = intent.getType();

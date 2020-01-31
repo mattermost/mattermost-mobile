@@ -50,6 +50,7 @@ jest.doMock('react-native', () => {
         },
         MattermostShare: {
             close: jest.fn(),
+            cacheDirName: 'mmShare',
         },
         PlatformConstants: {
             forceTouchAvailable: false,
