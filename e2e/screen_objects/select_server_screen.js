@@ -6,7 +6,7 @@ import AppScreen from './app_screen';
 const SELECTORS = {
     SELECT_SERVER_SCREEN: '~select server screen',
     URL_INPUT: '~url input',
-    CONNECT_BUTTON: '~connect',
+    CONNECT_BUTTON: '~connect button',
 };
 
 class SelectServerScreen extends AppScreen {

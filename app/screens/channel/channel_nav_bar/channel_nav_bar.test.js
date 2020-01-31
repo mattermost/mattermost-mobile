@@ -13,6 +13,7 @@ import ChannelNavBar from './channel_nav_bar';
 jest.mock('react-intl');
 
 describe('ChannelNavBar', () => {
+    const formatMessage = jest.fn();
     const baseProps = {
         isLandscape: false,
         openChannelDrawer: jest.fn(),
@@ -24,6 +25,7 @@ describe('ChannelNavBar', () => {
     test('should match, full snapshot', () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -32,6 +34,7 @@ describe('ChannelNavBar', () => {
     test('should not set the permanentSidebar state if not Tablet', () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
         );
 
         wrapper.instance().handlePermanentSidebar();
@@ -41,6 +44,7 @@ describe('ChannelNavBar', () => {
     test('should set the permanentSidebar state if Tablet', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
         );
 
         DeviceTypes.IS_TABLET = true;

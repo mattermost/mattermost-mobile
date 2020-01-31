@@ -2,7 +2,6 @@
 
 exports[`AttachmentButton should match snapshot 1`] = `
 <TouchableWithFeedbackIOS
-  accessibilityLabel="attachment button"
   onPress={[Function]}
   style={
     Object {
@@ -12,7 +11,6 @@ exports[`AttachmentButton should match snapshot 1`] = `
       "width": 45,
     }
   }
-  testID="attachment button"
   type="opacity"
 >
   <Icon

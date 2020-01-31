@@ -9,7 +9,10 @@ import Preferences from 'mattermost-redux/constants/preferences';
 import SendButton from 'app/components/send_button';
 import {changeOpacity} from 'app/utils/theme';
 
+jest.mock('react-intl');
+
 describe('SendButton', () => {
+    const formatMessage = jest.fn();
     const baseProps = {
         theme: Preferences.THEMES.default,
         handleSendMessage: jest.fn(),
@@ -22,6 +25,7 @@ describe('SendButton', () => {
                 {...baseProps}
                 {...props}
             />,
+            {context: {intl: {formatMessage}}},
         );
     }
 

@@ -8,13 +8,8 @@
 // *********************************************************************
 
 import PostTextbox from '../../screen_objects/components/post_textbox';
-import {login} from '../../utils/ui_commands';
 
 describe('Messaging', () => {
-    before(() => {
-        login('user-1');
-    });
-
     it('should be able to post a message', () => {
         browser.pause(2000);
 

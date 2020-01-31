@@ -296,6 +296,7 @@ export default class Login extends PureComponent {
     }
 
     render() {
+        const {formatMessage} = this.context.intl;
         const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
 
         let proceed;
@@ -322,7 +323,7 @@ export default class Login extends PureComponent {
 
             proceed = (
                 <Button
-                    {...accessibilityProps('sign in')}
+                    {...accessibilityProps(formatMessage(accessibilityLabel.signInButton))}
                     onPress={this.preSignIn}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
@@ -339,7 +340,7 @@ export default class Login extends PureComponent {
         if (this.props.config.EnableSignInWithEmail === 'true' || this.props.config.EnableSignInWithUsername === 'true') {
             forgotPassword = (
                 <Button
-                    {...accessibilityProps('forgot password')}
+                    {...accessibilityProps(formatMessage(accessibilityLabel.forgotPasswordButton))}
                     onPress={this.forgotPassword}
                     containerStyle={[style.forgotPasswordBtn]}
                 >
@@ -354,7 +355,7 @@ export default class Login extends PureComponent {
 
         return (
             <View
-                {...accessibilityProps('login screen')}
+                {...accessibilityProps(formatMessage(accessibilityLabel.loginScreen))}
                 style={style.container}
             >
                 <StatusBar/>
@@ -370,7 +371,7 @@ export default class Login extends PureComponent {
                         enableOnAndroid={true}
                     >
                         <Image
-                            {...accessibilityProps('logo image')}
+                            {...accessibilityProps(formatMessage(accessibilityLabel.logoImage))}
                             source={require('assets/images/logo.png')}
                         />
                         <View>
@@ -385,7 +386,7 @@ export default class Login extends PureComponent {
                         </View>
                         <ErrorText error={this.getLoginErrorMessage()}/>
                         <TextInput
-                            {...accessibilityProps('email or username')}
+                            {...accessibilityProps(formatMessage(accessibilityLabel.emailOrUsernameInput))}
                             ref={this.loginRef}
                             value={this.props.loginId}
                             onChangeText={this.props.actions.handleLoginIdChanged}
@@ -402,12 +403,12 @@ export default class Login extends PureComponent {
                             disableFullscreenUI={true}
                         />
                         <TextInput
-                            {...accessibilityProps('password')}
+                            {...accessibilityProps(formatMessage(accessibilityLabel.passwordInput))}
                             ref={this.passwordRef}
                             value={this.props.password}
                             onChangeText={this.props.actions.handlePasswordChanged}
                             style={GlobalStyles.inputBox}
-                            placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                            placeholder={formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             placeholderTextColor={changeOpacity('#000', 0.5)}
                             secureTextEntry={true}
                             autoCorrect={false}
@@ -446,3 +447,30 @@ const style = StyleSheet.create({
         color: '#2389D7',
     },
 });
+
+const accessibilityLabel = {
+    loginScreen: {
+        id: t('accessibility.login'),
+        defaultMessage: 'login screen',
+    },
+    emailOrUsernameInput: {
+        id: t('accessibility.login.email_or_username input'),
+        defaultMessage: 'email or username input',
+    },
+    forgotPasswordButton: {
+        id: t('accessibility.login.forgot_password_button'),
+        defaultMessage: 'forgot password button',
+    },
+    logoImage: {
+        id: t('accessibility.login.logo_image'),
+        defaultMessage: 'logo image',
+    },
+    passwordInput: {
+        id: t('accessibility.login.password_input'),
+        defaultMessage: 'password input',
+    },
+    signInButton: {
+        id: t('accessibility.login.sign_in_button'),
+        defaultMessage: 'sign in button',
+    },
+};

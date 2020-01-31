@@ -10,7 +10,10 @@ import {WebsocketEvents} from 'mattermost-redux/constants';
 
 import ChannelPostList from './channel_post_list';
 
+jest.mock('react-intl');
+
 describe('ChannelPostList', () => {
+    const formatMessage = jest.fn();
     const baseProps = {
         actions: {
             loadPostsIfNecessaryWithRetry: jest.fn(),
@@ -30,6 +33,7 @@ describe('ChannelPostList', () => {
     test('should call increasePostVisibilityByOne', () => {
         shallow(
             <ChannelPostList {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
         );
 
         expect(baseProps.actions.increasePostVisibilityByOne).toHaveBeenCalledTimes(0);

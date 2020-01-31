@@ -45,7 +45,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       }
     >
       <ForwardRef(WrappedPasteableTextInput)
-        accessibilityLabel="post textbox input"
+        accessibilityLabel="text input"
         blurOnSubmit={false}
         disableFullscreenUI={true}
         editable={true}
@@ -70,7 +70,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
             "paddingTop": 12,
           }
         }
-        testID="post textbox input"
+        testID="text input"
         underlineColorAndroid="transparent"
         value=""
       />

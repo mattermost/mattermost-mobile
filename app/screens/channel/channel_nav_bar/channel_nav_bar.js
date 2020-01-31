@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Dimensions, Platform, View} from 'react-native';
+import {intlShape} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -11,6 +12,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {accessibilityProps} from 'app/utils/accessibility';
+import {t} from 'app/utils/i18n';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ChannelDrawerButton from './channel_drawer_button';
@@ -34,6 +36,10 @@ export default class ChannelNavBar extends PureComponent {
         openSettingsDrawer: PropTypes.func.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape,
     };
 
     state = {
@@ -107,7 +113,7 @@ export default class ChannelNavBar extends PureComponent {
 
         return (
             <View
-                {...accessibilityProps('channel nav bar')}
+                {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.channelNavBar))}
                 style={[style.header, padding(isLandscape), {height}]}
             >
                 <ChannelDrawerButton
@@ -138,3 +144,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const accessibilityLabel = {
+    channelNavBar: {
+        id: t('accessibility.channel_nav_bar'),
+        defaultMessage: 'channel nav bar',
+    },
+};

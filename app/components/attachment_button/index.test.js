@@ -28,7 +28,10 @@ describe('AttachmentButton', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<AttachmentButton {...baseProps}/>);
+        const wrapper = shallow(
+            <AttachmentButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -40,7 +43,10 @@ describe('AttachmentButton', () => {
             onShowUnsupportedMimeTypeWarning: jest.fn(),
         };
 
-        const wrapper = shallow(<AttachmentButton {...props}/>);
+        const wrapper = shallow(
+            <AttachmentButton {...props}/>,
+            {context: {intl: {formatMessage}}},
+        );
 
         const file = {
             type: 'image/gif',
@@ -59,7 +65,10 @@ describe('AttachmentButton', () => {
             onShowUnsupportedMimeTypeWarning: jest.fn(),
         };
 
-        const wrapper = shallow(<AttachmentButton {...props}/>);
+        const wrapper = shallow(
+            <AttachmentButton {...props}/>,
+            {context: {intl: {formatMessage}}},
+        );
 
         const file = {
             fileSize: 10,

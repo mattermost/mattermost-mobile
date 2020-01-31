@@ -7,7 +7,7 @@ const SELECTORS = {
     CONTAINER: '~post textbox',
     ATTACHMENT_BUTTON: '~attachment button',
     SEND_BUTTON: '~send button',
-    TEXT_INPUT: '~post textbox input',
+    TEXT_INPUT: '~text input',
 };
 
 class PostTextbox extends AppScreen {

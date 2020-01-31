@@ -2,7 +2,6 @@
 
 exports[`ChannelNavBar should match, full snapshot 1`] = `
 <View
-  accessibilityLabel="channel nav bar"
   style={
     Array [
       Object {
@@ -18,7 +17,6 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
       },
     ]
   }
-  testID="channel nav bar"
 >
   <Connect(ChannelDrawerButton)
     openDrawer={[MockFunction]}

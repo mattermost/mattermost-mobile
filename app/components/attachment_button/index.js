@@ -483,6 +483,7 @@ export default class AttachmentButton extends PureComponent {
 
     render() {
         const {theme, wrapper, children} = this.props;
+        const {formatMessage} = this.context.intl;
 
         if (wrapper) {
             return (
@@ -497,7 +498,7 @@ export default class AttachmentButton extends PureComponent {
 
         return (
             <TouchableWithFeedback
-                {...accessibilityProps('attachment button')}
+                {...accessibilityProps(formatMessage(accessibilityLabel.attachmentButton))}
                 onPress={this.showFileAttachmentOptions}
                 style={style.buttonContainer}
                 type={'opacity'}
@@ -530,3 +531,10 @@ const style = StyleSheet.create({
         justifyContent: 'center',
     },
 });
+
+const accessibilityLabel = {
+    attachmentButton: {
+        id: t('accessibility.attachment_button'),
+        defaultMessage: 'attachment button',
+    },
+};

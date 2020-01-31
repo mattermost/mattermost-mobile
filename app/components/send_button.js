@@ -1,61 +1,70 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo} from 'react';
+import React, {PureComponent} from 'react';
 import {View} from 'react-native';
 import PropTypes from 'prop-types';
+import {intlShape} from 'react-intl';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {accessibilityProps} from 'app/utils/accessibility';
+import {t} from 'app/utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 let PaperPlane = null;
 
-function SendButton(props) {
-    const {theme} = props;
-    const style = getStyleSheet(theme);
-
-    if (!PaperPlane) {
-        PaperPlane = require('app/components/paper_plane').default;
+export default class SendButton extends PureComponent {
+    static propTypes = {
+        handleSendMessage: PropTypes.func.isRequired,
+        disabled: PropTypes.bool.isRequired,
+        theme: PropTypes.object.isRequired,
     }
 
-    if (props.disabled) {
+    static contextTypes = {
+        intl: intlShape,
+    };
+
+    render() {
+        const {formatMessage} = this.context.intl;
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        if (!PaperPlane) {
+            PaperPlane = require('app/components/paper_plane').default;
+        }
+
+        if (this.props.disabled) {
+            return (
+                <View style={style.sendButtonContainer}>
+                    <View style={[style.sendButton, style.disableButton]}>
+                        <PaperPlane
+                            height={16}
+                            width={19}
+                            color={changeOpacity(theme.buttonColor, 0.5)}
+                        />
+                    </View>
+                </View>
+            );
+        }
+
         return (
-            <View style={style.sendButtonContainer}>
-                <View style={[style.sendButton, style.disableButton]}>
+            <TouchableWithFeedback
+                {...accessibilityProps(formatMessage(accessibilityLabel.sendButton))}
+                onPress={this.props.handleSendMessage}
+                style={style.sendButtonContainer}
+                type={'opacity'}
+            >
+                <View style={style.sendButton}>
                     <PaperPlane
                         height={16}
                         width={19}
-                        color={changeOpacity(theme.buttonColor, 0.5)}
+                        color={theme.buttonColor}
                     />
                 </View>
-            </View>
+            </TouchableWithFeedback>
         );
     }
-
-    return (
-        <TouchableWithFeedback
-            {...accessibilityProps('send button')}
-            onPress={props.handleSendMessage}
-            style={style.sendButtonContainer}
-            type={'opacity'}
-        >
-            <View style={style.sendButton}>
-                <PaperPlane
-                    height={16}
-                    width={19}
-                    color={theme.buttonColor}
-                />
-            </View>
-        </TouchableWithFeedback>
-    );
 }
-
-SendButton.propTypes = {
-    handleSendMessage: PropTypes.func.isRequired,
-    disabled: PropTypes.bool.isRequired,
-    theme: PropTypes.object.isRequired,
-};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -77,4 +86,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default memo(SendButton);
+const accessibilityLabel = {
+    sendButton: {
+        id: t('accessibility.send_button'),
+        defaultMessage: 'send button',
+    },
+};

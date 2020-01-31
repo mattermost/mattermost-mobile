@@ -843,7 +843,7 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     renderTextBox = () => {
-        const {intl} = this.context;
+        const {formatMessage} = this.context.intl;
         const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
         const style = getStyleSheet(theme);
 
@@ -863,7 +863,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         return (
             <View
-                {...accessibilityProps('post textbox')}
+                {...accessibilityProps(formatMessage(accessibilityLabel.postTextbox))}
                 style={[style.inputWrapper, padding(isLandscape)]}
                 onLayout={this.handleLayout}
             >
@@ -879,12 +879,12 @@ export default class PostTextBoxBase extends PureComponent {
                     disableScrollViewPanResponder={true}
                 >
                     <PasteableTextInput
-                        {...accessibilityProps('post textbox input')}
+                        {...accessibilityProps(formatMessage(accessibilityLabel.textInput))}
                         ref={this.input}
                         value={textValue}
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handlePostDraftSelectionChanged}
-                        placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
+                        placeholder={formatMessage(placeholder, {channelDisplayName})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}
                         blurOnSubmit={false}
@@ -1029,3 +1029,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const accessibilityLabel = {
+    postTextbox: {
+        id: t('accessibility.post_textbox'),
+        defaultMessage: 'post textbox',
+    },
+    textInput: {
+        id: t('accessibility.post_textbox.text_input'),
+        defaultMessage: 'text input',
+    },
+};

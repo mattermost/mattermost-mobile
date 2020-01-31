@@ -8,6 +8,7 @@ import {
     Platform,
     View,
 } from 'react-native';
+import {intlShape} from 'react-intl';
 
 import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -18,6 +19,7 @@ import PostList from 'app/components/post_list';
 import RetryBarIndicator from 'app/components/retry_bar_indicator';
 import {ViewTypes} from 'app/constants';
 import {accessibilityProps} from 'app/utils/accessibility';
+import {t} from 'app/utils/i18n';
 import tracker from 'app/utils/time_tracker';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import telemetry from 'app/telemetry';
@@ -48,6 +50,10 @@ export default class ChannelPostList extends PureComponent {
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         updateNativeScrollView: PropTypes.func,
+    };
+
+    static contextTypes = {
+        intl: intlShape,
     };
 
     static defaultProps = {
@@ -231,7 +237,7 @@ export default class ChannelPostList extends PureComponent {
 
         return (
             <View
-                {...accessibilityProps('channel post list')}
+                {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.channelPostListScreen))}
                 style={style.container}
             >
                 <View style={style.separator}/>
@@ -252,3 +258,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         height: 1,
     },
 }));
+
+const accessibilityLabel = {
+    channelPostListScreen: {
+        id: t('accessibility.channel_post_list'),
+        defaultMessage: 'channel post list screen',
+    },
+};

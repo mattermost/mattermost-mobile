@@ -417,7 +417,7 @@ export default class SelectServer extends PureComponent {
 
         return (
             <SafeAreaView
-                {...accessibilityProps('select server screen')}
+                {...accessibilityProps(formatMessage(accessibilityLabel.selectServerScreen))}
                 style={style.container}
             >
                 <KeyboardAvoidingView
@@ -433,7 +433,7 @@ export default class SelectServer extends PureComponent {
                     >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                             <Image
-                                {...accessibilityProps('logo image')}
+                                {...accessibilityProps(formatMessage(accessibilityLabel.logoImage))}
                                 source={require('assets/images/logo.png')}
                             />
 
@@ -445,7 +445,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
-                                {...accessibilityProps('url input')}
+                                {...accessibilityProps(formatMessage(accessibilityLabel.urlInput))}
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!inputDisabled}
@@ -465,7 +465,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
-                                {...accessibilityProps('connect')}
+                                {...accessibilityProps(formatMessage(accessibilityLabel.connectButton))}
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >
@@ -497,3 +497,22 @@ const style = StyleSheet.create({
         marginRight: 5,
     },
 });
+
+const accessibilityLabel = {
+    selectServerScreen: {
+        id: t('accessibility.select_server'),
+        defaultMessage: 'select server screen',
+    },
+    connectButton: {
+        id: t('accessibility.select_server.connect_button'),
+        defaultMessage: 'connect button',
+    },
+    logoImage: {
+        id: t('accessibility.select_server.logo_image'),
+        defaultMessage: 'logo image',
+    },
+    urlInput: {
+        id: t('accessibility.select_server.url_input'),
+        defaultMessage: 'url input',
+    },
+};

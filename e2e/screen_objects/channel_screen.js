@@ -5,7 +5,7 @@ import AppScreen from './app_screen';
 
 const SELECTORS = {
     CHANNEL_NAV_BAR: '~channel nav bar',
-    CHANNEL_POST_LIST: '~channel post list',
+    CHANNEL_POST_LIST: '~channel post list screen',
     POST_TEXTBOX: '~post textbox',
 };
 

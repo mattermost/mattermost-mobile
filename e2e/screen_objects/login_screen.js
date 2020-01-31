@@ -5,10 +5,10 @@ import AppScreen from './app_screen';
 
 const SELECTORS = {
     LOGIN_SCREEN: '~login screen',
-    EMAIL_OR_USERNAME_INPUT: '~email or username',
-    PASSWORD_INPUT: '~password',
-    SIGN_IN_BUTTON: '~sign in',
-    FORGOT_PASSWORD_BUTTON: '~forgot password',
+    EMAIL_OR_USERNAME_INPUT: '~email or username input',
+    PASSWORD_INPUT: '~password input',
+    SIGN_IN_BUTTON: '~sign in button',
+    FORGOT_PASSWORD_BUTTON: '~forgot password button',
 };
 
 class LoginScreen extends AppScreen {

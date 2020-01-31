@@ -18,6 +18,7 @@ import StatusBar from 'app/components/status_bar';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {GlobalStyles} from 'app/styles';
 import {accessibilityProps} from 'app/utils/accessibility';
+import {t} from 'app/utils/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
 import {ViewTypes} from 'app/constants';
 import {goToScreen} from 'app/actions/navigation';
@@ -83,7 +84,7 @@ export default class LoginOptions extends PureComponent {
 
             return (
                 <Button
-                    {...accessibilityProps('email login option button')}
+                    {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.emailButton))}
                     key='email'
                     onPress={this.goToLogin}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
@@ -155,7 +156,7 @@ export default class LoginOptions extends PureComponent {
         if (!forceHideFromLocal && config.EnableSignUpWithGitLab === 'true') {
             return (
                 <Button
-                    {...accessibilityProps('one login option button')}
+                    {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.gitlabButton))}
                     key='gitlab'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
@@ -251,16 +252,18 @@ export default class LoginOptions extends PureComponent {
     };
 
     render() {
+        const {formatMessage} = this.context.intl;
+
         return (
             <ScrollView
-                {...accessibilityProps('login options screen')}
+                {...accessibilityProps(formatMessage(accessibilityLabel.loginOptionsScreen))}
                 style={style.container}
                 contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
                 ref={this.scrollRef}
             >
                 <StatusBar/>
                 <Image
-                    {...accessibilityProps('logo image')}
+                    {...accessibilityProps(formatMessage(accessibilityLabel.logoImage))}
                     source={logo}
                 />
                 <Text style={GlobalStyles.header}>
@@ -299,3 +302,22 @@ const style = StyleSheet.create({
         flex: 1,
     },
 });
+
+const accessibilityLabel = {
+    loginOptionsScreen: {
+        id: t('accessibility.login_options'),
+        defaultMessage: 'login options screen',
+    },
+    emailButton: {
+        id: t('accessibility.login_options.email_button'),
+        defaultMessage: 'email login option button',
+    },
+    gitlabButton: {
+        id: t('accessibility.login_options.gitlab_button'),
+        defaultMessage: 'gitlab login option button',
+    },
+    logoImage: {
+        id: t('accessibility.login_options.logo_image'),
+        defaultMessage: 'logo image',
+    },
+};

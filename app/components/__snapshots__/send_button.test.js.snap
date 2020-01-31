@@ -37,7 +37,6 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
 
 exports[`SendButton should match snapshot 1`] = `
 <TouchableWithFeedbackIOS
-  accessibilityLabel="send button"
   onPress={[MockFunction]}
   style={
     Object {
@@ -45,7 +44,6 @@ exports[`SendButton should match snapshot 1`] = `
       "paddingRight": 8,
     }
   }
-  testID="send button"
   type="opacity"
 >
   <View
@@ -71,7 +69,6 @@ exports[`SendButton should match snapshot 1`] = `
 
 exports[`SendButton should render theme backgroundColor 1`] = `
 <TouchableWithFeedbackIOS
-  accessibilityLabel="send button"
   onPress={[MockFunction]}
   style={
     Object {
@@ -79,7 +76,6 @@ exports[`SendButton should render theme backgroundColor 1`] = `
       "paddingRight": 8,
     }
   }
-  testID="send button"
   type="opacity"
 >
   <View

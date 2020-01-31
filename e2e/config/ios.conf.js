@@ -22,8 +22,7 @@ const {
 // Specs
 // ============
 config.specs = [
-    './test_ios/login/**/*_spec.js',
-    './test_ios/messaging/**/*_spec.js',
+    './test_ios/**/*_spec.js',
 ];
 
 // ============

@@ -7,11 +7,11 @@
 // - Use accessibility ID when selecting an element. Create one if none.
 // *********************************************************************
 
-import SelectServerScreen from '../screen_objects/select_server_screen';
-import LoginScreen from '../screen_objects/login_screen';
-import ChannelScreen from '../screen_objects/channel_screen';
+import SelectServerScreen from '../../screen_objects/select_server_screen';
+import LoginScreen from '../../screen_objects/login_screen';
+import ChannelScreen from '../../screen_objects/channel_screen';
 
-import users from '../fixtures/users.json';
+import users from '../../fixtures/users.json';
 
 describe('Login', () => {
     it('should be able to email login successfully', () => {
