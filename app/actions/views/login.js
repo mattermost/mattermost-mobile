@@ -17,6 +17,7 @@ import {setAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
 import {getDeviceTimezoneAsync} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
+import {loadConfigAndLicense} from 'app/actions/views/root';
 
 export function handleLoginIdChanged(loginId) {
     return async (dispatch, getState) => {
@@ -38,6 +39,8 @@ export function handlePasswordChanged(password) {
 
 export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {
+        await dispatch(loadConfigAndLicense());
+
         const state = getState();
         const config = getConfig(state);
         const license = getLicense(state);

@@ -55,7 +55,7 @@ export default class MessageAttachments extends PureComponent {
                     postId={postId}
                     theme={theme}
                     textStyles={textStyles}
-                />
+                />,
             );
         });
 

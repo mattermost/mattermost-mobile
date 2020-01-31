@@ -18,6 +18,7 @@ if (Platform.OS === 'android') {
 if (__DEV__) {
     YellowBox.ignoreWarnings([
         'Warning: componentWillReceiveProps',
+        '`-[RCTRootView cancelTouches]`',
 
         // Hide warnings caused by React Native (https://github.com/facebook/react-native/issues/20841)
         'Require cycle: node_modules/react-native/Libraries/Network/fetch.js',
@@ -71,7 +72,7 @@ if (Platform.OS === 'android') {
 // defined in packager/modulePaths.js so they are included in the main bundle.
 
 /*
-/!* eslint-disable no-console *!/
+//!* eslint-disable no-console *!/
 if (__DEV__) {
     const modules = require.getModules();
     const moduleIds = Object.keys(modules);

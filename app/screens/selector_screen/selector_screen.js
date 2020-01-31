@@ -121,7 +121,7 @@ export default class SelectorScreen extends PureComponent {
                 actions.getChannels(
                     currentTeamId,
                     this.page += 1,
-                    General.CHANNELS_CHUNK_SIZE
+                    General.CHANNELS_CHUNK_SIZE,
                 ).then(this.loadedChannels);
             });
         }
@@ -152,7 +152,7 @@ export default class SelectorScreen extends PureComponent {
 
                 actions.getProfiles(
                     this.page + 1,
-                    General.PROFILE_CHUNK_SIZE
+                    General.PROFILE_CHUNK_SIZE,
                 ).then(this.loadedProfiles);
             });
         }

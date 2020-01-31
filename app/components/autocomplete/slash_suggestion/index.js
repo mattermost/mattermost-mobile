@@ -23,13 +23,12 @@ const mobileCommandsSelector = createSelector(
     getAutocompleteCommandsList,
     (commands) => {
         return commands.filter((command) => !COMMANDS_TO_HIDE_ON_MOBILE.includes(command.trigger));
-    }
+    },
 );
 
 function mapStateToProps(state) {
     return {
         commands: mobileCommandsSelector(state),
-        commandsRequest: state.requests.integrations.getAutocompleteCommands,
         currentTeamId: getCurrentTeamId(state),
         theme: getTheme(state),
         isLandscape: isLandscape(state),

@@ -29,7 +29,7 @@ describe('CustomList', () => {
 
     test('should match snapshot with FlatList', () => {
         const wrapper = shallow(
-            <CustomList {...baseProps}/>
+            <CustomList {...baseProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('FlatList')).toHaveLength(1);
@@ -42,7 +42,7 @@ describe('CustomList', () => {
         };
 
         const wrapper = shallow(
-            <CustomList {...props}/>
+            <CustomList {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find('SectionList')).toHaveLength(1);
@@ -50,7 +50,7 @@ describe('CustomList', () => {
 
     test('should match snapshot, renderSectionHeader', () => {
         const wrapper = shallow(
-            <CustomList {...baseProps}/>
+            <CustomList {...baseProps}/>,
         );
         const section = {
             id: 'section_id',
@@ -61,7 +61,7 @@ describe('CustomList', () => {
     test('should call props.renderItem on renderItem', () => {
         const props = {...baseProps};
         const wrapper = shallow(
-            <CustomList {...props}/>
+            <CustomList {...props}/>,
         );
         wrapper.instance().renderItem({item: {id: 'item_id', selected: true}, index: 0, section: null});
         expect(props.renderItem).toHaveBeenCalledTimes(1);
@@ -69,7 +69,7 @@ describe('CustomList', () => {
 
     test('should match snapshot, renderSeparator', () => {
         const wrapper = shallow(
-            <CustomList {...baseProps}/>
+            <CustomList {...baseProps}/>,
         );
         expect(wrapper.instance().renderSeparator()).toMatchSnapshot();
     });
@@ -77,7 +77,7 @@ describe('CustomList', () => {
     test('should match snapshot, renderFooter', () => {
         const props = {...baseProps};
         const wrapper = shallow(
-            <CustomList {...props}/>
+            <CustomList {...props}/>,
         );
 
         // should return null

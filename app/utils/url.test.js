@@ -107,7 +107,7 @@ describe('UrlUtils', () => {
     describe('matchDeepLink', () => {
         const SITE_URL = 'http://localhost:8065';
         const SERVER_URL = 'http://localhost:8065';
-        const DEEPLINK_URL_ROOT = 'mattermost-beta://localhost:8065';
+        const DEEPLINK_URL_ROOT = 'mattermost://localhost:8065';
 
         const tests = [
             {name: 'should return null if all inputs are empty', input: {url: '', serverURL: '', siteURL: ''}, expected: null},
@@ -116,6 +116,7 @@ describe('UrlUtils', () => {
             {name: 'should return null if any of the input is null', input: {url: null, serverURL: '', siteURL: ''}, expected: null},
             {name: 'should return null for not supported link', input: {url: 'https://otherserver.com', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: null},
             {name: 'should return null despite url subset match', input: {url: 'http://myserver.com', serverURL: 'http://myserver.co'}, expected: null},
+            {name: 'should match despite no server URL in input link', input: {url: '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {postId: 'qe93kkfd7783iqwuwfcwcxbsgy', teamName: 'ad-1', type: 'permalink'}},
             {name: 'should match channel link', input: {url: SITE_URL + '/ad-1/channels/town-square', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {channelName: 'town-square', teamName: 'ad-1', type: 'channel'}},
             {name: 'should match permalink', input: {url: SITE_URL + '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {postId: 'qe93kkfd7783iqwuwfcwcxbsgy', teamName: 'ad-1', type: 'permalink'}},
             {name: 'should match channel link with deeplink prefix', input: {url: DEEPLINK_URL_ROOT + '/ad-1/channels/town-square', serverURL: SERVER_URL, siteURL: SITE_URL}, expected: {channelName: 'town-square', teamName: 'ad-1', type: 'channel'}},

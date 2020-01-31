@@ -259,7 +259,7 @@ export default class MoreChannels extends PureComponent {
                 },
                 {
                     displayName: channel ? channel.display_name : '',
-                }
+                },
             );
             this.setHeaderButtons(true);
             this.setState({adding: false});

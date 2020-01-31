@@ -17,7 +17,7 @@ describe('AtMention', () => {
 
     test('should match snapshot, no highlight', () => {
         const wrapper = shallow(
-            <AtMention {...baseProps}/>
+            <AtMention {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -25,7 +25,7 @@ describe('AtMention', () => {
 
     test('should match snapshot, with highlight', () => {
         const wrapper = shallow(
-            <AtMention {...baseProps}/>
+            <AtMention {...baseProps}/>,
         );
 
         wrapper.setState({user: {username: 'John.Smith'}});
@@ -34,7 +34,7 @@ describe('AtMention', () => {
 
     test('should match snapshot, without highlight', () => {
         const wrapper = shallow(
-            <AtMention {...baseProps}/>
+            <AtMention {...baseProps}/>,
         );
 
         wrapper.setState({user: {username: 'Victor.Welch'}});

@@ -54,12 +54,12 @@ const setTransforms = [
 export default function configureAppStore(initialState) {
     const viewsBlackListFilter = createBlacklistFilter(
         'views',
-        ['extension', 'login', 'root']
+        ['extension', 'login', 'root'],
     );
 
     const typingBlackListFilter = createBlacklistFilter(
         'entities',
-        ['typing']
+        ['typing'],
     );
 
     const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: true, postVisibility: true, retryFailed: true, loadMorePostsVisible: true};
@@ -79,7 +79,7 @@ export default function configureAppStore(initialState) {
             };
         },
         null,
-        {whitelist: ['views']} // Only run this filter on the views state (or any other entry that ends up being named views)
+        {whitelist: ['views']}, // Only run this filter on the views state (or any other entry that ends up being named views)
     );
 
     const emojiBlackList = {nonExistentEmoji: true};
@@ -99,7 +99,7 @@ export default function configureAppStore(initialState) {
             };
         },
         null,
-        {whitelist: ['entities']} // Only run this filter on the entities state (or any other entry that ends up being named entities)
+        {whitelist: ['entities']}, // Only run this filter on the entities state (or any other entry that ends up being named entities)
     );
 
     const setTransformer = createTransform(
@@ -130,7 +130,7 @@ export default function configureAppStore(initialState) {
             }
 
             return outboundState;
-        }
+        },
     );
 
     const offlineOptions = {

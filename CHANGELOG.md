@@ -33,6 +33,14 @@
  - Fixed an issue where the keyboard glitched when returning to the main channel view after viewing a code block in the right-hand side.
  - Fixed an issue with default boolean values in interactive dialogs.
 
+## 1.27.1 Release
+- Release Date: January 21, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Bug Fixes
+ - Fixed an issue where all previously auto-closed Direct Message channels were listed in the channel sidebar.
+ - Fixed a regression affecting webapp and mobile apps where some users were experiencing client-side performance issues. This was mainly affecting users with more than 100 channels listed in the channel sidebar and with channels sorted alphabetically.
+
 ## 1.27.0 Release
 - Release Date: January 16, 2020
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

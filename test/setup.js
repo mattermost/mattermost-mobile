@@ -50,6 +50,7 @@ jest.doMock('react-native', () => {
         },
         MattermostShare: {
             close: jest.fn(),
+            cacheDirName: 'mmShare',
         },
         PlatformConstants: {
             forceTouchAvailable: false,
@@ -83,6 +84,7 @@ jest.doMock('react-native', () => {
         RNDocumentPicker: {
             pick: jest.fn(),
         },
+        RNPermissions: {},
     };
 
     return Object.setPrototypeOf({

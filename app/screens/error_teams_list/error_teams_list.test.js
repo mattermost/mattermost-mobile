@@ -29,7 +29,7 @@ describe('ErrorTeamsList', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <ErrorTeamsList {...baseProps}/>
+            <ErrorTeamsList {...baseProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -52,7 +52,7 @@ describe('ErrorTeamsList', () => {
         };
 
         const wrapper = shallow(
-            <ErrorTeamsList {...newProps}/>
+            <ErrorTeamsList {...newProps}/>,
         );
 
         wrapper.find(FailedNetworkAction).props().onRetry();

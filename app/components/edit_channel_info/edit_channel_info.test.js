@@ -37,7 +37,7 @@ describe('EditChannelInfo', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <EditChannelInfo {...baseProps}/>
+            <EditChannelInfo {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -45,7 +45,7 @@ describe('EditChannelInfo', () => {
 
     test('should have called onHeaderChangeText on text change from Autocomplete', () => {
         const wrapper = shallow(
-            <EditChannelInfo {...baseProps}/>
+            <EditChannelInfo {...baseProps}/>,
         );
 
         const instance = wrapper.instance();
@@ -67,7 +67,7 @@ describe('EditChannelInfo', () => {
 
     test('should call scrollHeaderToTop', () => {
         const wrapper = shallow(
-            <EditChannelInfo {...baseProps}/>
+            <EditChannelInfo {...baseProps}/>,
         );
 
         const instance = wrapper.instance();

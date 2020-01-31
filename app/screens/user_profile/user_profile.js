@@ -213,7 +213,7 @@ export default class UserProfile extends PureComponent {
                 },
                 {
                     displayName: userDisplayName,
-                }
+                },
             );
         } else {
             this.close();

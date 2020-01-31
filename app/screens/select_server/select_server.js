@@ -425,7 +425,10 @@ export default class SelectServer extends PureComponent {
                     enabled={Platform.OS === 'ios'}
                 >
                     <StatusBar barStyle={statusStyle}/>
-                    <TouchableWithoutFeedback onPress={this.blur}>
+                    <TouchableWithoutFeedback
+                        onPress={this.blur}
+                        accessible={false}
+                    >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                             <Image
                                 source={require('assets/images/logo.png')}

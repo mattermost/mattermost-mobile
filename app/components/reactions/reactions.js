@@ -162,13 +162,13 @@ export default class Reactions extends PureComponent {
         case 'right':
             reactionElements.push(
                 this.renderReactions(),
-                addMoreReactions
+                addMoreReactions,
             );
             break;
         case 'left':
             reactionElements.push(
                 addMoreReactions,
-                this.renderReactions()
+                this.renderReactions(),
             );
             break;
         }

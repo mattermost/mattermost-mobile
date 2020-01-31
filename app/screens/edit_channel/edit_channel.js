@@ -212,12 +212,12 @@ export default class EditChannel extends PureComponent {
         } else if (displayName.length > ViewTypes.MAX_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
                 messages.display_name_maxLength,
-                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH}
+                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH},
             )};
         } else if (displayName.length < ViewTypes.MIN_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
                 messages.display_name_minLength,
-                {minLength: ViewTypes.MIN_CHANNELNAME_LENGTH}
+                {minLength: ViewTypes.MIN_CHANNELNAME_LENGTH},
             )};
         }
 
@@ -232,7 +232,7 @@ export default class EditChannel extends PureComponent {
         } else if (channelURL.length > ViewTypes.MAX_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
                 messages.name_maxLength,
-                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH}
+                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH},
             )};
         }
 
