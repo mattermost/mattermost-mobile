@@ -103,6 +103,7 @@ export default class Root extends PureComponent {
 
         return (
             <IntlProvider
+                key={locale}
                 ref={this.setProviderRef}
                 locale={locale}
                 messages={getTranslations(locale)}

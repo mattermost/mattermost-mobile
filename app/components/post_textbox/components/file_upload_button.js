@@ -5,22 +5,27 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     Alert,
+    NativeModules,
     Platform,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {ICON_SIZE} from 'app/constants/post_textbox';
+import AndroidOpenSettings from 'react-native-android-open-settings';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import ImagePicker from 'react-native-image-picker';
+import DocumentPicker from 'react-native-document-picker';
 import Permissions from 'react-native-permissions';
 
 import {changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
-export default class ImageUploadButton extends PureComponent {
+const ShareExtension = NativeModules.MattermostShare;
+
+export default class FileUploadButton extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
+        browseFileTypes: PropTypes.string,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
         onShowFileMaxWarning: PropTypes.func,
@@ -48,101 +53,79 @@ export default class ImageUploadButton extends PureComponent {
     getPermissionDeniedMessage = () => {
         const {formatMessage} = this.context.intl;
         const applicationName = DeviceInfo.getApplicationName();
-        if (Platform.OS === 'android') {
-            return {
-                title: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_title',
-                    defaultMessage: '{applicationName} would like to access your photos',
-                }, {applicationName}),
-                text: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_description',
-                    defaultMessage: 'Upload photos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo library.',
-                }),
-            };
-        }
-
         return {
             title: formatMessage({
-                id: 'mobile.ios.photos_permission_denied_title',
-                defaultMessage: '{applicationName} would like to access your photos',
+                id: 'mobile.storage_permission_denied_title',
+                defaultMessage: '{applicationName} would like to access your files',
             }, {applicationName}),
             text: formatMessage({
-                id: 'mobile.ios.photos_permission_denied_description',
-                defaultMessage: 'Upload photos and videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo and video library.',
+                id: 'mobile.storage_permission_denied_description',
+                defaultMessage: 'Upload files to your Mattermost instance. Open Settings to grant Mattermost Read and Write access to files on this device.',
             }),
         };
     }
 
-    attachFileFromLibrary = async () => {
-        const {formatMessage} = this.context.intl;
-        const {title, text} = this.getPermissionDeniedMessage();
-        const options = {
-            quality: 0.8,
-            mediaType: 'mixed',
-            noData: true,
-            permissionDenied: {
-                title,
-                text,
-                reTryTitle: formatMessage({
-                    id: 'mobile.permission_denied_retry',
-                    defaultMessage: 'Settings',
-                }),
-                okTitle: formatMessage({id: 'mobile.permission_denied_dismiss', defaultMessage: 'Don\'t Allow'}),
-            },
-        };
+    attachFileFromFiles = async () => {
+        const {browseFileTypes} = this.props;
+        const hasPermission = await this.hasStoragePermission();
 
-        const hasPhotoPermission = await this.hasPhotoPermission();
-
-        if (hasPhotoPermission) {
-            ImagePicker.launchImageLibrary(options, (response) => {
-                if (response.error || response.didCancel) {
-                    return;
+        if (hasPermission) {
+            try {
+                const res = await DocumentPicker.pick({type: [browseFileTypes]});
+                if (Platform.OS === 'android') {
+                    // For android we need to retrieve the realPath in case the file being imported is from the cloud
+                    const newUri = await ShareExtension.getFilePath(res.uri);
+                    if (newUri.filePath) {
+                        res.uri = newUri.filePath;
+                    } else {
+                        return;
+                    }
                 }
 
-                this.props.uploadFiles([response]);
-            });
+                // Decode file uri to get the actual path
+                res.uri = decodeURIComponent(res.uri);
+
+                this.props.uploadFiles([res]);
+            } catch (error) {
+                // Do nothing
+            }
         }
     };
 
-    hasPhotoPermission = async () => {
-        if (Platform.OS === 'ios') {
+    hasStoragePermission = async () => {
+        if (Platform.OS === 'android') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const targetSource = Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
-            const hasPermissionToStorage = await Permissions.check(targetSource);
+            const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+            const hasPermissionToStorage = await Permissions.check(storagePermission);
 
             switch (hasPermissionToStorage) {
+            case Permissions.RESULTS.DENIED:
             case Permissions.RESULTS.UNAVAILABLE:
-                permissionRequest = await Permissions.request(targetSource);
+                permissionRequest = await Permissions.request(storagePermission);
                 if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
                     return false;
                 }
                 break;
             case Permissions.RESULTS.BLOCKED: {
-                const canOpenSettings = await Permissions.canOpenSettings();
-                let grantOption = null;
-                if (canOpenSettings) {
-                    grantOption = {
-                        text: formatMessage({
-                            id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Settings',
-                        }),
-                        onPress: () => Permissions.openSettings(),
-                    };
-                }
-
                 const {title, text} = this.getPermissionDeniedMessage();
 
                 Alert.alert(
                     title,
                     text,
                     [
-                        grantOption,
                         {
                             text: formatMessage({
                                 id: 'mobile.permission_denied_dismiss',
                                 defaultMessage: 'Don\'t Allow',
                             }),
+                        },
+                        {
+                            text: formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Settings',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
                         },
                     ],
                 );
@@ -165,9 +148,8 @@ export default class ImageUploadButton extends PureComponent {
             onShowFileMaxWarning();
             return;
         }
-
         this.props.blurTextBox();
-        this.attachFileFromLibrary();
+        this.attachFileFromFiles();
     };
 
     render() {
@@ -180,7 +162,7 @@ export default class ImageUploadButton extends PureComponent {
             >
                 <MaterialCommunityIcons
                     color={changeOpacity(theme.centerChannelColor, 0.64)}
-                    name='image-outline'
+                    name='file-document-outline'
                     size={ICON_SIZE}
                 />
             </TouchableWithFeedback>
