@@ -454,7 +454,7 @@ export default class DrawerLayout extends Component {
     };
 
     _panResponderMove = (e: EventType, { moveX, dx }: PanResponderEventType) => {
-        const useDx = Platform.OS === 'ios' && this.getDrawerPosition() === 'left';
+        const useDx = Platform.OS === 'ios' && this.getDrawerPosition() === 'left' && !this._isClosing;
         let openValue = this._getOpenValueForX(useDx ? dx : moveX);
 
         if (this._isClosing) {
