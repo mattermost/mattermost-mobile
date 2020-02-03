@@ -26,7 +26,6 @@ class PushNotification {
         this.deviceNotification = null;
         this.onRegister = null;
         this.onNotification = null;
-        this.onReply = null;
         this.reduxStore = null;
 
         NotificationsIOS.addEventListener(DEVICE_REMOTE_NOTIFICATIONS_REGISTERED_EVENT, this.onRemoteNotificationsRegistered);
@@ -48,22 +47,10 @@ class PushNotification {
         }
     };
 
-    handleReply = (notification, text, completion) => {
-        const data = notification.getData();
-
-        if (this.onReply && !replies.has(data.identifier)) {
-            replies.add(data.identifier);
-            this.onReply(data, text, completion);
-        } else {
-            completion();
-        }
-    };
-
     configure(options) {
         this.reduxStore = options.reduxStore;
         this.onRegister = options.onRegister;
         this.onNotification = options.onNotification;
-        this.onReply = options.onReply;
 
         this.requestNotificationReplyPermissions();
 
@@ -176,17 +163,13 @@ class PushNotification {
     };
 
     onNotificationOpened = (notification, completion, action) => {
-        if (action.identifier === REPLY_ACTION) {
-            this.handleReply(notification, action.text, completion);
-        } else {
-            const data = notification.getData();
-            const info = {
-                ...data,
-                message: data.body || notification.getMessage(),
-            };
-            this.handleNotification(info, false, true);
-            completion();
-        }
+        const data = notification.getData();
+        const info = {
+            ...data,
+            message: data.body || notification.getMessage(),
+        };
+        this.handleNotification(info, false, true);
+        completion();
     };
 
     onRemoteNotificationsRegistered = (deviceToken) => {
