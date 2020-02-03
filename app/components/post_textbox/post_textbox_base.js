@@ -396,17 +396,68 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handlePostDraftSelectionChanged = (event) => {
-        const cursorPosition = event.nativeEvent.selection.end;
+    handlePostDraftSelectionChanged = (event, fromHandleTextChange) => {
+        let cursorPosition;
+
+        // When called from PasteableTextInput's onSelectionChange, nativeEvent gets passsed with
+        // updated cursorPosition. When called fromHandleTextChange, there's no nativeEvent passed but
+        // cursorPosition is already updated and available in state.
+        if (fromHandleTextChange) {
+            cursorPosition = this.state.cursorPosition;
+        } else {
+            cursorPosition = event.nativeEvent.selection.end;
+        }
+
         const {cursorPositionEvent} = this.props;
 
         if (cursorPositionEvent) {
             EventEmitter.emit(cursorPositionEvent, cursorPosition);
         }
 
-        this.setState({
-            cursorPosition,
-        });
+        // Workaround to avoid iOS emdash autocorrect in Code Blocks
+        if (Platform.OS === 'ios') {
+            // Matches all text between a pair of triple backticks ```, inclusive
+            // OR all text after a dangling triple backtick ```, inclusive
+            // Triple backticks must also be on their own separate line to be matched
+            const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
+
+            // Loop through this.state.value and create array of all regex match positions, start and end
+            // exec() method details: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
+            const matches = [];
+            let match;
+            while ((match = regexForCodeBlock.exec(this.state.value)) !== null) {
+                matches.push({
+                    start: regexForCodeBlock.lastIndex - match[0].length, // start position of a regex match
+                    end: fromHandleTextChange ? regexForCodeBlock.lastIndex : regexForCodeBlock.lastIndex + 1, // end position of a regex match
+                });
+            }
+
+            // Check if current cursor position is within the bounds of a matched triple backtick (```) Code Block
+            let insideCodeBlock = false;
+            for (let i = 0; i < matches.length; i++) {
+                if (cursorPosition >= matches[i].start && cursorPosition <= matches[i].end) {
+                    insideCodeBlock = true;
+                    break;
+                }
+            }
+
+            // 'email-address' keyboardType prevents iOS emdash autocorrect
+            if (insideCodeBlock) {
+                this.setState({
+                    cursorPosition,
+                    keyboardType: 'email-address',
+                });
+            } else {
+                this.setState({
+                    cursorPosition,
+                    keyboardType: 'default',
+                });
+            }
+        } else {
+            this.setState({
+                cursorPosition,
+            });
+        }
     };
 
     handleSendMessage = () => {
@@ -504,7 +555,13 @@ export default class PostTextBoxBase extends PureComponent {
 
         this.checkMessageLength(value);
 
-        this.setState(nextState);
+        // Workaround to avoid iOS emdash autocorrect in Code Blocks
+        if (Platform.OS === 'ios') {
+            const callback = () => this.handlePostDraftSelectionChanged(null, true);
+            this.setState(nextState, callback);
+        } else {
+            this.setState(nextState);
+        }
 
         if (value) {
             actions.userTyping(channelId, rootId);
@@ -880,7 +937,7 @@ export default class PostTextBoxBase extends PureComponent {
                         ref={this.input}
                         value={textValue}
                         onChangeText={this.handleTextChange}
-                        onSelectionChange={this.handlePostDraftSelectionChanged}
+                        onSelectionChange={(event) => this.handlePostDraftSelectionChanged(event, false)}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}
