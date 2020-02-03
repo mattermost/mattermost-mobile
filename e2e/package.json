@@ -12,6 +12,7 @@
     "@wdio/mocha-framework": "5.16.15",
     "@wdio/spec-reporter": "5.16.11",
     "@wdio/sync": "5.16.15",
+    "appium": "1.16.0",
     "chai": "4.2.0",
     "dotenv": "8.2.0",
     "node-fetch": "2.6.0",
