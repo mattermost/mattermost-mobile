@@ -19,8 +19,6 @@ import {t} from 'app/utils/i18n';
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
 
-const replies = new Set();
-
 class PushNotification {
     constructor() {
         this.deviceNotification = null;
@@ -162,7 +160,7 @@ class PushNotification {
         this.handleNotification(info, true, false);
     };
 
-    onNotificationOpened = (notification, completion, action) => {
+    onNotificationOpened = (notification, completion) => {
         const data = notification.getData();
         const info = {
             ...data,
