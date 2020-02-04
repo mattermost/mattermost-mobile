@@ -352,7 +352,10 @@ export default class Login extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <TouchableWithoutFeedback onPress={this.blur}>
+                <TouchableWithoutFeedback
+                    onPress={this.blur}
+                    accessible={false}
+                >
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}

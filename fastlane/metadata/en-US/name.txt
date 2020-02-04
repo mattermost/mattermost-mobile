@@ -1,1 +1,1 @@
-Mattermost RN
+Mattermost

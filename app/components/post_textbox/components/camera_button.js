@@ -18,9 +18,8 @@ import {changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
-export default class ImageUploadButton extends PureComponent {
+export default class AttachmentButton extends PureComponent {
     static propTypes = {
-        blurTextBox: PropTypes.func.isRequired,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number.isRequired,
         onShowFileMaxWarning: PropTypes.func,
@@ -30,15 +29,10 @@ export default class ImageUploadButton extends PureComponent {
     };
 
     static defaultProps = {
-        browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
         validMimeTypes: [],
-        canBrowseFiles: true,
-        canBrowsePhotoLibrary: true,
-        canBrowseVideoLibrary: true,
         canTakePhoto: true,
         canTakeVideo: true,
         maxFileCount: 5,
-        extraOptions: null,
     };
 
     static contextTypes = {
@@ -48,38 +42,42 @@ export default class ImageUploadButton extends PureComponent {
     getPermissionDeniedMessage = () => {
         const {formatMessage} = this.context.intl;
         const applicationName = DeviceInfo.getApplicationName();
-        if (Platform.OS === 'android') {
-            return {
-                title: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_title',
-                    defaultMessage: '{applicationName} would like to access your photos',
-                }, {applicationName}),
-                text: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_description',
-                    defaultMessage: 'Upload photos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo library.',
-                }),
-            };
-        }
-
         return {
             title: formatMessage({
-                id: 'mobile.ios.photos_permission_denied_title',
-                defaultMessage: '{applicationName} would like to access your photos',
+                id: 'mobile.camera_photo_permission_denied_title',
+                defaultMessage: '{applicationName} would like to access your camera',
             }, {applicationName}),
             text: formatMessage({
-                id: 'mobile.ios.photos_permission_denied_description',
-                defaultMessage: 'Upload photos and videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo and video library.',
+                id: 'mobile.camera_photo_permission_denied_description',
+                defaultMessage: 'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
             }),
         };
     }
 
-    attachFileFromLibrary = async () => {
+    attachFileFromCamera = async () => {
         const {formatMessage} = this.context.intl;
+        const {
+            fileCount,
+            maxFileCount,
+            onShowFileMaxWarning,
+        } = this.props;
+
         const {title, text} = this.getPermissionDeniedMessage();
+
+        if (fileCount === maxFileCount) {
+            onShowFileMaxWarning();
+            return;
+        }
+
         const options = {
             quality: 0.8,
-            mediaType: 'mixed',
+            videoQuality: 'high',
             noData: true,
+            mediaType: 'mixed',
+            storageOptions: {
+                cameraRoll: true,
+                waitUntilSaved: true,
+            },
             permissionDenied: {
                 title,
                 text,
@@ -91,10 +89,10 @@ export default class ImageUploadButton extends PureComponent {
             },
         };
 
-        const hasPhotoPermission = await this.hasPhotoPermission();
+        const hasCameraPermission = await this.hasCameraPermission();
 
-        if (hasPhotoPermission) {
-            ImagePicker.launchImageLibrary(options, (response) => {
+        if (hasCameraPermission) {
+            ImagePicker.launchCamera(options, (response) => {
                 if (response.error || response.didCancel) {
                     return;
                 }
@@ -104,14 +102,15 @@ export default class ImageUploadButton extends PureComponent {
         }
     };
 
-    hasPhotoPermission = async () => {
+    hasCameraPermission = async () => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
             let permissionRequest;
-            const targetSource = 'photo';
-            const hasPermissionToStorage = await Permissions.check(targetSource);
+            const targetSource = Permissions.PERMISSIONS.IOS.CAMERA;
+            const hasPermission = await Permissions.check(targetSource);
 
-            switch (hasPermissionToStorage) {
+            switch (hasPermission) {
+            case Permissions.RESULTS.DENIED:
             case Permissions.RESULTS.UNAVAILABLE:
                 permissionRequest = await Permissions.request(targetSource);
                 if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
@@ -119,17 +118,13 @@ export default class ImageUploadButton extends PureComponent {
                 }
                 break;
             case Permissions.RESULTS.BLOCKED: {
-                const canOpenSettings = await Permissions.canOpenSettings();
-                let grantOption = null;
-                if (canOpenSettings) {
-                    grantOption = {
-                        text: formatMessage({
-                            id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Settings',
-                        }),
-                        onPress: () => Permissions.openSettings(),
-                    };
-                }
+                const grantOption = {
+                    text: formatMessage({
+                        id: 'mobile.permission_denied_retry',
+                        defaultMessage: 'Settings',
+                    }),
+                    onPress: () => Permissions.openSettings(),
+                };
 
                 const {title, text} = this.getPermissionDeniedMessage();
 
@@ -154,33 +149,17 @@ export default class ImageUploadButton extends PureComponent {
         return true;
     };
 
-    handleButtonPress = () => {
-        const {
-            fileCount,
-            maxFileCount,
-            onShowFileMaxWarning,
-        } = this.props;
-
-        if (fileCount === maxFileCount) {
-            onShowFileMaxWarning();
-            return;
-        }
-
-        this.props.blurTextBox();
-        this.attachFileFromLibrary();
-    };
-
     render() {
         const {theme, buttonContainerStyle} = this.props;
         return (
             <TouchableWithFeedback
-                onPress={this.handleButtonPress}
+                onPress={this.attachFileFromCamera}
                 style={buttonContainerStyle}
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
                     color={changeOpacity(theme.centerChannelColor, 0.64)}
-                    name='image-outline'
+                    name='camera-outline'
                     size={ICON_SIZE}
                 />
             </TouchableWithFeedback>

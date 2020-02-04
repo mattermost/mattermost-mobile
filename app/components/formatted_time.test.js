@@ -4,9 +4,7 @@
 import React from 'react';
 import {render} from '@testing-library/react-native';
 import {IntlProvider} from 'react-intl';
-import IntlPolyfill from 'intl';
-import 'intl/locale-data/jsonp/es';
-import 'intl/locale-data/jsonp/ko';
+import moment from 'moment-timezone';
 
 import FormattedTime from './formatted_time';
 
@@ -16,8 +14,6 @@ describe('FormattedTime', () => {
         timeZone: 'UTC',
         hour12: true,
     };
-
-    setupTest();
 
     it('should render correctly', () => {
         console.error = jest.fn();
@@ -40,13 +36,15 @@ describe('FormattedTime', () => {
     });
 
     it('should support localization', () => {
+        moment.locale('es');
         let wrapper = renderWithIntl(
             <FormattedTime {...baseProps}/>,
             'es',
         );
 
-        expect(wrapper.getByText('7:02 p. m.')).toBeTruthy();
+        expect(wrapper.getByText('7:02 PM')).toBeTruthy();
 
+        moment.locale('ko');
         wrapper = renderWithIntl(
             <FormattedTime {...baseProps}/>,
             'ko',
@@ -66,6 +64,7 @@ describe('FormattedTime', () => {
     });
 
     it('should fallback to default short format for unsupported locale of react-intl ', () => {
+        moment.locale('es');
         let wrapper = renderWithIntl(
             <FormattedTime
                 {...baseProps}
@@ -74,7 +73,7 @@ describe('FormattedTime', () => {
             'es',
         );
 
-        expect(wrapper.getByText('08:47 AM')).toBeTruthy();
+        expect(wrapper.getByText('8:47 AM')).toBeTruthy();
 
         wrapper = renderWithIntl(
             <FormattedTime
@@ -82,16 +81,13 @@ describe('FormattedTime', () => {
                 timeZone='NZ-CHAT'
                 hour12={false}
             />,
+            'es',
         );
 
-        expect(wrapper.getByText('08:47')).toBeTruthy();
+        expect(wrapper.getByText('8:47')).toBeTruthy();
     });
 });
 
 function renderWithIntl(component, locale = 'en') {
     return render(<IntlProvider locale={locale}>{component}</IntlProvider>);
-}
-
-function setupTest() {
-    global.Intl = IntlPolyfill;
 }
