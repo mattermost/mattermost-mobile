@@ -12,7 +12,6 @@ class PushNotification {
     constructor() {
         this.onRegister = null;
         this.onNotification = null;
-        this.onReply = null;
         this.deviceNotification = null;
         this.deviceToken = null;
 
@@ -55,7 +54,6 @@ class PushNotification {
     configure(options) {
         this.onRegister = options.onRegister;
         this.onNotification = options.onNotification;
-        this.onReply = options.onReply;
 
         if (this.onRegister && this.deviceToken) {
             this.onRegister({token: this.deviceToken});
