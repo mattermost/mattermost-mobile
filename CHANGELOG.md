@@ -11,6 +11,7 @@
 ### Highlights
 
 #### UI/UX Improvements to the Post Draft Area
+ - The mobile post draft area includes buttons that enable users to access common functions more easily, including @mentioning users, using slash commands, selecting photos and videos, and taking a photo or video with the camera.
 
 #### Deep Linking
  - Links to posts in email notifications now launch to a browser landing page with option to open in the Mobile app.
