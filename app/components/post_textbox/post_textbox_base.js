@@ -418,26 +418,14 @@ export default class PostTextBoxBase extends PureComponent {
         const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
 
         // 'email-address' keyboardType prevents iOS emdash autocorrect
-        if (cursorIsInsideCodeBlock) {
-            this.setState({
-                cursorPosition,
-                keyboardType: 'email-address',
-            });
-        } else {
-            this.setState({
-                cursorPosition,
-                keyboardType: 'default',
-            });
-        }
+        this.setState({
+            cursorPosition,
+            keyboardType: cursorIsInsideCodeBlock ? 'email-address' : 'default',
+        });
     };
 
     handlePostDraftSelectionChanged = (event, fromHandleTextChange) => {
-        let cursorPosition;
-        if (fromHandleTextChange) {
-            cursorPosition = this.state.cursorPosition;
-        } else {
-            cursorPosition = event.nativeEvent.selection.end;
-        }
+        const cursorPosition = fromHandleTextChange ? this.state.cursorPosition : event.nativeEvent.selection.end;
 
         const {cursorPositionEvent} = this.props;
 
@@ -448,9 +436,7 @@ export default class PostTextBoxBase extends PureComponent {
         if (Platform.OS === 'ios') {
             this.switchKeyboardForCodeBlocks(fromHandleTextChange, cursorPosition);
         } else {
-            this.setState({
-                cursorPosition,
-            });
+            this.setState({cursorPosition});
         }
     };
 
