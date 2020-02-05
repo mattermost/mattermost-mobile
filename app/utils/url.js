@@ -103,18 +103,27 @@ export function matchDeepLink(url, serverURL, siteURL) {
         return null;
     }
 
-    const serverURLWithoutProtocol = removeProtocol(serverURL);
-    const siteURLWithoutProtocol = removeProtocol(siteURL);
+    let urlToMatch = url;
 
-    const linkRoot = `(?:${escapeRegex(serverURLWithoutProtocol || siteURLWithoutProtocol)})`;
+    // If url doesn't contain site or server URL, tack it on.
+    // e.g. <jump to convo> URLs from autolink plugin.
+    const urlBase = serverURL || siteURL;
+    let match = new RegExp(escapeRegex(urlBase)).exec(url);
+    if (!match) {
+        urlToMatch = urlBase + url;
+    }
 
-    let match = new RegExp(linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+    const urlBaseWithoutProtocol = removeProtocol(urlBase);
+
+    const linkRoot = `(?:${escapeRegex(urlBaseWithoutProtocol)})`;
+
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(urlToMatch);
 
     if (match) {
         return {type: DeepLinkTypes.CHANNEL, teamName: match[1], channelName: match[2]};
     }
 
-    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(urlToMatch);
     if (match) {
         return {type: DeepLinkTypes.PERMALINK, teamName: match[1], postId: match[2]};
     }

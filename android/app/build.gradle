@@ -75,7 +75,7 @@ import com.android.build.OutputFile
 project.ext.react = [
     entryFile: "index.js",
     bundleConfig: "metro.config.js",
-    enableHermes: true,
+    enableHermes: false,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -105,18 +105,8 @@ def enableSeparateBuildPerCPUArchitecture = false
  */
 def enableProguardInReleaseBuilds = false
 
-/**
- * The preferred build flavor of JavaScriptCore.
- *
- * For example, to use the international variant, you can use:
- * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
- *
- * The international variant includes ICU i18n library and necessary data
- * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
- * give correct results when using with locales other than en-US.  Note that
- * this variant is about 6MiB larger per architecture than default.
- */
-def jscFlavor = 'org.webkit:android-jsc-intl:r241213'
+// Add v8-android - prebuilt libv8android.so into APK
+def jscFlavor = 'org.chromium:v8-android:+'
 
 /**
  * Whether to enable the Hermes VM.
@@ -140,8 +130,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative60"
-        versionCode 260
-        versionName "1.27.1"
+        versionCode 264
+        versionName "1.28.0"
         multiDexEnabled = true
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
@@ -199,6 +189,11 @@ android {
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
+    }
+
+    packagingOptions {
+        // Make sure libjsc.so does not packed in APK
+        exclude "**/libjsc.so"
     }
 }
 
@@ -268,7 +263,9 @@ dependencies {
     implementation project(':@sentry_react-native')
     implementation project(':react-native-android-open-settings')
     implementation project(':react-native-haptic-feedback')
+    implementation project(':react-native-hw-keyboard-event')
     implementation project(':react-native-permissions')
+    
 
     implementation project(':react-native-fast-image')
     // For animated GIF support

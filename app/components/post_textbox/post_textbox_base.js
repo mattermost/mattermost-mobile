@@ -21,6 +21,7 @@ import {
 import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
 import Button from 'react-native-button';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
 
@@ -28,9 +29,9 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
 
-import FileUploadButton from './components/fileUploadButton';
-import ImageUploadButton from './components/imageUploadButton';
-import CameraButton from './components/cameraButton';
+import FileUploadButton from './components/file_upload_button';
+import ImageUploadButton from './components/image_upload_button';
+import CameraButton from './components/camera_button';
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';
 import PasteableTextInput from 'app/components/pasteable_text_input';
@@ -129,6 +130,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.on(event, this.handleInsertTextToDraft);
         AppState.addEventListener('change', this.handleAppStateChange);
+        HWKeyboardEvent.onHWKeyPressed(this.handleHardwareEnterPress);
 
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -156,6 +158,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.off(event, this.handleInsertTextToDraft);
         AppState.removeEventListener('change', this.handleAppStateChange);
+        HWKeyboardEvent.removeOnHWKeyPressed();
 
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -374,6 +377,14 @@ export default class PostTextBoxBase extends PureComponent {
     handleAndroidKeyboard = () => {
         this.blur();
     };
+
+    handleHardwareEnterPress = (keyEvent) => {
+        switch (keyEvent.pressedKey) {
+        case 'enter': this.handleSendMessage();
+            break;
+        case 'shift-enter': this.handleInsertTextToDraft('\n');
+        }
+    }
 
     handleAndroidBack = () => {
         const {channelId, files, rootId} = this.props;
