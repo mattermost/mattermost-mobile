@@ -105,18 +105,16 @@ export default class AttachmentButton extends PureComponent {
     hasCameraPermission = async () => {
         if (Platform.OS === 'ios') {
             const {formatMessage} = this.context.intl;
-            let permissionRequest;
             const targetSource = Permissions.PERMISSIONS.IOS.CAMERA;
             const hasPermission = await Permissions.check(targetSource);
 
             switch (hasPermission) {
             case Permissions.RESULTS.DENIED:
-            case Permissions.RESULTS.UNAVAILABLE:
-                permissionRequest = await Permissions.request(targetSource);
-                if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
-                    return false;
-                }
-                break;
+            case Permissions.RESULTS.UNAVAILABLE: {
+                const permissionRequest = await Permissions.request(targetSource);
+
+                return permissionRequest === Permissions.RESULTS.GRANTED;
+            }
             case Permissions.RESULTS.BLOCKED: {
                 const grantOption = {
                     text: formatMessage({
