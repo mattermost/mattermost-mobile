@@ -407,12 +407,32 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
+    switchKeyboardForCodeBlocks = (fromHandleTextChange, cursorPosition) => {
+        const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
+
+        const matches = [...this.state.value.matchAll(regexForCodeBlock)].map((match) => ({
+            startOfMatch: match.index,
+            endOfMatch: fromHandleTextChange ? match.index + match[0].length : match.index + match[0].length + 1,
+        }));
+
+        const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
+
+        // 'email-address' keyboardType prevents iOS emdash autocorrect
+        if (cursorIsInsideCodeBlock) {
+            this.setState({
+                cursorPosition,
+                keyboardType: 'email-address',
+            });
+        } else {
+            this.setState({
+                cursorPosition,
+                keyboardType: 'default',
+            });
+        }
+    };
+
     handlePostDraftSelectionChanged = (event, fromHandleTextChange) => {
         let cursorPosition;
-
-        // When called from PasteableTextInput's onSelectionChange, nativeEvent gets passsed with
-        // updated cursorPosition. When called fromHandleTextChange, there's no nativeEvent passed but
-        // cursorPosition is already updated and available in state.
         if (fromHandleTextChange) {
             cursorPosition = this.state.cursorPosition;
         } else {
@@ -425,32 +445,8 @@ export default class PostTextBoxBase extends PureComponent {
             EventEmitter.emit(cursorPositionEvent, cursorPosition);
         }
 
-        // Workaround to avoid iOS emdash autocorrect in Code Blocks
         if (Platform.OS === 'ios') {
-            // Matches all text between a pair of triple backticks ```, inclusive
-            // OR all text after a dangling triple backtick ```, inclusive
-            // Triple backticks must also be on their own separate line to be matched
-            const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
-
-            const matches = [...this.state.value.matchAll(regexForCodeBlock)].map((match) => ({
-                startOfMatch: match.index,
-                endOfMatch: fromHandleTextChange ? match.index + match[0].length : match.index + match[0].length + 1,
-            }));
-
-            const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
-
-            // 'email-address' keyboardType prevents iOS emdash autocorrect
-            if (cursorIsInsideCodeBlock) {
-                this.setState({
-                    cursorPosition,
-                    keyboardType: 'email-address',
-                });
-            } else {
-                this.setState({
-                    cursorPosition,
-                    keyboardType: 'default',
-                });
-            }
+            this.switchKeyboardForCodeBlocks(fromHandleTextChange, cursorPosition);
         } else {
             this.setState({
                 cursorPosition,
