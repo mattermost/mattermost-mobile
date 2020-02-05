@@ -312,7 +312,7 @@ export default class Downloader extends PureComponent {
                     // do nothing
                 });
             }
-            if (error.message !== 'cancelled' && this.mounted) {
+            if (error.message !== 'canceled' && this.mounted) {
                 this.showDownloadFailedAlert();
             } else {
                 this.downloadDidCancel();
