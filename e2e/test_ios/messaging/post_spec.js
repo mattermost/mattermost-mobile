@@ -7,9 +7,18 @@
 // - Use accessibility ID when selecting an element. Create one if none.
 // *********************************************************************
 
+/* eslint-disable no-process-env */
+
 import PostTextbox from '../../screen_objects/components/post_textbox';
+import {login} from '../../utils/ui_commands';
 
 describe('Messaging', () => {
+    before(() => {
+        if (!process.env.DEV) {
+            login('user-1');
+        }
+    });
+
     it('should be able to post a message', () => {
         browser.pause(2000);
 
