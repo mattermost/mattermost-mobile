@@ -73,4 +73,27 @@ describe('FileUploadButton', () => {
         expect(Alert.alert).toHaveBeenCalled();
         expect(hasPermission).toBe(false);
     });
+
+    test('hasStoragePermission returns true when permission has been granted', async () => {
+        const check = jest.spyOn(Permissions, 'check');
+        const request = jest.spyOn(Permissions, 'request');
+        request.mockReturnValue(Permissions.RESULTS.GRANTED);
+
+        const wrapper = shallow(
+            <FileUploadButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
+        let hasPermission = await wrapper.instance().hasStoragePermission();
+        expect(check).toHaveBeenCalled();
+        expect(request).toHaveBeenCalled();
+        expect(hasPermission).toBe(true);
+
+        check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
+        hasPermission = await wrapper.instance().hasStoragePermission();
+        expect(check).toHaveBeenCalled();
+        expect(request).toHaveBeenCalled();
+        expect(hasPermission).toBe(true);
+    });
 });
