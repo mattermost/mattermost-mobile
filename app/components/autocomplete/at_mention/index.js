@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {autocompleteUsers} from 'mattermost-redux/actions/users';
 import {getCurrentChannelId, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -25,7 +26,8 @@ import AtMention from './at_mention';
 function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
-    const useChannelMentions = haveIChannelPermission(
+
+    const useChannelMentions = !isMinimumServerVersion(state.entities.general.serverVersion, 5, 22) || haveIChannelPermission(
         state,
         {
             channel: currentChannelId,

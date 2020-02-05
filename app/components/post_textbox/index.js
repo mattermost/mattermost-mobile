@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {General, Permissions} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {setStatus} from 'mattermost-redux/actions/users';
@@ -49,7 +50,8 @@ function mapStateToProps(state, ownProps) {
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
     const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
-    const useChannelMentions = haveIChannelPermission(
+
+    const useChannelMentions = !isMinimumServerVersion(state.entities.general.serverVersion, 5, 22) || haveIChannelPermission(
         state,
         {
             channel: currentChannel.Id,
