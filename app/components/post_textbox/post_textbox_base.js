@@ -432,28 +432,15 @@ export default class PostTextBoxBase extends PureComponent {
             // Triple backticks must also be on their own separate line to be matched
             const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
 
-            // Loop through this.state.value and create array of all regex match positions, start and end
-            // exec() method details: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
-            const matches = [];
-            let match;
-            while ((match = regexForCodeBlock.exec(this.state.value)) !== null) {
-                matches.push({
-                    start: regexForCodeBlock.lastIndex - match[0].length, // start position of a regex match
-                    end: fromHandleTextChange ? regexForCodeBlock.lastIndex : regexForCodeBlock.lastIndex + 1, // end position of a regex match
-                });
-            }
+            const matches = [...this.state.value.matchAll(regexForCodeBlock)].map((match) => ({
+                startOfMatch: match.index,
+                endOfMatch: fromHandleTextChange ? match.index + match[0].length : match.index + match[0].length + 1,
+            }));
 
-            // Check if current cursor position is within the bounds of a matched triple backtick (```) Code Block
-            let insideCodeBlock = false;
-            for (let i = 0; i < matches.length; i++) {
-                if (cursorPosition >= matches[i].start && cursorPosition <= matches[i].end) {
-                    insideCodeBlock = true;
-                    break;
-                }
-            }
+            const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
 
             // 'email-address' keyboardType prevents iOS emdash autocorrect
-            if (insideCodeBlock) {
+            if (cursorIsInsideCodeBlock) {
                 this.setState({
                     cursorPosition,
                     keyboardType: 'email-address',
