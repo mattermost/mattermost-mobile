@@ -165,5 +165,5 @@ describe('channel_info', () => {
         expect(dismissModal).not.toHaveBeenCalled();
         instance.close();
         expect(dismissModal).toHaveBeenCalled();
-    })
+    });
 });
