@@ -12,10 +12,10 @@
 
 #### UI/UX Improvements to the Post Draft Area
  - Links added to facilitate easier access to common functions:
- - finding channel members for @mentioning;
- - finding and referencing slash commands;
- - attaching photos and videos;
- - accessing the camera
+   - finding channel members for @mentioning;
+   - finding and referencing slash commands;
+   - attaching photos and videos;
+   - accessing the camera
 
 #### Deep Linking
  - Links to posts in email notifications now launch to a browser landing page with option to open in the Mobile app.
