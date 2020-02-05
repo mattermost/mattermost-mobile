@@ -63,4 +63,27 @@ describe('CameraButton', () => {
         expect(Alert.alert).toHaveBeenCalled();
         expect(hasPermission).toBe(false);
     });
+
+    test('hasCameraPermission returns true when permission has been granted', async () => {
+        const check = jest.spyOn(Permissions, 'check');
+        const request = jest.spyOn(Permissions, 'request');
+        request.mockReturnValue(Permissions.RESULTS.GRANTED);
+
+        const wrapper = shallow(
+            <CameraButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
+        let hasPermission = await wrapper.instance().hasCameraPermission();
+        expect(check).toHaveBeenCalled();
+        expect(request).toHaveBeenCalled();
+        expect(hasPermission).toBe(true);
+
+        check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
+        hasPermission = await wrapper.instance().hasCameraPermission();
+        expect(check).toHaveBeenCalled();
+        expect(request).toHaveBeenCalled();
+        expect(hasPermission).toBe(true);
+    });
 });
