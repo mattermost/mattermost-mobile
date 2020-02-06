@@ -73,7 +73,7 @@ describe('CameraButton', () => {
             permission: Permissions.PERMISSIONS.ANDROID.CAMERA,
         }];
 
-        for (i = 0; i < platformPermissions.length; i ++) {
+        for (let i = 0; i < platformPermissions.length; i++) {
             const {platform, permission} = platformPermissions[i];
             Platform.OS = platform;
 
@@ -88,13 +88,13 @@ describe('CameraButton', () => {
             const instance = wrapper.instance();
 
             check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
-            let hasPermission = await instance.hasCameraPermission();
+            let hasPermission = await instance.hasCameraPermission(); // eslint-disable-line no-await-in-loop
             expect(check).toHaveBeenCalledWith(permission);
             expect(request).toHaveBeenCalled();
             expect(hasPermission).toBe(true);
 
             check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
-            hasPermission = await instance.hasCameraPermission();
+            hasPermission = await instance.hasCameraPermission(); // eslint-disable-line no-await-in-loop
             expect(check).toHaveBeenCalledWith(permission);
             expect(request).toHaveBeenCalled();
             expect(hasPermission).toBe(true);

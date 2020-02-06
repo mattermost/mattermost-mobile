@@ -74,7 +74,7 @@ describe('ImageUploadButton', () => {
             permission: Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
         }];
 
-        for (i = 0; i < platformPermissions.length; i ++) {
+        for (let i = 0; i < platformPermissions.length; i++) {
             const {platform, permission} = platformPermissions[i];
             Platform.OS = platform;
 
@@ -89,13 +89,13 @@ describe('ImageUploadButton', () => {
             const instance = wrapper.instance();
 
             check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
-            let hasPermission = await instance.hasPhotoPermission();
+            let hasPermission = await instance.hasPhotoPermission(); // eslint-disable-line no-await-in-loop
             expect(check).toHaveBeenCalledWith(permission);
             expect(request).toHaveBeenCalled();
             expect(hasPermission).toBe(true);
 
             check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
-            hasPermission = await instance.hasPhotoPermission();
+            hasPermission = await instance.hasPhotoPermission(); // eslint-disable-line no-await-in-loop
             expect(check).toHaveBeenCalledWith(permission);
             expect(request).toHaveBeenCalled();
             expect(hasPermission).toBe(true);
