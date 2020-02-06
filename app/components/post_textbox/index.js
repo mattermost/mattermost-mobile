@@ -51,13 +51,16 @@ function mapStateToProps(state, ownProps) {
     const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
     const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
 
-    const useChannelMentions = !isMinimumServerVersion(state.entities.general.serverVersion, 5, 22) || haveIChannelPermission(
-        state,
-        {
-            channel: currentChannel.Id,
-            permission: Permissions.USE_CHANNEL_MENTIONS,
-        },
-    );
+    let useChannelMentions = true;
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+        useChannelMentions = haveIChannelPermission(
+            state,
+            {
+                channel: currentChannel.Id,
+                permission: Permissions.USE_CHANNEL_MENTIONS,
+            },
+        );
+    }
 
     return {
         currentChannel,

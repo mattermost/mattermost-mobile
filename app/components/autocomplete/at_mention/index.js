@@ -27,13 +27,16 @@ function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
 
-    const useChannelMentions = !isMinimumServerVersion(state.entities.general.serverVersion, 5, 22) || haveIChannelPermission(
-        state,
-        {
-            channel: currentChannelId,
-            permission: Permissions.USE_CHANNEL_MENTIONS,
-        },
-    );
+    let useChannelMentions = true;
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+        useChannelMentions = haveIChannelPermission(
+            state,
+            {
+                channel: currentChannelId,
+                permission: Permissions.USE_CHANNEL_MENTIONS,
+            },
+        );
+    }
 
     const value = ownProps.value.substring(0, cursorPosition);
     const matchTerm = getMatchTermForAtMention(value, isSearch);
