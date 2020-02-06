@@ -92,16 +92,17 @@ describe('FileUploadButton', () => {
 
         Platform.OS = 'android';
         request.mockReturnValue(Permissions.RESULTS.GRANTED);
+        const permission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
 
         check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
         hasPermission = await instance.hasStoragePermission();
-        expect(check).toHaveBeenCalled();
+        expect(check).toHaveBeenCalledWith(permission);
         expect(request).toHaveBeenCalled();
         expect(hasPermission).toBe(true);
 
         check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
         hasPermission = await instance.hasStoragePermission();
-        expect(check).toHaveBeenCalled();
+        expect(check).toHaveBeenCalledWith(permission);
         expect(request).toHaveBeenCalled();
         expect(hasPermission).toBe(true);
     });
