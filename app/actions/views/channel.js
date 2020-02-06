@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes, ChannelTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
@@ -25,6 +25,7 @@ import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getTeamMembersByIds, selectTeam} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
+import {Client4} from 'mattermost-redux/client';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {
@@ -35,6 +36,9 @@ import {
     getChannelsNameMapInTeam,
     isManuallyUnread,
 } from 'mattermost-redux/selectors/entities/channels';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUserIdsInChannels, getUsers} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {getChannelReachable} from 'app/selectors/channel';
@@ -54,9 +58,12 @@ import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from 'app/constants/post_textbox';
-import {isDirectChannelVisible, isGroupChannelVisible} from 'app/utils/channels';
+import {isDirectChannelVisible, isGroupChannelVisible, isDirectMessageVisible, isGroupMessageVisible, isDirectChannelAutoClosed} from 'app/utils/channels';
+import {buildPreference} from 'app/utils/preferences';
 
-const MAX_POST_TRIES = 3;
+import {forceLogoutIfNecessary} from './user';
+
+const MAX_RETRIES = 3;
 
 export function loadChannelsIfNecessary(teamId) {
     return async (dispatch) => {
@@ -249,7 +256,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
     };
 }
 
-export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
+export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_RETRIES) {
     for (let i = 0; i < maxTries; i++) {
         const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
@@ -352,7 +359,6 @@ export function selectDefaultChannel(teamId) {
 
         const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
         const channel = getChannelByNameSelector(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
-
         let channelId;
         if (channel) {
             channelId = channel.id;
@@ -727,5 +733,162 @@ function selectChannelWithMember(channelId, channel, member) {
         data: channelId,
         channel,
         member,
+    };
+}
+
+export function loadChannelsForTeam(teamId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+
+        if (currentUserId) {
+            const data = {sync: true, teamId};
+            for (let i = 0; i < MAX_RETRIES; i++) {
+                try {
+                    console.log('Fetching channels attempt', (i + 1)); //eslint-disable-line no-console
+                    const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                        Client4.getMyChannels(teamId),
+                        Client4.getMyChannelMembers(teamId),
+                    ]);
+
+                    data.channels = channels;
+                    data.channelMembers = channelMembers;
+                    break;
+                } catch (error) {
+                    const result = await dispatch(forceLogoutIfNecessary(error)); //eslint-disable-line no-await-in-loop
+                    if (result || i === MAX_RETRIES) {
+                        return {error};
+                    }
+                }
+            }
+
+            // Load Roles
+
+            // Fetch needed profiles from channel creators and direct channels
+            dispatch(loadSidebarDirectMessagesProfiles(data));
+
+            dispatch({
+                type: ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS,
+                data,
+            });
+
+            return {data};
+        }
+
+        return {error: 'Cannot fetch channels without a current user'};
+    };
+}
+
+export function loadSidebarDirectMessagesProfiles(data) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {channels, channelMembers} = data;
+        const config = getConfig(state);
+        const currentChannelId = getCurrentChannelId(state);
+        const currentUserId = getCurrentUserId(state);
+        const preferences = getMyPreferences(state);
+        const usersInChannel = getUserIdsInChannels(state);
+        const users = getUsers(state);
+        const directChannels = Object.values(channels).filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const prefs = [];
+        let promises = []; //only fetch profiles that we don't have and the Direct channel should be visible
+
+        // Prepare preferences and start fetching profiles to batch them
+        directChannels.forEach((c) => {
+            const members = Array.from(usersInChannel[c.id] || []).filter((u) => u.id !== currentUserId);
+            switch (c.type) {
+            case General.DM_CHANNEL: {
+                const otherUserId = getUserIdFromChannelName(currentUserId, c.name);
+                const otherUser = users[otherUserId];
+                const dmVisible = isDirectMessageVisible(preferences, c.id);
+                const dmAutoClosed = isDirectChannelAutoClosed(config, preferences, c.id, c.last_post_at, otherUser?.delete_at, currentChannelId); //eslint-disable-line camelcase
+                const dmIsUnread = channelMembers[c.id]?.mention_count > 0; //eslint-disable-line camelcase
+                const dmFetchProfile = dmIsUnread || (dmVisible && !dmAutoClosed);
+
+                // when then DM is hidden but has new messages
+                if ((!dmVisible || dmAutoClosed) && dmIsUnread) {
+                    prefs.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId));
+                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
+                }
+
+                if (dmFetchProfile && !members.includes(otherUserId) && otherUserId !== currentUserId) {
+                    promises.push(dispatch(getUsersInChannel(c.id)));
+                }
+                break;
+            }
+            case General.GM_CHANNEL: {
+                const gmVisible = isGroupMessageVisible(preferences, c.id);
+                const gmAutoClosed = isDirectChannelAutoClosed(config, preferences, c.id, c.last_post_at);
+                const channelMember = channelMembers[c.id];
+                const gmIsUnread = channelMember?.mention_count > 0 || channelMember?.msg_count < c.total_msg_count; //eslint-disable-line camelcase
+                const gmFetchProfile = gmIsUnread || (gmVisible && !gmAutoClosed);
+
+                // when then GM is hidden but has new messages
+                if ((!gmVisible || gmAutoClosed) && gmIsUnread) {
+                    prefs.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, c.id));
+                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
+                }
+
+                if (gmFetchProfile && !members.length) {
+                    promises.push(dispatch(getUsersInChannel(c.id)));
+                }
+                break;
+            }
+            }
+        });
+
+        // Save preferences if there are any changes
+        if (prefs.length) {
+            dispatch(savePreferences(currentUserId, prefs));
+        }
+
+        // Get the profiles returned by the promises and retry those that failed
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            if (!promises.length) {
+                break;
+            }
+
+            const result = await Promise.all(promises); //eslint-disable-line no-await-in-loop
+            const failed = [];
+
+            result.forEach((p, index) => {
+                if (p.error) {
+                    failed.push(directChannels[index].id);
+                }
+            });
+
+            dispatch({
+                type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
+                data: result,
+            });
+
+            if (failed.length) {
+                promises = failed.map((id) => dispatch(getUsersInChannel(id))); //eslint-disable-line no-loop-func
+                continue;
+            }
+
+            break;
+        }
+    };
+}
+
+export function getUsersInChannel(channelId) {
+    return async (dispatch, getState) => {
+        try {
+            const state = getState();
+            const currentUserId = getCurrentUserId(state);
+            const profiles = await Client4.getProfilesInChannel(channelId);
+
+            // When fetching profiles in channels we exclude our own user
+            const users = profiles.filter((p) => p.id !== currentUserId);
+            const data = {
+                channelId,
+                users,
+            };
+
+            return {data};
+        } catch (error) {
+            return {error};
+        }
     };
 }

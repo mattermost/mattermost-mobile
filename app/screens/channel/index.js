@@ -13,8 +13,7 @@ import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/user
 import {getChannelStats} from 'mattermost-redux/actions/channels';
 
 import {
-    loadChannelsIfNecessary,
-    loadProfilesAndTeamMembersForDMSidebar,
+    loadChannelsForTeam,
     selectInitialChannel,
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
@@ -42,8 +41,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getChannelStats,
             connection,
-            loadChannelsIfNecessary,
-            loadProfilesAndTeamMembersForDMSidebar,
+            loadChannelsForTeam,
             logout,
             selectDefaultTeam,
             selectInitialChannel,

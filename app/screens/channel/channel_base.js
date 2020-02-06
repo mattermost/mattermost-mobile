@@ -37,8 +37,7 @@ export let ClientUpgradeListener;
 export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            loadChannelsIfNecessary: PropTypes.func.isRequired,
-            loadProfilesAndTeamMembersForDMSidebar: PropTypes.func.isRequired,
+            loadChannelsForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
@@ -74,6 +73,9 @@ export default class ChannelBase extends PureComponent {
         });
 
         setNavigatorStyles(props.componentId, props.theme);
+        this.state = {
+            channelsRequestFailed: false,
+        };
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
@@ -90,6 +92,7 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.currentChannelId) {
+            this.props.actions.getChannelStats(this.props.currentChannelId);
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
         }
 
@@ -106,8 +109,6 @@ export default class ChannelBase extends PureComponent {
         if (!this.props.skipMetrics) {
             telemetry.end(['start:channel_screen']);
         }
-
-        this.props.actions.getChannelStats(this.props.currentChannelId);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -229,14 +230,12 @@ export default class ChannelBase extends PureComponent {
     };
 
     loadChannels = (teamId) => {
-        const {
-            loadChannelsIfNecessary,
-            loadProfilesAndTeamMembersForDMSidebar,
-            selectInitialChannel,
-        } = this.props.actions;
-
-        loadChannelsIfNecessary(teamId).then(() => {
-            loadProfilesAndTeamMembersForDMSidebar(teamId);
+        const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
+        loadChannelsForTeam(teamId).then((result) => {
+            if (result?.error) {
+                this.setState({channelsRequestFailed: true});
+                return;
+            }
 
             if (EphemeralStore.appStartedFromPushNotification) {
                 EphemeralStore.appStartedFromPushNotification = false;
@@ -270,12 +269,12 @@ export default class ChannelBase extends PureComponent {
 
     renderChannel(drawerContent) {
         const {
-            channelsRequestFailed,
             currentChannelId,
             isLandscape,
             theme,
         } = this.props;
 
+        const {channelsRequestFailed} = this.state;
         if (!currentChannelId) {
             if (channelsRequestFailed) {
                 const FailedNetworkAction = require('app/components/failed_network_action').default;

@@ -5,7 +5,7 @@ import {Linking} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Provider} from 'react-redux';
 
-import {loadMe} from 'mattermost-redux/actions/users';
+import {loadMe} from 'app/actions/views/user';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
