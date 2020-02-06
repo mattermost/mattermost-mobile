@@ -105,47 +105,45 @@ export default class ImageUploadButton extends PureComponent {
     };
 
     hasPhotoPermission = async () => {
-        if (Platform.OS === 'ios') {
-            const {formatMessage} = this.context.intl;
-            let permissionRequest;
-            const targetSource = Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY;
-            const hasPermission = await Permissions.check(targetSource);
+        const {formatMessage} = this.context.intl;
+        const targetSource = Platform.OS === 'ios' ?
+            Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY :
+            Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+        const hasPermission = await Permissions.check(targetSource);
 
-            switch (hasPermission) {
-            case Permissions.RESULTS.DENIED:
-            case Permissions.RESULTS.UNAVAILABLE:
-                permissionRequest = await Permissions.request(targetSource);
-                if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
-                    return false;
-                }
-                break;
-            case Permissions.RESULTS.BLOCKED: {
-                const grantOption = {
-                    text: formatMessage({
-                        id: 'mobile.permission_denied_retry',
-                        defaultMessage: 'Settings',
-                    }),
-                    onPress: () => Permissions.openSettings(),
-                };
+        switch (hasPermission) {
+        case Permissions.RESULTS.DENIED:
+        case Permissions.RESULTS.UNAVAILABLE: {
+            const permissionRequest = await Permissions.request(targetSource);
 
-                const {title, text} = this.getPermissionDeniedMessage();
+            return permissionRequest === Permissions.RESULTS.GRANTED;
+        }
+        case Permissions.RESULTS.BLOCKED: {
+            const grantOption = {
+                text: formatMessage({
+                    id: 'mobile.permission_denied_retry',
+                    defaultMessage: 'Settings',
+                }),
+                onPress: () => Permissions.openSettings(),
+            };
 
-                Alert.alert(
-                    title,
-                    text,
-                    [
-                        grantOption,
-                        {
-                            text: formatMessage({
-                                id: 'mobile.permission_denied_dismiss',
-                                defaultMessage: 'Don\'t Allow',
-                            }),
-                        },
-                    ],
-                );
-                return false;
-            }
-            }
+            const {title, text} = this.getPermissionDeniedMessage();
+
+            Alert.alert(
+                title,
+                text,
+                [
+                    grantOption,
+                    {
+                        text: formatMessage({
+                            id: 'mobile.permission_denied_dismiss',
+                            defaultMessage: 'Don\'t Allow',
+                        }),
+                    },
+                ],
+            );
+            return false;
+        }
         }
 
         return true;
