@@ -75,23 +75,32 @@ describe('FileUploadButton', () => {
     });
 
     test('hasStoragePermission returns true when permission has been granted', async () => {
-        const check = jest.spyOn(Permissions, 'check');
-        const request = jest.spyOn(Permissions, 'request');
-        request.mockReturnValue(Permissions.RESULTS.GRANTED);
-
         const wrapper = shallow(
             <FileUploadButton {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
+        const instance = wrapper.instance();
+        const check = jest.spyOn(Permissions, 'check');
+        const request = jest.spyOn(Permissions, 'request');
+
+        // On iOS storage permissions are not checked
+        Platform.OS = 'ios';
+        let hasPermission = await instance.hasStoragePermission();
+        expect(check).not.toHaveBeenCalled();
+        expect(request).not.toHaveBeenCalled();
+        expect(hasPermission).toBe(true);
+
+        Platform.OS = 'android';
+        request.mockReturnValue(Permissions.RESULTS.GRANTED);
 
         check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
-        let hasPermission = await wrapper.instance().hasStoragePermission();
+        hasPermission = await instance.hasStoragePermission();
         expect(check).toHaveBeenCalled();
         expect(request).toHaveBeenCalled();
         expect(hasPermission).toBe(true);
 
         check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
-        hasPermission = await wrapper.instance().hasStoragePermission();
+        hasPermission = await instance.hasStoragePermission();
         expect(check).toHaveBeenCalled();
         expect(request).toHaveBeenCalled();
         expect(hasPermission).toBe(true);
