@@ -18,10 +18,12 @@ import AttachmentThumbnail from './attachment_thumbnail';
 import AttachmentTitle from './attachment_title';
 import AttachmentFooter from './attachment_footer';
 
-const STATUS_COLORS = {
+export const STATUS_COLORS = {
     good: '#00c100',
     warning: '#dede01',
     danger: '#e40303',
+    default: '#166de0',
+    primary: '#166de0',
 };
 
 export default class MessageAttachment extends PureComponent {

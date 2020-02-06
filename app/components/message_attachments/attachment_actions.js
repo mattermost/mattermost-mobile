@@ -55,6 +55,7 @@ export default class AttachmentActions extends PureComponent {
                         name={action.name}
                         postId={postId}
                         disabled={action.disabled}
+                        style={action.style}
                     />,
                 );
                 break;

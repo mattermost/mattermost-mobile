@@ -8,6 +8,7 @@ import Button from 'react-native-button';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import ActionButtonText from './action_button_text';
+import {STATUS_COLORS} from '../message_attachment';
 
 export default class ActionButton extends PureComponent {
     static propTypes = {
@@ -20,6 +21,7 @@ export default class ActionButton extends PureComponent {
         theme: PropTypes.object.isRequired,
         cookie: PropTypes.string.isRequired,
         disabled: PropTypes.bool,
+        style: PropTypes.string,
     };
 
     handleActionPress = preventDoubleTap(() => {
@@ -28,19 +30,27 @@ export default class ActionButton extends PureComponent {
     }, 4000);
 
     render() {
-        const {name, theme, disabled} = this.props;
+        const {name, theme, disabled, style: customStyle} = this.props;
         const style = getStyleSheet(theme);
+        let customButtonStyle;
+        let customButtonTextStyle;
+
+        if (customStyle) {
+            const color = STATUS_COLORS[customStyle] || theme[customStyle] || customStyle;
+            customButtonStyle = {borderColor: color, backgroundColor: '#ffffff', borderWidth: 1};
+            customButtonTextStyle = {color};
+        }
 
         return (
             <Button
-                containerStyle={style.button}
+                containerStyle={[style.button, customButtonStyle]}
                 disabledContainerStyle={style.buttonDisabled}
                 onPress={this.handleActionPress}
                 disabled={disabled}
             >
                 <ActionButtonText
                     message={name}
-                    style={style.text}
+                    style={{...style.text, ...customButtonTextStyle}}
                 />
             </Button>
         );
