@@ -18,7 +18,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-import {dismissModal, goToScreen, popTopScreen, showModalOverCurrentContext} from 'app/actions/navigation';
+import {dismissModal, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 
 import pinIcon from 'assets/images/channel_info/pin.png';
 
@@ -127,7 +127,7 @@ export default class ChannelInfo extends PureComponent {
             actions.setChannelDisplayName('');
         }
 
-        popTopScreen();
+        dismissModal();
     };
 
     goToChannelAddMembers = preventDoubleTap(() => {
