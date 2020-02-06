@@ -268,7 +268,7 @@ export default class ChannelBase extends PureComponent {
         }
     };
 
-    renderChannel(drawerContent, optionalProps = {}) {
+    renderChannel(drawerContent) {
         const {
             channelsRequestFailed,
             currentChannelId,
@@ -318,7 +318,6 @@ export default class ChannelBase extends PureComponent {
             <MainSidebar
                 ref={this.channelSidebarRef}
                 blurPostTextBox={this.blurPostTextBox}
-                {...optionalProps}
             >
                 <SettingsSidebar
                     ref={this.settingsSidebarRef}

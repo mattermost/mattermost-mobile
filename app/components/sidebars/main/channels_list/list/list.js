@@ -48,7 +48,6 @@ export default class List extends PureComponent {
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
-        previewChannel: PropTypes.func,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -309,7 +308,7 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {favoriteChannelIds, unreadChannelIds, previewChannel} = this.props;
+        const {favoriteChannelIds, unreadChannelIds} = this.props;
 
         return (
             <ChannelItem
@@ -317,7 +316,6 @@ export default class List extends PureComponent {
                 isUnread={unreadChannelIds.includes(item)}
                 isFavorite={favoriteChannelIds.includes(item)}
                 onSelectChannel={this.onSelectChannel}
-                previewChannel={previewChannel}
             />
         );
     };
