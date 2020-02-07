@@ -8,6 +8,7 @@ import {
     ScrollView,
     Text,
     View,
+    Platform,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 
@@ -20,7 +21,7 @@ import FileUploadItem from './file_upload_item';
 
 const initial = {opacity: 0, scale: 0};
 const final = {opacity: 1, scale: 1};
-const showFiles = {opacity: 1, height: 81};
+const showFiles = {opacity: 1, height: 65};
 const hideFiles = {opacity: 0, height: 0};
 const hideError = {height: 0};
 
@@ -108,12 +109,12 @@ export default class FileUploadPreview extends PureComponent {
     handleFileSizeWarning = (message) => {
         if (this.errorRef.current) {
             if (message) {
-                this.setState({fileSizeWarning: message});
-                this.makeErrorVisible(true, 42, null, () => {
+                this.setState({fileSizeWarning: message.replace(': ', ':\n')});
+                this.makeErrorVisible(true, 40, null, () => {
                     this.errorRef.current.transition(initial, final, 350, 'ease-in');
                 });
             } else {
-                this.makeErrorVisible(false, 42, 350, () => {
+                this.makeErrorVisible(false, 20, 350, () => {
                     this.errorRef.current.transition(final, initial, 350, 'ease-out');
                     this.clearErrorsFromState(400);
                 });
@@ -212,13 +213,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             display: 'flex',
             flexDirection: 'row',
             height: 0,
-            alignItems: 'center',
+            paddingBottom: 3,
         },
         errorContainer: {
             height: 0,
         },
         errorTextContainer: {
-            marginTop: 5,
+            marginTop: Platform.select({
+                ios: 4,
+                android: 2,
+            }),
             marginHorizontal: 12,
             opacity: 0,
             flex: 1,

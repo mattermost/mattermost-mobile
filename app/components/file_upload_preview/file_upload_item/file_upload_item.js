@@ -254,28 +254,27 @@ export default class FileUploadItem extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     preview: {
-        paddingTop: 12,
+        paddingTop: 5,
         marginLeft: 12,
     },
     previewContainer: {
-        height: 64,
-        width: 64,
-        elevation: 10,
+        height: 56,
+        width: 56,
         borderRadius: 4,
     },
     progressCircle: {
         alignItems: 'center',
         height: '100%',
-        justifyContent: 'center',
         width: '100%',
+        justifyContent: 'center',
     },
     progressCircleContent: {
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        height: 64,
+        height: 56,
+        width: 56,
         justifyContent: 'center',
         position: 'absolute',
-        width: 64,
     },
     progressCirclePercentage: {
         alignItems: 'center',
@@ -298,7 +297,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.15),
         borderRadius: 5,
         borderWidth: 1,
-        width: 64,
-        height: 64,
+        width: 56,
+        height: 56,
     },
 }));
