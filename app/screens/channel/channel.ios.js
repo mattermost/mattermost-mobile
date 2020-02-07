@@ -12,7 +12,6 @@ import PostTextbox from 'app/components/post_textbox';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import {DeviceTypes} from 'app/constants';
-import {peek} from 'app/actions/navigation';
 
 import LocalConfig from 'assets/config';
 
@@ -25,14 +24,6 @@ const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
 const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
 
 export default class ChannelIOS extends ChannelBase {
-    previewChannel = (passProps, options) => {
-        const screen = 'ChannelPeek';
-
-        peek(screen, passProps, options);
-    };
-
-    optionalProps = {previewChannel: this.previewChannel};
-
     render() {
         const {height} = Dimensions.get('window');
         const {currentChannelId} = this.props;
@@ -84,6 +75,6 @@ export default class ChannelIOS extends ChannelBase {
             </React.Fragment>
         );
 
-        return this.renderChannel(drawerContent, this.optionalProps);
+        return this.renderChannel(drawerContent);
     }
 }
