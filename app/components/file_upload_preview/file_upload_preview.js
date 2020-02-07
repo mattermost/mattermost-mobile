@@ -154,7 +154,12 @@ export default class FileUploadPreview extends PureComponent {
 
     render() {
         const {fileSizeWarning, showFileMaxWarning} = this.state;
-        const style = getStyleSheet(this.props.theme);
+        const {files, theme} = this.props;
+        const style = getStyleSheet(theme);
+
+        if (!files.length) {
+            return null;
+        }
 
         return (
             <View style={style.previewContainer}>
@@ -208,6 +213,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         previewContainer: {
             display: 'flex',
             flexDirection: 'column',
+            paddingTop: Platform.select({
+                ios: 8,
+                android: 0,
+            }),
+            paddingBottom: Platform.select({
+                ios: 0,
+                android: 6,
+            }),
         },
         fileContainer: {
             display: 'flex',

@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     ScrollView,
     View,
+    Image,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -904,6 +905,7 @@ export default class PostTextBoxBase extends PureComponent {
                     <PasteableTextInput
                         ref={this.input}
                         value={textValue}
+                        style={{...style.input, maxHeight}}
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handlePostDraftSelectionChanged}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
@@ -911,7 +913,6 @@ export default class PostTextBoxBase extends PureComponent {
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
-                        style={{...style.input, maxHeight}}
                         keyboardType={this.state.keyboardType}
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
@@ -961,6 +962,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
+            paddingBottom: Platform.select({
+                ios: 0,
+                android: 5,
+            }),
         },
         slashIcon: {
             width: ICON_SIZE,
@@ -979,22 +984,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         quickActionsContainer: {
             display: 'flex',
             flexDirection: 'row',
-            height: 44,
+            height: Platform.select({
+                ios: 44,
+                android: 34,
+            }),
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 16,
+            fontSize: 15,
             lineHeight: 20,
             paddingHorizontal: 12,
-            paddingTop: Platform.select({
-                ios: 10,
-                android: 6,
-            }),
-            paddingBottom: Platform.select({
-                ios: 8,
-                android: 4,
-            }),
-            minHeight: 38,
+            minHeight: 30,
         },
         inputContainer: {
             flex: 1,
@@ -1002,12 +1002,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         inputContentContainer: {
             alignItems: 'stretch',
+            paddingTop: Platform.select({
+                ios: 7,
+                android: 0,
+            }),
         },
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
             justifyContent: 'center',
-            paddingBottom: 8,
+            paddingBottom: 2,
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
