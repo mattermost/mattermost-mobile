@@ -14,7 +14,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "borderTopWidth": 1,
           "flexDirection": "row",
           "justifyContent": "center",
-          "paddingBottom": 8,
+          "paddingBottom": 2,
         },
         null,
       ]
@@ -24,6 +24,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       contentContainerStyle={
         Object {
           "alignItems": "stretch",
+          "paddingTop": 7,
         }
       }
       disableScrollViewPanResponder={true}
@@ -58,13 +59,11 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         style={
           Object {
             "color": "#3d3c40",
-            "fontSize": 16,
+            "fontSize": 15,
             "lineHeight": 20,
             "maxHeight": 150,
-            "minHeight": 38,
-            "paddingBottom": 8,
+            "minHeight": 30,
             "paddingHorizontal": 12,
-            "paddingTop": 10,
           }
         }
         underlineColorAndroid="transparent"
@@ -82,6 +81,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "justifyContent": "space-between",
+              "paddingBottom": 0,
             }
           }
         >
