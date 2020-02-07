@@ -80,7 +80,7 @@ export default class TeamsList extends PureComponent {
                 actions.handleTeamChange(teamId);
             }
 
-            closeChannelDrawer();
+            closeChannelDrawer(true);
         });
     };
 

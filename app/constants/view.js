@@ -62,7 +62,6 @@ const ViewTypes = keyMirror({
     SET_CHANNEL_RETRY_FAILED: null,
     SET_CHANNEL_DISPLAY_NAME: null,
 
-    SET_LAST_CHANNEL_FOR_TEAM: null,
     REMOVE_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
@@ -94,7 +93,6 @@ const ViewTypes = keyMirror({
 
     SELECTED_ACTION_MENU: null,
     SUBMIT_ATTACHMENT_MENU_ACTION: null,
-    SELECT_CHANNEL_WITH_MEMBER: null,
 
     PORTRAIT: null,
     LANDSCAPE: null,

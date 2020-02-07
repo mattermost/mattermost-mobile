@@ -10,14 +10,14 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import {intlShape} from 'react-intl';
+import {IntlProvider} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import {General, WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import {DRAWER_INITIAL_OFFSET} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
@@ -28,6 +28,9 @@ import DrawerSwiper from './drawer_swiper';
 import TeamsList from './teams_list';
 
 import telemetry from 'app/telemetry';
+import {getTranslations} from 'app/i18n';
+
+import {closeMainDrawer, enableMainDrawer} from 'app/actions/navigation';
 
 export default class ChannelSidebar extends Component {
     static propTypes = {
@@ -38,17 +41,19 @@ export default class ChannelSidebar extends Component {
             setChannelDisplayName: PropTypes.func.isRequired,
             setChannelLoading: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
+            handleSelectChannel: PropTypes.func,
         }).isRequired,
-        blurPostTextBox: PropTypes.func.isRequired,
+        blurPostTextBox: PropTypes.func,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
-        currentUserId: PropTypes.string.isRequired,
+        currentUserId: PropTypes.string,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
+        locale: PropTypes.string,
     };
 
-    static contextTypes = {
-        intl: intlShape.isRequired,
+    static defaultProps = {
+        blurPostTextBox: () => true,
     };
 
     constructor(props) {
@@ -106,10 +111,10 @@ export default class ChannelSidebar extends Component {
     }
 
     handleAndroidBack = () => {
-        if (this.state.drawerOpened && this.drawerRef?.current) {
-            this.drawerRef.current.closeDrawer();
-            return true;
-        }
+        // if (this.state.drawerOpened && this.drawerRef?.current) {
+        //     closeMainDrawer();
+        //     return true;
+        // }
 
         return false;
     };
@@ -145,11 +150,13 @@ export default class ChannelSidebar extends Component {
         requestAnimationFrame(() => this.setState({show: true}));
     };
 
-    closeChannelDrawer = () => {
-        if (this.state.drawerOpened && this.drawerRef?.current) {
-            this.drawerRef.current.closeDrawer();
-        } else if (this.drawerSwiper && DeviceTypes.IS_TABLET) {
-            this.resetDrawer(true);
+    closeChannelDrawer = (skip) => {
+        if (this.drawerSwiper && DeviceTypes.IS_TABLET) {
+            this.resetDrawer(skip);
+        } else {
+            // this.drawerRef.current.closeDrawer();
+            closeMainDrawer();
+            this.handleDrawerClose();
         }
     };
 
@@ -162,7 +169,7 @@ export default class ChannelSidebar extends Component {
             drawerOpened: false,
             searching: false,
         });
-        this.resetDrawer();
+        this.resetDrawer(true);
         Keyboard.dismiss();
     };
 
@@ -189,7 +196,7 @@ export default class ChannelSidebar extends Component {
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {logChannelSwitch, setChannelLoading} = this.props.actions;
+        const {logChannelSwitch, handleSelectChannel} = this.props.actions;
 
         logChannelSwitch(channel.id, currentChannelId);
 
@@ -197,13 +204,12 @@ export default class ChannelSidebar extends Component {
 
         if (closeDrawer) {
             telemetry.start(['channel:close_drawer']);
-            this.closeChannelDrawer();
-            setChannelLoading(channel.id !== currentChannelId);
+            this.closeChannelDrawer(true);
         }
 
         if (!channel) {
             const utils = require('app/utils/general');
-            const {intl} = this.context;
+            const {intl} = this.providerRef.getChildContext();
 
             const unableToJoinMessage = {
                 id: t('mobile.open_unknown_channel.error'),
@@ -212,15 +218,14 @@ export default class ChannelSidebar extends Component {
             const erroMessage = {};
 
             utils.alertErrorWithFallback(intl, erroMessage, unableToJoinMessage);
-            setChannelLoading(false);
             return;
         }
 
-        EventEmitter.emit('switch_channel', channel, currentChannelId);
+        handleSelectChannel(channel.id);
     };
 
     joinChannel = (channel, currentChannelId) => {
-        const {intl} = this.context;
+        const {intl} = this.providerRef.getChildContext();
         const {
             actions,
             currentTeamId,
@@ -233,7 +238,7 @@ export default class ChannelSidebar extends Component {
             setChannelLoading,
         } = actions;
 
-        this.closeChannelDrawer();
+        this.closeChannelDrawer(true);
         setChannelLoading(channel.id !== currentChannelId);
 
         setTimeout(async () => {
@@ -277,6 +282,7 @@ export default class ChannelSidebar extends Component {
     onPageSelected = (index) => {
         this.swiperIndex = index;
 
+        enableMainDrawer(this.swiperIndex !== 0);
         if (this.drawerRef?.current) {
             this.drawerRef.current.canClose = this.swiperIndex !== 0;
         }
@@ -299,9 +305,16 @@ export default class ChannelSidebar extends Component {
         }
     };
 
-    resetDrawer = () => {
+    setProviderRef = (ref) => {
+        this.providerRef = ref;
+    }
+
+    resetDrawer = (skip) => {
         if (this.drawerSwiper) {
             this.drawerSwiper.resetPage();
+            if (!skip) {
+                enableMainDrawer(true);
+            }
         }
 
         if (this.drawerRef?.current) {
@@ -313,21 +326,16 @@ export default class ChannelSidebar extends Component {
         }
     };
 
-    renderNavigationView = (drawerWidth) => {
+    renderNavigationView = () => {
         const {
             teamsCount,
             theme,
         } = this.props;
 
         const {
-            show,
             openDrawerOffset,
             searching,
         } = this.state;
-
-        if (!show) {
-            return null;
-        }
 
         const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets;
         const multipleTeams = teamsCount > 1;
@@ -386,7 +394,7 @@ export default class ChannelSidebar extends Component {
                     onPageSelected={this.onPageSelected}
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
-                    drawerWidth={drawerWidth}
+                    drawerWidth={Dimensions.get('window').width - 60}
                     hasSafeAreaInsets={hasSafeAreaInsets}
                 >
                     {lists}
@@ -396,23 +404,21 @@ export default class ChannelSidebar extends Component {
     };
 
     render() {
-        const {children} = this.props;
-        const {deviceWidth, openDrawerOffset} = this.state;
-        const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
-        const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
+        const locale = this.props.locale;
+
+        if (!locale) {
+            return null;
+        }
 
         return (
-            <DrawerLayout
-                ref={this.drawerRef}
-                renderNavigationView={this.renderNavigationView}
-                onDrawerClose={this.handleDrawerClose}
-                onDrawerOpen={this.handleDrawerOpen}
-                drawerWidth={drawerWidth}
-                useNativeAnimations={true}
-                isTablet={isTablet}
+            <IntlProvider
+                key={locale}
+                locale={'en'}
+                ref={this.setProviderRef}
+                messages={getTranslations('en')}
             >
-                {children}
-            </DrawerLayout>
+                {this.renderNavigationView()}
+            </IntlProvider>
         );
     }
 }

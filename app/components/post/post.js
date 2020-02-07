@@ -15,8 +15,8 @@ import {Posts} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
-import PostBody from 'app/components/post_body';
-import PostHeader from 'app/components/post_header';
+// import PostBody from 'app/components/post_body';
+// import PostHeader from 'app/components/post_header';
 import PostPreHeader from 'app/components/post_header/post_pre_header';
 import PostProfilePicture from 'app/components/post_profile_picture';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
@@ -28,7 +28,7 @@ import {t} from 'app/utils/i18n';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 
-import Config from 'assets/config';
+// import Config from 'assets/config';
 
 export default class Post extends PureComponent {
     static propTypes = {
@@ -227,33 +227,40 @@ export default class Post extends PureComponent {
 
     render() {
         const {
-            channelIsReadOnly,
+
+            // channelIsReadOnly,
             commentedOnPost,
             highlight,
-            isLastPost,
+
+            // isLastPost,
             isLastReply,
-            isSearchResult,
-            onHashtagPress,
-            onPermalinkPress,
+
+            // isSearchResult,
+            // onHashtagPress,
+            // onPermalinkPress,
             post,
             isBot,
-            renderReplies,
-            shouldRenderReplyButton,
-            showAddReaction,
-            showFullDate,
-            showLongPost,
+
+            // renderReplies,
+            // shouldRenderReplyButton,
+            // showAddReaction,
+            // showFullDate,
+            // showLongPost,
             theme,
-            managedConfig,
+
+            // managedConfig,
             consecutivePost,
             hasComments,
             isFlagged,
             highlightPinnedOrFlagged,
             skipFlaggedHeader,
             skipPinnedHeader,
-            location,
+
+            // location,
             isLandscape,
-            previousPostExists,
-            beforePrevPostUserId,
+
+            // previousPostExists,
+            // beforePrevPostUserId,
         } = this.props;
 
         if (!post) {
@@ -261,9 +268,10 @@ export default class Post extends PureComponent {
         }
 
         const style = getStyleSheet(theme);
-        const isReplyPost = this.isReplyPost();
-        const onUsernamePress =
-            Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly ? this.autofillUserMention : this.viewUserProfile;
+
+        // const isReplyPost = this.isReplyPost();
+        // const onUsernamePress =
+        //     Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly ? this.autofillUserMention : this.viewUserProfile;
         const mergeMessage = consecutivePost && !hasComments && !isBot;
         const highlightFlagged = isFlagged && !skipFlaggedHeader;
         const hightlightPinned = post.is_pinned && !skipPinnedHeader;
@@ -291,24 +299,26 @@ export default class Post extends PureComponent {
                     />
                 </View>
             );
-            postHeader = (
-                <PostHeader
-                    post={post}
-                    commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
-                    createAt={post.create_at}
-                    isSearchResult={isSearchResult}
-                    shouldRenderReplyButton={shouldRenderReplyButton}
-                    showFullDate={showFullDate}
-                    onPress={this.handleReply}
-                    onUsernamePress={onUsernamePress}
-                    renderReplies={renderReplies}
-                    theme={theme}
-                    previousPostExists={previousPostExists}
-                    beforePrevPostUserId={beforePrevPostUserId}
-                />
-            );
+
+            // postHeader = (
+            //     <PostHeader
+            //         post={post}
+            //         commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
+            //         createAt={post.create_at}
+            //         isSearchResult={isSearchResult}
+            //         shouldRenderReplyButton={shouldRenderReplyButton}
+            //         showFullDate={showFullDate}
+            //         onPress={this.handleReply}
+            //         onUsernamePress={onUsernamePress}
+            //         renderReplies={renderReplies}
+            //         theme={theme}
+            //         previousPostExists={previousPostExists}
+            //         beforePrevPostUserId={beforePrevPostUserId}
+            //     />
+            // );
         }
-        const replyBarStyle = this.replyBarStyle();
+
+        // const replyBarStyle = this.replyBarStyle();
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
 
         return (
@@ -320,7 +330,7 @@ export default class Post extends PureComponent {
                     underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     cancelTouchOnPanning={true}
                 >
-                    <React.Fragment>
+                    <>
                         <PostPreHeader
                             isConsecutive={mergeMessage}
                             isFlagged={isFlagged}
@@ -334,7 +344,7 @@ export default class Post extends PureComponent {
                             {userProfile}
                             <View style={rightColumnStyle}>
                                 {postHeader}
-                                <PostBody
+                                {/* <PostBody
                                     ref={this.postBodyRef}
                                     highlight={highlight}
                                     channelIsReadOnly={channelIsReadOnly}
@@ -352,10 +362,10 @@ export default class Post extends PureComponent {
                                     showAddReaction={showAddReaction}
                                     showLongPost={showLongPost}
                                     location={location}
-                                />
+                                /> */}
                             </View>
                         </View>
-                    </React.Fragment>
+                    </>
                 </TouchableWithFeedback>
             </View>
         );

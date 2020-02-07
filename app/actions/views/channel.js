@@ -12,8 +12,6 @@ import {
     markChannelAsRead,
     markChannelAsViewed,
     leaveChannel as serviceLeaveChannel,
-    selectChannel,
-    getChannelStats,
 } from 'mattermost-redux/actions/channels';
 import {
     getPosts,
@@ -29,9 +27,7 @@ import {Client4} from 'mattermost-redux/client';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {
-    getChannel,
     getCurrentChannelId,
-    getMyChannelMember,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
     isManuallyUnread,
@@ -39,7 +35,7 @@ import {
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUserIdsInChannels, getUsers} from 'mattermost-redux/selectors/entities/users';
-import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
+import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {getChannelReachable} from 'app/selectors/channel';
 
@@ -378,37 +374,49 @@ export function selectDefaultChannel(teamId) {
 
 export function handleSelectChannel(channelId, fromPushNotification = false) {
     return async (dispatch, getState) => {
+        const dt = Date.now();
         const state = getState();
-        const channel = getChannel(state, channelId);
-        const currentTeamId = getCurrentTeamId(state);
-        const currentChannelId = getCurrentChannelId(state);
-        const sameChannel = channelId === currentChannelId;
-        const member = getMyChannelMember(state, channelId);
+        const {channels, myMembers} = state.entities.channels;
+        const {currentTeamId} = state.entities.teams;
+        const channel = channels[channelId];
+        const member = myMembers[channelId];
 
-        dispatch(setLoadMorePostsVisible(true));
+        // dispatch(setLoadMorePostsVisible(true));
 
         // If the app is open from push notification, we already fetched the posts.
         if (!fromPushNotification) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
         }
 
-        let previousChannelId;
-        if (!fromPushNotification && !sameChannel) {
-            previousChannelId = currentChannelId;
-        }
+        // let previousChannelId;
+        // if (!fromPushNotification && !sameChannel) {
+        //     previousChannelId = currentChannelId;
+        // }
 
-        const actions = [
-            selectChannel(channelId),
-            getChannelStats(channelId),
-            setChannelDisplayName(channel.display_name),
-            setInitialPostVisibility(channelId),
-            setChannelLoading(false),
-            setLastChannelForTeam(currentTeamId, channelId),
-            selectChannelWithMember(channelId, channel, member),
-        ];
+        dispatch({
+            type: ChannelTypes.SELECT_CHANNEL,
+            data: channelId,
+            extra: {
+                channel,
+                member,
+                teamId: currentTeamId,
+            },
+        });
 
-        dispatch(batchActions(actions));
-        dispatch(markChannelViewedAndRead(channelId, previousChannelId));
+        // const actions = [
+        //     selectChannel(channelId),
+        //     // getChannelStats(channelId),
+        //     setChannelDisplayName(channel.display_name),
+        //     // setInitialPostVisibility(channelId),
+        //     // setChannelLoading(false),
+        //     // setLastChannelForTeam(currentTeamId, channelId),
+        //     selectChannelWithMember(channelId, channel, member),
+        // ];
+
+        // dispatch(batchActions(actions));
+        // dispatch(markChannelViewedAndRead(channelId, previousChannelId));
+
+        console.log('channel switch in', channel.display_name, (Date.now() - dt), 'ms'); //eslint-disable-line
     };
 }
 
@@ -712,29 +720,12 @@ function setLoadMorePostsVisible(visible) {
     };
 }
 
-function setInitialPostVisibility(channelId) {
-    return {
-        type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
-        data: channelId,
-    };
-}
-
-function setLastChannelForTeam(teamId, channelId) {
-    return {
-        type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-        teamId,
-        channelId,
-    };
-}
-
-function selectChannelWithMember(channelId, channel, member) {
-    return {
-        type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-        data: channelId,
-        channel,
-        member,
-    };
-}
+// function setInitialPostVisibility(channelId) {
+//     return {
+//         type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
+//         data: channelId,
+//     };
+// }
 
 export function loadChannelsForTeam(teamId) {
     return async (dispatch, getState) => {

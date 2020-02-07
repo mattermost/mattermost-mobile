@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Dimensions, View} from 'react-native';
+import {View} from 'react-native';
 
-import ChannelLoader from 'app/components/channel_loader';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
@@ -19,9 +18,6 @@ import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
 
 export default class ChannelAndroid extends ChannelBase {
     render() {
-        const {height} = Dimensions.get('window');
-
-        const channelLoaderStyle = [style.channelLoader, {height}];
         const drawerContent = (
             <SafeAreaView>
                 <StatusBar/>
@@ -40,10 +36,6 @@ export default class ChannelAndroid extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
-                <ChannelLoader
-                    height={height}
-                    style={channelLoaderStyle}
-                />
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </SafeAreaView>
         );

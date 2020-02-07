@@ -1,10 +1,11 @@
+<?xml version="1.0"?>
 <resources>
     <string name="app_name">Mattermost Beta</string>
     <string name="inAppPinCode_title">in-App Pincode</string>
     <string name="inAppPinCode_description">Require users to authenticate as the owner of the phone before using the app. Prompts for fingerprint or passcode when the app first opens and when the app has been in the background for more than 5 minutes.</string>
     <string name="blurApplicationScreen_title">Blur Application Screen</string>
-    <string name="blurApplicationScreen_description">Blur the app when it’s set to background to protect any confidential on-screen information, it also prevents taking screenshots of the app.</string>
-    <string name="jailbreakProtection_title">Jailbreak &#x2F; Root Detection</string>
+    <string name="blurApplicationScreen_description">Blur the app when it&#x2019;s set to background to protect any confidential on-screen information, it also prevents taking screenshots of the app.</string>
+    <string name="jailbreakProtection_title">Jailbreak / Root Detection</string>
     <string name="jailbreakProtection_description">Disable app launch on Jailbroken or rooted devices.</string>
     <string name="copyAndPasteProtection_title">Copy&amp;Paste Protection</string>
     <string name="copyAndPasteProtection_description">Disable the ability to copy from or paste into any text inputs in the app.</string>

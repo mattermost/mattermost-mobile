@@ -15,9 +15,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EmptyToolbar from 'app/components/start/empty_toolbar';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
-import MainSidebar from 'app/components/sidebars/main';
 import SafeAreaView from 'app/components/safe_area_view';
-import SettingsSidebar from 'app/components/sidebars/settings';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
@@ -38,6 +36,7 @@ export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadChannelsForTeam: PropTypes.func.isRequired,
+            markChannelViewedAndRead: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
@@ -45,7 +44,6 @@ export default class ChannelBase extends PureComponent {
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
-        channelsRequestFailed: PropTypes.bool,
         currentTeamId: PropTypes.string,
         isLandscape: PropTypes.bool,
         theme: PropTypes.object.isRequired,
@@ -92,8 +90,11 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.currentChannelId) {
-            this.props.actions.getChannelStats(this.props.currentChannelId);
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+            requestAnimationFrame(() => {
+                this.props.actions.getChannelStats(this.props.currentChannelId);
+                this.props.actions.markChannelViewedAndRead(this.props.currentChannelId);
+            });
         }
 
         if (tracker.initialLoad && !this.props.skipMetrics) {
@@ -130,7 +131,11 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (nextProps.currentChannelId !== this.props.currentChannelId) {
-            this.props.actions.getChannelStats(nextProps.currentChannelId);
+            const previousChannelId = EphemeralStore.appStartedFromPushNotification ? null : this.props.currentChannelId;
+            requestAnimationFrame(() => {
+                this.props.actions.markChannelViewedAndRead(nextProps.currentChannelId, previousChannelId);
+                this.props.actions.getChannelStats(nextProps.currentChannelId);
+            });
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
@@ -314,22 +319,14 @@ export default class ChannelBase extends PureComponent {
 
         const baseStyle = getStyleFromTheme(theme);
         return (
-            <MainSidebar
-                ref={this.channelSidebarRef}
-                blurPostTextBox={this.blurPostTextBox}
-            >
-                <SettingsSidebar
-                    ref={this.settingsSidebarRef}
-                    blurPostTextBox={this.blurPostTextBox}
-                >
-                    <View style={baseStyle.backdrop}>
-                        {drawerContent}
-                    </View>
-                </SettingsSidebar>
+            <>
+                <View style={baseStyle.backdrop}>
+                    {drawerContent}
+                </View>
                 <InteractiveDialogController
                     theme={theme}
                 />
-            </MainSidebar>
+            </>
         );
     }
 

@@ -8,6 +8,8 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import Channel from 'app/screens/channel';
 import Root from 'app/components/root';
 import SelectServer from 'app/screens/select_server';
+import MainSidebar from 'app/components/sidebars/main';
+import SettingsSidebar from 'app/components/sidebars/settings';
 
 export function registerScreens(store, Provider) {
     // TODO consolidate this with app/utils/wrap_context_provider
@@ -76,4 +78,6 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('TimezoneSettings', () => wrapper(require('app/screens/settings/timezone').default), () => require('app/screens/settings/timezone').default);
     Navigation.registerComponent('ErrorTeamsList', () => wrapper(require('app/screens/error_teams_list').default), () => require('app/screens/error_teams_list').default);
     Navigation.registerComponent('UserProfile', () => wrapper(require('app/screens/user_profile').default), () => require('app/screens/user_profile').default);
+    Navigation.registerComponentWithRedux('MainSidebar', () => MainSidebar, Provider, store);
+    Navigation.registerComponentWithRedux('SettingsSidebar', () => SettingsSidebar, Provider, store);
 }

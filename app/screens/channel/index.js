@@ -4,8 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
-import {RequestStatus} from 'mattermost-redux/constants';
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -15,19 +14,18 @@ import {getChannelStats} from 'mattermost-redux/actions/channels';
 import {
     loadChannelsForTeam,
     selectInitialChannel,
+    markChannelViewedAndRead,
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
+import {logout} from 'app/actions/views/user';
 import {selectDefaultTeam} from 'app/actions/views/select_team';
 import {isLandscape} from 'app/selectors/device';
 
 import Channel from './channel';
 
 function mapStateToProps(state) {
-    const {myChannels: channelsRequest} = state.requests.channels;
-
     return {
-        channelsRequestFailed: channelsRequest.status === RequestStatus.FAILURE,
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
         isLandscape: isLandscape(state),
@@ -43,6 +41,7 @@ function mapDispatchToProps(dispatch) {
             connection,
             loadChannelsForTeam,
             logout,
+            markChannelViewedAndRead,
             selectDefaultTeam,
             selectInitialChannel,
             recordLoadTime,

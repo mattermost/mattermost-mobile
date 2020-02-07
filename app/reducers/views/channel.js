@@ -15,6 +15,8 @@ function displayName(state = '', action) {
     switch (action.type) {
     case ViewTypes.SET_CHANNEL_DISPLAY_NAME:
         return action.displayName || '';
+    case ChannelTypes.SELECT_CHANNEL:
+        return action.extra?.channel?.display_name || ''; //eslint-disable-line camelcase
     default:
         return state;
     }
@@ -348,12 +350,14 @@ function loadMorePostsVisible(state = true, action) {
 
 function lastChannelViewTime(state = {}, action) {
     switch (action.type) {
-    case ViewTypes.SELECT_CHANNEL_WITH_MEMBER: {
-        if (action.member) {
+    case ChannelTypes.SELECT_CHANNEL: {
+        if (action.extra?.member) {
+            const {member} = action.extra;
             const nextState = {...state};
-            nextState[action.data] = action.member.last_viewed_at;
+            nextState[action.data] = member.last_viewed_at;
             return nextState;
         }
+
         return state;
     }
 
@@ -369,9 +373,8 @@ function lastChannelViewTime(state = {}, action) {
 
 function keepChannelIdAsUnread(state = null, action) {
     switch (action.type) {
-    case ViewTypes.SELECT_CHANNEL_WITH_MEMBER: {
-        const member = action.member;
-        const channel = action.channel;
+    case ChannelTypes.SELECT_CHANNEL: {
+        const {channel, member} = action.extra;
 
         if (!member || !channel) {
             return state;

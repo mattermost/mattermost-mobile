@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
+import {Platform, Keyboard} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import merge from 'deepmerge';
@@ -20,37 +20,53 @@ function getThemeFromState() {
 export function resetToChannel(passProps = {}) {
     const theme = getThemeFromState();
 
-    Navigation.setRoot({
-        root: {
-            stack: {
-                children: [{
-                    component: {
-                        name: 'Channel',
-                        passProps,
-                        options: {
-                            layout: {
-                                backgroundColor: 'transparent',
-                            },
-                            statusBar: {
-                                visible: true,
-                            },
-                            topBar: {
-                                visible: false,
-                                height: 0,
-                                backButton: {
-                                    color: theme.sidebarHeaderTextColor,
-                                    title: '',
-                                },
-                                background: {
-                                    color: theme.sidebarHeaderBg,
-                                },
-                                title: {
-                                    color: theme.sidebarHeaderTextColor,
-                                },
-                            },
+    const stack = {
+        children: [{
+            component: {
+                name: 'Channel',
+                passProps,
+                options: {
+                    layout: {
+                        backgroundColor: 'transparent',
+                    },
+                    statusBar: {
+                        visible: true,
+                    },
+                    topBar: {
+                        visible: false,
+                        height: 0,
+                        background: {
+                            color: theme.sidebarHeaderBg,
+                        },
+                        backButton: {
+                            visible: false,
                         },
                     },
-                }],
+                },
+            },
+        }],
+    };
+
+    Navigation.setRoot({
+        root: {
+            sideMenu: {
+                left: {
+                    animationVelocity: 2500,
+                    component: {
+                        name: 'MainSidebar',
+                    },
+                },
+                center: {
+                    stack,
+                },
+                right: {
+                    animationVelocity: 2500,
+                    component: {
+                        name: 'SettingsSidebar',
+                    },
+                },
+                animationType: 'parallax', // defaults to none if not provided, options are 'parallax', 'door', 'slide', or 'slide-and-scale'
+                // openGestureMode: 'entireScreen',
             },
         },
     });
@@ -349,4 +365,58 @@ export async function dismissOverlay(componentId) {
         // RNN returns a promise rejection if there is no modal with
         // this componentId to dismiss. We'll do nothing in this case.
     }
+}
+
+export function openMainDrawer() {
+    const componentId = EphemeralStore.getNavigationTopComponentId();
+
+    Keyboard.dismiss();
+    Navigation.mergeOptions(componentId, {
+        sideMenu: {
+            left: {visible: true},
+        },
+    });
+}
+
+export function closeMainDrawer() {
+    const componentId = EphemeralStore.getNavigationTopComponentId();
+
+    Keyboard.dismiss();
+    Navigation.mergeOptions(componentId, {
+        sideMenu: {
+            left: {visible: false},
+        },
+    });
+}
+
+export function enableMainDrawer(enabled) {
+    const componentId = EphemeralStore.getNavigationTopComponentId();
+
+    Navigation.mergeOptions(componentId, {
+        sideMenu: {
+            left: {enabled, visible: true},
+        },
+    });
+}
+
+export function openSettingsDrawer() {
+    const componentId = EphemeralStore.getNavigationTopComponentId();
+
+    Keyboard.dismiss();
+    Navigation.mergeOptions(componentId, {
+        sideMenu: {
+            right: {visible: true},
+        },
+    });
+}
+
+export function closeSettingsDrawer() {
+    const componentId = EphemeralStore.getNavigationTopComponentId();
+
+    Keyboard.dismiss();
+    Navigation.mergeOptions(componentId, {
+        sideMenu: {
+            right: {visible: false},
+        },
+    });
 }

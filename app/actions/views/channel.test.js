@@ -5,7 +5,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import initialState from 'app/initial_state';
-import {ViewTypes} from 'app/constants';
+import {ChannelTypes} from 'mattermost-redux/action_types';
 import testHelper from 'test/test_helper';
 
 import * as ChannelActions from 'app/actions/views/channel';
@@ -288,22 +288,23 @@ describe('Actions.Views.Channel', () => {
         await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
         const storeActions = store.getActions();
         const storeBatchActions = storeActions.find(({type}) => type === 'BATCHING_REDUCER.BATCH');
-        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ChannelTypes.SELECT_CHANNEL);
         const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
         const readAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_READ);
 
         const expectedSelectChannelWithMember = {
-            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+            type: ChannelTypes.SELECT_CHANNEL,
             data: channelId,
-            channel: {
-                data: channelId,
-            },
-            member: {
-                data: {
-                    member: {},
+            extra: {
+                channel: {
+                    data: channelId,
+                },
+                member: {
+                    data: {
+                        member: {},
+                    },
                 },
             },
-
         };
         expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
         expect(viewedAction).not.toBe(null);

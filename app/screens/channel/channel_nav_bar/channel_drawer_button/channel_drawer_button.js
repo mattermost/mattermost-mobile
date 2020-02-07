@@ -18,6 +18,7 @@ import {t} from 'app/utils/i18n';
 import {intlShape} from 'react-intl';
 
 import telemetry from 'app/telemetry';
+import {openMainDrawer} from 'app/actions/navigation';
 
 export default class ChannelDrawerButton extends PureComponent {
     static propTypes = {
@@ -57,7 +58,7 @@ export default class ChannelDrawerButton extends PureComponent {
 
     handlePress = preventDoubleTap(() => {
         telemetry.start(['channel:open_drawer']);
-        this.props.openDrawer();
+        openMainDrawer();
     });
 
     render() {

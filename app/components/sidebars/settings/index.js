@@ -18,6 +18,7 @@ function mapStateToProps(state) {
 
     return {
         currentUser,
+        locale: currentUser?.locale,
         status,
         theme: getTheme(state),
     };

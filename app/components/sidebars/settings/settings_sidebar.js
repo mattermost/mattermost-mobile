@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
+import {IntlProvider} from 'react-intl';
 import {
     BackHandler,
     Dimensions,
@@ -18,14 +18,16 @@ import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
+import {DRAWER_INITIAL_OFFSET} from 'app/components/sidebars/drawer_layout';
 import UserStatus from 'app/components/user_status';
 import {DeviceTypes, NavigationTypes} from 'app/constants';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-import {showModal, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
+import {closeSettingsDrawer, showModal, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
+
+import {getTranslations} from 'app/i18n';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -37,20 +39,18 @@ export default class SettingsDrawer extends PureComponent {
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
         }).isRequired,
-        blurPostTextBox: PropTypes.func.isRequired,
+        blurPostTextBox: PropTypes.func,
         children: PropTypes.node,
         currentUser: PropTypes.object.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        locale: PropTypes.string,
     };
 
     static defaultProps = {
         currentUser: {},
         status: 'offline',
-    };
-
-    static contextTypes = {
-        intl: intlShape,
+        blurPostTextBox: () => true,
     };
 
     constructor(props) {
@@ -86,14 +86,13 @@ export default class SettingsDrawer extends PureComponent {
     }
 
     confirmReset = (status) => {
-        const {intl} = this.context;
+        const {intl} = this.providerRef.getChildContext();
         confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
     };
 
     closeSettingsSidebar = () => {
-        if (this.drawerRef && this.drawerOpened) {
-            this.drawerRef.closeDrawer();
-        }
+        closeSettingsDrawer();
+        this.handleDrawerClose();
     };
 
     openSettingsSidebar = () => {
@@ -172,7 +171,8 @@ export default class SettingsDrawer extends PureComponent {
 
     goToEditProfile = preventDoubleTap(() => {
         const {currentUser} = this.props;
-        const {formatMessage} = this.context.intl;
+        const {intl} = this.providerRef.getChildContext();
+        const {formatMessage} = intl;
         const commandType = 'ShowModal';
 
         this.openModal(
@@ -183,7 +183,8 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     goToFlagged = preventDoubleTap(() => {
-        const {formatMessage} = this.context.intl;
+        const {intl} = this.providerRef.getChildContext();
+        const {formatMessage} = intl;
 
         this.openModal(
             'FlaggedPosts',
@@ -192,7 +193,7 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     goToMentions = preventDoubleTap(() => {
-        const {intl} = this.context;
+        const {intl} = this.providerRef.getChildContext();
 
         this.openModal(
             'RecentMentions',
@@ -202,7 +203,8 @@ export default class SettingsDrawer extends PureComponent {
 
     goToUserProfile = preventDoubleTap(() => {
         const userId = this.props.currentUser.id;
-        const {formatMessage} = this.context.intl;
+        const {intl} = this.providerRef.getChildContext();
+        const {formatMessage} = intl;
 
         this.openModal(
             'UserProfile',
@@ -212,7 +214,7 @@ export default class SettingsDrawer extends PureComponent {
     });
 
     goToSettings = preventDoubleTap(() => {
-        const {intl} = this.context;
+        const {intl} = this.providerRef.getChildContext();
 
         this.openModal(
             'Settings',
@@ -370,23 +372,26 @@ export default class SettingsDrawer extends PureComponent {
         );
     };
 
+    setProviderRef = (ref) => {
+        this.providerRef = ref;
+    }
+
     render() {
-        const {children} = this.props;
-        const {deviceWidth, openDrawerOffset} = this.state;
-        const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
+        const locale = this.props.locale;
+
+        if (!locale) {
+            return null;
+        }
 
         return (
-            <DrawerLayout
-                ref={this.setDrawerRef}
-                renderNavigationView={this.renderNavigationView}
-                onDrawerClose={this.handleDrawerClose}
-                onDrawerOpen={this.handleDrawerOpen}
-                drawerPosition='right'
-                drawerWidth={drawerWidth}
-                useNativeAnimations={true}
+            <IntlProvider
+                key={locale}
+                locale={locale}
+                ref={this.setProviderRef}
+                messages={getTranslations(locale)}
             >
-                {children}
-            </DrawerLayout>
+                {this.renderNavigationView()}
+            </IntlProvider>
         );
     }
 }
