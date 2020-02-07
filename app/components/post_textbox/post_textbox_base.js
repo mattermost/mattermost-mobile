@@ -8,8 +8,6 @@ import {
     AppState,
     BackHandler,
     findNodeHandle,
-    Image,
-    InteractionManager,
     Keyboard,
     NativeModules,
     Platform,
@@ -640,10 +638,26 @@ export default class PostTextBoxBase extends PureComponent {
             actions.handleClearFiles(channelId, rootId);
         }
 
-        InteractionManager.runAfterInteractions(() => {
+        if (Platform.OS === 'ios') {
+            // On iOS, if the PostTextbox height increases from its
+            // initial height (due to a multiline post or a post whose
+            // message wraps, for example), then when the text is cleared
+            // the PostTextbox height decrease will be animated. This
+            // animation in conjunction with the PostList animation as it
+            // receives the newly created post is causing issues in the iOS
+            // PostList component as it fails to properly react to its content
+            // size changes. While a proper fix is determined for the PostList
+            // component, a small delay in triggering the height decrease
+            // animation gives the PostList enough time to first handle content
+            // size changes from the new post.
+            setTimeout(() => {
+                this.handleTextChange('');
+                this.setState({sendingMessage: false});
+            }, 250);
+        } else {
             this.handleTextChange('');
             this.setState({sendingMessage: false});
-        });
+        }
 
         this.changeDraft('');
 
