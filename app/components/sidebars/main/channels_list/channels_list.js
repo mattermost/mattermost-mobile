@@ -34,7 +34,6 @@ export default class ChannelsList extends PureComponent {
         onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         drawerOpened: PropTypes.bool,
-        previewChannel: PropTypes.func,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -98,7 +97,6 @@ export default class ChannelsList extends PureComponent {
         const {
             onShowTeams,
             theme,
-            previewChannel,
             isLandscape,
         } = this.props;
 
@@ -112,7 +110,6 @@ export default class ChannelsList extends PureComponent {
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                     term={term}
-                    previewChannel={previewChannel}
                 />
             );
         } else {
@@ -120,7 +117,6 @@ export default class ChannelsList extends PureComponent {
                 <List
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
-                    previewChannel={previewChannel}
                 />
             );
         }
