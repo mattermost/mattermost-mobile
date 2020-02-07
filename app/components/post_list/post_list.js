@@ -167,12 +167,14 @@ export default class PostList extends PureComponent {
     };
 
     handleContentSizeChange = (contentWidth, contentHeight) => {
-        this.setState({contentHeight}, () => {
-            if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
-                // We still have less than 1 screen of posts loaded with more to get, so load more
-                this.props.onLoadMoreUp();
-            }
-        });
+        if (this.state.contentHeight !== contentHeight) {
+            this.setState({contentHeight}, () => {
+                if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
+                    // We still have less than 1 screen of posts loaded with more to get, so load more
+                    this.props.onLoadMoreUp();
+                }
+            });
+        }
     };
 
     handleDeepLink = (url) => {
@@ -203,7 +205,9 @@ export default class PostList extends PureComponent {
 
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
-        this.setState({postListHeight: height});
+        if (this.state.postListHeight !== height) {
+            this.setState({postListHeight: height});
+        }
     };
 
     errorBadTeam = () => {
@@ -399,7 +403,9 @@ export default class PostList extends PureComponent {
     resetPostList = () => {
         this.contentOffsetY = 0;
         this.hasDoneInitialScroll = false;
-        this.setState({contentHeight: 0});
+        if (this.state.contentHeight !== 0) {
+            this.setState({contentHeight: 0});
+        }
     }
 
     scrollToIndex = (index) => {
