@@ -21,7 +21,7 @@ import FileUploadItem from './file_upload_item';
 
 const initial = {opacity: 0, scale: 0};
 const final = {opacity: 1, scale: 1};
-const showFiles = {opacity: 1, height: 65};
+const showFiles = {opacity: 1, height: 70};
 const hideFiles = {opacity: 0, height: 0};
 const hideError = {height: 0};
 
@@ -154,12 +154,8 @@ export default class FileUploadPreview extends PureComponent {
 
     render() {
         const {fileSizeWarning, showFileMaxWarning} = this.state;
-        const {files, theme} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
-
-        if (!files.length) {
-            return null;
-        }
 
         return (
             <View style={style.previewContainer}>
@@ -213,20 +209,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         previewContainer: {
             display: 'flex',
             flexDirection: 'column',
-            paddingTop: Platform.select({
-                ios: 8,
-                android: 0,
-            }),
-            paddingBottom: Platform.select({
-                ios: 0,
-                android: 6,
-            }),
         },
         fileContainer: {
             display: 'flex',
             flexDirection: 'row',
             height: 0,
-            paddingBottom: 3,
+            paddingBottom: Platform.select({
+                ios: 5,
+                android: 10,
+            }),
         },
         errorContainer: {
             height: 0,
