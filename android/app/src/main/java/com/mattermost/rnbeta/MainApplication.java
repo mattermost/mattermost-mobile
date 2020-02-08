@@ -100,7 +100,7 @@ public class MainApplication extends NavigationApplication implements INotificat
 
   @Override
   public boolean isDebug() {
-    return false;
+    return BuildConfig.DEBUG;
   }
 
   @NonNull
