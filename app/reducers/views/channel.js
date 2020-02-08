@@ -259,41 +259,6 @@ function retryFailed(state = false, action) {
     }
 }
 
-function postVisibility(state = {}, action) {
-    switch (action.type) {
-    case ViewTypes.SET_INITIAL_POST_VISIBILITY: {
-        const nextState = {...state};
-        nextState[action.data] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-        return nextState;
-    }
-    case ViewTypes.INCREASE_POST_VISIBILITY: {
-        const nextState = {...state};
-        if (nextState[action.data]) {
-            nextState[action.data] += action.amount;
-        } else {
-            nextState[action.data] = action.amount;
-        }
-        return nextState;
-    }
-    case ViewTypes.RECEIVED_FOCUSED_POST: {
-        const nextState = {...state};
-        nextState[action.channelId] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-        return nextState;
-    }
-    case PostTypes.RECEIVED_NEW_POST: {
-        if (action.data.id === action.data.pending_post_id) {
-            const nextState = {...state};
-            nextState[action.data.channel_id] += 1;
-            return nextState;
-        }
-
-        return state;
-    }
-    default:
-        return state;
-    }
-}
-
 function postCountInChannel(state = {}, action) {
     switch (action.type) {
     case ViewTypes.SET_INITIAL_POST_COUNT: {
@@ -414,7 +379,6 @@ export default combineReducers({
     loading,
     refreshing,
     postCountInChannel,
-    postVisibility,
     loadingPosts,
     lastGetPosts,
     retryFailed,

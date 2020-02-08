@@ -174,14 +174,13 @@ export default class MainSidebarBase extends Component {
         }
     };
 
-    renderNavigationView = () => {
+    renderNavigationView = (drawerWidth) => {
         const {
             teamsCount,
             theme,
         } = this.props;
 
         const {
-            deviceWidth,
             openDrawerOffset,
             searching,
         } = this.state;
@@ -242,7 +241,7 @@ export default class MainSidebarBase extends Component {
                     onPageSelected={this.onPageSelected}
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
-                    drawerWidth={deviceWidth - offset}
+                    drawerWidth={drawerWidth - offset}
                 >
                     {lists}
                 </DrawerSwiper>

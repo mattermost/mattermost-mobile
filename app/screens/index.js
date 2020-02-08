@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
@@ -78,6 +79,9 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('TimezoneSettings', () => wrapper(require('app/screens/settings/timezone').default), () => require('app/screens/settings/timezone').default);
     Navigation.registerComponent('ErrorTeamsList', () => wrapper(require('app/screens/error_teams_list').default), () => require('app/screens/error_teams_list').default);
     Navigation.registerComponent('UserProfile', () => wrapper(require('app/screens/user_profile').default), () => require('app/screens/user_profile').default);
-    Navigation.registerComponentWithRedux('MainSidebar', () => MainSidebar, Provider, store);
-    Navigation.registerComponentWithRedux('SettingsSidebar', () => SettingsSidebar, Provider, store);
+
+    if (Platform.OS === 'android') {
+        Navigation.registerComponentWithRedux('MainSidebar', () => MainSidebar, Provider, store);
+        Navigation.registerComponentWithRedux('SettingsSidebar', () => SettingsSidebar, Provider, store);
+    }
 }

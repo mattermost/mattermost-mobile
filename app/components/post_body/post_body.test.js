@@ -85,13 +85,13 @@ describe('PostBody', () => {
 
         expect(wrapper.state('isLongPost')).toEqual(false);
 
-        event.nativeEvent.layout.height = wrapper.state('maxHeight');
-        instance.measurePost(event);
-        expect(wrapper.state('isLongPost')).toEqual(true);
-
         event.nativeEvent.layout.height = wrapper.state('maxHeight') - 1;
         instance.measurePost(event);
         expect(wrapper.state('isLongPost')).toEqual(false);
+
+        event.nativeEvent.layout.height = wrapper.state('maxHeight');
+        instance.measurePost(event);
+        expect(wrapper.state('isLongPost')).toEqual(true);
 
         event.nativeEvent.layout.height = wrapper.state('maxHeight') + 1;
         instance.measurePost(event);

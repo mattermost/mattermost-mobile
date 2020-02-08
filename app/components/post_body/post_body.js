@@ -116,9 +116,9 @@ export default class PostBody extends PureComponent {
         const {height} = event.nativeEvent.layout;
         const {showLongPost} = this.props;
 
-        if (!showLongPost) {
+        if (!showLongPost && height >= this.state.maxHeight) {
             this.setState({
-                isLongPost: height >= this.state.maxHeight,
+                isLongPost: true,
             });
         }
 
@@ -431,6 +431,7 @@ export default class PostBody extends PureComponent {
                     <ShowMoreButton
                         highlight={highlight}
                         onPress={this.openLongPost}
+                        theme={theme}
                     />
                     }
                     {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}

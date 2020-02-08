@@ -104,7 +104,7 @@ export default class MainSidebarAndroid extends MainSidebarBase {
                 ref={this.setProviderRef}
                 messages={getTranslations('en')}
             >
-                {this.renderNavigationView()}
+                {this.renderNavigationView(this.state.deviceWidth)}
             </IntlProvider>
         );
     }

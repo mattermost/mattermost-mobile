@@ -23,7 +23,7 @@ exports[`PostList setting channel deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={15}
+  initialNumToRender={7}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
@@ -34,7 +34,7 @@ exports[`PostList setting channel deep link 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={16}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -57,7 +57,7 @@ exports[`PostList setting channel deep link 1`] = `
   renderItem={[Function]}
   scrollEventThrottle={60}
   updateCellsBatchingPeriod={50}
-  windowSize={21}
+  windowSize={50}
 />
 `;
 
@@ -84,7 +84,7 @@ exports[`PostList setting permalink deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={15}
+  initialNumToRender={7}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
@@ -95,7 +95,7 @@ exports[`PostList setting permalink deep link 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={16}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -118,7 +118,7 @@ exports[`PostList setting permalink deep link 1`] = `
   renderItem={[Function]}
   scrollEventThrottle={60}
   updateCellsBatchingPeriod={50}
-  windowSize={21}
+  windowSize={50}
 />
 `;
 
@@ -145,7 +145,7 @@ exports[`PostList should match snapshot 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={15}
+  initialNumToRender={7}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
@@ -156,7 +156,7 @@ exports[`PostList should match snapshot 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={16}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -179,6 +179,6 @@ exports[`PostList should match snapshot 1`] = `
   renderItem={[Function]}
   scrollEventThrottle={60}
   updateCellsBatchingPeriod={50}
-  windowSize={21}
+  windowSize={50}
 />
 `;

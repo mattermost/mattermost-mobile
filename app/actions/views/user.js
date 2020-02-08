@@ -52,17 +52,17 @@ export function loadMe(user, deviceToken) {
         const data = {user};
         const deviceId = state.entities?.general?.deviceToken;
 
-        if (deviceId && !deviceToken) {
-            Client4.attachDevice(deviceId);
-        }
-
-        if (!user) {
-            try {
-                data.user = await Client4.getMe();
-            } catch (error) {
-                dispatch(forceLogoutIfNecessary(error));
-                return {error};
+        try {
+            if (deviceId && !deviceToken) {
+                await Client4.attachDevice(deviceId);
             }
+
+            if (!user) {
+                data.user = await Client4.getMe();
+            }
+        } catch (error) {
+            dispatch(forceLogoutIfNecessary(error));
+            return {error};
         }
 
         try {
@@ -159,8 +159,12 @@ export function ssoLogin(token) {
 
 export function logout(skipServerLogout = false) {
     return async (dispatch) => {
-        if (!skipServerLogout) {
-            Client4.logout();
+        try {
+            if (!skipServerLogout) {
+                Client4.logout();
+            }
+        } catch {
+            // Do nothing
         }
 
         dispatch({type: UserTypes.LOGOUT_SUCCESS});
