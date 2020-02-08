@@ -158,7 +158,7 @@ export default class SelectTeam extends PureComponent {
         if (userWithoutTeams) {
             this.goToChannelView();
         } else {
-            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit('close_main_sidebar');
             InteractionManager.runAfterInteractions(() => {
                 this.close();
             });

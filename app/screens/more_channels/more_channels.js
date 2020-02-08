@@ -271,7 +271,7 @@ export default class MoreChannels extends PureComponent {
             }
             await actions.handleSelectChannel(id);
 
-            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit('close_main_sidebar');
             requestAnimationFrame(() => {
                 this.close();
             });

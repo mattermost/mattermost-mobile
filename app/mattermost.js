@@ -5,6 +5,8 @@ import {Linking} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Provider} from 'react-redux';
 
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
 import {loadMe} from 'app/actions/views/user';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
@@ -85,9 +87,23 @@ Navigation.events().registerAppLaunchedListener(() => {
     // Keep track of the latest componentId to appear
     Navigation.events().registerComponentDidAppearListener(({componentId}) => {
         EphemeralStore.addNavigationComponentId(componentId);
+
+        switch (componentId) {
+        case 'MainSidebar':
+            EventEmitter.emit('main_sidebar_did_open', this.handleSidebarDidOpen);
+            EventEmitter.emit('blur_post_textbox');
+            break;
+        case 'SettingsSidebar':
+            EventEmitter.emit('blur_post_textbox');
+            break;
+        }
     });
 
     Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
         EphemeralStore.removeNavigationComponentId(componentId);
+
+        if (componentId === 'MainSidebar') {
+            EventEmitter.emit('main_sidebar_did_close');
+        }
     });
 });

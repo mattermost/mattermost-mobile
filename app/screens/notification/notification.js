@@ -143,7 +143,7 @@ export default class Notification extends PureComponent {
 
         const {actions, notification} = this.props;
 
-        EventEmitter.emit('close_channel_drawer');
+        EventEmitter.emit('close_main_sidebar');
         EventEmitter.emit('close_settings_sidebar');
         InteractionManager.runAfterInteractions(() => {
             this.dismissOverlay();

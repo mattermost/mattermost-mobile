@@ -4,27 +4,50 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import {openMainSideMenu, openSettingsSideMenu} from 'app/actions/navigation';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
+import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import NetworkIndicator from 'app/components/network_indicator';
 import SafeAreaView from 'app/components/safe_area_view';
 import StatusBar from 'app/components/status_bar';
 import PostTextbox from 'app/components/post_textbox';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
+
 import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
-import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
+import ChannelBase, {ClientUpgradeListener} from './channel_base';
 
 export default class ChannelAndroid extends ChannelBase {
+    openMainSidebar = () => {
+        EventEmitter.emit('blur_post_textbox');
+        openMainSideMenu();
+    };
+
+    openSettingsSidebar = () => {
+        EventEmitter.emit('blur_post_textbox');
+        openSettingsSideMenu();
+    };
+
     render() {
+        const {theme} = this.props;
+        const channelLoadingOrFailed = this.renderLoadingOrFailedChannel();
+        if (channelLoadingOrFailed) {
+            return channelLoadingOrFailed;
+        }
+
+        const style = getStyleFromTheme(theme);
         const drawerContent = (
             <SafeAreaView>
                 <StatusBar/>
                 <NetworkIndicator/>
                 <ChannelNavBar
-                    openChannelDrawer={this.openChannelSidebar}
-                    openSettingsDrawer={this.openSettingsSidebar}
+                    openMainSidebar={this.openMainSidebar}
+                    openSettingsSidebar={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
                 />
                 <KeyboardLayout>
@@ -40,6 +63,27 @@ export default class ChannelAndroid extends ChannelBase {
             </SafeAreaView>
         );
 
-        return this.renderChannel(drawerContent);
+        return (
+            <>
+                <View style={style.backdrop}>
+                    {drawerContent}
+                </View>
+                <InteractiveDialogController
+                    theme={theme}
+                />
+            </>
+        );
     }
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        backdrop: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
+        },
+        flex: {
+            flex: 1,
+        },
+    };
+});

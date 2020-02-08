@@ -15,11 +15,9 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {openSettingsDrawer} from 'app/actions/navigation';
-
 class SettingDrawerButton extends PureComponent {
     static propTypes = {
-        openDrawer: PropTypes.func.isRequired,
+        openSidebar: PropTypes.func.isRequired,
         theme: PropTypes.object,
     };
 
@@ -28,7 +26,7 @@ class SettingDrawerButton extends PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        openSettingsDrawer();
+        this.props.openSidebar();
     });
 
     render() {

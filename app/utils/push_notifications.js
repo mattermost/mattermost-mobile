@@ -53,7 +53,7 @@ class PushNotificationUtils {
         // if we have a componentId means that the app is already initialized
         const componentId = EphemeralStore.getNavigationTopComponentId();
         if (componentId) {
-            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit('close_main_sidebar');
             EventEmitter.emit('close_settings_sidebar');
 
             await dismissAllModals();
@@ -80,7 +80,7 @@ class PushNotificationUtils {
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
             } else if (userInteraction && !notification?.data?.localNotification) {
-                EventEmitter.emit('close_channel_drawer');
+                EventEmitter.emit('close_main_sidebar');
                 if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
                     setTimeout(() => {
                         this.loadFromNotification(notification);

@@ -321,7 +321,7 @@ export default class MoreDirectMessages extends PureComponent {
         }
 
         if (success) {
-            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit('close_main_sidebar');
             requestAnimationFrame(() => {
                 this.close();
             });

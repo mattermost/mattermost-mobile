@@ -41,7 +41,7 @@ describe('app/actions/navigation', () => {
                             passProps,
                             options: {
                                 layout: {
-                                    backgroundColor: 'transparent',
+                                    backgroundColor: theme.centerChannelBg,
                                 },
                                 statusBar: {
                                     visible: true,
@@ -50,14 +50,10 @@ describe('app/actions/navigation', () => {
                                     visible: false,
                                     height: 0,
                                     backButton: {
-                                        color: theme.sidebarHeaderTextColor,
-                                        title: '',
+                                        visible: false,
                                     },
                                     background: {
                                         color: theme.sidebarHeaderBg,
-                                    },
-                                    title: {
-                                        color: theme.sidebarHeaderTextColor,
                                     },
                                 },
                             },
@@ -160,6 +156,10 @@ describe('app/actions/navigation', () => {
         const defaultOptions = {
             layout: {
                 backgroundColor: theme.centerChannelBg,
+            },
+            sideMenu: {
+                left: {enabled: false},
+                right: {enabled: false},
             },
             topBar: {
                 animate: true,
@@ -396,27 +396,6 @@ describe('app/actions/navigation', () => {
 
         await NavigationActions.dismissAllModals(options);
         expect(dismissAllModals).toHaveBeenCalledWith(options);
-    });
-
-    test('peek should call Navigation.push', async () => {
-        const push = jest.spyOn(Navigation, 'push');
-
-        const defaultOptions = {
-            preview: {
-                commit: false,
-            },
-        };
-
-        const expectedLayout = {
-            component: {
-                name,
-                passProps,
-                options: merge(defaultOptions, options),
-            },
-        };
-
-        await NavigationActions.peek(name, passProps, options);
-        expect(push).toHaveBeenCalledWith(topComponentId, expectedLayout);
     });
 
     test('mergeNavigationOptions should call Navigation.mergeOptions', () => {

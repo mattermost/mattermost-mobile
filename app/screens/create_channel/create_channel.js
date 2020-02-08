@@ -87,7 +87,7 @@ export default class CreateChannel extends PureComponent {
                 this.setState({error: null, creating: true});
                 break;
             case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_channel_drawer');
+                EventEmitter.emit('close_main_sidebar');
                 InteractionManager.runAfterInteractions(() => {
                     this.emitCreating(false);
                     this.setState({error: null, creating: false});

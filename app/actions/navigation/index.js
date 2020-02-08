@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, Keyboard} from 'react-native';
+import {Keyboard, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-
 import merge from 'deepmerge';
 
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
@@ -27,7 +26,7 @@ export function resetToChannel(passProps = {}) {
                 passProps,
                 options: {
                     layout: {
-                        backgroundColor: 'transparent',
+                        backgroundColor: theme.centerChannelBg,
                     },
                     statusBar: {
                         visible: true,
@@ -47,12 +46,13 @@ export function resetToChannel(passProps = {}) {
         }],
     };
 
-    Navigation.setRoot({
-        root: {
+    let platformStack = {stack};
+    if (Platform.OS === 'android') {
+        platformStack = {
             sideMenu: {
                 left: {
-                    animationVelocity: 2500,
                     component: {
+                        id: 'MainSidebar',
                         name: 'MainSidebar',
                     },
                 },
@@ -60,14 +60,18 @@ export function resetToChannel(passProps = {}) {
                     stack,
                 },
                 right: {
-                    animationVelocity: 2500,
                     component: {
+                        id: 'SettingsSidebar',
                         name: 'SettingsSidebar',
                     },
                 },
-                animationType: 'parallax', // defaults to none if not provided, options are 'parallax', 'door', 'slide', or 'slide-and-scale'
-                // openGestureMode: 'entireScreen',
             },
+        };
+    }
+
+    Navigation.setRoot({
+        root: {
+            ...platformStack,
         },
     });
 }
@@ -153,6 +157,10 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
     const defaultOptions = {
         layout: {
             backgroundColor: theme.centerChannelBg,
+        },
+        sideMenu: {
+            left: {enabled: false},
+            right: {enabled: false},
         },
         topBar: {
             animate: true,
@@ -311,23 +319,6 @@ export async function dismissAllModals(options = {}) {
     }
 }
 
-export function peek(name, passProps = {}, options = {}) {
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-    const defaultOptions = {
-        preview: {
-            commit: false,
-        },
-    };
-
-    Navigation.push(componentId, {
-        component: {
-            name,
-            passProps,
-            options: merge(defaultOptions, options),
-        },
-    });
-}
-
 export function setButtons(componentId, buttons = {leftButtons: [], rightButtons: []}) {
     const options = {
         topBar: {
@@ -367,7 +358,11 @@ export async function dismissOverlay(componentId) {
     }
 }
 
-export function openMainDrawer() {
+export function openMainSideMenu() {
+    if (Platform.OS === 'ios') {
+        return;
+    }
+
     const componentId = EphemeralStore.getNavigationTopComponentId();
 
     Keyboard.dismiss();
@@ -378,7 +373,11 @@ export function openMainDrawer() {
     });
 }
 
-export function closeMainDrawer() {
+export function closeMainSideMenu() {
+    if (Platform.OS === 'ios') {
+        return;
+    }
+
     const componentId = EphemeralStore.getNavigationTopComponentId();
 
     Keyboard.dismiss();
@@ -389,17 +388,25 @@ export function closeMainDrawer() {
     });
 }
 
-export function enableMainDrawer(enabled) {
+export function enableMainSideMenu(enabled, visible = true) {
+    if (Platform.OS === 'ios') {
+        return;
+    }
+
     const componentId = EphemeralStore.getNavigationTopComponentId();
 
     Navigation.mergeOptions(componentId, {
         sideMenu: {
-            left: {enabled, visible: true},
+            left: {enabled, visible},
         },
     });
 }
 
-export function openSettingsDrawer() {
+export function openSettingsSideMenu() {
+    if (Platform.OS === 'ios') {
+        return;
+    }
+
     const componentId = EphemeralStore.getNavigationTopComponentId();
 
     Keyboard.dismiss();
@@ -410,7 +417,11 @@ export function openSettingsDrawer() {
     });
 }
 
-export function closeSettingsDrawer() {
+export function closeSettingsSideMenu() {
+    if (Platform.OS === 'ios') {
+        return;
+    }
+
     const componentId = EphemeralStore.getNavigationTopComponentId();
 
     Keyboard.dismiss();

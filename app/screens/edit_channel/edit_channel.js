@@ -151,7 +151,7 @@ export default class EditChannel extends PureComponent {
                 this.emitUpdating(true);
                 break;
             case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_channel_drawer');
+                EventEmitter.emit('close_main_sidebar');
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
                     this.close();

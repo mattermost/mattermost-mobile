@@ -13,20 +13,16 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import EmptyToolbar from 'app/components/start/empty_toolbar';
-import InteractiveDialogController from 'app/components/interactive_dialog_controller';
+import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
 import SafeAreaView from 'app/components/safe_area_view';
+import EmptyToolbar from 'app/components/start/empty_toolbar';
 
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
 import PushNotifications from 'app/push_notifications';
 import EphemeralStore from 'app/store/ephemeral_store';
-import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
-import {
-    showModal,
-    showModalOverCurrentContext,
-} from 'app/actions/navigation';
+import {preventDoubleTap} from 'app/utils/tap';
+import {setNavigatorStyles} from 'app/utils/theme';
+import tracker from 'app/utils/time_tracker';
 
 import LocalConfig from 'assets/config';
 
@@ -66,11 +62,8 @@ export default class ChannelBase extends PureComponent {
         this.postTextbox = React.createRef();
         this.keyboardTracker = React.createRef();
 
-        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
-            this.closeButton = source;
-        });
-
         setNavigatorStyles(props.componentId, props.theme);
+
         this.state = {
             channelsRequestFailed: false,
         };
@@ -81,6 +74,7 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentDidMount() {
+        EventEmitter.on('blur_post_textbox', this.blurPostTextBox);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
         if (this.props.currentTeamId) {
@@ -105,41 +99,8 @@ export default class ChannelBase extends PureComponent {
             this.showTermsOfServiceModal();
         }
 
-        EventEmitter.emit('renderDrawer');
-
         if (!this.props.skipMetrics) {
             telemetry.end(['start:channel_screen']);
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-
-            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-                setNavigatorStyles(componentId, nextProps.theme);
-            });
-        }
-
-        if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
-            this.loadChannels(nextProps.currentTeamId);
-        }
-
-        if (nextProps.currentChannelId !== this.props.currentChannelId &&
-            nextProps.currentTeamId === this.props.currentTeamId) {
-            PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
-        }
-
-        if (nextProps.currentChannelId !== this.props.currentChannelId) {
-            const previousChannelId = EphemeralStore.appStartedFromPushNotification ? null : this.props.currentChannelId;
-            requestAnimationFrame(() => {
-                this.props.actions.markChannelViewedAndRead(nextProps.currentChannelId, previousChannelId);
-                this.props.actions.getChannelStats(nextProps.currentChannelId);
-            });
-        }
-
-        if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
-            ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
     }
 
@@ -148,17 +109,38 @@ export default class ChannelBase extends PureComponent {
             this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
         }
 
-        // When the team changes emit the event to render the drawer content
-        if (this.props.currentChannelId && !prevProps.currentChannelId) {
-            EventEmitter.emit('renderDrawer');
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
+
+            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+                setNavigatorStyles(componentId, this.props.theme);
+            });
+        }
+
+        if (this.props.currentTeamId && this.props.currentTeamId !== prevProps.currentTeamId) {
+            this.loadChannels(this.props.currentTeamId);
         }
 
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
-            this.updateNativeScrollView();
+            if (prevProps.currentTeamId !== this.props.currentTeamId) {
+                PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+            }
+
+            const previousChannelId = EphemeralStore.appStartedFromPushNotification ? null : prevProps.currentChannelId;
+            requestAnimationFrame(() => {
+                this.props.actions.markChannelViewedAndRead(this.props.currentChannelId, previousChannelId);
+                this.props.actions.getChannelStats(this.props.currentChannelId);
+                this.updateNativeScrollView();
+            });
+        }
+
+        if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
+            ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
     }
 
     componentWillUnmount() {
+        EventEmitter.off('blur_post_textbox', this.blurPostTextBox);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 
@@ -168,58 +150,48 @@ export default class ChannelBase extends PureComponent {
         }
     };
 
-    channelSidebarRef = (ref) => {
-        if (ref) {
-            this.channelSidebar = ref;
-        }
-    };
-
-    settingsSidebarRef = (ref) => {
-        if (ref) {
-            this.settingsSidebar = ref;
-        }
-    };
-
     showTermsOfServiceModal = async () => {
         const {intl} = this.context;
         const {theme} = this.props;
-        const closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
         const screen = 'TermsOfService';
-        const passProps = {closeButton};
         const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
-        const options = {
-            layout: {
-                backgroundColor: theme.centerChannelBg,
-            },
-            topBar: {
-                visible: true,
-                height: null,
-                title: {
-                    color: theme.sidebarHeaderTextColor,
-                    text: title,
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((closeButton) => {
+            const passProps = {closeButton};
+            const options = {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
                 },
-            },
-        };
+                topBar: {
+                    visible: true,
+                    height: null,
+                    title: {
+                        color: theme.sidebarHeaderTextColor,
+                        text: title,
+                    },
+                },
+            };
 
-        showModalOverCurrentContext(screen, passProps, options);
+            showModalOverCurrentContext(screen, passProps, options);
+        });
     };
 
     goToChannelInfo = preventDoubleTap(() => {
         const {intl} = this.context;
+        const {theme} = this.props;
         const screen = 'ChannelInfo';
         const title = intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'});
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: 'close-info',
-                    icon: this.closeButton,
-                }],
-            },
-        };
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+            const options = {
+                topBar: {
+                    leftButtons: [{
+                        id: 'close-info',
+                        icon: source,
+                    }],
+                },
+            };
 
-        Keyboard.dismiss();
+            Keyboard.dismiss();
 
-        requestAnimationFrame(() => {
             showModal(screen, title, null, options);
         });
     });
@@ -250,29 +222,11 @@ export default class ChannelBase extends PureComponent {
         });
     };
 
-    openChannelSidebar = () => {
-        if (this.channelSidebar) {
-            this.channelSidebar.openChannelSidebar();
-        }
-    };
-
-    openSettingsSidebar = () => {
-        if (this.settingsSidebar) {
-            this.settingsSidebar.openSettingsSidebar();
-        }
-    };
-
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
     };
 
-    updateNativeScrollView = () => {
-        if (this.keyboardTracker?.current) {
-            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
-        }
-    };
-
-    renderChannel(drawerContent) {
+    renderLoadingOrFailedChannel() {
         const {
             currentChannelId,
             isLandscape,
@@ -317,18 +271,14 @@ export default class ChannelBase extends PureComponent {
             );
         }
 
-        const baseStyle = getStyleFromTheme(theme);
-        return (
-            <>
-                <View style={baseStyle.backdrop}>
-                    {drawerContent}
-                </View>
-                <InteractiveDialogController
-                    theme={theme}
-                />
-            </>
-        );
+        return null;
     }
+
+    updateNativeScrollView = () => {
+        if (this.keyboardTracker?.current) {
+            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
+        }
+    };
 
     render() {
         // Overriden in channel.android.js and channel.ios.js
@@ -337,25 +287,8 @@ export default class ChannelBase extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        backdrop: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-    };
-});
-
 export const style = StyleSheet.create({
     flex: {
         flex: 1,
-    },
-    channelLoader: {
-        position: 'absolute',
-        width: '100%',
-        flex: 1,
-    },
-    iOSHomeIndicator: {
-        paddingBottom: 50,
     },
 });

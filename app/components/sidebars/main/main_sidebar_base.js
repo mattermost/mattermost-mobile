@@ -4,22 +4,14 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
-    BackHandler,
-    Dimensions,
-    Keyboard,
+    Platform,
     StyleSheet,
     View,
 } from 'react-native';
-import {IntlProvider} from 'react-intl';
-import AsyncStorage from '@react-native-community/async-storage';
 
-import {General, WebsocketEvents} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {General} from 'mattermost-redux/constants';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import {DRAWER_INITIAL_OFFSET} from 'app/components/sidebars/drawer_layout';
-import {DeviceTypes} from 'app/constants';
-import mattermostManaged from 'app/mattermost_managed';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 
@@ -28,22 +20,17 @@ import DrawerSwiper from './drawer_swiper';
 import TeamsList from './teams_list';
 
 import telemetry from 'app/telemetry';
-import {getTranslations} from 'app/i18n';
 
-import {closeMainDrawer, enableMainDrawer} from 'app/actions/navigation';
-
-export default class ChannelSidebar extends Component {
+export default class MainSidebarBase extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
             logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func,
         }).isRequired,
-        blurPostTextBox: PropTypes.func,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string,
@@ -52,131 +39,19 @@ export default class ChannelSidebar extends Component {
         locale: PropTypes.string,
     };
 
-    static defaultProps = {
-        blurPostTextBox: () => true,
-    };
-
     constructor(props) {
         super(props);
 
         this.swiperIndex = 1;
-        this.drawerRef = React.createRef();
         this.channelListRef = React.createRef();
-        this.state = {
-            deviceWidth: Dimensions.get('window').width,
-            show: false,
-            openDrawerOffset: DRAWER_INITIAL_OFFSET,
-            drawerOpened: false,
-            searching: false,
-            isSplitView: false,
-        };
     }
 
-    componentDidMount() {
-        this.mounted = true;
-        this.props.actions.getTeams();
-        this.handleDimensions({window: Dimensions.get('window')});
-        this.handlePermanentSidebar();
-        EventEmitter.on('close_channel_drawer', this.closeChannelDrawer);
-        EventEmitter.on('renderDrawer', this.handleShowDrawerContent);
-        EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-        Dimensions.addEventListener('change', this.handleDimensions);
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, teamsCount, theme} = this.props;
-        const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, show, searching} = this.state;
-
-        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.show !== show || nextState.searching !== searching || nextState.deviceWidth !== deviceWidth) {
-            return true;
-        }
-
-        return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.teamsCount !== teamsCount ||
-            nextProps.theme !== theme ||
-            nextState.isSplitView !== isSplitView ||
-            nextState.permanentSidebar !== permanentSidebar;
-    }
-
-    componentWillUnmount() {
-        this.mounted = false;
-        EventEmitter.off('close_channel_drawer', this.closeChannelDrawer);
-        EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        EventEmitter.off('renderDrawer', this.handleShowDrawerContent);
-        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
-        Dimensions.removeEventListener('change', this.handleDimensions);
-    }
-
-    handleAndroidBack = () => {
-        // if (this.state.drawerOpened && this.drawerRef?.current) {
-        //     closeMainDrawer();
-        //     return true;
-        // }
-
+    shouldComponentUpdate() {
         return false;
-    };
-
-    handleDimensions = ({window}) => {
-        if (this.mounted) {
-            if (DeviceTypes.IS_TABLET) {
-                mattermostManaged.isRunningInSplitView().then((result) => {
-                    const isSplitView = Boolean(result.isSplitView);
-                    this.setState({isSplitView});
-                });
-            }
-
-            if (this.state.openDrawerOffset !== 0) {
-                let openDrawerOffset = DRAWER_INITIAL_OFFSET;
-                if ((window.width > window.height) || DeviceTypes.IS_TABLET) {
-                    openDrawerOffset = window.width * 0.5;
-                }
-
-                this.setState({openDrawerOffset, deviceWidth: window.width});
-            }
-        }
-    };
-
-    handlePermanentSidebar = async () => {
-        if (DeviceTypes.IS_TABLET && this.mounted) {
-            const enabled = await AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS);
-            this.setState({permanentSidebar: enabled === 'true'});
-        }
-    };
-
-    handleShowDrawerContent = () => {
-        requestAnimationFrame(() => this.setState({show: true}));
-    };
-
-    closeChannelDrawer = (skip) => {
-        if (this.drawerSwiper && DeviceTypes.IS_TABLET) {
-            this.resetDrawer(skip);
-        } else {
-            // this.drawerRef.current.closeDrawer();
-            closeMainDrawer();
-            this.handleDrawerClose();
-        }
-    };
+    }
 
     drawerSwiperRef = (ref) => {
         this.drawerSwiper = ref;
-    };
-
-    handleDrawerClose = () => {
-        this.setState({
-            drawerOpened: false,
-            searching: false,
-        });
-        this.resetDrawer(true);
-        Keyboard.dismiss();
-    };
-
-    handleDrawerOpen = () => {
-        this.setState({
-            drawerOpened: true,
-        });
     };
 
     handleUpdateTitle = (channel) => {
@@ -185,14 +60,6 @@ export default class ChannelSidebar extends Component {
             channelName = channel.display_name;
         }
         this.props.actions.setChannelDisplayName(channelName);
-    };
-
-    openChannelSidebar = () => {
-        this.props.blurPostTextBox();
-
-        if (this.drawerRef?.current) {
-            this.drawerRef.current.openDrawer();
-        }
     };
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
@@ -235,11 +102,9 @@ export default class ChannelSidebar extends Component {
         const {
             joinChannel,
             makeDirectChannel,
-            setChannelLoading,
         } = actions;
 
         this.closeChannelDrawer(true);
-        setChannelLoading(channel.id !== currentChannelId);
 
         setTimeout(async () => {
             const displayValue = {displayName: channel.display_name};
@@ -269,7 +134,6 @@ export default class ChannelSidebar extends Component {
             }
 
             if (result.error || (!result.data && !result.data.channel)) {
-                setChannelLoading(false);
                 return;
             }
 
@@ -277,15 +141,6 @@ export default class ChannelSidebar extends Component {
                 this.selectChannel(result.data.channel || result.data, currentChannelId, false);
             });
         }, 200);
-    };
-
-    onPageSelected = (index) => {
-        this.swiperIndex = index;
-
-        enableMainDrawer(this.swiperIndex !== 0);
-        if (this.drawerRef?.current) {
-            this.drawerRef.current.canClose = this.swiperIndex !== 0;
-        }
     };
 
     onSearchEnds = () => {
@@ -305,16 +160,9 @@ export default class ChannelSidebar extends Component {
         }
     };
 
-    setProviderRef = (ref) => {
-        this.providerRef = ref;
-    }
-
-    resetDrawer = (skip) => {
+    resetDrawer = () => {
         if (this.drawerSwiper) {
             this.drawerSwiper.resetPage();
-            if (!skip) {
-                enableMainDrawer(true);
-            }
         }
 
         if (this.drawerRef?.current) {
@@ -333,11 +181,12 @@ export default class ChannelSidebar extends Component {
         } = this.props;
 
         const {
+            deviceWidth,
             openDrawerOffset,
             searching,
         } = this.state;
 
-        const hasSafeAreaInsets = DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets;
+        const offset = Platform.select({android: 60, ios: 0});
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
@@ -377,7 +226,6 @@ export default class ChannelSidebar extends Component {
                     onSearchStart={this.onSearchStart}
                     onSearchEnds={this.onSearchEnds}
                     theme={theme}
-                    drawerOpened={this.state.drawerOpened}
                 />
             </View>,
         );
@@ -394,8 +242,7 @@ export default class ChannelSidebar extends Component {
                     onPageSelected={this.onPageSelected}
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
-                    drawerWidth={Dimensions.get('window').width - 60}
-                    hasSafeAreaInsets={hasSafeAreaInsets}
+                    drawerWidth={deviceWidth - offset}
                 >
                     {lists}
                 </DrawerSwiper>
@@ -404,22 +251,7 @@ export default class ChannelSidebar extends Component {
     };
 
     render() {
-        const locale = this.props.locale;
-
-        if (!locale) {
-            return null;
-        }
-
-        return (
-            <IntlProvider
-                key={locale}
-                locale={'en'}
-                ref={this.setProviderRef}
-                messages={getTranslations('en')}
-            >
-                {this.renderNavigationView()}
-            </IntlProvider>
-        );
+        return; // eslint-disable-line no-useless-return
     }
 }
 
