@@ -270,7 +270,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     progressText: {
         color: 'white',
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 'bold',
     },
     filePreview: {

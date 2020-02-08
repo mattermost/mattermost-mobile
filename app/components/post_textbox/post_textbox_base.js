@@ -962,6 +962,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
+            paddingTop: Platform.select({
+                ios: 0,
+                android: 2,
+            }),
             paddingBottom: Platform.select({
                 ios: 0,
                 android: 5,
@@ -994,10 +998,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             lineHeight: 20,
             paddingHorizontal: 12,
-            paddingVertical: Platform.select({
-                ios: 0,
-                android: 6,
+            paddingTop: Platform.select({
+                ios: 6,
+                android: 13,
             }),
+            paddingBottom: 6,
             minHeight: 30,
         },
         inputContainer: {
