@@ -994,6 +994,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             lineHeight: 20,
             paddingHorizontal: 12,
+            paddingVertical: Platform.select({
+                ios: 0,
+                android: 6,
+            }),
             minHeight: 30,
         },
         inputContainer: {

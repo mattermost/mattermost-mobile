@@ -64,6 +64,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
             "maxHeight": 150,
             "minHeight": 30,
             "paddingHorizontal": 12,
+            "paddingVertical": 0,
           }
         }
         underlineColorAndroid="transparent"
