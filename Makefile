@@ -32,10 +32,10 @@ npm-ci: package.json
 	@npm ci
 
 .podinstall:
-ifeq ($(OS), Darwin)
-ifdef POD
 	@echo Installing gems;
 	@bundle install
+ifeq ($(OS), Darwin)
+ifdef POD
 	@echo Getting Cocoapods dependencies;
 	@cd ios && bundle exec pod install;
 else
