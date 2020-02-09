@@ -114,7 +114,7 @@ commands:
       - run:
           name: Getting cocoapods dependencies
           working_directory: ios
-          command: bundle exec pod install
+          command: pod install
       - save_cache:
           name: Save cocoapods specs and pods cache
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
