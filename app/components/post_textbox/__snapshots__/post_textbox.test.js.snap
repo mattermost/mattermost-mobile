@@ -51,6 +51,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         keyboardType="default"
         multiline={true}
         onChangeText={[Function]}
+        onContentSizeChange={null}
         onEndEditing={[Function]}
         onPaste={[Function]}
         onSelectionChange={[Function]}
@@ -83,8 +84,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "justifyContent": "space-between",
-              "paddingBottom": 0,
-              "paddingTop": 0,
+              "paddingBottom": 1,
             }
           }
         >

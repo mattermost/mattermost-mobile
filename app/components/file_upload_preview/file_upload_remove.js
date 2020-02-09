@@ -71,6 +71,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 ios: 1,
                 android: 0,
             }),
-        }
+        },
     };
 });
