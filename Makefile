@@ -22,6 +22,9 @@ node_modules: package.json
 	@echo Getting Javascript dependencies
 	@npm install
 
+gems: 
+	@bundle install
+
 npm-ci: package.json
 	@if ! [ $(shell which npm 2> /dev/null) ]; then \
 		echo "npm is not installed https://npmjs.com"; \
@@ -35,7 +38,7 @@ npm-ci: package.json
 ifeq ($(OS), Darwin)
 ifdef POD
 	@echo Getting Cocoapods dependencies;
-	@cd ios && pod install;
+	@cd ios && bundle exec pod install;
 else
 	@echo "Cocoapods is not installed https://cocoapods.org/"
 	@exit 1
@@ -53,7 +56,7 @@ dist/assets: $(BASE_ASSETS) $(OVERRIDE_ASSETS)
 	@echo "Generating app assets"
 	@node scripts/make-dist-assets.js
 
-pre-run: | node_modules .podinstall dist/assets ## Installs dependencies and assets
+pre-run: | node_modules gems .podinstall dist/assets ## Installs dependencies and assets
 
 pre-build: | npm-ci .podinstall dist/assets ## Install dependencies and assets before building
 
