@@ -49,6 +49,8 @@ import {
 } from 'app/utils/theme';
 
 const {RNTextInputReset} = NativeModules;
+const INPUT_LINE_HEIGHT = 20;
+const EXTRA_INPUT_PADDING = 3;
 
 export default class PostTextBoxBase extends PureComponent {
     static propTypes = {
@@ -120,6 +122,7 @@ export default class PostTextBoxBase extends PureComponent {
             channelId: props.channelId,
             channelTimezoneCount: 0,
             longMessageAlertShown: false,
+            extraInputPadding: 0,
         };
     }
 
@@ -842,6 +845,16 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
+    handleInputSizeChange = ({nativeEvent: {contentSize}}) => {
+        const {extraInputPadding} = this.state;
+        const numLines = contentSize.height / INPUT_LINE_HEIGHT;
+        if (numLines >= 2 && extraInputPadding !== EXTRA_INPUT_PADDING) {
+            this.setState({extraInputPadding: EXTRA_INPUT_PADDING});
+        } else if (numLines < 2 && extraInputPadding !== 0) {
+            this.setState({extraInputPadding: 0});
+        }
+    }
+
     renderDeactivatedChannel = () => {
         const {intl} = this.context;
         const style = getStyleSheet(this.props.theme);
@@ -865,7 +878,7 @@ export default class PostTextBoxBase extends PureComponent {
             return this.archivedView(theme, style);
         }
 
-        const {value} = this.state;
+        const {value, extraInputPadding} = this.state;
         const textValue = channelIsLoading ? '' : value;
         const placeholder = this.getPlaceHolder();
 
@@ -873,6 +886,12 @@ export default class PostTextBoxBase extends PureComponent {
 
         if (isLandscape) {
             maxHeight = 88;
+        }
+
+        const inputStyle = {};
+        if (extraInputPadding) {
+            inputStyle.paddingBottom = style.input.paddingBottom + extraInputPadding;
+            inputStyle.paddingTop = style.input.paddingTop + extraInputPadding;
         }
 
         return (
@@ -894,7 +913,7 @@ export default class PostTextBoxBase extends PureComponent {
                     <PasteableTextInput
                         ref={this.input}
                         value={textValue}
-                        style={{...style.input, maxHeight}}
+                        style={{...style.input, ...inputStyle, maxHeight}}
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handlePostDraftSelectionChanged}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
@@ -908,6 +927,7 @@ export default class PostTextBoxBase extends PureComponent {
                         editable={!channelIsReadOnly}
                         onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        onContentSizeChange={Platform.OS === 'android' ? this.handleInputSizeChange : null}
                     />
                     {!channelIsReadOnly &&
                     <React.Fragment>
@@ -951,13 +971,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            paddingTop: Platform.select({
-                ios: 0,
-                android: 2,
-            }),
             paddingBottom: Platform.select({
-                ios: 0,
-                android: 5,
+                ios: 1,
+                android: 2,
             }),
         },
         slashIcon: {
@@ -977,21 +993,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         quickActionsContainer: {
             display: 'flex',
             flexDirection: 'row',
-            height: Platform.select({
-                ios: 44,
-                android: 34,
-            }),
+            height: 44,
         },
         input: {
             color: theme.centerChannelColor,
             fontSize: 15,
-            lineHeight: 20,
+            lineHeight: INPUT_LINE_HEIGHT,
             paddingHorizontal: 12,
             paddingTop: Platform.select({
                 ios: 6,
-                android: 13,
+                android: 8,
             }),
-            paddingBottom: 6,
+            paddingBottom: Platform.select({
+                ios: 6,
+                android: 2,
+            }),
             minHeight: 30,
         },
         inputContainer: {

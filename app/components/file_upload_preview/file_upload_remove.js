@@ -38,6 +38,7 @@ export default class FileUploadRemove extends PureComponent {
                         name='close-circle'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                         size={21}
+                        style={style.removeIcon}
                     />
                 </View>
             </TouchableWithFeedback>
@@ -50,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         tappableContainer: {
             position: 'absolute',
             elevation: 11,
-            top: -10,
+            top: -5,
             right: -10,
             width: 32,
             height: 32,
@@ -59,10 +60,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 12,
             alignSelf: 'center',
             marginTop: Platform.select({
-                ios: 10.8,
-                android: 9.5,
+                ios: 5.4,
+                android: 4.75,
             }),
             backgroundColor: theme.centerChannelBg,
         },
+        removeIcon: {
+            position: 'relative',
+            top: Platform.select({
+                ios: 1,
+                android: 0,
+            }),
+        }
     };
 });
