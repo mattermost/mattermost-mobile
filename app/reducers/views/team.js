@@ -15,26 +15,26 @@ function lastTeamId(state = '', action) {
     }
 }
 
-function setLastChannelForTeam(state, teamId, channelId) {
-    const team = state[teamId];
-    const channelIds = [];
-
-    if (!channelId) {
+function setLastChannelForTeam(state, teamId, channel) {
+    if (!channel?.id) {
         return state;
     }
 
+    const team = state[channel.team_id || teamId];
+    const channelIds = [];
+
     if (team) {
         channelIds.push(...team);
-        const index = channelIds.indexOf(channelId);
+        const index = channelIds.indexOf(channel.id);
         if (index === -1) {
-            channelIds.unshift(channelId);
+            channelIds.unshift(channel.id);
             channelIds.slice(0, 5);
         } else {
             channelIds.splice(index, 1);
-            channelIds.unshift(channelId);
+            channelIds.unshift(channel.id);
         }
     } else {
-        channelIds.push(channelId);
+        channelIds.push(channel.id);
     }
 
     return {
@@ -46,7 +46,7 @@ function setLastChannelForTeam(state, teamId, channelId) {
 function lastChannelForTeam(state = {}, action) {
     switch (action.type) {
     case ChannelTypes.SELECT_CHANNEL: {
-        return setLastChannelForTeam(state, action.extra.teamId, action.data);
+        return setLastChannelForTeam(state, action.extra.teamId, action.extra.channel);
     }
 
     case ViewTypes.REMOVE_LAST_CHANNEL_FOR_TEAM: {
