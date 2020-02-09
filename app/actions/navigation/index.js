@@ -22,6 +22,7 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
+                id: 'Channel',
                 name: 'Channel',
                 passProps,
                 options: {
@@ -84,6 +85,7 @@ export function resetToSelectServer(allowOtherServers) {
             stack: {
                 children: [{
                     component: {
+                        id: 'SelectServer',
                         name: 'SelectServer',
                         passProps: {
                             allowOtherServers,
@@ -141,6 +143,7 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
             stack: {
                 children: [{
                     component: {
+                        id: name,
                         name,
                         passProps,
                         options: merge(defaultOptions, options),
@@ -181,6 +184,7 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
 
     Navigation.push(componentId, {
         component: {
+            id: name,
             name,
             passProps,
             options: merge(defaultOptions, options),
@@ -240,6 +244,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
         stack: {
             children: [{
                 component: {
+                    id: name,
                     name,
                     passProps,
                     options: merge(defaultOptions, options),
@@ -342,6 +347,7 @@ export function showOverlay(name, passProps, options = {}) {
 
     Navigation.showOverlay({
         component: {
+            id: name,
             name,
             passProps,
             options: merge(defaultOptions, options),

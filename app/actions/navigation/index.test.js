@@ -37,6 +37,7 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: 'Channel',
                             name: 'Channel',
                             passProps,
                             options: {
@@ -76,6 +77,7 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: 'SelectServer',
                             name: 'SelectServer',
                             passProps: {
                                 allowOtherServers,
@@ -137,6 +139,7 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: name,
                             name,
                             passProps,
                             options: merge(defaultOptions, options),
@@ -180,6 +183,7 @@ describe('app/actions/navigation', () => {
 
         const expectedLayout = {
             component: {
+                id: name,
                 name,
                 passProps,
                 options: merge(defaultOptions, options),
@@ -241,6 +245,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: name,
                         name,
                         passProps,
                         options: merge(defaultOptions, options),
@@ -317,6 +322,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: name,
                         name,
                         passProps,
                         options: merge(showModalOptions, defaultOptions),
@@ -372,6 +378,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: showSearchModalName,
                         name: showSearchModalName,
                         passProps: showSearchModalPassProps,
                         options: merge(defaultOptions, showSearchModalOptions),
@@ -433,6 +440,7 @@ describe('app/actions/navigation', () => {
 
         const expectedLayout = {
             component: {
+                id: name,
                 name,
                 passProps,
                 options: merge(defaultOptions, options),

@@ -10,8 +10,6 @@ import {openMainSideMenu, openSettingsSideMenu} from 'app/actions/navigation';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import NetworkIndicator from 'app/components/network_indicator';
-import SafeAreaView from 'app/components/safe_area_view';
-import StatusBar from 'app/components/status_bar';
 import PostTextbox from 'app/components/post_textbox';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -42,8 +40,7 @@ export default class ChannelAndroid extends ChannelBase {
 
         const style = getStyleFromTheme(theme);
         const drawerContent = (
-            <SafeAreaView>
-                <StatusBar/>
+            <>
                 <NetworkIndicator/>
                 <ChannelNavBar
                     openMainSidebar={this.openMainSidebar}
@@ -60,7 +57,7 @@ export default class ChannelAndroid extends ChannelBase {
                     />
                 </KeyboardLayout>
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
-            </SafeAreaView>
+            </>
         );
 
         return (
