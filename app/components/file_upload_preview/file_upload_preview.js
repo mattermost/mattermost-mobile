@@ -19,8 +19,6 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FileUploadItem from './file_upload_item';
 
-const initial = {opacity: 0, scale: 0};
-const final = {opacity: 1, scale: 1};
 const showFiles = {opacity: 1, height: 68};
 const hideFiles = {opacity: 0, height: 0};
 const hideError = {height: 0};
@@ -94,14 +92,9 @@ export default class FileUploadPreview extends PureComponent {
     handleFileMaxWarning = () => {
         this.setState({showFileMaxWarning: true});
         if (this.errorRef.current) {
-            this.makeErrorVisible(true, 20, null, () => {
-                this.errorRef.current.transition(initial, final, 350, 'ease-in');
-            });
+            this.makeErrorVisible(true, 20);
             setTimeout(() => {
-                this.makeErrorVisible(false, 20, 350, () => {
-                    this.errorRef.current.transition(final, initial, 350, 'ease-out');
-                    this.clearErrorsFromState(400);
-                });
+                this.makeErrorVisible(false, 20);
             }, 5000);
         }
     };
@@ -110,28 +103,19 @@ export default class FileUploadPreview extends PureComponent {
         if (this.errorRef.current) {
             if (message) {
                 this.setState({fileSizeWarning: message.replace(': ', ':\n')});
-                this.makeErrorVisible(true, 40, null, () => {
-                    this.errorRef.current.transition(initial, final, 350, 'ease-in');
-                });
+                this.makeErrorVisible(true, 40);
             } else {
-                this.makeErrorVisible(false, 20, 350, () => {
-                    this.errorRef.current.transition(final, initial, 350, 'ease-out');
-                    this.clearErrorsFromState(400);
-                });
+                this.makeErrorVisible(false, 20);
             }
         }
     };
 
-    makeErrorVisible = (visible, height, delay, callback) => {
+    makeErrorVisible = (visible, height) => {
         if (this.errorContainerRef.current) {
             if (visible) {
-                this.errorContainerRef.current.transition(hideError, {height}, 100);
-                setTimeout(callback, delay || 150);
+                this.errorContainerRef.current.transition(hideError, {height}, 200, 'ease-out');
             } else {
-                callback();
-                setTimeout(() => {
-                    this.errorContainerRef.current.transition({height}, hideError, 300);
-                }, delay || 150);
+                this.errorContainerRef.current.transition({height}, hideError, 200, 'ease-in');
             }
         }
     }
@@ -226,7 +210,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 android: 2,
             }),
             marginHorizontal: 12,
-            opacity: 0,
             flex: 1,
         },
         scrollView: {
