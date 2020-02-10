@@ -38,7 +38,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
         this.props.actions.getTeams();
         this.handleDimensions({window: Dimensions.get('window')});
         this.handlePermanentSidebar();
-        EventEmitter.on('close_main_sidebar', this.closeChannelDrawer);
+        EventEmitter.on('close_main_sidebar', this.closeMainSidebar);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         Dimensions.addEventListener('change', this.handleDimensions);
@@ -61,7 +61,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
 
     componentWillUnmount() {
         this.mounted = false;
-        EventEmitter.off('close_main_sidebar', this.closeChannelDrawer);
+        EventEmitter.off('close_main_sidebar', this.closeMainSidebar);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
         Dimensions.removeEventListener('change', this.handleDimensions);
@@ -94,7 +94,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
         }
     };
 
-    closeChannelDrawer = () => {
+    closeMainSidebar = () => {
         if (this.state.drawerOpened && this.drawerRef?.current) {
             this.drawerRef.current.closeDrawer();
         } else if (this.drawerSwiper && DeviceTypes.IS_TABLET) {

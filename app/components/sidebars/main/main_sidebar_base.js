@@ -80,7 +80,7 @@ export default class MainSidebarBase extends Component {
             makeDirectChannel,
         } = actions;
 
-        this.closeChannelDrawer(true);
+        this.closeMainSidebar();
 
         const displayValue = {displayName: channel.display_name};
         const utils = require('app/utils/general');
@@ -177,7 +177,7 @@ export default class MainSidebarBase extends Component {
                     style={style.swiperContent}
                 >
                     <TeamsList
-                        closeChannelDrawer={this.closeChannelDrawer}
+                        closeMainSidebar={this.closeMainSidebar}
                     />
                 </View>
             );
@@ -230,7 +230,7 @@ export default class MainSidebarBase extends Component {
 
         if (closeDrawer) {
             telemetry.start(['channel:close_drawer']);
-            this.closeChannelDrawer(true);
+            this.closeMainSidebar();
         }
 
         if (!channel) {

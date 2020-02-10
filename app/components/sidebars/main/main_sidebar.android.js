@@ -27,7 +27,7 @@ export default class MainSidebarAndroid extends MainSidebarBase {
     componentDidMount() {
         this.mounted = true;
         this.props.actions.getTeams();
-        EventEmitter.on('close_main_sidebar', this.closeChannelDrawer);
+        EventEmitter.on('close_main_sidebar', this.closeMainSidebar);
         EventEmitter.on('main_sidebar_did_close', this.handleSidebarDidClose);
         EventEmitter.on('main_sidebar_did_open', this.handleSidebarDidOpen);
         EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
@@ -49,7 +49,7 @@ export default class MainSidebarAndroid extends MainSidebarBase {
 
     componentWillUnmount() {
         this.mounted = false;
-        EventEmitter.off('close_main_sidebar', this.closeChannelDrawer);
+        EventEmitter.off('close_main_sidebar', this.closeMainSidebar);
         EventEmitter.off('main_sidebar_did_close', this.handleSidebarDidClose);
         EventEmitter.off('main_sidebar_did_open', this.handleSidebarDidOpen);
         EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
@@ -62,7 +62,7 @@ export default class MainSidebarAndroid extends MainSidebarBase {
         }
     };
 
-    closeChannelDrawer = () => {
+    closeMainSidebar = () => {
         closeMainSideMenu();
     };
 
