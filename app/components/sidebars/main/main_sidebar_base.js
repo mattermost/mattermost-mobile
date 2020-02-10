@@ -25,18 +25,18 @@ export default class MainSidebarBase extends Component {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
+            handleSelectChannel: PropTypes.func,
+            joinChannel: PropTypes.func.isRequired,
             logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            joinChannel: PropTypes.func.isRequired,
-            handleSelectChannel: PropTypes.func,
         }).isRequired,
         children: PropTypes.node,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string,
+        locale: PropTypes.string,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
-        locale: PropTypes.string,
     };
 
     constructor(props) {
@@ -54,6 +54,11 @@ export default class MainSidebarBase extends Component {
         this.drawerSwiper = ref;
     };
 
+    getIntl = () => {
+        const {intl} = this.providerRef ? this.providerRef.getChildContext() : this.context;
+        return intl;
+    };
+
     handleUpdateTitle = (channel) => {
         let channelName = '';
         if (channel.display_name) {
@@ -62,37 +67,8 @@ export default class MainSidebarBase extends Component {
         this.props.actions.setChannelDisplayName(channelName);
     };
 
-    selectChannel = (channel, currentChannelId, closeDrawer = true) => {
-        const {logChannelSwitch, handleSelectChannel} = this.props.actions;
-
-        logChannelSwitch(channel.id, currentChannelId);
-
-        tracker.channelSwitch = Date.now();
-
-        if (closeDrawer) {
-            telemetry.start(['channel:close_drawer']);
-            this.closeChannelDrawer(true);
-        }
-
-        if (!channel) {
-            const utils = require('app/utils/general');
-            const {intl} = this.providerRef.getChildContext();
-
-            const unableToJoinMessage = {
-                id: t('mobile.open_unknown_channel.error'),
-                defaultMessage: "We couldn't join the channel. Please reset the cache and try again.",
-            };
-            const erroMessage = {};
-
-            utils.alertErrorWithFallback(intl, erroMessage, unableToJoinMessage);
-            return;
-        }
-
-        handleSelectChannel(channel.id);
-    };
-
-    joinChannel = (channel, currentChannelId) => {
-        const {intl} = this.providerRef.getChildContext();
+    joinChannel = async (channel, currentChannelId) => {
+        const intl = this.getIntl();
         const {
             actions,
             currentTeamId,
@@ -106,41 +82,37 @@ export default class MainSidebarBase extends Component {
 
         this.closeChannelDrawer(true);
 
-        setTimeout(async () => {
-            const displayValue = {displayName: channel.display_name};
-            const utils = require('app/utils/general');
+        const displayValue = {displayName: channel.display_name};
+        const utils = require('app/utils/general');
 
-            let result;
-            if (channel.type === General.DM_CHANNEL) {
-                result = await makeDirectChannel(channel.id, false);
+        let result;
+        if (channel.type === General.DM_CHANNEL) {
+            result = await makeDirectChannel(channel.id, false);
 
-                if (result.error) {
-                    const dmFailedMessage = {
-                        id: t('mobile.open_dm.error'),
-                        defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
-                    };
-                    utils.alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
-                }
-            } else {
-                result = await joinChannel(currentUserId, currentTeamId, channel.id);
-
-                if (result.error || !result.data || !result.data.channel) {
-                    const joinFailedMessage = {
-                        id: t('mobile.join_channel.error'),
-                        defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
-                    };
-                    utils.alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
-                }
+            if (result.error) {
+                const dmFailedMessage = {
+                    id: t('mobile.open_dm.error'),
+                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
+                };
+                utils.alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
             }
+        } else {
+            result = await joinChannel(currentUserId, currentTeamId, channel.id);
 
-            if (result.error || (!result.data && !result.data.channel)) {
-                return;
+            if (result.error || !result.data || !result.data.channel) {
+                const joinFailedMessage = {
+                    id: t('mobile.join_channel.error'),
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
+                };
+                utils.alertErrorWithFallback(intl, result.error, joinFailedMessage, displayValue);
             }
+        }
 
-            requestAnimationFrame(() => {
-                this.selectChannel(result.data.channel || result.data, currentChannelId, false);
-            });
-        }, 200);
+        if (result.error || (!result.data && !result.data.channel)) {
+            return;
+        }
+
+        this.selectChannel(result.data.channel || result.data, currentChannelId, false);
     };
 
     onSearchEnds = () => {
@@ -247,6 +219,35 @@ export default class MainSidebarBase extends Component {
                 </DrawerSwiper>
             </SafeAreaView>
         );
+    };
+
+    selectChannel = (channel, currentChannelId, closeDrawer = true) => {
+        const {logChannelSwitch, handleSelectChannel} = this.props.actions;
+
+        logChannelSwitch(channel.id, currentChannelId);
+
+        tracker.channelSwitch = Date.now();
+
+        if (closeDrawer) {
+            telemetry.start(['channel:close_drawer']);
+            this.closeChannelDrawer(true);
+        }
+
+        if (!channel) {
+            const utils = require('app/utils/general');
+            const intl = this.getIntl();
+
+            const unableToJoinMessage = {
+                id: t('mobile.open_unknown_channel.error'),
+                defaultMessage: "We couldn't join the channel. Please reset the cache and try again.",
+            };
+            const erroMessage = {};
+
+            utils.alertErrorWithFallback(intl, erroMessage, unableToJoinMessage);
+            return;
+        }
+
+        handleSelectChannel(channel.id);
     };
 
     render() {
