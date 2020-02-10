@@ -10,7 +10,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {loadMe} from 'app/actions/views/user';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
-import {setDeepLinkURL, loadConfigAndLicense} from 'app/actions/views/root';
+import {setDeepLinkURL} from 'app/actions/views/root';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/device';
@@ -51,7 +51,6 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(store, async () => {
-            await store.dispatch(loadConfigAndLicense());
             store.dispatch(loadMe());
             resetToChannel({skipMetrics: true});
         });
