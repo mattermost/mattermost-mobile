@@ -8,45 +8,31 @@ import {IntlProvider} from 'react-intl';
 import {getTranslations} from 'app/i18n';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import store from 'app/store';
+import {waitForHydration} from 'app/store/utils';
 
 import {extensionSelectTeamId} from './actions';
-import Extension from './extension';
+let Extension;
 
 export default class ShareApp extends PureComponent {
     constructor() {
         super();
 
-        const st = store.getState();
-        if (st?.views?.root?.hydrationComplete) {
-            this.state = {init: true};
-            this.listenForHydration();
-        } else {
-            this.unsubscribeFromStore = store.subscribe(this.listenForHydration);
-            this.state = {init: false};
+        if (!Extension) {
+            Extension = require('./extension').default;
         }
+
+        this.state = {init: false};
     }
 
     componentDidMount() {
         this.mounted = true;
-    }
-
-    listenForHydration = () => {
-        const {dispatch, getState} = store;
-        const state = getState();
-        if (state.views.root.hydrationComplete) {
-            const {currentTeamId} = state.entities.teams;
-
-            if (this.unsubscribeFromStore) {
-                this.unsubscribeFromStore();
-            }
-
+        waitForHydration(store, () => {
+            const {dispatch, getState} = store;
+            const {currentTeamId} = getState().entities.teams;
             dispatch(extensionSelectTeamId(currentTeamId));
-
-            if (this.mounted) {
-                this.setState({init: true});
-            }
-        }
-    };
+            this.setState({init: true});
+        });
+    }
 
     render() {
         if (!this.state.init) {
