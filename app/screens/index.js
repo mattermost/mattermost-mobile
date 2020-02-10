@@ -5,12 +5,14 @@ import React from 'react';
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
-import Channel from 'app/screens/channel';
-import Root from 'app/components/root';
-import SelectServer from 'app/screens/select_server';
-
+let Root;
 export function registerScreens(store, Provider) {
     // TODO consolidate this with app/utils/wrap_context_provider
+
+    if (!Root) {
+        Root = require('app/components/root').default;
+    }
+
     const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
         <Provider store={store}>
             <Root>
@@ -22,7 +24,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => wrapper(require('app/screens/about').default), () => require('app/screens/about').default);
     Navigation.registerComponent('AddReaction', () => wrapper(require('app/screens/add_reaction').default), () => require('app/screens/add_reaction').default);
     Navigation.registerComponent('AdvancedSettings', () => wrapper(require('app/screens/settings/advanced_settings').default), () => require('app/screens/settings/advanced_settings').default);
-    Navigation.registerComponent('Channel', () => wrapper(Channel), () => Channel);
+    Navigation.registerComponent('Channel', () => wrapper(require('app/screens/channel').default), () => require('app/screens/channel').default);
     Navigation.registerComponent('ChannelAddMembers', () => wrapper(require('app/screens/channel_add_members').default), () => require('app/screens/channel_add_members').default);
     Navigation.registerComponent('ChannelInfo', () => wrapper(require('app/screens/channel_info').default), () => require('app/screens/channel_info').default);
     Navigation.registerComponent('ChannelMembers', () => wrapper(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
@@ -61,7 +63,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('Root', () => wrapper(Root), () => Root);
     Navigation.registerComponent('Search', () => wrapper(require('app/screens/search').default), () => require('app/screens/search').default);
     Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
-    Navigation.registerComponent('SelectServer', () => wrapper(SelectServer), () => SelectServer);
+    Navigation.registerComponent('SelectServer', () => wrapper(require('app/screens/select_server').default), () => require('app/screens/select_server').default);
     Navigation.registerComponent('SelectTeam', () => wrapper(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
     Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/settings/timezone/select_timezone').default), () => require('app/screens/settings/timezone/select_timezone').default);
     Navigation.registerComponent('Settings', () => wrapper(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);
