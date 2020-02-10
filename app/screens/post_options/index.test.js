@@ -38,6 +38,10 @@ describe('makeMapStateToProps', () => {
             general: {
                 serverVersion: '5.18',
             },
+            channels: {myMembers: {}},
+            teams: {myMembers: {}},
+            roles: {roles: {}},
+            users: {profiles: {}},
         },
     };
 

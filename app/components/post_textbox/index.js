@@ -11,7 +11,9 @@ import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats} fro
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
 import {getChannelTimezones} from 'mattermost-redux/actions/channels';
+import Permissions from 'mattermost-redux/constants/permissions';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
@@ -48,6 +50,14 @@ function mapStateToProps(state, ownProps) {
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
     const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
+    const canPost = haveIChannelPermission(
+        state,
+        {
+            channel: currentChannel.id,
+            team: currentChannel.team_id,
+            permission: Permissions.CREATE_POST,
+        },
+    );
 
     return {
         currentChannel,
@@ -71,6 +81,7 @@ function mapStateToProps(state, ownProps) {
         currentChannelMembersCount,
         isTimezoneEnabled,
         isLandscape: isLandscape(state),
+        canPost,
     };
 }
 

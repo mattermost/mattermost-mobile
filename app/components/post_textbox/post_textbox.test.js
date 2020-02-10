@@ -64,6 +64,7 @@ describe('PostTextBox', () => {
         valueEvent: '',
         isLandscape: false,
         screenId: 'NavigationScreen1',
+        canPost: true,
     };
 
     test('should match, full snapshot', () => {
@@ -519,6 +520,16 @@ describe('PostTextBox', () => {
         expect(wrapper.state('value')).toEqual('');
         wrapper.setProps({value: 'value', channelId: 'channel-id2'});
         expect(wrapper.state('value')).toEqual('value');
+    });
+
+    test('should be disabled without the create_post permission', () => {
+        const props = {...baseProps, canPost: false};
+
+        const wrapper = shallowWithIntl(
+            <PostTextbox {...props}/>,
+        );
+
+        expect(wrapper.find(PasteableTextInput).prop('editable')).toBe(false);
     });
 });
 

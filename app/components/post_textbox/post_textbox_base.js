@@ -96,6 +96,7 @@ export default class PostTextBoxBase extends PureComponent {
         currentChannel: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
         screenId: PropTypes.string.isRequired,
+        canPost: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -254,7 +255,7 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     getTextInputButton = (actionType) => {
-        const {channelIsReadOnly, theme} = this.props;
+        const {channelIsReadOnly, theme, canPost} = this.props;
         const style = getStyleSheet(theme);
 
         let button = null;
@@ -262,7 +263,7 @@ export default class PostTextBoxBase extends PureComponent {
         let iconColor = changeOpacity(theme.centerChannelColor, 0.64);
         let isDisabled = false;
 
-        if (!channelIsReadOnly) {
+        if (!channelIsReadOnly && canPost) {
             switch (actionType) {
             case 'at':
                 isDisabled = this.state.value[this.state.value.length - 1] === '@';
@@ -310,7 +311,7 @@ export default class PostTextBoxBase extends PureComponent {
     }
 
     getMediaButton = (actionType) => {
-        const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme} = this.props;
+        const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme, canPost} = this.props;
         const style = getStyleSheet(theme);
         let button = null;
         const props = {
@@ -325,7 +326,7 @@ export default class PostTextBoxBase extends PureComponent {
             buttonContainerStyle: style.iconWrapper,
         };
 
-        if (canUploadFiles && !channelIsReadOnly) {
+        if (canUploadFiles && !channelIsReadOnly && canPost) {
             switch (actionType) {
             case 'file':
                 button = (
@@ -348,11 +349,11 @@ export default class PostTextBoxBase extends PureComponent {
     }
 
     getInputContainerStyle = () => {
-        const {channelIsReadOnly, theme} = this.props;
+        const {channelIsReadOnly, theme, canPost} = this.props;
         const style = getStyleSheet(theme);
         const inputContainerStyle = [style.inputContainer];
 
-        if (channelIsReadOnly) {
+        if (channelIsReadOnly || !canPost) {
             inputContainerStyle.push(style.readonlyContainer);
         }
 
@@ -360,10 +361,10 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     getPlaceHolder = () => {
-        const {channelIsReadOnly, rootId} = this.props;
+        const {channelIsReadOnly, rootId, canPost} = this.props;
         let placeholder;
 
-        if (channelIsReadOnly) {
+        if (channelIsReadOnly || !canPost) {
             placeholder = {id: t('mobile.create_post.read_only'), defaultMessage: 'This channel is read-only.'};
         } else if (rootId) {
             placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
@@ -854,7 +855,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {intl} = this.context;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId, canPost} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {
@@ -901,11 +902,11 @@ export default class PostTextBoxBase extends PureComponent {
                         keyboardType={this.state.keyboardType}
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
-                        editable={!channelIsReadOnly}
+                        editable={!channelIsReadOnly && canPost}
                         onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     />
-                    {!channelIsReadOnly &&
+                    {!channelIsReadOnly && canPost &&
                     <React.Fragment>
                         <FileUploadPreview
                             files={files}

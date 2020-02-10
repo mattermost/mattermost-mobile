@@ -71,6 +71,7 @@ export default class PostBody extends PureComponent {
         shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
         location: PropTypes.string,
+        canPost: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -164,6 +165,7 @@ export default class PostBody extends PureComponent {
             post,
             showAddReaction,
             location,
+            canPost,
         } = this.props;
 
         if (isSystemMessage && (!canDelete || hasBeenDeleted)) {
@@ -185,6 +187,7 @@ export default class PostBody extends PureComponent {
             managedConfig,
             showAddReaction,
             location,
+            canPost,
         };
 
         Keyboard.dismiss();

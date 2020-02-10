@@ -46,6 +46,7 @@ describe('PostBody', () => {
         isEmojiOnly: false,
         shouldRenderJumboEmoji: false,
         theme: Preferences.THEMES.default,
+        canPost: true,
     };
 
     test('should mount additional content for non-system messages', () => {

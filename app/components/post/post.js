@@ -70,6 +70,7 @@ export default class Post extends PureComponent {
         isLandscape: PropTypes.bool.isRequired,
         previousPostExists: PropTypes.bool,
         beforePrevPostUserId: PropTypes.string,
+        canPost: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -78,6 +79,7 @@ export default class Post extends PureComponent {
         showLongPost: false,
         channelIsReadOnly: false,
         highlightPinnedOrFlagged: true,
+        canPost: true,
     };
 
     static contextTypes = {
@@ -254,6 +256,7 @@ export default class Post extends PureComponent {
             isLandscape,
             previousPostExists,
             beforePrevPostUserId,
+            canPost,
         } = this.props;
 
         if (!post) {
@@ -263,7 +266,7 @@ export default class Post extends PureComponent {
         const style = getStyleSheet(theme);
         const isReplyPost = this.isReplyPost();
         const onUsernamePress =
-            Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly ? this.autofillUserMention : this.viewUserProfile;
+            (Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly && canPost) ? this.autofillUserMention : this.viewUserProfile;
         const mergeMessage = consecutivePost && !hasComments && !isBot;
         const highlightFlagged = isFlagged && !skipFlaggedHeader;
         const hightlightPinned = post.is_pinned && !skipPinnedHeader;

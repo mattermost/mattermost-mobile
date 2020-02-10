@@ -56,6 +56,14 @@ export function makeMapStateToProps() {
         let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
+        const canPost = haveIChannelPermission(
+            state,
+            {
+                channel: post.channel_id,
+                team: channel.team_id,
+                permission: Permissions.CREATE_POST,
+            },
+        );
 
         if (hasNewPermissions(state)) {
             canAddReaction = haveIChannelPermission(state, {
@@ -81,6 +89,10 @@ export function makeMapStateToProps() {
             ) {
                 canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
             }
+        }
+
+        if (!canPost) {
+            canReply = false;
         }
 
         if (ownProps.isSystemMessage) {

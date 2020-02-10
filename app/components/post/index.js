@@ -6,10 +6,12 @@ import {bindActionCreators} from 'redux';
 
 import {createPost, removePost} from 'mattermost-redux/actions/posts';
 import {Posts} from 'mattermost-redux/constants';
-import {isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
+import Permissions from 'mattermost-redux/constants/permissions';
+import {isChannelReadOnlyById, makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from 'mattermost-redux/selectors/entities/posts';
 import {getUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
 import {isStartOfNewMessages} from 'mattermost-redux/utils/post_list';
 import {isPostFlagged, isSystemMessage} from 'mattermost-redux/utils/post_utils';
 
@@ -39,6 +41,8 @@ function isConsecutivePost(post, previousPost) {
 function makeMapStateToProps() {
     const getCommentCountForPost = makeGetCommentCountForPost();
     const isPostCommentMention = makeIsPostCommentMention();
+    const getChannel = makeGetChannel();
+
     return function mapStateToProps(state, ownProps) {
         const post = ownProps.post || getPost(state, ownProps.postId);
         const previousPostId = isStartOfNewMessages(ownProps.previousPostId) ? ownProps.beforePrevPostId : ownProps.previousPostId;
@@ -52,6 +56,15 @@ function makeMapStateToProps() {
         let isFirstReply = true;
         let isLastReply = true;
         let commentedOnPost = null;
+        const channel = getChannel(state, {id: post.channel_id}) || {};
+        const canPost = haveIChannelPermission(
+            state,
+            {
+                channel: post.channel_id,
+                team: channel.team_id,
+                permission: Permissions.CREATE_POST,
+            },
+        );
 
         if (ownProps.renderReplies && post && post.root_id) {
             if (previousPostId) {
@@ -89,6 +102,7 @@ function makeMapStateToProps() {
             isLandscape: isLandscape(state),
             previousPostExists: Boolean(previousPost),
             beforePrevPostUserId: (beforePrevPost ? beforePrevPost.user_id : null),
+            canPost,
         };
     };
 }
