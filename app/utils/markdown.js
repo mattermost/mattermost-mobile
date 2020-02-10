@@ -182,3 +182,24 @@ export function getDisplayNameForLanguage(language) {
 export function escapeRegex(text) {
     return text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
+
+export function switchKeyboardForCodeBlocks(value, cursorPosition) {
+    const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
+
+    const matches = [];
+    let nextMatch;
+    while ((nextMatch = regexForCodeBlock.exec(value)) !== null) {
+        matches.push({
+            startOfMatch: regexForCodeBlock.lastIndex - nextMatch[0].length,
+            endOfMatch: regexForCodeBlock.lastIndex + 1,
+        });
+    }
+
+    const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
+
+    // 'email-address' keyboardType prevents iOS emdash autocorrect
+    if (cursorIsInsideCodeBlock) {
+        return 'email-address';
+    }
+    return 'default';
+}

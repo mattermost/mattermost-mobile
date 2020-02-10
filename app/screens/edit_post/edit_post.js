@@ -18,6 +18,7 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -167,28 +168,18 @@ export default class EditPost extends PureComponent {
         }
     };
 
-    switchKeyboardForCodeBlocks = (fromOnPostChangeText, cursorPosition) => {
-        const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
-
-        const matches = [...this.state.message.matchAll(regexForCodeBlock)].map((match) => ({
-            startOfMatch: match.index,
-            endOfMatch: fromOnPostChangeText ? match.index + match[0].length : match.index + match[0].length + 1,
-        }));
-
-        const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
-
-        // 'email-address' keyboardType prevents iOS emdash autocorrect
-        this.setState({
-            cursorPosition,
-            keyboardType: cursorIsInsideCodeBlock ? 'email-address' : 'default',
-        });
+    handleOnSelectionChange = (e) => {
+        if (e) {
+            this.onPostSelectionChange(e, false);
+        }
     };
 
     onPostSelectionChange = (event, fromOnPostChangeText) => {
         const cursorPosition = fromOnPostChangeText ? this.state.cursorPosition : event.nativeEvent.selection.end;
 
         if (Platform.OS === 'ios') {
-            this.switchKeyboardForCodeBlocks(fromOnPostChangeText, cursorPosition);
+            const keyboardType = switchKeyboardForCodeBlocks(this.state.message, cursorPosition);
+            this.setState({cursorPosition, keyboardType});
         } else {
             this.setState({cursorPosition});
         }
@@ -250,7 +241,7 @@ export default class EditPost extends PureComponent {
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
-                            onSelectionChange={(event) => this.onPostSelectionChange(event, false)}
+                            onSelectionChange={this.handleOnSelectionChange}
                             keyboardType={this.state.keyboardType}
                         />
                     </View>

@@ -44,6 +44,7 @@ import FileUploadPreview from 'app/components/file_upload_preview';
 import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
+import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -407,21 +408,10 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    switchKeyboardForCodeBlocks = (fromHandleTextChange, cursorPosition) => {
-        const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
-
-        const matches = [...this.state.value.matchAll(regexForCodeBlock)].map((match) => ({
-            startOfMatch: match.index,
-            endOfMatch: fromHandleTextChange ? match.index + match[0].length : match.index + match[0].length + 1,
-        }));
-
-        const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
-
-        // 'email-address' keyboardType prevents iOS emdash autocorrect
-        this.setState({
-            cursorPosition,
-            keyboardType: cursorIsInsideCodeBlock ? 'email-address' : 'default',
-        });
+    handleOnSelectionChange = (e) => {
+        if (e) {
+            this.handlePostDraftSelectionChanged(e, false);
+        }
     };
 
     handlePostDraftSelectionChanged = (event, fromHandleTextChange) => {
@@ -434,7 +424,8 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         if (Platform.OS === 'ios') {
-            this.switchKeyboardForCodeBlocks(fromHandleTextChange, cursorPosition);
+            const keyboardType = switchKeyboardForCodeBlocks(this.state.value, cursorPosition);
+            this.setState({cursorPosition, keyboardType});
         } else {
             this.setState({cursorPosition});
         }
@@ -917,7 +908,7 @@ export default class PostTextBoxBase extends PureComponent {
                         ref={this.input}
                         value={textValue}
                         onChangeText={this.handleTextChange}
-                        onSelectionChange={(event) => this.handlePostDraftSelectionChanged(event, false)}
+                        onSelectionChange={this.handleOnSelectionChange}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}
