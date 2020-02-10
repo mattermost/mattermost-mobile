@@ -91,10 +91,6 @@ export function loadMe(user, deviceToken) {
             data.config = config;
             data.url = Client4.getUrl();
 
-            // should load data retention policy
-
-            // should load roles
-
             dispatch({
                 type: UserTypes.LOGIN,
                 data,
@@ -110,7 +106,6 @@ export function loadMe(user, deviceToken) {
                 }
             }
             if (roles.size > 0) {
-                // We should dispatch this with LOGIN?
                 dispatch(loadRolesIfNeeded(roles));
             }
         } catch (error) {

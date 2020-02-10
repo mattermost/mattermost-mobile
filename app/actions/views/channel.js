@@ -21,6 +21,7 @@ import {
 } from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
+import {loadRolesIfNeeded} from 'mattermost-redux/actions/roles';
 import {getTeamMembersByIds, selectTeam} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
@@ -666,9 +667,19 @@ export function loadChannelsForTeam(teamId) {
                 }
             }
 
-            // Load Roles
-
             if (data.channels) {
+                const roles = new Set();
+                const members = data.channelMembers;
+                for (const member of members) {
+                    for (const role of member.roles.split(' ')) {
+                        roles.add(role);
+                    }
+                }
+
+                if (roles.size > 0) {
+                    dispatch(loadRolesIfNeeded(roles));
+                }
+
                 // Fetch needed profiles from channel creators and direct channels
                 dispatch(loadSidebarDirectMessagesProfiles(data));
 
