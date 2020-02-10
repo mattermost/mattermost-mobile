@@ -118,7 +118,4 @@ export default {
     NotificationLevels,
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
-    INPUT_LINE_HEIGHT: 20,
-    INPUT_VERTICAL_PADDING: 18,
-    INPUT_INITIAL_HEIGHT: 38,
 };
