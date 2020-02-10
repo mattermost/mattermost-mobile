@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {View, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
@@ -37,7 +37,8 @@ export default class FileUploadRemove extends PureComponent {
                     <Icon
                         name='close-circle'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        size={18}
+                        size={21}
+                        style={style.removeIcon}
                     />
                 </View>
             </TouchableWithFeedback>
@@ -50,17 +51,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         tappableContainer: {
             position: 'absolute',
             elevation: 11,
-            top: -2,
-            right: -16,
+            top: -5,
+            right: -10,
             width: 32,
             height: 32,
         },
         removeButton: {
-            borderRadius: 20,
+            borderRadius: 12,
             alignSelf: 'center',
-            paddingTop: 6,
-            paddingHorizontal: 1,
+            marginTop: Platform.select({
+                ios: 5.4,
+                android: 4.75,
+            }),
             backgroundColor: theme.centerChannelBg,
+        },
+        removeIcon: {
+            position: 'relative',
+            top: Platform.select({
+                ios: 1,
+                android: 0,
+            }),
         },
     };
 });
