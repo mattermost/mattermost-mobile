@@ -37,6 +37,9 @@
  - Fixed an issue where explicit links to teams and channels on the same server currently logged in to didn't switch to that team and channel.
  - Fixed an issue where the keyboard glitched when returning to the main channel view after viewing a code block in the right-hand side.
  - Fixed an issue with default boolean values in interactive dialogs.
+ 
+## Known Issues
+ - Markdown tables are missing a header colour.
 
 ## 1.27.1 Release
 - Release Date: January 21, 2020
