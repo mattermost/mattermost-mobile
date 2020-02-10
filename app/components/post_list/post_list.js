@@ -55,6 +55,7 @@ export default class PostList extends PureComponent {
         isSearchResult: PropTypes.bool,
         lastPostIndex: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
+        loadMorePostsVisible: PropTypes.bool,
         onLoadMoreUp: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
@@ -138,7 +139,7 @@ export default class PostList extends PureComponent {
             this.props.postIds.length &&
             this.state.contentHeight &&
             this.state.contentHeight < this.state.postListHeight &&
-            this.props.extraData
+            !this.props.extraData
         ) {
             this.loadToFillContent();
         }
@@ -169,7 +170,7 @@ export default class PostList extends PureComponent {
     handleContentSizeChange = (contentWidth, contentHeight) => {
         if (this.state.contentHeight !== contentHeight) {
             this.setState({contentHeight}, () => {
-                if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData && contentHeight > 53) {
+                if (this.state.postListHeight && contentHeight < this.state.postListHeight && !this.props.extraData && contentHeight > 53) {
                     // We still have less than 1 screen of posts loaded with more to get, so load more
                     this.props.onLoadMoreUp();
                 }
@@ -457,7 +458,9 @@ export default class PostList extends PureComponent {
     render() {
         const {
             channelId,
+            extraData,
             highlightPostId,
+            loadMorePostsVisible,
             postIds,
             refreshing,
             scrollViewNativeID,
@@ -478,9 +481,10 @@ export default class PostList extends PureComponent {
             <FlatList
                 key={`recyclerFor-${channelId}-${hasPostsKey}`}
                 ref={this.flatListRef}
+                style={{flex: 1}}
                 contentContainerStyle={styles.postListContent}
                 data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
+                extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
                 keyboardDismissMode={'interactive'}

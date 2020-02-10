@@ -193,22 +193,10 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
         const time = Date.now();
 
         let loadMorePostsVisible = true;
-        let received;
+        let postAction;
         if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
             // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-            received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
-
-            if (received?.order) {
-                const count = received.order.length;
-                loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-                actions.push({
-                    type: ViewTypes.SET_INITIAL_POST_COUNT,
-                    data: {
-                        channelId,
-                        count,
-                    },
-                });
-            }
+            postAction = getPosts(channelId);
         } else {
             const lastConnectAt = state.websocket?.lastConnectAt || 0;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
@@ -224,20 +212,10 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 since = getLastCreateAt(postsForChannel);
             }
 
-            received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
-
-            if (received?.order) {
-                const count = received.order.length;
-                loadMorePostsVisible = postsIds.length + count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-                actions.push({
-                    type: ViewTypes.SET_INITIAL_POST_COUNT,
-                    data: {
-                        channelId,
-                        count: postsIds.length + count,
-                    },
-                });
-            }
+            postAction = getPostsSince(channelId, since);
         }
+
+        const received = await retryGetPostsAction(postAction, dispatch, getState);
 
         if (received) {
             actions.push({
@@ -245,6 +223,11 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 channelId,
                 time,
             });
+
+            if (received?.order) {
+                const count = received.order.length;
+                loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+            }
         }
 
         actions.push(setLoadMorePostsVisible(loadMorePostsVisible));
@@ -638,14 +621,6 @@ export function increasePostVisibility(channelId, postId) {
         if (result?.order) {
             const count = result.order.length;
             hasMorePost = count >= pageSize;
-
-            actions.push({
-                type: ViewTypes.INCREASE_POST_COUNT,
-                data: {
-                    channelId,
-                    count,
-                },
-            });
 
             actions.push(setLoadMorePostsVisible(hasMorePost));
         }

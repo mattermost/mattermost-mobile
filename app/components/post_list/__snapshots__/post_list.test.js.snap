@@ -20,6 +20,7 @@ exports[`PostList setting channel deep link 1`] = `
       "channel-id",
       undefined,
       undefined,
+      undefined,
     ]
   }
   horizontal={false}
@@ -56,6 +57,11 @@ exports[`PostList setting channel deep link 1`] = `
   removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={60}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
   updateCellsBatchingPeriod={50}
   windowSize={50}
 />
@@ -81,6 +87,7 @@ exports[`PostList setting permalink deep link 1`] = `
       "channel-id",
       undefined,
       undefined,
+      undefined,
     ]
   }
   horizontal={false}
@@ -117,6 +124,11 @@ exports[`PostList setting permalink deep link 1`] = `
   removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={60}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
   updateCellsBatchingPeriod={50}
   windowSize={50}
 />
@@ -142,6 +154,7 @@ exports[`PostList should match snapshot 1`] = `
       "channel-id",
       undefined,
       undefined,
+      undefined,
     ]
   }
   horizontal={false}
@@ -178,6 +191,11 @@ exports[`PostList should match snapshot 1`] = `
   removeClippedSubviews={true}
   renderItem={[Function]}
   scrollEventThrottle={60}
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
   updateCellsBatchingPeriod={50}
   windowSize={50}
 />

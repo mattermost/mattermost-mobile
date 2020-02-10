@@ -259,25 +259,6 @@ function retryFailed(state = false, action) {
     }
 }
 
-function postCountInChannel(state = {}, action) {
-    switch (action.type) {
-    case ViewTypes.SET_INITIAL_POST_COUNT: {
-        const {channelId, count} = action.data;
-        const nextState = {...state};
-        nextState[channelId] = count;
-        return nextState;
-    }
-    case ViewTypes.INCREASE_POST_COUNT: {
-        const {channelId, count} = action.data;
-        const nextState = {...state};
-        nextState[channelId] += count;
-        return nextState;
-    }
-    default:
-        return state;
-    }
-}
-
 function loadingPosts(state = {}, action) {
     switch (action.type) {
     case ViewTypes.LOADING_POSTS: {
@@ -305,6 +286,8 @@ function lastGetPosts(state = {}, action) {
 
 function loadMorePostsVisible(state = true, action) {
     switch (action.type) {
+    case ChannelTypes.SELECT_CHANNEL:
+        return true;
     case ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE:
         return action.data;
 
@@ -378,7 +361,6 @@ export default combineReducers({
     drafts,
     loading,
     refreshing,
-    postCountInChannel,
     loadingPosts,
     lastGetPosts,
     retryFailed,

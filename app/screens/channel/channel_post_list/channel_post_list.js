@@ -189,6 +189,7 @@ export default class ChannelPostList extends PureComponent {
                     renderFooter={this.renderFooter}
                     refreshing={refreshing}
                     scrollViewNativeID={channelId}
+                    loadMorePostsVisible={this.props.loadMorePostsVisible}
                 />
             );
         }
