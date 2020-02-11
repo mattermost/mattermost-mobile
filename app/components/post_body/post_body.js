@@ -116,9 +116,9 @@ export default class PostBody extends PureComponent {
         const {height} = event.nativeEvent.layout;
         const {showLongPost} = this.props;
 
-        if (!showLongPost && height >= this.state.maxHeight) {
+        if (!showLongPost) {
             this.setState({
-                isLongPost: true,
+                isLongPost: height >= this.state.maxHeight,
             });
         }
 
