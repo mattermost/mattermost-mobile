@@ -122,11 +122,9 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
-            if (prevProps.currentTeamId !== this.props.currentTeamId) {
-                PushNotifications.clearChannelNotifications(this.props.currentChannelId);
-            }
-
             const previousChannelId = EphemeralStore.appStartedFromPushNotification ? null : prevProps.currentChannelId;
+            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+
             requestAnimationFrame(() => {
                 this.props.actions.markChannelViewedAndRead(this.props.currentChannelId, previousChannelId);
                 this.props.actions.getChannelStats(this.props.currentChannelId);
