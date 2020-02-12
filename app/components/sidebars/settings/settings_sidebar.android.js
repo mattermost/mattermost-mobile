@@ -5,8 +5,6 @@ import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {View} from 'react-native';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-
 import {closeSettingsSideMenu} from 'app/actions/navigation';
 import {getTranslations} from 'app/i18n';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -15,16 +13,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import SettingsSidebarBase from './settings_sidebar_base';
 
 export default class SettingsDrawerAndroid extends SettingsSidebarBase {
-    componentDidMount() {
-        this.mounted = true;
-        EventEmitter.on('close_settings_sidebar', this.closeSettingsSidebar);
-    }
-
-    componentWillUnmount() {
-        this.mounted = false;
-        EventEmitter.off('close_settings_sidebar', this.closeSettingsSidebar);
-    }
-
     confirmReset = (status) => {
         const {intl} = this.providerRef.getChildContext();
         this.confirmResetBase(status, intl);

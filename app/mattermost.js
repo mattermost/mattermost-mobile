@@ -11,6 +11,7 @@ import {loadMe} from 'app/actions/views/user';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
+import {NavigationTypes} from 'app/constants';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/device';
@@ -90,11 +91,11 @@ Navigation.events().registerAppLaunchedListener(() => {
 
         switch (componentId) {
         case 'MainSidebar':
-            EventEmitter.emit('main_sidebar_did_open', this.handleSidebarDidOpen);
-            EventEmitter.emit('blur_post_textbox');
+            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
+            EventEmitter.emit(Navigation.BLUR_POST_TEXTBOX);
             break;
         case 'SettingsSidebar':
-            EventEmitter.emit('blur_post_textbox');
+            EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
             break;
         }
     });
@@ -103,7 +104,7 @@ Navigation.events().registerAppLaunchedListener(() => {
         EphemeralStore.removeNavigationComponentId(componentId);
 
         if (componentId === 'MainSidebar') {
-            EventEmitter.emit('main_sidebar_did_close');
+            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
         }
     });
 });

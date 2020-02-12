@@ -16,7 +16,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
 import SafeAreaView from 'app/components/safe_area_view';
 import EmptyToolbar from 'app/components/start/empty_toolbar';
-
+import {NavigationTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
 import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
@@ -74,7 +74,7 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentDidMount() {
-        EventEmitter.on('blur_post_textbox', this.blurPostTextBox);
+        EventEmitter.on(NavigationTypes.BLUR_POST_TEXTBOX, this.blurPostTextBox);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
         if (this.props.currentTeamId) {
@@ -140,7 +140,7 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off('blur_post_textbox', this.blurPostTextBox);
+        EventEmitter.off(NavigationTypes.BLUR_POST_TEXTBOX, this.blurPostTextBox);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 

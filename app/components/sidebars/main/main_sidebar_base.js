@@ -4,14 +4,17 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     Platform,
     StyleSheet,
     View,
 } from 'react-native';
 
-import {General} from 'mattermost-redux/constants';
+import {General, WebsocketEvents} from 'mattermost-redux/constants';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
+import {NavigationTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 
@@ -46,8 +49,44 @@ export default class MainSidebarBase extends Component {
         this.channelListRef = React.createRef();
     }
 
-    shouldComponentUpdate() {
-        return false;
+    componentDidMount() {
+        this.mounted = true;
+        this.props.actions.getTeams();
+        EventEmitter.on(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
+        EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
+        Dimensions.addEventListener('change', this.handleDimensions);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        const {currentTeamId, teamsCount, theme} = this.props;
+        const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, searching} = this.state;
+
+        if (nextState.openDrawerOffset !== openDrawerOffset && Platform.OS === 'ios') {
+            return true;
+        }
+
+        if (nextState.searching !== searching || nextState.deviceWidth !== deviceWidth) {
+            return true;
+        }
+
+        const condition = nextProps.currentTeamId !== currentTeamId ||
+            nextProps.teamsCount !== teamsCount ||
+            nextProps.theme !== theme;
+
+        if (Platform.OS === 'ios') {
+            return condition ||
+                nextState.isSplitView !== isSplitView ||
+                nextState.permanentSidebar !== permanentSidebar;
+        }
+
+        return condition;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        EventEmitter.off(NavigationTypes.CLOSE_MAIN_SIDEBAR, this.closeMainSidebar);
+        EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
+        Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
     drawerSwiperRef = (ref) => {

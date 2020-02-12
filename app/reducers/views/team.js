@@ -46,7 +46,7 @@ function setLastChannelForTeam(state, teamId, channel) {
 function lastChannelForTeam(state = {}, action) {
     switch (action.type) {
     case ChannelTypes.SELECT_CHANNEL: {
-        return setLastChannelForTeam(state, action.extra.teamId, action.extra.channel);
+        return setLastChannelForTeam(state, action.extra?.teamId, action.extra?.channel);
     }
 
     case ViewTypes.REMOVE_LAST_CHANNEL_FOR_TEAM: {

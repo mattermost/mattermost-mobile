@@ -154,12 +154,12 @@ export function ssoLogin(token) {
 
 export function logout(skipServerLogout = false) {
     return async (dispatch) => {
-        try {
-            if (!skipServerLogout) {
+        if (!skipServerLogout) {
+            try {
                 Client4.logout();
+            } catch {
+                // Do nothing
             }
-        } catch {
-            // Do nothing
         }
 
         dispatch({type: UserTypes.LOGOUT_SUCCESS});

@@ -21,6 +21,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {NavigationTypes} from 'app/constants';
 import {alertErrorWithFallback, emptyFunction} from 'app/utils/general';
 import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {
@@ -271,7 +272,7 @@ export default class MoreChannels extends PureComponent {
             }
             await actions.handleSelectChannel(id);
 
-            EventEmitter.emit('close_main_sidebar');
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
             requestAnimationFrame(() => {
                 this.close();
             });

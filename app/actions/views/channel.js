@@ -62,12 +62,6 @@ import {forceLogoutIfNecessary} from './user';
 
 const MAX_RETRIES = 3;
 
-export function loadChannelsIfNecessary(teamId) {
-    return async (dispatch) => {
-        await dispatch(fetchMyChannelsAndMembers(teamId));
-    };
-}
-
 export function loadChannelsByTeamName(teamName, errorHandler) {
     return async (dispatch, getState) => {
         const state = getState();
@@ -700,54 +694,29 @@ export function loadSidebarDirectMessagesProfiles(data) {
     return async (dispatch, getState) => {
         const state = getState();
         const {channels, channelMembers} = data;
-        const config = getConfig(state);
-        const currentChannelId = getCurrentChannelId(state);
         const currentUserId = getCurrentUserId(state);
-        const preferences = getMyPreferences(state);
         const usersInChannel = getUserIdsInChannels(state);
-        const users = getUsers(state);
         const directChannels = Object.values(channels).filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
         const prefs = [];
-        let promises = []; //only fetch profiles that we don't have and the Direct channel should be visible
+        const promises = []; //only fetch profiles that we don't have and the Direct channel should be visible
 
         // Prepare preferences and start fetching profiles to batch them
         directChannels.forEach((c) => {
-            const members = Array.from(usersInChannel[c.id] || []).filter((u) => u.id !== currentUserId);
+            const profilesInChannel = Array.from(usersInChannel[c.id] || []).filter((u) => u.id !== currentUserId);
             switch (c.type) {
             case General.DM_CHANNEL: {
-                const otherUserId = getUserIdFromChannelName(currentUserId, c.name);
-                const otherUser = users[otherUserId];
-                const dmVisible = isDirectMessageVisible(preferences, c.id);
-                const dmAutoClosed = isDirectChannelAutoClosed(config, preferences, c.id, c.last_post_at, otherUser?.delete_at, currentChannelId); //eslint-disable-line camelcase
-                const dmIsUnread = channelMembers[c.id]?.mention_count > 0; //eslint-disable-line camelcase
-                const dmFetchProfile = dmIsUnread || (dmVisible && !dmAutoClosed);
+                const dm = fetchDirectMessageProfileIfNeeded(state, c, channelMembers, profilesInChannel, prefs);
 
-                // when then DM is hidden but has new messages
-                if ((!dmVisible || dmAutoClosed) && dmIsUnread) {
-                    prefs.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId));
-                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
-                }
-
-                if (dmFetchProfile && !members.includes(otherUserId) && otherUserId !== currentUserId) {
-                    promises.push(dispatch(getUsersInChannel(c.id)));
+                if (dm) {
+                    promises.push(dispatch(dm));
                 }
                 break;
             }
             case General.GM_CHANNEL: {
-                const gmVisible = isGroupMessageVisible(preferences, c.id);
-                const gmAutoClosed = isDirectChannelAutoClosed(config, preferences, c.id, c.last_post_at);
-                const channelMember = channelMembers[c.id];
-                const gmIsUnread = channelMember?.mention_count > 0 || channelMember?.msg_count < c.total_msg_count; //eslint-disable-line camelcase
-                const gmFetchProfile = gmIsUnread || (gmVisible && !gmAutoClosed);
+                const gm = fetchGroupMessageProfilesIfNeeded(state, c, channelMembers, profilesInChannel, prefs);
 
-                // when then GM is hidden but has new messages
-                if ((!gmVisible || gmAutoClosed) && gmIsUnread) {
-                    prefs.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, c.id));
-                    prefs.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, c.id, Date.now().toString()));
-                }
-
-                if (gmFetchProfile && !members.length) {
-                    promises.push(dispatch(getUsersInChannel(c.id)));
+                if (gm) {
+                    promises.push(dispatch(gm));
                 }
                 break;
             }
@@ -759,33 +728,9 @@ export function loadSidebarDirectMessagesProfiles(data) {
             dispatch(savePreferences(currentUserId, prefs));
         }
 
-        // Get the profiles returned by the promises and retry those that failed
-        for (let i = 0; i < MAX_RETRIES; i++) {
-            if (!promises.length) {
-                break;
-            }
+        getProfilesFromPromises(dispatch, promises, directChannels);
 
-            const result = await Promise.all(promises); //eslint-disable-line no-await-in-loop
-            const failed = [];
-
-            result.forEach((p, index) => {
-                if (p.error) {
-                    failed.push(directChannels[index].id);
-                }
-            });
-
-            dispatch({
-                type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
-                data: result,
-            });
-
-            if (failed.length) {
-                promises = failed.map((id) => dispatch(getUsersInChannel(id))); //eslint-disable-line no-loop-func
-                continue;
-            }
-
-            break;
-        }
+        return {data: true};
     };
 }
 
@@ -808,4 +753,84 @@ export function getUsersInChannel(channelId) {
             return {error};
         }
     };
+}
+
+async function getProfilesFromPromises(dispatch, promiseArray, directChannels) {
+    // Get the profiles returned by the promises and retry those that failed
+    let promises = promiseArray;
+    for (let i = 0; i < MAX_RETRIES; i++) {
+        if (!promises.length) {
+            return;
+        }
+
+        const result = await Promise.all(promises); //eslint-disable-line no-await-in-loop
+        const failed = [];
+
+        result.forEach((p, index) => {
+            if (p.error) {
+                failed.push(directChannels[index].id);
+            }
+        });
+
+        dispatch({
+            type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
+            data: result,
+        });
+
+        if (failed.length) {
+            promises = failed.map((id) => dispatch(getUsersInChannel(id))); //eslint-disable-line no-loop-func
+            continue;
+        }
+
+        return;
+    }
+}
+
+function fetchDirectMessageProfileIfNeeded(state, channel, channelMembers, profilesInChannel, newPreferences) {
+    const currentUserId = getCurrentUserId(state);
+    const preferences = getMyPreferences(state);
+    const users = getUsers(state);
+    const config = getConfig(state);
+    const currentChannelId = getCurrentChannelId(state);
+    const otherUserId = getUserIdFromChannelName(currentUserId, channel.name);
+    const otherUser = users[otherUserId];
+    const dmVisible = isDirectMessageVisible(preferences, channel.id);
+    const dmAutoClosed = isDirectChannelAutoClosed(config, preferences, channel.id, channel.last_post_at, otherUser?.delete_at, currentChannelId); //eslint-disable-line camelcase
+    const dmIsUnread = channelMembers[channel.id]?.mention_count > 0; //eslint-disable-line camelcase
+    const dmFetchProfile = dmIsUnread || (dmVisible && !dmAutoClosed);
+
+    // when then DM is hidden but has new messages
+    if ((!dmVisible || dmAutoClosed) && dmIsUnread) {
+        newPreferences.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId));
+        newPreferences.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channel.id, Date.now().toString()));
+    }
+
+    if (dmFetchProfile && !profilesInChannel.includes(otherUserId) && otherUserId !== currentUserId) {
+        return getUsersInChannel(channel.id);
+    }
+
+    return null;
+}
+
+function fetchGroupMessageProfilesIfNeeded(state, channel, channelMembers, profilesInChannel, newPreferences) {
+    const currentUserId = getCurrentUserId(state);
+    const preferences = getMyPreferences(state);
+    const config = getConfig(state);
+    const gmVisible = isGroupMessageVisible(preferences, channel.id);
+    const gmAutoClosed = isDirectChannelAutoClosed(config, preferences, channel.id, channel.last_post_at);
+    const channelMember = channelMembers[channel.id];
+    const gmIsUnread = channelMember?.mention_count > 0 || channelMember?.msg_count < channel.total_msg_count; //eslint-disable-line camelcase
+    const gmFetchProfile = gmIsUnread || (gmVisible && !gmAutoClosed);
+
+    // when then GM is hidden but has new messages
+    if ((!gmVisible || gmAutoClosed) && gmIsUnread) {
+        newPreferences.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, channel.id));
+        newPreferences.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channel.id, Date.now().toString()));
+    }
+
+    if (gmFetchProfile && !profilesInChannel.length) {
+        return getUsersInChannel(channel.id);
+    }
+
+    return null;
 }

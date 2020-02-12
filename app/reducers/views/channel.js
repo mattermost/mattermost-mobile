@@ -16,7 +16,7 @@ function displayName(state = '', action) {
     case ViewTypes.SET_CHANNEL_DISPLAY_NAME:
         return action.displayName || '';
     case ChannelTypes.SELECT_CHANNEL:
-        return action.extra?.channel?.display_name || ''; //eslint-disable-line camelcase
+        return '';
     default:
         return state;
     }

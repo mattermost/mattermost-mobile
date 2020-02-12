@@ -21,11 +21,11 @@ import {isDirectChannel} from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {displayUsername} from 'mattermost-redux/utils/user_utils';
 
+import {popToRoot, dismissAllModals, dismissOverlay} from 'app/actions/navigation';
 import FormattedText from 'app/components/formatted_text';
 import ProfilePicture from 'app/components/profile_picture';
-import {changeOpacity} from 'app/utils/theme';
 import {NavigationTypes} from 'app/constants';
-import {popToRoot, dismissAllModals, dismissOverlay} from 'app/actions/navigation';
+import {changeOpacity} from 'app/utils/theme';
 
 import logo from 'assets/images/icon.png';
 import webhookIcon from 'assets/images/icons/webhook.jpg';
@@ -143,8 +143,8 @@ export default class Notification extends PureComponent {
 
         const {actions, notification} = this.props;
 
-        EventEmitter.emit('close_main_sidebar');
-        EventEmitter.emit('close_settings_sidebar');
+        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEABR);
+        EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
         InteractionManager.runAfterInteractions(() => {
             this.dismissOverlay();
             if (!notification.localNotification) {

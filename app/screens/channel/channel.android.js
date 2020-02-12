@@ -11,6 +11,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import NetworkIndicator from 'app/components/network_indicator';
 import PostTextbox from 'app/components/post_textbox';
+import {NavigationTypes} from 'app/constants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import LocalConfig from 'assets/config';
@@ -22,12 +23,12 @@ import ChannelBase, {ClientUpgradeListener} from './channel_base';
 
 export default class ChannelAndroid extends ChannelBase {
     openMainSidebar = () => {
-        EventEmitter.emit('blur_post_textbox');
+        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
         openMainSideMenu();
     };
 
     openSettingsSidebar = () => {
-        EventEmitter.emit('blur_post_textbox');
+        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
         openSettingsSideMenu();
     };
 

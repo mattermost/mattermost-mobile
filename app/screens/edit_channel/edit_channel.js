@@ -14,7 +14,7 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
-import {ViewTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import {setNavigatorStyles} from 'app/utils/theme';
 import {cleanUpUrlable} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
@@ -151,7 +151,7 @@ export default class EditChannel extends PureComponent {
                 this.emitUpdating(true);
                 break;
             case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_main_sidebar');
+                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
                     this.close();

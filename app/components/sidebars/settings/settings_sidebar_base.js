@@ -45,6 +45,16 @@ export default class SettingsSidebarBase extends PureComponent {
         });
     }
 
+    componentDidMount() {
+        this.mounted = true;
+        EventEmitter.on(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+        EventEmitter.off(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+    }
+
     confirmResetBase = (status, intl) => {
         confirmOutOfOfficeDisabled(intl, status, this.updateStatus);
     };

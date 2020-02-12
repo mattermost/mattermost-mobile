@@ -9,7 +9,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes, NavigationTypes} from 'app/constants';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -30,15 +30,15 @@ export default class SettingsDrawer extends SettingsSidebarBase {
     }
 
     componentDidMount() {
-        this.mounted = true;
+        super.componentDidMount();
+
         this.handleDimensions({window: Dimensions.get('window')});
-        EventEmitter.on('close_settings_sidebar', this.closeSettingsSidebar);
         Dimensions.addEventListener('change', this.handleDimensions);
     }
 
     componentWillUnmount() {
-        this.mounted = false;
-        EventEmitter.off('close_settings_sidebar', this.closeSettingsSidebar);
+        super.componentWillUnmount();
+
         Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
@@ -58,7 +58,7 @@ export default class SettingsDrawer extends SettingsSidebarBase {
     };
 
     open = () => {
-        EventEmitter.emit('blur_post_textbox');
+        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
 
         if (this.drawerRef && !this.drawerOpened) {
             this.drawerRef.openDrawer();

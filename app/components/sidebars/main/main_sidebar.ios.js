@@ -6,11 +6,10 @@ import {Dimensions, Keyboard} from 'react-native';
 import {intlShape} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import {WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes, NavigationTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 
 import MainSidebarBase from './main_sidebar_base';
@@ -34,38 +33,26 @@ export default class MainSidebarIOS extends MainSidebarBase {
     }
 
     componentDidMount() {
-        this.mounted = true;
-        this.props.actions.getTeams();
+        super.componentDidMount();
+
         this.handleDimensions({window: Dimensions.get('window')});
         this.handlePermanentSidebar();
-        EventEmitter.on('close_main_sidebar', this.closeMainSidebar);
-        EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
         EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        Dimensions.addEventListener('change', this.handleDimensions);
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, teamsCount, theme} = this.props;
-        const {deviceWidth, openDrawerOffset, isSplitView, permanentSidebar, searching} = this.state;
-
-        if (nextState.openDrawerOffset !== openDrawerOffset || nextState.searching !== searching || nextState.deviceWidth !== deviceWidth) {
-            return true;
-        }
-
-        return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.teamsCount !== teamsCount ||
-            nextProps.theme !== theme ||
-            nextState.isSplitView !== isSplitView ||
-            nextState.permanentSidebar !== permanentSidebar;
     }
 
     componentWillUnmount() {
-        this.mounted = false;
-        EventEmitter.off('close_main_sidebar', this.closeMainSidebar);
-        EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
+        super.componentWillUnmount();
+
         EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        Dimensions.removeEventListener('change', this.handleDimensions);
     }
+
+    closeMainSidebar = () => {
+        if (this.state.drawerOpened && this.drawerRef?.current) {
+            this.drawerRef.current.closeDrawer();
+        } else if (this.drawerSwiper && DeviceTypes.IS_TABLET) {
+            this.resetDrawer(true);
+        }
+    };
 
     handleDimensions = ({window}) => {
         if (this.mounted) {
@@ -94,14 +81,6 @@ export default class MainSidebarIOS extends MainSidebarBase {
         }
     };
 
-    closeMainSidebar = () => {
-        if (this.state.drawerOpened && this.drawerRef?.current) {
-            this.drawerRef.current.closeDrawer();
-        } else if (this.drawerSwiper && DeviceTypes.IS_TABLET) {
-            this.resetDrawer(true);
-        }
-    };
-
     handleDrawerClose = () => {
         this.setState({
             drawerOpened: false,
@@ -118,7 +97,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
     };
 
     open = () => {
-        EventEmitter.emit('blur_post_textbox');
+        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
 
         if (this.drawerRef?.current) {
             this.drawerRef.current.openDrawer();

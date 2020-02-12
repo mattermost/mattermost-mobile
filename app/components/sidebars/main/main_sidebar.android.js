@@ -5,10 +5,10 @@ import React from 'react';
 import {Dimensions, Keyboard} from 'react-native';
 import {IntlProvider} from 'react-intl';
 
-import {WebsocketEvents} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {closeMainSideMenu, enableMainSideMenu} from 'app/actions/navigation';
+import {NavigationTypes} from 'app/constants';
 import {getTranslations} from 'app/i18n';
 
 import MainSidebarBase from './main_sidebar_base';
@@ -25,45 +25,27 @@ export default class MainSidebarAndroid extends MainSidebarBase {
     }
 
     componentDidMount() {
-        this.mounted = true;
-        this.props.actions.getTeams();
-        EventEmitter.on('close_main_sidebar', this.closeMainSidebar);
-        EventEmitter.on('main_sidebar_did_close', this.handleSidebarDidClose);
-        EventEmitter.on('main_sidebar_did_open', this.handleSidebarDidOpen);
-        EventEmitter.on(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.addEventListener('change', this.handleDimensions);
-    }
+        super.componentDidMount();
 
-    shouldComponentUpdate(nextProps, nextState) {
-        const {currentTeamId, teamsCount, theme} = this.props;
-        const {deviceWidth, searching} = this.state;
-
-        if (nextState.searching !== searching || nextState.deviceWidth !== deviceWidth) {
-            return true;
-        }
-
-        return nextProps.currentTeamId !== currentTeamId ||
-            nextProps.teamsCount !== teamsCount ||
-            nextProps.theme !== theme;
+        EventEmitter.on(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE, this.handleSidebarDidClose);
+        EventEmitter.on(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
     }
 
     componentWillUnmount() {
-        this.mounted = false;
-        EventEmitter.off('close_main_sidebar', this.closeMainSidebar);
-        EventEmitter.off('main_sidebar_did_close', this.handleSidebarDidClose);
-        EventEmitter.off('main_sidebar_did_open', this.handleSidebarDidOpen);
-        EventEmitter.off(WebsocketEvents.CHANNEL_UPDATED, this.handleUpdateTitle);
-        Dimensions.removeEventListener('change', this.handleDimensions);
+        super.componentWillUnmount();
+
+        EventEmitter.off(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE, this.handleSidebarDidClose);
+        EventEmitter.off(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
     }
+
+    closeMainSidebar = () => {
+        closeMainSideMenu();
+    };
 
     handleDimensions = ({window}) => {
         if (this.mounted) {
             this.setState({deviceWidth: window.width});
         }
-    };
-
-    closeMainSidebar = () => {
-        closeMainSideMenu();
     };
 
     handleSidebarDidClose = () => {
@@ -100,9 +82,9 @@ export default class MainSidebarAndroid extends MainSidebarBase {
         return (
             <IntlProvider
                 key={locale}
-                locale={'en'}
+                locale={locale}
                 ref={this.setProviderRef}
-                messages={getTranslations('en')}
+                messages={getTranslations(locale)}
             >
                 {this.renderNavigationView(this.state.deviceWidth)}
             </IntlProvider>
