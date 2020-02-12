@@ -408,9 +408,9 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handleOnSelectionChange = (e) => {
-        if (e) {
-            this.handlePostDraftSelectionChanged(e, false);
+    handleOnSelectionChange = (event) => {
+        if (event) {
+            this.handlePostDraftSelectionChanged(event, false);
         }
     };
 
