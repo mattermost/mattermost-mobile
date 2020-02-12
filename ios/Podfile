@@ -39,7 +39,6 @@ target 'Mattermost' do
   pod 'Swime', '3.0.6'
 
 
-  pod 'react-native-appearance', :path => '../node_modules/react-native-appearance'
 
   target 'MattermostTests' do
     inherit! :search_paths
