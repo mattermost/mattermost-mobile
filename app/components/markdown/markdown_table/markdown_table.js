@@ -193,6 +193,10 @@ export default class MarkdownTable extends React.PureComponent {
         } else {
             leftOffset = tableWidth - 20;
         }
+        let expandButtonOffset = leftOffset;
+        if (Platform.OS === 'android') {
+            expandButtonOffset -= 10;
+        }
 
         // Renders when table width exceeds the container, or if the columns exceed maximum allowed for previews
         if ((this.state.containerWidth && tableWidth > this.state.containerWidth && !renderAsFlex) ||
@@ -227,7 +231,7 @@ export default class MarkdownTable extends React.PureComponent {
             <TouchableWithFeedback
                 type={'opacity'}
                 onPress={this.handlePress}
-                style={[style.expandButton, {left: leftOffset}]}
+                style={[style.expandButton, {left: expandButtonOffset}]}
             >
                 <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
                     <View style={style.iconButton}>
