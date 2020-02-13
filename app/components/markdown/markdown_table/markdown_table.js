@@ -41,13 +41,15 @@ export default class MarkdownTable extends React.PureComponent {
             containerWidth: 0,
             contentHeight: 0,
             contentWidth: 0,
-            maxPreviewColumns: MAX_PREVIEW_COLUMNS,
             cellWidth: 0,
         };
     }
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.setMaxPreviewColumns);
+
+        const window = Dimensions.get('window');
+        this.setMaxPreviewColumns({window});
     }
 
     componentWillUnmount() {

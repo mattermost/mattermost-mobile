@@ -38,6 +38,18 @@ describe('MarkdownTable', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
+    test('should call setMaxPreviewColumns on mount', () => {
+        const wrapper = shallowWithIntl(
+            <MarkdownTable {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+        const setMaxPreviewColumns = jest.spyOn(instance, 'setMaxPreviewColumns');
+
+        instance.componentDidMount();
+        expect(setMaxPreviewColumns).toHaveBeenCalled();
+        expect(instance.state.maxPreviewColumns).toBeDefined();
+    });
+
     test('should slice rows and columns', () => {
         const wrapper = shallowWithIntl(
             <MarkdownTable {...baseProps}/>,
