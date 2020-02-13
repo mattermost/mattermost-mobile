@@ -5,7 +5,7 @@ import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'rea
 import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
-import semver from 'semver';
+import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {loadMe, logout} from 'mattermost-redux/actions/users';
@@ -226,7 +226,8 @@ class GlobalEventHandler {
     onServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = this.store;
         const state = getState();
-        const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
+        const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
+        const version = match && match[0];
         const locale = getCurrentLocale(state);
         const translations = getTranslations(locale);
 

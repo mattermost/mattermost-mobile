@@ -7,8 +7,6 @@ import {Dimensions, View} from 'react-native';
 import ChannelLoader from 'app/components/channel_loader';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import NetworkIndicator from 'app/components/network_indicator';
-import SafeAreaView from 'app/components/safe_area_view';
-import StatusBar from 'app/components/status_bar';
 import PostTextbox from 'app/components/post_textbox';
 import LocalConfig from 'assets/config';
 
@@ -23,8 +21,7 @@ export default class ChannelAndroid extends ChannelBase {
 
         const channelLoaderStyle = [style.channelLoader, {height}];
         const drawerContent = (
-            <SafeAreaView>
-                <StatusBar/>
+            <>
                 <NetworkIndicator/>
                 <ChannelNavBar
                     openChannelDrawer={this.openChannelSidebar}
@@ -45,7 +42,7 @@ export default class ChannelAndroid extends ChannelBase {
                     style={channelLoaderStyle}
                 />
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
-            </SafeAreaView>
+            </>
         );
 
         return this.renderChannel(drawerContent);

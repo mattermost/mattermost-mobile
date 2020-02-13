@@ -210,6 +210,8 @@ PODS:
     - React
   - react-native-document-picker (3.2.4):
     - React
+  - react-native-hw-keyboard-event (0.0.4):
+    - React
   - react-native-image-picker (2.0.0):
     - React
   - react-native-local-auth (1.5.0):
@@ -335,6 +337,7 @@ DEPENDENCIES:
   - "react-native-cameraroll (from `../node_modules/@react-native-community/cameraroll`)"
   - react-native-cookies (from `../node_modules/react-native-cookies/ios`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
+  - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-local-auth (from `../node_modules/react-native-local-auth`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -430,6 +433,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-cookies/ios"
   react-native-document-picker:
     :path: "../node_modules/react-native-document-picker"
+  react-native-hw-keyboard-event:
+    :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
   react-native-local-auth:
@@ -523,6 +528,7 @@ SPEC CHECKSUMS:
   react-native-cameraroll: ad20f5a93c25cb83a76455df57a2c62fbb63aaed
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
   react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
+  react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: ba7fe85b3373ff33d4827210d989dfcbbd68f7f9
   react-native-local-auth: 5081a70211643de74bb207e007401a0c81b37a20
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
-import {Navigation} from 'react-native-navigation';
+import {TouchableHighlight} from 'react-native';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -217,7 +217,7 @@ describe('ChannelItem', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        wrapper.find(Navigation.TouchablePreview).simulate('press');
+        wrapper.find(TouchableHighlight).simulate('press');
         jest.runAllTimers();
 
         const expectedChannelParams = {id: baseProps.channelId, display_name: baseProps.displayName, fake: channel.fake, type: channel.type};

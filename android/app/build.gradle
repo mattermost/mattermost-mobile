@@ -75,6 +75,7 @@ import com.android.build.OutputFile
 project.ext.react = [
     entryFile: "index.js",
     bundleConfig: "metro.config.js",
+    bundleCommand: "ram-bundle",
     enableHermes: false,
 ]
 
@@ -130,7 +131,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative60"
-        versionCode 262
+        versionCode 267
         versionName "1.28.0"
         multiDexEnabled = true
         ndk {
@@ -263,7 +264,9 @@ dependencies {
     implementation project(':@sentry_react-native')
     implementation project(':react-native-android-open-settings')
     implementation project(':react-native-haptic-feedback')
+    implementation project(':react-native-hw-keyboard-event')
     implementation project(':react-native-permissions')
+    
 
     implementation project(':react-native-fast-image')
     // For animated GIF support

@@ -45,7 +45,6 @@ export default class ChannelSidebar extends Component {
         currentUserId: PropTypes.string.isRequired,
         teamsCount: PropTypes.number.isRequired,
         theme: PropTypes.object.isRequired,
-        previewChannel: PropTypes.func,
     };
 
     static contextTypes = {
@@ -318,7 +317,6 @@ export default class ChannelSidebar extends Component {
         const {
             teamsCount,
             theme,
-            previewChannel,
         } = this.props;
 
         const {
@@ -372,7 +370,6 @@ export default class ChannelSidebar extends Component {
                     onSearchEnds={this.onSearchEnds}
                     theme={theme}
                     drawerOpened={this.state.drawerOpened}
-                    previewChannel={previewChannel}
                 />
             </View>,
         );

@@ -8,8 +8,6 @@ import {
     AppState,
     BackHandler,
     findNodeHandle,
-    Image,
-    InteractionManager,
     Keyboard,
     NativeModules,
     Platform,
@@ -17,10 +15,12 @@ import {
     TouchableOpacity,
     ScrollView,
     View,
+    Image,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
 import Button from 'react-native-button';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
 
@@ -50,6 +50,8 @@ import {
 } from 'app/utils/theme';
 
 const {RNTextInputReset} = NativeModules;
+const INPUT_LINE_HEIGHT = 20;
+const EXTRA_INPUT_PADDING = 3;
 
 export default class PostTextBoxBase extends PureComponent {
     static propTypes = {
@@ -122,6 +124,7 @@ export default class PostTextBoxBase extends PureComponent {
             channelId: props.channelId,
             channelTimezoneCount: 0,
             longMessageAlertShown: false,
+            extraInputPadding: 0,
         };
     }
 
@@ -130,6 +133,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.on(event, this.handleInsertTextToDraft);
         AppState.addEventListener('change', this.handleAppStateChange);
+        HWKeyboardEvent.onHWKeyPressed(this.handleHardwareEnterPress);
 
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -157,6 +161,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.off(event, this.handleInsertTextToDraft);
         AppState.removeEventListener('change', this.handleAppStateChange);
+        HWKeyboardEvent.removeOnHWKeyPressed();
 
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -375,6 +380,14 @@ export default class PostTextBoxBase extends PureComponent {
     handleAndroidKeyboard = () => {
         this.blur();
     };
+
+    handleHardwareEnterPress = (keyEvent) => {
+        switch (keyEvent.pressedKey) {
+        case 'enter': this.handleSendMessage();
+            break;
+        case 'shift-enter': this.handleInsertTextToDraft('\n');
+        }
+    }
 
     handleAndroidBack = () => {
         const {channelId, files, rootId} = this.props;
@@ -641,10 +654,26 @@ export default class PostTextBoxBase extends PureComponent {
             actions.handleClearFiles(channelId, rootId);
         }
 
-        InteractionManager.runAfterInteractions(() => {
+        if (Platform.OS === 'ios') {
+            // On iOS, if the PostTextbox height increases from its
+            // initial height (due to a multiline post or a post whose
+            // message wraps, for example), then when the text is cleared
+            // the PostTextbox height decrease will be animated. This
+            // animation in conjunction with the PostList animation as it
+            // receives the newly created post is causing issues in the iOS
+            // PostList component as it fails to properly react to its content
+            // size changes. While a proper fix is determined for the PostList
+            // component, a small delay in triggering the height decrease
+            // animation gives the PostList enough time to first handle content
+            // size changes from the new post.
+            setTimeout(() => {
+                this.handleTextChange('');
+                this.setState({sendingMessage: false});
+            }, 250);
+        } else {
             this.handleTextChange('');
             this.setState({sendingMessage: false});
-        });
+        }
 
         this.changeDraft('');
 
@@ -828,6 +857,16 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
+    handleInputSizeChange = ({nativeEvent: {contentSize}}) => {
+        const {extraInputPadding} = this.state;
+        const numLines = contentSize.height / INPUT_LINE_HEIGHT;
+        if (numLines >= 2 && extraInputPadding !== EXTRA_INPUT_PADDING) {
+            this.setState({extraInputPadding: EXTRA_INPUT_PADDING});
+        } else if (numLines < 2 && extraInputPadding !== 0) {
+            this.setState({extraInputPadding: 0});
+        }
+    }
+
     renderDeactivatedChannel = () => {
         const {intl} = this.context;
         const style = getStyleSheet(this.props.theme);
@@ -851,7 +890,7 @@ export default class PostTextBoxBase extends PureComponent {
             return this.archivedView(theme, style);
         }
 
-        const {value} = this.state;
+        const {value, extraInputPadding} = this.state;
         const textValue = channelIsLoading ? '' : value;
         const placeholder = this.getPlaceHolder();
 
@@ -859,6 +898,12 @@ export default class PostTextBoxBase extends PureComponent {
 
         if (isLandscape) {
             maxHeight = 88;
+        }
+
+        const inputStyle = {};
+        if (extraInputPadding) {
+            inputStyle.paddingBottom = style.input.paddingBottom + extraInputPadding;
+            inputStyle.paddingTop = style.input.paddingTop + extraInputPadding;
         }
 
         return (
@@ -880,6 +925,7 @@ export default class PostTextBoxBase extends PureComponent {
                     <PasteableTextInput
                         ref={this.input}
                         value={textValue}
+                        style={{...style.input, ...inputStyle, maxHeight}}
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handlePostDraftSelectionChanged}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
@@ -887,13 +933,13 @@ export default class PostTextBoxBase extends PureComponent {
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
-                        style={{...style.input, maxHeight}}
                         keyboardType={this.state.keyboardType}
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
                         editable={!channelIsReadOnly}
                         onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        onContentSizeChange={Platform.OS === 'android' ? this.handleInputSizeChange : null}
                     />
                     {!channelIsReadOnly &&
                     <React.Fragment>
@@ -937,6 +983,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
+            paddingBottom: Platform.select({
+                ios: 1,
+                android: 2,
+            }),
         },
         slashIcon: {
             width: ICON_SIZE,
@@ -959,12 +1009,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 20,
+            fontSize: 15,
+            lineHeight: INPUT_LINE_HEIGHT,
             paddingHorizontal: 12,
-            paddingTop: 12,
-            paddingBottom: 6,
-            minHeight: 38,
+            paddingTop: Platform.select({
+                ios: 6,
+                android: 8,
+            }),
+            paddingBottom: Platform.select({
+                ios: 6,
+                android: 2,
+            }),
+            minHeight: 30,
         },
         inputContainer: {
             flex: 1,
@@ -972,12 +1028,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         inputContentContainer: {
             alignItems: 'stretch',
+            paddingTop: Platform.select({
+                ios: 7,
+                android: 0,
+            }),
         },
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
             justifyContent: 'center',
-            paddingBottom: 8,
+            paddingBottom: 2,
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
