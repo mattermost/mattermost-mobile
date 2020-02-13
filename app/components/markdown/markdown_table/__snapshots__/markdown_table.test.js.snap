@@ -30,7 +30,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
             "width": "100%",
           },
           Object {
-            "width": 480,
+            "width": 672,
           },
         ]
       }
@@ -276,7 +276,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
             "paddingTop": 8,
           },
           Object {
-            "width": 480,
+            "width": 672,
           },
         ]
       }
