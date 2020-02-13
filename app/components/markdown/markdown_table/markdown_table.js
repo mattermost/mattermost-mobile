@@ -98,30 +98,7 @@ export default class MarkdownTable extends React.PureComponent {
     };
 
     renderPreviewRows = (isFullView = false) => {
-        const {maxPreviewColumns} = this.state;
-        const tableStyle = this.getTableStyle(isFullView);
-
-        // Add an extra prop to the last row of the table so that it knows not to render a bottom border
-        // since the container should be rendering that
-        const rows = React.Children.toArray(this.props.children).slice(0, maxPreviewColumns).map((row) => {
-            const children = React.Children.toArray(row.props.children).slice(0, maxPreviewColumns);
-            return {
-                ...row,
-                props: {
-                    ...row.props,
-                    children,
-                },
-            };
-        });
-        rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
-            isLastRow: true,
-        });
-
-        return (
-            <View style={tableStyle}>
-                {rows}
-            </View>
-        );
+        return this.renderRows(isFullView, true);
     }
 
     shouldRenderAsFlex = (isFullView = false) => {
@@ -165,12 +142,27 @@ export default class MarkdownTable extends React.PureComponent {
         return tableStyle;
     }
 
-    renderRows = (isFullView = false) => {
+    renderRows = (isFullView = false, isPreview = false) => {
         const tableStyle = this.getTableStyle(isFullView);
+
+        let rows = React.Children.toArray(this.props.children);
+        if (isPreview) {
+            const {maxPreviewColumns} = this.state;
+
+            rows = rows.slice(0, maxPreviewColumns).map((row) => {
+                const children = React.Children.toArray(row.props.children).slice(0, maxPreviewColumns);
+                return {
+                    ...row,
+                    props: {
+                        ...row.props,
+                        children,
+                    },
+                };
+            });
+        }
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
-        const rows = React.Children.toArray(this.props.children);
         rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
             isLastRow: true,
         });
