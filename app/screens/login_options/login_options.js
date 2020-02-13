@@ -81,10 +81,11 @@ export default class LoginOptions extends PureComponent {
             }
 
             const textColor = config.EmailLoginButtonTextColor || 'white';
+            const {formatMessage} = this.context.intl;
 
             return (
                 <Button
-                    {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.emailButton))}
+                    {...accessibilityProps(formatMessage(accessibilityLabel.emailButton))}
                     key='email'
                     onPress={this.goToLogin}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
@@ -154,9 +155,11 @@ export default class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
 
         if (!forceHideFromLocal && config.EnableSignUpWithGitLab === 'true') {
+            const {formatMessage} = this.context.intl;
+
             return (
                 <Button
-                    {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.gitlabButton))}
+                    {...accessibilityProps(formatMessage(accessibilityLabel.gitlabButton))}
                     key='gitlab'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
                     containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}

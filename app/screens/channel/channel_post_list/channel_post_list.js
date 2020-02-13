@@ -235,11 +235,12 @@ export default class ChannelPostList extends PureComponent {
             );
         }
 
+        const {formatMessage} = this.context.intl;
         const style = getStyleSheet(theme);
 
         return (
             <View
-                {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.channelPostListScreen))}
+                {...accessibilityProps(formatMessage(accessibilityLabel.channelPostListScreen))}
                 style={style.container}
             >
                 <View style={style.separator}/>

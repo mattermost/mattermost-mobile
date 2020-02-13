@@ -111,9 +111,11 @@ export default class ChannelNavBar extends PureComponent {
             drawerButtonVisible = true;
         }
 
+        const {formatMessage} = this.context.intl;
+
         return (
             <View
-                {...accessibilityProps(this.context.intl.formatMessage(accessibilityLabel.channelNavBar))}
+                {...accessibilityProps(formatMessage(accessibilityLabel.channelNavBar))}
                 style={[style.header, padding(isLandscape), {height}]}
             >
                 <ChannelDrawerButton
