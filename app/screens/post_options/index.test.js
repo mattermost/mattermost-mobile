@@ -9,6 +9,7 @@ import * as commonSelectors from 'mattermost-redux/selectors/entities/common';
 import * as teamSelectors from 'mattermost-redux/selectors/entities/teams';
 import * as deviceSelectors from 'app/selectors/device';
 import * as preferencesSelectors from 'mattermost-redux/selectors/entities/preferences';
+import * as postUtils from 'mattermost-redux/utils/post_utils';
 
 channelSelectors.getChannel = jest.fn();
 channelSelectors.getCurrentChannelId = jest.fn();
@@ -23,6 +24,7 @@ teamSelectors.getCurrentTeamUrl = jest.fn();
 deviceSelectors.getDimensions = jest.fn();
 deviceSelectors.isLandscape = jest.fn();
 preferencesSelectors.getTheme = jest.fn();
+postUtils.canEditPost = jest.fn();
 
 describe('makeMapStateToProps', () => {
     const baseState = {
@@ -69,10 +71,22 @@ describe('makeMapStateToProps', () => {
         expect(props.canFlag).toBe(true);
     });
 
-    test('canMarkAsUnread is true when isMinimumServerVersion is 5.18v', () => {
+    test('canMarkAsUnread is true when isMinimumServerVersion is 5.18v and channel not archived', () => {
+        channelSelectors.getChannel = jest.fn().mockReturnValueOnce({
+            delete_at: 0,
+        });
         const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, baseOwnProps);
         expect(props.canMarkAsUnread).toBe(true);
+    });
+
+    test('canMarkAsUnread is false when channel is archived', () => {
+        channelSelectors.getChannel = jest.fn().mockReturnValueOnce({
+            delete_at: 1,
+        });
+        const mapStateToProps = makeMapStateToProps();
+        const props = mapStateToProps(baseState, baseOwnProps);
+        expect(props.canMarkAsUnread).toBe(false);
     });
 
     test('canMarkAsUnread is false when isMinimumServerVersion is not 5.18v', () => {
