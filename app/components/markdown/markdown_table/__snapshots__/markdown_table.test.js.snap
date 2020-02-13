@@ -54,19 +54,6 @@ exports[`MarkdownTable should match snapshot 1`] = `
         <
           className="col"
         />
-      </>
-      <
-        className="row"
-      >
-        <
-          className="col"
-        />
-        <
-          className="col"
-        />
-        <
-          className="col"
-        />
         <
           className="col"
         />
@@ -92,10 +79,97 @@ exports[`MarkdownTable should match snapshot 1`] = `
         <
           className="col"
         />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
       </>
       <
         className="row"
       >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
         <
           className="col"
         />
@@ -116,6 +190,12 @@ exports[`MarkdownTable should match snapshot 1`] = `
         className="row"
         isLastRow={true}
       >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
         <
           className="col"
         />
