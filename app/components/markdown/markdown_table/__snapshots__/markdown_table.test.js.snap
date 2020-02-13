@@ -37,6 +37,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
     >
       <
         className="row"
+        isFirstRow={true}
       >
         <
           className="col"
