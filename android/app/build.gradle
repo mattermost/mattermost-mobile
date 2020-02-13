@@ -75,6 +75,7 @@ import com.android.build.OutputFile
 project.ext.react = [
     entryFile: "index.js",
     bundleConfig: "metro.config.js",
+    bundleCommand: "ram-bundle",
     enableHermes: false,
 ]
 
@@ -130,7 +131,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative60"
-        versionCode 264
+        versionCode 267
         versionName "1.28.0"
         multiDexEnabled = true
         ndk {

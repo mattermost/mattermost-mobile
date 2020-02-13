@@ -91,6 +91,7 @@ export default class ChannelBase extends PureComponent {
 
         if (this.props.currentChannelId) {
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+            this.props.actions.getChannelStats(this.props.currentChannelId);
         }
 
         if (tracker.initialLoad && !this.props.skipMetrics) {
@@ -106,8 +107,6 @@ export default class ChannelBase extends PureComponent {
         if (!this.props.skipMetrics) {
             telemetry.end(['start:channel_screen']);
         }
-
-        this.props.actions.getChannelStats(this.props.currentChannelId);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -268,7 +267,7 @@ export default class ChannelBase extends PureComponent {
         }
     };
 
-    renderChannel(drawerContent, optionalProps = {}) {
+    renderChannel(drawerContent) {
         const {
             channelsRequestFailed,
             currentChannelId,
@@ -318,7 +317,6 @@ export default class ChannelBase extends PureComponent {
             <MainSidebar
                 ref={this.channelSidebarRef}
                 blurPostTextBox={this.blurPostTextBox}
-                {...optionalProps}
             >
                 <SettingsSidebar
                     ref={this.settingsSidebarRef}

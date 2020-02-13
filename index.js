@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import 'react-native/Libraries/Core/InitializeCore';
-import {AppRegistry, DeviceEventEmitter, Platform, Text, YellowBox} from 'react-native';
+import {DeviceEventEmitter, Platform, Text} from 'react-native';
 import 'react-native-gesture-handler';
 
 import LocalConfig from 'assets/config';
@@ -16,6 +16,7 @@ if (Platform.OS === 'android') {
 }
 
 if (__DEV__) {
+    const YellowBox = require('react-native/Libraries/YellowBox/YellowBox');
     YellowBox.ignoreWarnings([
         'Warning: componentWillReceiveProps',
         '`-[RCTRootView cancelTouches]`',
@@ -51,6 +52,7 @@ const setFontFamily = () => {
 
 if (Platform.OS === 'android') {
     const ShareExtension = require('share_extension/android').default;
+    const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
     setFontFamily();
 
@@ -87,9 +89,9 @@ if (__DEV__) {
     // make sure that the modules you expect to be waiting are actually waiting
     console.log(
         'loaded:',
-        loadedModuleNames,
+        loadedModuleNames.length,
         'waiting:',
-        waitingModuleNames
+        waitingModuleNames.length,
     );
 
     // grab this text blob, and put it in a file named packager/moduleNames.js

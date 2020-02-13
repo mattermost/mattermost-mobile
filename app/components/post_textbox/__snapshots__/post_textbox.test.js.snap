@@ -15,7 +15,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
           "borderTopWidth": 1,
           "flexDirection": "row",
           "justifyContent": "center",
-          "paddingBottom": 8,
+          "paddingBottom": 2,
         },
         null,
       ]
@@ -26,6 +26,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
       contentContainerStyle={
         Object {
           "alignItems": "stretch",
+          "paddingTop": 7,
         }
       }
       disableScrollViewPanResponder={true}
@@ -53,6 +54,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         keyboardType="default"
         multiline={true}
         onChangeText={[Function]}
+        onContentSizeChange={null}
         onEndEditing={[Function]}
         onPaste={[Function]}
         onSelectionChange={[Function]}
@@ -61,13 +63,13 @@ exports[`PostTextBox should match, full snapshot 1`] = `
         style={
           Object {
             "color": "#3d3c40",
-            "fontSize": 16,
+            "fontSize": 15,
             "lineHeight": 20,
             "maxHeight": 150,
-            "minHeight": 38,
+            "minHeight": 30,
             "paddingBottom": 6,
             "paddingHorizontal": 12,
-            "paddingTop": 12,
+            "paddingTop": 6,
           }
         }
         testID="text input"
@@ -86,6 +88,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
               "display": "flex",
               "flexDirection": "row",
               "justifyContent": "space-between",
+              "paddingBottom": 1,
             }
           }
         >
