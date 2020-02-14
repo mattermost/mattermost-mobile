@@ -109,33 +109,6 @@ export default class ChannelBase extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-
-            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-                setNavigatorStyles(componentId, nextProps.theme);
-            });
-        }
-
-        if (nextProps.currentTeamId && this.props.currentTeamId !== nextProps.currentTeamId) {
-            this.loadChannels(nextProps.currentTeamId);
-        }
-
-        if (nextProps.currentChannelId !== this.props.currentChannelId &&
-            nextProps.currentTeamId === this.props.currentTeamId) {
-            PushNotifications.clearChannelNotifications(nextProps.currentChannelId);
-        }
-
-        if (nextProps.currentChannelId !== this.props.currentChannelId) {
-            this.props.actions.getChannelStats(nextProps.currentChannelId);
-        }
-
-        if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
-            ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
-        }
-    }
-
     componentDidUpdate(prevProps) {
         if (tracker.teamSwitch) {
             this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
@@ -152,6 +125,31 @@ export default class ChannelBase extends PureComponent {
 
         if (!this.props.currentChannelId && this.props.currentTeamId) {
             this.loadChannels(this.props.currentTeamId);
+        }
+
+        if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
+
+            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
+                setNavigatorStyles(componentId, this.props.theme);
+            });
+        }
+
+        if (this.props.currentTeamId && this.props.currentTeamId !== prevProps.currentTeamId) {
+            this.loadChannels(this.props.currentTeamId);
+        }
+
+        if (this.props.currentChannelId !== prevProps.currentChannelId &&
+            this.props.currentTeamId === prevProps.currentTeamId) {
+            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+        }
+
+        if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
+            this.props.actions.getChannelStats(this.props.currentChannelId);
+        }
+
+        if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
+            ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
     }
 
