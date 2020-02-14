@@ -38,7 +38,7 @@
  - Fixed an issue where the keyboard glitched when returning to the main channel view after viewing a code block in the right-hand side.
  - Fixed an issue with default boolean values in interactive dialogs.
  
-## Known Issues
+### Known Issues
  - Markdown tables are missing a header colour.
 
 ## 1.27.1 Release
