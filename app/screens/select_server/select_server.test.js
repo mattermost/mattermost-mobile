@@ -9,6 +9,10 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import {darkColors, lightColors} from 'app/styles/colors';
 import SelectServer from './select_server';
 
+jest.mock('react-native-splash-screen', () => ({
+    hide: jest.fn(),
+}));
+
 describe('SelectServer', () => {
     const baseProps = {
         actions: {
