@@ -68,7 +68,8 @@ import com.facebook.soloader.SoLoader;
 
 import com.mattermost.share.RealPathUtil;
 
-import io.expo.appearance.RNCAppearanceModule;
+import io.expo.appearance.RNCAppearancePackage;
+import org.devio.rn.splashscreen.SplashScreenReactPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
@@ -155,8 +156,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new AndroidOpenSettings(reactContext);
                   case "RNReactNativeHapticFeedbackModule":
                     return new RNReactNativeHapticFeedbackModule(reactContext);
-                  case "RNCAppearance":
-                    return new RNCAppearanceModule(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                 }
@@ -191,7 +190,6 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     map.put("RNAndroidOpenSettings", new ReactModuleInfo("RNAndroidOpenSettings", "com.levelasquez.androidopensettings.AndroidOpenSettings", false, false, false, false, false));
                     map.put("RNReactNativeHapticFeedbackModule", new ReactModuleInfo("RNReactNativeHapticFeedback", "com.mkuczera.RNReactNativeHapticFeedbackModule", false, false, false, false, false));
-                    map.put("RNCAppearance", new ReactModuleInfo("RNCAppearance", "io.expo.appearance.RNCAppearanceModule", false, false, false, false, false));
                     return map;
                   }
                 };
@@ -203,7 +201,9 @@ public class MainApplication extends NavigationApplication implements INotificat
             new LinearGradientPackage(),
             new ReactVideoPackage(),
             new RNGestureHandlerPackage(),
-            new RNPasteableTextInputPackage()
+            new RNPasteableTextInputPackage(),
+            new SplashScreenReactPackage(),
+            new RNCAppearancePackage()
     );
   }
 

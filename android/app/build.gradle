@@ -228,6 +228,7 @@ configurations.all {
 }
 
 dependencies {
+    implementation project(':react-native-splash-screen')
     implementation project(':react-native-appearance')
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";

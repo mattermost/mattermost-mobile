@@ -1,8 +1,18 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="LightTheme" parent="AppTheme">
+        <item name="backgroundColor">@color/neutral_lightest</item>
+        <item name="splashIcon">@drawable/splash_light</item>
+    </style>
+
+    <style name="DarkTheme" parent="AppTheme">
+        <item name="backgroundColor">@color/neutral_darkest</item>
+        <item name="splashIcon">@drawable/splash_dark</item>
     </style>
 
 </resources>

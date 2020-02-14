@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import {Navigation} from 'react-native-navigation';
+import SplashScreen from 'react-native-splash-screen';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
@@ -116,6 +117,8 @@ export default class SelectServer extends PureComponent {
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
+
+        setTimeout(() => SplashScreen.hide(), 10);
     }
 
     componentDidUpdate(prevProps, prevState) {
