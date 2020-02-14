@@ -149,6 +149,10 @@ export default class ChannelBase extends PureComponent {
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
             this.updateNativeScrollView();
         }
+
+        if (!this.props.currentChannelId && this.props.currentTeamId) {
+            this.loadChannels(this.props.currentTeamId);
+        }
     }
 
     componentWillUnmount() {

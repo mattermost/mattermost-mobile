@@ -216,11 +216,6 @@ class GlobalEventHandler {
                 },
             );
         }
-
-        if (this.launchApp) {
-            const credentials = await getAppCredentials();
-            this.launchApp(credentials);
-        }
     };
 
     onServerVersionChanged = async (serverVersion) => {
