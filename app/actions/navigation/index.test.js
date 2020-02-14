@@ -41,7 +41,7 @@ describe('app/actions/navigation', () => {
                             passProps,
                             options: {
                                 layout: {
-                                    backgroundColor: 'transparent',
+                                    backgroundColor: theme.centerChannelBg,
                                 },
                                 statusBar: {
                                     visible: true,
