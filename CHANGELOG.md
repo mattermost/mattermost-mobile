@@ -21,7 +21,6 @@
  - Links to posts in email notifications now launch to a browser landing page with option to open in the Mobile app.
 
 ### Improvements
- - Added a post menu item to mark posts as unread.
  - Removed markdown rendering from Channel Purpose in channel info screen.
  - Improved channel info transition so that it opens up as a modal rather than as a drawer from the right.
  - Clicking on the time in the iOS status bar now scrolls up the center channel.
