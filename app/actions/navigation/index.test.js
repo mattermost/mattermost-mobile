@@ -10,6 +10,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 import * as NavigationActions from 'app/actions/navigation';
+import {getColorStyles} from 'app/utils/appearance';
 
 jest.unmock('app/actions/navigation');
 jest.mock('app/store/ephemeral_store', () => ({
@@ -73,6 +74,7 @@ describe('app/actions/navigation', () => {
 
     test('resetToSelectServer should call Navigation.setRoot', () => {
         const setRoot = jest.spyOn(Navigation, 'setRoot');
+        const colorStyles = getColorStyles('dark');
 
         const allowOtherServers = false;
         const expectedLayout = {
@@ -90,11 +92,11 @@ describe('app/actions/navigation', () => {
                                 },
                                 topBar: {
                                     backButton: {
-                                        color: theme.sidebarHeaderTextColor,
+                                        color: colorStyles.navigation.color,
                                         title: '',
                                     },
                                     background: {
-                                        color: theme.sidebarHeaderBg,
+                                        color: colorStyles.navigation.backgroundColor,
                                     },
                                     visible: false,
                                     height: 0,

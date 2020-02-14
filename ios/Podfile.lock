@@ -216,6 +216,8 @@ PODS:
     - React
   - react-native-safe-area (0.5.1):
     - React
+  - react-native-splash-screen (3.2.0):
+    - React
   - react-native-video (5.0.2):
     - React
     - react-native-video/Video (= 5.0.2)
@@ -332,6 +334,7 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-safe-area (from `../node_modules/react-native-safe-area`)
+  - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -427,6 +430,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-notifications"
   react-native-safe-area:
     :path: "../node_modules/react-native-safe-area"
+  react-native-splash-screen:
+    :path: "../node_modules/react-native-splash-screen"
   react-native-video:
     :path: "../node_modules/react-native-video"
   react-native-webview:
@@ -511,6 +516,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
+  react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-video: 961749da457e73bf0b5565edfbaffc25abfb8974
   react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
   React-RCTActionSheet: 89b037c0fb7d2671607cb645760164e7e0c013f6
@@ -545,6 +551,6 @@ SPEC CHECKSUMS:
   Yoga: 14927e37bd25376d216b150ab2a561773d57911f
   YoutubePlayer-in-WKWebView: 7694e858c5c3472ed067d6fe34eb9b944845e63c
 
-PODFILE CHECKSUM: 567493f2c9e662bb5dfcd7c9d3105d0ce5a194d7
+PODFILE CHECKSUM: 1292e6c338cc694bf606aa455825750cc8117d6c
 
 COCOAPODS: 1.8.4

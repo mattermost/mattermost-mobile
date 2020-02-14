@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
+import {Appearance} from 'react-native-appearance';
 import {Navigation} from 'react-native-navigation';
 
 import merge from 'deepmerge';
@@ -10,6 +11,7 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import store from 'app/store';
 import EphemeralStore from 'app/store/ephemeral_store';
+import {getColorStyles} from 'app/utils/appearance';
 
 function getThemeFromState() {
     const state = store.getState();
@@ -57,7 +59,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    const theme = getThemeFromState();
+    const colorStyles = getColorStyles(Appearance.getColorScheme());
 
     Navigation.setRoot({
         root: {
@@ -74,11 +76,11 @@ export function resetToSelectServer(allowOtherServers) {
                             },
                             topBar: {
                                 backButton: {
-                                    color: theme.sidebarHeaderTextColor,
+                                    color: colorStyles.navigation.color,
                                     title: '',
                                 },
                                 background: {
-                                    color: theme.sidebarHeaderBg,
+                                    color: colorStyles.navigation.backgroundColor,
                                 },
                                 visible: false,
                                 height: 0,
