@@ -83,15 +83,23 @@ describe('ChannelBase', () => {
     test('should call selectDefaultTeam if the channel request failed but there is a current team id', () => {
         const props = {
             ...baseProps,
-            currentTeamId: 'current-team-id',
+            currentTeamId: null,
             channelsRequestFailed: false,
         };
         const wrapper = shallow(
             <ChannelBase {...props}/>,
         );
 
-        expect(baseProps.actions.selectDefaultTeam).not.toHaveBeenCalled();
-        wrapper.setProps({channelsRequestFailed: true});
-        expect(baseProps.actions.selectDefaultTeam).toHaveBeenCalled();
+        // First call is in componentDidMount
+        expect(baseProps.actions.selectDefaultTeam).toHaveBeenCalledTimes(1);
+
+        wrapper.setProps({currentTeamId: null, channelsRequestFailed: true});
+        expect(baseProps.actions.selectDefaultTeam).toHaveBeenCalledTimes(1);
+
+        wrapper.setProps({currentTeamId: 'current-team-id', channelsRequestFailed: false});
+        expect(baseProps.actions.selectDefaultTeam).toHaveBeenCalledTimes(1);
+
+        wrapper.setProps({currentTeamId: 'current-team-id', channelsRequestFailed: true});
+        expect(baseProps.actions.selectDefaultTeam).toHaveBeenCalledTimes(2);
     });
 });
