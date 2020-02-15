@@ -33,7 +33,11 @@ export default class ExtensionChannelItem extends PureComponent {
     onPress = preventDoubleTap(() => {
         const {channel, onSelectChannel} = this.props;
         requestAnimationFrame(() => {
-            onSelectChannel(channel);
+            if (channel.notCreatedYet) {
+                onSelectChannel(channel, true);
+            } else {
+                onSelectChannel(channel, false);
+            }
         });
     });
 

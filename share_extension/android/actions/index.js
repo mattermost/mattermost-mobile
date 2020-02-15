@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMyChannelsAndMembers} from 'mattermost-redux/actions/channels';
+import {fetchMyChannelsAndMembers, searchChannels, createDirectChannel} from 'mattermost-redux/actions/channels';
 import {getRedirectChannelNameForTeam, getChannelsNameMapInTeam} from 'mattermost-redux/selectors/entities/channels';
 import {getChannelByName} from 'mattermost-redux/utils/channel_utils';
 
@@ -27,5 +27,22 @@ export function extensionSelectTeamId(teamId) {
             type: ViewTypes.EXTENSION_SELECTED_TEAM_ID,
             data: teamId,
         }, getState);
+    };
+}
+
+export function searchChannelsTyping(teamId, term) {
+    return async (dispatch) => {
+        const result = await dispatch(searchChannels(teamId, term, false));
+        return result;
+    };
+}
+
+export function makeDirectChannel(otherUserId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+        const result = await dispatch(createDirectChannel(currentUserId, otherUserId));
+
+        return result;
     };
 }

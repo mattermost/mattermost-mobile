@@ -266,6 +266,7 @@ export default class ExtensionPost extends PureComponent {
                     defaultMessage: 'Select Channel',
                 }),
                 currentChannelId: this.state.channelId,
+                teamId: this.state.teamId,
                 onSelectChannel: this.handleSelectChannel,
             },
         });

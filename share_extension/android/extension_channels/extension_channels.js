@@ -15,14 +15,21 @@ import {
 import {Preferences} from 'mattermost-redux/constants';
 
 import SearchBar from 'app/components/search_bar';
+import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ExtensionChannelItem from './extension_channel_item';
 
 const defaultTheme = Preferences.THEMES.default;
 
-export default class ExtensionTeam extends PureComponent {
+export default class ExtensionChannel extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            searchChannelsTyping: PropTypes.func.isRequired,
+            searchProfiles: PropTypes.func.isRequired,
+            makeDirectChannel: PropTypes.func.isRequired,
+        }).isRequired,
+        restrictDirectMessage: PropTypes.bool.isRequired,
         directChannels: PropTypes.array,
         navigation: PropTypes.object.isRequired,
         privateChannels: PropTypes.array,
@@ -45,10 +52,12 @@ export default class ExtensionTeam extends PureComponent {
 
     state = {
         sections: null,
+        loading: true,
     };
 
     componentDidMount() {
         this.buildSections();
+        this.searchChannels('');
     }
 
     setSearchBarRef = (ref) => {
@@ -100,41 +109,101 @@ export default class ExtensionTeam extends PureComponent {
         this.setState({sections});
     };
 
-    handleSelectChannel = async (channel) => {
+    handleSelectChannel = async (channel, notCreatedYet) => {
+        const {actions} = this.props;
         const {state} = this.props.navigation;
         const backAction = NavigationActions.back();
 
         if (state.params && state.params.onSelectChannel) {
-            state.params.onSelectChannel(channel.id);
+            if (notCreatedYet) {
+                const newChannel = await actions.makeDirectChannel(channel.otherUserId);
+                state.params.onSelectChannel(newChannel.data.id);
+            } else {
+                state.params.onSelectChannel(channel.id);
+            }
         }
 
         this.props.navigation.dispatch(backAction);
     };
 
+    searchChannels = (term) => {
+        const {actions, navigation} = this.props;
+        const {params = {}} = navigation.state;
+        const {teamId} = params;
+        actions.searchChannelsTyping(teamId, term).then(() => {
+            this.buildSections(term);
+            this.setState({loading: false});
+        });
+    };
+
+    searchUsers = (term) => {
+        if (term) {
+            const {actions, navigation, restrictDirectMessage} = this.props;
+            const {params = {}} = navigation.state;
+            const {teamId} = params;
+            const lowerCasedTerm = term.toLowerCase();
+
+            if (restrictDirectMessage) {
+                actions.searchProfiles(lowerCasedTerm).then(() => {
+                    this.buildSections(term);
+                    this.setState({loading: false});
+                });
+            } else {
+                actions.searchProfiles(lowerCasedTerm, {team_id: teamId}).then(() => {
+                    this.buildSections(term);
+                    this.setState({loading: false});
+                });
+            }
+        } else {
+            this.buildSections(term);
+            this.setState({loading: false});
+        }
+    };
+
     handleSearch = (term) => {
-        this.setState({term}, () => {
+        this.setState({term, loading: true}, async () => {
             if (this.throttleTimeout) {
                 clearTimeout(this.throttleTimeout);
             }
 
             this.throttleTimeout = setTimeout(() => {
-                this.buildSections(term);
+                this.searchUsers(term);
             }, 300);
         });
+    };
+
+    renderSpinner = () => {
+        const {loading} = this.state;
+        const styles = getStyleSheet(defaultTheme);
+
+        if (loading) {
+            return (
+                <View style={styles.loadingSpinner}>
+                    <ActivityIndicator/>
+                </View>
+            );
+        }
+        return null;
+    };
+
+    renderNoResults = () => {
+        const style = getStyleSheet(defaultTheme);
+
+        return (
+            <View style={style.noResultContainer}>
+                <FormattedText
+                    id='mobile.custom_list.no_results'
+                    defaultMessage='No Results'
+                    style={style.noResultText}
+                />
+            </View>
+        );
     };
 
     keyExtractor = (item) => item.id;
 
     renderBody = (styles) => {
         const {sections} = this.state;
-
-        if (!sections) {
-            return (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator/>
-                </View>
-            );
-        }
 
         return (
             <React.Fragment>
@@ -145,6 +214,7 @@ export default class ExtensionTeam extends PureComponent {
                     ItemSeparatorComponent={this.renderItemSeparator}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
+                    ListEmptyComponent={this.renderNoResults}
                     keyExtractor={this.keyExtractor}
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='on-drag'
@@ -154,6 +224,7 @@ export default class ExtensionTeam extends PureComponent {
                     scrollEventThrottle={100}
                     windowSize={5}
                 />
+                {this.renderSpinner()}
             </React.Fragment>
         );
     };
@@ -238,7 +309,7 @@ export default class ExtensionTeam extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
-            flex: 1,
+            flexGrow: 0,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -276,6 +347,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         error: {
             color: theme.errorTextColor,
             fontSize: 14,
+        },
+        noResultContainer: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 25,
+        },
+        noResultText: {
+            fontSize: 26,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+        },
+        loadingSpinner: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            marginTop: 15,
         },
     };
 });
