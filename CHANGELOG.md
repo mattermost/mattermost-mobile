@@ -1,5 +1,45 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.28.0 Release
+- Release Date: February 16, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Highlights
+
+#### UI/UX Improvements to the Post Draft Area
+ - Links added to facilitate easier access to common functions:
+   - finding channel members for @mentioning;
+   - finding and referencing slash commands;
+   - attaching photos and videos;
+   - accessing the camera
+
+#### Deep Linking
+ - Links to posts in email notifications now launch to a browser landing page with option to open in the Mobile app.
+
+### Improvements
+ - Removed markdown rendering from Channel Purpose in channel info screen.
+ - Improved channel info transition so that it opens up as a modal rather than as a drawer from the right.
+ - Clicking on the time in the iOS status bar now scrolls up the center channel.
+ - Improved the sliding behaviour of the left-hand sidebar on iOS.
+ - Added more responsiveness to markdown tables.
+ - User's own username with a suffix 'you' is now shown in the username autocomplete.
+ - Improved sorting of emojis in the emoji picker so that thumbsup is sorted first, then thumbsdown, and then custom emoji.
+
+### Bug Fixes
+ - Fixed an issue on Android where the app displayed an incorrect timestamp when the experimental Timezone setting was disabled.
+ - Fixed an issue where combined system messages with many users listed hid posts above them.
+ - Fixed an issue on iOS where the app crashed when pasting a GIF via the keyboard.
+ - Fixed an issue where explicit links to teams and channels on the same server currently logged in to didn't switch to that team and channel.
+ - Fixed an issue where the keyboard glitched when returning to the main channel view after viewing a code block in the right-hand side.
+ - Fixed an issue with default boolean values in interactive dialogs.
+ 
+### Known Issues
+ - Markdown tables are missing a header colour.
+
 ## 1.27.1 Release
 - Release Date: January 21, 2020
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
