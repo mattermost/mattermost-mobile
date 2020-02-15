@@ -134,6 +134,12 @@ export default class ChannelBase extends PureComponent {
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
+
+        if (this.props.currentTeamId &&
+            nextProps.channelsRequestFailed &&
+            nextProps.channelsRequestFailed !== this.props.channelsRequestFailed) {
+            this.props.actions.selectDefaultTeam();
+        }
     }
 
     componentDidUpdate(prevProps) {

@@ -21,7 +21,7 @@ describe('ChannelBase', () => {
     const componentIds = ['component-1', 'component-2', 'component-3'];
     const baseProps = {
         actions: {
-            loadChannelsIfNecessary: jest.fn(),
+            loadChannelsIfNecessary: jest.fn().mockResolvedValue(),
             loadProfilesAndTeamMembersForDMSidebar: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
@@ -78,5 +78,20 @@ describe('ChannelBase', () => {
             [componentIds[1], newThemeOptions],
             [componentIds[0], newThemeOptions],
         ]);
+    });
+
+    test('should call selectDefaultTeam if the channel request failed but there is a current team id', () => {
+        const props = {
+            ...baseProps,
+            currentTeamId: 'current-team-id',
+            channelsRequestFailed: false,
+        };
+        const wrapper = shallow(
+            <ChannelBase {...props}/>,
+        );
+
+        expect(baseProps.actions.selectDefaultTeam).not.toHaveBeenCalled();
+        wrapper.setProps({channelsRequestFailed: true});
+        expect(baseProps.actions.selectDefaultTeam).toHaveBeenCalled();
     });
 });
