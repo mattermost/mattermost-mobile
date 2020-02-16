@@ -7,8 +7,8 @@ import Button from 'react-native-button';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {STATUS_COLORS} from 'app/constants/colors';
 import ActionButtonText from './action_button_text';
-import {STATUS_COLORS} from '../message_attachment';
 
 export default class ActionButton extends PureComponent {
     static propTypes = {
@@ -37,7 +37,7 @@ export default class ActionButton extends PureComponent {
 
         if (customStyle) {
             const color = STATUS_COLORS[customStyle] || theme[customStyle] || customStyle;
-            customButtonStyle = {borderColor: color, backgroundColor: '#ffffff', borderWidth: 1};
+            customButtonStyle = {borderColor: color, backgroundColor: '#ffffff'};
             customButtonTextStyle = {color};
         }
 
@@ -60,24 +60,25 @@ export default class ActionButton extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         button: {
-            borderRadius: 2,
-            backgroundColor: theme.buttonBg,
+            borderRadius: 4,
+            borderColor: STATUS_COLORS.default,
+            borderWidth: 2,
             opacity: 1,
             alignItems: 'center',
             marginBottom: 2,
             marginRight: 5,
             marginTop: 10,
             paddingHorizontal: 10,
-            paddingVertical: 7,
+            paddingVertical: 9.5,
         },
         buttonDisabled: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.3),
         },
         text: {
-            color: theme.buttonColor,
-            fontSize: 12,
+            color: STATUS_COLORS.default,
+            fontSize: 15,
             fontWeight: '600',
-            lineHeight: 13,
+            lineHeight: 15,
         },
     };
 });
