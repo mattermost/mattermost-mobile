@@ -37,7 +37,7 @@ export default class ActionButton extends PureComponent {
 
         if (customStyle) {
             const color = STATUS_COLORS[customStyle] || theme[customStyle] || customStyle;
-            customButtonStyle = {borderColor: color, backgroundColor: '#ffffff'};
+            customButtonStyle = {borderColor: changeOpacity(color, 0.25), backgroundColor: '#ffffff'};
             customButtonTextStyle = {color};
         }
 
@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         button: {
             borderRadius: 4,
-            borderColor: STATUS_COLORS.default,
+            borderColor: changeOpacity(STATUS_COLORS.default, 0.25),
             borderWidth: 2,
             opacity: 1,
             alignItems: 'center',

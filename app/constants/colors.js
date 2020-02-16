@@ -5,7 +5,7 @@ export const STATUS_COLORS = {
     good: '#00c100',
     warning: '#dede01',
     danger: '#fd5960',
-    default: '#3d3f44',
-    primary: '#26a970',
-    success: '#26a970',
+    default: '#3d3c40',
+    primary: '#166de0',
+    success: '#06d6a0',
 };
