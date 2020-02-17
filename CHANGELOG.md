@@ -1,5 +1,17 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.29.0 Release
+- Release Date: March 16, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Bug Fixes
+ - Fixed an issue where channels drawers were partially shown with orientation change on iOS RN61.
+
+
 ## 1.28.0 Release
 - Release Date: February 16, 2020
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
