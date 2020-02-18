@@ -9,6 +9,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Bug Fixes
+ - Fixed an issue where the app was unresponsive for a period of time after clearing cache or on initial login.
  - Fixed an issue where channels drawers were partially shown with orientation change on iOS RN61.
 
 
