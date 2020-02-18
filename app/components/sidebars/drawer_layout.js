@@ -11,6 +11,7 @@ import {
     Easing,
     Keyboard,
     PanResponder,
+    Platform,
     StyleSheet,
     TouchableWithoutFeedback,
     View,
