@@ -119,15 +119,6 @@ export default class DrawerLayout extends Component {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.handleDimensionsChange);
-
-        // on iOS force closing the drawers to prevent them for partially showing
-        // when channging the device orientation, probably caused by RN61
-        Animated.timing(this.openValue, {
-            toValue: 0,
-            duration: 10,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: this.props.useNativeAnimations,
-        }).start();
     }
 
     componentWillUnmount() {
@@ -196,9 +187,12 @@ export default class DrawerLayout extends Component {
         };
         /* Drawer styles */
         let outputRange;
-        // ios main sidebar sits mostly under the main screen, with slight move
-        const translateDistance = drawerPosition === 'left' ?
-            Math.floor(drawerWidth * 0.2) : drawerWidth
+        let translateDistance = drawerWidth;
+        if (Platform.OS === 'ios') {
+            // ios main sidebar sits mostly under the main screen, with slight move
+            translateDistance = drawerPosition === 'left' ?
+            Math.floor(drawerWidth * 0.2) : Math.floor(drawerWidth * 1.2)
+        }
 
         if (this.getDrawerPosition() === 'left') {
             outputRange = [-translateDistance, 0];
