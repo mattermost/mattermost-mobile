@@ -19,8 +19,6 @@ import {
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -46,12 +44,10 @@ export default class Login extends PureComponent {
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
-        theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        loginRequest: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -64,6 +60,7 @@ export default class Login extends PureComponent {
 
         this.state = {
             error: null,
+            isLoading: false,
         };
     }
 
@@ -71,14 +68,6 @@ export default class Login extends PureComponent {
         Dimensions.addEventListener('change', this.orientationDidChange);
 
         setMfaPreflightDone(false);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.handleSuccessfulLogin().then(this.goToChannel);
-        } else if (this.props.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            this.setState({isLoading: false});
-        }
     }
 
     componentWillUnmount() {
@@ -100,7 +89,7 @@ export default class Login extends PureComponent {
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse});
     };
 
     blur = () => {
@@ -178,16 +167,32 @@ export default class Login extends PureComponent {
     };
 
     signIn = () => {
-        const {actions, loginId, loginRequest, password} = this.props;
-        if (loginRequest.status !== RequestStatus.STARTED) {
-            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse);
+        const {actions, loginId, password} = this.props;
+        const {isLoading} = this.state;
+        if (isLoading) {
+            actions.login(loginId.toLowerCase(), password).
+                then(this.checkLoginResponse);
         }
     };
 
     checkLoginResponse = (data) => {
         if (mfaExpectedErrors.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
             this.goToMfa();
+            this.setState({isLoading: false});
+            return false;
         }
+
+        if (data?.error) {
+            this.setState({
+                error: this.getLoginErrorMessage(data.error),
+                isLoading: false,
+            });
+            return false;
+        }
+
+        this.setState({isLoading: false});
+        resetToChannel();
+        return true;
     };
 
     createLoginPlaceholder() {
@@ -223,15 +228,14 @@ export default class Login extends PureComponent {
         return '';
     }
 
-    getLoginErrorMessage = () => {
+    getLoginErrorMessage = (error) => {
         return (
-            this.getServerErrorForLogin() ||
+            this.getServerErrorForLogin(error) ||
             this.state.error
         );
     };
 
-    getServerErrorForLogin = () => {
-        const {error} = this.props.loginRequest;
+    getServerErrorForLogin = (error) => {
         if (!error) {
             return null;
         }
@@ -295,7 +299,7 @@ export default class Login extends PureComponent {
     }
 
     render() {
-        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
+        const {isLoading} = this.state;
 
         let proceed;
         if (isLoading) {
@@ -373,7 +377,7 @@ export default class Login extends PureComponent {
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
-                        <ErrorText error={this.getLoginErrorMessage()}/>
+                        <ErrorText error={this.state.error}/>
                         <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}

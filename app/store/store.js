@@ -9,7 +9,7 @@ import {createTransform, persistStore} from 'redux-persist';
 import merge from 'deepmerge';
 
 import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import configureStore from 'mattermost-redux/store';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -62,7 +62,7 @@ export default function configureAppStore(initialState) {
         ['typing'],
     );
 
-    const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: true, postVisibility: true, retryFailed: true, loadMorePostsVisible: true};
+    const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: true, retryFailed: true, loadMorePostsVisible: true};
     const channelViewBlackListFilter = createTransform(
         (inboundState) => {
             const channel = {};
@@ -206,39 +206,7 @@ export default function configureAppStore(initialState) {
                     setSiteUrl(config.SiteURL);
                 }
 
-                if ((state.requests.users.logout.status === RequestStatus.SUCCESS || state.requests.users.logout.status === RequestStatus.FAILURE) && !purging) {
-                    purging = true;
-
-                    await persistor.purge();
-
-                    store.dispatch(batchActions([
-                        {
-                            type: General.OFFLINE_STORE_RESET,
-                            data: initialState,
-                        },
-                        {
-                            type: General.STORE_REHYDRATION_COMPLETE,
-                        },
-                        {
-                            type: ViewTypes.SERVER_URL_CHANGED,
-                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
-                        },
-                        {
-                            type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                            data: state.entities.general.deviceToken,
-                        },
-                    ]));
-
-                    // When logging out remove the data stored in the bucket
-                    mattermostBucket.removePreference('cert');
-                    mattermostBucket.removePreference('emm');
-                    mattermostBucket.removeFile('entities');
-                    setSiteUrl(null);
-
-                    setTimeout(() => {
-                        purging = false;
-                    }, 500);
-                } else if (state.views.root.purge && !purging) {
+                if (state.views.root.purge && !purging) {
                     purging = true;
 
                     await persistor.purge();

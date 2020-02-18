@@ -14,7 +14,6 @@ import {
     loadPostsIfNecessaryWithRetry,
     loadThreadIfNecessary,
     increasePostVisibility,
-    increasePostVisibilityByOne,
     refreshChannelWithRetry,
 } from 'app/actions/views/channel';
 import {recordLoadTime} from 'app/actions/views/root';
@@ -31,8 +30,7 @@ function mapStateToProps(state) {
         channelRefreshingFailed,
         currentUserId: getCurrentUserId(state),
         deviceHeight: state.device.dimension.deviceHeight,
-        postIds: getPostIdsInCurrentChannel(state),
-        postVisibility: state.views.channel.postVisibility[channelId],
+        postIds: getPostIdsInCurrentChannel(state) || [],
         lastViewedAt: state.views.channel.lastChannelViewTime[channelId],
         loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
         refreshing: state.views.channel.refreshing,
@@ -47,7 +45,6 @@ function mapDispatchToProps(dispatch) {
             loadPostsIfNecessaryWithRetry,
             loadThreadIfNecessary,
             increasePostVisibility,
-            increasePostVisibilityByOne,
             selectPost,
             recordLoadTime,
             refreshChannelWithRetry,

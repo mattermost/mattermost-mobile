@@ -214,7 +214,7 @@ export default class DrawerLayout extends Component {
         // 1 - main | tablet
         // 2 - overlay
         // 3 - android main drawer | settings drawer
-        const drawerZIndex = drawerPosition === 'left' && Platform.OS === 'ios' ? 0 : 3
+        const drawerZIndex = drawerPosition === 'left' ? 0 : 3
 
         return (
             <React.Fragment>
@@ -262,7 +262,7 @@ export default class DrawerLayout extends Component {
         }
 
         const mainStyles = [styles.main]
-        if (drawerPosition === 'left' && Platform.OS === 'ios') {
+        if (drawerPosition === 'left') {
             /* Drawer styles */
             let outputRange;
             
@@ -410,10 +410,7 @@ export default class DrawerLayout extends Component {
                     return true;
                 }
             } else {
-                const filter = Platform.select({
-                    ios: moveX > 0 && dx > 35,
-                    android: moveX <= 35 && dx > 0
-                });
+                const filter = moveX > 0 && dx > 35;
                 if (filter) {
                     this._isClosing = false;
                     return true;
@@ -447,7 +444,7 @@ export default class DrawerLayout extends Component {
     };
 
     _panResponderMove = (e: EventType, { moveX, dx }: PanResponderEventType) => {
-        const useDx = Platform.OS === 'ios' && this.getDrawerPosition() === 'left' && !this._isClosing;
+        const useDx = this.getDrawerPosition() === 'left' && !this._isClosing;
         let openValue = this._getOpenValueForX(useDx ? dx : moveX);
 
         if (this._isClosing) {
