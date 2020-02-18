@@ -4,11 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
+import {scheduleExpiredNotification} from 'app/actions/views/login';
+import {ssoLogin} from 'app/actions/views/user';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {isLandscape} from 'app/selectors/device';
-
-import {setStoreFromLocalData} from 'mattermost-redux/actions/general';
 
 import SSO from './sso';
 
@@ -24,8 +23,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             scheduleExpiredNotification,
-            handleSuccessfulLogin,
-            setStoreFromLocalData,
+            ssoLogin,
         }, dispatch),
     };
 }

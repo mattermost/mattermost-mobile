@@ -38,7 +38,7 @@ export default class TeamsList extends PureComponent {
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
         }).isRequired,
-        closeChannelDrawer: PropTypes.func.isRequired,
+        closeMainSidebar: PropTypes.func.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         hasOtherJoinableTeams: PropTypes.bool,
         teamIds: PropTypes.array.isRequired,
@@ -66,7 +66,7 @@ export default class TeamsList extends PureComponent {
     }
 
     selectTeam = (teamId) => {
-        const {actions, closeChannelDrawer, currentTeamId} = this.props;
+        const {actions, closeMainSidebar, currentTeamId} = this.props;
 
         if (teamId !== currentTeamId) {
             telemetry.reset();
@@ -80,7 +80,7 @@ export default class TeamsList extends PureComponent {
                 actions.handleTeamChange(teamId);
             }
 
-            closeChannelDrawer();
+            closeMainSidebar();
         });
     };
 

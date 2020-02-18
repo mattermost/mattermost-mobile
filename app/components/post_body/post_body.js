@@ -431,6 +431,7 @@ export default class PostBody extends PureComponent {
                     <ShowMoreButton
                         highlight={highlight}
                         onPress={this.openLongPost}
+                        theme={theme}
                     />
                     }
                     {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}

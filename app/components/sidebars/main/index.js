@@ -8,12 +8,13 @@ import {joinChannel} from 'mattermost-redux/actions/channels';
 import {getTeams} from 'mattermost-redux/actions/teams';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMyTeamsCount} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
-import {setChannelDisplayName, setChannelLoading} from 'app/actions/views/channel';
+import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import telemetry from 'app/telemetry';
 
-import MainSidebar from './main_sidebar.js';
+import MainSidebar from './main_sidebar';
 
 export function logChannelSwitch(channelId, currentChannelId) {
     return (dispatch, getState) => {
@@ -34,11 +35,12 @@ export function logChannelSwitch(channelId, currentChannelId) {
 }
 
 function mapStateToProps(state) {
-    const {currentUserId} = state.entities.users;
+    const currentUser = getCurrentUser(state);
 
     return {
+        locale: currentUser?.locale,
         currentTeamId: getCurrentTeamId(state),
-        currentUserId,
+        currentUserId: currentUser?.id,
         teamsCount: getMyTeamsCount(state),
         theme: getTheme(state),
     };
@@ -52,7 +54,7 @@ function mapDispatchToProps(dispatch) {
             logChannelSwitch,
             makeDirectChannel,
             setChannelDisplayName,
-            setChannelLoading,
+            handleSelectChannel,
         }, dispatch),
     };
 }

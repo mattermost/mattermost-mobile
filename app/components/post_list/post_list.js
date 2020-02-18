@@ -24,7 +24,8 @@ import {t} from 'app/utils/i18n';
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
 
-const INITIAL_BATCH_TO_RENDER = 15;
+const INITIAL_BATCH_TO_RENDER = 7;
+const LOADING_POSTS_HEIGHT = 53;
 const SCROLL_UP_MULTIPLIER = 3.5;
 const SCROLL_POSITION_CONFIG = {
 
@@ -55,6 +56,7 @@ export default class PostList extends PureComponent {
         isSearchResult: PropTypes.bool,
         lastPostIndex: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
+        loadMorePostsVisible: PropTypes.bool,
         onLoadMoreUp: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
@@ -129,7 +131,7 @@ export default class PostList extends PureComponent {
             this.shouldScrollToBottom = false;
         }
 
-        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight) {
+        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight > LOADING_POSTS_HEIGHT) {
             this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
         }
 
@@ -138,7 +140,7 @@ export default class PostList extends PureComponent {
             this.props.postIds.length &&
             this.state.contentHeight &&
             this.state.contentHeight < this.state.postListHeight &&
-            this.props.extraData
+            !this.props.extraData
         ) {
             this.loadToFillContent();
         }
@@ -169,7 +171,7 @@ export default class PostList extends PureComponent {
     handleContentSizeChange = (contentWidth, contentHeight) => {
         if (this.state.contentHeight !== contentHeight) {
             this.setState({contentHeight}, () => {
-                if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
+                if (this.state.postListHeight && contentHeight < this.state.postListHeight && !this.props.extraData && contentHeight > LOADING_POSTS_HEIGHT) {
                     // We still have less than 1 screen of posts loaded with more to get, so load more
                     this.props.onLoadMoreUp();
                 }
@@ -392,11 +394,13 @@ export default class PostList extends PureComponent {
     };
 
     flatListScrollToIndex = (index) => {
-        this.flatListRef.current.scrollToIndex({
-            animated: false,
-            index,
-            viewOffset: 0,
-            viewPosition: 1, // 0 is at bottom
+        this.animationFrameInitialIndex = requestAnimationFrame(() => {
+            this.flatListRef.current.scrollToIndex({
+                animated: false,
+                index,
+                viewOffset: 0,
+                viewPosition: 1, // 0 is at bottom
+            });
         });
     }
 
@@ -455,7 +459,9 @@ export default class PostList extends PureComponent {
     render() {
         const {
             channelId,
+            extraData,
             highlightPostId,
+            loadMorePostsVisible,
             postIds,
             refreshing,
             scrollViewNativeID,
@@ -476,9 +482,10 @@ export default class PostList extends PureComponent {
             <FlatList
                 key={`recyclerFor-${channelId}-${hasPostsKey}`}
                 ref={this.flatListRef}
+                style={{flex: 1}}
                 contentContainerStyle={styles.postListContent}
                 data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
+                extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
                 keyboardDismissMode={'interactive'}
@@ -486,7 +493,6 @@ export default class PostList extends PureComponent {
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 onContentSizeChange={this.handleContentSizeChange}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
@@ -496,6 +502,7 @@ export default class PostList extends PureComponent {
                 scrollEventThrottle={60}
                 refreshControl={refreshControl}
                 nativeID={scrollViewNativeID}
+                windowSize={50}
             />
         );
     }

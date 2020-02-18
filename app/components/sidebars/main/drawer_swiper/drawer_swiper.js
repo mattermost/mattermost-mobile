@@ -11,9 +11,7 @@ import Swiper from 'app/components/swiper';
 export default class DrawerSwiper extends Component {
     static propTypes = {
         children: PropTypes.node.isRequired,
-        drawerOpened: PropTypes.bool,
         drawerWidth: PropTypes.number.isRequired,
-        hasSafeAreaInsets: PropTypes.bool,
         onPageSelected: PropTypes.func,
         showTeams: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
@@ -30,8 +28,7 @@ export default class DrawerSwiper extends Component {
         const {drawerWidth, showTeams, theme} = this.props;
         return nextProps.drawerWidth !== drawerWidth ||
             nextProps.showTeams !== showTeams ||
-            nextProps.theme !== theme ||
-            nextProps.drawerOpened !== this.props.drawerOpened;
+            nextProps.theme !== theme;
     }
 
     runOnLayout = (shouldRun = true) => {

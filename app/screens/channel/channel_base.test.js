@@ -21,12 +21,12 @@ describe('ChannelBase', () => {
     const componentIds = ['component-1', 'component-2', 'component-3'];
     const baseProps = {
         actions: {
-            loadChannelsIfNecessary: jest.fn(),
-            loadProfilesAndTeamMembersForDMSidebar: jest.fn(),
+            getChannelStats: jest.fn(),
+            loadChannelsForTeam: jest.fn(),
+            markChannelViewedAndRead: jest.fn(),
+            recordLoadTime: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
-            recordLoadTime: jest.fn(),
-            getChannelStats: jest.fn(),
         },
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.default,
