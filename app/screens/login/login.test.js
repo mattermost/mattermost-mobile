@@ -3,8 +3,6 @@
 
 import React from 'react';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
 import FormattedText from 'app/components/formatted_text';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
@@ -79,43 +77,6 @@ describe('Login', () => {
         expect(wrapper.find(FormattedText).find({id: 'login.forgot'}).exists()).toBe(false);
     });
 
-    test('should send the user to the login screen after login', (done) => {
-        const resetToChannel = jest.spyOn(NavigationActions, 'resetToChannel').mockImplementation(() => done());
-
-        let props = {
-            ...baseProps,
-            loginRequest: {
-                status: RequestStatus.NOT_STARTED,
-            },
-        };
-
-        props.actions.handleSuccessfulLogin.mockImplementation(() => Promise.resolve());
-
-        const wrapper = shallowWithIntl(<Login {...props}/>);
-
-        expect(resetToChannel).not.toHaveBeenCalled();
-
-        props = {
-            ...props,
-            loginRequest: {
-                status: RequestStatus.STARTED,
-            },
-        };
-        wrapper.setProps(props);
-
-        expect(resetToChannel).not.toHaveBeenCalled();
-
-        props = {
-            ...props,
-            loginRequest: {
-                status: RequestStatus.SUCCESS,
-            },
-        };
-        wrapper.setProps(props);
-
-        // This test times out if resetToChannel hasn't been called
-    });
-
     test('should go to MFA screen when login response returns MFA error', () => {
         const goToScreen = jest.spyOn(NavigationActions, 'goToScreen');
 
@@ -132,6 +93,7 @@ describe('Login', () => {
             toHaveBeenCalledWith(
                 'MFA',
                 'Multi-factor Authentication',
+                {onMfaComplete: wrapper.instance().checkLoginResponse},
             );
     });
 

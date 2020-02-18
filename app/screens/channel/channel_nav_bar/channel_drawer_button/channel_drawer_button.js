@@ -21,7 +21,7 @@ import telemetry from 'app/telemetry';
 
 export default class ChannelDrawerButton extends PureComponent {
     static propTypes = {
-        openDrawer: PropTypes.func.isRequired,
+        openSidebar: PropTypes.func.isRequired,
         badgeCount: PropTypes.number,
         theme: PropTypes.object,
         visible: PropTypes.bool,
@@ -57,7 +57,7 @@ export default class ChannelDrawerButton extends PureComponent {
 
     handlePress = preventDoubleTap(() => {
         telemetry.start(['channel:open_drawer']);
-        this.props.openDrawer();
+        this.props.openSidebar();
     });
 
     render() {

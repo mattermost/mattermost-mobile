@@ -17,7 +17,7 @@ import {
 } from 'app/actions/views/root';
 import {dismissAllModals, popToRoot} from 'app/actions/navigation';
 
-import {ViewTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getLocalizedMessage} from 'app/i18n';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
@@ -53,8 +53,8 @@ class PushNotificationUtils {
         // if we have a componentId means that the app is already initialized
         const componentId = EphemeralStore.getNavigationTopComponentId();
         if (componentId) {
-            EventEmitter.emit('close_channel_drawer');
-            EventEmitter.emit('close_settings_sidebar');
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+            EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
 
             await dismissAllModals();
             await popToRoot();
@@ -80,7 +80,7 @@ class PushNotificationUtils {
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
             } else if (userInteraction && !notification?.data?.localNotification) {
-                EventEmitter.emit('close_channel_drawer');
+                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
                 if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
                     setTimeout(() => {
                         this.loadFromNotification(notification);

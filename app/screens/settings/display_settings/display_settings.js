@@ -4,10 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    Platform,
-    View,
-} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import {DeviceTypes} from 'app/constants';
 import StatusBar from 'app/components/status_bar';
@@ -111,7 +108,7 @@ export default class DisplaySettings extends PureComponent {
         }
 
         let sidebar;
-        if (DeviceTypes.IS_TABLET) {
+        if (DeviceTypes.IS_TABLET && Platform.OS === 'ios') {
             sidebar = (
                 <SettingsItem
                     defaultMessage='Sidebar'

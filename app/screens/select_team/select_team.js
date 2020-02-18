@@ -22,6 +22,7 @@ import StatusBar from 'app/components/status_bar';
 import CustomList from 'app/components/custom_list';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TeamIcon from 'app/components/team_icon';
+import {NavigationTypes} from 'app/constants';
 import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
@@ -158,7 +159,7 @@ export default class SelectTeam extends PureComponent {
         if (userWithoutTeams) {
             this.goToChannelView();
         } else {
-            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
             InteractionManager.runAfterInteractions(() => {
                 this.close();
             });

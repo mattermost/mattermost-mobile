@@ -39,7 +39,7 @@ jest.mock('react-native-notifications', () => {
 
 describe('ChannelDrawerButton', () => {
     const baseProps = {
-        openDrawer: jest.fn(),
+        openSidebar: jest.fn(),
         badgeCount: 0,
         theme: Preferences.THEMES.default,
         visible: false,
