@@ -4,12 +4,11 @@
 import {createSelector} from 'reselect';
 
 import {General} from 'mattermost-redux/constants';
-import {getAllChannels, getChannelsInTeam, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+import {getAllChannels, getChannelsInTeam, getMyChannelMemberships, getDirectAndGroupChannels} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUser, getUsers} from 'mattermost-redux/selectors/entities/users';
 import {
     getTeammateNameDisplaySetting,
     getVisibleTeammate,
-    getVisibleGroupIds,
 } from 'mattermost-redux/selectors/entities/preferences';
 
 import {
@@ -79,13 +78,18 @@ export const getExtensionSortedDirectChannels = createSelector(
     (state) => state.entities.users.profilesInChannel,
     getAllChannels,
     getVisibleTeammate,
-    getVisibleGroupIds,
+    getDirectAndGroupChannels,
     getTeammateNameDisplaySetting,
-    (currentUser, profiles, profilesInChannel, channels, teammates, groupIds, settings) => {
+    (currentUser, profiles, profilesInChannel, channels, teammates, directAndGroup, settings) => {
         if (!currentUser) {
             return [];
         }
-
+        const allGroupIds = directAndGroup.reduce((result, group) => {
+            if (group.type === 'G') {
+                result.push(group.id);
+            }
+            return result;
+        }, []);
         const locale = currentUser.locale || 'en';
         const channelValues = Object.values(channels);
         const directChannelsIds = [];
@@ -98,7 +102,7 @@ export const getExtensionSortedDirectChannels = createSelector(
             return result;
         }, directChannelsIds);
 
-        const directChannels = groupIds.concat(directChannelsIds).map((id) => {
+        const directChannels = allGroupIds.concat(directChannelsIds).map((id) => {
             const channel = channels[id];
             if (channel.type === General.GM_CHANNEL) {
                 return completeDirectGroupInfo(currentUser.id, profiles, profilesInChannel, settings, channel);
