@@ -1,6 +1,10 @@
 import UIKit
 
 class ChannelsViewController: UIViewController {
+  
+  private var store = StoreManager.shared() as StoreManager
+  private var serverURL: String?
+  private var sessionToken: String?
 
   let searchController = UISearchController(searchResultsController: nil)
   
@@ -20,10 +24,24 @@ class ChannelsViewController: UIViewController {
   var filteredDecks: [Section]?
   weak var delegate: ChannelsViewControllerDelegate?
   
+  var footerFrame = UIView()
+  var footerLabel = UILabel()
+  var indicator = UIActivityIndicatorView()
+  var dispatchGroup = DispatchGroup()
+
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
     if #available(iOS 11.0, *) {
       navigationItem.hidesSearchBarWhenScrolling = false
+    }
+
+    showActivityIndicator()
+    dispatchGroup.enter()
+    delegate?.loadedChannels()
+    
+    dispatchGroup.notify(queue: .main) {
+      self.filteredDecks = self.channelDecks
+      self.hideActivityIndicator()
     }
   }
 
@@ -41,6 +59,32 @@ class ChannelsViewController: UIViewController {
     title = navbarTitle
     configureSearchBar()
     view.addSubview(tableView)
+  }
+
+  func showActivityIndicator() {
+    footerFrame = UIView(frame: CGRect(x: 0, y: view.frame.midY - 25, width: 250, height: 50))
+    footerFrame.center.x = view.center.x
+
+    footerLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 50))
+    footerLabel.textColor = UIColor.systemGray
+    footerLabel.text = "Searching for Channels..."
+    
+    indicator.frame = CGRect(x: 200, y: 0, width: 50, height: 50)
+    indicator.startAnimating()
+
+    footerFrame.addSubview(footerLabel)
+    footerFrame.addSubview(indicator)
+    
+    tableView.tableFooterView = footerFrame
+  }
+  
+  func hideActivityIndicator() {
+    tableView.tableFooterView = nil
+    self.tableView.reloadData()
+  }
+  
+  func leaveDispatchGroup() {
+    dispatchGroup.leave()
   }
  
   func configureSearchBar() {
@@ -78,6 +122,25 @@ private extension ChannelsViewController {
 
 extension ChannelsViewController: UITableViewDataSource {
   func numberOfSections(in tableView: UITableView) -> Int {
+    var empty = true
+    for sec in filteredDecks! {
+      if sec.items.count > 0 {
+        empty = false
+        break
+      }
+    }
+    
+    if (empty) {
+      let noDataLabel: UILabel  = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: tableView.bounds.size.height))
+      noDataLabel.text          = "No Results Found"
+      noDataLabel.textColor     = UIColor.systemGray
+      noDataLabel.textAlignment = .center
+      tableView.backgroundView  = noDataLabel
+      tableView.separatorStyle  = .none
+      return 0
+    }
+    tableView.separatorStyle = .singleLine
+    tableView.backgroundView = nil
     return filteredDecks?.count ?? 0
   }
 
@@ -111,6 +174,8 @@ extension ChannelsViewController: UITableViewDataSource {
 
 protocol ChannelsViewControllerDelegate: class {
   func selectedChannel(deck: Item)
+  func loadedChannels()
+  func searchOnTyping(term: String)
 }
 
 extension ChannelsViewController: UITableViewDelegate {
@@ -125,11 +190,18 @@ extension ChannelsViewController: UITableViewDelegate {
 extension ChannelsViewController: UISearchResultsUpdating {
   func updateSearchResults(for searchController: UISearchController) {
     if let searchText = searchController.searchBar.text, !searchText.isEmpty {
-      filteredDecks = channelDecks.map {section in
-        let s = section.copy() as! Section
-        let items = section.items.filter{($0.title?.lowercased().contains(searchText.lowercased()))!}
-        s.items = items
-        return s
+      showActivityIndicator()
+      dispatchGroup.enter()
+      delegate?.searchOnTyping(term: searchText)
+      
+      dispatchGroup.notify(queue: .main) {
+        self.filteredDecks = self.channelDecks.map {section in
+          let s = section.copy() as! Section
+          let items = section.items.filter{($0.title?.lowercased().contains(searchText.lowercased()))!}
+          s.items = items
+          return s
+        }
+        self.hideActivityIndicator()
       }
     } else {
       filteredDecks = channelDecks

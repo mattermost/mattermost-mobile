@@ -35,8 +35,6 @@
 -(NSDictionary *)getChannelsBySections:(NSString *)forTeamId excludeArchived:(BOOL)excludeArchived {
   NSDictionary *channelsStore = [self.entities objectForKey:@"channels"];
   NSString *currentUserId = [self getCurrentUserId];
-  NSString *currentChannelId = [self getCurrentChannelId];
-  NSDictionary *preferences = [self getMyPreferences];
   NSDictionary *channels = [channelsStore objectForKey:@"channels"];
   NSMutableDictionary *channelsInTeam = [[NSMutableDictionary alloc] init];
   NSMutableArray *publicChannels = [[NSMutableArray alloc] init];
@@ -45,7 +43,6 @@
   
   for (NSString * key in channels) {
     NSMutableDictionary *channel = [[channels objectForKey:key] mutableCopy];
-
     NSNumber *deleteAt = [channel objectForKey:@"delete_at"];
     if (excludeArchived && ![deleteAt isEqualToNumber:@0]) {
       continue;
@@ -57,28 +54,28 @@
     BOOL isGM = [channelType isEqualToString:@"G"];
     BOOL isPublic = [channelType isEqualToString:@"O"];
     BOOL isPrivate = [channelType isEqualToString:@"P"];
-    if ([team_id isEqualToString:forTeamId] || isDM || isGM) {
+    BOOL isNotCreatedYet = [channel valueForKey:@"notCreatedYet"];
+    if ([team_id isEqualToString:forTeamId] || isDM || isGM || isNotCreatedYet) {
       if (isPublic) {
         // public channel
         [publicChannels addObject:channel];
       } else if (isPrivate) {
         // private channel
         [privateChannels addObject:channel];
+      } else if (isNotCreatedYet) {
+        [directChannels addObject:channel];
       } else if (isDM) {
         // direct message
         NSString *otherUserId = [self getOtherUserIdFromChannel:currentUserId withChannelName:[channel objectForKey:@"name"]];
         NSDictionary *otherUser = [self getUserById:otherUserId];
-        NSNumber *delete_at = [otherUser objectForKey:@"delete_at"] ?: 0;
-          if (otherUser && [self isDirectChannelVisible:preferences otherUserId:otherUserId] && ![self isAutoClosed:preferences channel:channel currentChannelId:currentChannelId channelArchivedAt:delete_at]) {
+        NSNumber *userDeleteAt = [otherUser objectForKey:@"delete_at"];
+        if ([userDeleteAt isEqualToNumber:@0]) {
           [channel setObject:[self displayUserName:otherUser] forKey:@"display_name"];
           [directChannels addObject:channel];
         }
       } else {
-        NSNumber *delete_at = [channel objectForKey:@"delete_at"] ?: 0;
-        if ([self isGroupChannelVisible:preferences channelId:key] && ![self isAutoClosed:preferences channel:channel currentChannelId:currentChannelId channelArchivedAt:delete_at]) {
-            [channel setObject:[self completeDirectGroupInfo:key] forKey:@"display_name"];
-            [directChannels addObject:channel];
-        }
+        [channel setObject:[self completeDirectGroupInfo:key] forKey:@"display_name"];
+        [directChannels addObject:channel];
       }
     }
   }
@@ -226,8 +223,8 @@
       NSDictionary *user = [self getUserById:key];
       NSString *userId = [user objectForKey:@"id"];
       if (![userId isEqualToString:currentUserId]) {
-        NSString *fullName = [self getUserFullName:user];
-        [result addObject:fullName];
+        NSString *username = [self displayUserName:user];
+        [result addObject:username];
       }
     }
   }
@@ -408,28 +405,6 @@
     }
 
     return 0;
-}
-
--(BOOL)isDirectChannelVisible:(NSDictionary *)preferences otherUserId:(NSString *) otherUserId {
-    NSDictionary *dmPref = [preferences objectForKey:[NSString stringWithFormat:@"direct_channel_show--%@", otherUserId]];
-    if (dmPref != nil) {
-        NSString *value = [dmPref objectForKey:@"value"];
-        if (value != nil) {
-            return [value isEqualToString:@"true"];
-        }
-    }
-    return NO;
-}
-
--(BOOL)isGroupChannelVisible:(NSDictionary *)preferences channelId:(NSString *) channelId {
-    NSDictionary *gmPref = [preferences objectForKey:[NSString stringWithFormat:@"group_channel_show--%@", channelId]];
-    if (gmPref != nil) {
-        NSString *value = [gmPref objectForKey:@"value"];
-        if (value != nil) {
-            return [value isEqualToString:@"true"];
-        }
-    }
-    return NO;
 }
 
 @end
