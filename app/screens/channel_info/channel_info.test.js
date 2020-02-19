@@ -6,6 +6,8 @@ import {shallow} from 'enzyme';
 import Preferences from 'mattermost-redux/constants/preferences';
 import {General} from 'mattermost-redux/constants';
 
+import * as NavigationActions from 'app/actions/navigation';
+
 import ChannelInfo from './channel_info';
 
 // ChannelInfoRow expects to receive the pinIcon as a number
@@ -152,6 +154,21 @@ describe('channel_info', () => {
         expect(render).toBeFalsy();
     });
 
+    test('should dismiss modal on close', () => {
+        const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
+        const wrapper = shallow(
+            <ChannelInfo
+                {...baseProps}
+            />,
+            {context: {intl: intlMock}},
+        );
+
+        const instance = wrapper.instance();
+        expect(dismissModal).not.toHaveBeenCalled();
+        instance.close();
+        expect(dismissModal).toHaveBeenCalled();
+    });
+    
     test('should render unarchive channel button when currentChannel is an archived channel', async () => {
         const props = Object.assign({}, baseProps);
         props.canUnarchiveChannel = true;

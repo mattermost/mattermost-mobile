@@ -186,7 +186,6 @@
   "mobile.channel_list.not_member": "NOT A MEMBER",
   "mobile.channel_list.unreads": "UNREADS",
   "mobile.channel_members.add_members_alert": "You must select at least one member to add to the channel.",
-  "mobile.channel.markAsRead": "Mark As Read",
   "mobile.client_upgrade": "Update App",
   "mobile.client_upgrade.can_upgrade_subtitle": "A new version is available for download.",
   "mobile.client_upgrade.can_upgrade_title": "Update Available",

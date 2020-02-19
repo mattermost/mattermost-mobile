@@ -75,6 +75,7 @@ import com.android.build.OutputFile
 project.ext.react = [
     entryFile: "index.js",
     bundleConfig: "metro.config.js",
+    bundleCommand: "ram-bundle",
     enableHermes: false,
 ]
 
@@ -130,8 +131,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNN.reactNativeVersion", "reactNative60"
-        versionCode 264
-        versionName "1.28.0"
+        versionCode 270
+        versionName "1.29.0"
         multiDexEnabled = true
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'

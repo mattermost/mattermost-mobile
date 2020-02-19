@@ -1,669 +1,657 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelItem should match snapshot 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
   >
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
           undefined,
-          null,
         ]
       }
     >
-      <View
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={false}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        type="O"
+      />
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
-            undefined,
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+            },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={false}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-          type="O"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-                "fontWeight": "500",
-              },
-            ]
-          }
-        >
-          display_name
-        </Text>
-      </View>
+        display_name
+      </Text>
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
   >
+    <View
+      style={
+        Object {
+          "backgroundColor": "#579eff",
+          "width": 5,
+        }
+      }
+    />
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
-          undefined,
-          null,
+          Object {
+            "backgroundColor": "rgba(255,255,255,0.1)",
+            "paddingLeft": 11,
+          },
         ]
       }
     >
-      <View
-        style={
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={true}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
           Object {
-            "backgroundColor": "#579eff",
-            "width": 5,
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
           }
         }
+        type="D"
       />
-      <View
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
             Object {
-              "backgroundColor": "rgba(255,255,255,0.1)",
-              "paddingLeft": 11,
+              "color": "#ffffff",
             },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={true}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-          type="D"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-              },
-            ]
-          }
-        >
-          {displayname} (you)
-        </Text>
-      </View>
+        {displayname} (you)
+      </Text>
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) when isSearchResult 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
   >
+    <View
+      style={
+        Object {
+          "backgroundColor": "#579eff",
+          "width": 5,
+        }
+      }
+    />
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
-          undefined,
-          null,
+          Object {
+            "backgroundColor": "rgba(255,255,255,0.1)",
+            "paddingLeft": 11,
+          },
         ]
       }
     >
-      <View
-        style={
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={true}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
           Object {
-            "backgroundColor": "#579eff",
-            "width": 5,
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
           }
         }
+        type="D"
       />
-      <View
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
             Object {
-              "backgroundColor": "rgba(255,255,255,0.1)",
-              "paddingLeft": 11,
+              "color": "#ffffff",
             },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={true}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-          type="D"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-              },
-            ]
-          }
-        >
-          {displayname} (you)
-        </Text>
-      </View>
+        {displayname} (you)
+      </Text>
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is currentChannel 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
   >
+    <View
+      style={
+        Object {
+          "backgroundColor": "#579eff",
+          "width": 5,
+        }
+      }
+    />
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
-          undefined,
-          null,
+          Object {
+            "backgroundColor": "rgba(255,255,255,0.1)",
+            "paddingLeft": 11,
+          },
         ]
       }
     >
-      <View
-        style={
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={true}
+        isArchived={true}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
           Object {
-            "backgroundColor": "#579eff",
-            "width": 5,
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
           }
         }
+        type="D"
       />
-      <View
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
             Object {
-              "backgroundColor": "rgba(255,255,255,0.1)",
-              "paddingLeft": 11,
+              "color": "#ffffff",
             },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={true}
-          isArchived={true}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-          type="D"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-              },
-            ]
-          }
-        >
-          display_name
-        </Text>
-      </View>
+        display_name
+      </Text>
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is searchResult 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
   >
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
           undefined,
-          null,
         ]
       }
     >
-      <View
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={false}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        type="D"
+      />
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
-            undefined,
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+            },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={false}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-          type="D"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-                "fontWeight": "500",
-              },
-            ]
-          }
-        >
-          display_name
-        </Text>
-      </View>
+        display_name
+      </Text>
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and not searchResults or currentChannel 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
   >
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
           undefined,
-          null,
         ]
       }
     >
-      <View
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={false}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        type="D"
+      />
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
-            undefined,
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+            },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={false}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-          type="D"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-                "fontWeight": "500",
-              },
-            ]
-          }
-        >
-          display_name
-        </Text>
-      </View>
+        display_name
+      </Text>
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;
 
 exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
@@ -671,246 +659,242 @@ exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
 exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
 
 exports[`ChannelItem should match snapshot with draft 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
   >
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
           undefined,
-          null,
         ]
       }
     >
-      <View
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={true}
+        isActive={false}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        type="O"
+      />
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
-            undefined,
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+            },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={true}
-          isActive={false}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
-          }
-          type="O"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-                "fontWeight": "500",
-              },
-            ]
-          }
-        >
-          display_name
-        </Text>
-      </View>
+        display_name
+      </Text>
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;
 
 exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
-<AnimatedComponent>
-  <TouchablePreview
-    onPress={[Function]}
-    onPressIn={[Function]}
-    touchableComponent={[Function]}
-    underlayColor="rgba(69,120,191,0.5)"
+<TouchableHighlight
+  activeOpacity={0.85}
+  delayPressOut={100}
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        Object {
+          "opacity": 0.5,
+        },
+        null,
+      ]
+    }
   >
     <View
       style={
         Array [
           Object {
+            "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
-            "height": 44,
+            "paddingLeft": 16,
           },
-          Object {
-            "opacity": 0.5,
-          },
-          null,
+          undefined,
         ]
       }
     >
-      <View
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={false}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        type="O"
+      />
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
         style={
           Array [
             Object {
-              "alignItems": "center",
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
               "flex": 1,
-              "flexDirection": "row",
-              "paddingLeft": 16,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
             },
-            undefined,
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+            },
           ]
         }
       >
-        <ChannelIcon
-          channelId="channel_id"
-          hasDraft={false}
-          isActive={false}
-          isArchived={false}
-          isBot={false}
-          isInfo={false}
-          isUnread={true}
-          membersCount={1}
-          size={16}
-          status="online"
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
-            }
+        display_name
+      </Text>
+      <Badge
+        containerStyle={
+          Object {
+            "borderColor": "#1153ab",
+            "borderRadius": 14,
+            "borderWidth": 0,
+            "marginRight": 16,
+            "right": 0,
+            "top": 11,
           }
-          type="O"
-        />
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            Array [
-              Object {
-                "alignSelf": "center",
-                "color": "rgba(255,255,255,0.6)",
-                "flex": 1,
-                "fontFamily": "Open Sans",
-                "fontSize": 16,
-                "lineHeight": 24,
-                "maxWidth": "80%",
-                "paddingRight": 10,
-              },
-              Object {
-                "color": "#ffffff",
-                "fontWeight": "500",
-              },
-            ]
+        }
+        count={1}
+        countStyle={
+          Object {
+            "color": "#145dbf",
+            "fontSize": 12,
           }
-        >
-          display_name
-        </Text>
-        <Badge
-          containerStyle={
-            Object {
-              "borderColor": "#1153ab",
-              "borderRadius": 14,
-              "borderWidth": 0,
-              "marginRight": 16,
-              "right": 0,
-              "top": 11,
-            }
+        }
+        extraPaddingHorizontal={10}
+        minHeight={20}
+        minWidth={21}
+        onPress={[Function]}
+        style={
+          Object {
+            "backgroundColor": "#ffffff",
+            "height": 21,
+            "padding": 3,
+            "position": "relative",
           }
-          count={1}
-          countStyle={
-            Object {
-              "color": "#145dbf",
-              "fontSize": 12,
-            }
-          }
-          extraPaddingHorizontal={10}
-          minHeight={20}
-          minWidth={21}
-          onPress={[Function]}
-          style={
-            Object {
-              "backgroundColor": "#ffffff",
-              "height": 21,
-              "padding": 3,
-              "position": "relative",
-            }
-          }
-        />
-      </View>
+        }
+      />
     </View>
-  </TouchablePreview>
-</AnimatedComponent>
+  </View>
+</TouchableHighlight>
 `;

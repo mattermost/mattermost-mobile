@@ -62,7 +62,6 @@ const ViewTypes = keyMirror({
     SET_CHANNEL_RETRY_FAILED: null,
     SET_CHANNEL_DISPLAY_NAME: null,
 
-    SET_LAST_CHANNEL_FOR_TEAM: null,
     REMOVE_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
@@ -70,13 +69,9 @@ const ViewTypes = keyMirror({
     SAML: null,
 
     SET_INITIAL_POST_VISIBILITY: null,
-    INCREASE_POST_VISIBILITY: null,
     RECEIVED_FOCUSED_POST: null,
     LOADING_POSTS: null,
     SET_LOAD_MORE_POSTS_VISIBLE: null,
-
-    SET_INITIAL_POST_COUNT: null,
-    INCREASE_POST_COUNT: null,
 
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
 
@@ -94,7 +89,6 @@ const ViewTypes = keyMirror({
 
     SELECTED_ACTION_MENU: null,
     SUBMIT_ATTACHMENT_MENU_ACTION: null,
-    SELECT_CHANNEL_WITH_MEMBER: null,
 
     PORTRAIT: null,
     LANDSCAPE: null,
@@ -121,7 +115,4 @@ export default {
     NotificationLevels,
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
-    INPUT_LINE_HEIGHT: 20,
-    INPUT_VERTICAL_PADDING: 18,
-    INPUT_INITIAL_HEIGHT: 38,
 };

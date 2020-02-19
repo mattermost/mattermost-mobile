@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -24,7 +24,7 @@
     "intl": "1.2.5",
     "jail-monkey": "2.3.1",
     "jsc-android": "241213.2.0",
-    "mattermost-redux": "github:mattermost/mattermost-redux#af7a071de69e778a633ab182367568c21977f6b0",
+    "mattermost-redux": "github:mattermost/mattermost-redux#eddfcc3a5a1d8e7ee8635e2f281f7b55d2982618",
     "mime-db": "1.43.0",
     "moment-timezone": "0.5.27",
     "prop-types": "15.7.2",

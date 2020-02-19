@@ -7,7 +7,6 @@
 .PHONY: build-pr can-build-pr prepare-pr
 .PHONY: test help
 
-POD := $(shell which pod 2> /dev/null)
 OS := $(shell sh -c 'uname -s 2>/dev/null')
 BASE_ASSETS = $(shell find assets/base -type d) $(shell find assets/base -type f -name '*')
 OVERRIDE_ASSETS = $(shell find assets/override -type d 2> /dev/null) $(shell find assets/override -type f -name '*' 2> /dev/null)
@@ -33,13 +32,11 @@ npm-ci: package.json
 
 .podinstall:
 ifeq ($(OS), Darwin)
-ifdef POD
+	@echo "Required version of Cocoapods is not installed"
+	@echo Installing gems;
+	@bundle install
 	@echo Getting Cocoapods dependencies;
-	@cd ios && pod install;
-else
-	@echo "Cocoapods is not installed https://cocoapods.org/"
-	@exit 1
-endif
+	@cd ios && bundle exec pod install;
 endif
 	@touch $@
 
