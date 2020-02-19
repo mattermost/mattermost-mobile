@@ -132,7 +132,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: 1,
             borderTopWidth: 1,
             marginTop: 5,
-            padding: 10,
+            padding: 12,
         },
         border: {
             borderLeftColor: changeOpacity(theme.linkColor, 0.6),
