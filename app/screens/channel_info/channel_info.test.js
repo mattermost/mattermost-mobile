@@ -168,7 +168,7 @@ describe('channel_info', () => {
         instance.close();
         expect(dismissModal).toHaveBeenCalled();
     });
-    
+
     test('should render unarchive channel button when currentChannel is an archived channel', async () => {
         const props = Object.assign({}, baseProps);
         props.canUnarchiveChannel = true;
