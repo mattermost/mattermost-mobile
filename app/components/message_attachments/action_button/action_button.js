@@ -66,8 +66,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             opacity: 1,
             alignItems: 'center',
             marginTop: 12,
-            paddingHorizontal: 10,
-            paddingVertical: 9.5,
+            justifyContent: 'center',
+            height: 36,
         },
         buttonDisabled: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.3),
@@ -76,7 +76,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: STATUS_COLORS.default,
             fontSize: 15,
             fontWeight: '600',
-            lineHeight: 15,
         },
     };
 });
