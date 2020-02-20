@@ -76,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: STATUS_COLORS.default,
             fontSize: 15,
             fontWeight: '600',
-            lineHeight: 18,
+            lineHeight: 17,
         },
     };
 });
