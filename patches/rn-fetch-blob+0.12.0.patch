@@ -119,7 +119,7 @@ index a4d7015..f430865 100644
       * List content of folder
       * @param path Target folder
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
-index a8abd71..7d78b49 100644
+index a8abd71..ad273ce 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
 +++ b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
 @@ -407,6 +407,7 @@ public class RNFetchBlobReq extends BroadcastReceiver implements Runnable {
@@ -163,7 +163,7 @@ index a8abd71..7d78b49 100644
 +                } catch (ClassCastException ex) {
 +                    // unexpected response type
 +                    if (responseBody != null) {
-+                        callback.invoke("Unexpected FileStorage response file: " + responseBody.string(), null);
++                        callback.invoke("Unexpected FileStorage response file: " + responseBody.toString(), null);
 +                    } else {
 +                        callback.invoke("Unexpected FileStorage response with no file.", null);
 +                    }
