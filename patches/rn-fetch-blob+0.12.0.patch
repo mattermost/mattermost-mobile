@@ -119,7 +119,7 @@ index a4d7015..f430865 100644
       * List content of folder
       * @param path Target folder
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
-index a8abd71..7bcd052 100644
+index a8abd71..7d78b49 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
 +++ b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
 @@ -407,6 +407,7 @@ public class RNFetchBlobReq extends BroadcastReceiver implements Runnable {
@@ -151,6 +151,27 @@ index a8abd71..7bcd052 100644
                              if(responseFormat == ResponseFormat.UTF8) {
                                  String utf8 = new String(b);
                                  callback.invoke(null, RNFetchBlobConst.RNFB_RESPONSE_UTF8, utf8);
+@@ -591,7 +589,19 @@ public class RNFetchBlobReq extends BroadcastReceiver implements Runnable {
+ //                    ignored.printStackTrace();
+                 }
+ 
+-                RNFetchBlobFileResp rnFetchBlobFileResp = (RNFetchBlobFileResp) responseBody;
++                RNFetchBlobFileResp rnFetchBlobFileResp;
++
++                try {
++                    rnFetchBlobFileResp = (RNFetchBlobFileResp) responseBody;
++                } catch (ClassCastException ex) {
++                    // unexpected response type
++                    if (responseBody != null) {
++                        callback.invoke("Unexpected FileStorage response file: " + responseBody.string(), null);
++                    } else {
++                        callback.invoke("Unexpected FileStorage response with no file.", null);
++                    }
++                    return;
++                }
+ 
+                 if(rnFetchBlobFileResp != null && !rnFetchBlobFileResp.isDownloadComplete()){
+                     callback.invoke("Download interrupted.", null);
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java
 index 2470eef..d46be3f 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java
@@ -7444,7 +7465,7 @@ index b550ac2..b603f44 100644
  - (void) sendRequest:(NSDictionary  * _Nullable )options
         contentLength:(long)contentLength
 diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m b/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
-index cdbe6b1..56e97eb 100644
+index cdbe6b1..094c506 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
 @@ -51,7 +51,6 @@ @implementation RNFetchBlobRequest
@@ -7458,7 +7479,7 @@ index cdbe6b1..56e97eb 100644
 @@ -81,6 +80,10 @@ - (void) sendRequest:(__weak NSDictionary  * _Nullable )options
      self.receivedBytes = 0;
      self.options = options;
-     
+ 
 +    if (!self.keyChain) {
 +        self.keyChain = [[KeyChainDataSource alloc] initWithMode:KSM_Identities];
 +    }
