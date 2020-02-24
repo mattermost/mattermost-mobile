@@ -169,9 +169,7 @@ export default class EditPost extends PureComponent {
     };
 
     handleOnSelectionChange = (event) => {
-        if (event) {
-            this.onPostSelectionChange(event, false);
-        }
+        this.onPostSelectionChange(event, false);
     };
 
     onPostSelectionChange = (event, fromOnPostChangeText) => {
