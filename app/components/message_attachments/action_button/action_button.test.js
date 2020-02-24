@@ -44,7 +44,7 @@ describe('ActionButton', () => {
                 cookie: '',
                 name,
                 postId: id,
-                style,
+                buttonColor: style,
                 theme: Preferences.THEMES.default,
                 actions: {
                     doPostActionWithCookie: jest.fn(),
@@ -54,22 +54,24 @@ describe('ActionButton', () => {
             const wrapper = shallow(<ActionButton {...baseProps}/>);
 
             const buttonTextChild = wrapper.getElement().props.children;
+            const baseButtonStyles = wrapper.getElement().props.containerStyle[0];
+            const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
 
-            expect(wrapper.getElement().props.containerStyle[0].borderColor).toBe(changeOpacity(Preferences.THEMES.default.centerChannelColor, 0.25));
-            expect(wrapper.getElement().props.containerStyle[0].borderWidth).toBe(2);
-            expect(wrapper.getElement().props.containerStyle[0].borderRadius).toBe(4);
+            expect(baseButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default.centerChannelColor, 0.25));
+            expect(baseButtonStyles.borderWidth).toBe(2);
+            expect(baseButtonStyles.borderRadius).toBe(4);
 
             if (STATUS_COLORS[style]) {
-                expect(wrapper.getElement().props.containerStyle[1].borderColor).toBe(changeOpacity(STATUS_COLORS[style], 0.25));
+                expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(STATUS_COLORS[style], 0.25));
                 expect(buttonTextChild.props.style.color).toBe(STATUS_COLORS[style]);
             } else if (Preferences.THEMES.default[style]) {
-                expect(wrapper.getElement().props.containerStyle[1].borderColor).toBe(changeOpacity(Preferences.THEMES.default[style], 0.25));
+                expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default[style], 0.25));
                 expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default[style]);
             } else if (style) {
-                expect(wrapper.getElement().props.containerStyle[1].borderColor).toBe(changeOpacity(style, 0.25));
+                expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(style, 0.25));
                 expect(buttonTextChild.props.style.color).toBe(style);
             } else {
-                expect(wrapper.getElement().props.containerStyle[1]).toBe(undefined);
+                expect(dynamicButtonStyles).toBe(undefined);
                 expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default.centerChannelColor);
             }
         });

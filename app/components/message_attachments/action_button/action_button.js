@@ -21,7 +21,7 @@ export default class ActionButton extends PureComponent {
         theme: PropTypes.object.isRequired,
         cookie: PropTypes.string.isRequired,
         disabled: PropTypes.bool,
-        style: PropTypes.string,
+        buttonColor: PropTypes.string,
     };
 
     handleActionPress = preventDoubleTap(() => {
@@ -30,15 +30,15 @@ export default class ActionButton extends PureComponent {
     }, 4000);
 
     render() {
-        const {name, theme, disabled, style: customStyle} = this.props;
+        const {name, theme, disabled, buttonColor} = this.props;
         const style = getStyleSheet(theme);
         let customButtonStyle;
         let customButtonTextStyle;
 
-        if (customStyle) {
-            const color = STATUS_COLORS[customStyle] || theme[customStyle] || customStyle;
-            customButtonStyle = {borderColor: changeOpacity(color, 0.25), backgroundColor: '#ffffff'};
-            customButtonTextStyle = {color};
+        if (buttonColor) {
+            const hexColor = STATUS_COLORS[buttonColor] || theme[buttonColor] || buttonColor;
+            customButtonStyle = {borderColor: changeOpacity(hexColor, 0.25), backgroundColor: '#ffffff'};
+            customButtonTextStyle = {color: hexColor};
         }
 
         return (
