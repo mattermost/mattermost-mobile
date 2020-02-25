@@ -20,6 +20,7 @@ export default class AttachmentText extends PureComponent {
         metadata: PropTypes.object,
         onPermalinkPress: PropTypes.func,
         textStyles: PropTypes.object.isRequired,
+        theme: PropTypes.object,
         value: PropTypes.string,
     };
 
@@ -68,8 +69,9 @@ export default class AttachmentText extends PureComponent {
             hasThumbnail,
             metadata,
             onPermalinkPress,
-            value,
             textStyles,
+            theme,
+            value,
         } = this.props;
         const {collapsed, isLongText, maxHeight} = this.state;
 
@@ -103,6 +105,7 @@ export default class AttachmentText extends PureComponent {
                 <ShowMoreButton
                     onPress={this.toggleCollapseState}
                     showMore={collapsed}
+                    theme={theme}
                 />
                 }
             </View>

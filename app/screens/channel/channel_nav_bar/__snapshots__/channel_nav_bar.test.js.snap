@@ -19,7 +19,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
   }
 >
   <Connect(ChannelDrawerButton)
-    openDrawer={[MockFunction]}
+    openSidebar={[MockFunction]}
     visible={true}
   />
   <Connect(ChannelTitle)
@@ -58,7 +58,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
     }
   />
   <Connect(SettingDrawerButton)
-    openDrawer={[MockFunction]}
+    openSidebar={[MockFunction]}
   />
 </View>
 `;

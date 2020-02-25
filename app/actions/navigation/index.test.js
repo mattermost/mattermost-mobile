@@ -37,6 +37,7 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: 'Channel',
                             name: 'Channel',
                             passProps,
                             options: {
@@ -50,14 +51,10 @@ describe('app/actions/navigation', () => {
                                     visible: false,
                                     height: 0,
                                     backButton: {
-                                        color: theme.sidebarHeaderTextColor,
-                                        title: '',
+                                        visible: false,
                                     },
                                     background: {
                                         color: theme.sidebarHeaderBg,
-                                    },
-                                    title: {
-                                        color: theme.sidebarHeaderTextColor,
                                     },
                                 },
                             },
@@ -80,6 +77,7 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: 'SelectServer',
                             name: 'SelectServer',
                             passProps: {
                                 allowOtherServers,
@@ -141,6 +139,7 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: name,
                             name,
                             passProps,
                             options: merge(defaultOptions, options),
@@ -161,6 +160,10 @@ describe('app/actions/navigation', () => {
             layout: {
                 backgroundColor: theme.centerChannelBg,
             },
+            sideMenu: {
+                left: {enabled: false},
+                right: {enabled: false},
+            },
             topBar: {
                 animate: true,
                 visible: true,
@@ -180,6 +183,7 @@ describe('app/actions/navigation', () => {
 
         const expectedLayout = {
             component: {
+                id: name,
                 name,
                 passProps,
                 options: merge(defaultOptions, options),
@@ -241,6 +245,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: name,
                         name,
                         passProps,
                         options: merge(defaultOptions, options),
@@ -317,6 +322,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: name,
                         name,
                         passProps,
                         options: merge(showModalOptions, defaultOptions),
@@ -372,6 +378,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: showSearchModalName,
                         name: showSearchModalName,
                         passProps: showSearchModalPassProps,
                         options: merge(defaultOptions, showSearchModalOptions),
@@ -396,27 +403,6 @@ describe('app/actions/navigation', () => {
 
         await NavigationActions.dismissAllModals(options);
         expect(dismissAllModals).toHaveBeenCalledWith(options);
-    });
-
-    test('peek should call Navigation.push', async () => {
-        const push = jest.spyOn(Navigation, 'push');
-
-        const defaultOptions = {
-            preview: {
-                commit: false,
-            },
-        };
-
-        const expectedLayout = {
-            component: {
-                name,
-                passProps,
-                options: merge(defaultOptions, options),
-            },
-        };
-
-        await NavigationActions.peek(name, passProps, options);
-        expect(push).toHaveBeenCalledWith(topComponentId, expectedLayout);
     });
 
     test('mergeNavigationOptions should call Navigation.mergeOptions', () => {
@@ -454,6 +440,7 @@ describe('app/actions/navigation', () => {
 
         const expectedLayout = {
             component: {
+                id: name,
                 name,
                 passProps,
                 options: merge(defaultOptions, options),
