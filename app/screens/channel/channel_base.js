@@ -132,6 +132,10 @@ export default class ChannelBase extends PureComponent {
             });
         }
 
+        if (!this.props.currentChannelId && this.props.currentTeamId) {
+            this.loadChannels(this.props.currentTeamId);
+        }
+
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
