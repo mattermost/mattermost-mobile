@@ -8,10 +8,13 @@
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
  
+### Improvements
+ - Improved the experience where the app was unresponsive for a period of time after clearing cache or on initial login.
+ - Improved the experience of copying permalinks.
+ 
 ### Bug Fixes
- - Fixed an issue where the app was unresponsive for a period of time after clearing cache or on initial login.
  - Fixed an issue where channels drawers were partially shown with orientation change on iOS RN61.
-
+ - Fixed an issue where tall and thin image attachments got pushed to the left instead of appearing centered.
 
 ## 1.28.0 Release
 - Release Date: February 16, 2020
