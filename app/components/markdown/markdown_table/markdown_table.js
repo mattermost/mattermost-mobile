@@ -40,7 +40,6 @@ export default class MarkdownTable extends React.PureComponent {
         this.state = {
             containerWidth: 0,
             contentHeight: 0,
-            contentWidth: 0,
             cellWidth: 0,
             rowsSliced: false,
         };
@@ -149,6 +148,7 @@ export default class MarkdownTable extends React.PureComponent {
         if (isPreview) {
             const {maxPreviewColumns} = this.state;
             const prevRowLength = rows.length;
+            const prevColLength = React.Children.toArray(rows[0].props.children).length;
 
             rows = rows.slice(0, maxPreviewColumns).map((row) => {
                 const children = React.Children.toArray(row.props.children).slice(0, maxPreviewColumns);
@@ -161,7 +161,9 @@ export default class MarkdownTable extends React.PureComponent {
                 };
             });
 
-            this.setState({rowsSliced: prevRowLength > rows.length});
+            const rowsSliced = prevRowLength > rows.length;
+            const colsSliced = prevColLength > React.Children.toArray(rows[0].props.children).length;
+            this.setState({rowsSliced, colsSliced});
         }
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
@@ -184,7 +186,7 @@ export default class MarkdownTable extends React.PureComponent {
 
     render() {
         const {containerWidth, contentHeight} = this.state;
-        const {theme, numColumns} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
         const tableWidth = this.getTableWidth();
         const renderAsFlex = this.shouldRenderAsFlex();
@@ -200,10 +202,9 @@ export default class MarkdownTable extends React.PureComponent {
             expandButtonOffset -= 10;
         }
 
-        // Renders when table width exceeds the container, or if the columns exceed maximum allowed for previews
+        // Renders when columns exceed maximum allowed for previews
         let moreRight = null;
-        if ((containerWidth && tableWidth > containerWidth && !renderAsFlex) ||
-            (numColumns > MAX_PREVIEW_COLUMNS)) {
+        if (this.state.colsSliced) {
             moreRight = (
                 <LinearGradient
                     colors={[
