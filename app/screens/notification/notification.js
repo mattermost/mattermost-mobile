@@ -145,8 +145,8 @@ export default class Notification extends PureComponent {
 
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEABR);
         EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
+        this.dismissOverlay();
         InteractionManager.runAfterInteractions(() => {
-            this.dismissOverlay();
             if (!notification.localNotification) {
                 actions.loadFromPushNotification(notification);
             }
