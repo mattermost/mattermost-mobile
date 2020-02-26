@@ -646,7 +646,7 @@ export function loadChannelsForTeam(teamId) {
                 try {
                     console.log('Fetching channels attempt', (i + 1)); //eslint-disable-line no-console
                     const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
-                        Client4.getMyChannels(teamId),
+                        Client4.getMyChannels(teamId, true),
                         Client4.getMyChannelMembers(teamId),
                     ]);
 
