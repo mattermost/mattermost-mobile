@@ -347,7 +347,6 @@ export function showOverlay(name, passProps, options = {}) {
 
     Navigation.showOverlay({
         component: {
-            id: name,
             name,
             passProps,
             options: merge(defaultOptions, options),

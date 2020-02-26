@@ -440,7 +440,6 @@ describe('app/actions/navigation', () => {
 
         const expectedLayout = {
             component: {
-                id: name,
                 name,
                 passProps,
                 options: merge(defaultOptions, options),
