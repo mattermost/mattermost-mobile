@@ -77,10 +77,6 @@ export default class Downloader extends PureComponent {
                 id: 'mobile.downloader.android_started',
                 defaultMessage: 'Download started',
             });
-            const title = intl.formatMessage({
-                id: 'mobile.downloader.android_success',
-                defaultMessage: 'download successful',
-            });
             const complete = intl.formatMessage({
                 id: 'mobile.downloader.android_complete',
                 defaultMessage: 'Download complete',
@@ -127,7 +123,7 @@ export default class Downloader extends PureComponent {
                         useDownloadManager: true,
                         notification: true,
                         path: dest,
-                        title: `${file.caption} ${title}`,
+                        title: `${file.caption}`,
                         mime: data.mime_type,
                         description: data.name,
                         mediaScannable: true,
