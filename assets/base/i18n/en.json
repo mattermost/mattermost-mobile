@@ -80,7 +80,7 @@
   "edit_post.save": "Save",
   "file_attachment.download": "Download",
   "file_upload.fileAbove": "File above {max} cannot be uploaded: {filename}",
-  "get_post_link_modal.title": "Copy Link",
+  "get_post_link_modal.title": "Copy Permalink",
   "integrations.add": "Add",
   "intro_messages.anyMember": " Any member can join and read this channel.",
   "intro_messages.beginning": "Beginning of {name}",

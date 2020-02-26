@@ -122,7 +122,7 @@ export default class PostOptions extends PureComponent {
         if (canCopyPermalink) {
             const key = 'permalink';
             const icon = 'link';
-            const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Link'};
+            const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Permalink'};
             const onPress = this.handleCopyPermalink;
 
             return this.getOption(key, icon, message, onPress);
