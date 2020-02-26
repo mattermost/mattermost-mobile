@@ -10,70 +10,118 @@ import {STATUS_COLORS} from 'app/constants/colors';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 describe('ActionButton', () => {
-    const actions = [
-        {
-            id: 'gpc1tihowbfmmcizofm7zhr1to',
+    test('correct styles when from global theme', () => {
+        const buttonConfig = {
+            id: 'gpc1tihowfabfmmcizddo',
             name: 'Option 1',
-            style: 'danger',
-        },
-        {
-            id: 'gpc1tihowddto',
+            style: 'onlineIndicator',
+        };
+
+        const baseProps = {
+            id: buttonConfig.id,
+            cookie: '',
+            name: buttonConfig.name,
+            postId: buttonConfig.id,
+            buttonColor: buttonConfig.style,
+            theme: Preferences.THEMES.default,
+            actions: {
+                doPostActionWithCookie: jest.fn(),
+            },
+        };
+
+        const wrapper = shallow(<ActionButton {...baseProps}/>);
+
+        const buttonTextChild = wrapper.getElement().props.children;
+        const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
+
+        expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default[buttonConfig.style], 0.25));
+        expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default[buttonConfig.style]);
+    });
+
+    test('correct styles when a status color', () => {
+        const buttonConfig = {
+            id: 'gpc1tihowbfmmcizofm7zhr1to',
             name: 'Option 2',
-            style: 'default',
-        },
-        {
-            id: 'gpc1tihowbfmmcizddo',
+            style: 'danger',
+        };
+
+        const baseProps = {
+            id: buttonConfig.id,
+            cookie: '',
+            name: buttonConfig.name,
+            postId: buttonConfig.id,
+            buttonColor: buttonConfig.style,
+            theme: Preferences.THEMES.default,
+            actions: {
+                doPostActionWithCookie: jest.fn(),
+            },
+        };
+
+        const wrapper = shallow(<ActionButton {...baseProps}/>);
+
+        const buttonTextChild = wrapper.getElement().props.children;
+        const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
+
+        expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(STATUS_COLORS[buttonConfig.style], 0.25));
+        expect(buttonTextChild.props.style.color).toBe(STATUS_COLORS[buttonConfig.style]);
+    });
+
+    test('correct styles when a hex style', () => {
+        const buttonConfig = {
+            id: 'gpc1tihowbfawemmcizddo',
             name: 'Option 3',
-        },
-        {
+            style: '#166de0',
+        };
+
+        const baseProps = {
+            id: buttonConfig.id,
+            cookie: '',
+            name: buttonConfig.name,
+            postId: buttonConfig.id,
+            buttonColor: buttonConfig.style,
+            theme: Preferences.THEMES.default,
+            actions: {
+                doPostActionWithCookie: jest.fn(),
+            },
+        };
+
+        const wrapper = shallow(<ActionButton {...baseProps}/>);
+
+        const buttonTextChild = wrapper.getElement().props.children;
+        const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
+
+        expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(buttonConfig.style, 0.25));
+        expect(buttonTextChild.props.style.color).toBe(buttonConfig.style);
+    });
+
+    test('correct default styles', () => {
+        const buttonConfig = {
             id: 'gpc1tihowbfawemmcizddo',
             name: 'Option 4',
-            style: '#166de0',
-        },
-        {
-            id: 'gpc1tihowfabfmmcizddo',
-            name: 'Option 5',
-            style: 'onlineIndicator',
-        },
-    ];
+        };
 
-    actions.forEach(({id, name, style}) => {
-        test('custom action button style: ' + style, () => {
-            const baseProps = {
-                id,
-                cookie: '',
-                name,
-                postId: id,
-                buttonColor: style,
-                theme: Preferences.THEMES.default,
-                actions: {
-                    doPostActionWithCookie: jest.fn(),
-                },
-            };
+        const baseProps = {
+            id: buttonConfig.id,
+            cookie: '',
+            name: buttonConfig.name,
+            postId: buttonConfig.id,
+            buttonColor: buttonConfig.style,
+            theme: Preferences.THEMES.default,
+            actions: {
+                doPostActionWithCookie: jest.fn(),
+            },
+        };
 
-            const wrapper = shallow(<ActionButton {...baseProps}/>);
+        const wrapper = shallow(<ActionButton {...baseProps}/>);
 
-            const buttonTextChild = wrapper.getElement().props.children;
-            const baseButtonStyles = wrapper.getElement().props.containerStyle[0];
-            const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
+        const buttonTextChild = wrapper.getElement().props.children;
+        const baseButtonStyles = wrapper.getElement().props.containerStyle[0];
+        const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
 
-            expect(baseButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default.centerChannelColor, 0.25));
-            expect(baseButtonStyles.borderWidth).toBe(2);
-            expect(baseButtonStyles.borderRadius).toBe(4);
-
-            if (STATUS_COLORS[style]) {
-                expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(STATUS_COLORS[style], 0.25));
-                expect(buttonTextChild.props.style.color).toBe(STATUS_COLORS[style]);
-            } else if (Preferences.THEMES.default[style]) {
-                expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default[style], 0.25));
-                expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default[style]);
-            } else if (style) {
-                expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(style, 0.25));
-                expect(buttonTextChild.props.style.color).toBe(style);
-            } else {
-                expect(dynamicButtonStyles).toBe(undefined);
-                expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default.centerChannelColor);
-            }
-        });
+        expect(baseButtonStyles.borderColor).toBe(changeOpacity(Preferences.THEMES.default.centerChannelColor, 0.25));
+        expect(baseButtonStyles.borderWidth).toBe(2);
+        expect(baseButtonStyles.borderRadius).toBe(4);
+        expect(dynamicButtonStyles).toBe(undefined);
+        expect(buttonTextChild.props.style.color).toBe(Preferences.THEMES.default.centerChannelColor);
     });
 });
