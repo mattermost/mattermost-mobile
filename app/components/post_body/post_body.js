@@ -410,6 +410,7 @@ export default class PostBody extends PureComponent {
                         onPostPress={onPress}
                         textStyles={textStyles}
                         value={message}
+                        disableAtChannelMentionHighlight={postProps.mentionHighlightDisabled}
                     />
                 </View>
             );

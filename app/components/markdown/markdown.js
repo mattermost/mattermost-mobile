@@ -59,6 +59,7 @@ export default class Markdown extends PureComponent {
         disableHashtags: PropTypes.bool,
         disableAtMentions: PropTypes.bool,
         disableChannelLink: PropTypes.bool,
+        disableAtChannelMentionHighlight: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -68,6 +69,7 @@ export default class Markdown extends PureComponent {
         disableHashtags: false,
         disableAtMentions: false,
         disableChannelLink: false,
+        disableAtChannelMentionHighlight: false,
     };
 
     constructor(props) {
@@ -89,6 +91,14 @@ export default class Markdown extends PureComponent {
 
         return !scheme || this.props.autolinkedUrlSchemes.indexOf(scheme) !== -1;
     };
+
+    getMentionKeys = () => {
+        const mentionKeys = this.props.mentionKeys;
+        if (this.props.disableAtChannelMentionHighlight) {
+            return mentionKeys.filter((mention) => !(mention.key === '@all' || mention.key === '@channel' || mention.key === '@here'));
+        }
+        return mentionKeys;
+    }
 
     createRenderer = () => {
         return new Renderer({
@@ -424,7 +434,7 @@ export default class Markdown extends PureComponent {
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
         ast = pullOutImages(ast);
-        ast = highlightMentions(ast, this.props.mentionKeys);
+        ast = highlightMentions(ast, this.getMentionKeys());
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');
