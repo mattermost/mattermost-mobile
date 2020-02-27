@@ -3,5 +3,50 @@
 exports[`ProgressiveImage should match snapshot 1`] = `
 <View
   style={Object {}}
-/>
+>
+  <AnimatedComponent
+    blurRadius={5}
+    onError={[MockFunction]}
+    onLoadEnd={[Function]}
+    resizeMethod="auto"
+    resizeMode="contain"
+    source={
+      Object {
+        "headers": Object {
+          "Authorization": "Bearer ",
+        },
+        "uri": "https://images.com/image.png",
+      }
+    }
+    style={
+      Array [
+        Object {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        undefined,
+      ]
+    }
+  />
+  <AnimatedComponent
+    style={
+      Array [
+        Object {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        Object {
+          "backgroundColor": "#ffffff",
+          "opacity": 0.8,
+        },
+      ]
+    }
+  />
+</View>
 `;

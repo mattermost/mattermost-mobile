@@ -259,7 +259,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
         "marginTop": 5,
       },
       Object {
-        "height": 112.56666666666666,
+        "height": 69.83261802575107,
         "width": 307,
       },
     ]
@@ -277,7 +277,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
             "borderRadius": 3,
           },
           Object {
-            "height": 112.56666666666666,
+            "height": 69.83261802575107,
             "width": 307,
           },
         ]
