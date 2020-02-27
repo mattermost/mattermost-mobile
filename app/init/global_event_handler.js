@@ -14,7 +14,7 @@ import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
@@ -203,8 +203,13 @@ class GlobalEventHandler {
     };
 
     onRestartApp = async () => {
-        await this.store.dispatch(loadConfigAndLicense());
-        await this.store.dispatch(loadMe());
+        const {dispatch, getState} = this.store;
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+        const user = getUser(state, currentUserId);
+
+        await dispatch(loadConfigAndLicense());
+        await dispatch(loadMe(user));
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
@@ -215,11 +220,6 @@ class GlobalEventHandler {
                     this.onStatusBarHeightChange(data.height);
                 },
             );
-        }
-
-        if (this.launchApp) {
-            const credentials = await getAppCredentials();
-            this.launchApp(credentials);
         }
     };
 
