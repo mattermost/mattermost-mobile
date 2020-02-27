@@ -351,7 +351,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginBottom: 12,
         },
         container: {
-            marginTop: 60,
+            marginTop: 10,
             marginHorizontal: 12,
             marginBottom: 12,
             overflow: 'hidden',
