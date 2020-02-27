@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {View} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
+import {STATUS_COLORS} from 'app/constants/colors';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import AttachmentActions from './attachment_actions';
@@ -17,12 +18,6 @@ import AttachmentText from './attachment_text';
 import AttachmentThumbnail from './attachment_thumbnail';
 import AttachmentTitle from './attachment_title';
 import AttachmentFooter from './attachment_footer';
-
-const STATUS_COLORS = {
-    good: '#00c100',
-    warning: '#dede01',
-    danger: '#e40303',
-};
 
 export default class MessageAttachment extends PureComponent {
     static propTypes = {
@@ -138,7 +133,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: 1,
             borderTopWidth: 1,
             marginTop: 5,
-            padding: 10,
+            padding: 12,
         },
         border: {
             borderLeftColor: changeOpacity(theme.linkColor, 0.6),
