@@ -8,7 +8,6 @@ import {Image, View} from 'react-native';
 import ProgressiveImage from 'app/components/progressive_image';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isGifTooLarge, previewImageAtIndex, calculateDimensions} from 'app/utils/images';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const VIEWPORT_IMAGE_OFFSET = 100;
@@ -42,13 +41,13 @@ export default class AttachmentImage extends PureComponent {
         }
 
         if (imageUrl) {
-            ImageCacheManager.cache(null, imageUrl, this.setImageUrl);
+            this.setImageUrl(imageUrl);
         }
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.imageUrl && (prevProps.imageUrl !== this.props.imageUrl)) {
-            ImageCacheManager.cache(null, this.props.imageUrl, this.setImageUrl);
+            this.setImageUrl(this.props.imageUrl);
         }
     }
 

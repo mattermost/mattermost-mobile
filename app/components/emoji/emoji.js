@@ -4,14 +4,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     Platform,
     StyleSheet,
     Text,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 
 export default class Emoji extends React.PureComponent {
     static propTypes = {
@@ -49,56 +48,15 @@ export default class Emoji extends React.PureComponent {
         isCustomEmoji: false,
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            imageUrl: null,
-        };
-    }
-
-    componentDidMount() {
-        const {displayTextOnly, emojiName, imageUrl} = this.props;
-        this.mounted = true;
-        if (!displayTextOnly && imageUrl) {
-            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const {displayTextOnly, emojiName, imageUrl} = nextProps;
-        if (emojiName !== this.props.emojiName && this.mounted) {
-            this.setState({
-                imageUrl: null,
-            });
-        }
-
-        if (!displayTextOnly && imageUrl &&
-                imageUrl !== this.props.imageUrl) {
-            ImageCacheManager.cache(`emoji-${emojiName}`, imageUrl, this.setImageUrl);
-        }
-    }
-
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
-    setImageUrl = (imageUrl) => {
-        if (this.mounted) {
-            this.setState({
-                imageUrl,
-            });
-        }
-    };
-
     render() {
         const {
-            literal,
-            textStyle,
-            displayTextOnly,
             customEmojiStyle,
+            displayTextOnly,
+            imageUrl,
+            literal,
+            unicode,
+            textStyle,
         } = this.props;
-        const {imageUrl} = this.state;
 
         let size = this.props.size;
         let fontSize = size;
@@ -117,36 +75,32 @@ export default class Emoji extends React.PureComponent {
 
         // Android can't change the size of an image after its first render, so
         // force a new image to be rendered when the size changes
-        const key = Platform.OS === 'android' ? (height + '-' + width) : null;
+        const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
 
-        if (this.props.unicode && !this.props.imageUrl) {
-            const codeArray = this.props.unicode.split('-');
+        if (unicode && !imageUrl) {
+            const codeArray = unicode.split('-');
             const code = codeArray.reduce((acc, c) => {
                 return acc + String.fromCodePoint(parseInt(c, 16));
             }, '');
 
             return (
-                <Text style={[this.props.textStyle, {fontSize: size}]}>
+                <Text style={[textStyle, {fontSize: size}]}>
                     {code}
                 </Text>
             );
         }
 
         if (!imageUrl) {
-            return (
-                <Image
-                    key={key}
-                    style={{width, height}}
-                />
-            );
+            return null;
         }
 
         return (
-            <Image
+            <FastImage
                 key={key}
                 style={[customEmojiStyle, {width, height}]}
                 source={{uri: imageUrl}}
                 onError={this.onError}
+                resizeMode={FastImage.resizeMode.contain}
             />
         );
     }

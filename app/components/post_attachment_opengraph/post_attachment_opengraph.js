@@ -14,7 +14,6 @@ import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {DeviceTypes} from 'app/constants';
 
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getNearestPoint} from 'app/utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -47,6 +46,10 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         this.mounted = true;
 
         this.fetchData(this.props.link, this.props.openGraphData);
+
+        if (this.state.openGraphImageUrl) {
+            this.getImageSize(this.state.openGraphImageUrl);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -56,7 +59,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
 
         if (this.props.openGraphData !== nextProps.openGraphData) {
-            this.setState(this.getBestImageUrl(nextProps.openGraphData));
+            this.setState(this.getBestImageUrl(nextProps.openGraphData), () => {
+                this.getImageSize(this.state.openGraphImageUrl);
+            });
         }
     }
 
@@ -110,10 +115,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             dimensions = calculateDimensions(ogImage.height, ogImage.width, this.getViewPostWidth());
         }
 
-        if (imageUrl) {
-            ImageCacheManager.cache(this.getFilename(imageUrl), imageUrl, this.getImageSize);
-        }
-
         return {
             hasImage: true,
             ...dimensions,
@@ -143,7 +144,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
 
         if (!ogImage) {
-            ogImage = openGraphData.images.find((i) => i.url === openGraphImageUrl || i.secure_url === openGraphImageUrl);
+            ogImage = openGraphData?.images?.find((i) => i.url === openGraphImageUrl || i.secure_url === openGraphImageUrl);
         }
 
         // Fallback when the ogImage does not have dimensions but there is a metaImage defined
