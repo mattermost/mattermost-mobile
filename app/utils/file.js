@@ -7,11 +7,8 @@ import mimeDB from 'mime-db';
 
 import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
 
-import {DeviceTypes} from 'app/constants/';
-
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
-const {DOCUMENTS_PATH, IMAGES_PATH, VIDEOS_PATH} = DeviceTypes;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
 export const SUPPORTED_DOCS_FORMAT = [
@@ -58,51 +55,39 @@ export function generateId() {
     return 'uid' + id;
 }
 
+async function getDirectorySize(fileStats, initialSize = 0) {
+    if (fileStats?.length) {
+        return fileStats.reduce(async (previousPromise, stat) => {
+            const value = await previousPromise;
+
+            if (stat.type === 'directory') {
+                const stats = await RNFetchBlob.fs.lstat(stat.path);
+                const dirSize = await getDirectorySize(stats, value);
+                return value + dirSize;
+            }
+
+            return value + parseInt(stat.size, 10);
+        }, Promise.resolve(initialSize));
+    }
+
+    return 0;
+}
+
 export async function getFileCacheSize() {
-    const isDocsDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
-    const isImagesDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
-    const isVideosDir = await RNFetchBlob.fs.isDir(VIDEOS_PATH);
-    let size = 0;
-
-    if (isDocsDir) {
-        const docsStats = await RNFetchBlob.fs.lstat(DOCUMENTS_PATH);
-        size = docsStats.reduce((accumulator, stat) => {
-            return accumulator + parseInt(stat.size, 10);
-        }, size);
-    }
-
-    if (isImagesDir) {
-        const imagesStats = await RNFetchBlob.fs.lstat(IMAGES_PATH);
-        size = imagesStats.reduce((accumulator, stat) => {
-            return accumulator + parseInt(stat.size, 10);
-        }, size);
-    }
-
-    if (isVideosDir) {
-        const videoStats = await RNFetchBlob.fs.lstat(VIDEOS_PATH);
-        size = videoStats.reduce((accumulator, stat) => {
-            return accumulator + parseInt(stat.size, 10);
-        }, size);
-    }
+    const cacheStats = await RNFetchBlob.fs.lstat(RNFetchBlob.fs.dirs.CacheDir);
+    const size = await getDirectorySize(cacheStats);
 
     return size;
 }
 
 export async function deleteFileCache() {
-    const isDocsDir = await RNFetchBlob.fs.isDir(DOCUMENTS_PATH);
-    const isImagesDir = await RNFetchBlob.fs.isDir(IMAGES_PATH);
-    const isVideosDir = await RNFetchBlob.fs.isDir(VIDEOS_PATH);
-    if (isDocsDir) {
-        await RNFetchBlob.fs.unlink(DOCUMENTS_PATH);
+    const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
+    const isCacheDir = await RNFetchBlob.fs.isDir(cacheDir);
+    if (isCacheDir) {
+        await RNFetchBlob.fs.unlink(cacheDir);
     }
 
-    if (isImagesDir) {
-        await RNFetchBlob.fs.unlink(IMAGES_PATH);
-    }
-
-    if (isVideosDir) {
-        await RNFetchBlob.fs.unlink(VIDEOS_PATH);
-    }
+    await RNFetchBlob.fs.mkdir(cacheDir);
 
     return true;
 }

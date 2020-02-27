@@ -8,7 +8,6 @@ import RNFetchBlob from 'rn-fetch-blob';
 import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
-import {loadMe, logout} from 'mattermost-redux/actions/users';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client4} from 'mattermost-redux/client';
@@ -22,6 +21,7 @@ import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusB
 import {selectDefaultChannel} from 'app/actions/views/channel';
 import {showOverlay} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
+import {loadMe, logout} from 'app/actions/views/user';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations, resetMomentLocale} from 'app/i18n';
 import mattermostBucket from 'app/mattermost_bucket';

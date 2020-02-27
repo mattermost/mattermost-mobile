@@ -8,6 +8,10 @@ import Preferences from 'mattermost-redux/constants/preferences';
 
 import ProgressiveImage from './progressive_image';
 
+jest.mock('react-native-fast-image', () => ({
+    preload: jest.fn(),
+}));
+
 jest.useFakeTimers();
 
 describe('ProgressiveImage', () => {
@@ -68,15 +72,15 @@ describe('ProgressiveImage', () => {
         expect(instance.setImage).toHaveBeenCalledTimes(1);
     });
 
-    test('should set thumbnail when thumbnailUri is set', () => {
+    test('should set thumbnail when thumbnailUri and imageUri are set', () => {
         const wrapper = shallow(
             <ProgressiveImage
                 {...baseProps}
-                imageUri={null}
             />,
         );
         const instance = wrapper.instance();
         jest.spyOn(instance, 'setThumbnail');
+        instance.load();
 
         jest.runAllTimers();
         expect(instance.setThumbnail).toHaveBeenCalledTimes(1);
