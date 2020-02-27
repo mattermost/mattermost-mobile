@@ -117,7 +117,8 @@ export default class ChannelBase extends PureComponent {
             });
         }
 
-        if (this.props.currentTeamId && this.props.currentTeamId !== prevProps.currentTeamId) {
+        if (this.props.currentTeamId &&
+            (!this.props.currentChannelId || this.props.currentTeamId !== prevProps.currentTeamId)) {
             this.loadChannels(this.props.currentTeamId);
         }
 
@@ -130,10 +131,6 @@ export default class ChannelBase extends PureComponent {
                 this.props.actions.getChannelStats(this.props.currentChannelId);
                 this.updateNativeScrollView();
             });
-        }
-
-        if (!this.props.currentChannelId && this.props.currentTeamId) {
-            this.loadChannels(this.props.currentTeamId);
         }
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
