@@ -55,19 +55,27 @@ export function generateId() {
     return 'uid' + id;
 }
 
-async function getDirectorySize(fileStats, initialSize = 0) {
+const dirsToExclude = ['Cache.db', 'WebKit', 'WebView'];
+async function getDirectorySize(fileStats) {
     if (fileStats?.length) {
-        return fileStats.reduce(async (previousPromise, stat) => {
+        const total = await fileStats.reduce(async (previousPromise, stat) => {
             const value = await previousPromise;
+
+            const exclude = dirsToExclude.find((f) => stat.path.includes(f));
+            if (exclude) {
+                return value;
+            }
 
             if (stat.type === 'directory') {
                 const stats = await RNFetchBlob.fs.lstat(stat.path);
-                const dirSize = await getDirectorySize(stats, value);
+                const dirSize = await getDirectorySize(stats, 0);
                 return value + dirSize;
             }
 
             return value + parseInt(stat.size, 10);
-        }, Promise.resolve(initialSize));
+        }, Promise.resolve(0));
+
+        return total;
     }
 
     return 0;
@@ -84,10 +92,13 @@ export async function deleteFileCache() {
     const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
     const isCacheDir = await RNFetchBlob.fs.isDir(cacheDir);
     if (isCacheDir) {
-        await RNFetchBlob.fs.unlink(cacheDir);
+        try {
+            await RNFetchBlob.fs.unlink(cacheDir);
+            await RNFetchBlob.fs.mkdir(cacheDir);
+        } catch (e) {
+            // do nothing
+        }
     }
-
-    await RNFetchBlob.fs.mkdir(cacheDir);
 
     return true;
 }
