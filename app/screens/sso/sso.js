@@ -61,16 +61,15 @@ const oneLoginFormScalingJS = `
 
 class SSO extends PureComponent {
     static propTypes = {
-        intl: intlShape.isRequired,
-        theme: PropTypes.object,
-        serverUrl: PropTypes.string.isRequired,
-        ssoType: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             scheduleExpiredNotification: PropTypes.func.isRequired,
-            handleSuccessfulLogin: PropTypes.func.isRequired,
-            setStoreFromLocalData: PropTypes.func.isRequired,
+            ssoLogin: PropTypes.func.isRequired,
         }).isRequired,
+        intl: intlShape.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        serverUrl: PropTypes.string.isRequired,
+        ssoType: PropTypes.string.isRequired,
+        theme: PropTypes.object,
     };
 
     useWebkit = true;
@@ -158,15 +157,17 @@ class SSO extends PureComponent {
                 if (token) {
                     this.setState({renderWebView: false});
                     const {
-                        handleSuccessfulLogin,
-                        setStoreFromLocalData,
+                        ssoLogin,
                     } = this.props.actions;
 
                     Client4.setToken(token);
-                    setStoreFromLocalData({url: Client4.getUrl(), token}).
-                        then(handleSuccessfulLogin).
-                        then(this.goToChannel).
-                        catch(this.onLoadEndError);
+                    ssoLogin(token).then((result) => {
+                        if (result.error) {
+                            this.onLoadEndError(result.error);
+                            return;
+                        }
+                        this.goToChannel();
+                    });
                 } else if (this.webView && !this.state.error) {
                     this.webView.injectJavaScript(postMessageJS);
                 }
