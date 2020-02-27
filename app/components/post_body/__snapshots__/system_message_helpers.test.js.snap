@@ -35,3 +35,12 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
   value="{username} archived the channel"
 />
 `;
+
+exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
+<Connect(Markdown)
+  baseTextStyle={Object {}}
+  onPostPress={[MockFunction]}
+  textStyles={Object {}}
+  value="{username} unarchived the channel"
+/>
+`;

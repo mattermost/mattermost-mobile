@@ -36,6 +36,7 @@ describe('channel_info', () => {
     };
     const baseProps = {
         canDeleteChannel: true,
+        canUnarchiveChannel: false,
         canConvertChannel: true,
         canManageUsers: true,
         viewArchivedChannels: true,
@@ -70,6 +71,7 @@ describe('channel_info', () => {
             closeGMChannel: jest.fn(),
             convertChannelToPrivate: jest.fn(),
             deleteChannel: jest.fn(),
+            unarchiveChannel: jest.fn(),
             getChannelStats: jest.fn(),
             getChannel: jest.fn(),
             leaveChannel: jest.fn(),
@@ -165,5 +167,39 @@ describe('channel_info', () => {
         expect(dismissModal).not.toHaveBeenCalled();
         instance.close();
         expect(dismissModal).toHaveBeenCalled();
+    });
+
+    test('should render unarchive channel button when currentChannel is an archived channel', async () => {
+        const props = Object.assign({}, baseProps);
+        props.canUnarchiveChannel = true;
+        props.currentChannel.delete_at = 1234566;
+
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+
+        const instance = wrapper.instance();
+        const render = instance.renderUnarchiveChannel();
+        expect(render).toBeTruthy();
+    });
+
+    test('should not render unarchive channel button when currentChannel is an active channel', async () => {
+        const props = Object.assign({}, baseProps);
+        props.canUnarchiveChannel = false;
+        props.currentChannel.delete_at = 0;
+
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+
+        const instance = wrapper.instance();
+        const render = instance.renderUnarchiveChannel();
+        expect(render).toBeFalsy();
     });
 });
