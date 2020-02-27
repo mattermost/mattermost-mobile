@@ -212,7 +212,7 @@ index 800bd35..c215a8d 100644
          else
          {
 -            insets.bottom = bottomInset;
-+            insets.bottom = (keyboardHeight == 0 ? 0 : keyboardHeight);
++            insets.bottom = keyboardHeight;
          }
 +
          self.scrollViewToManage.contentInset = insets;
