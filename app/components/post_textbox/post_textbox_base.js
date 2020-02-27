@@ -43,6 +43,7 @@ import FileUploadPreview from 'app/components/file_upload_preview';
 import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
+import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -409,17 +410,25 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handlePostDraftSelectionChanged = (event) => {
-        const cursorPosition = event.nativeEvent.selection.end;
+    handleOnSelectionChange = (event) => {
+        this.handlePostDraftSelectionChanged(event, false);
+    };
+
+    handlePostDraftSelectionChanged = (event, fromHandleTextChange) => {
+        const cursorPosition = fromHandleTextChange ? this.state.cursorPosition : event.nativeEvent.selection.end;
+
         const {cursorPositionEvent} = this.props;
 
         if (cursorPositionEvent) {
             EventEmitter.emit(cursorPositionEvent, cursorPosition);
         }
 
-        this.setState({
-            cursorPosition,
-        });
+        if (Platform.OS === 'ios') {
+            const keyboardType = switchKeyboardForCodeBlocks(this.state.value, cursorPosition);
+            this.setState({cursorPosition, keyboardType});
+        } else {
+            this.setState({cursorPosition});
+        }
     };
 
     handleSendMessage = () => {
@@ -517,7 +526,13 @@ export default class PostTextBoxBase extends PureComponent {
 
         this.checkMessageLength(value);
 
-        this.setState(nextState);
+        // Workaround to avoid iOS emdash autocorrect in Code Blocks
+        if (Platform.OS === 'ios') {
+            const callback = () => this.handlePostDraftSelectionChanged(null, true);
+            this.setState(nextState, callback);
+        } else {
+            this.setState(nextState);
+        }
 
         if (value) {
             actions.userTyping(channelId, rootId);
@@ -926,7 +941,7 @@ export default class PostTextBoxBase extends PureComponent {
                         value={textValue}
                         style={{...style.input, ...inputStyle, maxHeight}}
                         onChangeText={this.handleTextChange}
-                        onSelectionChange={this.handlePostDraftSelectionChanged}
+                        onSelectionChange={this.handleOnSelectionChange}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}

@@ -45,8 +45,8 @@ export function makeMapStateToProps() {
         const reactions = getReactionsForPostSelector(state, post.id);
         const channelIsArchived = channel.delete_at !== 0;
         const {serverVersion} = state.entities.general;
-        const canMarkAsUnread = isMinimumServerVersion(serverVersion, 5, 18);
 
+        let canMarkAsUnread = true;
         let canAddReaction = true;
         let canReply = true;
         let canCopyPermalink = true;
@@ -105,6 +105,10 @@ export function makeMapStateToProps() {
 
         if (reactions && Object.values(reactions).length >= MAX_ALLOWED_REACTIONS) {
             canAddReaction = false;
+        }
+
+        if (!isMinimumServerVersion(serverVersion, 5, 18) || channelIsArchived) {
+            canMarkAsUnread = false;
         }
 
         return {

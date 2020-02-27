@@ -4,17 +4,15 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {login} from 'mattermost-redux/actions/users';
+import {login} from 'app/actions/views/user';
 
 import Mfa from './mfa';
 
 function mapStateToProps(state) {
-    const {login: loginRequest} = state.requests.users;
     const {loginId, password} = state.views.login;
     return {
         loginId,
         password,
-        loginRequest,
     };
 }
 

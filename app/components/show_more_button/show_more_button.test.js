@@ -8,7 +8,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import ShowMoreButton from './show_more_button';
+import ShowMoreButton from './index';
 
 describe('ShowMoreButton', () => {
     const baseProps = {
