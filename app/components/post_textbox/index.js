@@ -56,7 +56,7 @@ function mapStateToProps(state, ownProps) {
         useChannelMentions = haveIChannelPermission(
             state,
             {
-                channel: currentChannel.Id,
+                channel: currentChannel.id,
                 permission: Permissions.USE_CHANNEL_MENTIONS,
             },
         );
