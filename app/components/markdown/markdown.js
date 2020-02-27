@@ -95,7 +95,7 @@ export default class Markdown extends PureComponent {
     getMentionKeys = () => {
         const mentionKeys = this.props.mentionKeys;
         if (this.props.disableAtChannelMentionHighlight) {
-            return mentionKeys.filter((mention) => !(mention.key === '@all' || mention.key === '@channel' || mention.key === '@here'));
+            return mentionKeys.filter((mention) => !['@all', '@channel', '@here'].includes(mention.key));
         }
         return mentionKeys;
     }
