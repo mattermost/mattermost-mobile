@@ -10,10 +10,14 @@
  
 ### Improvements
  - Improved the experience where the app was unresponsive for a period of time after clearing cache or on initial login.
- - Improved the experience of copying permalinks.
  
 ### Bug Fixes
+ - Fixed an issue where downloaded files on Android had the words `download successful` appended to their filenames, preventing the file from being opened until it was renamed in the file manager.
+ - Fixed an issue on Android where users could not swipe to close sidebar unless the gesture was initiated outside of the sidebar.
  - Fixed an issue where channels drawers were partially shown with orientation change on iOS RN61.
+ - Fixed an issue on Android where inline custom emojis did not display in portrait mode.
+ - Fixed an issue where a user's was set as online when replying to a message from a push notification.
+ - Fixed an issue where deleting documents and data caused a flash of the background when the app reloaded.
  - Fixed an issue where tall and thin image attachments got pushed to the left instead of appearing centered.
 
 ## 1.28.0 Release
