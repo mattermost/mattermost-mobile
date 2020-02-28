@@ -214,6 +214,42 @@ exports[`MarkdownTable should match snapshot 1`] = `
       </>
     </View>
   </ScrollView>
+  <LinearGradient
+    colors={
+      Array [
+        "rgba(61,60,64,0)",
+        "rgba(61,60,64,0.1)",
+      ]
+    }
+    end={
+      Object {
+        "x": 1,
+        "y": 0,
+      }
+    }
+    start={
+      Object {
+        "x": 0,
+        "y": 0,
+      }
+    }
+    style={
+      Array [
+        Object {
+          "borderColor": "rgba(61,60,64,0.2)",
+          "borderRightWidth": 1,
+          "maxHeight": 300,
+          "position": "absolute",
+          "top": 0,
+          "width": 20,
+        },
+        Object {
+          "height": 0,
+          "left": -20,
+        },
+      ]
+    }
+  />
   <TouchableWithFeedbackIOS
     onPress={[Function]}
     style={

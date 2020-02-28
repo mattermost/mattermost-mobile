@@ -202,9 +202,12 @@ export default class MarkdownTable extends React.PureComponent {
             expandButtonOffset -= 10;
         }
 
-        // Renders when columns exceed maximum allowed for previews
+        // Renders when the columns were sliced, or the table width exceeds the container,
+        // or if the columns exceed maximum allowed for previews
         let moreRight = null;
-        if (this.state.colsSliced) {
+        if (this.state.colsSliced ||
+            (containerWidth && tableWidth > containerWidth && !renderAsFlex) ||
+            (this.props.numColumns > MAX_PREVIEW_COLUMNS)) {
             moreRight = (
                 <LinearGradient
                     colors={[
