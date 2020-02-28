@@ -71,9 +71,10 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
     [self handleReplyFailure:channelId completionHandler:notificationCompletionHandler];
     return;
   }
-  
-  NSString *urlString = [NSString stringWithFormat:@"%@/api/v4/posts", serverUrl];
-  NSURL *url = [NSURL URLWithString:urlString];
+
+  NSString *urlString = [serverUrl stringByReplacingOccurrencesOfString:@"/$" withString:@"" options:NSRegularExpressionSearch range:NSMakeRange(0, [serverUrl length])];
+  NSString *postsEndpoint = @"/api/v4/posts?set_online=false";
+  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", urlString, postsEndpoint]];
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   [request setHTTPMethod:@"POST"];
   [request setValue:[NSString stringWithFormat:@"Bearer %@", sessionToken] forHTTPHeaderField:@"Authorization"];
