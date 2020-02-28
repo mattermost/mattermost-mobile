@@ -63,7 +63,6 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
                         String token = map.getString("password");
                         String serverUrl = map.getString("service");
 
-                        Log.i("ReactNative", String.format("URL=%s", serverUrl));
                         replyToMessage(serverUrl, token, notificationId, message);
                     }
                 }
@@ -88,12 +87,16 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         String json = buildReplyPost(channelId, rootId, message.toString());
         RequestBody body = RequestBody.create(JSON, json);
+
+        String postsEndpoint = "/api/v4/posts?set_online=false";
+        String url = String.format("%s%s", serverUrl.replaceAll("/$", ""), postsEndpoint);
+        Log.i("ReactNative", String.format("Reply URL=%s", url));
         Request request = new Request.Builder()
-                .header("Authorization", String.format("Bearer %s", token))
-                .header("Content-Type", "application/json")
-                .url(String.format("%s/api/v4/posts", serverUrl.replaceAll("/$", "")))
-                .post(body)
-                .build();
+            .header("Authorization", String.format("Bearer %s", token))
+            .header("Content-Type", "application/json")
+            .url(url)
+            .post(body)
+            .build();
 
         client.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
