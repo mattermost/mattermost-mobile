@@ -216,6 +216,7 @@ export default class ChannelBase extends PureComponent {
             if (EphemeralStore.appStartedFromPushNotification) {
                 EphemeralStore.appStartedFromPushNotification = false;
             } else {
+                this.setState({channelsRequestFailed: false});
                 selectInitialChannel(teamId);
             }
         });
