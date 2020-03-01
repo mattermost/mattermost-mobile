@@ -6,6 +6,7 @@ import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
+    StatusBar,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {ICON_SIZE} from 'app/constants/post_textbox';
@@ -95,6 +96,7 @@ export default class ImageUploadButton extends PureComponent {
 
         if (hasPhotoPermission) {
             ImagePicker.launchImageLibrary(options, (response) => {
+                StatusBar.setHidden(false);
                 if (response.error || response.didCancel) {
                     return;
                 }

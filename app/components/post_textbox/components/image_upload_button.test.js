@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Alert, Platform} from 'react-native';
+import {Alert, Platform, StatusBar} from 'react-native';
 import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
@@ -12,7 +12,7 @@ import ImageUploadButton from './image_upload_button';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
+    launchImageLibrary: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
 describe('ImageUploadButton', () => {
@@ -100,5 +100,19 @@ describe('ImageUploadButton', () => {
             expect(request).toHaveBeenCalled();
             expect(hasPermission).toBe(true);
         }
+    });
+
+    test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
+        const wrapper = shallow(
+            <ImageUploadButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'hasPhotoPermission').mockReturnValue(true);
+        jest.spyOn(StatusBar, 'setHidden');
+
+        await instance.attachFileFromLibrary();
+        expect(StatusBar.setHidden).toHaveBeenCalled();
     });
 });
