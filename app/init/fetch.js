@@ -145,7 +145,10 @@ Client4.doFetchWithResponse = async (url, options) => {
 };
 
 const initFetchConfig = async () => {
-    let fetchConfig = {};
+    const fetchConfig = {
+        auto: true,
+        timeout: 5000, // Set the base timeout for every request to 5s
+    };
 
     try {
         managedConfig = await mattermostManaged.getConfig();
@@ -157,18 +160,10 @@ const initFetchConfig = async () => {
     Client4.setUserAgent(userAgent);
 
     if (Platform.OS === 'ios') {
-        const certificate = await mattermostBucket.getPreference('cert');
-        fetchConfig = {
-            auto: true,
-            certificate,
-        };
-        window.fetch = new RNFetchBlob.polyfill.Fetch(fetchConfig).build();
-    } else {
-        fetchConfig = {
-            auto: true,
-        };
-        window.fetch = new RNFetchBlob.polyfill.Fetch(fetchConfig).build();
+        fetchConfig.certificate = await mattermostBucket.getPreference('cert');
     }
+
+    window.fetch = new RNFetchBlob.polyfill.Fetch(fetchConfig).build();
 
     return true;
 };
