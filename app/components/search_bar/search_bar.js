@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
@@ -13,8 +13,10 @@ import {
     Platform,
 } from 'react-native';
 
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+
 import {SearchBar} from 'react-native-elements';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
@@ -23,14 +25,13 @@ const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
 const containerHeight = 40;
 const middleHeight = 20;
 
-export default class Search extends Component {
+export default class Search extends PureComponent {
     static propTypes = {
         onBlur: PropTypes.func,
         onFocus: PropTypes.func,
-        onSearch: PropTypes.func,
+        onSearchButtonPress: PropTypes.func,
         onChangeText: PropTypes.func,
-        onCancel: PropTypes.func,
-        onDelete: PropTypes.func,
+        onCancelButtonPress: PropTypes.func,
         onSelectionChange: PropTypes.func,
         backgroundColor: PropTypes.string,
         placeholderTextColor: PropTypes.string,
@@ -46,8 +47,6 @@ export default class Search extends Component {
             PropTypes.string,
             PropTypes.object,
         ]),
-        iconDelete: PropTypes.object,
-        iconSearch: PropTypes.object,
         returnKeyType: PropTypes.string,
         keyboardType: PropTypes.string,
         autoCapitalize: PropTypes.string,
@@ -59,6 +58,10 @@ export default class Search extends Component {
         value: PropTypes.string,
         positionRightDelete: PropTypes.number,
         keyboardAppearance: PropTypes.string,
+        showArrow: PropTypes.bool,
+        searchIconSize: PropTypes.number,
+        backArrowSize: PropTypes.number,
+        deleteIconSize: PropTypes.number,
     };
 
     static defaultProps = {
@@ -69,6 +72,10 @@ export default class Search extends Component {
         keyboardShouldPersist: false,
         placeholderTextColor: 'grey',
         value: '',
+        showArrow: false,
+        searchIconSize: 24,
+        backArrowSize: 24,
+        deleteIconSize: 20,
     };
 
     constructor(props) {
@@ -104,9 +111,7 @@ export default class Search extends Component {
             await Keyboard.dismiss();
         }
 
-        if (this.props.onSearch) {
-            this.props.onSearch(this.props.value);
-        }
+        this.props.onSearchButtonPress(this.props.value);
     };
 
     onChangeText = (text) => {
@@ -127,7 +132,7 @@ export default class Search extends Component {
     onFocus = () => {
         InteractionManager.runAfterInteractions(() => {
             if (this.props.onFocus) {
-                this.props.onFocus(this.props.value);
+                this.props.onFocus();
             }
         });
     };
@@ -143,15 +148,16 @@ export default class Search extends Component {
         ).start();
         this.focus();
 
-        if (this.props.onDelete) {
-            this.props.onDelete();
-        }
+        this.props.onChangeText('', true);
     };
 
     onCancel = () => {
-        if (this.props.onCancel) {
-            this.props.onCancel();
-        }
+        Keyboard.dismiss();
+        InteractionManager.runAfterInteractions(() => {
+            if (this.props.onCancelButtonPress) {
+                this.props.onCancelButtonPress();
+            }
+        });
     };
 
     onSelectionChange = (event) => {
@@ -161,20 +167,15 @@ export default class Search extends Component {
     render() {
         const {backgroundColor} = this.props.inputStyle;
 
-        const clearIcon = (
-            <TouchableWithoutFeedback
-                onPress={this.onDelete}
-            >
-                {((this.props.iconDelete) ?
-                    <Animated.View
-                        style={[
-                            styles.iconDelete,
-                            this.props.positionRightDelete && {right: this.props.positionRightDelete},
-                            {opacity: this.iconDeleteAnimated},
-                        ]}
-                    >
-                        {this.props.iconDelete}
-                    </Animated.View> :
+        let clearIcon = null;
+        let searchIcon = null;
+        let cancelIcon = null;
+
+        if (Platform.OS === 'ios') {
+            clearIcon = (
+                <TouchableWithoutFeedback
+                    onPress={this.onDelete}
+                >
                     <View style={[styles.iconDelete, this.props.inputHeight && {height: this.props.inputHeight}]}>
                         <AnimatedIonIcon
                             name='ios-close-circle'
@@ -189,22 +190,10 @@ export default class Search extends Component {
                             ]}
                         />
                     </View>
-                )}
-            </TouchableWithoutFeedback>
-        );
+                </TouchableWithoutFeedback>
+            );
 
-        const searchIcon = this.props.iconSearch ?
-            (
-                <View
-                    style={[
-                        styles.iconSearch,
-                        {left: this.iconSearchAnimated},
-                    ]}
-                >
-                    {this.props.iconSearch}
-                </View>
-            ) :
-            (
+            searchIcon = (
                 <EvilIcon
                     name='search'
                     size={24}
@@ -217,6 +206,39 @@ export default class Search extends Component {
                     ]}
                 />
             );
+        } else {
+            searchIcon = this.props.showArrow ?
+                (
+                    <TouchableWithoutFeedback onPress={this.onCancel}>
+                        <MaterialIcon
+                            name='arrow-back'
+                            size={this.props.backArrowSize}
+                            color={this.props.titleCancelColor || this.props.placeholderTextColor}
+                        />
+                    </TouchableWithoutFeedback>
+                ) :
+                (
+                    <MaterialIcon
+                        name='search'
+                        size={this.props.searchIconSize}
+                        color={this.props.tintColorSearch || this.props.placeholderTextColor}
+                    />
+                );
+
+            // Making sure the icon won't change depending on whether the input is in focus on Android devices
+            cancelIcon = searchIcon;
+
+            clearIcon = this.props.value.length > 0 ? (
+                <TouchableWithoutFeedback onPress={this.onDelete}>
+                    <MaterialIcon
+                        style={[{paddingRight: 7}]}
+                        name='close'
+                        size={this.props.deleteIconSize}
+                        color={this.props.titleCancelColor || this.props.placeholderTextColor}
+                    />
+                </TouchableWithoutFeedback>
+            ) : null;
+        }
 
         return (
             <View style={styles.container}>
@@ -224,25 +246,27 @@ export default class Search extends Component {
                     ref={this.setInputKeywordRef}
                     containerStyle={{
                         backgroundColor: this.props.backgroundColor,
-                        height: containerHeight - 10,
+                        height: Platform.OS === 'ios' ? containerHeight - 10 : this.props.inputHeight,
+                        paddingTop: 0,
+                        paddingBottom: 0,
                     }}
                     inputContainerStyle={{
                         backgroundColor,
                         borderRadius: this.props.inputBorderRadius,
+                        height: this.props.inputHeight,
                     }}
                     inputStyle={{
                         ...styles.text,
                         color: this.props.placeholderTextColor,
                         height: this.props.inputHeight,
+                        marginLeft: 10,
                     }}
                     placeholder={this.placeholder}
                     placeholderTextColor={this.props.placeholderTextColor}
                     selectionColor={this.props.selectionColor}
-                    onSelectionChange={this.onSelectionChange}
                     autoCorrect={false}
                     blurOnSubmit={this.props.blurOnSubmit}
                     editable={this.props.editable}
-                    onCancel={this.onCancel}
                     cancelButtonTitle={this.cancelTitle}
                     cancelButtonProps={{
                         buttonStyle: {
@@ -261,6 +285,8 @@ export default class Search extends Component {
                     autoCapitalize={this.props.autoCapitalize}
                     onBlur={this.onBlur}
                     onFocus={this.onFocus}
+                    onCancel={this.onCancel}
+                    onSelectionChange={this.onSelectionChange}
                     underlineColorAndroid='transparent'
                     enablesReturnKeyAutomatically={true}
                     keyboardAppearance={this.props.keyboardAppearance}
@@ -268,8 +294,9 @@ export default class Search extends Component {
                     showCancel={true}
                     value={this.props.value}
                     platform={Platform.OS === 'ios' ? 'ios' : 'android'}
-                    searchIcon={searchIcon}
                     clearIcon={clearIcon}
+                    searchIcon={searchIcon}
+                    cancelIcon={cancelIcon}
                 />
             </View>
         );
@@ -297,7 +324,10 @@ const styles = StyleSheet.create({
         color: 'grey',
     },
     text: {
-        fontSize: 14,
+        fontSize: Platform.select({
+            ios: 14,
+            android: 15,
+        }),
         color: '#fff',
     },
 });

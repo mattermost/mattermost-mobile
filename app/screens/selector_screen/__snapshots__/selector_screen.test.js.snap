@@ -19,11 +19,14 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
       ]
     }
   >
-    <SearchBarIos
+    <Search
       autoCapitalize="none"
+      backArrowSize={24}
       backgroundColor="transparent"
-      blurOnSubmit={true}
+      blurOnSubmit={false}
       cancelTitle="Cancel"
+      deleteIconSize={20}
+      editable={true}
       inputHeight={33}
       inputStyle={
         Object {
@@ -33,17 +36,16 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
         }
       }
       keyboardAppearance="light"
-      leftComponent={null}
+      keyboardShouldPersist={false}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
-      onFocus={[Function]}
       onSearchButtonPress={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
-      searchIconCollapsedMargin={10}
-      searchIconExpandedMargin={10}
+      searchIconSize={24}
+      showArrow={false}
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -115,11 +117,14 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
       ]
     }
   >
-    <SearchBarIos
+    <Search
       autoCapitalize="none"
+      backArrowSize={24}
       backgroundColor="transparent"
-      blurOnSubmit={true}
+      blurOnSubmit={false}
       cancelTitle="Cancel"
+      deleteIconSize={20}
+      editable={true}
       inputHeight={33}
       inputStyle={
         Object {
@@ -129,17 +134,16 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
         }
       }
       keyboardAppearance="light"
-      leftComponent={null}
+      keyboardShouldPersist={false}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
-      onFocus={[Function]}
       onSearchButtonPress={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
-      searchIconCollapsedMargin={10}
-      searchIconExpandedMargin={10}
+      searchIconSize={24}
+      showArrow={false}
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -211,11 +215,14 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
       ]
     }
   >
-    <SearchBarIos
+    <Search
       autoCapitalize="none"
+      backArrowSize={24}
       backgroundColor="transparent"
-      blurOnSubmit={true}
+      blurOnSubmit={false}
       cancelTitle="Cancel"
+      deleteIconSize={20}
+      editable={true}
       inputHeight={33}
       inputStyle={
         Object {
@@ -225,17 +232,16 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         }
       }
       keyboardAppearance="light"
-      leftComponent={null}
+      keyboardShouldPersist={false}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
-      onFocus={[Function]}
       onSearchButtonPress={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
-      searchIconCollapsedMargin={10}
-      searchIconExpandedMargin={10}
+      searchIconSize={24}
+      showArrow={false}
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -314,11 +320,14 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
       ]
     }
   >
-    <SearchBarIos
+    <Search
       autoCapitalize="none"
+      backArrowSize={24}
       backgroundColor="transparent"
-      blurOnSubmit={true}
+      blurOnSubmit={false}
       cancelTitle="Cancel"
+      deleteIconSize={20}
+      editable={true}
       inputHeight={33}
       inputStyle={
         Object {
@@ -328,17 +337,16 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
         }
       }
       keyboardAppearance="light"
-      leftComponent={null}
+      keyboardShouldPersist={false}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
-      onFocus={[Function]}
       onSearchButtonPress={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
-      searchIconCollapsedMargin={10}
-      searchIconExpandedMargin={10}
+      searchIconSize={24}
+      showArrow={false}
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -410,11 +418,14 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
       ]
     }
   >
-    <SearchBarIos
+    <Search
       autoCapitalize="none"
+      backArrowSize={24}
       backgroundColor="transparent"
-      blurOnSubmit={true}
+      blurOnSubmit={false}
       cancelTitle="Cancel"
+      deleteIconSize={20}
+      editable={true}
       inputHeight={33}
       inputStyle={
         Object {
@@ -424,17 +435,16 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
         }
       }
       keyboardAppearance="light"
-      leftComponent={null}
+      keyboardShouldPersist={false}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
-      onFocus={[Function]}
       onSearchButtonPress={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
-      searchIconCollapsedMargin={10}
-      searchIconExpandedMargin={10}
+      searchIconSize={24}
+      showArrow={false}
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -506,11 +516,14 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
       ]
     }
   >
-    <SearchBarIos
+    <Search
       autoCapitalize="none"
+      backArrowSize={24}
       backgroundColor="transparent"
-      blurOnSubmit={true}
+      blurOnSubmit={false}
       cancelTitle="Cancel"
+      deleteIconSize={20}
+      editable={true}
       inputHeight={33}
       inputStyle={
         Object {
@@ -520,17 +533,16 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
         }
       }
       keyboardAppearance="light"
-      leftComponent={null}
+      keyboardShouldPersist={false}
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
-      onFocus={[Function]}
       onSearchButtonPress={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
-      searchIconCollapsedMargin={10}
-      searchIconExpandedMargin={10}
+      searchIconSize={24}
+      showArrow={false}
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"

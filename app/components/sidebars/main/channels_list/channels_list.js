@@ -59,7 +59,7 @@ export default class ChannelsList extends PureComponent {
 
     cancelSearch = () => {
         if (this.searchBarRef) {
-            this.searchBarRef.cancel();
+            this.searchBarRef.onCancel();
         }
     };
 
