@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "ダウンロードが失敗しました",
   "mobile.downloader.android_permission": "ファイルを保存するにはダウンロードフォルダーへのアクセスが必要です。",
   "mobile.downloader.android_started": "ダウンロードが開始されました",
-  "mobile.downloader.android_success": "ダウンロードが成功しました",
   "mobile.downloader.complete": "ダウンロードが完了しました",
   "mobile.downloader.disabled_description": "このサーバーではファイルのダウンロードが無効化されています。詳しくはシステム管理者に問い合わせてください。\n",
   "mobile.downloader.disabled_title": "ダウンロードは無効化されています",

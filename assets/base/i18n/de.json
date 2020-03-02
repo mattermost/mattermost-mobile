@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "Herunterladen gescheitert",
   "mobile.downloader.android_permission": "Wir benötigen Zugriff auf den Donwload-Ordner, um Dateien speichern zu können.",
   "mobile.downloader.android_started": "Herunterladen gestartet",
-  "mobile.downloader.android_success": "Herunterladen erfolgreich",
   "mobile.downloader.complete": "Herunterladen abgeschlossen",
   "mobile.downloader.disabled_description": "Das Herunterladen von Dateien ist auf diesem Server deaktiviert. Bitte kontaktieren Sie ihren Systemadministrator.\n",
   "mobile.downloader.disabled_title": "Herunterladen deaktiviert",

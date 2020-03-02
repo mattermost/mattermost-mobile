@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "İndirilemedi",
   "mobile.downloader.android_permission": "İndirmeler klasörünüze erişme ve dosya kaydetme izinleri gerekli.",
   "mobile.downloader.android_started": "İndirme işlemi başladı",
-  "mobile.downloader.android_success": "indirildi",
   "mobile.downloader.complete": "İndirildi",
   "mobile.downloader.disabled_description": "Bu sunucu üzerinde dosya indirme özelliği devre dışı bırakılmış. Ayrıntılı bilgi almak için Sistem Yöneticisi ile görüşebilirsiniz.\n",
   "mobile.downloader.disabled_title": "İndirme devre dışı",

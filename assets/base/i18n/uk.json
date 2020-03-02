@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "Помилка завантаження",
   "mobile.downloader.android_permission": "Для збереження файлів нам потрібен доступ до папки завантажень.",
   "mobile.downloader.android_started": "Завантаження розпочато",
-  "mobile.downloader.android_success": "завантаження успішне",
   "mobile.downloader.complete": "Завантаження завершено",
   "mobile.downloader.disabled_description": "Завантаження файлів вимкнено на цьому сервері. Щоб отримати докладнішу інформацію, зв'яжіться зі своїм системним адміністратором.\n",
   "mobile.downloader.disabled_title": "Завантаження відключене",

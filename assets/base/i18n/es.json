@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "Descarga fallida",
   "mobile.downloader.android_permission": "Se necesita acceso al directorio de descargas para guardar los archivos.",
   "mobile.downloader.android_started": "Descarga iniciada",
-  "mobile.downloader.android_success": "descarga con éxito",
   "mobile.downloader.complete": "Descarga completa",
   "mobile.downloader.disabled_description": "La descarga de archivos ha sido desactivada en este servidor. Por favor contacta a tu Administrador de Sistemas para más detalles.\n",
   "mobile.downloader.disabled_title": "Descarga desactivada",
