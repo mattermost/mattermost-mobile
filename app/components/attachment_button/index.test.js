@@ -117,7 +117,7 @@ describe('AttachmentButton', () => {
         jest.spyOn(StatusBar, 'setHidden');
 
         await instance.attachFileFromCamera();
-        expect(StatusBar.setHidden).toHaveBeenCalled();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 
     test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
@@ -131,6 +131,6 @@ describe('AttachmentButton', () => {
         jest.spyOn(StatusBar, 'setHidden');
 
         await instance.attachFileFromLibrary();
-        expect(StatusBar.setHidden).toHaveBeenCalled();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 });

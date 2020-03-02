@@ -112,6 +112,6 @@ describe('CameraButton', () => {
         jest.spyOn(StatusBar, 'setHidden');
 
         await instance.attachFileFromCamera();
-        expect(StatusBar.setHidden).toHaveBeenCalled();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 });

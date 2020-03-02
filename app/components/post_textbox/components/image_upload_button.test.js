@@ -113,6 +113,6 @@ describe('ImageUploadButton', () => {
         jest.spyOn(StatusBar, 'setHidden');
 
         await instance.attachFileFromLibrary();
-        expect(StatusBar.setHidden).toHaveBeenCalled();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 });
