@@ -95,7 +95,7 @@ export default class FileAttachmentImage extends PureComponent {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
-            imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.imageUri = isGif(file) ? Client4.getFileUrl(file.id) : Client4.getFilePreviewUrl(file.id);
         }
         return imageProps;
     };
