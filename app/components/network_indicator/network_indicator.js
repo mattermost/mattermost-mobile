@@ -90,7 +90,7 @@ export default class NetworkIndicator extends PureComponent {
 
         // Attempt to connect when this component mounts
         // if the websocket is already connected it does not try and connect again
-        this.connect();
+        this.connect(true);
     }
 
     componentDidUpdate(prevProps) {
