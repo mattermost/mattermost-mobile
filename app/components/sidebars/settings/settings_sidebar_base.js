@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {InteractionManager, ScrollView, View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from 'mattermost-redux/constants';
@@ -36,14 +36,6 @@ export default class SettingsSidebarBase extends PureComponent {
         currentUser: {},
         status: 'offline',
     };
-
-    constructor(props) {
-        super(props);
-
-        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
-            this.closeButton = source;
-        });
-    }
 
     componentDidMount() {
         this.mounted = true;
@@ -141,16 +133,16 @@ export default class SettingsSidebarBase extends PureComponent {
     openModal = (screen, title, passProps) => {
         this.closeSettingsSidebar();
 
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: 'close-settings',
-                    icon: this.closeButton,
-                }],
-            },
-        };
+        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+            const options = {
+                topBar: {
+                    leftButtons: [{
+                        id: 'close-settings',
+                        icon: source,
+                    }],
+                },
+            };
 
-        InteractionManager.runAfterInteractions(() => {
             showModal(screen, title, passProps, options);
         });
     };
