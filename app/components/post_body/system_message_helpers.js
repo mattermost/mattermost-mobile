@@ -17,6 +17,7 @@ const renderMessage = (postBodyProps, styles, intl, localeHolder, values) => {
     return (
         <Markdown
             baseTextStyle={messageStyle}
+            disableAtChannelMentionHighlight={true}
             onPostPress={onPress}
             textStyles={textStyles}
             value={intl.formatMessage(localeHolder, values)}
