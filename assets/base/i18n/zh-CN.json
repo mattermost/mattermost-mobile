@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "下载失败",
   "mobile.downloader.android_permission": "我们需要能访问下载目录才能保存文件。",
   "mobile.downloader.android_started": "下载已开始",
-  "mobile.downloader.android_success": "成功下载",
   "mobile.downloader.complete": "下载完成",
   "mobile.downloader.disabled_description": "文件下载在本服务器已停用。详情请联系您的系统管理员。\n",
   "mobile.downloader.disabled_title": "下载已停用",

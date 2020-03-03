@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "Pobieranie nie udane",
   "mobile.downloader.android_permission": "Potrzebujemy dostępu do folderu downloads aby zapisać pliki.",
   "mobile.downloader.android_started": "Pobieranie rozpoczęte",
-  "mobile.downloader.android_success": "pobieranie udane",
   "mobile.downloader.complete": "Pobieranie zakończone",
   "mobile.downloader.disabled_description": "Pobieranie plików zostało wyłączone na tym serwerze. Proszę skontaktować się ze swoim Administratorem Systemu aby uzyskać więcej szczegółów.\n",
   "mobile.downloader.disabled_title": "Pobieranie wyłączone",

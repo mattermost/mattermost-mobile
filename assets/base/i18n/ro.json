@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "Descărcare eșuată",
   "mobile.downloader.android_permission": "Avem nevoie de acces la dosarul de descărcări pentru salvarea fișierelor.",
   "mobile.downloader.android_started": "Descărcare începutăComment",
-  "mobile.downloader.android_success": "descărcare reușită",
   "mobile.downloader.complete": "Comment",
   "mobile.downloader.disabled_description": "Descărcările de fișiere sunt dezactivate pe acest server. Pentru mai multe detalii, contactați administratorul de sistem.\n",
   "mobile.downloader.disabled_title": "Descărcarea este dezactivată",

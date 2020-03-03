@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "Download falhou",
   "mobile.downloader.android_permission": "Precisamos de acesso a pasta de downloads para salvar arquivos.",
   "mobile.downloader.android_started": "Download iniciado",
-  "mobile.downloader.android_success": "download realizado com sucesso",
   "mobile.downloader.complete": "Download concluído",
   "mobile.downloader.disabled_description": "Download de arquivos está desativado neste servidor. Por favor contate o Administrador do Sistema para mais detalhes.\n",
   "mobile.downloader.disabled_title": "Download desativado",

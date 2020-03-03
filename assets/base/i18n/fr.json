@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "Échec du téléchargement",
   "mobile.downloader.android_permission": "Des permissions au dossier de téléchargements sont requises pour pouvoir enregistrer des fichiers.",
   "mobile.downloader.android_started": "Téléchargement commencé",
-  "mobile.downloader.android_success": "Téléchargement réussi",
   "mobile.downloader.complete": "Téléchargement terminé",
   "mobile.downloader.disabled_description": "Le téléchargement de fichiers est désactivé sur ce serveur. Veuillez contacter votre administrateur système pour en savoir plus.\n",
   "mobile.downloader.disabled_title": "Téléchargement désactivé",

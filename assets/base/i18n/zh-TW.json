@@ -220,7 +220,6 @@
   "mobile.downloader.android_failed": "下載失敗",
   "mobile.downloader.android_permission": "需要下載資料夾存取權限以儲存檔案。",
   "mobile.downloader.android_started": "下載已開始",
-  "mobile.downloader.android_success": "下載成功",
   "mobile.downloader.complete": "下載完成",
   "mobile.downloader.disabled_description": "檔案下載在此伺服器被停用。請聯絡系統管理員。",
   "mobile.downloader.disabled_title": "下載已被停用",
