@@ -55,7 +55,6 @@ function mapStateToProps(state, ownProps) {
         channelTeamId: currentChannel ? currentChannel.team_id : '',
         canUploadFiles: canUploadFilesOnMobile(state),
         channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
-        channelIsLoading: state.views.channel.loading,
         channelIsReadOnly: isCurrentChannelReadOnly(state) || false,
         channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
         currentUserId,
