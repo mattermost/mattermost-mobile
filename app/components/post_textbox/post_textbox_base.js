@@ -76,7 +76,6 @@ export default class PostTextBoxBase extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelDisplayName: PropTypes.string,
         channelTeamId: PropTypes.string.isRequired,
-        channelIsLoading: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
@@ -898,7 +897,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {intl} = this.context;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {
@@ -906,7 +905,6 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         const {value, extraInputPadding} = this.state;
-        const textValue = channelIsLoading ? '' : value;
         const placeholder = this.getPlaceHolder();
 
         let maxHeight = 150;
@@ -939,7 +937,7 @@ export default class PostTextBoxBase extends PureComponent {
                 >
                     <PasteableTextInput
                         ref={this.input}
-                        value={textValue}
+                        value={value}
                         style={{...style.input, ...inputStyle, maxHeight}}
                         onChangeText={this.handleTextChange}
                         onSelectionChange={this.handleOnSelectionChange}

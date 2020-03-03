@@ -46,7 +46,6 @@ describe('PostTextBox', () => {
         channelId: 'channel-id',
         channelDisplayName: 'Test Channel',
         channelTeamId: 'channel-team-id',
-        channelIsLoading: false,
         channelIsReadOnly: false,
         currentUserId: 'current-user-id',
         deactivatedChannel: false,
