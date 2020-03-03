@@ -59,6 +59,8 @@ export default class Search extends PureComponent {
         positionRightDelete: PropTypes.number,
         keyboardAppearance: PropTypes.string,
         showArrow: PropTypes.bool,
+        leftComponent: PropTypes.element,
+        leftComponentWidth: PropTypes.number,
         searchIconSize: PropTypes.number,
         backArrowSize: PropTypes.number,
         deleteIconSize: PropTypes.number,
@@ -76,12 +78,17 @@ export default class Search extends PureComponent {
         searchIconSize: 24,
         backArrowSize: 24,
         deleteIconSize: 20,
+        leftComponentWidth: 56,
+        inputBorderRadius: 6,
     };
 
     constructor(props) {
         super(props);
 
         this.iconDeleteAnimated = new Animated.Value(0);
+        this.leftComponentAnimated = new Animated.Value(0);
+        this.searchContainerAnimated = new Animated.Value(0);
+
         this.placeholder = this.props.placeholder || 'Search';
         this.cancelTitle = this.props.cancelTitle || 'Cancel';
     }
@@ -100,6 +107,18 @@ export default class Search extends PureComponent {
 
     focus = () => {
         this.inputKeywordRef.focus();
+
+        if (this.props.leftComponent) {
+            Animated.parallel([
+                Animated.timing(
+                    this.leftComponentAnimated,
+                    {
+                        toValue: 100,
+                        duration: 200,
+                    },
+                ),
+            ]);
+        }
     };
 
     onBlur = () => {
@@ -165,7 +184,7 @@ export default class Search extends PureComponent {
     };
 
     render() {
-        const {backgroundColor} = this.props.inputStyle;
+        const {backgroundColor, ...restOfInputPropStyles} = this.props.inputStyle;
 
         let clearIcon = null;
         let searchIcon = null;
@@ -242,21 +261,39 @@ export default class Search extends PureComponent {
 
         return (
             <View style={styles.container}>
+                {((this.props.leftComponent) ?
+                    <View
+                        style={[
+                            styles.leftContainer,
+                            {
+                                width: this.props.leftComponentWidth,
+                            },
+                        ]}
+                    >
+                        {this.props.leftComponent}
+                    </View> :
+                    null
+                )}
                 <SearchBar
                     ref={this.setInputKeywordRef}
                     containerStyle={{
+                        ...styles.searchContainer,
                         backgroundColor: this.props.backgroundColor,
-                        height: Platform.OS === 'ios' ? containerHeight - 10 : this.props.inputHeight,
-                        paddingTop: 0,
-                        paddingBottom: 0,
+                        marginLeft: 0,
+                        height: Platform.select({
+                            ios: containerHeight - 10,
+                            android: this.props.inputHeight,
+                        }),
                     }}
                     inputContainerStyle={{
                         backgroundColor,
-                        borderRadius: this.props.inputBorderRadius,
                         height: this.props.inputHeight,
+                        borderRadius: this.props.inputBorderRadius,
+                        marginLeft: 5,
                     }}
                     inputStyle={{
                         ...styles.text,
+                        ...restOfInputPropStyles,
                         color: this.props.placeholderTextColor,
                         height: this.props.inputHeight,
                         marginLeft: 10,
@@ -305,8 +342,10 @@ export default class Search extends PureComponent {
 
 const styles = StyleSheet.create({
     container: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
         height: containerHeight,
-        justifyContent: 'center',
     },
     iconSearch: {
         flex: 1,
@@ -322,6 +361,16 @@ const styles = StyleSheet.create({
     },
     iconDeleteDefault: {
         color: 'grey',
+    },
+    leftContainer: {
+        right: 100,
+    },
+    searchContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        paddingTop: 0,
+        paddingBottom: 0,
+        marginLeft: 0,
     },
     text: {
         fontSize: Platform.select({

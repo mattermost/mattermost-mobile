@@ -729,6 +729,7 @@ export default class Search extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             onSelectionChange={this.handleSelectionChange}
                             autoCapitalize='none'
+                            showArrow={true}
                             value={value}
                             containerStyle={style.searchBarContainer}
                             backArrowSize={28}

@@ -137,9 +137,8 @@ export default class ChannelsList extends PureComponent {
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    inputCollapsedMargin={0}
                     backgroundColor='transparent'
-                    inputHeight={33}
+                    inputHeight={32}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -150,16 +149,14 @@ export default class ChannelsList extends PureComponent {
                     onCancelButtonPress={this.onSearchCancel}
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
-                    searchIconCollapsedMargin={5}
-                    searchIconExpandedMargin={5}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
+                    leftComponentWidth={67}
                     leftComponent={(
                         <SwitchTeamsButton
                             onShowTeams={onShowTeams}
                         />
                     )}
-                    positionRightDelete={5}
                 />
             </View>
         );
