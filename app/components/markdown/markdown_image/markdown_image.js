@@ -21,7 +21,6 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 import EphemeralStore from 'app/store/ephemeral_store';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions, isGifTooLarge} from 'app/utils/images';
 import {normalizeProtocol} from 'app/utils/url';
 
@@ -32,7 +31,7 @@ const ANDROID_MAX_WIDTH = 4096;
 const VIEWPORT_IMAGE_OFFSET = 66;
 const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
-export default class MarkdownImage extends React.Component {
+export default class MarkdownImage extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node,
         deviceHeight: PropTypes.number.isRequired,
@@ -65,7 +64,7 @@ export default class MarkdownImage extends React.Component {
     componentDidMount() {
         this.mounted = true;
 
-        ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
+        this.setImageUrl(this.getSource());
     }
 
     static getDerivedStateFromProps(props) {
@@ -84,7 +83,7 @@ export default class MarkdownImage extends React.Component {
     componentDidUpdate(prevProps) {
         if (this.props.source !== prevProps.source) {
             // getSource also depends on serverURL, but that shouldn't change while this is mounted
-            ImageCacheManager.cache(null, this.getSource(), this.setImageUrl);
+            this.setImageUrl(this.getSource());
         }
     }
 

@@ -64,6 +64,9 @@ describe('PostTextBox', () => {
         valueEvent: '',
         isLandscape: false,
         screenId: 'NavigationScreen1',
+        currentChannelMembersCount: 50,
+        enableConfirmNotificationsToChannel: true,
+        useChannelMentions: true,
     };
 
     test('should match, full snapshot', () => {
@@ -115,6 +118,38 @@ describe('PostTextBox', () => {
 
         expect(Alert.alert).toBeCalled();
         expect(Alert.alert).toHaveBeenCalledTimes(1);
+    });
+
+    test('should send an alert when sending a message with a channel mention', () => {
+        const wrapper = shallowWithIntl(
+            <PostTextbox {...baseProps}/>,
+        );
+        const message = '@all';
+        const instance = wrapper.instance();
+        instance.handleTextChange(message);
+
+        expect(wrapper.state('value')).toBe(message);
+
+        instance.sendMessage();
+        expect(Alert.alert).toBeCalled();
+        expect(Alert.alert).toHaveBeenCalledWith('Confirm sending notifications to entire channel', expect.anything(), expect.anything());
+    });
+
+    test('should not send an alert when sending a message with a channel mention when the user does not have channel mentions permission', () => {
+        const wrapper = shallowWithIntl(
+            <PostTextbox
+                {...baseProps}
+                useChannelMentions={false}
+            />,
+        );
+        const message = '@all';
+        const instance = wrapper.instance();
+        instance.handleTextChange(message);
+
+        expect(wrapper.state('value')).toBe(message);
+
+        instance.sendMessage();
+        expect(Alert.alert).not.toHaveBeenCalled();
     });
 
     test('should return correct @all (same for @channel)', () => {

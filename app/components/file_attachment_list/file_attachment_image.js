@@ -8,13 +8,12 @@ import {
     View,
     StyleSheet,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import {Client4} from 'mattermost-redux/client';
 
 import ProgressiveImage from 'app/components/progressive_image';
 import {isGif} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity} from 'app/utils/theme';
 
 import thumb from 'assets/images/thumb.png';
@@ -58,11 +57,14 @@ export default class FileAttachmentImage extends PureComponent {
 
         const {file} = props;
         if (file && file.id) {
-            ImageCacheManager.cache(file.name, Client4.getFileThumbnailUrl(file.id), emptyFunction);
+            const headers = {Authorization: `Bearer ${Client4.getToken()}`};
+            const preloadImages = [{uri: Client4.getFileThumbnailUrl(file.id), headers}];
 
             if (isGif(file)) {
-                ImageCacheManager.cache(file.name, Client4.getFileUrl(file.id), emptyFunction);
+                preloadImages.push({uri: Client4.getFileUrl(file.id), headers});
             }
+
+            FastImage.preload(preloadImages);
         }
 
         this.state = {
@@ -93,7 +95,7 @@ export default class FileAttachmentImage extends PureComponent {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
-            imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.imageUri = isGif(file) ? Client4.getFileUrl(file.id) : Client4.getFilePreviewUrl(file.id);
         }
         return imageProps;
     };

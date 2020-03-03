@@ -98,6 +98,7 @@ export default class PostTextBoxBase extends PureComponent {
         currentChannel: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
         screenId: PropTypes.string.isRequired,
+        useChannelMentions: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -573,7 +574,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {value} = this.state;
 
         const currentMembersCount = this.props.currentChannelMembersCount;
-        const notificationsToChannel = this.props.enableConfirmNotificationsToChannel;
+        const notificationsToChannel = this.props.enableConfirmNotificationsToChannel && this.props.useChannelMentions;
         const toAllOrChannel = this.textContainsAtAllAtChannel(value);
 
         if (value.indexOf('/') === 0) {

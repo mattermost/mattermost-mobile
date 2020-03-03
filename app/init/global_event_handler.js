@@ -8,20 +8,20 @@ import RNFetchBlob from 'rn-fetch-blob';
 import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
-import {loadMe, logout} from 'mattermost-redux/actions/users';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';
 import {showOverlay} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
+import {loadMe, logout} from 'app/actions/views/user';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations, resetMomentLocale} from 'app/i18n';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -203,8 +203,13 @@ class GlobalEventHandler {
     };
 
     onRestartApp = async () => {
-        await this.store.dispatch(loadConfigAndLicense());
-        await this.store.dispatch(loadMe());
+        const {dispatch, getState} = this.store;
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+        const user = getUser(state, currentUserId);
+
+        await dispatch(loadConfigAndLicense());
+        await dispatch(loadMe(user));
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
@@ -215,11 +220,6 @@ class GlobalEventHandler {
                     this.onStatusBarHeightChange(data.height);
                 },
             );
-        }
-
-        if (this.launchApp) {
-            const credentials = await getAppCredentials();
-            this.launchApp(credentials);
         }
     };
 

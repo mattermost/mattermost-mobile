@@ -23,7 +23,6 @@ import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
 import {DeviceTypes} from 'app/constants';
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink} from 'app/utils/url';
 
@@ -126,7 +125,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
             } else if (isYoutubeLink(link)) {
                 const videoId = getYouTubeVideoId(link);
                 imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
             } else {
                 const {data} = await this.props.actions.getRedirectLocation(link);
 
@@ -141,7 +139,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
                     } else if (isYoutubeLink(shortenedLink)) {
                         const videoId = getYouTubeVideoId(shortenedLink);
                         imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                        ImageCacheManager.cache(null, `https://i.ytimg.com/vi/${videoId}/default.jpg`, () => true);
                     }
                     if (this.mounted) {
                         this.setState({shortenedLink});
@@ -150,7 +147,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             }
 
             if (imageUrl) {
-                ImageCacheManager.cache(null, imageUrl, this.getImageSize);
+                this.getImageSize(imageUrl);
             }
         }
     };

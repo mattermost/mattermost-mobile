@@ -231,7 +231,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 }
 
 export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_RETRIES) {
-    for (let i = 0; i < maxTries; i++) {
+    for (let i = 0; i <= maxTries; i++) {
         const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
         if (data) {
@@ -364,14 +364,14 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
         }
 
-        if (channel && member) {
+        if (channel) {
             dispatch({
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
                 extra: {
                     channel,
                     member,
-                    teamId: currentTeamId,
+                    teamId: channel.team_id || currentTeamId,
                 },
             });
         }
@@ -642,21 +642,22 @@ export function loadChannelsForTeam(teamId) {
 
         if (currentUserId) {
             const data = {sync: true, teamId};
-            for (let i = 0; i < MAX_RETRIES; i++) {
+            for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
-                    console.log('Fetching channels attempt', (i + 1)); //eslint-disable-line no-console
+                    console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
                     const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
-                        Client4.getMyChannels(teamId),
+                        Client4.getMyChannels(teamId, true),
                         Client4.getMyChannelMembers(teamId),
                     ]);
 
                     data.channels = channels;
                     data.channelMembers = channelMembers;
                     break;
-                } catch (error) {
-                    const result = await dispatch(forceLogoutIfNecessary(error)); //eslint-disable-line no-await-in-loop
+                } catch (err) {
+                    const result = await dispatch(forceLogoutIfNecessary(err)); //eslint-disable-line no-await-in-loop
                     if (result || i === MAX_RETRIES) {
-                        return {error};
+                        const hasChannelsLoaded = state.entities.channels.channelsInTeam[teamId]?.size > 0;
+                        return {error: hasChannelsLoaded ? null : err};
                     }
                 }
             }
@@ -758,7 +759,7 @@ export function getUsersInChannel(channelId) {
 async function getProfilesFromPromises(dispatch, promiseArray, directChannels) {
     // Get the profiles returned by the promises and retry those that failed
     let promises = promiseArray;
-    for (let i = 0; i < MAX_RETRIES; i++) {
+    for (let i = 0; i <= MAX_RETRIES; i++) {
         if (!promises.length) {
             return;
         }

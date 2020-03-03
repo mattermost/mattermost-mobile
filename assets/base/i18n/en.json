@@ -223,7 +223,6 @@
   "mobile.downloader.android_failed": "Download failed",
   "mobile.downloader.android_permission": "We need access to the downloads folder to save files.",
   "mobile.downloader.android_started": "Download started",
-  "mobile.downloader.android_success": "download successful",
   "mobile.downloader.complete": "Download complete",
   "mobile.downloader.disabled_description": "File downloads are disabled on this server. Please contact your System Admin for more details.\n",
   "mobile.downloader.disabled_title": "Download disabled",

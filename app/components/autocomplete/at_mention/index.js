@@ -4,6 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
 import {autocompleteUsers} from 'mattermost-redux/actions/users';
 import {getCurrentChannelId, getDefaultChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
@@ -17,11 +18,25 @@ import {
 } from 'app/selectors/autocomplete';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
+import {Permissions} from 'mattermost-redux/constants';
+
 import AtMention from './at_mention';
 
 function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
+
+    let useChannelMentions = true;
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+        useChannelMentions = haveIChannelPermission(
+            state,
+            {
+                channel: currentChannelId,
+                permission: Permissions.USE_CHANNEL_MENTIONS,
+            },
+        );
+    }
 
     const value = ownProps.value.substring(0, cursorPosition);
     const matchTerm = getMatchTermForAtMention(value, isSearch);
@@ -47,6 +62,7 @@ function mapStateToProps(state, ownProps) {
         requestStatus: state.requests.users.autocompleteUsers.status,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        useChannelMentions,
     };
 }
 
