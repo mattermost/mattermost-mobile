@@ -229,10 +229,10 @@ export default class MoreChannels extends PureComponent {
 
             if (isPublic) {
                 this.publicPage += 1;
-                this.nextPublic = (data && !data.length);
+                this.nextPublic = data?.length > 0;
             } else {
                 this.archivedPage += 1;
-                this.nextArchived = (data && !data.length);
+                this.nextArchived = data?.length > 0;
             }
 
             this.setState({loading: false});
