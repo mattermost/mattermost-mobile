@@ -113,7 +113,7 @@ describe('app/actions/navigation', () => {
 
         const defaultOptions = {
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -158,7 +158,7 @@ describe('app/actions/navigation', () => {
 
         const defaultOptions = {
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             sideMenu: {
                 left: {enabled: false},
@@ -267,7 +267,6 @@ describe('app/actions/navigation', () => {
         const showModalOverCurrentContextOptions = {
             modalPresentationStyle: 'overCurrentContext',
             layout: {
-                backgroundColor: 'transparent',
                 componentBackgroundColor: 'transparent',
             },
             topBar: {
@@ -276,6 +275,7 @@ describe('app/actions/navigation', () => {
             },
             animations: {
                 showModal: {
+                    waitForRender: true,
                     enabled: animationsEnabled,
                     alpha: {
                         from: 0,

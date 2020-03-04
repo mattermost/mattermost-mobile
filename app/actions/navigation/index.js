@@ -117,7 +117,7 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
         layout: {
-            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
         },
         statusBar: {
             visible: true,
@@ -159,7 +159,7 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
     const componentId = EphemeralStore.getNavigationTopComponentId();
     const defaultOptions = {
         layout: {
-            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
         },
         sideMenu: {
             left: {enabled: false},
@@ -261,7 +261,6 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
-            backgroundColor: 'transparent',
             componentBackgroundColor: 'transparent',
         },
         topBar: {
@@ -270,6 +269,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
         },
         animations: {
             showModal: {
+                waitForRender: true,
                 enabled: animationsEnabled,
                 alpha: {
                     from: 0,
