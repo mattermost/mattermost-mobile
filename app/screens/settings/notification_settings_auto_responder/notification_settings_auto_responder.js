@@ -143,7 +143,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                     blurOnSubmit={false}
                                     onChangeText={this.onAutoResponseChangeText}
                                     multiline={true}
-                                    style={style.input}
+                                    style={[style.input, padding(isLandscape)]}
                                     autoCapitalize='none'
                                     autoCorrect={false}
                                     placeholder={{id: t('mobile.notification_settings.auto_responder.message_placeholder'), defaultMessage: 'Message'}}
@@ -189,7 +189,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             fontSize: 15,
             height: 150,
-            paddingHorizontal: 15,
             paddingVertical: 10,
         },
         footer: {
