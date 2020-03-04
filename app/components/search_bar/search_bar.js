@@ -51,12 +51,10 @@ export default class Search extends PureComponent {
         keyboardType: PropTypes.string,
         autoCapitalize: PropTypes.string,
         inputHeight: PropTypes.number,
-        inputBorderRadius: PropTypes.number,
         editable: PropTypes.bool,
         blurOnSubmit: PropTypes.bool,
         keyboardShouldPersist: PropTypes.bool,
         value: PropTypes.string,
-        positionRightDelete: PropTypes.number,
         keyboardAppearance: PropTypes.string,
         showArrow: PropTypes.bool,
         searchBarRightMargin: PropTypes.number,
@@ -79,10 +77,6 @@ export default class Search extends PureComponent {
         backArrowSize: 24,
         deleteIconSize: 20,
         searchBarRightMargin: 0,
-        inputBorderRadius: Platform.select({
-            ios: 6,
-            android: 0,
-        }),
     };
 
     constructor(props) {
@@ -251,9 +245,8 @@ export default class Search extends PureComponent {
                             name='ios-close-circle'
                             size={17}
                             style={[
-                                styles.iconDeleteDefault,
+                                styles.defaultColor,
                                 this.props.tintColorDelete && {color: this.props.tintColorDelete},
-                                this.props.positionRightDelete && {right: this.props.positionRightDelete},
                                 {
                                     opacity: this.iconDeleteAnimated,
                                 },
@@ -268,7 +261,7 @@ export default class Search extends PureComponent {
                     name='search'
                     size={24}
                     style={[
-                        styles.iconSearch,
+                        styles.fullWidth,
                         this.props.tintColorSearch && {color: this.props.tintColorSearch},
                         {
                             top: middleHeight - 10,
@@ -325,12 +318,12 @@ export default class Search extends PureComponent {
                 )}
                 <Animated.View
                     style={[
-                        styles.animatedContainer,
+                        styles.fullWidth,
                         {
                             marginRight: this.props.searchBarRightMargin,
                             marginLeft: this.searchContainerAnimated,
                             height: Platform.select({
-                                ios: containerHeight - 10,
+                                ios: this.props.inputHeight || containerHeight - 10,
                                 android: this.props.inputHeight,
                             }),
                         },
@@ -340,20 +333,19 @@ export default class Search extends PureComponent {
                         ref={this.setInputKeywordRef}
                         containerStyle={{
                             ...styles.searchContainer,
+                            ...styles.fullWidth,
                             backgroundColor: this.props.backgroundColor,
-                            marginLeft: 0,
                         }}
                         inputContainerStyle={{
+                            ...styles.inputContainer,
                             backgroundColor,
                             height: this.props.inputHeight,
-                            borderRadius: this.props.inputBorderRadius,
                         }}
                         inputStyle={{
                             ...styles.text,
                             ...restOfInputPropStyles,
                             color: this.props.placeholderTextColor,
                             height: this.props.inputHeight,
-                            marginLeft: 10,
                         }}
                         placeholder={this.placeholder}
                         placeholderTextColor={this.props.placeholderTextColor}
@@ -399,38 +391,36 @@ export default class Search extends PureComponent {
 }
 
 const styles = StyleSheet.create({
-    animatedContainer: {
-        flex: 1,
-        justifyContent: 'flex-start',
-    },
     container: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
         height: containerHeight,
     },
-    iconSearch: {
-        flex: 1,
-    },
-    iconSearchDefault: {
+    defaultColor: {
         color: 'grey',
+    },
+    fullWidth: {
+        flex: 1,
     },
     iconDelete: {
-        alignItems: 'flex-start',
         justifyContent: 'center',
         position: 'relative',
-        top: containerHeight - 39,
+        top: 1,
     },
-    iconDeleteDefault: {
-        color: 'grey',
+    inputContainer: {
+        borderRadius: Platform.select({
+            ios: 6,
+            android: 0,
+        }),
     },
     searchContainer: {
-        flex: 1,
         paddingTop: 0,
         paddingBottom: 0,
         marginLeft: 0,
     },
     text: {
+        marginLeft: 10,
         fontSize: Platform.select({
             ios: 14,
             android: 15,
