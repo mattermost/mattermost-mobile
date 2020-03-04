@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import * as Sentry from '@sentry/react-native';
-
 import Config from 'assets/config';
 
 import {Client4} from 'mattermost-redux/client';
@@ -21,9 +19,14 @@ export const LOGGER_REDUX = 'redux';
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
 
+let Sentry;
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
         return;
+    }
+
+    if (!Sentry) {
+        Sentry = require('@sentry/react-native');
     }
 
     const dsn = getDsn();

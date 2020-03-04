@@ -13,10 +13,8 @@ import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {isDocument, isGif, isVideo} from 'app/utils/file';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
-import {emptyFunction} from 'app/utils/general';
 
 import FileAttachment from './file_attachment';
 
@@ -123,9 +121,9 @@ export default class FileAttachmentList extends PureComponent {
                 if (file.localPath) {
                     uri = file.localPath;
                 } else if (isGif(file)) {
-                    uri = await ImageCacheManager.cache(file.name, Client4.getFileUrl(file.id), emptyFunction); // eslint-disable-line no-await-in-loop
+                    uri = Client4.getFileUrl(file.id);
                 } else {
-                    uri = await ImageCacheManager.cache(file.name, Client4.getFilePreviewUrl(file.id), emptyFunction); // eslint-disable-line no-await-in-loop
+                    uri = Client4.getFilePreviewUrl(file.id);
                 }
 
                 results.push({

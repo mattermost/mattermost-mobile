@@ -9,8 +9,6 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Client4} from 'mattermost-redux/client';
 
 import UserStatus from 'app/components/user_status';
-import ImageCacheManager from 'app/utils/image_cache_manager';
-import {emptyFunction} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import placeholder from 'assets/images/profile.jpg';
@@ -63,7 +61,8 @@ export default class ProfilePicture extends PureComponent {
         } else if (edit && imageUri) {
             this.setImageURL(imageUri);
         } else if (user) {
-            ImageCacheManager.cache('', Client4.getProfilePictureUrl(user.id, user.last_picture_update), this.setImageURL).then(this.clearProfileImageUri).catch(emptyFunction);
+            this.setImageURL(Client4.getProfilePictureUrl(user.id, user.last_picture_update));
+            this.clearProfileImageUri();
         }
     }
 
@@ -101,7 +100,8 @@ export default class ProfilePicture extends PureComponent {
 
             if (nextUrl && url !== nextUrl) {
                 // empty function is so that promise unhandled is not triggered in dev mode
-                ImageCacheManager.cache('', nextUrl, this.setImageURL).then(this.clearProfileImageUri).catch(emptyFunction);
+                this.setImageURL(nextUrl);
+                this.clearProfileImageUri();
             }
         }
     }

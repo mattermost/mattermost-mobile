@@ -9,6 +9,9 @@ import * as commonSelectors from 'mattermost-redux/selectors/entities/common';
 import * as teamSelectors from 'mattermost-redux/selectors/entities/teams';
 import * as deviceSelectors from 'app/selectors/device';
 import * as preferencesSelectors from 'mattermost-redux/selectors/entities/preferences';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+
+jest.mock('mattermost-redux/utils/post_utils');
 
 channelSelectors.getChannel = jest.fn();
 channelSelectors.getCurrentChannelId = jest.fn();
@@ -73,13 +76,27 @@ describe('makeMapStateToProps', () => {
         expect(props.canFlag).toBe(true);
     });
 
-    test('canMarkAsUnread is true when isMinimumServerVersion is 5.18v', () => {
+    test('canMarkAsUnread is true when isMinimumServerVersion is 5.18v and channel not archived', () => {
+        channelSelectors.getChannel = jest.fn().mockReturnValueOnce({
+            delete_at: 0,
+        });
         const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(baseState, baseOwnProps);
+        expect(isMinimumServerVersion(baseState.entities.general.serverVersion, 5, 18)).toBe(true);
         expect(props.canMarkAsUnread).toBe(true);
     });
 
-    test('canMarkAsUnread is false when isMinimumServerVersion is not 5.18v', () => {
+    test('canMarkAsUnread is false when isMinimumServerVersion is 5.18v and channel is archived', () => {
+        channelSelectors.getChannel = jest.fn().mockReturnValueOnce({
+            delete_at: 1,
+        });
+        const mapStateToProps = makeMapStateToProps();
+        const props = mapStateToProps(baseState, baseOwnProps);
+        expect(isMinimumServerVersion(baseState.entities.general.serverVersion, 5, 18)).toBe(true);
+        expect(props.canMarkAsUnread).toBe(false);
+    });
+
+    test('canMarkAsUnread is false when isMinimumServerVersion is not 5.18v and channel is not archived', () => {
         const state = {
             entities: {
                 ...baseState.entities,
@@ -89,8 +106,33 @@ describe('makeMapStateToProps', () => {
             },
         };
 
+        channelSelectors.getChannel = jest.fn().mockReturnValueOnce({
+            delete_at: 0,
+        });
+
         const mapStateToProps = makeMapStateToProps();
         const props = mapStateToProps(state, baseOwnProps);
+        expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 18)).toBe(false);
+        expect(props.canMarkAsUnread).toBe(false);
+    });
+
+    test('canMarkAsUnread is false when isMinimumServerVersion is not 5.18v and channel is archived', () => {
+        const state = {
+            entities: {
+                ...baseState.entities,
+                general: {
+                    serverVersion: '5.17',
+                },
+            },
+        };
+
+        channelSelectors.getChannel = jest.fn().mockReturnValueOnce({
+            delete_at: 1,
+        });
+
+        const mapStateToProps = makeMapStateToProps();
+        const props = mapStateToProps(state, baseOwnProps);
+        expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 18)).toBe(false);
         expect(props.canMarkAsUnread).toBe(false);
     });
 });

@@ -15,6 +15,8 @@ function displayName(state = '', action) {
     switch (action.type) {
     case ViewTypes.SET_CHANNEL_DISPLAY_NAME:
         return action.displayName || '';
+    case ChannelTypes.SELECT_CHANNEL:
+        return '';
     default:
         return state;
     }
@@ -257,60 +259,6 @@ function retryFailed(state = false, action) {
     }
 }
 
-function postVisibility(state = {}, action) {
-    switch (action.type) {
-    case ViewTypes.SET_INITIAL_POST_VISIBILITY: {
-        const nextState = {...state};
-        nextState[action.data] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-        return nextState;
-    }
-    case ViewTypes.INCREASE_POST_VISIBILITY: {
-        const nextState = {...state};
-        if (nextState[action.data]) {
-            nextState[action.data] += action.amount;
-        } else {
-            nextState[action.data] = action.amount;
-        }
-        return nextState;
-    }
-    case ViewTypes.RECEIVED_FOCUSED_POST: {
-        const nextState = {...state};
-        nextState[action.channelId] = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-        return nextState;
-    }
-    case PostTypes.RECEIVED_NEW_POST: {
-        if (action.data.id === action.data.pending_post_id) {
-            const nextState = {...state};
-            nextState[action.data.channel_id] += 1;
-            return nextState;
-        }
-
-        return state;
-    }
-    default:
-        return state;
-    }
-}
-
-function postCountInChannel(state = {}, action) {
-    switch (action.type) {
-    case ViewTypes.SET_INITIAL_POST_COUNT: {
-        const {channelId, count} = action.data;
-        const nextState = {...state};
-        nextState[channelId] = count;
-        return nextState;
-    }
-    case ViewTypes.INCREASE_POST_COUNT: {
-        const {channelId, count} = action.data;
-        const nextState = {...state};
-        nextState[channelId] += count;
-        return nextState;
-    }
-    default:
-        return state;
-    }
-}
-
 function loadingPosts(state = {}, action) {
     switch (action.type) {
     case ViewTypes.LOADING_POSTS: {
@@ -338,6 +286,8 @@ function lastGetPosts(state = {}, action) {
 
 function loadMorePostsVisible(state = true, action) {
     switch (action.type) {
+    case ChannelTypes.SELECT_CHANNEL:
+        return true;
     case ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE:
         return action.data;
 
@@ -348,12 +298,14 @@ function loadMorePostsVisible(state = true, action) {
 
 function lastChannelViewTime(state = {}, action) {
     switch (action.type) {
-    case ViewTypes.SELECT_CHANNEL_WITH_MEMBER: {
-        if (action.member) {
+    case ChannelTypes.SELECT_CHANNEL: {
+        if (action.extra?.member) {
+            const {member} = action.extra;
             const nextState = {...state};
-            nextState[action.data] = action.member.last_viewed_at;
+            nextState[action.data] = member.last_viewed_at;
             return nextState;
         }
+
         return state;
     }
 
@@ -369,9 +321,8 @@ function lastChannelViewTime(state = {}, action) {
 
 function keepChannelIdAsUnread(state = null, action) {
     switch (action.type) {
-    case ViewTypes.SELECT_CHANNEL_WITH_MEMBER: {
-        const member = action.member;
-        const channel = action.channel;
+    case ChannelTypes.SELECT_CHANNEL: {
+        const {channel, member} = action.extra;
 
         if (!member || !channel) {
             return state;
@@ -410,8 +361,6 @@ export default combineReducers({
     drafts,
     loading,
     refreshing,
-    postCountInChannel,
-    postVisibility,
     loadingPosts,
     lastGetPosts,
     retryFailed,

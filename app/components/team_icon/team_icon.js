@@ -12,7 +12,6 @@ import {
 
 import {Client4} from 'mattermost-redux/client';
 
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class TeamIcon extends React.PureComponent {
@@ -29,34 +28,38 @@ export default class TeamIcon extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        const {lastIconUpdate, teamId} = props;
-        if (lastIconUpdate) {
-            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdate), this.setImageURL);
-        }
-
         this.state = {
             teamIcon: null,
             imageError: false,
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        const newState = {imageError: false};
+    componentDidMount() {
+        const {lastIconUpdate, teamId} = this.props;
+        this.mounted = true;
 
-        if (this.props.teamId !== nextProps.teamId) {
-            newState.teamIcon = null;
+        if (lastIconUpdate) {
+            this.setImageURL(Client4.getTeamIconUrl(teamId, lastIconUpdate));
         }
+    }
 
-        if (nextProps.lastIconUpdate && this.props.lastIconUpdate !== nextProps.lastIconUpdate) {
-            const {lastIconUpdate, teamId} = nextProps;
-            ImageCacheManager.cache('', Client4.getTeamIconUrl(teamId, lastIconUpdate), this.setImageURL);
+    componentDidUpdate(prevProps) {
+        if (this.props.teamId !== prevProps.teamId) {
+            this.setImageURL(null);
+        } else if (this.props.lastIconUpdate && this.props.lastIconUpdate !== prevProps.lastIconUpdate) {
+            const {lastIconUpdate, teamId} = this.props;
+            this.setImageURL(Client4.getTeamIconUrl(teamId, lastIconUpdate));
         }
+    }
 
-        this.setState(newState);
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     setImageURL = (teamIcon) => {
-        this.setState({teamIcon});
+        if (this.mounted) {
+            this.setState({imageError: false, teamIcon});
+        }
     };
 
     render() {

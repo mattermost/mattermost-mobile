@@ -17,6 +17,7 @@ const renderMessage = (postBodyProps, styles, intl, localeHolder, values) => {
     return (
         <Markdown
             baseTextStyle={messageStyle}
+            disableAtChannelMentionHighlight={true}
             onPostPress={onPress}
             textStyles={textStyles}
             value={intl.formatMessage(localeHolder, values)}
@@ -144,11 +145,25 @@ const renderArchivedMessage = (postBodyProps, styles, intl) => {
     return renderMessage(postBodyProps, styles, intl, localeHolder, values);
 };
 
+const renderUnarchivedMessage = (postBodyProps, styles, intl) => {
+    const {postProps} = postBodyProps;
+
+    const username = renderUsername(postProps.username);
+    const localeHolder = {
+        id: t('mobile.system_message.channel_unarchived_message'),
+        defaultMessage: '{username} unarchived the channel',
+    };
+
+    const values = {username};
+    return renderMessage(postBodyProps, styles, intl, localeHolder, values);
+};
+
 const systemMessageRenderers = {
     [Posts.POST_TYPES.HEADER_CHANGE]: renderHeaderChangeMessage,
     [Posts.POST_TYPES.DISPLAYNAME_CHANGE]: renderDisplayNameChangeMessage,
     [Posts.POST_TYPES.PURPOSE_CHANGE]: renderPurposeChangeMessage,
     [Posts.POST_TYPES.CHANNEL_DELETED]: renderArchivedMessage,
+    [Posts.POST_TYPES.CHANNEL_UNARCHIVED]: renderUnarchivedMessage,
 };
 
 export const renderSystemMessage = (postBodyProps, styles, intl) => {

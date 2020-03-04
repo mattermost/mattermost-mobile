@@ -1,10 +1,12 @@
 diff --git a/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml b/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml
-index ffef75f..a4df210 100644
+index ffef75f..feabe20 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml
 +++ b/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml
-@@ -32,6 +32,8 @@
+@@ -31,7 +31,10 @@
+ 
          <service
              android:name=".gcm.FcmInstanceIdRefreshHandlerService"
++            android:permission="android.permission.BIND_JOB_SERVICE"
              android:exported="false" />
 +        
 +        <receiver android:name="com.wix.reactnativenotifications.core.notification.PushNotificationPublisher" />
@@ -12,7 +14,7 @@ index ffef75f..a4df210 100644
  
  </manifest>
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
-index 8fb5f01..74d6138 100644
+index 8fb5f01..d3a1e7a 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
 @@ -103,12 +103,26 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
@@ -42,6 +44,14 @@ index 8fb5f01..74d6138 100644
      @ReactMethod
      public void isRegisteredForRemoteNotifications(Promise promise) {
          boolean hasPermission = NotificationManagerCompat.from(getReactApplicationContext()).areNotificationsEnabled();
+@@ -119,6 +133,6 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
+         final Context appContext = getReactApplicationContext().getApplicationContext();
+         final Intent tokenFetchIntent = new Intent(appContext, FcmInstanceIdRefreshHandlerService.class);
+         tokenFetchIntent.putExtra(extraFlag, true);
+-        appContext.startService(tokenFetchIntent);
++        FcmInstanceIdRefreshHandlerService.enqueueWork(appContext, tokenFetchIntent);
+     }
+ }
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
 new file mode 100644
 index 0000000..c35076d
@@ -361,6 +371,39 @@ index 7b320e1..d95535b 100644
 +        notificationManager.cancel(Integer.parseInt(notificationId));
 +    }
  }
+diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java
+index 8270ad6..3674814 100644
+--- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java
++++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java
+@@ -1,19 +1,23 @@
+ package com.wix.reactnativenotifications.gcm;
+ 
+-import android.app.IntentService;
++import android.support.annotation.NonNull;
++import android.support.v4.app.JobIntentService;
++import android.content.Context;
+ import android.content.Intent;
+ 
+-public class FcmInstanceIdRefreshHandlerService extends IntentService {
++public class FcmInstanceIdRefreshHandlerService extends JobIntentService {
+ 
+     public static String EXTRA_IS_APP_INIT = "isAppInit";
+     public static String EXTRA_MANUAL_REFRESH = "doManualRefresh";
++    static final int JOB_ID = 1000;
+ 
+-    public FcmInstanceIdRefreshHandlerService() {
+-        super(FcmInstanceIdRefreshHandlerService.class.getSimpleName());
++    public static void enqueueWork(Context context, Intent work) {
++        enqueueWork(context, FcmInstanceIdRefreshHandlerService.class, JOB_ID, work);
+     }
+ 
++
+     @Override
+-    protected void onHandleIntent(Intent intent) {
++    protected void onHandleWork(@NonNull Intent intent) {
+         IFcmToken gcmToken = FcmToken.get(this);
+         if (gcmToken == null) {
+             return;
 diff --git a/node_modules/react-native-notifications/lib/src/index.android.js b/node_modules/react-native-notifications/lib/src/index.android.js
 index 51376bf..a5d9540 100644
 --- a/node_modules/react-native-notifications/lib/src/index.android.js
