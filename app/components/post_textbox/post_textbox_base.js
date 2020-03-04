@@ -898,7 +898,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {intl} = this.context;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId, canPost} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsReadOnly, theme, isLandscape, files, rootId, canPost} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {

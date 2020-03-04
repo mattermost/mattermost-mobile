@@ -13,9 +13,7 @@ import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles'
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
-import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
 import {getChannelTimezones} from 'mattermost-redux/actions/channels';
-import Permissions from 'mattermost-redux/constants/permissions';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
