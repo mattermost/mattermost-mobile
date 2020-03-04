@@ -92,6 +92,7 @@ export function resetToSelectServer(allowOtherServers) {
                         },
                         options: {
                             layout: {
+                                backgroundColor: theme.centerChannelBg,
                                 componentBackgroundColor: theme.centerChannelBg,
                             },
                             statusBar: {
