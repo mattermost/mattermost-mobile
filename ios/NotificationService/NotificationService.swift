@@ -26,18 +26,22 @@ class NotificationService: UNNotificationServiceExtension {
             return
           }
 
-          let json = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as! Dictionary<String,Any>
-          bestAttemptContent.title = json!["channel_name"] as! String
-          bestAttemptContent.body = json!["message"] as! String
+          let json = try? JSONSerialization.jsonObject(with: data) as! [String: Any]
+          if let json = json {
+            if let message = json["message"] as? String {
+              bestAttemptContent.body = message
+            }
+            if let channelName = json["channel_name"] as? String {
+              bestAttemptContent.title = channelName
+            }
 
-          bestAttemptContent.userInfo["channel_name"] = json!["channel_name"] as! String
-          bestAttemptContent.userInfo["team_id"] = json!["team_id"] as? String
-          bestAttemptContent.userInfo["sender_id"] = json!["sender_id"] as! String
-          bestAttemptContent.userInfo["sender_name"] = json!["sender_name"] as! String
-          bestAttemptContent.userInfo["root_id"] = json!["root_id"] as? String
-          bestAttemptContent.userInfo["override_username"] = json!["override_username"] as? String
-          bestAttemptContent.userInfo["override_icon_url"] = json!["override_icon_url"] as? String
-          bestAttemptContent.userInfo["from_webhook"] = json!["from_webhook"] as? String
+            let userInfoKeys = ["channel_name", "team_id", "sender_id", "root_id", "override_username", "override_icon_url", "from_webhook"]
+            for key in userInfoKeys {
+              if let value = json[key] as? String {
+                bestAttemptContent.userInfo[key] = value
+              }
+            }
+          }
         }
 
         contentHandler(bestAttemptContent)
