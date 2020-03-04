@@ -54,6 +54,7 @@ public class CustomPushNotification extends PushNotification {
 
     private NotificationChannel mHighImportanceChannel;
     private NotificationChannel mMinImportanceChannel;
+    private ReceiptDelivery mReceiptDelivery;
 
     private static Map<String, Integer> channelIdToNotificationCount = new HashMap<String, Integer>();
     private static Map<String, List<Bundle>> channelIdToNotification = new HashMap<String, List<Bundle>>();
@@ -64,6 +65,7 @@ public class CustomPushNotification extends PushNotification {
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
         super(context, bundle, appLifecycleFacade, appLaunchHelper, jsIoHelper);
         this.context = context;
+        mReceiptDelivery = new ReceiptDelivery();
         createNotificationChannels();
     }
 
@@ -529,7 +531,7 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void notificationReceiptDelivery(String ackId, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
-        ReceiptDelivery.send(context, ackId, postId, type, isIdLoaded, promise);
+        mReceiptDelivery.send(context, ackId, postId, type, isIdLoaded, promise);
     }
 
     private void createNotificationChannels() {

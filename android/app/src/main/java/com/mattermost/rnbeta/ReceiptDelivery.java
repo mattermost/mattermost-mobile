@@ -6,13 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import java.lang.System;
 
-import okhttp3.Call;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.HttpUrl;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.json.GenericJson;
 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -24,9 +19,15 @@ import com.facebook.react.bridge.Arguments;
 import com.mattermost.react_native_interface.ResolvePromise;
 
 public class ReceiptDelivery {
-    static final String CURRENT_SERVER_URL = "@currentServerUrl";
+    private final String CURRENT_SERVER_URL = "@currentServerUrl";
+    private final HttpClient mHttpClient;
 
-    public static void send(Context context, final String ackId, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
+    public ReceiptDelivery() {
+        Boolean withExponentialBackoff = true;
+        mHttpClient = new HttpClient(withExponentialBackoff);
+    }
+
+    public void send(Context context, final String ackId, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
 
         MattermostCredentialsHelper.getCredentialsForCurrentServer(reactApplicationContext, new ResolvePromise() {
@@ -55,7 +56,7 @@ public class ReceiptDelivery {
         });
     }
 
-    protected static void execute(String serverUrl, String postId, String token, String ackId, String type, boolean isIdLoaded, ResolvePromise promise) {
+    protected void execute(String serverUrl, String postId, String token, String ackId, String type, boolean isIdLoaded, ResolvePromise promise) {
         if (token == null) {
             promise.reject("Receipt delivery failure", "Invalid token");
             return;
@@ -65,13 +66,10 @@ public class ReceiptDelivery {
             promise.reject("Receipt delivery failure", "Invalid server URL");
         }
 
-        JSONObject json;
-        long receivedAt = System.currentTimeMillis();
-
+        JSONObject json = new JSONObject();
         try {
-            json = new JSONObject();
             json.put("id", ackId);
-            json.put("received_at", receivedAt);
+            json.put("received_at", System.currentTimeMillis());
             json.put("platform", "android");
             json.put("type", type);
             json.put("post_id", postId);
@@ -82,39 +80,30 @@ public class ReceiptDelivery {
             return;
         }
 
-        final HttpUrl url = HttpUrl.parse(
-            String.format("%s/api/v4/notifications/ack", serverUrl.replaceAll("/$", "")));
-        if (url != null) {
-            final OkHttpClient client = new OkHttpClient();
-            final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(JSON, json.toString());
-            Request request = new Request.Builder()
-                    .header("Authorization", String.format("Bearer %s", token))
-                    .header("Content-Type", "application/json")
-                    .url(url)
-                    .post(body)
-                    .build();
+        String url = String.format("%s/api/v4/notifications/ack", serverUrl.replaceAll("/$", ""));
+        String authorization = String.format("Bearer %s", token);
+        try {
+            HttpResponse response = mHttpClient.post(url, authorization, json.toString());
 
-            try {
-                Response response = client.newCall(request).execute();
-                String responseBody = response.body().string();
-                if (response.code() != 200 || !isIdLoaded) {
-                    throw new Exception(responseBody);
-                }
-                JSONObject jsonResponse = new JSONObject(responseBody);
+            if (response.getStatusCode() != 200) {
+                throw new Exception(response.parseAsString());
+            }
+
+            if (isIdLoaded) {
+                GenericJson jsonResponse = response.parseAs(GenericJson.class);
                 Bundle bundle = new Bundle();
                 String keys[] = new String[] {"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
                 for (int i = 0; i < keys.length; i++) {
                     String key = keys[i];
-                    if (jsonResponse.has(key)) {
-                        bundle.putString(key, jsonResponse.getString(key));
+                    if (jsonResponse.containsKey(key)) {
+                        bundle.putString(key, jsonResponse.get(key).toString());
                     }
                 }
                 promise.resolve(bundle);
-            } catch (Exception e) {
-                Log.e("ReactNative", "Receipt delivery failed to send");
-                promise.reject("Receipt delivery failure", e.toString());
             }
+        } catch (Exception e) {
+            Log.e("ReactNative", "Receipt delivery failed to send");
+            promise.reject("Receipt delivery failure", e.toString());
         }
     }
 }
