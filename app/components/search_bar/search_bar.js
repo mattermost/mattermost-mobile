@@ -59,8 +59,8 @@ export default class Search extends PureComponent {
         positionRightDelete: PropTypes.number,
         keyboardAppearance: PropTypes.string,
         showArrow: PropTypes.bool,
+        searchBarRightMargin: PropTypes.number,
         leftComponent: PropTypes.element,
-        leftComponentWidth: PropTypes.number,
         searchIconSize: PropTypes.number,
         backArrowSize: PropTypes.number,
         deleteIconSize: PropTypes.number,
@@ -78,12 +78,19 @@ export default class Search extends PureComponent {
         searchIconSize: 24,
         backArrowSize: 24,
         deleteIconSize: 20,
-        leftComponentWidth: 56,
-        inputBorderRadius: 6,
+        searchBarRightMargin: 0,
+        inputBorderRadius: Platform.select({
+            ios: 6,
+            android: 0,
+        }),
     };
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            leftComponentWidth: 0,
+        };
 
         this.iconDeleteAnimated = new Animated.Value(0);
         this.leftComponentAnimated = new Animated.Value(0);
@@ -107,22 +114,18 @@ export default class Search extends PureComponent {
 
     focus = () => {
         this.inputKeywordRef.focus();
-
-        if (this.props.leftComponent) {
-            Animated.parallel([
-                Animated.timing(
-                    this.leftComponentAnimated,
-                    {
-                        toValue: 100,
-                        duration: 200,
-                    },
-                ),
-            ]);
-        }
     };
 
-    onBlur = () => {
+    onBlur = async () => {
+        if (this.props.leftComponent) {
+            await this.collapseAnimation();
+        }
         this.props.onBlur();
+    };
+
+    onLeftComponentLayout = (event) => {
+        const leftComponentWidth = event.nativeEvent.layout.width;
+        this.setState({leftComponentWidth});
     };
 
     onSearch = async () => {
@@ -149,7 +152,11 @@ export default class Search extends PureComponent {
     };
 
     onFocus = () => {
-        InteractionManager.runAfterInteractions(() => {
+        InteractionManager.runAfterInteractions(async () => {
+            if (this.props.leftComponent) {
+                await this.expandAnimation();
+            }
+
             if (this.props.onFocus) {
                 this.props.onFocus();
             }
@@ -182,6 +189,50 @@ export default class Search extends PureComponent {
     onSelectionChange = (event) => {
         this.props.onSelectionChange(event);
     };
+
+    expandAnimation = () => {
+        return new Promise((resolve) => {
+            Animated.parallel([
+                Animated.timing(
+                    this.leftComponentAnimated,
+                    {
+                        toValue: 100,
+                        duration: 200,
+                    },
+                ),
+                Animated.timing(
+                    this.searchContainerAnimated,
+                    {
+                        toValue: this.state.leftComponentWidth * -1,
+                        duration: 200,
+                    },
+                ),
+            ]).start();
+            resolve();
+        });
+    }
+
+    collapseAnimation = () => {
+        return new Promise((resolve) => {
+            Animated.parallel([
+                Animated.timing(
+                    this.leftComponentAnimated,
+                    {
+                        toValue: 0,
+                        duration: 200,
+                    },
+                ),
+                Animated.timing(
+                    this.searchContainerAnimated,
+                    {
+                        toValue: 0,
+                        duration: 200,
+                    },
+                ),
+            ]).start();
+            resolve();
+        });
+    }
 
     render() {
         const {backgroundColor, ...restOfInputPropStyles} = this.props.inputStyle;
@@ -262,85 +313,96 @@ export default class Search extends PureComponent {
         return (
             <View style={styles.container}>
                 {((this.props.leftComponent) ?
-                    <View
-                        style={[
-                            styles.leftContainer,
-                            {
-                                width: this.props.leftComponentWidth,
-                            },
-                        ]}
+                    <Animated.View
+                        style={{
+                            right: this.leftComponentAnimated,
+                        }}
+                        onLayout={this.onLeftComponentLayout}
                     >
                         {this.props.leftComponent}
-                    </View> :
+                    </Animated.View> :
                     null
                 )}
-                <SearchBar
-                    ref={this.setInputKeywordRef}
-                    containerStyle={{
-                        ...styles.searchContainer,
-                        backgroundColor: this.props.backgroundColor,
-                        marginLeft: 0,
-                        height: Platform.select({
-                            ios: containerHeight - 10,
-                            android: this.props.inputHeight,
-                        }),
-                    }}
-                    inputContainerStyle={{
-                        backgroundColor,
-                        height: this.props.inputHeight,
-                        borderRadius: this.props.inputBorderRadius,
-                        marginLeft: 5,
-                    }}
-                    inputStyle={{
-                        ...styles.text,
-                        ...restOfInputPropStyles,
-                        color: this.props.placeholderTextColor,
-                        height: this.props.inputHeight,
-                        marginLeft: 10,
-                    }}
-                    placeholder={this.placeholder}
-                    placeholderTextColor={this.props.placeholderTextColor}
-                    selectionColor={this.props.selectionColor}
-                    autoCorrect={false}
-                    blurOnSubmit={this.props.blurOnSubmit}
-                    editable={this.props.editable}
-                    cancelButtonTitle={this.cancelTitle}
-                    cancelButtonProps={{
-                        buttonStyle: {
-                            minWidth: 75,
+                <Animated.View
+                    style={[
+                        styles.animatedContainer,
+                        {
+                            marginRight: this.props.searchBarRightMargin,
+                            marginLeft: this.searchContainerAnimated,
+                            height: Platform.select({
+                                ios: containerHeight - 10,
+                                android: this.props.inputHeight,
+                            }),
                         },
-                        buttonTextStyle: {
+                    ]}
+                >
+                    <SearchBar
+                        ref={this.setInputKeywordRef}
+                        containerStyle={{
+                            ...styles.searchContainer,
+                            backgroundColor: this.props.backgroundColor,
+                            marginLeft: 0,
+                        }}
+                        inputContainerStyle={{
+                            backgroundColor,
+                            height: this.props.inputHeight,
+                            borderRadius: this.props.inputBorderRadius,
+                        }}
+                        inputStyle={{
                             ...styles.text,
-                            ...this.props.cancelButtonStyle,
-                            color: this.props.titleCancelColor,
-                        },
-                    }}
-                    onChangeText={this.onChangeText}
-                    onSubmitEditing={this.onSearch}
-                    returnKeyType={this.props.returnKeyType || 'search'}
-                    keyboardType={this.props.keyboardType || 'default'}
-                    autoCapitalize={this.props.autoCapitalize}
-                    onBlur={this.onBlur}
-                    onFocus={this.onFocus}
-                    onCancel={this.onCancel}
-                    onSelectionChange={this.onSelectionChange}
-                    underlineColorAndroid='transparent'
-                    enablesReturnKeyAutomatically={true}
-                    keyboardAppearance={this.props.keyboardAppearance}
-                    autoFocus={this.props.autoFocus}
-                    showCancel={true}
-                    value={this.props.value}
-                    platform={Platform.OS === 'ios' ? 'ios' : 'android'}
-                    clearIcon={clearIcon}
-                    searchIcon={searchIcon}
-                    cancelIcon={cancelIcon}
-                />
+                            ...restOfInputPropStyles,
+                            color: this.props.placeholderTextColor,
+                            height: this.props.inputHeight,
+                            marginLeft: 10,
+                        }}
+                        placeholder={this.placeholder}
+                        placeholderTextColor={this.props.placeholderTextColor}
+                        selectionColor={this.props.selectionColor}
+                        autoCorrect={false}
+                        blurOnSubmit={this.props.blurOnSubmit}
+                        editable={this.props.editable}
+                        cancelButtonTitle={this.cancelTitle}
+                        cancelButtonProps={{
+                            buttonStyle: {
+                                minWidth: 75,
+                            },
+                            buttonTextStyle: {
+                                ...styles.text,
+                                ...this.props.cancelButtonStyle,
+                                color: this.props.titleCancelColor,
+                            },
+                        }}
+                        onChangeText={this.onChangeText}
+                        onSubmitEditing={this.onSearch}
+                        returnKeyType={this.props.returnKeyType || 'search'}
+                        keyboardType={this.props.keyboardType || 'default'}
+                        autoCapitalize={this.props.autoCapitalize}
+                        onBlur={this.onBlur}
+                        onFocus={this.onFocus}
+                        onCancel={this.onCancel}
+                        onSelectionChange={this.onSelectionChange}
+                        underlineColorAndroid='transparent'
+                        enablesReturnKeyAutomatically={true}
+                        keyboardAppearance={this.props.keyboardAppearance}
+                        autoFocus={this.props.autoFocus}
+                        showCancel={true}
+                        value={this.props.value}
+                        platform={Platform.OS === 'ios' ? 'ios' : 'android'}
+                        clearIcon={clearIcon}
+                        searchIcon={searchIcon}
+                        cancelIcon={cancelIcon}
+                    />
+                </Animated.View>
             </View>
         );
     }
 }
 
 const styles = StyleSheet.create({
+    animatedContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
+    },
     container: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
@@ -362,12 +424,8 @@ const styles = StyleSheet.create({
     iconDeleteDefault: {
         color: 'grey',
     },
-    leftContainer: {
-        right: 100,
-    },
     searchContainer: {
         flex: 1,
-        justifyContent: 'flex-start',
         paddingTop: 0,
         paddingBottom: 0,
         marginLeft: 0,
