@@ -2,14 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
+import {batchActions} from 'redux-batched-actions';
 import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
 import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
+import {GeneralTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -24,6 +27,7 @@ import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/action
 import {loadMe, logout} from 'app/actions/views/user';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations, resetMomentLocale} from 'app/i18n';
+import initialState from 'app/initial_state';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
@@ -151,6 +155,7 @@ class GlobalEventHandler {
     onLogout = async () => {
         this.store.dispatch(closeWebSocket(false));
         this.store.dispatch(setServerVersion(''));
+        this.resetState();
         removeAppCredentials();
         deleteFileCache();
         resetMomentLocale();
@@ -161,13 +166,8 @@ class GlobalEventHandler {
         const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
         const mainPath = cacheDir.split('/').slice(0, -1).join('/');
 
-        try {
-            await RNFetchBlob.fs.unlink(cacheDir);
-        } catch (e) {
-            console.log('Failed to remove cache folder', e); //eslint-disable-line no-console
-        }
-
         mattermostBucket.removePreference('cert');
+        mattermostBucket.removePreference('emm');
         if (Platform.OS === 'ios') {
             mattermostBucket.removeFile('entities');
         } else {
@@ -257,6 +257,32 @@ class GlobalEventHandler {
     onSwitchToDefaultChannel = (teamId) => {
         this.store.dispatch(selectDefaultChannel(teamId));
     };
+
+    resetState = async () => {
+        try {
+            await AsyncStorage.clear();
+            const state = this.store.getState();
+            this.store.dispatch(batchActions([
+                {
+                    type: General.OFFLINE_STORE_RESET,
+                    data: initialState,
+                },
+                {
+                    type: General.STORE_REHYDRATION_COMPLETE,
+                },
+                {
+                    type: ViewTypes.SERVER_URL_CHANGED,
+                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
+                },
+                {
+                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
+                    data: state.entities.general.deviceToken,
+                },
+            ]));
+        } catch (e) {
+            // clear error
+        }
+    }
 
     serverUpgradeNeeded = async () => {
         const {dispatch} = this.store;
