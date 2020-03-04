@@ -51,6 +51,7 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         onSelectionChange={[Function]}
         placeholder="Search"
         placeholderTextColor="rgba(61,60,64,0.5)"
+        searchBarRightMargin={0}
         searchIconSize={24}
         showArrow={false}
         tintColorDelete="rgba(61,60,64,0.5)"

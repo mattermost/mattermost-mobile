@@ -37,6 +37,7 @@ exports[`MoreChannels should match snapshot 1`] = `
         onSearchButtonPress={[Function]}
         onSelectionChange={[Function]}
         placeholderTextColor="rgba(61,60,64,0.5)"
+        searchBarRightMargin={0}
         searchIconSize={24}
         showArrow={false}
         tintColorDelete="rgba(61,60,64,0.5)"
