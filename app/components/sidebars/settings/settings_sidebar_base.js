@@ -130,21 +130,23 @@ export default class SettingsSidebarBase extends PureComponent {
         logout();
     });
 
-    openModal = (screen, title, passProps) => {
+    openModal = async (screen, title, passProps) => {
         this.closeSettingsSidebar();
 
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
-            const options = {
-                topBar: {
-                    leftButtons: [{
-                        id: 'close-settings',
-                        icon: source,
-                    }],
-                },
-            };
+        if (!this.closeButton) {
+            this.closeButton = await MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor);
+        }
 
-            showModal(screen, title, passProps, options);
-        });
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
+        showModal(screen, title, passProps, options);
     };
 
     updateStatus = (status) => {
