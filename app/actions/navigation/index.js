@@ -91,6 +91,9 @@ export function resetToSelectServer(allowOtherServers) {
                             allowOtherServers,
                         },
                         options: {
+                            layout: {
+                                componentBackgroundColor: theme.centerChannelBg,
+                            },
                             statusBar: {
                                 visible: true,
                             },
@@ -161,6 +164,7 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
+        popGesture: true,
         sideMenu: {
             left: {enabled: false},
             right: {enabled: false},

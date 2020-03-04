@@ -83,6 +83,9 @@ describe('app/actions/navigation', () => {
                                 allowOtherServers,
                             },
                             options: {
+                                layout: {
+                                    componentBackgroundColor: theme.centerChannelBg,
+                                },
                                 statusBar: {
                                     visible: true,
                                 },
@@ -160,6 +163,7 @@ describe('app/actions/navigation', () => {
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },
+            popGesture: true,
             sideMenu: {
                 left: {enabled: false},
                 right: {enabled: false},
