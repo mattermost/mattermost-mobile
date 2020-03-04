@@ -272,6 +272,7 @@ describe('app/actions/navigation', () => {
         const showModalOverCurrentContextOptions = {
             modalPresentationStyle: 'overCurrentContext',
             layout: {
+                backgroundColor: 'transparent',
                 componentBackgroundColor: 'transparent',
             },
             topBar: {

@@ -266,6 +266,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
+            backgroundColor: 'transparent',
             componentBackgroundColor: 'transparent',
         },
         topBar: {
