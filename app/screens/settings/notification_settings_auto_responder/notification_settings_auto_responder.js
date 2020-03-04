@@ -143,7 +143,10 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                     blurOnSubmit={false}
                                     onChangeText={this.onAutoResponseChangeText}
                                     multiline={true}
-                                    style={[style.input, padding(isLandscape)]}
+                                    style={[
+                                        style.input,
+                                        isLandscape ? padding(isLandscape) : {paddingHorizontal: 15},
+                                    ]}
                                     autoCapitalize='none'
                                     autoCorrect={false}
                                     placeholder={{id: t('mobile.notification_settings.auto_responder.message_placeholder'), defaultMessage: 'Message'}}
