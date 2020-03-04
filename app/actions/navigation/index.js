@@ -27,7 +27,7 @@ export function resetToChannel(passProps = {}) {
                 passProps,
                 options: {
                     layout: {
-                        backgroundColor: theme.centerChannelBg,
+                        componentBackgroundColor: theme.centerChannelBg,
                     },
                     statusBar: {
                         visible: true,
@@ -215,8 +215,9 @@ export async function popToRoot() {
 export function showModal(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
+        modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
         layout: {
-            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
         },
         statusBar: {
             visible: true,
@@ -261,6 +262,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
         modalPresentationStyle: 'overCurrentContext',
         layout: {
             backgroundColor: 'transparent',
+            componentBackgroundColor: 'transparent',
         },
         topBar: {
             visible: false,

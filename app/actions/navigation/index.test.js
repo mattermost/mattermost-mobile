@@ -42,7 +42,7 @@ describe('app/actions/navigation', () => {
                             passProps,
                             options: {
                                 layout: {
-                                    backgroundColor: theme.centerChannelBg,
+                                    componentBackgroundColor: theme.centerChannelBg,
                                 },
                                 statusBar: {
                                     visible: true,
@@ -216,8 +216,9 @@ describe('app/actions/navigation', () => {
         const showModal = jest.spyOn(Navigation, 'showModal');
 
         const defaultOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -267,6 +268,7 @@ describe('app/actions/navigation', () => {
             modalPresentationStyle: 'overCurrentContext',
             layout: {
                 backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
             },
             topBar: {
                 visible: false,
@@ -292,8 +294,9 @@ describe('app/actions/navigation', () => {
             },
         };
         const showModalOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -349,8 +352,9 @@ describe('app/actions/navigation', () => {
             },
         };
         const defaultOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
