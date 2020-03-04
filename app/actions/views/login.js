@@ -20,20 +20,16 @@ import {setCSRFFromCookie} from 'app/utils/security';
 import {loadConfigAndLicense} from 'app/actions/views/root';
 
 export function handleLoginIdChanged(loginId) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: ViewTypes.LOGIN_ID_CHANGED,
-            loginId,
-        }, getState);
+    return {
+        type: ViewTypes.LOGIN_ID_CHANGED,
+        loginId,
     };
 }
 
 export function handlePasswordChanged(password) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: ViewTypes.PASSWORD_CHANGED,
-            password,
-        }, getState);
+    return {
+        type: ViewTypes.PASSWORD_CHANGED,
+        password,
     };
 }
 
