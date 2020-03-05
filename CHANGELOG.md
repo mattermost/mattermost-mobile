@@ -15,7 +15,7 @@
  - Fixed an issue where downloaded files on Android had the words `download successful` appended to their filenames, preventing the file from being opened until it was renamed in the file manager.
  - Fixed an issue on Android where users could not swipe to close sidebar unless the gesture was initiated outside of the sidebar.
  - Fixed an issue where channels drawers were partially shown with orientation change on iOS RN61.
- - Fixed an issue where the message box obstructed the bottom part of the message when opened from the notification banner.
+ - Fixed an issue on iOS where the message box obstructed the bottom part of the message when opened from the notification banner.
  - Fixed an issue where switching teams showed the center channel from the old team until the new team's channel data got loaded.
  - Fixed an issue on Android where inline custom emojis did not display in portrait mode.
  - Fixed an issue where a user's was set as online when replying to a message from a push notification.
