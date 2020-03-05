@@ -118,9 +118,11 @@ describe('Actions.Views.Channel', () => {
                 currentChannelId,
                 channels: {
                     'channel-id': {id: 'channel-id', display_name: 'Test Channel'},
+                    'channel-id-2': {id: 'channel-id-2', display_name: 'Test Channel'},
                 },
                 myMembers: {
                     'channel-id': {channel_id: 'channel-id', user_id: currentUserId, mention_count: 0, msg_count: 0},
+                    'channel-id-2': {channel_id: 'channel-id-2', user_id: currentUserId, mention_count: 0, msg_count: 0},
                 },
             },
             teams: {
@@ -282,17 +284,17 @@ describe('Actions.Views.Channel', () => {
     });
 
     const handleSelectChannelCases = [
-        [currentChannelId, true],
-        [currentChannelId, false],
-        [`not-${currentChannelId}`, true],
-        [`not-${currentChannelId}`, false],
+        [currentChannelId],
+        [`${currentChannelId}-2`],
+        [`not-${currentChannelId}`],
+        [`not-${currentChannelId}-2`],
     ];
-    test.each(handleSelectChannelCases)('handleSelectChannel dispatches selectChannelWithMember', async (channelId, fromPushNotification) => {
+    test.each(handleSelectChannelCases)('handleSelectChannel dispatches selectChannelWithMember', async (channelId) => {
         const testObj = {...storeObj};
         testObj.entities.teams.currentTeamId = currentTeamId;
         store = mockStore(testObj);
 
-        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+        await store.dispatch(handleSelectChannel(channelId));
         const storeActions = store.getActions();
         const selectChannelWithMember = storeActions.find(({type}) => type === ChannelTypes.SELECT_CHANNEL);
         const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
@@ -315,7 +317,7 @@ describe('Actions.Views.Channel', () => {
                 teamId: currentTeamId,
             },
         };
-        if (channelId.includes('not')) {
+        if (channelId.includes('not') || channelId === currentChannelId) {
             expect(selectChannelWithMember).toBe(undefined);
         } else {
             expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);

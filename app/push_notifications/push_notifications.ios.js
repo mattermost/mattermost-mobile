@@ -11,7 +11,7 @@ import NotificationsIOS, {
 } from 'react-native-notifications';
 
 import {getBadgeCount} from 'app/selectors/views';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {getLocalizedMessage} from 'app/i18n';
 import {t} from 'app/utils/i18n';
@@ -58,7 +58,7 @@ class PushNotification {
                     if (notification) {
                         const data = notification.getData();
                         if (data) {
-                            ephemeralStore.appStartedFromPushNotification = true;
+                            EphemeralStore.setStartFromNotification(true);
                             this.handleNotification(data, false, true);
                         }
                     }
@@ -137,7 +137,7 @@ class PushNotification {
 
         // mark the app as started as soon as possible
         if (userInteraction) {
-            ephemeralStore.appStartedFromPushNotification = true;
+            EphemeralStore.setStartFromNotification(true);
         }
 
         const data = notification.getData();

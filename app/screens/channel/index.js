@@ -14,7 +14,6 @@ import {getChannelStats} from 'mattermost-redux/actions/channels';
 import {
     loadChannelsForTeam,
     selectInitialChannel,
-    markChannelViewedAndRead,
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
@@ -41,7 +40,6 @@ function mapDispatchToProps(dispatch) {
             connection,
             loadChannelsForTeam,
             logout,
-            markChannelViewedAndRead,
             selectDefaultTeam,
             selectInitialChannel,
             recordLoadTime,

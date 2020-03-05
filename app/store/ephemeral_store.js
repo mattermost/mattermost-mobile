@@ -45,6 +45,14 @@ class EphemeralStore {
             this.navigationComponentIdStack.splice(index, 1);
         }
     }
+
+    getStartFromNotification = () => {
+        return this.appStartedFromPushNotification;
+    };
+
+    setStartFromNotification = (value) => {
+        this.appStartedFromPushNotification = value;
+    };
 }
 
 export default new EphemeralStore();
