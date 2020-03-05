@@ -112,7 +112,7 @@ describe('Login', () => {
                 'ForgotPassword',
                 'Password Reset',
                 {},
-                getStyledNavigationOptions(getColorStyles('dark'))
+                getStyledNavigationOptions(getColorStyles('dark')),
             );
     });
 
