@@ -48,7 +48,7 @@ class EMMProvider {
                         mattermostManaged.quitApp();
                     },
                 }],
-                {cancelable: false}
+                {cancelable: false},
             );
         }
     };

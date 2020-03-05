@@ -3,6 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import {Preferences} from 'mattermost-redux/constants';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import FileUploadItem from './file_upload_item';
 
@@ -18,7 +19,7 @@ describe('FileUploadItem', () => {
         file: {
             loading: false,
         },
-        theme: {},
+        theme: Preferences.THEMES.default,
     };
 
     describe('downloadAndUploadFile', () => {
@@ -43,6 +44,18 @@ describe('FileUploadItem', () => {
             expect(component.instance().uploadFile).toHaveBeenCalledWith({
                 localPath: 'path/to/downloaded/image',
             });
+        });
+
+        test('should upload next file when we pass new props', async () => {
+            const component = shallow(<FileUploadItem {...props}/>);
+            component.instance().uploadFile = jest.fn();
+
+            component.setProps({file: {
+                loading: true,
+                failed: false,
+                localPath: 'path/to/downloaded/image',
+            }});
+            expect(component.instance().uploadFile).toHaveBeenCalledTimes(1);
         });
     });
 });

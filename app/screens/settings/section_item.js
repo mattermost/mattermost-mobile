@@ -61,14 +61,14 @@ function sectionItem(props) {
 
     const labelComponent = React.cloneElement(
         label,
-        {style: style.label}
+        {style: style.label},
     );
 
     let descriptionComponent;
     if (description) {
         descriptionComponent = React.cloneElement(
             description,
-            {style: style.description}
+            {style: style.description},
         );
     }
 

@@ -4,9 +4,11 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
+import android.view.KeyEvent;
 
 import com.reactnativenavigation.NavigationActivity;
 import org.devio.rn.splashscreen.SplashScreen;
+import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
 public class MainActivity extends NavigationActivity {
     @Override
@@ -27,4 +29,19 @@ public class MainActivity extends NavigationActivity {
         isUIModeNight() ? setTheme(R.style.DarkTheme) : setTheme(R.style.LightTheme);
         SplashScreen.show(this, true);
     }
+
+    /*
+    https://mattermost.atlassian.net/browse/MM-10601
+    Required by react-native-hw-keyboard-event
+    (https://github.com/emilioicai/react-native-hw-keyboard-event)
+    */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
+            String keyPressed = event.isShiftPressed() ? "shift-enter" : "enter";
+            HWKeyboardEventModule.getInstance().keyPressed(keyPressed);
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    };
 }

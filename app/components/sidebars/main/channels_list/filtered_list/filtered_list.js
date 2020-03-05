@@ -50,7 +50,6 @@ class FilteredList extends Component {
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        previewChannel: PropTypes.func,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -350,7 +349,6 @@ class FilteredList extends Component {
                 isUnread={item.isUnread}
                 mentions={0}
                 onSelectChannel={this.onSelectChannel}
-                previewChannel={this.props.previewChannel}
             />
         );
     };

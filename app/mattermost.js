@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Linking, NativeModules, Platform} from 'react-native';
+import {Linking} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {Provider} from 'react-redux';
 
-import {loadMe} from 'mattermost-redux/actions/users';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import {loadMe} from 'app/actions/views/user';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
+import {NavigationTypes} from 'app/constants';
 import {getAppCredentials} from 'app/init/credentials';
 import emmProvider from 'app/init/emm_provider';
 import 'app/init/device';
@@ -20,9 +23,6 @@ import {waitForHydration} from 'app/store/utils';
 import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import pushNotificationsUtils from 'app/utils/push_notifications';
-
-const {MattermostShare} = NativeModules;
-const sharedExtensionStarted = Platform.OS === 'android' && MattermostShare.isOpened;
 
 const init = async () => {
     const credentials = await getAppCredentials();
@@ -39,10 +39,6 @@ const init = async () => {
 
     registerScreens(store, Provider);
 
-    if (sharedExtensionStarted) {
-        EphemeralStore.appStarted = true;
-    }
-
     if (!EphemeralStore.appStarted) {
         launchAppAndAuthenticateIfNeeded(credentials);
     }
@@ -55,7 +51,7 @@ const launchApp = (credentials) => {
     ]);
 
     if (credentials) {
-        waitForHydration(store, () => {
+        waitForHydration(store, async () => {
             store.dispatch(loadMe());
             resetToChannel({skipMetrics: true});
         });
@@ -65,6 +61,10 @@ const launchApp = (credentials) => {
 
     telemetry.startSinceLaunch(['start:splash_screen']);
     EphemeralStore.appStarted = true;
+
+    Linking.getInitialURL().then((url) => {
+        store.dispatch(setDeepLinkURL(url));
+    });
 };
 
 const launchAppAndAuthenticateIfNeeded = async (credentials) => {
@@ -80,10 +80,6 @@ const launchAppAndAuthenticateIfNeeded = async (credentials) => {
             await emmProvider.handleAuthentication(store);
         }
     }
-
-    Linking.getInitialURL().then((url) => {
-        store.dispatch(setDeepLinkURL(url));
-    });
 };
 
 Navigation.events().registerAppLaunchedListener(() => {
@@ -92,9 +88,23 @@ Navigation.events().registerAppLaunchedListener(() => {
     // Keep track of the latest componentId to appear
     Navigation.events().registerComponentDidAppearListener(({componentId}) => {
         EphemeralStore.addNavigationComponentId(componentId);
+
+        switch (componentId) {
+        case 'MainSidebar':
+            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
+            EventEmitter.emit(Navigation.BLUR_POST_TEXTBOX);
+            break;
+        case 'SettingsSidebar':
+            EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+            break;
+        }
     });
 
     Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
         EphemeralStore.removeNavigationComponentId(componentId);
+
+        if (componentId === 'MainSidebar') {
+            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
+        }
     });
 });

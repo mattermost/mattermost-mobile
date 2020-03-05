@@ -146,7 +146,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 this.setState({downloading: true});
                 this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(data.id));
                 this.downloadTask.progress((received, total) => {
-                    const progress = (received / total) * 100;
+                    const progress = Math.round((received / total) * 100);
                     if (this.mounted) {
                         this.setState({progress});
                     }
@@ -216,7 +216,9 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     onDonePreviewingFile = () => {
-        this.setState({preview: false});
+        if (this.mounted) {
+            this.setState({preview: false});
+        }
         this.setStatusBarColor();
     };
 
@@ -256,13 +258,15 @@ export default class FileAttachmentDocument extends PureComponent {
                                     id: 'mobile.server_upgrade.button',
                                     defaultMessage: 'OK',
                                 }),
-                            }]
+                            }],
                         );
                         this.onDonePreviewingFile();
                         RNFetchBlob.fs.unlink(path);
                     }
 
-                    this.setState({downloading: false, progress: 0});
+                    if (this.mounted) {
+                        this.setState({downloading: false, progress: 0});
+                    }
                 });
 
                 // Android does not trigger the event for DoneButtonEvent
@@ -281,7 +285,11 @@ export default class FileAttachmentDocument extends PureComponent {
                 didCancel: true,
             }, () => {
                 // need to wait a bit for the progress circle UI to update to the give progress
-                setTimeout(() => this.setState({downloading: false}), 2000);
+                setTimeout(() => {
+                    if (this.mounted) {
+                        this.setState({downloading: false});
+                    }
+                }, 2000);
             });
         }
     };
@@ -303,7 +311,7 @@ export default class FileAttachmentDocument extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK',
                 }),
-            }]
+            }],
         );
     };
 
@@ -324,7 +332,7 @@ export default class FileAttachmentDocument extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK',
                 }),
-            }]
+            }],
         );
     };
 

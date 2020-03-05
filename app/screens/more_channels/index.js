@@ -28,14 +28,14 @@ const joinablePublicChannels = createSelector(
         return channels.filter((c) => {
             return (!myMembers[c.id] && c.type === General.OPEN_CHANNEL && c.delete_at === 0);
         });
-    }
+    },
 );
 
 const teamArchivedChannels = createSelector(
     getChannelsInCurrentTeam,
     (channels) => {
         return channels.filter((c) => c.delete_at !== 0);
-    }
+    },
 );
 
 function mapStateToProps(state) {

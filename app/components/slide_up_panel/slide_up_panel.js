@@ -111,13 +111,13 @@ export default class SlideUpPanel extends PureComponent {
 
         this.reverseLastScrollY = Animated.multiply(
             new Animated.Value(-1),
-            this.lastScrollY
+            this.lastScrollY,
         );
 
         this.translateYOffset = new Animated.Value(containerHeight);
         this.translateY = Animated.add(
             this.translateYOffset,
-            Animated.add(this.dragY, this.reverseLastScrollY)
+            Animated.add(this.dragY, this.reverseLastScrollY),
         ).interpolate({
             inputRange: [marginFromTop, containerHeight],
             outputRange: [marginFromTop, containerHeight],
@@ -177,42 +177,38 @@ export default class SlideUpPanel extends PureComponent {
                 destSnapPoint = this.snapPoints[2];
             } else if (isGoingDown) {
                 destSnapPoint = this.snapPoints.find((s) => s >= endOffsetY);
+                if (!destSnapPoint) {
+                    destSnapPoint = this.snapPoints[2];
+                }
             } else {
                 destSnapPoint = this.snapPoints.find((s) => s <= endOffsetY);
+                if (!destSnapPoint) {
+                    destSnapPoint = this.snapPoints[0];
+                }
             }
 
-            if (destSnapPoint) {
-                this.translateYOffset.extractOffset();
-                this.translateYOffset.setValue(translationY);
-                this.translateYOffset.flattenOffset();
-                this.dragY.setValue(0);
+            this.translateYOffset.extractOffset();
+            this.translateYOffset.setValue(translationY);
+            this.translateYOffset.flattenOffset();
+            this.dragY.setValue(0);
 
-                if (destSnapPoint === this.snapPoints[2]) {
-                    this.closeWithAnimation();
-                } else {
-                    Animated.spring(this.translateYOffset, {
-                        velocity: velocityY,
-                        tension: 68,
-                        friction: 12,
-                        toValue: destSnapPoint,
-                        useNativeDriver: true,
-                    }).start(() => {
-                        this.setState({lastSnap: destSnapPoint});
-
-                        // When dragging down the panel when is fully open reset the scrollView to the top
-                        if (isGoingDown && destSnapPoint !== this.snapPoints[0]) {
-                            this.scrollToTop();
-                        }
-                    });
-                }
+            if (destSnapPoint === this.snapPoints[2]) {
+                this.closeWithAnimation();
             } else {
                 Animated.spring(this.translateYOffset, {
                     velocity: velocityY,
                     tension: 68,
                     friction: 12,
-                    toValue: lastSnap,
+                    toValue: destSnapPoint,
                     useNativeDriver: true,
-                }).start();
+                }).start(() => {
+                    this.setState({lastSnap: destSnapPoint});
+
+                    // When dragging down the panel when is fully open reset the scrollView to the top
+                    if (isGoingDown && destSnapPoint !== this.snapPoints[0]) {
+                        this.scrollToTop();
+                    }
+                });
             }
         }
     };

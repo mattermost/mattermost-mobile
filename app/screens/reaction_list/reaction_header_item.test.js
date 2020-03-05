@@ -21,7 +21,7 @@ describe('ReactionHeaderItem', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <ReactionHeaderItem {...baseProps}/>
+            <ReactionHeaderItem {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -30,7 +30,7 @@ describe('ReactionHeaderItem', () => {
 
     test('should match snapshot, renderContent', () => {
         const wrapper = shallow(
-            <ReactionHeaderItem {...baseProps}/>
+            <ReactionHeaderItem {...baseProps}/>,
         );
 
         expect(wrapper.instance().renderContent()).toMatchSnapshot();
@@ -45,7 +45,7 @@ describe('ReactionHeaderItem', () => {
             <ReactionHeaderItem
                 {...baseProps}
                 onPress={onPress}
-            />
+            />,
         );
 
         wrapper.instance().handleOnPress();

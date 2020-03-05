@@ -30,7 +30,7 @@ export const getChannelIdsForExtensionTeam = createIdsSelector(
     getChannelsInTeam,
     (teamId, channelsInTeam) => {
         return Array.from(channelsInTeam[teamId] || []);
-    }
+    },
 );
 
 export const getExtensionSortedPublicChannels = createSelector(
@@ -56,7 +56,7 @@ export const getExtensionSortedPublicChannels = createSelector(
 
             return publicChannels;
         }, []).sort(sortChannelsByDisplayName.bind(null, locale));
-    }
+    },
 );
 
 export const getExtensionSortedPrivateChannels = createSelector(
@@ -82,7 +82,7 @@ export const getExtensionSortedPrivateChannels = createSelector(
 
             return privateChannels;
         }, []).sort(sortChannelsByDisplayName.bind(null, locale));
-    }
+    },
 );
 
 export const getExtensionSortedDirectChannels = createSelector(
@@ -132,7 +132,7 @@ export const getExtensionSortedDirectChannels = createSelector(
             return completeDirectChannelDisplayName(currentUser.id, profiles, profilesInChannel[id], settings, channel);
         }).sort(sortChannelsByDisplayName.bind(null, locale));
         return directChannels;
-    }
+    },
 );
 
 function completeDirectGroupInfo(currentUserId, profiles, profilesInChannel, teammateNameDisplay, channel) {

@@ -16,8 +16,12 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.mattermost.share.RealPathUtil;
+import com.mattermost.share.ShareModule;
 
 import java.io.FileNotFoundException;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 
 public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteListener {
@@ -83,6 +87,14 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         // Get fileName
         String fileName = URLUtil.guessFileName(uri, null, mimeType);
 
+        if (uri.contains(ShareModule.CACHE_DIR_NAME)) {
+            uri = moveToImagesCache(uri, fileName);
+        }
+
+        if (uri == null) {
+            return;
+        }
+
         // Get fileSize
         long fileSize;
         try {
@@ -118,5 +130,25 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
                         "onPaste",
                         event
                 );
+    }
+
+    private String moveToImagesCache(String src, String fileName) {
+        ReactContext ctx = (ReactContext)mEditText.getContext();
+        String cacheFolder = ctx.getCacheDir().getAbsolutePath() + "/Images/";
+        String dest = cacheFolder + fileName;
+        File folder = new File(cacheFolder);
+
+
+        try {
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
+            Files.move(Paths.get(src), Paths.get(dest));
+        } catch (Exception err) {
+            return null;
+        }
+
+        return dest;
     }
 }

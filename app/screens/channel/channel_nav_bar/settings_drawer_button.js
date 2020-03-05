@@ -17,7 +17,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 class SettingDrawerButton extends PureComponent {
     static propTypes = {
-        openDrawer: PropTypes.func.isRequired,
+        openSidebar: PropTypes.func.isRequired,
         theme: PropTypes.object,
     };
 
@@ -26,7 +26,7 @@ class SettingDrawerButton extends PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        this.props.openDrawer();
+        this.props.openSidebar();
     });
 
     render() {

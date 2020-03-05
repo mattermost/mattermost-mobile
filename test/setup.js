@@ -50,6 +50,7 @@ jest.doMock('react-native', () => {
         },
         MattermostShare: {
             close: jest.fn(),
+            cacheDirName: 'mmShare',
         },
         PlatformConstants: {
             forceTouchAvailable: false,
@@ -83,6 +84,7 @@ jest.doMock('react-native', () => {
         RNDocumentPicker: {
             pick: jest.fn(),
         },
+        RNPermissions: {},
     };
 
     return Object.setPrototypeOf({
@@ -161,7 +163,6 @@ jest.mock('app/actions/navigation', () => ({
     showModal: jest.fn(),
     showModalOverCurrentContext: jest.fn(),
     showSearchModal: jest.fn(),
-    peek: jest.fn(),
     setButtons: jest.fn(),
     showOverlay: jest.fn(),
     mergeNavigationOptions: jest.fn(),
@@ -198,12 +199,6 @@ beforeEach(() => {
     logs = [];
     warns = [];
     errors = [];
-});
-
-afterEach(() => {
-    if (logs.length > 0 || warns.length > 0 || errors.length > 0) {
-        throw new Error('Unexpected console logs' + logs + warns + errors);
-    }
 });
 
 jest.mock('rn-fetch-blob', () => ({

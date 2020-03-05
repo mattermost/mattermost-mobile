@@ -93,7 +93,7 @@ export default class ChannelLoader extends PureComponent {
 
     stopLoadingAnimation = () => {
         Animated.timing(
-            this.state.barsOpacity
+            this.state.barsOpacity,
         ).stop();
     }
 

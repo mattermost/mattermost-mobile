@@ -34,7 +34,7 @@ describe('ExtensionPost', () => {
     };
 
     const wrapper = shallowWithIntl(
-        <ExtensionPost {...baseProps}/>
+        <ExtensionPost {...baseProps}/>,
     );
 
     const instance = wrapper.instance();

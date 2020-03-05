@@ -122,7 +122,7 @@ export default class PostOptions extends PureComponent {
         if (canCopyPermalink) {
             const key = 'permalink';
             const icon = 'link';
-            const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Permalink'};
+            const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Link'};
             const onPress = this.handleCopyPermalink;
 
             return this.getOption(key, icon, message, onPress);
@@ -357,7 +357,7 @@ export default class PostOptions extends PureComponent {
                         actions.removePost(post);
                     });
                 },
-            }]
+            }],
         );
     };
 

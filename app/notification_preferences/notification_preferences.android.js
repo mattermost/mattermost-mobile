@@ -18,7 +18,7 @@ export default {
             let granted;
             if (!hasPermission) {
                 granted = await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+                    PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
                 );
             }
 

@@ -80,6 +80,7 @@ NotificationSettingsMentionsKeywords {
         "useCallback": [Function],
         "useContext": [Function],
         "useDebugValue": [Function],
+        "useDeferredValue": [Function],
         "useEffect": [Function],
         "useImperativeHandle": [Function],
         "useLayoutEffect": [Function],
@@ -88,6 +89,7 @@ NotificationSettingsMentionsKeywords {
         "useRef": [Function],
         "useResponder": [Function],
         "useState": [Function],
+        "useTransition": [Function],
       },
       "_element": <NotificationSettingsMentionsKeywords
         componentId="component-id"
@@ -167,7 +169,7 @@ NotificationSettingsMentionsKeywords {
         }
       >
         <Connect(StatusBar) />
-        <ScrollViewMock
+        <ScrollView
           alwaysBounceVertical={false}
           contentContainerStyle={
             Object {
@@ -243,7 +245,7 @@ NotificationSettingsMentionsKeywords {
               }
             />
           </View>
-        </ScrollViewMock>
+        </ScrollView>
       </View>,
       "_rendering": false,
       "_updater": [Circular],

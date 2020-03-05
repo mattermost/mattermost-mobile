@@ -13,10 +13,8 @@ import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {isDocument, isGif, isVideo} from 'app/utils/file';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {previewImageAtIndex} from 'app/utils/images';
 import {preventDoubleTap} from 'app/utils/tap';
-import {emptyFunction} from 'app/utils/general';
 
 import FileAttachment from './file_attachment';
 
@@ -43,14 +41,13 @@ export default class FileAttachmentList extends PureComponent {
         files: [],
     };
 
+    state = {};
+
     constructor(props) {
         super(props);
 
         this.items = [];
         this.filesForGallery = this.getFilesForGallery(props);
-        this.state = {
-            loadingFiles: props.files.length === 0,
-        };
 
         this.buildGalleryFiles().then((results) => {
             this.galleryFiles = results;
@@ -71,17 +68,14 @@ export default class FileAttachmentList extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.files !== nextProps.files) {
-            this.filesForGallery = this.getFilesForGallery(nextProps);
+    componentDidUpdate(prevProps) {
+        if (prevProps.files !== this.props.files) {
+            this.filesForGallery = this.getFilesForGallery(this.props);
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
         }
-        if (!this.state.loadingFiles && nextProps.files.length === 0) {
-            this.setState({
-                loadingFiles: true,
-            });
+        if (this.props.files !== prevProps.files && this.props.files.length === 0) {
             this.loadFilesForPost();
         }
     }
@@ -127,9 +121,9 @@ export default class FileAttachmentList extends PureComponent {
                 if (file.localPath) {
                     uri = file.localPath;
                 } else if (isGif(file)) {
-                    uri = await ImageCacheManager.cache(file.name, Client4.getFileUrl(file.id), emptyFunction); // eslint-disable-line no-await-in-loop
+                    uri = Client4.getFileUrl(file.id);
                 } else {
-                    uri = await ImageCacheManager.cache(file.name, Client4.getFilePreviewUrl(file.id), emptyFunction); // eslint-disable-line no-await-in-loop
+                    uri = Client4.getFilePreviewUrl(file.id);
                 }
 
                 results.push({
@@ -206,9 +200,6 @@ export default class FileAttachmentList extends PureComponent {
 
     loadFilesForPost = async () => {
         await this.props.actions.loadFilesForPostIfNecessary(this.props.postId);
-        this.setState({
-            loadingFiles: false,
-        });
     }
 
     renderItems = (items, moreImagesCount, includeGutter = false) => {

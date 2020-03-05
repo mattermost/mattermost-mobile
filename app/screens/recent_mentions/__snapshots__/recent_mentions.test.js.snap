@@ -9,9 +9,42 @@ exports[`RecentMentions should match snapshot 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <NoResults
-    description="Messages containing your username and other words that trigger mentions will appear here."
-    iconName="ios-at"
+  <Connect(ChannelLoader)
+    channelIsLoading={true}
+  />
+</View>
+`;
+
+exports[`RecentMentions should match snapshot when component waiting for response 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <Connect(ChannelLoader)
+    channelIsLoading={true}
+  />
+</View>
+`;
+
+exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(StatusBar) />
+  <FailedNetworkAction
+    actionDefaultMessage="try again"
+    actionId="mobile.failed_network_action.retry"
+    errorDefaultMessage="Messages will load when you have an internet connection or {tryAgainAction}."
+    errorId="mobile.failed_network_action.shortDescription"
+    onRetry={[Function]}
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -41,7 +74,6 @@ exports[`RecentMentions should match snapshot 1`] = `
         "type": "Mattermost",
       }
     }
-    title="No Recent Mentions"
   />
 </View>
 `;

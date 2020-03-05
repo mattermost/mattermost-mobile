@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.RestrictionsManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import io.sentry.RNSentryModule;
 import com.dylanvann.fastimage.FastImageViewPackage;
 import com.levelasquez.androidopensettings.AndroidOpenSettings;
 import com.mkuczera.RNReactNativeHapticFeedbackModule;
+import com.reactnativecommunity.rnpermissions.RNPermissionsModule;
 
 import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.brentvatne.react.ReactVideoPackage;
@@ -70,6 +72,7 @@ import com.mattermost.share.RealPathUtil;
 
 import io.expo.appearance.RNCAppearancePackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
+import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
@@ -156,6 +159,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return new AndroidOpenSettings(reactContext);
                   case "RNReactNativeHapticFeedbackModule":
                     return new RNReactNativeHapticFeedbackModule(reactContext);
+                  case "RNPermissions":
+                    return new RNPermissionsModule(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                 }
@@ -190,6 +195,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put(NetInfoModule.NAME, new ReactModuleInfo(NetInfoModule.NAME, "com.reactnativecommunity.netinfo.NetInfoModule", false, false, false, false, false));
                     map.put("RNAndroidOpenSettings", new ReactModuleInfo("RNAndroidOpenSettings", "com.levelasquez.androidopensettings.AndroidOpenSettings", false, false, false, false, false));
                     map.put("RNReactNativeHapticFeedbackModule", new ReactModuleInfo("RNReactNativeHapticFeedback", "com.mkuczera.RNReactNativeHapticFeedbackModule", false, false, false, false, false));
+                    map.put("RNPermissions", new ReactModuleInfo("RNPermissions", "com.reactnativecommunity.rnpermissions.RNPermissionsModule", false, false, false, false, false));
                     return map;
                   }
                 };
@@ -203,7 +209,8 @@ public class MainApplication extends NavigationApplication implements INotificat
             new RNGestureHandlerPackage(),
             new RNPasteableTextInputPackage(),
             new SplashScreenReactPackage(),
-            new RNCAppearancePackage()
+            new RNCAppearancePackage(),
+            new HWKeyboardEventPackage()
     );
   }
 
@@ -213,7 +220,7 @@ public class MainApplication extends NavigationApplication implements INotificat
     instance = this;
 
     // Delete any previous temp files created by the app
-    File tempFolder = new File(getApplicationContext().getCacheDir(), "mmShare");
+    File tempFolder = new File(getApplicationContext().getCacheDir(), ShareModule.CACHE_DIR_NAME);
     RealPathUtil.deleteTempFiles(tempFolder);
     Log.i("ReactNative", "Cleaning temp cache " + tempFolder.getAbsolutePath());
 

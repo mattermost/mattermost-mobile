@@ -21,7 +21,7 @@ export const getAllowedThemes = createSelector(
             acceptableThemes = allThemes.filter((theme) => allowedThemeKeys.includes(theme.key));
         }
         return acceptableThemes;
-    }
+    },
 );
 
 export const getCustomTheme = createSelector(
@@ -35,5 +35,5 @@ export const getCustomTheme = createSelector(
             };
         }
         return null;
-    }
+    },
 );

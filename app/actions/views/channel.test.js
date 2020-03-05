@@ -5,7 +5,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import initialState from 'app/initial_state';
-import {ViewTypes} from 'app/constants';
+import {ChannelTypes} from 'mattermost-redux/action_types';
 import testHelper from 'test/test_helper';
 
 import * as ChannelActions from 'app/actions/views/channel';
@@ -116,14 +116,21 @@ describe('Actions.Views.Channel', () => {
             },
             channels: {
                 currentChannelId,
+                channels: {
+                    'channel-id': {id: 'channel-id', display_name: 'Test Channel'},
+                    'channel-id-2': {id: 'channel-id-2', display_name: 'Test Channel'},
+                },
+                myMembers: {
+                    'channel-id': {channel_id: 'channel-id', user_id: currentUserId, mention_count: 0, msg_count: 0},
+                    'channel-id-2': {channel_id: 'channel-id-2', user_id: currentUserId, mention_count: 0, msg_count: 0},
+                },
             },
             teams: {
+                currentTeamId,
                 teams: {
-                    currentTeamId,
-                    currentTeams: {
-                        [currentTeamId]: {
-                            name: currentTeamName,
-                        },
+                    [currentTeamId]: {
+                        id: currentTeamId,
+                        name: currentTeamName,
                     },
                 },
             },
@@ -135,6 +142,9 @@ describe('Actions.Views.Channel', () => {
     channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
     channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));
 
+    const appChannelSelectors = require('app/selectors/channel');
+    appChannelSelectors.getChannelReachable = jest.fn(() => true);
+
     test('handleSelectChannelByName success', async () => {
         store = mockStore(storeObj);
 
@@ -144,15 +154,14 @@ describe('Actions.Views.Channel', () => {
         const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
         expect(receivedChannel).toBe(true);
 
-        const storeBatchActions = storeActions.filter(({type}) => type === 'BATCHING_REDUCER.BATCH');
-        const selectedChannel = storeBatchActions[0].payload.some((action) => action.type === MOCK_SELECT_CHANNEL_TYPE);
+        const selectedChannel = storeActions.some(({type}) => type === MOCK_RECEIVE_CHANNEL_TYPE);
         expect(selectedChannel).toBe(true);
     });
 
     test('handleSelectChannelByName failure from null currentTeamName', async () => {
         const failStoreObj = {...storeObj};
-        failStoreObj.entities.teams.teams.currentTeamId = 'not-in-current-teams';
-        store = mockStore(storeObj);
+        failStoreObj.entities.teams.currentTeamId = 'not-in-current-teams';
+        store = mockStore(failStoreObj);
 
         await store.dispatch(handleSelectChannelByName(currentChannelName, null));
 
@@ -162,6 +171,36 @@ describe('Actions.Views.Channel', () => {
 
         const storeBatchActions = storeActions.some(({type}) => type === 'BATCHING_REDUCER.BATCH');
         expect(storeBatchActions).toBe(false);
+    });
+
+    test('handleSelectChannelByName failure from no permission to channel', async () => {
+        store = mockStore({...storeObj});
+        actions.getChannelByNameAndTeamName = jest.fn(() => {
+            return {
+                type: 'MOCK_ERROR',
+                error: {
+                    message: "Can't get to channel.",
+                },
+            };
+        });
+
+        await store.dispatch(handleSelectChannelByName(currentChannelName, currentTeamName));
+
+        const storeActions = store.getActions();
+        const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
+        expect(receivedChannel).toBe(false);
+    });
+
+    test('handleSelectChannelByName failure from unreachable channel', async () => {
+        appChannelSelectors.getChannelReachable = jest.fn(() => false);
+
+        store = mockStore(storeObj);
+
+        await store.dispatch(handleSelectChannelByName(currentChannelName, currentTeamName));
+
+        const storeActions = store.getActions();
+        const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
+        expect(receivedChannel).toBe(false);
     });
 
     test('loadPostsIfNecessaryWithRetry for the first time', async () => {
@@ -245,35 +284,44 @@ describe('Actions.Views.Channel', () => {
     });
 
     const handleSelectChannelCases = [
-        [currentChannelId, true],
-        [currentChannelId, false],
-        [`not-${currentChannelId}`, true],
-        [`not-${currentChannelId}`, false],
+        [currentChannelId],
+        [`${currentChannelId}-2`],
+        [`not-${currentChannelId}`],
+        [`not-${currentChannelId}-2`],
     ];
-    test.each(handleSelectChannelCases)('handleSelectChannel dispatches selectChannelWithMember', async (channelId, fromPushNotification) => {
-        store = mockStore({...storeObj});
+    test.each(handleSelectChannelCases)('handleSelectChannel dispatches selectChannelWithMember', async (channelId) => {
+        const testObj = {...storeObj};
+        testObj.entities.teams.currentTeamId = currentTeamId;
+        store = mockStore(testObj);
 
-        await store.dispatch(handleSelectChannel(channelId, fromPushNotification));
+        await store.dispatch(handleSelectChannel(channelId));
         const storeActions = store.getActions();
-        const storeBatchActions = storeActions.find(({type}) => type === 'BATCHING_REDUCER.BATCH');
-        const selectChannelWithMember = storeBatchActions.payload.find(({type}) => type === ViewTypes.SELECT_CHANNEL_WITH_MEMBER);
+        const selectChannelWithMember = storeActions.find(({type}) => type === ChannelTypes.SELECT_CHANNEL);
         const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
         const readAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_READ);
 
         const expectedSelectChannelWithMember = {
-            type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
+            type: ChannelTypes.SELECT_CHANNEL,
             data: channelId,
-            channel: {
-                data: channelId,
-            },
-            member: {
-                data: {
-                    member: {},
+            extra: {
+                channel: {
+                    id: channelId,
+                    display_name: 'Test Channel',
                 },
+                member: {
+                    channel_id: channelId,
+                    user_id: currentUserId,
+                    mention_count: 0,
+                    msg_count: 0,
+                },
+                teamId: currentTeamId,
             },
-
         };
-        expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+        if (channelId.includes('not') || channelId === currentChannelId) {
+            expect(selectChannelWithMember).toBe(undefined);
+        } else {
+            expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);
+        }
         expect(viewedAction).not.toBe(null);
         expect(readAction).not.toBe(null);
     });

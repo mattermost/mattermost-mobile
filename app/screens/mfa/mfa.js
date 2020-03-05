@@ -15,8 +15,6 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -34,7 +32,7 @@ export default class Mfa extends PureComponent {
         }).isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        loginRequest: PropTypes.object.isRequired,
+        onMfaComplete: PropTypes.func.isRequired,
     };
 
     constructor(props) {
@@ -43,20 +41,13 @@ export default class Mfa extends PureComponent {
         this.state = {
             token: '',
             error: null,
+            isLoading: false,
         };
     }
 
     componentDidMount() {
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
-        }
-    }
-
-    componentDidUpdate(prevProps) {
-        // In case the login is successful the previous scene (login) will take care of the transition
-        if (prevProps.loginRequest.status === RequestStatus.STARTED &&
-            this.props.loginRequest.status === RequestStatus.FAILURE) {
-            popTopScreen();
         }
     }
 
@@ -86,8 +77,11 @@ export default class Mfa extends PureComponent {
     };
 
     submit = preventDoubleTap(() => {
+        const {actions, loginId, password, onMfaComplete} = this.props;
+        const {token} = this.state;
+
         Keyboard.dismiss();
-        if (!this.state.token) {
+        if (!token) {
             this.setState({
                 error: {
                     intl: {
@@ -99,11 +93,17 @@ export default class Mfa extends PureComponent {
             return;
         }
         setMfaPreflightDone(true);
-        this.props.actions.login(this.props.loginId, this.props.password, this.state.token);
+        this.setState({isLoading: true});
+        actions.login(loginId, password, token).then(() => {
+            if (!onMfaComplete()) {
+                popTopScreen();
+            }
+            this.setState({isLoading: false});
+        });
     });
 
     render() {
-        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED;
+        const {isLoading} = this.state;
 
         let proceed;
         if (isLoading) {

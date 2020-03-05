@@ -21,8 +21,6 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
@@ -60,7 +58,6 @@ export default class Login extends PureComponent {
         license: PropTypes.object.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        loginRequest: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -75,6 +72,7 @@ export default class Login extends PureComponent {
             colorStyles: getColorStyles(Appearance.getColorScheme()),
             error: null,
             logo: getLogo(Appearance.getColorScheme()),
+            isLoading: false,
         };
     }
 
@@ -91,14 +89,6 @@ export default class Login extends PureComponent {
         });
 
         setMfaPreflightDone(false);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.handleSuccessfulLogin().then(this.goToChannel);
-        } else if (this.props.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            this.setState({isLoading: false});
-        }
     }
 
     componentWillUnmount() {
@@ -122,7 +112,7 @@ export default class Login extends PureComponent {
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        goToScreen(screen, title, {}, getStyledNavigationOptions(colorStyles));
+        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse}, , getStyledNavigationOptions(colorStyles));
     };
 
     blur = () => {
@@ -200,16 +190,32 @@ export default class Login extends PureComponent {
     };
 
     signIn = () => {
-        const {actions, loginId, loginRequest, password} = this.props;
-        if (loginRequest.status !== RequestStatus.STARTED) {
-            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse);
+        const {actions, loginId, password} = this.props;
+        const {isLoading} = this.state;
+        if (isLoading) {
+            actions.login(loginId.toLowerCase(), password).
+                then(this.checkLoginResponse);
         }
     };
 
     checkLoginResponse = (data) => {
         if (mfaExpectedErrors.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
             this.goToMfa();
+            this.setState({isLoading: false});
+            return false;
         }
+
+        if (data?.error) {
+            this.setState({
+                error: this.getLoginErrorMessage(data.error),
+                isLoading: false,
+            });
+            return false;
+        }
+
+        this.setState({isLoading: false});
+        resetToChannel();
+        return true;
     };
 
     createLoginPlaceholder() {
@@ -245,16 +251,15 @@ export default class Login extends PureComponent {
         return '';
     }
 
-    getLoginErrorMessage = () => {
-        const error = this.getServerErrorForLogin() || this.state.error;
+    getLoginErrorMessage = (error) => {
+        const error = this.getServerErrorForLogin(error) || this.state.error;
         if (error && this.loginId && this.passwd) {
             this.setErrorStyle();
         }
         return error;
     };
 
-    getServerErrorForLogin = () => {
-        const {error} = this.props.loginRequest;
+    getServerErrorForLogin = (error) => {
         if (!error) {
             return null;
         }
@@ -336,9 +341,7 @@ export default class Login extends PureComponent {
     }
 
     render() {
-        const {colorStyles, logo} = this.state;
-
-        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
+        const {colorStyles, logo, isLoading} = this.state;
 
         let proceed;
         if (isLoading) {
@@ -397,7 +400,10 @@ export default class Login extends PureComponent {
         return (
             <View style={[GlobalStyles.container, colorStyles.container]}>
                 <StatusBar/>
-                <TouchableWithoutFeedback onPress={this.blur}>
+                <TouchableWithoutFeedback
+                    onPress={this.blur}
+                    accessible={false}
+                >
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={[GlobalStyles.container, colorStyles.container]}
@@ -418,6 +424,7 @@ export default class Login extends PureComponent {
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
+                        <ErrorText error={this.state.error}/>
                         <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}

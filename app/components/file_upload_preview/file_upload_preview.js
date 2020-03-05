@@ -4,23 +4,29 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    InteractionManager,
     ScrollView,
-    StyleSheet,
     Text,
     View,
+    Platform,
 } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FileUploadItem from './file_upload_item';
+
+const showFiles = {opacity: 1, height: 68};
+const hideFiles = {opacity: 0, height: 0};
+const hideError = {height: 0};
 
 export default class FileUploadPreview extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
-        deviceHeight: PropTypes.number.isRequired,
         files: PropTypes.array.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
         rootId: PropTypes.string,
@@ -36,14 +42,28 @@ export default class FileUploadPreview extends PureComponent {
         showFileMaxWarning: false,
     };
 
+    errorRef = React.createRef();
+    errorContainerRef = React.createRef();
+    containerRef = React.createRef();
+
     componentDidMount() {
         EventEmitter.on('fileMaxWarning', this.handleFileMaxWarning);
         EventEmitter.on('fileSizeWarning', this.handleFileSizeWarning);
+
+        if (this.props.files.length) {
+            InteractionManager.runAfterInteractions(this.showOrHideContainer);
+        }
     }
 
     componentWillUnmount() {
         EventEmitter.off('fileMaxWarning', this.handleFileMaxWarning);
         EventEmitter.off('fileSizeWarning', this.handleFileSizeWarning);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.containerRef.current && this.props.files.length !== prevProps.files.length) {
+            InteractionManager.runAfterInteractions(this.showOrHideContainer);
+        }
     }
 
     buildFilePreviews = () => {
@@ -60,35 +80,77 @@ export default class FileUploadPreview extends PureComponent {
         });
     };
 
+    clearErrorsFromState = (delay) => {
+        setTimeout(() => {
+            this.setState({
+                showFileMaxWarning: false,
+                fileSizeWarning: null,
+            });
+        }, delay || 0);
+    }
+
     handleFileMaxWarning = () => {
         this.setState({showFileMaxWarning: true});
-        setTimeout(() => {
-            this.setState({showFileMaxWarning: false});
-        }, 3000);
+        if (this.errorRef.current) {
+            this.makeErrorVisible(true, 20);
+            setTimeout(() => {
+                this.makeErrorVisible(false, 20);
+            }, 5000);
+        }
     };
 
     handleFileSizeWarning = (message) => {
-        this.setState({fileSizeWarning: message});
+        if (this.errorRef.current) {
+            if (message) {
+                this.setState({fileSizeWarning: message.replace(': ', ':\n')});
+                this.makeErrorVisible(true, 40);
+            } else {
+                this.makeErrorVisible(false, 20);
+            }
+        }
     };
 
-    render() {
+    makeErrorVisible = (visible, height) => {
+        if (this.errorContainerRef.current) {
+            if (visible) {
+                this.errorContainerRef.current.transition(hideError, {height}, 200, 'ease-out');
+            } else {
+                this.errorContainerRef.current.transition({height}, hideError, 200, 'ease-in');
+            }
+        }
+    }
+
+    showOrHideContainer = () => {
         const {
             channelIsLoading,
             filesUploadingForCurrentChannel,
-            deviceHeight,
             files,
         } = this.props;
-        const {fileSizeWarning, showFileMaxWarning} = this.state;
-        if (
-            !fileSizeWarning && !showFileMaxWarning &&
-            (channelIsLoading || (!files.length && !filesUploadingForCurrentChannel))
-        ) {
-            return null;
+
+        if ((channelIsLoading || (!files.length && !filesUploadingForCurrentChannel))) {
+            this.containerRef.current.transition(showFiles, hideFiles, 150, 'ease-out');
+            this.shown = false;
+        } else if (files.length && !this.shown) {
+            this.containerRef.current.transition(hideFiles, showFiles, 350, 'ease-in');
+            this.shown = true;
         }
+    }
+
+    render() {
+        const {fileSizeWarning, showFileMaxWarning} = this.state;
+        const {theme, files} = this.props;
+        const style = getStyleSheet(theme);
+        const fileContainerStyle = {
+            paddingBottom: files.length ? 5 : 0,
+        };
 
         return (
-            <View>
-                <View style={[style.container, {height: deviceHeight}]}>
+            <View style={style.previewContainer}>
+                <Animatable.View
+                    style={[style.fileContainer, fileContainerStyle]}
+                    ref={this.containerRef}
+                    isInteraction={true}
+                >
                     <ScrollView
                         horizontal={true}
                         style={style.scrollView}
@@ -97,43 +159,70 @@ export default class FileUploadPreview extends PureComponent {
                     >
                         {this.buildFilePreviews()}
                     </ScrollView>
-                    {showFileMaxWarning && (
-                        <FormattedText
-                            style={style.warning}
-                            id='mobile.file_upload.max_warning'
-                            defaultMessage='Uploads limited to 5 files maximum.'
-                        />
-                    )}
-                    {Boolean(fileSizeWarning) &&
-                        <Text style={style.warning}>
-                            {fileSizeWarning}
-                        </Text>
-                    }
-                </View>
+                </Animatable.View>
+                <Animatable.View
+                    ref={this.errorContainerRef}
+                    style={style.errorContainer}
+                    isInteraction={true}
+                >
+                    <Animatable.View
+                        ref={this.errorRef}
+                        isInteraction={true}
+                        style={style.errorTextContainer}
+                        useNativeDriver={true}
+                    >
+                        {showFileMaxWarning && (
+                            <FormattedText
+                                style={style.warning}
+                                id='mobile.file_upload.max_warning'
+                                defaultMessage='Uploads limited to 5 files maximum.'
+                            />
+                        )}
+                        {Boolean(fileSizeWarning) &&
+                            <Text style={style.warning}>
+                                {fileSizeWarning}
+                            </Text>
+                        }
+                    </Animatable.View>
+                </Animatable.View>
             </View>
         );
     }
 }
 
-const style = StyleSheet.create({
-    container: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        left: 0,
-        bottom: 0,
-        position: 'absolute',
-        width: '100%',
-    },
-    scrollView: {
-        flex: 1,
-        marginBottom: 10,
-    },
-    scrollViewContent: {
-        alignItems: 'flex-end',
-        marginLeft: 14,
-    },
-    warning: {
-        color: 'white',
-        marginLeft: 14,
-        marginBottom: 10,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        previewContainer: {
+            display: 'flex',
+            flexDirection: 'column',
+        },
+        fileContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            height: 0,
+        },
+        errorContainer: {
+            height: 0,
+        },
+        errorTextContainer: {
+            marginTop: Platform.select({
+                ios: 4,
+                android: 2,
+            }),
+            marginHorizontal: 12,
+            flex: 1,
+        },
+        scrollView: {
+            flex: 1,
+        },
+        scrollViewContent: {
+            alignItems: 'flex-end',
+            paddingRight: 12,
+        },
+        warning: {
+            color: theme.errorTextColor,
+            flex: 1,
+            flexWrap: 'wrap',
+        },
+    };
 });

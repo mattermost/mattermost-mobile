@@ -21,6 +21,7 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {NavigationTypes} from 'app/constants';
 import {alertErrorWithFallback, emptyFunction} from 'app/utils/general';
 import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {
@@ -228,10 +229,10 @@ export default class MoreChannels extends PureComponent {
 
             if (isPublic) {
                 this.publicPage += 1;
-                this.nextPublic = (data && !data.length);
+                this.nextPublic = data?.length > 0;
             } else {
                 this.archivedPage += 1;
-                this.nextArchived = (data && !data.length);
+                this.nextArchived = data?.length > 0;
             }
 
             this.setState({loading: false});
@@ -259,7 +260,7 @@ export default class MoreChannels extends PureComponent {
                 },
                 {
                     displayName: channel ? channel.display_name : '',
-                }
+                },
             );
             this.setHeaderButtons(true);
             this.setState({adding: false});
@@ -271,7 +272,7 @@ export default class MoreChannels extends PureComponent {
             }
             await actions.handleSelectChannel(id);
 
-            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
             requestAnimationFrame(() => {
                 this.close();
             });

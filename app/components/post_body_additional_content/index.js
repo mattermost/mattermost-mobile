@@ -54,7 +54,7 @@ function makeMapStateToProps() {
 
         const removeLinkPreview = ownProps.postProps.remove_link_preview === 'true';
 
-        let openGraphData = getOpenGraphMetadataForUrl(state, link);
+        let openGraphData = getOpenGraphMetadataForUrl(state, ownProps.postId, link);
         if (!openGraphData) {
             const data = getOpenGraphData(ownProps.metadata, link);
             openGraphData = data?.data;

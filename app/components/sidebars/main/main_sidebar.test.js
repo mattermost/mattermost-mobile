@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform} from 'react-native';
 import {shallow} from 'enzyme';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import {DeviceTypes} from 'app/constants';
 
-import MainSidebar from './main_sidebar';
+import MainSidebar from './main_sidebar.ios';
 
 jest.mock('react-intl');
 
@@ -34,7 +33,7 @@ describe('MainSidebar', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -42,7 +41,7 @@ describe('MainSidebar', () => {
 
     test('should not set the permanentSidebar state if not Tablet', () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
 
         wrapper.instance().handlePermanentSidebar();
@@ -51,7 +50,7 @@ describe('MainSidebar', () => {
 
     test('should set the permanentSidebar state if Tablet', async () => {
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
 
         DeviceTypes.IS_TABLET = true;
@@ -73,7 +72,7 @@ describe('MainSidebar', () => {
         };
 
         const wrapper = shallow(
-            <MainSidebar {...props}/>
+            <MainSidebar {...props}/>,
         );
 
         const instance = wrapper.instance();
@@ -85,24 +84,11 @@ describe('MainSidebar', () => {
     });
 
     test('should render main sidebar below PostList for iOS', () => {
-        Platform.OS = 'ios';
-
         const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
+            <MainSidebar {...baseProps}/>,
         );
         const drawer = wrapper.dive().childAt(1);
         const drawerStyle = drawer.props().style.reduce((acc, obj) => ({...acc, ...obj}));
         expect(drawerStyle).toHaveProperty('zIndex', 0);
-    });
-
-    test('should render main sidebar above PostList for android', () => {
-        Platform.OS = 'android';
-
-        const wrapper = shallow(
-            <MainSidebar {...baseProps}/>
-        );
-        const drawer = wrapper.dive().childAt(1);
-        const drawerStyle = drawer.props().style.reduce((acc, obj) => ({...acc, ...obj}));
-        expect(drawerStyle).toHaveProperty('zIndex', 3);
     });
 });

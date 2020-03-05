@@ -39,7 +39,7 @@ jest.mock('react-native-notifications', () => {
 
 describe('ChannelDrawerButton', () => {
     const baseProps = {
-        openDrawer: jest.fn(),
+        openSidebar: jest.fn(),
         badgeCount: 0,
         theme: Preferences.THEMES.default,
         visible: false,
@@ -49,7 +49,7 @@ describe('ChannelDrawerButton', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...baseProps}/>
+            <ChannelDrawerButton {...baseProps}/>,
         );
 
         // no badge to show
@@ -70,7 +70,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         shallowWithIntl(
-            <ChannelDrawerButton {...props}/>
+            <ChannelDrawerButton {...props}/>,
         );
         expect(setApplicationIconBadgeNumber).not.toBeCalled();
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(0));
@@ -84,7 +84,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         shallowWithIntl(
-            <ChannelDrawerButton {...props}/>
+            <ChannelDrawerButton {...props}/>,
         );
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledTimes(1);
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(1));
@@ -98,7 +98,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...props}/>
+            <ChannelDrawerButton {...props}/>,
         );
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(0));
 
@@ -116,7 +116,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...props}/>
+            <ChannelDrawerButton {...props}/>,
         );
         wrapper.setProps({badgeCount: 2});
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(2);

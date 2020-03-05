@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Analytics from 'analytics-react-native';
 import DeviceInfo from 'react-native-device-info';
 import {Dimensions} from 'react-native';
 
@@ -10,9 +9,13 @@ import Config from 'assets/config';
 import tracker from './time_tracker';
 
 let diagnosticId;
+let Analytics;
 
 export function init(config) {
     if (!global.analytics) {
+        if (!Analytics) {
+            Analytics = require('analytics-react-native').default;
+        }
         diagnosticId = config.DiagnosticId;
         const {height, width} = Dimensions.get('window');
         global.analytics = new Analytics(Config.SegmentApiKey, {

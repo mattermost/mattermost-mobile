@@ -1,5 +1,157 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.28.0 Release
+- Release Date: February 16, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Highlights
+
+#### UI/UX Improvements to the Post Draft Area
+ - Links added to facilitate easier access to common functions:
+   - finding channel members for @mentioning;
+   - finding and referencing slash commands;
+   - attaching photos and videos;
+   - accessing the camera
+
+#### Deep Linking
+ - Links to posts in email notifications now launch to a browser landing page with option to open in the Mobile app.
+
+### Improvements
+ - Removed markdown rendering from Channel Purpose in channel info screen.
+ - Improved channel info transition so that it opens up as a modal rather than as a drawer from the right.
+ - Clicking on the time in the iOS status bar now scrolls up the center channel.
+ - Improved the sliding behaviour of the left-hand sidebar on iOS.
+ - Added more responsiveness to markdown tables.
+ - User's own username with a suffix 'you' is now shown in the username autocomplete.
+ - Improved sorting of emojis in the emoji picker so that thumbsup is sorted first, then thumbsdown, and then custom emoji.
+
+### Bug Fixes
+ - Fixed an issue on Android where the app displayed an incorrect timestamp when the experimental Timezone setting was disabled.
+ - Fixed an issue where combined system messages with many users listed hid posts above them.
+ - Fixed an issue on iOS where the app crashed when pasting a GIF via the keyboard.
+ - Fixed an issue where explicit links to teams and channels on the same server currently logged in to didn't switch to that team and channel.
+ - Fixed an issue where the keyboard glitched when returning to the main channel view after viewing a code block in the right-hand side.
+ - Fixed an issue with default boolean values in interactive dialogs.
+ 
+### Known Issues
+ - Markdown tables are missing a header colour.
+
+## 1.27.1 Release
+- Release Date: January 21, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue where all previously auto-closed Direct Message channels were listed in the channel sidebar.
+ - Fixed a regression affecting webapp and mobile apps where some users were experiencing client-side performance issues. This was mainly affecting users with more than 100 channels listed in the channel sidebar and with channels sorted alphabetically.
+
+## 1.27.0 Release
+- Release Date: January 16, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue where flaky networks caused users to miss messages when at the top of the channel.
+ - Fixed an issue where uploading image attachments in the mobile app was not working in some cases.
+ - Fixed an issue where joining a user's first team from the mobile apps failed.
+ - Fixed an issue where an unexpected `More New Messages Above` line appeared when marking a first post as unread in a Direct Message or Group Message channel.
+ - Fixed an issue where disagreeing with custom Terms of Service gives users a glimpse of the app.
+ - Fixed an issue on Android where the Back button did not dismiss the modal before dismissing the sidebar.
+ - Fixed an issue where a message draft was lost after attempting to post an invalid slash command.
+ - Fixed an issue where timestamps on 12-hour format had a leading zero.
+ - Fixed an issue where the display name of a post was truncated even when there was enough space to render it on landscape.
+ - Fixed an issue where the post input field icon was mis-aligned.
+ - Fixed an issue where system message mentions were not at 100% opacity compared to non-system messages.
+ 
+### Known Issues
+ - Text box obstructs bottom part of messages in Direct Message channels when opened from a notification banner. [MM-21276](https://mattermost.atlassian.net/browse/MM-21276)
+
+## 1.26.2 Release
+- Release Date: January 7, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue on iOS where the mobile app was not usable if ``inAppPincode`` was enabled.
+
+## 1.26.1 Release
+- Release Date: December 20, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed a crash issue on Android and iOS on server versions prior to the v5.9.0 Extended Support Release (ESR).
+ - Fixed a crash when connecting the WebSocket to a server with Cert Based Auth (CBA) enabled.
+
+## 1.26.0 Release
+- Release Date: December 16, 2019
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+Mattermost Mobile App v1.26.0 contains low to medium level security fixes. [Upgrading](http://docs.mattermost.com/administration/upgrade.html) is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
+
+### Highlights
+
+#### Improved Styling for File, Image and Video Attachments, Including In-line Image Thumbnails
+
+#### Mark as Unread
+ - With server v5.18 and above, users can stay on top of important messages with a new feature that allows marking posts as unread. After doing so, users will automatically land on the unread post the next time they click on the relevant channel.
+
+#### Push Notification Message Contents Fetched from the Server on Receipt (E20)
+ - Allows push notifications to be delivered showing the full message contents that are fetched from the server once the notification is delivered to the device. This means that Apple Push Notification Service (APNS) or Google Firebase Cloud Messaging (FCM) cannot read the message contents since only a unique message ID is sent in the notification payload. 
+
+#### Upgraded RN to v0.61
+
+### Improvements
+- Added support for pasting other file types such as videos, PDFs and documents.
+- Added the option to convert public channels to private in the channel info screen.
+- Added support for reading the channel drawer button with voice-over.
+- Made usernames in system messages tappable.
+- Added an autocomplete to edit post screen.
+- Added a count for pinned posts icon.
+- Updated the channel name length character limit to 64 to match server.
+- Added an expand button to truncated markdown tables to improve discoverability of opening them in full screen.
+- Added an error message when trying to share too long text from share extension.
+- Improved behaviour where posts from different authors in the same thread appeared to be from different threads if separated by new message line.
+- Added support for native emojis in the emoji picker and autocomplete.
+- Removed reactions and file attachments from the long post view.
+- Large number of emoji reactions now wrap instead of introducing horizontal scroll.
+- Added support for a generic error message in interactive dialog responses.
+- Added the ability to disable attachment buttons and fields.
+
+### Bug Fixes
+- Fixed an issue on Android where the app slowed down when opening a channel with large number of animated emoji.
+- Fixed an issue where the app crashed when pasting a large file to the text box from the clipboard.
+- Fixed an issue where the app crashed when previewing large GIF files.
+- Fixed an issue where the app crashed when using the emoji category selector.
+- Fixed an issue where the app was not able to play YouTube videos.
+- Fixed an issue where images/videos could not be saved.
+- Fixed an issue where channels archived via the command line interface were still visible on the left-hand side and accessible on mobile apps.
+- Fixed an issue where the thread header in landscape view was wider than the main channel view header.
+- Fixed an issue where sidebar separator line was misaligned between Teams and Channel view.
+- Fixed an issue on iOS where the channel spinner appeared black on a dark theme.
+- Fixed an issue where an asterisk appeared on the "Nickname" and "Position" fields in Edit Profile screen even though nickname is not handled through the login provider.
+- Fixed an issue where the filtered list for emojis opened above the edit box and behind the channel header when adding an emoji to channel header using ``:emoji:``.
+
 ## 1.25.1 Release
 - Release Date: November 22, 2019
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

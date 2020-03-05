@@ -90,7 +90,7 @@ export default class NetworkIndicator extends PureComponent {
 
         // Attempt to connect when this component mounts
         // if the websocket is already connected it does not try and connect again
-        this.connect();
+        this.connect(true);
     }
 
     componentDidUpdate(prevProps) {
@@ -175,14 +175,14 @@ export default class NetworkIndicator extends PureComponent {
                 this.backgroundColor, {
                     toValue: 1,
                     duration: 100,
-                }
+                },
             ),
             Animated.timing(
                 this.top, {
                     toValue: (this.getNavBarHeight() - HEIGHT),
                     duration: 300,
                     delay: 500,
-                }
+                },
             ),
         ]).start(() => {
             this.backgroundColor.setValue(0);
@@ -317,7 +317,7 @@ export default class NetworkIndicator extends PureComponent {
                     }),
                     onPress: actions.logout,
                 }],
-                {cancelable: false}
+                {cancelable: false},
             );
             closeWebSocket(true);
         });
@@ -340,7 +340,7 @@ export default class NetworkIndicator extends PureComponent {
             this.top, {
                 toValue: this.getNavBarHeight(),
                 duration: 300,
-            }
+            },
         ).start(() => {
             this.props.actions.setCurrentUserStatusOffline();
         });

@@ -44,7 +44,7 @@ export default class ShareApp extends PureComponent {
                     }),
                     onPress: this.close,
                 },
-            ]
+            ],
         );
     }
 

@@ -21,7 +21,7 @@ describe('SendButton', () => {
             <SendButton
                 {...baseProps}
                 {...props}
-            />
+            />,
         );
     }
 

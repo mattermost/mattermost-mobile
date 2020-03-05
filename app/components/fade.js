@@ -31,7 +31,7 @@ export default class Fade extends PureComponent {
                     toValue: prevProps.visible ? 0 : 1,
                     duration: this.props.duration || FADE_DURATION,
                     useNativeDriver: true,
-                }
+                },
             ).start();
         }
     }

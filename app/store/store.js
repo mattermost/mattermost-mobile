@@ -6,10 +6,9 @@ import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
-import merge from 'deepmerge';
 
 import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import configureStore from 'mattermost-redux/store';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -24,7 +23,7 @@ import mattermostBucket from 'app/mattermost_bucket';
 
 import {messageRetention} from './middleware';
 import {createThunkMiddleware} from './thunk';
-import {transformSet} from './utils';
+import {transformSet, getStateForReset} from './utils';
 
 function getAppReducer() {
     return require('../../app/reducers'); // eslint-disable-line global-require
@@ -54,15 +53,15 @@ const setTransforms = [
 export default function configureAppStore(initialState) {
     const viewsBlackListFilter = createBlacklistFilter(
         'views',
-        ['extension', 'login', 'root']
+        ['extension', 'login', 'root'],
     );
 
     const typingBlackListFilter = createBlacklistFilter(
         'entities',
-        ['typing']
+        ['typing'],
     );
 
-    const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: true, postVisibility: true, retryFailed: true, loadMorePostsVisible: true};
+    const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: true, retryFailed: true, loadMorePostsVisible: true};
     const channelViewBlackListFilter = createTransform(
         (inboundState) => {
             const channel = {};
@@ -79,7 +78,7 @@ export default function configureAppStore(initialState) {
             };
         },
         null,
-        {whitelist: ['views']} // Only run this filter on the views state (or any other entry that ends up being named views)
+        {whitelist: ['views']}, // Only run this filter on the views state (or any other entry that ends up being named views)
     );
 
     const emojiBlackList = {nonExistentEmoji: true};
@@ -99,7 +98,7 @@ export default function configureAppStore(initialState) {
             };
         },
         null,
-        {whitelist: ['entities']} // Only run this filter on the entities state (or any other entry that ends up being named entities)
+        {whitelist: ['entities']}, // Only run this filter on the entities state (or any other entry that ends up being named entities)
     );
 
     const setTransformer = createTransform(
@@ -130,7 +129,7 @@ export default function configureAppStore(initialState) {
             }
 
             return outboundState;
-        }
+        },
     );
 
     const offlineOptions = {
@@ -175,6 +174,7 @@ export default function configureAppStore(initialState) {
                         const entities = {
                             ...state.entities,
                             general: {
+                                ...state.entities.general,
                                 credentials: {
                                     url,
                                 },
@@ -205,66 +205,17 @@ export default function configureAppStore(initialState) {
                     setSiteUrl(config.SiteURL);
                 }
 
-                if ((state.requests.users.logout.status === RequestStatus.SUCCESS || state.requests.users.logout.status === RequestStatus.FAILURE) && !purging) {
+                if (state.views.root.purge && !purging) {
                     purging = true;
 
                     await persistor.purge();
 
-                    store.dispatch(batchActions([
-                        {
-                            type: General.OFFLINE_STORE_RESET,
-                            data: initialState,
-                        },
-                        {
-                            type: General.STORE_REHYDRATION_COMPLETE,
-                        },
-                        {
-                            type: ViewTypes.SERVER_URL_CHANGED,
-                            serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
-                        },
-                        {
-                            type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                            data: state.entities.general.deviceToken,
-                        },
-                    ]));
-
-                    // When logging out remove the data stored in the bucket
-                    mattermostBucket.removePreference('cert');
-                    mattermostBucket.removePreference('emm');
-                    mattermostBucket.removeFile('entities');
-                    setSiteUrl(null);
-
-                    setTimeout(() => {
-                        purging = false;
-                    }, 500);
-                } else if (state.views.root.purge && !purging) {
-                    purging = true;
-
-                    await persistor.purge();
-
-                    const {currentTeamId} = state.entities.teams;
-                    const myPreferences = {...state.entities.preferences.myPreferences};
-                    Object.keys(myPreferences).forEach((key) => {
-                        if (!key.startsWith('theme--')) {
-                            Reflect.deleteProperty(myPreferences, key);
-                        }
-                    });
-
-                    const initialStateWithTeamAndThemePreferences = merge(initialState, {
-                        entities: {
-                            teams: {
-                                currentTeamId,
-                            },
-                            preferences: {
-                                myPreferences,
-                            },
-                        },
-                    });
+                    const resetState = getStateForReset(initialState, state);
 
                     store.dispatch(batchActions([
                         {
                             type: General.OFFLINE_STORE_RESET,
-                            data: initialStateWithTeamAndThemePreferences,
+                            data: resetState,
                         },
                         {
                             type: ErrorTypes.RESTORE_ERRORS,

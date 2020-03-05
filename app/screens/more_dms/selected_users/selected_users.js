@@ -63,7 +63,7 @@ export default class SelectedUsers extends React.PureComponent {
                     theme={this.props.theme}
                     teammateNameDisplay={this.props.teammateNameDisplay}
                     onRemove={this.props.onRemove}
-                />
+                />,
             );
         }
 

@@ -11,7 +11,7 @@ import NotificationsIOS, {
 } from 'react-native-notifications';
 
 import {getBadgeCount} from 'app/selectors/views';
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {getLocalizedMessage} from 'app/i18n';
 import {t} from 'app/utils/i18n';
@@ -19,14 +19,11 @@ import {t} from 'app/utils/i18n';
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
 
-const replies = new Set();
-
 class PushNotification {
     constructor() {
         this.deviceNotification = null;
         this.onRegister = null;
         this.onNotification = null;
-        this.onReply = null;
         this.reduxStore = null;
 
         NotificationsIOS.addEventListener(DEVICE_REMOTE_NOTIFICATIONS_REGISTERED_EVENT, this.onRemoteNotificationsRegistered);
@@ -48,22 +45,10 @@ class PushNotification {
         }
     };
 
-    handleReply = (notification, text, completion) => {
-        const data = notification.getData();
-
-        if (this.onReply && !replies.has(data.identifier)) {
-            replies.add(data.identifier);
-            this.onReply(data, text, completion);
-        } else {
-            completion();
-        }
-    };
-
     configure(options) {
         this.reduxStore = options.reduxStore;
         this.onRegister = options.onRegister;
         this.onNotification = options.onNotification;
-        this.onReply = options.onReply;
 
         this.requestNotificationReplyPermissions();
 
@@ -73,7 +58,7 @@ class PushNotification {
                     if (notification) {
                         const data = notification.getData();
                         if (data) {
-                            ephemeralStore.appStartedFromPushNotification = true;
+                            EphemeralStore.setStartFromNotification(true);
                             this.handleNotification(data, false, true);
                         }
                     }
@@ -152,7 +137,7 @@ class PushNotification {
 
         // mark the app as started as soon as possible
         if (userInteraction) {
-            ephemeralStore.appStartedFromPushNotification = true;
+            EphemeralStore.setStartFromNotification(true);
         }
 
         const data = notification.getData();
@@ -175,18 +160,14 @@ class PushNotification {
         this.handleNotification(info, true, false);
     };
 
-    onNotificationOpened = (notification, completion, action) => {
-        if (action.identifier === REPLY_ACTION) {
-            this.handleReply(notification, action.text, completion);
-        } else {
-            const data = notification.getData();
-            const info = {
-                ...data,
-                message: data.body || notification.getMessage(),
-            };
-            this.handleNotification(info, false, true);
-            completion();
-        }
+    onNotificationOpened = (notification, completion) => {
+        const data = notification.getData();
+        const info = {
+            ...data,
+            message: data.body || notification.getMessage(),
+        };
+        this.handleNotification(info, false, true);
+        completion();
     };
 
     onRemoteNotificationsRegistered = (deviceToken) => {

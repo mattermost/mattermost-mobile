@@ -3,7 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, RefreshControl, StyleSheet} from 'react-native';
+import {Alert, FlatList, RefreshControl, StyleSheet} from 'react-native';
+import {intlShape} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import * as PostListUtils from 'mattermost-redux/utils/post_list';
@@ -17,11 +18,14 @@ import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
 import {showModalOverCurrentContext} from 'app/actions/navigation';
+import {alertErrorWithFallback} from 'app/utils/general';
+import {t} from 'app/utils/i18n';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
 
-const INITIAL_BATCH_TO_RENDER = 15;
+const INITIAL_BATCH_TO_RENDER = 7;
+const LOADING_POSTS_HEIGHT = 53;
 const SCROLL_UP_MULTIPLIER = 3.5;
 const SCROLL_POSITION_CONFIG = {
 
@@ -52,6 +56,7 @@ export default class PostList extends PureComponent {
         isSearchResult: PropTypes.bool,
         lastPostIndex: PropTypes.number.isRequired,
         lastViewedAt: PropTypes.number, // Used by container // eslint-disable-line no-unused-prop-types
+        loadMorePostsVisible: PropTypes.bool,
         onLoadMoreUp: PropTypes.func,
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
@@ -78,6 +83,10 @@ export default class PostList extends PureComponent {
         postIds: [],
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     constructor(props) {
         super(props);
 
@@ -93,20 +102,25 @@ export default class PostList extends PureComponent {
     }
 
     componentDidMount() {
-        EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
-    }
+        const {actions, deepLinkURL} = this.props;
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.channelId !== nextProps.channelId) {
-            this.contentOffsetY = 0;
-            this.hasDoneInitialScroll = false;
-            this.setState({contentHeight: 0});
+        EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
+
+        // Invoked when hitting a deep link and app is not already running.
+        if (deepLinkURL) {
+            this.handleDeepLink(deepLinkURL);
+            actions.setDeepLinkURL('');
         }
     }
 
     componentDidUpdate(prevProps) {
         const {actions, channelId, deepLinkURL, postIds} = this.props;
 
+        if (this.props.channelId !== prevProps.channelId) {
+            this.resetPostList();
+        }
+
+        // Invoked when hitting a deep link and app is already running.
         if (deepLinkURL && deepLinkURL !== prevProps.deepLinkURL) {
             this.handleDeepLink(deepLinkURL);
             actions.setDeepLinkURL('');
@@ -117,8 +131,18 @@ export default class PostList extends PureComponent {
             this.shouldScrollToBottom = false;
         }
 
-        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight) {
+        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight > LOADING_POSTS_HEIGHT) {
             this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+        }
+
+        if (
+            this.props.channelId === prevProps.channelId &&
+            this.props.postIds.length &&
+            this.state.contentHeight &&
+            this.state.contentHeight < this.state.postListHeight &&
+            !this.props.extraData
+        ) {
+            this.loadToFillContent();
         }
     }
 
@@ -145,30 +169,67 @@ export default class PostList extends PureComponent {
     };
 
     handleContentSizeChange = (contentWidth, contentHeight) => {
-        this.setState({contentHeight}, () => {
-            if (this.state.postListHeight && contentHeight < this.state.postListHeight && this.props.extraData) {
-                // We still have less than 1 screen of posts loaded with more to get, so load more
-                this.props.onLoadMoreUp();
-            }
-        });
+        if (this.state.contentHeight !== contentHeight) {
+            this.setState({contentHeight}, () => {
+                if (this.state.postListHeight && contentHeight < this.state.postListHeight && !this.props.extraData && contentHeight > LOADING_POSTS_HEIGHT) {
+                    // We still have less than 1 screen of posts loaded with more to get, so load more
+                    this.props.onLoadMoreUp();
+                }
+            });
+        }
     };
 
     handleDeepLink = (url) => {
         const {serverURL, siteURL} = this.props;
 
         const match = matchDeepLink(url, serverURL, siteURL);
+
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName);
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 this.handlePermalinkPress(match.postId, match.teamName);
             }
+        } else {
+            const {formatMessage} = this.context.intl;
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.server_link.error.title',
+                    defaultMessage: 'Link Error',
+                }),
+                formatMessage({
+                    id: 'mobile.server_link.error.text',
+                    defaultMessage: 'The link could not be found on this server.',
+                }),
+            );
         }
     };
 
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
-        this.setState({postListHeight: height});
+        if (this.state.postListHeight !== height) {
+            this.setState({postListHeight: height});
+        }
+    };
+
+    errorBadTeam = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_team.error'),
+            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
+        };
+
+        alertErrorWithFallback(intl, {}, message);
+    };
+
+    errorBadChannel = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_channel.error'),
+            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
+        };
+
+        alertErrorWithFallback(intl, {}, message);
     };
 
     handlePermalinkPress = (postId, teamName) => {
@@ -178,7 +239,7 @@ export default class PostList extends PureComponent {
         if (onPermalinkPress) {
             onPermalinkPress(postId, true);
         } else {
-            actions.loadChannelsByTeamName(teamName);
+            actions.loadChannelsByTeamName(teamName, this.errorBadTeam);
             this.showPermalinkView(postId);
         }
     };
@@ -235,17 +296,42 @@ export default class PostList extends PureComponent {
         return item;
     };
 
+    loadToFillContent = () => {
+        setTimeout(() => {
+            this.handleContentSizeChange(0, this.state.contentHeight);
+        });
+    };
+
     renderItem = ({item, index}) => {
+        const {
+            highlightPinnedOrFlagged,
+            highlightPostId,
+            isSearchResult,
+            lastPostIndex,
+            location,
+            onHashtagPress,
+            onPostPress,
+            postIds,
+            renderReplies,
+            shouldRenderReplyButton,
+            theme,
+        } = this.props;
+
         if (PostListUtils.isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
-            const moreNewMessages = this.props.postIds.length === index + 2;
+            const moreNewMessages = postIds.length === index + 2;
+
+            // The date line and new message line each count for a line. So the
+            // goal of this is to check for the 3rd previous, which for the start
+            // of a thread would be null as it doesn't exist.
+            const checkForPostId = index < postIds.length - 3;
 
             return (
                 <NewMessagesDivider
                     index={index}
-                    theme={this.props.theme}
-                    moreMessages={moreNewMessages}
+                    theme={theme}
+                    moreMessages={moreNewMessages && checkForPostId}
                 />
             );
         } else if (PostListUtils.isDateLine(item)) {
@@ -259,22 +345,22 @@ export default class PostList extends PureComponent {
 
         // Remember that the list is rendered with item 0 at the bottom so the "previous" post
         // comes after this one in the list
-        const previousPostId = index < this.props.postIds.length - 1 ? this.props.postIds[index + 1] : null;
-        const beforePrevPostId = index < this.props.postIds.length - 2 ? this.props.postIds[index + 2] : null;
-        const nextPostId = index > 0 ? this.props.postIds[index - 1] : null;
+        const previousPostId = index < postIds.length - 1 ? postIds[index + 1] : null;
+        const beforePrevPostId = index < postIds.length - 2 ? postIds[index + 2] : null;
+        const nextPostId = index > 0 ? postIds[index - 1] : null;
 
         const postProps = {
             previousPostId,
             nextPostId,
-            highlightPinnedOrFlagged: this.props.highlightPinnedOrFlagged,
-            isSearchResult: this.props.isSearchResult,
-            location: this.props.location,
+            highlightPinnedOrFlagged,
+            isSearchResult,
+            location,
             managedConfig: mattermostManaged.getCachedConfig(),
-            onHashtagPress: this.props.onHashtagPress,
+            onHashtagPress,
             onPermalinkPress: this.handlePermalinkPress,
-            onPress: this.props.onPostPress,
-            renderReplies: this.props.renderReplies,
-            shouldRenderReplyButton: this.props.shouldRenderReplyButton,
+            onPress: onPostPress,
+            renderReplies,
+            shouldRenderReplyButton,
             beforePrevPostId,
         };
 
@@ -292,8 +378,8 @@ export default class PostList extends PureComponent {
         return (
             <Post
                 postId={postId}
-                highlight={this.props.highlightPostId === postId}
-                isLastPost={this.props.lastPostIndex === index}
+                highlight={highlightPostId === postId}
+                isLastPost={lastPostIndex === index}
                 {...postProps}
             />
         );
@@ -308,12 +394,22 @@ export default class PostList extends PureComponent {
     };
 
     flatListScrollToIndex = (index) => {
-        this.flatListRef.current.scrollToIndex({
-            animated: false,
-            index,
-            viewOffset: 0,
-            viewPosition: 1, // 0 is at bottom
+        this.animationFrameInitialIndex = requestAnimationFrame(() => {
+            this.flatListRef.current.scrollToIndex({
+                animated: false,
+                index,
+                viewOffset: 0,
+                viewPosition: 1, // 0 is at bottom
+            });
         });
+    }
+
+    resetPostList = () => {
+        this.contentOffsetY = 0;
+        this.hasDoneInitialScroll = false;
+        if (this.state.contentHeight !== 0) {
+            this.setState({contentHeight: 0});
+        }
     }
 
     scrollToIndex = (index) => {
@@ -337,7 +433,7 @@ export default class PostList extends PureComponent {
         }
     };
 
-    showPermalinkView = (postId) => {
+    showPermalinkView = (postId, error = '') => {
         const {actions} = this.props;
 
         actions.selectFocusedPostId(postId);
@@ -347,6 +443,7 @@ export default class PostList extends PureComponent {
             const passProps = {
                 isPermalink: true,
                 onClose: this.handleClosePermalink,
+                error,
             };
             const options = {
                 layout: {
@@ -362,7 +459,9 @@ export default class PostList extends PureComponent {
     render() {
         const {
             channelId,
+            extraData,
             highlightPostId,
+            loadMorePostsVisible,
             postIds,
             refreshing,
             scrollViewNativeID,
@@ -383,9 +482,10 @@ export default class PostList extends PureComponent {
             <FlatList
                 key={`recyclerFor-${channelId}-${hasPostsKey}`}
                 ref={this.flatListRef}
+                style={{flex: 1}}
                 contentContainerStyle={styles.postListContent}
                 data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId, this.props.extraData)}
+                extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
                 keyboardDismissMode={'interactive'}
@@ -393,7 +493,6 @@ export default class PostList extends PureComponent {
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 onContentSizeChange={this.handleContentSizeChange}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
@@ -403,6 +502,7 @@ export default class PostList extends PureComponent {
                 scrollEventThrottle={60}
                 refreshControl={refreshControl}
                 nativeID={scrollViewNativeID}
+                windowSize={50}
             />
         );
     }

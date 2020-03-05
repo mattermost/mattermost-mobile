@@ -14,7 +14,7 @@ import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divide
 import Emoji from 'app/components/emoji';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {BuiltInEmojis} from 'app/utils/emojis';
-import {getEmojiByName} from 'app/utils/emoji_utils';
+import {getEmojiByName, compareEmojis} from 'app/utils/emoji_utils';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
@@ -94,13 +94,18 @@ export default class EmojiSuggestion extends PureComponent {
 
         const results = await fuse.search(matchTerm.toLowerCase());
         const data = results.map((index) => emojis[index]);
-        this.setEmojiData(data);
+        this.setEmojiData(data, matchTerm);
     };
 
-    setEmojiData = (data) => {
+    setEmojiData = (data, matchTerm = null) => {
+        let sorter = compareEmojis;
+        if (matchTerm) {
+            sorter = (a, b) => compareEmojis(a, b, matchTerm);
+        }
+
         this.setState({
             active: data.length > 0,
-            dataSource: data,
+            dataSource: data.sort(sorter),
         });
 
         this.props.onResultCountChange(data.length);

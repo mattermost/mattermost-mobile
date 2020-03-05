@@ -10,7 +10,7 @@ describe('CustomTextInput', () => {
         const onPaste = jest.fn();
         const text = 'My Text';
         const component = shallow(
-            <CustomTextInput onPaste={onPaste}>{text}</CustomTextInput>
+            <CustomTextInput onPaste={onPaste}>{text}</CustomTextInput>,
         );
         expect(component).toMatchSnapshot();
     });

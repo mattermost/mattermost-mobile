@@ -3,8 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Platform, StyleSheet} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import {View, Platform} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 
@@ -14,6 +15,7 @@ export default class FileUploadRemove extends PureComponent {
         clientId: PropTypes.string,
         onPress: PropTypes.func.isRequired,
         rootId: PropTypes.string,
+        theme: PropTypes.object.isRequired,
     };
 
     handleOnPress = () => {
@@ -23,45 +25,52 @@ export default class FileUploadRemove extends PureComponent {
     };
 
     render() {
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
         return (
             <TouchableWithFeedback
-                style={style.removeButtonWrapper}
+                style={style.tappableContainer}
                 onPress={this.handleOnPress}
                 type={'opacity'}
             >
-                <Icon
-                    name='md-close'
-                    color='#fff'
-                    size={18}
-                    style={style.removeButtonIcon}
-                />
+                <View style={style.removeButton}>
+                    <Icon
+                        name='close-circle'
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
+                        size={21}
+                        style={style.removeIcon}
+                    />
+                </View>
             </TouchableWithFeedback>
         );
     }
 }
 
-const style = StyleSheet.create({
-    removeButtonIcon: Platform.select({
-        ios: {
-            marginTop: 2,
+const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    return {
+        tappableContainer: {
+            position: 'absolute',
+            elevation: 11,
+            top: -5,
+            right: -10,
+            width: 32,
+            height: 32,
         },
-        android: {
-            marginLeft: 1,
+        removeButton: {
+            borderRadius: 12,
+            alignSelf: 'center',
+            marginTop: Platform.select({
+                ios: 5.4,
+                android: 4.75,
+            }),
+            backgroundColor: theme.centerChannelBg,
         },
-    }),
-    removeButtonWrapper: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'absolute',
-        overflow: 'hidden',
-        elevation: 11,
-        top: 7,
-        right: 7,
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#000',
-        borderWidth: 1,
-        borderColor: '#fff',
-    },
+        removeIcon: {
+            position: 'relative',
+            top: Platform.select({
+                ios: 1,
+                android: 0,
+            }),
+        },
+    };
 });

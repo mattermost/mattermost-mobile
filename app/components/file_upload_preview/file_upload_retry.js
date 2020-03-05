@@ -29,7 +29,7 @@ export default class FileUploadRetry extends PureComponent {
             >
                 <Icon
                     name='md-refresh'
-                    size={50}
+                    size={25}
                     color='#fff'
                 />
             </TouchableWithFeedback>
@@ -45,5 +45,6 @@ const style = StyleSheet.create({
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
+        borderRadius: 4,
     },
 });

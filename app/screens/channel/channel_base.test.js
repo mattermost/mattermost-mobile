@@ -12,18 +12,21 @@ import * as NavigationActions from 'app/actions/navigation';
 import ChannelBase from './channel_base';
 
 jest.mock('react-intl');
+jest.mock('react-native-vector-icons/MaterialIcons', () => ({
+    getImageSource: jest.fn().mockResolvedValue(null),
+}));
 
 describe('ChannelBase', () => {
     const channelBaseComponentId = 'component-0';
     const componentIds = ['component-1', 'component-2', 'component-3'];
     const baseProps = {
         actions: {
-            loadChannelsIfNecessary: jest.fn(),
-            loadProfilesAndTeamMembersForDMSidebar: jest.fn(),
+            getChannelStats: jest.fn(),
+            loadChannelsForTeam: jest.fn(),
+            markChannelViewedAndRead: jest.fn(),
+            recordLoadTime: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
-            recordLoadTime: jest.fn(),
-            getChannelStats: jest.fn(),
         },
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.default,

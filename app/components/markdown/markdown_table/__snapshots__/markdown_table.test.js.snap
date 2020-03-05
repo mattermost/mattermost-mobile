@@ -10,7 +10,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
   }
   type="opacity"
 >
-  <ScrollViewMock
+  <ScrollView
     onContentSizeChange={[Function]}
     onLayout={[Function]}
     scrollEnabled={false}
@@ -30,14 +30,21 @@ exports[`MarkdownTable should match snapshot 1`] = `
             "width": "100%",
           },
           Object {
-            "width": 480,
+            "width": 672,
           },
         ]
       }
     >
       <
         className="row"
+        isFirstRow={true}
       >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
         <
           className="col"
         />
@@ -72,6 +79,37 @@ exports[`MarkdownTable should match snapshot 1`] = `
         <
           className="col"
         />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
       </>
       <
         className="row"
@@ -91,10 +129,47 @@ exports[`MarkdownTable should match snapshot 1`] = `
         <
           className="col"
         />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
       </>
       <
         className="row"
       >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
+      </>
+      <
+        className="row"
+      >
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
         <
           className="col"
         />
@@ -130,9 +205,15 @@ exports[`MarkdownTable should match snapshot 1`] = `
         <
           className="col"
         />
+        <
+          className="col"
+        />
+        <
+          className="col"
+        />
       </>
     </View>
-  </ScrollViewMock>
+  </ScrollView>
   <LinearGradient
     colors={
       Array [
@@ -195,7 +276,7 @@ exports[`MarkdownTable should match snapshot 1`] = `
             "paddingTop": 8,
           },
           Object {
-            "width": 480,
+            "width": 672,
           },
         ]
       }
