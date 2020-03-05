@@ -252,11 +252,11 @@ export default class Login extends PureComponent {
     }
 
     getLoginErrorMessage = (error) => {
-        const error = this.getServerErrorForLogin(error) || this.state.error;
-        if (error && this.loginId && this.passwd) {
+        const errorMessage = this.getServerErrorForLogin(error) || this.state.error;
+        if (errorMessage && this.loginId && this.passwd) {
             this.setErrorStyle();
         }
-        return error;
+        return errorMessage;
     };
 
     getServerErrorForLogin = (error) => {
