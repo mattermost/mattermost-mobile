@@ -20,13 +20,15 @@ public class MainActivity extends NavigationActivity {
     }
 
     private boolean isUIModeNight() {
-        return getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES;
+        int uiMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return uiMode == Configuration.UI_MODE_NIGHT_YES;
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        isUIModeNight() ? setTheme(R.style.DarkTheme) : setTheme(R.style.LightTheme);
+        int theme = isUIModeNight() ? R.style.DarkTheme : R.style.LightTheme;
+        setTheme(theme);
         SplashScreen.show(this, true);
     }
 
