@@ -32,7 +32,6 @@ export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadChannelsForTeam: PropTypes.func.isRequired,
-            markChannelViewedAndRead: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
@@ -87,7 +86,6 @@ export default class ChannelBase extends PureComponent {
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
             requestAnimationFrame(() => {
                 this.props.actions.getChannelStats(this.props.currentChannelId);
-                this.props.actions.markChannelViewedAndRead(this.props.currentChannelId);
             });
         }
 
@@ -123,11 +121,9 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
-            const previousChannelId = EphemeralStore.appStartedFromPushNotification ? null : prevProps.currentChannelId;
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
 
             requestAnimationFrame(() => {
-                this.props.actions.markChannelViewedAndRead(this.props.currentChannelId, previousChannelId);
                 this.props.actions.getChannelStats(this.props.currentChannelId);
                 this.updateNativeScrollView();
             });
@@ -207,19 +203,17 @@ export default class ChannelBase extends PureComponent {
 
     loadChannels = (teamId) => {
         const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
-        loadChannelsForTeam(teamId).then((result) => {
-            if (result?.error) {
-                this.setState({channelsRequestFailed: true});
-                return;
-            }
+        if (!EphemeralStore.getStartFromNotification()) {
+            loadChannelsForTeam(teamId).then((result) => {
+                if (result?.error) {
+                    this.setState({channelsRequestFailed: true});
+                    return;
+                }
 
-            if (EphemeralStore.appStartedFromPushNotification) {
-                EphemeralStore.appStartedFromPushNotification = false;
-            } else {
                 this.setState({channelsRequestFailed: false});
                 selectInitialChannel(teamId);
-            }
-        });
+            });
+        }
     };
 
     retryLoadChannels = () => {
