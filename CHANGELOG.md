@@ -10,13 +10,19 @@
  
 ### Improvements
  - Improved the experience where the app was unresponsive for a period of time after clearing cache or on initial login.
+ - Changed "Copy Permalink" to "Copy Link" for readability.
  
 ### Bug Fixes
  - Fixed an issue where downloaded files on Android had the words `download successful` appended to their filenames, preventing the file from being opened until it was renamed in the file manager.
+ - Fixed a silent crash on Android when receiving a push notification.
  - Fixed an issue on Android where users could not swipe to close sidebar unless the gesture was initiated outside of the sidebar.
  - Fixed an issue where channels drawers were partially shown with orientation change on iOS RN61.
  - Fixed an issue on iOS where the message box obstructed the bottom part of the message when opened from the notification banner.
  - Fixed an issue where switching teams showed the center channel from the old team until the new team's channel data got loaded.
+ - Fixed an issue where users could not post messages after returning from an archived channel.
+ - Fixed an issue where user experienced infinite scrolling when viewing all public joinable/archived channels.
+ - Fixed an issue where archived channels membership was lost on the client.
+ - Fixed an issue on iOS where the channel intro scrolled past the top of the channel.
  - Fixed an issue on Android where inline custom emojis did not display in portrait mode.
  - Fixed an issue where a user's was set as online when replying to a message from a push notification.
  - Fixed an issue where markdown tables did not display all rows in a post when it had multiple heights.
