@@ -15,9 +15,10 @@ exports[`Login should show dark background when user has dark color scheme set 1
 >
   <Connect(StatusBar) />
   <TouchableWithoutFeedback
+    accessible={false}
     onPress={[Function]}
   >
-    <KeyboardAwareScrollViewMock
+    <KeyboardAwareScrollView
       contentContainerStyle={
         Array [
           Object {
@@ -93,6 +94,9 @@ exports[`Login should show dark background when user has dark color scheme set 1
           }
         />
       </View>
+      <Connect(ErrorText)
+        error={null}
+      />
       <TextInput
         allowFontScaling={true}
         autoCapitalize="none"
@@ -239,7 +243,7 @@ exports[`Login should show dark background when user has dark color scheme set 1
           }
         />
       </Button>
-    </KeyboardAwareScrollViewMock>
+    </KeyboardAwareScrollView>
   </TouchableWithoutFeedback>
 </View>
 `;
@@ -259,9 +263,10 @@ exports[`Login should show light background when user has light color scheme set
 >
   <Connect(StatusBar) />
   <TouchableWithoutFeedback
+    accessible={false}
     onPress={[Function]}
   >
-    <KeyboardAwareScrollViewMock
+    <KeyboardAwareScrollView
       contentContainerStyle={
         Array [
           Object {
@@ -337,6 +342,9 @@ exports[`Login should show light background when user has light color scheme set
           }
         />
       </View>
+      <Connect(ErrorText)
+        error={null}
+      />
       <TextInput
         allowFontScaling={true}
         autoCapitalize="none"
@@ -483,7 +491,7 @@ exports[`Login should show light background when user has light color scheme set
           }
         />
       </Button>
-    </KeyboardAwareScrollViewMock>
+    </KeyboardAwareScrollView>
   </TouchableWithoutFeedback>
 </View>
 `;

@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SelectServer should show dark background when user has dark color scheme set 1`] = `
-<ForwardRef(_SafeAreaView)
+<SafeAreaView
   style={
     Array [
       Object {
@@ -34,6 +34,7 @@ exports[`SelectServer should show dark background when user has dark color schem
       showHideTransition="fade"
     />
     <TouchableWithoutFeedback
+      accessbile={false}
       onPress={[Function]}
     >
       <View
@@ -181,11 +182,11 @@ exports[`SelectServer should show dark background when user has dark color schem
       </View>
     </TouchableWithoutFeedback>
   </KeyboardAvoidingView>
-</ForwardRef(_SafeAreaView)>
+</SafeAreaView>
 `;
 
 exports[`SelectServer should show light background when user has light color scheme set 1`] = `
-<ForwardRef(_SafeAreaView)
+<SafeAreaView
   style={
     Array [
       Object {
@@ -218,6 +219,7 @@ exports[`SelectServer should show light background when user has light color sch
       showHideTransition="fade"
     />
     <TouchableWithoutFeedback
+      accessbile={false}
       onPress={[Function]}
     >
       <View
@@ -365,5 +367,5 @@ exports[`SelectServer should show light background when user has light color sch
       </View>
     </TouchableWithoutFeedback>
   </KeyboardAvoidingView>
-</ForwardRef(_SafeAreaView)>
+</SafeAreaView>
 `;
