@@ -112,7 +112,7 @@ export default class Login extends PureComponent {
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
 
-        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse}, , getStyledNavigationOptions(colorStyles));
+        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse}, getStyledNavigationOptions(colorStyles));
     };
 
     blur = () => {
