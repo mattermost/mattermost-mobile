@@ -27,6 +27,7 @@ describe('ChannelBase', () => {
             recordLoadTime: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
+            preFetchUnreadChannels: jest.fn(),
         },
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.default,

@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {UserTypes, ChannelTypes} from 'mattermost-redux/action_types';
+import {UserTypes, ChannelTypes, PostTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
@@ -18,6 +18,10 @@ import {
     getPostsBefore,
     getPostsSince,
     getPostThread,
+    getProfilesAndStatusesForPosts,
+    receivedPosts,
+    receivedPostsInChannel,
+    receivedPostsSince,
 } from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
@@ -684,6 +688,80 @@ export function loadChannelsForTeam(teamId) {
         }
 
         return {error: 'Cannot fetch channels without a current user'};
+    };
+}
+
+export function preFetchUnreadChannels(unreadChannels) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {posts} = state.entities.posts;
+        const time = Date.now();
+
+        const channelFetchPromises = unreadChannels.map(async (channelId) => {
+            const postsIds = getPostIdsInChannel(state, channelId);
+            const actions = [];
+            let newPosts;
+            if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
+                // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+                for (let i = 0; i <= MAX_RETRIES; i++) {
+                    try {
+                        newPosts = await Client4.getPosts(channelId, 0, 60); //eslint-disable-line no-await-in-loop
+                        getProfilesAndStatusesForPosts(newPosts.posts, dispatch, getState);
+                        actions.push(
+                            receivedPosts(newPosts),
+                            receivedPostsInChannel(newPosts, channelId, true, newPosts.prev_post_id === ''),
+                        );
+                        break;
+                    } catch (err) {
+                        return {err};
+                    }
+                }
+            } else {
+                const lastConnectAt = state.websocket?.lastConnectAt || 0;
+                const lastGetPosts = state.views.channel.lastGetPosts[channelId];
+
+                let since;
+                if (lastGetPosts && lastGetPosts < lastConnectAt) {
+                    // Since the websocket disconnected, we may have missed some posts since then
+                    since = lastGetPosts;
+                } else {
+                    // Trust that we've received all posts since the last time the websocket disconnected
+                    // so just get any that have changed since the latest one we've received
+                    const postsForChannel = postsIds.map((id) => posts[id]);
+                    since = getLastCreateAt(postsForChannel);
+                }
+
+                for (let i = 0; i <= MAX_RETRIES; i++) {
+                    try {
+                        newPosts = await Client4.getPostsSince(channelId, since); //eslint-disable-line no-await-in-loop
+                        getProfilesAndStatusesForPosts(newPosts.posts, dispatch, getState);
+                        actions.push(
+                            receivedPosts(newPosts),
+                            receivedPostsSince(newPosts, channelId),
+                            {
+                                type: PostTypes.GET_POSTS_SINCE_SUCCESS,
+                            },
+                        );
+                        break;
+                    } catch (err) {
+                        return {err};
+                    }
+                }
+            }
+
+            actions.push({
+                type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
+                channelId,
+                time,
+            });
+
+            return actions;
+        });
+
+        Promise.all(channelFetchPromises).then((results) => {
+            const allActions = results.flat();
+            dispatch(batchActions(allActions));
+        });
     };
 }
 

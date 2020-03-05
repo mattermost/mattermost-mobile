@@ -36,9 +36,11 @@ export default class ChannelBase extends PureComponent {
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
+            preFetchUnreadChannels: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
+        unreadChannelIds: PropTypes.array,
         currentTeamId: PropTypes.string,
         isLandscape: PropTypes.bool,
         theme: PropTypes.object.isRequired,
@@ -202,7 +204,8 @@ export default class ChannelBase extends PureComponent {
     };
 
     loadChannels = (teamId) => {
-        const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
+        const {unreadChannelIds} = this.props;
+        const {loadChannelsForTeam, selectInitialChannel, preFetchUnreadChannels} = this.props.actions;
         if (!EphemeralStore.getStartFromNotification()) {
             loadChannelsForTeam(teamId).then((result) => {
                 if (result?.error) {
@@ -212,6 +215,10 @@ export default class ChannelBase extends PureComponent {
 
                 this.setState({channelsRequestFailed: false});
                 selectInitialChannel(teamId);
+
+                if (unreadChannelIds.length > 0) {
+                    preFetchUnreadChannels(unreadChannelIds);
+                }
             });
         }
     };
