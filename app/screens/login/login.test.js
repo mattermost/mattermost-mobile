@@ -97,7 +97,7 @@ describe('Login', () => {
                 'MFA',
                 'Multi-factor Authentication',
                 {onMfaComplete: wrapper.instance().checkLoginResponse},
-                getStyledNavigationOptions(getColorStyles('dark'))
+                getStyledNavigationOptions(getColorStyles('dark')),
             );
     });
 
