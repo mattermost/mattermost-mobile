@@ -52,7 +52,7 @@
     "react-native-keychain": "4.0.5",
     "react-native-linear-gradient": "2.5.6",
     "react-native-local-auth": "github:mattermost/react-native-local-auth#cc9ce2f468fbf7b431dfad3191a31aaa9227a6ab",
-    "react-native-navigation": "6.0.1",
+    "react-native-navigation": "6.1.0",
     "react-native-notifications": "2.0.6",
     "react-native-passcode-status": "1.1.2",
     "react-native-permissions": "2.0.9",
