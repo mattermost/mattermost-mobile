@@ -55,7 +55,8 @@ export function generateId() {
     return 'uid' + id;
 }
 
-const dirsToExclude = ['Cache.db', 'WebKit', 'WebView'];
+const vectorIconsDir = 'vectorIcons';
+const dirsToExclude = ['Cache.db', 'WebKit', 'WebView', vectorIconsDir];
 async function getDirectorySize(fileStats) {
     if (fileStats?.length) {
         const total = await fileStats.reduce(async (previousPromise, stat) => {
@@ -93,8 +94,19 @@ export async function deleteFileCache() {
     const isCacheDir = await RNFetchBlob.fs.isDir(cacheDir);
     if (isCacheDir) {
         try {
-            await RNFetchBlob.fs.unlink(cacheDir);
-            await RNFetchBlob.fs.mkdir(cacheDir);
+            if (Platform.OS === 'ios') {
+                await RNFetchBlob.fs.unlink(cacheDir);
+                await RNFetchBlob.fs.mkdir(cacheDir);
+            } else {
+                const cacheStats = await RNFetchBlob.fs.lstat(RNFetchBlob.fs.dirs.CacheDir);
+                if (cacheStats?.length) {
+                    cacheStats.forEach((stat) => {
+                        if (!stat.path.includes(vectorIconsDir)) {
+                            RNFetchBlob.fs.unlink(stat.path);
+                        }
+                    });
+                }
+            }
         } catch (e) {
             // do nothing
         }
