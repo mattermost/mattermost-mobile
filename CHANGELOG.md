@@ -11,8 +11,8 @@
 **Note:** An issue was fixed where a user's status was set as online when replying to a message from a push notification. This fix only works in combination with server v5.20.0+.
  
 ### Improvements
- - Improved the experience where the app was unresponsive for a period of time after clearing cache or on initial login.
- - Set all requests timeouts to a maximum of 5 seconds.
+ - Significantly improved how quickly channels load when you open the app and when you switch between them.
+ - Set all requests timeouts to a maximum of 5 seconds to improve reliability on bad networks.
  - Changed "Copy Permalink" to "Copy Link" for readability.
  
 ### Bug Fixes
