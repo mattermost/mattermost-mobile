@@ -424,7 +424,6 @@ export default class Login extends PureComponent {
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
-                        <ErrorText error={this.state.error}/>
                         <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}
@@ -462,7 +461,7 @@ export default class Login extends PureComponent {
                             disableFullscreenUI={true}
                             editable={!isLoading}
                         />
-                        <ErrorText error={this.getLoginErrorMessage()}/>
+                        <ErrorText error={this.state.error}/>
                         {proceed}
                         {forgotPassword}
                     </KeyboardAwareScrollView>

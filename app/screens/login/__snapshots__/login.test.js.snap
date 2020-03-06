@@ -94,9 +94,6 @@ exports[`Login should show dark background when user has dark color scheme set 1
           }
         />
       </View>
-      <Connect(ErrorText)
-        error={null}
-      />
       <TextInput
         allowFontScaling={true}
         autoCapitalize="none"
@@ -342,9 +339,6 @@ exports[`Login should show light background when user has light color scheme set
           }
         />
       </View>
-      <Connect(ErrorText)
-        error={null}
-      />
       <TextInput
         allowFontScaling={true}
         autoCapitalize="none"
