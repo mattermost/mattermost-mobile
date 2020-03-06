@@ -8,8 +8,11 @@
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
  
+**Note:** An issue was fixed where a user's status was set as online when replying to a message from a push notification. This fix only works in combination with server v5.20.0+.
+ 
 ### Improvements
  - Improved the experience where the app was unresponsive for a period of time after clearing cache or on initial login.
+ - Set all requests timeouts to a maximum of 5 seconds.
  - Changed "Copy Permalink" to "Copy Link" for readability.
  
 ### Bug Fixes
@@ -24,7 +27,6 @@
  - Fixed an issue where archived channels membership was lost on the client.
  - Fixed an issue on iOS where the channel intro scrolled past the top of the channel.
  - Fixed an issue on Android where inline custom emojis did not display in portrait mode.
- - Fixed an issue where a user's was set as online when replying to a message from a push notification.
  - Fixed an issue where markdown tables did not display all rows in a post when it had multiple heights.
  - Fixed an issue where deleting documents and data caused a flash of the background when the app reloaded.
  - Fixed an issue where tall and thin image attachments got pushed to the left instead of appearing centered.
