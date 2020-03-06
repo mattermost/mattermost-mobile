@@ -28,6 +28,11 @@ export function resetToChannel(passProps = {}) {
                 name: 'Channel',
                 passProps,
                 options: {
+                    animations: {
+                        setRoot: {
+                            waitForRender: true,
+                        },
+                    },
                     layout: {
                         backgroundColor: theme.centerChannelBg,
                     },
@@ -93,6 +98,11 @@ export function resetToSelectServer(allowOtherServers) {
                             allowOtherServers,
                         },
                         options: {
+                            animations: {
+                                setRoot: {
+                                    waitForRender: true,
+                                },
+                            },
                             statusBar: {
                                 visible: true,
                             },
@@ -118,6 +128,11 @@ export function resetToSelectServer(allowOtherServers) {
 export function resetToTeams(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
+        animations: {
+            setRoot: {
+                waitForRender: true,
+            },
+        },
         layout: {
             backgroundColor: theme.centerChannelBg,
         },

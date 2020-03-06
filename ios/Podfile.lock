@@ -224,8 +224,6 @@ PODS:
     - React
   - react-native-safe-area (0.5.1):
     - React
-  - react-native-splash-screen (3.2.0):
-    - React
   - react-native-video (5.0.2):
     - React
     - react-native-video/Video (= 5.0.2)
@@ -348,7 +346,6 @@ DEPENDENCIES:
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-passcode-status (from `../node_modules/react-native-passcode-status`)
   - react-native-safe-area (from `../node_modules/react-native-safe-area`)
-  - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -453,8 +450,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-passcode-status"
   react-native-safe-area:
     :path: "../node_modules/react-native-safe-area"
-  react-native-splash-screen:
-    :path: "../node_modules/react-native-splash-screen"
   react-native-video:
     :path: "../node_modules/react-native-video"
   react-native-webview:
@@ -545,7 +540,6 @@ SPEC CHECKSUMS:
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
-  react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-video: 961749da457e73bf0b5565edfbaffc25abfb8974
   react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
   React-RCTActionSheet: 600b4d10e3aea0913b5a92256d2719c0cdd26d76

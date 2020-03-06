@@ -71,7 +71,6 @@ import com.facebook.soloader.SoLoader;
 import com.mattermost.share.RealPathUtil;
 
 import io.expo.appearance.RNCAppearancePackage;
-import org.devio.rn.splashscreen.SplashScreenReactPackage;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
@@ -208,7 +207,6 @@ public class MainApplication extends NavigationApplication implements INotificat
             new ReactVideoPackage(),
             new RNGestureHandlerPackage(),
             new RNPasteableTextInputPackage(),
-            new SplashScreenReactPackage(),
             new RNCAppearancePackage(),
             new HWKeyboardEventPackage()
     );

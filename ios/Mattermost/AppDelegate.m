@@ -14,7 +14,6 @@
 #import <React/RCTLinkingManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import "RNNotifications.h"
-#import "RNSplashScreen.h"
 #import <UploadAttachments/UploadAttachments-Swift.h>
 #import <UserNotifications/UserNotifications.h>
 #import "Mattermost-Swift.h"
@@ -60,8 +59,6 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   [RNNotifications startMonitorNotifications];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
-
-  [RNSplashScreen show];
 
   return YES;
 }

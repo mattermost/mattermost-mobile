@@ -7,7 +7,6 @@ import androidx.annotation.Nullable;
 import android.view.KeyEvent;
 
 import com.reactnativenavigation.NavigationActivity;
-import org.devio.rn.splashscreen.SplashScreen;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
 public class MainActivity extends NavigationActivity {
@@ -29,7 +28,7 @@ public class MainActivity extends NavigationActivity {
         super.onCreate(savedInstanceState);
         int theme = isUIModeNight() ? R.style.DarkTheme : R.style.LightTheme;
         setTheme(theme);
-        SplashScreen.show(this, true);
+        setContentView(R.layout.launch_screen);
     }
 
     /*

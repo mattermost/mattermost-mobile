@@ -42,6 +42,11 @@ describe('app/actions/navigation', () => {
                             name: 'Channel',
                             passProps,
                             options: {
+                                animations: {
+                                    setRoot: {
+                                        waitForRender: true,
+                                    },
+                                },
                                 layout: {
                                     backgroundColor: theme.centerChannelBg,
                                 },
@@ -85,6 +90,11 @@ describe('app/actions/navigation', () => {
                                 allowOtherServers,
                             },
                             options: {
+                                animations: {
+                                    setRoot: {
+                                        waitForRender: true,
+                                    },
+                                },
                                 statusBar: {
                                     visible: true,
                                 },
@@ -114,6 +124,11 @@ describe('app/actions/navigation', () => {
         const setRoot = jest.spyOn(Navigation, 'setRoot');
 
         const defaultOptions = {
+            animations: {
+                setRoot: {
+                    waitForRender: true,
+                },
+            },
             layout: {
                 backgroundColor: theme.centerChannelBg,
             },
