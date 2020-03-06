@@ -28,6 +28,7 @@ class ChannelsViewController: UIViewController {
   var footerLabel = UILabel()
   var indicator = UIActivityIndicatorView()
   var dispatchGroup = DispatchGroup()
+  var indicatorShown = false
 
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
@@ -76,10 +77,12 @@ class ChannelsViewController: UIViewController {
     footerFrame.addSubview(indicator)
     
     tableView.tableFooterView = footerFrame
+    indicatorShown = true
   }
   
   func hideActivityIndicator() {
     tableView.tableFooterView = nil
+    indicatorShown = false
     self.tableView.reloadData()
   }
   
@@ -130,7 +133,7 @@ extension ChannelsViewController: UITableViewDataSource {
       }
     }
     
-    if (empty) {
+    if (empty && !indicatorShown) {
       let noDataLabel: UILabel  = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: tableView.bounds.size.height))
       noDataLabel.text          = "No Results Found"
       noDataLabel.textColor     = UIColor.systemGray

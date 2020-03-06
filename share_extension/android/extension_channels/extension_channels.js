@@ -189,15 +189,18 @@ export default class ExtensionChannel extends PureComponent {
     renderNoResults = () => {
         const style = getStyleSheet(defaultTheme);
 
-        return (
-            <View style={style.noResultContainer}>
-                <FormattedText
-                    id='mobile.custom_list.no_results'
-                    defaultMessage='No Results'
-                    style={style.noResultText}
-                />
-            </View>
-        );
+        if (!this.state.loading) {
+            return (
+                <View style={style.noResultContainer}>
+                    <FormattedText
+                        id='mobile.custom_list.no_results'
+                        defaultMessage='No Results'
+                        style={style.noResultText}
+                    />
+                </View>
+            );
+        }
+        return null;
     };
 
     keyExtractor = (item) => item.id;
@@ -214,6 +217,7 @@ export default class ExtensionChannel extends PureComponent {
                     ItemSeparatorComponent={this.renderItemSeparator}
                     renderItem={this.renderItem}
                     renderSectionHeader={this.renderSectionHeader}
+                    extraData={this.state.loading}
                     ListEmptyComponent={this.renderNoResults}
                     keyExtractor={this.keyExtractor}
                     keyboardShouldPersistTaps='always'

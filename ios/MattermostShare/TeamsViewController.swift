@@ -21,6 +21,14 @@ class TeamsViewController: UIViewController {
     view.addSubview(tableView)
   }
   
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    if #available(iOS 11.0, *) {
+      navigationItem.hidesSearchBarWhenScrolling = false
+    }
+
+    tableView.reloadData()
+  }
 }
 
 private extension TeamsViewController {

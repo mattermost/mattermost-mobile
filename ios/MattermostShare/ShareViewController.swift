@@ -172,19 +172,21 @@ class ShareViewController: SLComposeServiceViewController {
           //here dataResponse received from a network request
           let jsonArray = try JSONSerialization.jsonObject(with: dataResponse, options: []) as! NSDictionary
           let newChannelId:String! = jsonArray.value(forKey: "id") as? String
-          UploadManager.shared.uploadFiles(baseURL: self.serverURL!, token: self.sessionToken!, channelId: newChannelId, message: self.message, attachments: self.attachments, callback: {
-            self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
-          })
+          self.uploadFile(channelId: newChannelId)
         } catch let parsingError {
           print("Error", parsingError)
         }
       }
       task.resume()
     } else {
-      UploadManager.shared.uploadFiles(baseURL: serverURL!, token: sessionToken!, channelId: selectedChannel!.id!, message: message, attachments: attachments, callback: {
-        self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
-      })
+      uploadFile(channelId: selectedChannel!.id!)
     }
+  }
+  
+  func uploadFile(channelId: String) {
+    UploadManager.shared.uploadFiles(baseURL: self.serverURL!, token: self.sessionToken!, channelId: channelId, message: self.message, attachments: self.attachments, callback: {
+      self.extensionContext!.completeRequest(returningItems: [], completionHandler: nil)
+    })
   }
   
   override func loadPreviewView() -> UIView! {
@@ -377,7 +379,7 @@ class ShareViewController: SLComposeServiceViewController {
     }
   }
   
-  func getChannelsFromServerAndReload(forTeamId: String) {
+  func getChannelsFromServerAndReload(forTeamId: String, teamSwitch: Bool) {
     var currentChannel = store.getCurrentChannel() as NSDictionary?
     if currentChannel?.object(forKey: "team_id") as! String != forTeamId {
       currentChannel = store.getDefaultChannel(forTeamId) as NSDictionary?
@@ -430,7 +432,9 @@ class ShareViewController: SLComposeServiceViewController {
             self.view.setNeedsDisplay()
             let channelDecks = self.getChannelItems(forTeamId: self.selectedTeam?.id)
             self.channelsVC.channelDecks = channelDecks!
-            self.channelsVC.leaveDispatchGroup()
+            if (!teamSwitch) {
+              self.channelsVC.leaveDispatchGroup()
+            }
           }
         } catch let parsingError {
           print("Error", parsingError)
@@ -481,26 +485,24 @@ class ShareViewController: SLComposeServiceViewController {
           
           // here dataResponse received from a network request
           // filtered for active users and non-duplicate direct channels
-          let jsonArray = try JSONSerialization.jsonObject(with: dataResponse, options: []) as! NSArray
-          let activeUsers = jsonArray.filter {element in
-            let user = element as! NSDictionary
+          let jsonArray = try JSONSerialization.jsonObject(with: dataResponse, options: []) as! NSArray          
+          for item in jsonArray {
+            let user = item as! NSDictionary
             let userDeleteAt = user.object(forKey: "delete_at") as! Int
             let userId = user.object(forKey: "id") as! String
-            return userDeleteAt == 0 && existingDMChannels["\(userId)"] == nil
-          }
-          
-          for item in activeUsers {
-            let user = item as! NSDictionary
-            let id:String! = user.value(forKey: "id") as? String
-            let username:String! = user.value(forKey: "username") as? String
-            let placeHolderChannel: [String: Any] = [
-              "id": id,
-              "display_name": username,
-              "type": "D",
-              "delete_at": 0,
-              "notCreatedYet": true
-            ]
-            entitiesChannels.setValue(placeHolderChannel, forKey: id)
+            
+            if (userDeleteAt == 0 && existingDMChannels["\(userId)"] == nil) {
+              let id:String! = user.value(forKey: "id") as? String
+              let username:String! = user.value(forKey: "username") as? String
+              let placeHolderChannel: [String: Any] = [
+                "id": id,
+                "display_name": username,
+                "type": "D",
+                "delete_at": 0,
+                "notCreatedYet": true
+              ]
+              entitiesChannels.setValue(placeHolderChannel, forKey: id)
+            }
           }
           
           if let entitiesData: NSData = try? JSONSerialization.data(withJSONObject: ent, options: JSONSerialization.WritingOptions.prettyPrinted) as NSData {
@@ -653,7 +655,7 @@ extension ShareViewController: TeamsViewControllerDelegate {
   func selectedTeam(deck: Item) {
     selectedTeam = deck
     selectedChannel = nil
-    self.getChannelsFromServerAndReload(forTeamId: deck.id!)
+    self.getChannelsFromServerAndReload(forTeamId: deck.id!, teamSwitch: true)
     reloadConfigurationItems()
     popConfigurationViewController()
   }
@@ -668,7 +670,7 @@ extension ShareViewController: ChannelsViewControllerDelegate {
   
   func loadedChannels() {
     let currentTeamId = store.getCurrentTeamId()
-    self.getChannelsFromServerAndReload(forTeamId: currentTeamId!)
+    self.getChannelsFromServerAndReload(forTeamId: currentTeamId!, teamSwitch: false)
   }
   
   func searchOnTyping(term: String) {
