@@ -1,57 +1,5 @@
 rootProject.name = 'Mattermost'
-include ':@sentry_react-native'
-project(':@sentry_react-native').projectDir = new File(rootProject.projectDir, '../node_modules/@sentry/react-native/android')
-include ':react-native-android-open-settings'
-project(':react-native-android-open-settings').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-android-open-settings/android')
-include ':react-native-permissions'
-project(':react-native-permissions').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-permissions/android')
-include ':react-native-fast-image'
-project(':react-native-fast-image').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fast-image/android')
-include ':react-native-haptic-feedback'
-project(':react-native-haptic-feedback').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-haptic-feedback/android')
-include ':react-native-gesture-handler'
-project(':react-native-gesture-handler').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-gesture-handler/android')
-include ':react-native-document-picker'
-project(':react-native-document-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-document-picker/android')
-include ':react-native-keychain'
-project(':react-native-keychain').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-keychain/android')
-include ':react-native-doc-viewer'
-project(':react-native-doc-viewer').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-doc-viewer/android')
-include ':react-native-video'
-project(':react-native-video').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-video/android')
-include ':react-native-youtube'
-project(':react-native-youtube').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-youtube/android')
-include ':react-native-exception-handler'
-project(':react-native-exception-handler').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-exception-handler/android')
-include ':rn-fetch-blob'
-project(':rn-fetch-blob').projectDir = new File(rootProject.projectDir, '../node_modules/rn-fetch-blob/android')
-include ':jail-monkey'
-project(':jail-monkey').projectDir = new File(rootProject.projectDir, '../node_modules/jail-monkey/android')
-include ':react-native-local-auth'
-project(':react-native-local-auth').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-local-auth/android')
-include ':react-native-navigation'
-project(':react-native-navigation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-navigation/lib/android/app/')
-include ':react-native-image-picker'
-project(':react-native-image-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-picker/android')
-include ':react-native-device-info'
-project(':react-native-device-info').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-device-info/android')
-include ':react-native-cookies'
-project(':react-native-cookies').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-cookies/android')
-include ':react-native-vector-icons'
-project(':react-native-vector-icons').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-vector-icons/android')
 include ':reactnativenotifications'
 project(':reactnativenotifications').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-notifications/android/app')
-
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'
-include ':react-native-svg'
-project(':react-native-svg').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-svg/android')
-include ':react-native-linear-gradient'
-project(':react-native-linear-gradient').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-linear-gradient/android')
-include ':react-native-webview'
-project(':react-native-webview').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-webview/android')
-include ':@react-native-community_async-storage'
-project(':@react-native-community_async-storage').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-community/async-storage/android')
-include ':@react-native-community_netinfo'
-project(':@react-native-community_netinfo').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-community/netinfo/android')
-include ':react-native-hw-keyboard-event'
-project(':react-native-hw-keyboard-event').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-hw-keyboard-event/android')
