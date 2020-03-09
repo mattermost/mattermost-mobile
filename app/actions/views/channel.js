@@ -171,7 +171,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         }
 
         if (actions.length) {
-            dispatch(batchActions(actions), getState);
+            dispatch(batchActions(actions));
         }
     };
 }
@@ -410,12 +410,10 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
 }
 
 export function handlePostDraftChanged(channelId, draft) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: ViewTypes.POST_DRAFT_CHANGED,
-            channelId,
-            draft,
-        }, getState);
+    return {
+        type: ViewTypes.POST_DRAFT_CHANGED,
+        channelId,
+        draft,
     };
 }
 

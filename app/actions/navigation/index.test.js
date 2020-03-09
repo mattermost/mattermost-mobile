@@ -48,7 +48,7 @@ describe('app/actions/navigation', () => {
                                     },
                                 },
                                 layout: {
-                                    backgroundColor: theme.centerChannelBg,
+                                    componentBackgroundColor: theme.centerChannelBg,
                                 },
                                 statusBar: {
                                     visible: true,
@@ -95,6 +95,10 @@ describe('app/actions/navigation', () => {
                                         waitForRender: true,
                                     },
                                 },
+                                layout: {
+                                    backgroundColor: theme.centerChannelBg,
+                                    componentBackgroundColor: theme.centerChannelBg,
+                                },
                                 statusBar: {
                                     visible: true,
                                 },
@@ -130,7 +134,7 @@ describe('app/actions/navigation', () => {
                 },
             },
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -175,8 +179,9 @@ describe('app/actions/navigation', () => {
 
         const defaultOptions = {
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
+            popGesture: true,
             sideMenu: {
                 left: {enabled: false},
                 right: {enabled: false},
@@ -233,8 +238,9 @@ describe('app/actions/navigation', () => {
         const showModal = jest.spyOn(Navigation, 'showModal');
 
         const defaultOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -283,7 +289,7 @@ describe('app/actions/navigation', () => {
         const showModalOverCurrentContextOptions = {
             modalPresentationStyle: 'overCurrentContext',
             layout: {
-                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
             },
             topBar: {
                 visible: false,
@@ -291,6 +297,7 @@ describe('app/actions/navigation', () => {
             },
             animations: {
                 showModal: {
+                    waitForRender: true,
                     enabled: animationsEnabled,
                     alpha: {
                         from: 0,
@@ -309,8 +316,9 @@ describe('app/actions/navigation', () => {
             },
         };
         const showModalOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -366,8 +374,9 @@ describe('app/actions/navigation', () => {
             },
         };
         const defaultOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,

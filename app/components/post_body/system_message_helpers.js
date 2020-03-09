@@ -147,6 +147,9 @@ const renderArchivedMessage = (postBodyProps, styles, intl) => {
 
 const renderUnarchivedMessage = (postBodyProps, styles, intl) => {
     const {postProps} = postBodyProps;
+    if (!postProps?.username) {
+        return null;
+    }
 
     const username = renderUsername(postProps.username);
     const localeHolder = {

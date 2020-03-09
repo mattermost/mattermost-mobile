@@ -213,6 +213,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     blockStyles={blockStyles}
                                     value={header}
                                     onChannelLinkPress={popToRoot}
+                                    disableAtChannelMentionHighlight={true}
                                 />
                             </View>
                         </TouchableHighlight>

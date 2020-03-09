@@ -34,7 +34,7 @@ export function resetToChannel(passProps = {}) {
                         },
                     },
                     layout: {
-                        backgroundColor: theme.centerChannelBg,
+                        componentBackgroundColor: theme.centerChannelBg,
                     },
                     statusBar: {
                         visible: true,
@@ -103,6 +103,10 @@ export function resetToSelectServer(allowOtherServers) {
                                     waitForRender: true,
                                 },
                             },
+                            layout: {
+                                backgroundColor: theme.centerChannelBg,
+                                componentBackgroundColor: theme.centerChannelBg,
+                            },
                             statusBar: {
                                 visible: true,
                             },
@@ -134,7 +138,7 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
             },
         },
         layout: {
-            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
         },
         statusBar: {
             visible: true,
@@ -176,8 +180,9 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
     const componentId = EphemeralStore.getNavigationTopComponentId();
     const defaultOptions = {
         layout: {
-            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
         },
+        popGesture: true,
         sideMenu: {
             left: {enabled: false},
             right: {enabled: false},
@@ -232,8 +237,9 @@ export async function popToRoot() {
 export function showModal(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
+        modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
         layout: {
-            backgroundColor: theme.centerChannelBg,
+            componentBackgroundColor: theme.centerChannelBg,
         },
         statusBar: {
             visible: true,
@@ -277,7 +283,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
-            backgroundColor: 'transparent',
+            componentBackgroundColor: 'transparent',
         },
         topBar: {
             visible: false,
@@ -285,6 +291,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
         },
         animations: {
             showModal: {
+                waitForRender: true,
                 enabled: animationsEnabled,
                 alpha: {
                     from: 0,
