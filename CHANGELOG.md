@@ -32,7 +32,7 @@
  - Fixed an issue where tall and thin image attachments got pushed to the left instead of appearing centered.
  
 ### Known Issues
- - Some gender neutral emojis render as minimized.
+ - Some gender neutral emojis don't render as jumbo emojis.
 
 ## 1.28.0 Release
 - Release Date: February 16, 2020
