@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
@@ -25,7 +25,7 @@ const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
 const containerHeight = 40;
 const middleHeight = 20;
 
-export default class Search extends PureComponent {
+export default class Search extends Component {
     static propTypes = {
         onBlur: PropTypes.func,
         onFocus: PropTypes.func,
@@ -86,7 +86,7 @@ export default class Search extends PureComponent {
             leftComponentWidth: 0,
         };
 
-        this.iconDeleteAnimated = new Animated.Value(0);
+        this.iconDeleteAnimated = new Animated.Value(1);
         this.leftComponentAnimated = new Animated.Value(0);
         this.searchContainerAnimated = new Animated.Value(0);
 
@@ -343,8 +343,8 @@ export default class Search extends PureComponent {
                         }}
                         inputStyle={{
                             ...styles.text,
-                            ...restOfInputPropStyles,
                             color: this.props.placeholderTextColor,
+                            ...restOfInputPropStyles,
                             height: this.props.inputHeight,
                         }}
                         placeholder={this.placeholder}
