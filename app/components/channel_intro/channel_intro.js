@@ -30,6 +30,7 @@ class ChannelIntro extends PureComponent {
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        teammateNameDisplay: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
