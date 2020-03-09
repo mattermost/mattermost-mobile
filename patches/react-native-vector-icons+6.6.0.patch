@@ -1,0 +1,25 @@
+diff --git a/node_modules/react-native-vector-icons/android/src/main/java/com/oblador/vectoricons/VectorIconsModule.java b/node_modules/react-native-vector-icons/android/src/main/java/com/oblador/vectoricons/VectorIconsModule.java
+index ddb740c..3738367 100755
+--- a/node_modules/react-native-vector-icons/android/src/main/java/com/oblador/vectoricons/VectorIconsModule.java
++++ b/node_modules/react-native-vector-icons/android/src/main/java/com/oblador/vectoricons/VectorIconsModule.java
+@@ -43,7 +43,8 @@ public class VectorIconsModule extends ReactContextBaseJavaModule {
+   public void getImageForFont(String fontFamily, String glyph, Integer fontSize, Integer color, Callback callback) {
+     Context context = getReactApplicationContext();
+     File cacheFolder = context.getCacheDir();
+-    String cacheFolderPath = cacheFolder.getAbsolutePath() + "/";
++    String cacheFolderPath = cacheFolder.getAbsolutePath() + "/vectorIcons/";
++    File vectorIconsFolder = new File(cacheFolderPath);
+ 
+     float scale = context.getResources().getDisplayMetrics().density;
+     String scaleSuffix = "@" + (scale == (int) scale ? Integer.toString((int) scale) : Float.toString(scale)) + "x";
+@@ -54,6 +55,10 @@ public class VectorIconsModule extends ReactContextBaseJavaModule {
+     String cacheFileUrl = "file://" + cacheFilePath;
+     File cacheFile = new File(cacheFilePath);
+ 
++    if (!vectorIconsFolder.exists()) {
++      vectorIconsFolder.mkdirs();
++    }
++
+     if(cacheFile.exists()) {
+       callback.invoke(null, cacheFileUrl);
+     } else {

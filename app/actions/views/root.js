@@ -1,18 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {GeneralTypes} from 'mattermost-redux/action_types';
+import {batchActions} from 'redux-batched-actions';
+
+import {ChannelTypes, GeneralTypes, TeamTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
 import {fetchMyChannelsAndMembers} from 'mattermost-redux/actions/channels';
 import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
 import {receivedNewPost} from 'mattermost-redux/actions/posts';
-import {getMyTeams, getMyTeamMembers, selectTeam} from 'mattermost-redux/actions/teams';
+import {getMyTeams, getMyTeamMembers} from 'mattermost-redux/actions/teams';
 
 import {ViewTypes} from 'app/constants';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {recordTime} from 'app/utils/segment';
 
-import {handleSelectChannel} from 'app/actions/views/channel';
+import {markChannelViewedAndRead} from './channel';
 
 export function startDataCleanup() {
     return async (dispatch, getState) => {
@@ -79,12 +82,46 @@ export function loadFromPushNotification(notification) {
             await Promise.all(loading);
         }
 
+        dispatch(handleSelectTeamAndChannel(teamId, channelId));
+    };
+}
+
+export function handleSelectTeamAndChannel(teamId, channelId) {
+    return async (dispatch, getState) => {
+        const dt = Date.now();
+        const state = getState();
+        const {channels, currentChannelId, myMembers} = state.entities.channels;
+        const {currentTeamId} = state.entities.teams;
+        const channel = channels[channelId];
+        const member = myMembers[channelId];
+        const actions = [];
+
         // when the notification is from a team other than the current team
         if (teamId !== currentTeamId) {
-            dispatch(selectTeam({id: teamId}));
+            actions.push({type: TeamTypes.SELECT_TEAM, data: teamId});
         }
 
-        dispatch(handleSelectChannel(channelId, true));
+        if (channel && currentChannelId !== channelId) {
+            actions.push({
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId,
+                extra: {
+                    channel,
+                    member,
+                    teamId: channel.team_id || currentTeamId,
+                },
+            });
+
+            dispatch(markChannelViewedAndRead(channelId));
+        }
+
+        if (actions.length) {
+            dispatch(batchActions(actions));
+        }
+
+        EphemeralStore.setStartFromNotification(false);
+
+        console.log('channel switch from push notification to', channel?.display_name, (Date.now() - dt), 'ms'); //eslint-disable-line
     };
 }
 

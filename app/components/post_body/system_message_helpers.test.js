@@ -87,7 +87,16 @@ describe('renderSystemMessage', () => {
             postType: Posts.POST_TYPES.CHANNEL_UNARCHIVED,
         };
 
-        const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
+        let renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
+        expect(renderedMessage).toMatchSnapshot();
+
+        const noUserInPostBodyProps = {
+            ...basePostBodyProps,
+            postProps: {},
+            postType: Posts.POST_TYPES.CHANNEL_UNARCHIVED,
+        };
+
+        renderedMessage = SystemMessageHelpers.renderSystemMessage(noUserInPostBodyProps, mockStyles, mockIntl);
         expect(renderedMessage).toMatchSnapshot();
     });
 

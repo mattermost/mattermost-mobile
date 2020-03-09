@@ -38,10 +38,6 @@ import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences'
 import {getCurrentUserId, getUserIdsInChannels, getUsers} from 'mattermost-redux/selectors/entities/users';
 import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
-import {getChannelReachable} from 'app/selectors/channel';
-
-import telemetry from 'app/telemetry';
-
 import {
     getChannelByName,
     getDirectChannelName,
@@ -55,6 +51,8 @@ import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from 'app/constants/post_textbox';
+import {getChannelReachable} from 'app/selectors/channel';
+import telemetry from 'app/telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, isDirectMessageVisible, isGroupMessageVisible, isDirectChannelAutoClosed} from 'app/utils/channels';
 import {buildPreference} from 'app/utils/preferences';
 
@@ -173,7 +171,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         }
 
         if (actions.length) {
-            dispatch(batchActions(actions), getState);
+            dispatch(batchActions(actions));
         }
     };
 }
@@ -349,21 +347,18 @@ export function selectDefaultChannel(teamId) {
     };
 }
 
-export function handleSelectChannel(channelId, fromPushNotification = false) {
+export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const dt = Date.now();
         const state = getState();
-        const {channels, myMembers} = state.entities.channels;
+        const {channels, currentChannelId, myMembers} = state.entities.channels;
         const {currentTeamId} = state.entities.teams;
         const channel = channels[channelId];
         const member = myMembers[channelId];
 
-        // If the app is open from push notification, we already fetched the posts.
-        if (!fromPushNotification) {
-            dispatch(loadPostsIfNecessaryWithRetry(channelId));
-        }
+        dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
-        if (channel) {
+        if (channel && currentChannelId !== channelId) {
             dispatch({
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
@@ -373,9 +368,11 @@ export function handleSelectChannel(channelId, fromPushNotification = false) {
                     teamId: channel.team_id || currentTeamId,
                 },
             });
+
+            dispatch(markChannelViewedAndRead(channelId, currentChannelId));
         }
 
-        console.log('channel switch in', channel?.display_name, (Date.now() - dt), 'ms'); //eslint-disable-line
+        console.log('channel switch to', channel?.display_name, (Date.now() - dt), 'ms'); //eslint-disable-line
     };
 }
 
@@ -413,12 +410,10 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
 }
 
 export function handlePostDraftChanged(channelId, draft) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: ViewTypes.POST_DRAFT_CHANGED,
-            channelId,
-            draft,
-        }, getState);
+    return {
+        type: ViewTypes.POST_DRAFT_CHANGED,
+        channelId,
+        draft,
     };
 }
 

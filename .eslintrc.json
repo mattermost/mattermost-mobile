@@ -1,7 +1,9 @@
 {
   "extends": [
-    "./node_modules/eslint-config-mattermost/.eslintrc.json",
-    "./node_modules/eslint-config-mattermost/.eslintrc-react.json"
+    "plugin:mattermost/react"
+  ],
+  "plugins": [
+    "mattermost"
   ],
   "settings": {
     "react": {

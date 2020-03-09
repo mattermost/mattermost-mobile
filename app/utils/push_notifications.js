@@ -47,7 +47,7 @@ class PushNotificationUtils {
 
     loadFromNotification = async (notification) => {
         // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
-        EphemeralStore.appStartedFromPushNotification = true;
+        EphemeralStore.setStartFromNotification(true);
         await this.store.dispatch(loadFromPushNotification(notification));
 
         // if we have a componentId means that the app is already initialized
@@ -80,11 +80,8 @@ class PushNotificationUtils {
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
             } else if (userInteraction && !notification?.data?.localNotification) {
-                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
                 if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
-                    setTimeout(() => {
-                        this.loadFromNotification(notification);
-                    }, 0);
+                    this.loadFromNotification(notification);
                 } else {
                     waitForHydration(this.store, () => {
                         this.loadFromNotification(notification);
