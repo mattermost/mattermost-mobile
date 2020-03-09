@@ -30,6 +30,9 @@
  - Fixed an issue where markdown tables did not display all rows in a post when it had multiple heights.
  - Fixed an issue where deleting documents and data caused a flash of the background when the app reloaded.
  - Fixed an issue where tall and thin image attachments got pushed to the left instead of appearing centered.
+ 
+### Known Issues
+ - Some gender neutral emojis render as minimized.
 
 ## 1.28.0 Release
 - Release Date: February 16, 2020
