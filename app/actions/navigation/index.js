@@ -104,8 +104,8 @@ export function resetToSelectServer(allowOtherServers) {
                                 },
                             },
                             layout: {
-                                backgroundColor: theme.centerChannelBg,
-                                componentBackgroundColor: theme.centerChannelBg,
+                                backgroundColor: colorStyles.navigation.backgroundColor,
+                                componentBackgroundColor: colorStyles.navigation.backgroundColor,
                             },
                             statusBar: {
                                 visible: true,
