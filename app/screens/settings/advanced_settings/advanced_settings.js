@@ -80,9 +80,7 @@ class AdvancedSettings extends Component {
         this.setState({cacheSize: 0, cacheSizedFetched: true});
         actions.purgeOfflineStore();
 
-        if (Platform.OS === 'android') {
-            dismissAllModals();
-        }
+        dismissAllModals();
     });
 
     renderCacheFileSize = () => {

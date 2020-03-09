@@ -1,10 +1,10 @@
 {
   "extends": [
-    "./node_modules/eslint-config-mattermost/.eslintrc.json",
-    "./node_modules/eslint-config-mattermost/.eslintrc-react.json",
+    "plugin:mattermost/react",
     "plugin:wdio/recommended"
   ],
   "plugins": [
+    "mattermost",
     "wdio"
   ],
   "settings": {

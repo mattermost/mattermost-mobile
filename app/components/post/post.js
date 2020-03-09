@@ -320,7 +320,7 @@ export default class Post extends PureComponent {
                     underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     cancelTouchOnPanning={true}
                 >
-                    <React.Fragment>
+                    <>
                         <PostPreHeader
                             isConsecutive={mergeMessage}
                             isFlagged={isFlagged}
@@ -355,7 +355,7 @@ export default class Post extends PureComponent {
                                 />
                             </View>
                         </View>
-                    </React.Fragment>
+                    </>
                 </TouchableWithFeedback>
             </View>
         );

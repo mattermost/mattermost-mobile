@@ -2,30 +2,50 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Dimensions, View} from 'react-native';
+import {View} from 'react-native';
 
-import ChannelLoader from 'app/components/channel_loader';
+import EventEmitter from 'mattermost-redux/utils/event_emitter';
+
+import {openMainSideMenu, openSettingsSideMenu} from 'app/actions/navigation';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
+import InteractiveDialogController from 'app/components/interactive_dialog_controller';
 import NetworkIndicator from 'app/components/network_indicator';
 import PostTextbox from 'app/components/post_textbox';
+import {NavigationTypes} from 'app/constants';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
+
 import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
-import ChannelBase, {ClientUpgradeListener, style} from './channel_base';
+import ChannelBase, {ClientUpgradeListener} from './channel_base';
 
 export default class ChannelAndroid extends ChannelBase {
-    render() {
-        const {height} = Dimensions.get('window');
+    openMainSidebar = () => {
+        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+        openMainSideMenu();
+    };
 
-        const channelLoaderStyle = [style.channelLoader, {height}];
+    openSettingsSidebar = () => {
+        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+        openSettingsSideMenu();
+    };
+
+    render() {
+        const {theme} = this.props;
+        const channelLoadingOrFailed = this.renderLoadingOrFailedChannel();
+        if (channelLoadingOrFailed) {
+            return channelLoadingOrFailed;
+        }
+
+        const style = getStyleFromTheme(theme);
         const drawerContent = (
             <>
                 <NetworkIndicator/>
                 <ChannelNavBar
-                    openChannelDrawer={this.openChannelSidebar}
-                    openSettingsDrawer={this.openSettingsSidebar}
+                    openMainSidebar={this.openMainSidebar}
+                    openSettingsSidebar={this.openSettingsSidebar}
                     onPress={this.goToChannelInfo}
                 />
                 <KeyboardLayout>
@@ -37,14 +57,31 @@ export default class ChannelAndroid extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
-                <ChannelLoader
-                    height={height}
-                    style={channelLoaderStyle}
-                />
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>
         );
 
-        return this.renderChannel(drawerContent);
+        return (
+            <>
+                <View style={style.backdrop}>
+                    {drawerContent}
+                </View>
+                <InteractiveDialogController
+                    theme={theme}
+                />
+            </>
+        );
     }
 }
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        backdrop: {
+            flex: 1,
+            backgroundColor: theme.centerChannelBg,
+        },
+        flex: {
+            flex: 1,
+        },
+    };
+});

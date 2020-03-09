@@ -41,13 +41,13 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   });
 }
 
-- (void)sendReply:(UNNotificationResponse *)response {
+- (void)sendReply:(UNNotificationResponse *)response completionHandler:(void (^)(void))notificationCompletionHandler {
   StoreManager *store = [StoreManager shared];
   [store getEntities:true];
   NSString *serverUrl = [store getServerUrl];
   NSString *sessionToken = [store getToken];
   if (serverUrl == nil || sessionToken == nil) {
-    [self handleReplyFailure:@""];
+    [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
     return;
   }
 
@@ -68,12 +68,13 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   NSError *error;
   NSData *postData = [NSJSONSerialization dataWithJSONObject:post options:0 error:&error];
   if (!postData) {
-    [self handleReplyFailure:channelId];
+    [self handleReplyFailure:channelId completionHandler:notificationCompletionHandler];
     return;
   }
-  
-  NSString *urlString = [NSString stringWithFormat:@"%@/api/v4/posts", serverUrl];
-  NSURL *url = [NSURL URLWithString:urlString];
+
+  NSString *urlString = [serverUrl stringByReplacingOccurrencesOfString:@"/$" withString:@"" options:NSRegularExpressionSearch range:NSMakeRange(0, [serverUrl length])];
+  NSString *postsEndpoint = @"/api/v4/posts?set_online=false";
+  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", urlString, postsEndpoint]];
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
   [request setHTTPMethod:@"POST"];
   [request setValue:[NSString stringWithFormat:@"Bearer %@", sessionToken] forHTTPHeaderField:@"Authorization"];
@@ -85,24 +86,26 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
     NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
     if (statusCode == 201) {
-      [self handleReplySuccess:completionKey];
+      [self handleReplySuccess:completionKey completionHandler:notificationCompletionHandler];
     } else {
-      [self handleReplyFailure:channelId];
+      [self handleReplyFailure:channelId completionHandler:notificationCompletionHandler];
     }
   }];
 
   [task resume];
 }
 
-- (void) handleReplySuccess:(NSString *)completionKey {
+- (void) handleReplySuccess:(NSString *)completionKey completionHandler:(void (^)(void))completionHandler {
   [[RNNotificationsStore sharedInstance] completeAction:completionKey];
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
   [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
     [[UIApplication sharedApplication] setApplicationIconBadgeNumber:[notifications count]];
   }];
+
+  completionHandler();
 }
 
-- (void) handleReplyFailure:(NSString *)channelId {
+- (void) handleReplyFailure:(NSString *)channelId completionHandler:(void (^)(void))completionHandler {
   RNNotificationCenter *notificationCenter = [self notificationCenter];
   if (!notificationCenter) {
     notificationCenter = [RNNotificationCenter new];
@@ -120,14 +123,15 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
     }
   };
   [notificationCenter sendLocalNotification:notification withId:id];
+
+  completionHandler();
 }
 
 #pragma mark - Method Swizzling
 
 - (void)handleReplyAction_didReceiveNotificationResponse:(UNNotificationResponse *)response completionHandler:(void (^)(void))completionHandler {
   if ([response.actionIdentifier isEqualToString:ReplyActionID]) {
-    [self sendReply:response];
-    completionHandler();
+    [self sendReply:response completionHandler:completionHandler];
   } else {
     [self handleReplyAction_didReceiveNotificationResponse:response completionHandler:completionHandler];
   }

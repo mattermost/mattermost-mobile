@@ -6,8 +6,9 @@ import PropTypes from 'prop-types';
 import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import {Client4} from 'mattermost-redux/client';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import ImageCacheManager from 'app/utils/image_cache_manager';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
@@ -73,14 +74,23 @@ export default class ProgressiveImage extends PureComponent {
     }
 
     load = () => {
-        const {filename, imageUri, thumbnailUri} = this.props;
+        const {imageUri, thumbnailUri} = this.props;
+        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
 
-        if (thumbnailUri) {
-            ImageCacheManager.cache(filename, thumbnailUri, this.setThumbnail);
+        if (thumbnailUri && imageUri) {
+            FastImage.preload([{uri: imageUri, headers}]);
+            this.setThumbnail(thumbnailUri);
         } else if (imageUri) {
-            ImageCacheManager.cache(filename, imageUri, this.setImage);
+            this.setImage(imageUri);
         }
     };
+
+    loadFullImage = () => {
+        if (!this.state.uri) {
+            const {imageUri} = this.props;
+            this.setImage(imageUri);
+        }
+    }
 
     setImage = (uri) => {
         if (this.subscribedToCache) {
@@ -94,12 +104,7 @@ export default class ProgressiveImage extends PureComponent {
                 this.load();
                 this.setState({failedImageLoad: true});
             } else {
-                const {filename, imageUri} = this.props;
-                this.setState({thumb}, () => {
-                    setTimeout(() => {
-                        ImageCacheManager.cache(filename, imageUri, this.setImage);
-                    }, 300);
-                });
+                this.setState({thumb, uri: null});
             }
         }
     };
@@ -167,28 +172,36 @@ export default class ProgressiveImage extends PureComponent {
             );
         }
 
+        if (hasDefaultSource && !hasPreview && !hasURI) {
+            return (
+                <View style={style}>
+                    {defaultImage}
+                    {hasPreview &&
+                    <Animated.View style={[StyleSheet.absoluteFill, {backgroundColor: theme.centerChannelBg, opacity}]}/>
+                    }
+                </View>
+            );
+        }
+
+        let source;
+        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
+        if (hasPreview && !isImageReady) {
+            source = {uri: thumb, headers};
+        } else if (isImageReady) {
+            source = {uri, headers};
+        }
+
         return (
             <View style={style}>
-                {(hasDefaultSource && !hasPreview && !hasURI) && defaultImage}
-                {hasPreview && !isImageReady &&
+                {source &&
                 <ImageComponent
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
                     onError={onError}
-                    source={{uri: thumb}}
+                    source={source}
                     style={[StyleSheet.absoluteFill, imageStyle]}
-                    blurRadius={5}
-                >
-                    {this.props.children}
-                </ImageComponent>
-                }
-                {isImageReady &&
-                <ImageComponent
-                    resizeMode={resizeMode}
-                    resizeMethod={resizeMethod}
-                    onError={onError}
-                    source={{uri}}
-                    style={[StyleSheet.absoluteFill, imageStyle]}
+                    blurRadius={isImageReady ? null : 5}
+                    onLoadEnd={this.loadFullImage}
                 >
                     {this.props.children}
                 </ImageComponent>

@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {TeamTypes} from 'mattermost-redux/action_types';
+import {batchActions} from 'redux-batched-actions';
+
+import {ChannelTypes, TeamTypes} from 'mattermost-redux/action_types';
 import {getMyTeams} from 'mattermost-redux/actions/teams';
 import {RequestStatus} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
@@ -18,7 +20,10 @@ export function handleTeamChange(teamId) {
             return;
         }
 
-        dispatch({type: TeamTypes.SELECT_TEAM, data: teamId});
+        dispatch(batchActions([
+            {type: TeamTypes.SELECT_TEAM, data: teamId},
+            {type: ChannelTypes.SELECT_CHANNEL, data: '', extra: {}},
+        ]));
     };
 }
 

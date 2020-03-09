@@ -16,8 +16,8 @@ describe('ChannelNavBar', () => {
     const formatMessage = jest.fn();
     const baseProps = {
         isLandscape: false,
-        openChannelDrawer: jest.fn(),
-        openSettingsDrawer: jest.fn(),
+        openMainSidebar: jest.fn(),
+        openSettingsSidebar: jest.fn(),
         onPress: jest.fn(),
         theme: Preferences.THEMES.default,
     };

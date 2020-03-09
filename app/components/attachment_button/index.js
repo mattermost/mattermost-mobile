@@ -8,6 +8,7 @@ import {
     NativeModules,
     Platform,
     StyleSheet,
+    StatusBar,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
@@ -179,6 +180,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (hasCameraPermission) {
             ImagePicker.launchCamera(options, (response) => {
+                StatusBar.setHidden(false);
                 emmProvider.inBackgroundSince = null;
                 if (response.error || response.didCancel) {
                     return;
@@ -214,6 +216,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (hasPhotoPermission) {
             ImagePicker.launchImageLibrary(options, (response) => {
+                StatusBar.setHidden(false);
                 emmProvider.inBackgroundSince = null;
                 if (response.error || response.didCancel) {
                     return;

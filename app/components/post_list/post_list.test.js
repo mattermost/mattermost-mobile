@@ -109,7 +109,7 @@ describe('PostList', () => {
         instance.loadToFillContent = jest.fn();
 
         wrapper.setProps({
-            extraData: true,
+            extraData: false,
         });
         expect(instance.loadToFillContent).toHaveBeenCalledTimes(0);
 
@@ -120,7 +120,7 @@ describe('PostList', () => {
         expect(instance.loadToFillContent).toHaveBeenCalledTimes(1);
 
         wrapper.setProps({
-            extraData: false,
+            extraData: true,
         });
 
         expect(instance.loadToFillContent).toHaveBeenCalledTimes(1);

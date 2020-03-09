@@ -1,0 +1,85 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Markdown should match snapshot 1`] = `
+<Unknown
+  context={Array []}
+  first={true}
+  last={true}
+  literal={null}
+  nodeKey="8"
+>
+  <Unknown
+    context={
+      Array [
+        "paragraph",
+      ]
+    }
+    literal="This is a message containing "
+    nodeKey="2"
+  />
+  <Unknown
+    context={
+      Array [
+        "paragraph",
+        "mention_highlight",
+      ]
+    }
+    literal={null}
+    mentionName="all"
+    nodeKey="6"
+  >
+    <Unknown
+      context={
+        Array [
+          "paragraph",
+          "mention_highlight",
+          "at_mention",
+        ]
+      }
+      literal="@all"
+      nodeKey="5"
+    />
+  </Unknown>
+</Unknown>
+`;
+
+exports[`Markdown should match with disableAtChannelMentionHighlight 1`] = `
+<Unknown
+  context={Array []}
+  first={true}
+  last={true}
+  literal={null}
+  nodeKey="6"
+>
+  <Unknown
+    context={
+      Array [
+        "paragraph",
+      ]
+    }
+    literal="This is a message containing "
+    nodeKey="2"
+  />
+  <Unknown
+    context={
+      Array [
+        "paragraph",
+      ]
+    }
+    literal={null}
+    mentionName="all"
+    nodeKey="5"
+  >
+    <Unknown
+      context={
+        Array [
+          "paragraph",
+          "at_mention",
+        ]
+      }
+      literal="@all"
+      nodeKey="4"
+    />
+  </Unknown>
+</Unknown>
+`;

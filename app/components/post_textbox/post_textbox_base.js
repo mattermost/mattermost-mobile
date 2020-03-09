@@ -44,6 +44,7 @@ import EphemeralStore from 'app/store/ephemeral_store';
 import {accessibilityProps} from 'app/utils/accessibility';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
+import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -76,7 +77,6 @@ export default class PostTextBoxBase extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelDisplayName: PropTypes.string,
         channelTeamId: PropTypes.string.isRequired,
-        channelIsLoading: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
@@ -98,6 +98,7 @@ export default class PostTextBoxBase extends PureComponent {
         currentChannel: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
         screenId: PropTypes.string.isRequired,
+        useChannelMentions: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -410,17 +411,25 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handlePostDraftSelectionChanged = (event) => {
-        const cursorPosition = event.nativeEvent.selection.end;
+    handleOnSelectionChange = (event) => {
+        this.handlePostDraftSelectionChanged(event, false);
+    };
+
+    handlePostDraftSelectionChanged = (event, fromHandleTextChange) => {
+        const cursorPosition = fromHandleTextChange ? this.state.cursorPosition : event.nativeEvent.selection.end;
+
         const {cursorPositionEvent} = this.props;
 
         if (cursorPositionEvent) {
             EventEmitter.emit(cursorPositionEvent, cursorPosition);
         }
 
-        this.setState({
-            cursorPosition,
-        });
+        if (Platform.OS === 'ios') {
+            const keyboardType = switchKeyboardForCodeBlocks(this.state.value, cursorPosition);
+            this.setState({cursorPosition, keyboardType});
+        } else {
+            this.setState({cursorPosition});
+        }
     };
 
     handleSendMessage = () => {
@@ -518,7 +527,13 @@ export default class PostTextBoxBase extends PureComponent {
 
         this.checkMessageLength(value);
 
-        this.setState(nextState);
+        // Workaround to avoid iOS emdash autocorrect in Code Blocks
+        if (Platform.OS === 'ios') {
+            const callback = () => this.handlePostDraftSelectionChanged(null, true);
+            this.setState(nextState, callback);
+        } else {
+            this.setState(nextState);
+        }
 
         if (value) {
             actions.userTyping(channelId, rootId);
@@ -559,7 +574,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {value} = this.state;
 
         const currentMembersCount = this.props.currentChannelMembersCount;
-        const notificationsToChannel = this.props.enableConfirmNotificationsToChannel;
+        const notificationsToChannel = this.props.enableConfirmNotificationsToChannel && this.props.useChannelMentions;
         const toAllOrChannel = this.textContainsAtAllAtChannel(value);
 
         if (value.indexOf('/') === 0) {
@@ -883,7 +898,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {formatMessage} = this.context.intl;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {
@@ -891,7 +906,6 @@ export default class PostTextBoxBase extends PureComponent {
         }
 
         const {value, extraInputPadding} = this.state;
-        const textValue = channelIsLoading ? '' : value;
         const placeholder = this.getPlaceHolder();
 
         let maxHeight = 150;
@@ -926,10 +940,10 @@ export default class PostTextBoxBase extends PureComponent {
                     <PasteableTextInput
                         {...accessibilityProps(formatMessage(accessibilityLabel.textInput))}
                         ref={this.input}
-                        value={textValue}
+                        value={value}
                         style={{...style.input, ...inputStyle, maxHeight}}
                         onChangeText={this.handleTextChange}
-                        onSelectionChange={this.handlePostDraftSelectionChanged}
+                        onSelectionChange={this.handleOnSelectionChange}
                         placeholder={formatMessage(placeholder, {channelDisplayName})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}

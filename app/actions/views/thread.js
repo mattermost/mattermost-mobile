@@ -4,12 +4,10 @@
 import {ViewTypes} from 'app/constants';
 
 export function handleCommentDraftChanged(rootId, draft) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: ViewTypes.COMMENT_DRAFT_CHANGED,
-            rootId,
-            draft,
-        }, getState);
+    return {
+        type: ViewTypes.COMMENT_DRAFT_CHANGED,
+        rootId,
+        draft,
     };
 }
 

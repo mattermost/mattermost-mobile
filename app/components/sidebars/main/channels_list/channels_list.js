@@ -33,7 +33,6 @@ export default class ChannelsList extends PureComponent {
         onSelectChannel: PropTypes.func.isRequired,
         onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        drawerOpened: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
     };
 

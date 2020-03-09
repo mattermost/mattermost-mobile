@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Alert, Platform} from 'react-native';
+import {Alert, Platform, StatusBar} from 'react-native';
 import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
@@ -12,7 +12,7 @@ import CameraButton from './camera_button';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
+    launchCamera: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
 describe('CameraButton', () => {
@@ -99,5 +99,19 @@ describe('CameraButton', () => {
             expect(request).toHaveBeenCalled();
             expect(hasPermission).toBe(true);
         }
+    });
+
+    test('should re-enable StatusBar after ImagePicker launchCamera finishes', async () => {
+        const wrapper = shallow(
+            <CameraButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'hasCameraPermission').mockReturnValue(true);
+        jest.spyOn(StatusBar, 'setHidden');
+
+        await instance.attachFileFromCamera();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 });

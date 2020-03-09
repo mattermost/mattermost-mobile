@@ -4,10 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {General} from 'mattermost-redux/constants';
+import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+import {General, Permissions} from 'mattermost-redux/constants';
 import {createPost} from 'mattermost-redux/actions/posts';
 import {setStatus} from 'mattermost-redux/actions/users';
 import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats} from 'mattermost-redux/selectors/entities/channels';
+import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
 import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
@@ -49,13 +51,23 @@ function mapStateToProps(state, ownProps) {
     const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
     const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
 
+    let useChannelMentions = true;
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+        useChannelMentions = haveIChannelPermission(
+            state,
+            {
+                channel: currentChannel.id,
+                permission: Permissions.USE_CHANNEL_MENTIONS,
+            },
+        );
+    }
+
     return {
         currentChannel,
         channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
         channelTeamId: currentChannel ? currentChannel.team_id : '',
         canUploadFiles: canUploadFilesOnMobile(state),
         channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
-        channelIsLoading: state.views.channel.loading,
         channelIsReadOnly: isCurrentChannelReadOnly(state) || false,
         channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
         currentUserId,
@@ -71,6 +83,7 @@ function mapStateToProps(state, ownProps) {
         currentChannelMembersCount,
         isTimezoneEnabled,
         isLandscape: isLandscape(state),
+        useChannelMentions,
     };
 }
 

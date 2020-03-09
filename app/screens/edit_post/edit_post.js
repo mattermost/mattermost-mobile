@@ -18,6 +18,7 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -62,6 +63,7 @@ export default class EditPost extends PureComponent {
             message: props.post.message,
             cursorPosition: 0,
             autocompleteVisible: false,
+            keyboardType: 'default',
         };
 
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
@@ -151,7 +153,14 @@ export default class EditPost extends PureComponent {
     };
 
     onPostChangeText = (message) => {
-        this.setState({message});
+        // Workaround to avoid iOS emdash autocorrect in Code Blocks
+        if (Platform.OS === 'ios') {
+            const callback = () => this.onPostSelectionChange(null, true);
+            this.setState({message}, callback);
+        } else {
+            this.setState({message});
+        }
+
         if (message) {
             this.emitCanEditPost(true);
         } else {
@@ -159,9 +168,19 @@ export default class EditPost extends PureComponent {
         }
     };
 
-    onPostSelectionChange = (event) => {
-        const cursorPosition = event.nativeEvent.selection.end;
-        this.setState({cursorPosition});
+    handleOnSelectionChange = (event) => {
+        this.onPostSelectionChange(event, false);
+    };
+
+    onPostSelectionChange = (event, fromOnPostChangeText) => {
+        const cursorPosition = fromOnPostChangeText ? this.state.cursorPosition : event.nativeEvent.selection.end;
+
+        if (Platform.OS === 'ios') {
+            const keyboardType = switchKeyboardForCodeBlocks(this.state.message, cursorPosition);
+            this.setState({cursorPosition, keyboardType});
+        } else {
+            this.setState({cursorPosition});
+        }
     };
 
     onAutocompleteVisible = (autocompleteVisible) => {
@@ -220,7 +239,8 @@ export default class EditPost extends PureComponent {
                             underlineColorAndroid='transparent'
                             disableFullscreenUI={true}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
-                            onSelectionChange={this.onPostSelectionChange}
+                            onSelectionChange={this.handleOnSelectionChange}
+                            keyboardType={this.state.keyboardType}
                         />
                     </View>
                 </View>
