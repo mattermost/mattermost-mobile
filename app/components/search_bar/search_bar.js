@@ -86,7 +86,6 @@ export default class Search extends Component {
             leftComponentWidth: 0,
         };
 
-        this.iconDeleteAnimated = new Animated.Value(1);
         this.leftComponentAnimated = new Animated.Value(0);
         this.searchContainerAnimated = new Animated.Value(0);
 
@@ -131,15 +130,6 @@ export default class Search extends Component {
     };
 
     onChangeText = (text) => {
-        Animated.timing(
-            this.iconDeleteAnimated,
-            {
-                toValue: (text.length > 0) ? 1 : 0,
-                duration: 200,
-                useNativeDriver: true,
-            },
-        ).start();
-
         if (this.props.onChangeText) {
             this.props.onChangeText(text);
         }
@@ -158,14 +148,6 @@ export default class Search extends Component {
     };
 
     onDelete = () => {
-        Animated.timing(
-            this.iconDeleteAnimated,
-            {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true,
-            },
-        ).start();
         this.focus();
 
         this.props.onChangeText('', true);
@@ -247,9 +229,6 @@ export default class Search extends Component {
                             style={[
                                 styles.defaultColor,
                                 this.props.tintColorDelete && {color: this.props.tintColorDelete},
-                                {
-                                    opacity: this.iconDeleteAnimated,
-                                },
                             ]}
                         />
                     </View>
@@ -291,16 +270,16 @@ export default class Search extends Component {
             // Making sure the icon won't change depending on whether the input is in focus on Android devices
             cancelIcon = searchIcon;
 
-            clearIcon = this.props.value.length > 0 ? (
+            clearIcon = (
                 <TouchableWithoutFeedback onPress={this.onDelete}>
                     <MaterialIcon
-                        style={[{paddingRight: 7}]}
+                        style={styles.clearIconAndroid}
                         name='close'
                         size={this.props.deleteIconSize}
                         color={this.props.titleCancelColor || this.props.placeholderTextColor}
                     />
                 </TouchableWithoutFeedback>
-            ) : null;
+            );
         }
 
         return (
@@ -343,6 +322,7 @@ export default class Search extends Component {
                         }}
                         inputStyle={{
                             ...styles.text,
+                            ...styles.inputMargin,
                             color: this.props.placeholderTextColor,
                             ...restOfInputPropStyles,
                             height: this.props.inputHeight,
@@ -400,6 +380,9 @@ const styles = StyleSheet.create({
     defaultColor: {
         color: 'grey',
     },
+    clearIconAndroid: {
+        paddingRight: 7,
+    },
     fullWidth: {
         flex: 1,
     },
@@ -414,13 +397,15 @@ const styles = StyleSheet.create({
             android: 0,
         }),
     },
+    inputMargin: {
+        marginLeft: 10,
+    },
     searchContainer: {
         paddingTop: 0,
         paddingBottom: 0,
         marginLeft: 0,
     },
     text: {
-        marginLeft: 10,
         fontSize: Platform.select({
             ios: 14,
             android: 15,
