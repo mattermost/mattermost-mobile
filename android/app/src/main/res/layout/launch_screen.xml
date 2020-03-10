@@ -10,9 +10,9 @@
 
     <ImageView
         android:id="@+id/imgLogo"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:src="?attr/splashIcon"
+        android:layout_width="108dp"
+        android:layout_height="108dp"
+        android:src="?attr/launchIcon"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

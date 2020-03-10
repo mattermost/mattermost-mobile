@@ -452,6 +452,13 @@ platform :ios do
     end
   end
 
+  lane :replace_assets do	
+    if ENV['REPLACE_ASSETS'] == 'true'	
+      sh 'cp -R ../dist/assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'	
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/* ../ios/Mattermost/Images.xcassets/LaunchIcon.appiconset/'	
+    end	
+  end
+
   lane :deploy do |options|
     ipa_path = options[:file]
 
@@ -640,6 +647,13 @@ platform :android do
         )
       end
     end
+  end
+
+  lane :replace_assets do	
+    if ENV['REPLACE_ASSETS'] == 'true'	
+      sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'	
+      sh 'cp -R ../dist/assets/release/splash_screen/android/* ../android/app/src/main/res/'	
+    end	
   end
 
   lane :deploy do |options|
