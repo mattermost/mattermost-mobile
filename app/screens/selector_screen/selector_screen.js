@@ -27,7 +27,6 @@ import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -43,7 +42,6 @@ export default class SelectorScreen extends PureComponent {
             searchProfiles: PropTypes.func.isRequired,
             searchChannels: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         data: PropTypes.arrayOf(PropTypes.object),
         dataSource: PropTypes.string,
@@ -88,12 +86,6 @@ export default class SelectorScreen extends PureComponent {
 
     componentWillUnmount() {
         this.mounted = false;
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
     }
 
     setSearchBarRef = (ref) => {

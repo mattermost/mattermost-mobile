@@ -115,12 +115,11 @@ class Settings extends PureComponent {
     });
 
     goToSelectTeam = preventDoubleTap(() => {
-        const {currentUrl, intl, theme} = this.props;
+        const {currentUrl, intl} = this.props;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
             currentUrl,
-            theme,
         };
 
         goToScreen(screen, title, passProps);

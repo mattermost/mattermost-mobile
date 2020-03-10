@@ -61,8 +61,6 @@ export default class ChannelBase extends PureComponent {
         this.postTextbox = React.createRef();
         this.keyboardTracker = React.createRef();
 
-        setNavigatorStyles(props.componentId, props.theme);
-
         this.state = {
             channelsRequestFailed: false,
         };
@@ -108,8 +106,6 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-
             EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
                 setNavigatorStyles(componentId, this.props.theme);
             });

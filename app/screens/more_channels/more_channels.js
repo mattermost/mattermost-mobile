@@ -27,7 +27,6 @@ import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 
@@ -108,10 +107,6 @@ export default class MoreChannels extends PureComponent {
         const {term} = this.state;
         let channels;
         let archivedChannels;
-
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
 
         if (nextProps.channels !== this.props.channels) {
             channels = nextProps.channels;

@@ -16,7 +16,7 @@ import {General, Users} from 'mattermost-redux/constants';
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {dismissModal, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 
@@ -113,12 +113,6 @@ export default class ChannelInfo extends PureComponent {
     navigationButtonPressed({buttonId}) {
         if (buttonId === 'close-info') {
             dismissModal();
-        }
-    }
-
-    componentDidUpdate(prevProps) {
-        if (prevProps.theme !== this.props.theme) {
-            setNavigatorStyles(prevProps.componentId, this.props.theme);
         }
     }
 

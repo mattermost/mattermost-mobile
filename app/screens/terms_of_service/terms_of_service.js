@@ -17,7 +17,7 @@ import Markdown from 'app/components/markdown';
 import StatusBar from 'app/components/status_bar';
 
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {dismissModal, setButtons} from 'app/actions/navigation';
 
@@ -72,12 +72,6 @@ export default class TermsOfService extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
         this.getTerms();
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
     }
 
     navigationButtonPressed({buttonId}) {

@@ -14,7 +14,7 @@ import DeviceInfo from 'react-native-device-info';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import AppIcon from 'app/components/app_icon';
 import Config from 'assets/config';
@@ -30,12 +30,6 @@ export default class About extends PureComponent {
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
     };
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
-    }
 
     handleAboutTeam = () => {
         Linking.openURL(Config.AboutTeamURL);

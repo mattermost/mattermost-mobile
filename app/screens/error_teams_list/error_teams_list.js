@@ -13,7 +13,7 @@ import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {resetToChannel} from 'app/actions/navigation';
-import {makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ErrorTeamsList extends PureComponent {
     static propTypes = {
@@ -23,7 +23,6 @@ export default class ErrorTeamsList extends PureComponent {
             logout: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         theme: PropTypes.object,
     };
 
@@ -37,12 +36,6 @@ export default class ErrorTeamsList extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
     }
 
     navigationButtonPressed({buttonId}) {

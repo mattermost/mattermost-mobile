@@ -12,8 +12,7 @@ import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import FormattedText from 'app/components/formatted_text';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
-import EphemeralStore from 'app/store/ephemeral_store';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import ThemeTile from './theme_tile';
 
@@ -29,7 +28,6 @@ export default class Theme extends React.PureComponent {
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         allowedThemes: PropTypes.arrayOf(PropTypes.object),
         customTheme: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
@@ -54,14 +52,6 @@ export default class Theme extends React.PureComponent {
             };
         }
         return null;
-    }
-
-    componentDidUpdate(prevProps) {
-        if (prevProps.theme !== this.props.theme) {
-            EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-                setNavigatorStyles(componentId, this.props.theme);
-            });
-        }
     }
 
     setTheme = (key) => {
