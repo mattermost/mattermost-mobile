@@ -96,8 +96,8 @@ describe('app/actions/navigation', () => {
                                     },
                                 },
                                 layout: {
-                                    backgroundColor: colorStyles.navigation.backgroundColor,
-                                    componentBackgroundColor: colorStyles.navigation.backgroundColor,
+                                    backgroundColor: colorStyles.container.backgroundColor,
+                                    componentBackgroundColor: colorStyles.container.backgroundColor,
                                 },
                                 statusBar: {
                                     visible: true,
