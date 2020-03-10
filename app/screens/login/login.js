@@ -423,7 +423,6 @@ export default class Login extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: '#FFFFFF',
         flex: 1,
     },
     innerContainer: {

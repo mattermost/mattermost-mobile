@@ -269,7 +269,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             lineHeight: 20,
         },
         container: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         scrollView: {

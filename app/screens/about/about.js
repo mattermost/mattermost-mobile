@@ -24,7 +24,6 @@ const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
 export default class About extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
@@ -345,7 +344,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         wrapper: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,

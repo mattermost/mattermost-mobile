@@ -43,7 +43,6 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
@@ -155,7 +154,6 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }

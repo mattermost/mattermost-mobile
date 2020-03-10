@@ -17,6 +17,7 @@ const MODAL_SCREENS_WITHOUT_BACK = [
     'ErrorTeamsList',
     'MoreChannels',
     'MoreDirectMessages',
+    'Permalink',
     'SelectTeam',
     'Settings',
     'TermsOfService',

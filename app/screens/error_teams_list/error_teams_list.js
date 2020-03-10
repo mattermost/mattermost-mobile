@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     InteractionManager,
+    StyleSheet,
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -13,7 +14,6 @@ import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {resetToChannel} from 'app/actions/navigation';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ErrorTeamsList extends PureComponent {
     static propTypes = {
@@ -68,7 +68,6 @@ export default class ErrorTeamsList extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const style = getStyleFromTheme(theme);
 
         if (this.state.loading) {
             return <Loading color={theme.centerChannelColor}/>;
@@ -86,11 +85,8 @@ export default class ErrorTeamsList extends PureComponent {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            backgroundColor: theme.centerChannelBg,
-            flex: 1,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
 });

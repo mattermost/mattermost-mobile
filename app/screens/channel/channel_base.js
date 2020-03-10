@@ -150,7 +150,7 @@ export default class ChannelBase extends PureComponent {
             const passProps = {closeButton};
             const options = {
                 layout: {
-                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
                 },
                 topBar: {
                     visible: true,
