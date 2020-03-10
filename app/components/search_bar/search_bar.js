@@ -15,13 +15,11 @@ import {
 
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import {SearchBar} from 'react-native-elements';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
-const AnimatedIonIcon = Animated.createAnimatedComponent(IonIcon);
 const containerHeight = 40;
 const middleHeight = 20;
 
@@ -147,9 +145,8 @@ export default class Search extends Component {
         });
     };
 
-    onDelete = () => {
+    onClear = () => {
         this.focus();
-
         this.props.onChangeText('', true);
     };
 
@@ -218,22 +215,12 @@ export default class Search extends Component {
         let cancelIcon = null;
 
         if (Platform.OS === 'ios') {
-            clearIcon = (
-                <TouchableWithoutFeedback
-                    onPress={this.onDelete}
-                >
-                    <View style={[styles.iconDelete, this.props.inputHeight && {height: this.props.inputHeight}]}>
-                        <AnimatedIonIcon
-                            name='ios-close-circle'
-                            size={17}
-                            style={[
-                                styles.defaultColor,
-                                this.props.tintColorDelete && {color: this.props.tintColorDelete},
-                            ]}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-            );
+            clearIcon = {
+                type: 'ionicon',
+                name: 'ios-close-circle',
+                size: 17,
+                color: this.props.tintColorDelete ? this.props.tintColorDelete : styles.defaultColor.color,
+            };
 
             searchIcon = (
                 <EvilIcon
@@ -259,27 +246,22 @@ export default class Search extends Component {
                         />
                     </TouchableWithoutFeedback>
                 ) :
-                (
-                    <MaterialIcon
-                        name='search'
-                        size={this.props.searchIconSize}
-                        color={this.props.tintColorSearch || this.props.placeholderTextColor}
-                    />
-                );
+                {
+                    type: 'material',
+                    size: this.props.searchIconSize,
+                    color: this.props.tintColorSearch || this.props.placeholderTextColor,
+                    name: 'search',
+                };
 
             // Making sure the icon won't change depending on whether the input is in focus on Android devices
             cancelIcon = searchIcon;
 
-            clearIcon = (
-                <TouchableWithoutFeedback onPress={this.onDelete}>
-                    <MaterialIcon
-                        style={styles.clearIconAndroid}
-                        name='close'
-                        size={this.props.deleteIconSize}
-                        color={this.props.titleCancelColor || this.props.placeholderTextColor}
-                    />
-                </TouchableWithoutFeedback>
-            );
+            clearIcon = {
+                type: 'material',
+                size: this.props.deleteIconSize,
+                color: this.props.titleCancelColor || this.props.placeholderTextColor,
+                name: 'close',
+            };
         }
 
         return (
@@ -352,6 +334,7 @@ export default class Search extends Component {
                         onBlur={this.onBlur}
                         onFocus={this.onFocus}
                         onCancel={this.onCancel}
+                        onClear={this.onClear}
                         onSelectionChange={this.onSelectionChange}
                         underlineColorAndroid='transparent'
                         enablesReturnKeyAutomatically={true}
@@ -380,16 +363,8 @@ const styles = StyleSheet.create({
     defaultColor: {
         color: 'grey',
     },
-    clearIconAndroid: {
-        paddingRight: 7,
-    },
     fullWidth: {
         flex: 1,
-    },
-    iconDelete: {
-        justifyContent: 'center',
-        position: 'relative',
-        top: 1,
     },
     inputContainer: {
         borderRadius: Platform.select({
