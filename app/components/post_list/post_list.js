@@ -89,11 +89,11 @@ export default class PostList extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.hasDoneInitialScroll = false;
+        this.cancelScrollToIndex = false;
         this.contentOffsetY = 0;
         this.contentHeight = 0;
+        this.hasDoneInitialScroll = false;
         this.shouldScrollToBottom = false;
-        this.cancelScrollToIndex = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
     }
@@ -258,6 +258,10 @@ export default class PostList extends PureComponent {
         }
     };
 
+    handleScrollBeginDrag = () => {
+        this.cancelScrollToIndex = true;
+    }
+
     handleScrollToIndexFailed = (info) => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
             if (this.props.initialIndex > 0 && this.contentHeight > 0) {
@@ -265,7 +269,7 @@ export default class PostList extends PureComponent {
                 if (info.highestMeasuredFrameIndex) {
                     this.scrollToInitialIndexIfNeeded(info.highestMeasuredFrameIndex);
                 } else {
-                    InteractionManager.runAfterInteractions(() => {
+                    this.scrollAfterInteraction = InteractionManager.runAfterInteractions(() => {
                         this.scrollToInitialIndexIfNeeded(info.index);
                     });
                 }
@@ -287,7 +291,7 @@ export default class PostList extends PureComponent {
     };
 
     loadToFillContent = () => {
-        setTimeout(() => {
+        this.fillContentTimer = setTimeout(() => {
             this.handleContentSizeChange(0, this.contentHeight, true);
         });
     };
@@ -400,6 +404,10 @@ export default class PostList extends PureComponent {
         this.hasDoneInitialScroll = false;
         this.cancelScrollToIndex = false;
 
+        if (this.scrollAfterInteraction) {
+            this.scrollAfterInteraction.cancel();
+        }
+
         if (this.animationFrameIndexFailed) {
             cancelAnimationFrame(this.animationFrameIndexFailed);
         }
@@ -408,8 +416,16 @@ export default class PostList extends PureComponent {
             cancelAnimationFrame(this.animationFrameInitialIndex);
         }
 
-        if (this.scrollIfNeededTimer) {
-            clearTimeout(this.scrollIfNeededTimer);
+        if (this.fillContentTimer) {
+            clearTimeout(this.fillContentTimer);
+        }
+
+        if (this.scrollToBottomTimer) {
+            clearTimeout(this.scrollToBottomTimer);
+        }
+
+        if (this.scrollToInitialTimer) {
+            clearTimeout(this.scrollToInitialTimer);
         }
 
         if (this.contentHeight !== 0) {
@@ -418,7 +434,7 @@ export default class PostList extends PureComponent {
     }
 
     scrollToBottom = () => {
-        setTimeout(() => {
+        this.scrollToBottomTimer = setTimeout(() => {
             if (this.flatListRef.current) {
                 this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
             }
@@ -438,9 +454,10 @@ export default class PostList extends PureComponent {
             if (index > 0 && index <= this.getItemCount()) {
                 this.hasDoneInitialScroll = true;
                 this.scrollToIndex(index);
+
                 if (index !== this.props.initialIndex) {
                     this.hasDoneInitialScroll = false;
-                    this.scrollIfNeededTimer = setTimeout(() => {
+                    this.scrollToInitialTimer = setTimeout(() => {
                         this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
                     });
                 }
@@ -511,6 +528,7 @@ export default class PostList extends PureComponent {
                 onContentSizeChange={this.handleContentSizeChange}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
+                onScrollBeginDrag={this.handleScrollBeginDrag}
                 onScrollToIndexFailed={this.handleScrollToIndexFailed}
                 ref={this.flatListRef}
                 refreshControl={refreshControl}
@@ -518,7 +536,6 @@ export default class PostList extends PureComponent {
                 renderItem={this.renderItem}
                 scrollEventThrottle={60}
                 style={styles.flex}
-                onScrollBeginDrag={this.handleScrollBeginDrag}
             />
         );
     }
