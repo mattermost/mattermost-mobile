@@ -42,6 +42,7 @@ exports[`PostList setting channel deep link 1`] = `
   onEndReachedThreshold={2}
   onLayout={[Function]}
   onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
   onScrollToIndexFailed={[Function]}
   refreshControl={
     <RefreshControl
@@ -110,6 +111,7 @@ exports[`PostList setting permalink deep link 1`] = `
   onEndReachedThreshold={2}
   onLayout={[Function]}
   onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
   onScrollToIndexFailed={[Function]}
   refreshControl={
     <RefreshControl
@@ -178,6 +180,7 @@ exports[`PostList should match snapshot 1`] = `
   onEndReachedThreshold={2}
   onLayout={[Function]}
   onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
   onScrollToIndexFailed={[Function]}
   refreshControl={
     <RefreshControl
