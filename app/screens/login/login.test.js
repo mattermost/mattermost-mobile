@@ -97,7 +97,7 @@ describe('Login', () => {
                 'MFA',
                 'Multi-factor Authentication',
                 {onMfaComplete: wrapper.instance().checkLoginResponse},
-                getStyledNavigationOptions(getColorStyles('dark')),
+                getStyledNavigationOptions(getColorStyles('light')),
             );
     });
 
@@ -112,7 +112,7 @@ describe('Login', () => {
                 'ForgotPassword',
                 'Password Reset',
                 {},
-                getStyledNavigationOptions(getColorStyles('dark')),
+                getStyledNavigationOptions(getColorStyles('light')),
             );
     });
 

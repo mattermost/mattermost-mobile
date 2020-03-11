@@ -76,7 +76,7 @@ describe('app/actions/navigation', () => {
 
     test('resetToSelectServer should call Navigation.setRoot', () => {
         const setRoot = jest.spyOn(Navigation, 'setRoot');
-        const colorStyles = getColorStyles('dark');
+        const colorStyles = getColorStyles('light');
 
         const allowOtherServers = false;
         const expectedLayout = {
