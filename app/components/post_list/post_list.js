@@ -93,6 +93,7 @@ export default class PostList extends PureComponent {
         this.contentOffsetY = 0;
         this.contentHeight = 0;
         this.shouldScrollToBottom = false;
+        this.cancelScrollToIndex = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
     }
@@ -127,7 +128,7 @@ export default class PostList extends PureComponent {
             this.shouldScrollToBottom = false;
         }
 
-        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0) {
+        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && !this.cancelScrollToIndex) {
             this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
         }
 
@@ -145,23 +146,19 @@ export default class PostList extends PureComponent {
     componentWillUnmount() {
         EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
 
-        if (this.animationFrameIndexFailed) {
-            cancelAnimationFrame(this.animationFrameIndexFailed);
-        }
-
-        if (this.animationFrameInitialIndex) {
-            cancelAnimationFrame(this.animationFrameInitialIndex);
-        }
+        this.resetPostList();
     }
 
     flatListScrollToIndex = (index) => {
         this.animationFrameInitialIndex = requestAnimationFrame(() => {
-            this.flatListRef.current.scrollToIndex({
-                animated: false,
-                index,
-                viewOffset: 0,
-                viewPosition: 1, // 0 is at bottom
-            });
+            if (!this.cancelScrollToIndex) {
+                this.flatListRef.current.scrollToIndex({
+                    animated: false,
+                    index,
+                    viewOffset: 0,
+                    viewPosition: 1, // 0 is at bottom
+                });
+            }
         });
     }
 
@@ -274,6 +271,10 @@ export default class PostList extends PureComponent {
                 }
             }
         });
+    };
+
+    handleScrollBeginDrag = () => {
+        this.cancelScrollToIndex = true;
     };
 
     handleSetScrollToBottom = () => {
@@ -397,6 +398,20 @@ export default class PostList extends PureComponent {
     resetPostList = () => {
         this.contentOffsetY = 0;
         this.hasDoneInitialScroll = false;
+        this.cancelScrollToIndex = false;
+
+        if (this.animationFrameIndexFailed) {
+            cancelAnimationFrame(this.animationFrameIndexFailed);
+        }
+
+        if (this.animationFrameInitialIndex) {
+            cancelAnimationFrame(this.animationFrameInitialIndex);
+        }
+
+        if (this.scrollIfNeededTimer) {
+            clearTimeout(this.scrollIfNeededTimer);
+        }
+
         if (this.contentHeight !== 0) {
             this.contentHeight = 0;
         }
@@ -425,7 +440,7 @@ export default class PostList extends PureComponent {
                 this.scrollToIndex(index);
                 if (index !== this.props.initialIndex) {
                     this.hasDoneInitialScroll = false;
-                    setTimeout(() => {
+                    this.scrollIfNeededTimer = setTimeout(() => {
                         this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
                     });
                 }
@@ -503,6 +518,7 @@ export default class PostList extends PureComponent {
                 renderItem={this.renderItem}
                 scrollEventThrottle={60}
                 style={styles.flex}
+                onScrollBeginDrag={this.handleScrollBeginDrag}
             />
         );
     }
