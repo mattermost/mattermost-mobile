@@ -94,6 +94,7 @@ export default class PostList extends PureComponent {
         this.contentHeight = 0;
         this.hasDoneInitialScroll = false;
         this.shouldScrollToBottom = false;
+        this.cancelScrollToIndex = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
     }
