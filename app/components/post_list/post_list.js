@@ -93,6 +93,7 @@ export default class PostList extends PureComponent {
         this.hasDoneInitialScroll = false;
         this.contentOffsetY = 0;
         this.shouldScrollToBottom = false;
+        this.cancelScrollToIndex = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
 
@@ -149,13 +150,20 @@ export default class PostList extends PureComponent {
     componentWillUnmount() {
         EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
 
-        if (this.animationFrameIndexFailed) {
-            cancelAnimationFrame(this.animationFrameIndexFailed);
-        }
+        this.resetPostList();
+    }
 
-        if (this.animationFrameInitialIndex) {
-            cancelAnimationFrame(this.animationFrameInitialIndex);
-        }
+    flatListScrollToIndex = (index) => {
+        this.animationFrameInitialIndex = requestAnimationFrame(() => {
+            if (!this.cancelScrollToIndex) {
+                this.flatListRef.current.scrollToIndex({
+                    animated: false,
+                    index,
+                    viewOffset: 0,
+                    viewPosition: 1, // 0 is at bottom
+                });
+            }
+        });
     }
 
     getItemCount = () => {
@@ -278,6 +286,10 @@ export default class PostList extends PureComponent {
         }
     };
 
+    handleScrollBeginDrag = () => {
+        this.cancelScrollToIndex = true;
+    }
+
     handleScrollToIndexFailed = () => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
             if (this.props.initialIndex > 0 && this.state.contentHeight > 0) {
@@ -297,7 +309,7 @@ export default class PostList extends PureComponent {
     };
 
     loadToFillContent = () => {
-        setTimeout(() => {
+        this.fillContentTimer = setTimeout(() => {
             this.handleContentSizeChange(0, this.state.contentHeight);
         });
     };
@@ -386,27 +398,38 @@ export default class PostList extends PureComponent {
     };
 
     scrollToBottom = () => {
-        setTimeout(() => {
+        this.scrollToBottomTimer = setTimeout(() => {
             if (this.flatListRef.current) {
                 this.flatListRef.current.scrollToOffset({offset: 0, animated: true});
             }
         }, 250);
     };
 
-    flatListScrollToIndex = (index) => {
-        this.animationFrameInitialIndex = requestAnimationFrame(() => {
-            this.flatListRef.current.scrollToIndex({
-                animated: false,
-                index,
-                viewOffset: 0,
-                viewPosition: 1, // 0 is at bottom
-            });
-        });
-    }
-
     resetPostList = () => {
         this.contentOffsetY = 0;
         this.hasDoneInitialScroll = false;
+        this.cancelScrollToIndex = false;
+
+        if (this.animationFrameIndexFailed) {
+            cancelAnimationFrame(this.animationFrameIndexFailed);
+        }
+
+        if (this.animationFrameInitialIndex) {
+            cancelAnimationFrame(this.animationFrameInitialIndex);
+        }
+
+        if (this.fillContentTimer) {
+            clearTimeout(this.fillContentTimer);
+        }
+
+        if (this.scrollToBottomTimer) {
+            clearTimeout(this.scrollToBottomTimer);
+        }
+
+        if (this.scrollToInitialTimer) {
+            clearTimeout(this.scrollToInitialTimer);
+        }
+
         if (this.state.contentHeight !== 0) {
             this.setState({contentHeight: 0});
         }
@@ -426,7 +449,7 @@ export default class PostList extends PureComponent {
                 this.hasDoneInitialScroll = true;
                 this.scrollToIndex(index);
             } else if (count < 3) {
-                setTimeout(() => {
+                this.scrollToInitialTimer = setTimeout(() => {
                     this.scrollToInitialIndexIfNeeded(index, count + 1);
                 }, 300);
             }
@@ -496,6 +519,7 @@ export default class PostList extends PureComponent {
                 onContentSizeChange={this.handleContentSizeChange}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
+                onScrollBeginDrag={this.handleScrollBeginDrag}
                 onScrollToIndexFailed={this.handleScrollToIndexFailed}
                 removeClippedSubviews={true}
                 renderItem={this.renderItem}
