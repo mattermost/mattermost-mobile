@@ -65,7 +65,7 @@ export function getButtonTextStyle(isDisabled, colorStyles) {
 }
 
 export function getColorStyles(colorScheme) {
-    return colorScheme === 'light' ? createStyleSheet(lightColors) : createStyleSheet(darkColors);
+    return colorScheme === 'dark' ? createStyleSheet(darkColors) : createStyleSheet(lightColors);
 }
 
 export function getInputStyle(isDisabled, colorStyles) {
@@ -78,7 +78,7 @@ export function getInputStyle(isDisabled, colorStyles) {
 }
 
 export function getLogo(colorScheme) {
-    return colorScheme === 'light' ? require('assets/images/logo_light.png') : require('assets/images/logo_dark.png');
+    return colorScheme === 'dark' ? require('assets/images/logo_dark.png') : require('assets/images/logo_light.png');
 }
 
 export function getStyledNavigationOptions(colorStyles) {
