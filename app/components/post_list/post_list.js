@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, FlatList, RefreshControl, StyleSheet} from 'react-native';
+import {Alert, FlatList, InteractionManager, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
@@ -24,8 +24,7 @@ import {t} from 'app/utils/i18n';
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
 
-const INITIAL_BATCH_TO_RENDER = 7;
-const LOADING_POSTS_HEIGHT = 53;
+const INITIAL_BATCH_TO_RENDER = 10;
 const SCROLL_UP_MULTIPLIER = 3.5;
 const SCROLL_POSITION_CONFIG = {
 
@@ -92,13 +91,10 @@ export default class PostList extends PureComponent {
 
         this.hasDoneInitialScroll = false;
         this.contentOffsetY = 0;
+        this.contentHeight = 0;
         this.shouldScrollToBottom = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
-
-        this.state = {
-            postListHeight: 0,
-        };
     }
 
     componentDidMount() {
@@ -131,16 +127,16 @@ export default class PostList extends PureComponent {
             this.shouldScrollToBottom = false;
         }
 
-        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && this.state.contentHeight > LOADING_POSTS_HEIGHT) {
+        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0) {
             this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
         }
 
         if (
             this.props.channelId === prevProps.channelId &&
             this.props.postIds.length &&
-            this.state.contentHeight &&
-            this.state.contentHeight < this.state.postListHeight &&
-            !this.props.extraData
+            this.contentHeight &&
+            this.contentHeight < this.postListHeight &&
+            this.props.extraData
         ) {
             this.loadToFillContent();
         }
@@ -158,6 +154,17 @@ export default class PostList extends PureComponent {
         }
     }
 
+    flatListScrollToIndex = (index) => {
+        this.animationFrameInitialIndex = requestAnimationFrame(() => {
+            this.flatListRef.current.scrollToIndex({
+                animated: false,
+                index,
+                viewOffset: 0,
+                viewPosition: 1, // 0 is at bottom
+            });
+        });
+    }
+
     getItemCount = () => {
         return this.props.postIds.length;
     };
@@ -168,14 +175,12 @@ export default class PostList extends PureComponent {
         this.showingPermalink = false;
     };
 
-    handleContentSizeChange = (contentWidth, contentHeight) => {
-        if (this.state.contentHeight !== contentHeight) {
-            this.setState({contentHeight}, () => {
-                if (this.state.postListHeight && contentHeight < this.state.postListHeight && !this.props.extraData && contentHeight > LOADING_POSTS_HEIGHT) {
-                    // We still have less than 1 screen of posts loaded with more to get, so load more
-                    this.props.onLoadMoreUp();
-                }
-            });
+    handleContentSizeChange = (contentWidth, contentHeight, forceLoad) => {
+        this.contentHeight = contentHeight;
+        const loadMore = forceLoad || !this.props.extraData;
+        if (this.postListHeight && contentHeight < this.postListHeight && loadMore) {
+            // We still have less than 1 screen of posts loaded with more to get, so load more
+            this.props.onLoadMoreUp();
         }
     };
 
@@ -186,7 +191,7 @@ export default class PostList extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.permalinkBadChannel);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 this.handlePermalinkPress(match.postId, match.teamName);
             }
@@ -207,29 +212,9 @@ export default class PostList extends PureComponent {
 
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
-        if (this.state.postListHeight !== height) {
-            this.setState({postListHeight: height});
+        if (this.postListHeight !== height) {
+            this.postListHeight = height;
         }
-    };
-
-    errorBadTeam = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_team.error'),
-            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
-        };
-
-        alertErrorWithFallback(intl, {}, message);
-    };
-
-    errorBadChannel = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_channel.error'),
-            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
-        };
-
-        alertErrorWithFallback(intl, {}, message);
     };
 
     handlePermalinkPress = (postId, teamName) => {
@@ -239,7 +224,7 @@ export default class PostList extends PureComponent {
         if (onPermalinkPress) {
             onPermalinkPress(postId, true);
         } else {
-            actions.loadChannelsByTeamName(teamName, this.errorBadTeam);
+            actions.loadChannelsByTeamName(teamName, this.permalinkBadTeam);
             this.showPermalinkView(postId);
         }
     };
@@ -264,25 +249,29 @@ export default class PostList extends PureComponent {
         const pageOffsetY = event.nativeEvent.contentOffset.y;
         if (pageOffsetY > 0) {
             const contentHeight = event.nativeEvent.contentSize.height;
-            const direction = (this.contentOffsetY < pageOffsetY) ?
-                ListTypes.VISIBILITY_SCROLL_UP :
-                ListTypes.VISIBILITY_SCROLL_DOWN;
+            const direction = (this.contentOffsetY < pageOffsetY) ? ListTypes.VISIBILITY_SCROLL_UP : ListTypes.VISIBILITY_SCROLL_DOWN;
 
             this.contentOffsetY = pageOffsetY;
             if (
                 direction === ListTypes.VISIBILITY_SCROLL_UP &&
-                (contentHeight - pageOffsetY) < (this.state.postListHeight * SCROLL_UP_MULTIPLIER)
+                (contentHeight - pageOffsetY) < (this.postListHeight * SCROLL_UP_MULTIPLIER)
             ) {
                 this.props.onLoadMoreUp();
             }
         }
     };
 
-    handleScrollToIndexFailed = () => {
+    handleScrollToIndexFailed = (info) => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
-            if (this.props.initialIndex > 0 && this.state.contentHeight > 0) {
+            if (this.props.initialIndex > 0 && this.contentHeight > 0) {
                 this.hasDoneInitialScroll = false;
-                this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+                if (info.highestMeasuredFrameIndex) {
+                    this.scrollToInitialIndexIfNeeded(info.highestMeasuredFrameIndex);
+                } else {
+                    InteractionManager.runAfterInteractions(() => {
+                        this.scrollToInitialIndexIfNeeded(info.index);
+                    });
+                }
             }
         });
     };
@@ -298,8 +287,28 @@ export default class PostList extends PureComponent {
 
     loadToFillContent = () => {
         setTimeout(() => {
-            this.handleContentSizeChange(0, this.state.contentHeight);
+            this.handleContentSizeChange(0, this.contentHeight, true);
         });
+    };
+
+    permalinkBadTeam = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_team.error'),
+            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
+        };
+
+        alertErrorWithFallback(intl, {}, message);
+    };
+
+    permalinkBadChannel = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_channel.error'),
+            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
+        };
+
+        alertErrorWithFallback(intl, {}, message);
     };
 
     renderItem = ({item, index}) => {
@@ -385,6 +394,14 @@ export default class PostList extends PureComponent {
         );
     };
 
+    resetPostList = () => {
+        this.contentOffsetY = 0;
+        this.hasDoneInitialScroll = false;
+        if (this.contentHeight !== 0) {
+            this.contentHeight = 0;
+        }
+    }
+
     scrollToBottom = () => {
         setTimeout(() => {
             if (this.flatListRef.current) {
@@ -392,25 +409,6 @@ export default class PostList extends PureComponent {
             }
         }, 250);
     };
-
-    flatListScrollToIndex = (index) => {
-        this.animationFrameInitialIndex = requestAnimationFrame(() => {
-            this.flatListRef.current.scrollToIndex({
-                animated: false,
-                index,
-                viewOffset: 0,
-                viewPosition: 1, // 0 is at bottom
-            });
-        });
-    }
-
-    resetPostList = () => {
-        this.contentOffsetY = 0;
-        this.hasDoneInitialScroll = false;
-        if (this.state.contentHeight !== 0) {
-            this.setState({contentHeight: 0});
-        }
-    }
 
     scrollToIndex = (index) => {
         this.animationFrameInitialIndex = requestAnimationFrame(() => {
@@ -420,15 +418,17 @@ export default class PostList extends PureComponent {
         });
     };
 
-    scrollToInitialIndexIfNeeded = (index, count = 0) => {
+    scrollToInitialIndexIfNeeded = (index) => {
         if (!this.hasDoneInitialScroll) {
             if (index > 0 && index <= this.getItemCount()) {
                 this.hasDoneInitialScroll = true;
                 this.scrollToIndex(index);
-            } else if (count < 3) {
-                setTimeout(() => {
-                    this.scrollToInitialIndexIfNeeded(index, count + 1);
-                }, 300);
+                if (index !== this.props.initialIndex) {
+                    this.hasDoneInitialScroll = false;
+                    setTimeout(() => {
+                        this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
+                    });
+                }
             }
         }
     };
@@ -476,39 +476,42 @@ export default class PostList extends PureComponent {
                 tintColor={theme.centerChannelColor}
             />);
 
-        const hasPostsKey = postIds.length ? 'true' : 'false';
-
         return (
             <FlatList
-                key={`recyclerFor-${channelId}-${hasPostsKey}`}
-                ref={this.flatListRef}
-                style={{flex: 1}}
                 contentContainerStyle={styles.postListContent}
                 data={postIds}
+                disableVirtualization={true}
                 extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
+                key={`recyclerFor-${channelId}`}
                 keyboardDismissMode={'interactive'}
                 keyboardShouldPersistTaps={'handled'}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
+                listKey={`recyclerFor-${channelId}`}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                maxToRenderPerBatch={5}
+                nativeID={scrollViewNativeID}
                 onContentSizeChange={this.handleContentSizeChange}
                 onLayout={this.handleLayout}
                 onScroll={this.handleScroll}
                 onScrollToIndexFailed={this.handleScrollToIndexFailed}
-                removeClippedSubviews={true}
+                ref={this.flatListRef}
+                refreshControl={refreshControl}
+                removeClippedSubviews={false}
                 renderItem={this.renderItem}
                 scrollEventThrottle={60}
-                refreshControl={refreshControl}
-                nativeID={scrollViewNativeID}
-                windowSize={50}
+                style={styles.flex}
             />
         );
     }
 }
 
 const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
     postListContent: {
         paddingTop: 5,
     },
