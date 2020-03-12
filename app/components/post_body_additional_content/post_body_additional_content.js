@@ -129,7 +129,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return imageUrl;
     }
 
-    load = async (linkChanged = false) => {
+    load = (linkChanged = false) => {
         const {link, expandedLink, actions} = this.props;
 
         if (link) {
@@ -137,7 +137,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
             if (!imageUrl) {
                 if (!expandedLink || linkChanged) {
-                    await actions.getRedirectLocation(link);
+                    actions.getRedirectLocation(link);
                 } else {
                     imageUrl = this.getImageUrl(expandedLink);
                 }
