@@ -17,6 +17,7 @@ import {
     refreshChannelWithRetry,
 } from 'app/actions/views/channel';
 import {recordLoadTime} from 'app/actions/views/root';
+import {Types} from 'app/constants';
 import {isLandscape} from 'app/selectors/device';
 
 import ChannelPostList from './channel_post_list';
@@ -30,7 +31,7 @@ function mapStateToProps(state) {
         channelRefreshingFailed,
         currentUserId: getCurrentUserId(state),
         deviceHeight: state.device.dimension.deviceHeight,
-        postIds: getPostIdsInCurrentChannel(state) || [],
+        postIds: getPostIdsInCurrentChannel(state) || Types.EMPTY_ARRAY,
         lastViewedAt: state.views.channel.lastChannelViewTime[channelId],
         loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
         refreshing: state.views.channel.refreshing,

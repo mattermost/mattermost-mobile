@@ -537,6 +537,7 @@ export default class PostList extends PureComponent {
                 renderItem={this.renderItem}
                 scrollEventThrottle={60}
                 style={styles.flex}
+                windowSize={11}
             />
         );
     }

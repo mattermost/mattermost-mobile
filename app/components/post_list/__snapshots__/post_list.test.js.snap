@@ -65,7 +65,7 @@ exports[`PostList setting channel deep link 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={21}
+  windowSize={11}
 />
 `;
 
@@ -134,7 +134,7 @@ exports[`PostList setting permalink deep link 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={21}
+  windowSize={11}
 />
 `;
 
@@ -203,6 +203,6 @@ exports[`PostList should match snapshot 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={21}
+  windowSize={11}
 />
 `;
