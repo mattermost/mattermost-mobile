@@ -1,5 +1,39 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.29.0 Release
+- Release Date: March 16, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+**Note:** An issue was fixed where a user's status was set as online when replying to a message from a push notification. This fix only works in combination with server v5.20.0+.
+ 
+### Improvements
+ - Significantly improved how quickly channels load when you open the app and when you switch between them.
+ - Set all requests timeouts to a maximum of 5 seconds to improve reliability on bad networks.
+ - Changed "Copy Permalink" to "Copy Link" for readability.
+ 
+### Bug Fixes
+ - Fixed an issue where downloaded files on Android had the words `download successful` appended to their filenames, preventing the file from being opened until it was renamed in the file manager.
+ - Fixed a silent crash on Android when receiving a push notification.
+ - Fixed an issue on Android where users could not swipe to close sidebar unless the gesture was initiated outside of the sidebar.
+ - Fixed an issue where channels drawers were partially shown with orientation change on iOS RN61.
+ - Fixed an issue on iOS where the message box obstructed the bottom part of the message when opened from the notification banner.
+ - Fixed an issue where switching teams showed the center channel from the old team until the new team's channel data got loaded.
+ - Fixed an issue where users could not post messages after returning from an archived channel.
+ - Fixed an issue where user experienced infinite scrolling when viewing all public joinable/archived channels.
+ - Fixed an issue where archived channels membership was lost on the client.
+ - Fixed an issue on iOS where the channel intro scrolled past the top of the channel.
+ - Fixed an issue on Android where inline custom emojis did not display in portrait mode.
+ - Fixed an issue where markdown tables did not display all rows in a post when it had multiple heights.
+ - Fixed an issue where deleting documents and data caused a flash of the background when the app reloaded.
+ - Fixed an issue where tall and thin image attachments got pushed to the left instead of appearing centered.
+ 
+### Known Issues
+ - Some gender neutral emojis don't render as jumbo emojis.
+
 ## 1.28.0 Release
 - Release Date: February 16, 2020
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
