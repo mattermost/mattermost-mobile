@@ -38,23 +38,24 @@ export default class PostBodyAdditionalContent extends PureComponent {
         actions: PropTypes.shape({
             getRedirectLocation: PropTypes.func.isRequired,
         }).isRequired,
-        baseTextStyle: CustomPropTypes.Style,
-        blockStyles: PropTypes.object,
-        googleDeveloperKey: PropTypes.string,
+        link: PropTypes.string.isRequired,
+        message: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
-        metadata: PropTypes.object,
-        isReplyPost: PropTypes.bool,
-        link: PropTypes.string,
-        message: PropTypes.string.isRequired,
-        onHashtagPress: PropTypes.func,
-        onPermalinkPress: PropTypes.func,
-        openGraphData: PropTypes.object,
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
-        textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
+        baseTextStyle: CustomPropTypes.Style,
+        blockStyles: PropTypes.object,
+        googleDeveloperKey: PropTypes.string,
+        metadata: PropTypes.object,
+        isReplyPost: PropTypes.bool,
+        onHashtagPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
+        openGraphData: PropTypes.object,
+        textStyles: PropTypes.object,
+        expandedLink: PropTypes.string,
     };
 
     static contextTypes = {
@@ -79,7 +80,6 @@ export default class PostBodyAdditionalContent extends PureComponent {
         this.state = {
             linkLoadError: false,
             linkLoaded: false,
-            shortenedLink: null,
             ...dimensions,
         };
 
@@ -89,12 +89,12 @@ export default class PostBodyAdditionalContent extends PureComponent {
     componentDidMount() {
         this.mounted = true;
 
-        this.load(this.props);
+        this.load();
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.link !== this.props.link) {
-            this.load(this.props);
+            this.load(true);
         }
     }
 
@@ -116,33 +116,30 @@ export default class PostBodyAdditionalContent extends PureComponent {
         return false;
     };
 
-    load = async (props) => {
-        const {link} = props;
+    getImageUrl = (link) => {
+        let imageUrl;
+
+        if (this.isImage()) {
+            imageUrl = link;
+        } else if (isYoutubeLink(link)) {
+            const videoId = getYouTubeVideoId(link);
+            imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        }
+
+        return imageUrl;
+    }
+
+    load = (linkChanged = false) => {
+        const {link, expandedLink, actions} = this.props;
+
         if (link) {
-            let imageUrl;
-            if (this.isImage()) {
-                imageUrl = link;
-            } else if (isYoutubeLink(link)) {
-                const videoId = getYouTubeVideoId(link);
-                imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-            } else {
-                const {data} = await this.props.actions.getRedirectLocation(link);
+            let imageUrl = this.getImageUrl(link);
 
-                let shortenedLink;
-                if (data && data.location) {
-                    shortenedLink = data.location;
-                }
-
-                if (shortenedLink) {
-                    if (this.isImage(shortenedLink)) {
-                        imageUrl = shortenedLink;
-                    } else if (isYoutubeLink(shortenedLink)) {
-                        const videoId = getYouTubeVideoId(shortenedLink);
-                        imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                    }
-                    if (this.mounted) {
-                        this.setState({shortenedLink});
-                    }
+            if (!imageUrl) {
+                if (!expandedLink || linkChanged) {
+                    actions.getRedirectLocation(link);
+                } else {
+                    imageUrl = this.getImageUrl(expandedLink);
                 }
             }
 
@@ -215,9 +212,9 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     generateToggleableEmbed = (isImage, isYouTube) => {
         let {link} = this.props;
-        const {shortenedLink} = this.state;
-        if (shortenedLink) {
-            link = shortenedLink;
+        const {expandedLink} = this.props;
+        if (expandedLink) {
+            link = expandedLink;
         }
         const {width, height, uri} = this.state;
 
@@ -407,10 +404,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
     };
 
     handlePreviewImage = (imageRef) => {
-        const {shortenedLink} = this.state;
         let {link} = this.props;
-        if (shortenedLink) {
-            link = shortenedLink;
+        const {expandedLink} = this.props;
+        if (expandedLink) {
+            link = expandedLink;
         }
         const {
             originalHeight,
@@ -485,10 +482,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
 
     render() {
         let {link} = this.props;
-        const {openGraphData, postProps} = this.props;
-        const {linkLoadError, shortenedLink} = this.state;
-        if (shortenedLink) {
-            link = shortenedLink;
+        const {openGraphData, postProps, expandedLink} = this.props;
+        const {linkLoadError} = this.state;
+        if (expandedLink) {
+            link = expandedLink;
         }
         const {attachments} = postProps;
 
