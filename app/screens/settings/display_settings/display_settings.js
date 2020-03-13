@@ -78,7 +78,7 @@ export default class DisplaySettings extends PureComponent {
         const style = getStyleSheet(theme);
 
         let clockDisplayModal;
-        if (Platform.OS === 'android' && showClockDisplaySettings) {
+        if (Platform.OS === 'android') {
             clockDisplayModal = (
                 <ClockDisplay
                     showModal={showClockDisplaySettings}
