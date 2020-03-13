@@ -9,15 +9,12 @@ import {Navigation} from 'react-native-navigation';
 import {Preferences} from 'mattermost-redux/constants';
 import {getEmailInterval} from 'mattermost-redux/utils/notify_props';
 
-import {setNavigatorStyles} from 'app/utils/theme';
-
 export default class NotificationSettingsEmailBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             savePreferences: PropTypes.func.isRequired,
             updateMe: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         notifyProps: PropTypes.object.isRequired,
         emailInterval: PropTypes.string.isRequired,
@@ -48,10 +45,6 @@ export default class NotificationSettingsEmailBase extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
         const {
             notifyProps,
             sendEmailNotifications,

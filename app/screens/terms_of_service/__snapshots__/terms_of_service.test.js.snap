@@ -282,7 +282,6 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }

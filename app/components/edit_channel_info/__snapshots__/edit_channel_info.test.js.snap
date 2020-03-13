@@ -15,7 +15,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
     onKeyboardDidShow={[Function]}
     style={
       Object {
-        "backgroundColor": "#ffffff",
         "flex": 1,
       }
     }

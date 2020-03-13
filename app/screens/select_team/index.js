@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {getTeams, addUserToTeam, joinTeam} from 'mattermost-redux/actions/teams';
 import {logout} from 'mattermost-redux/actions/users';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
@@ -18,13 +19,15 @@ import SelectTeam from './select_team.js';
 function mapStateToProps(state) {
     const currentUser = getCurrentUser(state);
     const currentUserIsGuest = isGuest(currentUser);
+
     return {
-        teamsRequest: state.requests.teams.getTeams,
-        teams: getJoinableTeams(state),
-        isLandscape: isLandscape(state),
         currentUserId: currentUser && currentUser.id,
         currentUserIsGuest,
+        isLandscape: isLandscape(state),
         serverVersion: state.entities.general.serverVersion,
+        teamsRequest: state.requests.teams.getTeams,
+        teams: getJoinableTeams(state),
+        theme: getTheme(state),
     };
 }
 

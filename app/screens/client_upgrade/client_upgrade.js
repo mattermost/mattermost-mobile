@@ -19,7 +19,7 @@ import StatusBar from 'app/components/status_bar';
 import {UpgradeTypes} from 'app/constants';
 import logo from 'assets/images/logo.png';
 import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {popTopScreen, dismissModal} from 'app/actions/navigation';
 
 export default class ClientUpgrade extends PureComponent {
@@ -28,7 +28,6 @@ export default class ClientUpgrade extends PureComponent {
             logError: PropTypes.func.isRequired,
             setLastUpgradeCheck: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         currentVersion: PropTypes.string,
         closeAction: PropTypes.func,
         userCheckedForUpgrade: PropTypes.bool,
@@ -56,12 +55,6 @@ export default class ClientUpgrade extends PureComponent {
 
         if (this.props.userCheckedForUpgrade) {
             this.checkUpgrade(this.props);
-        }
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 
@@ -290,7 +283,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         image: {
             marginTop: 75,

@@ -68,7 +68,7 @@ export default class Root extends PureComponent {
         const {currentUrl, theme} = this.props;
         const {intl} = this.providerRef.getChildContext();
 
-        let passProps = {theme};
+        let passProps = null;
         const options = {topBar: {}};
         if (Platform.OS === 'android') {
             options.topBar.rightButtons = [{
@@ -87,7 +87,6 @@ export default class Root extends PureComponent {
 
         if (screen === 'SelectTeam') {
             passProps = {
-                ...passProps,
                 currentUrl,
                 userWithoutTeams: true,
             };

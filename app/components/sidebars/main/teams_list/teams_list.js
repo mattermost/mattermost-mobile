@@ -86,13 +86,11 @@ export default class TeamsList extends PureComponent {
 
     goToSelectTeam = preventDoubleTap(async () => {
         const {intl} = this.context;
-        const {theme} = this.props;
         const {serverUrl} = this.state;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
             currentUrl: serverUrl,
-            theme,
         };
         const options = {
             topBar: {

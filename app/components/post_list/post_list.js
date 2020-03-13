@@ -470,7 +470,7 @@ export default class PostList extends PureComponent {
             };
             const options = {
                 layout: {
-                    backgroundColor: changeOpacity('#000', 0.2),
+                    componentBackgroundColor: changeOpacity('#000', 0.2),
                 },
             };
 
