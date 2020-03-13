@@ -1,5 +1,28 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.30.0 Release
+- Release Date: April 16, 2020
+- Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Improvements
+ - Mobile performance related to themes, links
+ - Animated gifs posted as file attachments now animate
+ - Support different interactive message button styles on mobile.
+ - Added "Unarchive Channel" option to the channel info screen
+ - Removed mark as unread option from post menus for archived channels
+ - Enter key on hardware Android keyboard now posts a message
+ 
+### Bug Fixes
+ - Fixed an issue on iOS where the modal popped down when attempting to scroll down to see if there are more emoji.
+ - Fixed an issue on iOS where Automatic Replies custom message text box was obstructed by the iPhone's notch.
+ - Fixed a few crash issues.
+ - Fixed an issue where the navigation bar tucked under status bar when using photo or camera post icons in landscape.
+ - Fixed an issue where double dashes in mobile inside a code block got converted to emdash.
+
 ## 1.29.0 Release
 - Release Date: March 16, 2020
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
