@@ -36,7 +36,12 @@ describe('Reactions', () => {
     });
 
     test('should match snapshot with canAddReaction = false', () => {
-        const wrapper = shallow(<Reactions {...baseProps} canAddReaction={false}/>);
+        const wrapper = shallow(
+            <Reactions
+                {...baseProps}
+                canAddReaction={false}
+            />,
+        );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 });
