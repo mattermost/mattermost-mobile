@@ -44,6 +44,7 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         }
         keyboardAppearance="light"
         keyboardShouldPersist={false}
+        keyboardType="default"
         onAnimationComplete={[Function]}
         onBlur={[Function]}
         onCancelButtonPress={[Function]}
@@ -51,6 +52,7 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         onSelectionChange={[Function]}
         placeholder="Search"
         placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
         searchBarRightMargin={0}
         searchIconSize={24}
         showArrow={false}

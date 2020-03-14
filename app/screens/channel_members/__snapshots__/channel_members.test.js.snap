@@ -31,6 +31,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
       }
       keyboardAppearance="light"
       keyboardShouldPersist={false}
+      keyboardType="default"
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
@@ -38,6 +39,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
+      returnKeyType="search"
       searchBarRightMargin={0}
       searchIconSize={24}
       showArrow={false}

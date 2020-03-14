@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
@@ -12,18 +12,21 @@ import {
     View,
     Platform,
 } from 'react-native';
+import {intlShape} from 'react-intl';
 
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
 import {SearchBar} from 'react-native-elements';
 
+import {memoizeResult} from 'mattermost-redux/utils/helpers';
+
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
 const containerHeight = 40;
 const middleHeight = 20;
 
-export default class Search extends Component {
+export default class Search extends PureComponent {
     static propTypes = {
         onBlur: PropTypes.func,
         onFocus: PropTypes.func,
@@ -62,6 +65,10 @@ export default class Search extends Component {
         deleteIconSize: PropTypes.number,
     };
 
+    static contextTypes = {
+        intl: intlShape,
+    };
+
     static defaultProps = {
         onSelectionChange: () => true,
         onBlur: () => true,
@@ -75,20 +82,18 @@ export default class Search extends Component {
         backArrowSize: 24,
         deleteIconSize: 20,
         searchBarRightMargin: 0,
+        returnKeyType: 'search',
+        keyboardType: 'default',
     };
 
     constructor(props) {
         super(props);
-
         this.state = {
             leftComponentWidth: 0,
         };
 
         this.leftComponentAnimated = new Animated.Value(0);
         this.searchContainerAnimated = new Animated.Value(0);
-
-        this.placeholder = this.props.placeholder || 'Search';
-        this.cancelTitle = this.props.cancelTitle || 'Cancel';
     }
 
     setSearchContainerRef = (ref) => {
@@ -180,8 +185,7 @@ export default class Search extends Component {
                         duration: 200,
                     },
                 ),
-            ]).start();
-            resolve();
+            ]).start(resolve);
         });
     }
 
@@ -202,13 +206,13 @@ export default class Search extends Component {
                         duration: 200,
                     },
                 ),
-            ]).start();
-            resolve();
+            ]).start(resolve);
         });
     }
 
     render() {
-        const {backgroundColor, ...restOfInputPropStyles} = this.props.inputStyle;
+        const searchBarStyle = searchBarTheme(this.props);
+        const {intl} = this.context;
 
         let clearIcon = null;
         let searchIcon = null;
@@ -219,7 +223,7 @@ export default class Search extends Component {
                 type: 'ionicon',
                 name: 'ios-close-circle',
                 size: 17,
-                color: this.props.tintColorDelete ? this.props.tintColorDelete : styles.defaultColor.color,
+                color: searchBarStyle.clearIconColorIos,
             };
 
             searchIcon = (
@@ -228,8 +232,8 @@ export default class Search extends Component {
                     size={24}
                     style={[
                         styles.fullWidth,
-                        this.props.tintColorSearch && {color: this.props.tintColorSearch},
                         {
+                            color: searchBarStyle.searchIconColor,
                             top: middleHeight - 10,
                         },
                     ]}
@@ -242,14 +246,14 @@ export default class Search extends Component {
                         <MaterialIcon
                             name='arrow-back'
                             size={this.props.backArrowSize}
-                            color={this.props.titleCancelColor || this.props.placeholderTextColor}
+                            color={searchBarStyle.clearIconColorAndroid}
                         />
                     </TouchableWithoutFeedback>
                 ) :
                 {
                     type: 'material',
                     size: this.props.searchIconSize,
-                    color: this.props.tintColorSearch || this.props.placeholderTextColor,
+                    color: searchBarStyle.searchIconColor,
                     name: 'search',
                 };
 
@@ -259,7 +263,7 @@ export default class Search extends Component {
             clearIcon = {
                 type: 'material',
                 size: this.props.deleteIconSize,
-                color: this.props.titleCancelColor || this.props.placeholderTextColor,
+                color: searchBarStyle.clearIconColorAndroid,
                 name: 'close',
             };
         }
@@ -280,13 +284,9 @@ export default class Search extends Component {
                 <Animated.View
                     style={[
                         styles.fullWidth,
+                        searchBarStyle.searchBarWrapper,
                         {
-                            marginRight: this.props.searchBarRightMargin,
                             marginLeft: this.searchContainerAnimated,
-                            height: Platform.select({
-                                ios: this.props.inputHeight || containerHeight - 10,
-                                android: this.props.inputHeight,
-                            }),
                         },
                     ]}
                 >
@@ -295,41 +295,35 @@ export default class Search extends Component {
                         containerStyle={{
                             ...styles.searchContainer,
                             ...styles.fullWidth,
-                            backgroundColor: this.props.backgroundColor,
+                            ...searchBarStyle.searchBarContainer,
                         }}
                         inputContainerStyle={{
                             ...styles.inputContainer,
-                            backgroundColor,
-                            height: this.props.inputHeight,
+                            ...searchBarStyle.inputContainer,
                         }}
                         inputStyle={{
                             ...styles.text,
                             ...styles.inputMargin,
-                            color: this.props.placeholderTextColor,
-                            ...restOfInputPropStyles,
-                            height: this.props.inputHeight,
+                            ...searchBarStyle.inputStyle,
                         }}
-                        placeholder={this.placeholder}
+                        placeholder={this.props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         placeholderTextColor={this.props.placeholderTextColor}
                         selectionColor={this.props.selectionColor}
                         autoCorrect={false}
                         blurOnSubmit={this.props.blurOnSubmit}
                         editable={this.props.editable}
-                        cancelButtonTitle={this.cancelTitle}
+                        cancelButtonTitle={this.props.cancelTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         cancelButtonProps={{
-                            buttonStyle: {
-                                minWidth: 75,
-                            },
+                            buttonStyle: searchBarStyle.cancelButton,
                             buttonTextStyle: {
                                 ...styles.text,
-                                ...this.props.cancelButtonStyle,
-                                color: this.props.titleCancelColor,
+                                ...searchBarStyle.cancelButtonText,
                             },
                         }}
                         onChangeText={this.onChangeText}
                         onSubmitEditing={this.onSearch}
-                        returnKeyType={this.props.returnKeyType || 'search'}
-                        keyboardType={this.props.keyboardType || 'default'}
+                        returnKeyType={this.props.returnKeyType}
+                        keyboardType={this.props.keyboardType}
                         autoCapitalize={this.props.autoCapitalize}
                         onBlur={this.onBlur}
                         onFocus={this.onFocus}
@@ -342,7 +336,7 @@ export default class Search extends Component {
                         autoFocus={this.props.autoFocus}
                         showCancel={true}
                         value={this.props.value}
-                        platform={Platform.OS === 'ios' ? 'ios' : 'android'}
+                        platform={Platform.OS}
                         clearIcon={clearIcon}
                         searchIcon={searchIcon}
                         cancelIcon={cancelIcon}
@@ -352,6 +346,38 @@ export default class Search extends Component {
         );
     }
 }
+
+const searchBarTheme = memoizeResult((props) => ({
+    cancelButton: {
+        minWidth: 75,
+    },
+    cancelButtonText: {
+        ...props.cancelButtonStyle,
+        color: props.titleCancelColor,
+    },
+    clearIconColorIos: props.tintColorDelete || styles.defaultColor.color,
+    clearIconColorAndroid: props.titleCancelColor || props.placeholderTextColor,
+    inputStyle: {
+        ...props.inputStyle,
+        backgroundColor: 'transparent',
+        height: props.inputHeight,
+    },
+    inputContainer: {
+        backgroundColor: props.inputStyle.backgroundColor,
+        height: props.inputHeight,
+    },
+    searchBarWrapper: {
+        marginRight: props.searchBarRightMargin,
+        height: Platform.select({
+            ios: props.inputHeight || containerHeight - 10,
+            android: props.inputHeight,
+        }),
+    },
+    searchBarContainer: {
+        backgroundColor: props.backgroundColor,
+    },
+    searchIconColor: props.tintColorSearch || props.placeholderTextColor,
+}));
 
 const styles = StyleSheet.create({
     container: {
