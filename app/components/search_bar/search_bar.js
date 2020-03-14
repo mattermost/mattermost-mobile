@@ -211,7 +211,18 @@ export default class Search extends PureComponent {
     }
 
     render() {
-        const searchBarStyle = searchBarTheme(this.props);
+        const {backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin} = this.props;
+        const searchBarStyle = getSearchBarStyle(
+            backgroundColor,
+            cancelButtonStyle,
+            inputHeight,
+            inputStyle,
+            placeholderTextColor,
+            tintColorDelete,
+            tintColorSearch,
+            titleCancelColor,
+            searchBarRightMargin,
+        );
         const {intl} = this.context;
 
         let clearIcon = null;
@@ -347,36 +358,46 @@ export default class Search extends PureComponent {
     }
 }
 
-const searchBarTheme = memoizeResult((props) => ({
+const getSearchBarStyle = memoizeResult((
+    backgroudColor,
+    cancelButtonStyle,
+    inputHeight,
+    inputStyle,
+    placeholderTextColor,
+    tintColorDelete,
+    tintColorSearch,
+    titleCancelColor,
+    searchBarRightMargin,
+) => ({
     cancelButton: {
         minWidth: 75,
     },
     cancelButtonText: {
-        ...props.cancelButtonStyle,
-        color: props.titleCancelColor,
+        ...cancelButtonStyle,
+        color: titleCancelColor,
     },
-    clearIconColorIos: props.tintColorDelete || styles.defaultColor.color,
-    clearIconColorAndroid: props.titleCancelColor || props.placeholderTextColor,
+    clearIconColorIos: tintColorDelete || styles.defaultColor.color,
+    clearIconColorAndroid: titleCancelColor || placeholderTextColor,
     inputStyle: {
-        ...props.inputStyle,
+        ...inputStyle,
         backgroundColor: 'transparent',
-        height: props.inputHeight,
+        height: inputHeight,
     },
     inputContainer: {
-        backgroundColor: props.inputStyle.backgroundColor,
-        height: props.inputHeight,
+        backgroundColor: inputStyle.backgroundColor,
+        height: inputHeight,
     },
     searchBarWrapper: {
-        marginRight: props.searchBarRightMargin,
+        marginRight: searchBarRightMargin,
         height: Platform.select({
-            ios: props.inputHeight || containerHeight - 10,
-            android: props.inputHeight,
+            ios: inputHeight || containerHeight - 10,
+            android: inputHeight,
         }),
     },
     searchBarContainer: {
-        backgroundColor: props.backgroundColor,
+        backgroudColor,
     },
-    searchIconColor: props.tintColorSearch || props.placeholderTextColor,
+    searchIconColor: tintColorSearch || placeholderTextColor,
 }));
 
 const styles = StyleSheet.create({
