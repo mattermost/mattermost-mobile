@@ -22,7 +22,7 @@ exports[`ImagePreview should match snapshot 1`] = `
       }
     }
   >
-    <Gallery
+    <GallerySwiper
       errorComponent={[Function]}
       flatListProps={
         Object {
@@ -45,11 +45,12 @@ exports[`ImagePreview should match snapshot 1`] = `
         ]
       }
       initialPage={0}
+      onEndReachedThreshold={0.5}
       onPageSelected={[Function]}
       onSingleTapConfirmed={[Function]}
-      onSwipedVertical={[Function]}
+      onSwipeDownReleased={[Function]}
+      onSwipeUpReleased={[Function]}
       pageMargin={2}
-      removeClippedSubviews={true}
       scrollViewStyle={Object {}}
       style={
         Object {
