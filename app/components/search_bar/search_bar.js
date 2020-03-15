@@ -359,7 +359,7 @@ export default class Search extends PureComponent {
 }
 
 const getSearchBarStyle = memoizeResult((
-    backgroudColor,
+    backgroundColor,
     cancelButtonStyle,
     inputHeight,
     inputStyle,
@@ -395,7 +395,7 @@ const getSearchBarStyle = memoizeResult((
         }),
     },
     searchBarContainer: {
-        backgroudColor,
+        backgroundColor,
     },
     searchIconColor: tintColorSearch || placeholderTextColor,
 }));
