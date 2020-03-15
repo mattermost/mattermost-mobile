@@ -5,23 +5,20 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getChannel as getChannelAction, joinChannel} from 'mattermost-redux/actions/channels';
-import {
-    getPostsAround,
-    getPostThread,
-    selectPost,
-} from 'mattermost-redux/actions/posts';
+import {selectPost} from 'mattermost-redux/actions/posts';
 import {makeGetChannel, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
 import {makeGetPostIdsAroundPost, getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {isLandscape} from 'app/selectors/device';
 
 import {
     handleSelectChannel,
     loadThreadIfNecessary,
 } from 'app/actions/views/channel';
+import {getPostsAround, getPostThread} from 'app/actions/views/post';
 import {handleTeamChange} from 'app/actions/views/select_team';
+import {isLandscape} from 'app/selectors/device';
 
 import Permalink from './permalink';
 

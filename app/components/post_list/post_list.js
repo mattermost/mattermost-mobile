@@ -100,7 +100,7 @@ export default class PostList extends PureComponent {
     }
 
     componentDidMount() {
-        const {actions, deepLinkURL} = this.props;
+        const {actions, deepLinkURL, highlightPostId, initialIndex} = this.props;
 
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
 
@@ -108,6 +108,11 @@ export default class PostList extends PureComponent {
         if (deepLinkURL) {
             this.handleDeepLink(deepLinkURL);
             actions.setDeepLinkURL('');
+        }
+
+        // Scroll to highlighted post for permalinks
+        if (!this.hasDoneInitialScroll && initialIndex > 0 && !this.cancelScrollToIndex && highlightPostId) {
+            this.scrollToInitialIndexIfNeeded(initialIndex);
         }
     }
 

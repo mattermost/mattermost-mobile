@@ -66,7 +66,7 @@ describe('Actions.Views.Channel', () => {
         type: MOCK_SELECT_CHANNEL_TYPE,
         data: 'selected-channel-id',
     });
-    const postActions = require('mattermost-redux/actions/posts');
+    const postActions = require('./post');
     postActions.getPostsSince = jest.fn(() => {
         return {
             type: MOCK_RECEIVED_POSTS_SINCE,
