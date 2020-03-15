@@ -20,7 +20,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
-import Gallery from 'react-native-image-gallery';
+import Gallery from 'react-native-gallery-swiper';
 import DeviceInfo from 'react-native-device-info';
 import FastImage from 'react-native-fast-image';
 
@@ -47,6 +47,7 @@ const {View: AnimatedView} = Animated;
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 const HEADER_HEIGHT = 48;
 const ANIM_CONFIG = {duration: 300};
+const DISMISS_TRANSLATE = 150;
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
@@ -149,8 +150,8 @@ export default class ImagePreview extends PureComponent {
         this.setState({index});
     };
 
-    handleSwipedVertical = (evt, gestureState) => {
-        if (Math.abs(gestureState.dy) > 150) {
+    onViewTransformed = (transform) => {
+        if (Math.abs(transform.translateY) > DISMISS_TRANSLATE || Math.abs(transform.translateY) < DISMISS_TRANSLATE * -1) {
             this.close();
         }
     };
@@ -330,7 +331,8 @@ export default class ImagePreview extends PureComponent {
                 initialPage={this.state.index}
                 onPageSelected={this.handleChangeImage}
                 onSingleTapConfirmed={this.handleTapped}
-                onSwipedVertical={this.handleSwipedVertical}
+                onSwipeDownReleased={this.onViewTransformed}
+                onSwipeUpReleased={this.onViewTransformed}
                 pageMargin={2}
                 style={style.flex}
             />
@@ -366,10 +368,10 @@ export default class ImagePreview extends PureComponent {
         );
     };
 
-    renderImageComponent = (imageProps, imageDimensions) => {
-        if (imageDimensions) {
+    renderImageComponent = (imageProps) => {
+        if (imageProps.image) {
             const {deviceHeight, deviceWidth} = this.props;
-            const {height, width} = imageDimensions;
+            const {height, width} = imageProps.image.data;
             const {style, source} = imageProps;
             const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
             const flattenStyle = StyleSheet.flatten(style);
@@ -385,7 +387,6 @@ export default class ImagePreview extends PureComponent {
                 </View>
             );
         }
-
         return null;
     };
 
