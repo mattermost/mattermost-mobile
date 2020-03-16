@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-gallery-swiper/src/index.js b/node_modules/react-native-gallery-swiper/src/index.js
+index 39c3cb1..1f9c71c 100644
+--- a/node_modules/react-native-gallery-swiper/src/index.js
++++ b/node_modules/react-native-gallery-swiper/src/index.js
+@@ -113,7 +113,7 @@ export default class GallerySwiper extends PureComponent {
+         };
+ 
+         this.gestureResponder = createResponder({
+-            onStartShouldSetResponderCapture: (evt, gestureState) => true,
++            onStartShouldSetResponderCapture: (evt, gestureState) => false,
+             onStartShouldSetResponder: (evt, gestureState) => true,
+             onResponderGrant: this.activeImageResponder,
+             onResponderMove: (evt, gestureState) => {

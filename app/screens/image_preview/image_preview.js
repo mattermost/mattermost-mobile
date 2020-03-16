@@ -369,7 +369,7 @@ export default class ImagePreview extends PureComponent {
     };
 
     renderImageComponent = (imageProps) => {
-        if (imageProps.image) {
+        if (imageProps.image.data.width && imageProps.image.data.height) {
             const {deviceHeight, deviceWidth} = this.props;
             const {height, width} = imageProps.image.data;
             const {style, source} = imageProps;
@@ -387,13 +387,12 @@ export default class ImagePreview extends PureComponent {
                 </View>
             );
         }
-        return null;
+        return this.renderOtherItems(imageProps.index);
     };
 
     renderOtherItems = (index) => {
         const {files} = this.props;
         const file = files[index];
-
         if (file.data) {
             if (isDocument(file.data)) {
                 return this.renderAttachmentDocument(file);
