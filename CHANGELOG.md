@@ -13,6 +13,7 @@
 ### Improvements
  - Significantly improved how quickly channels load when you open the app and when you switch between them.
  - Set all requests timeouts to a maximum of 5 seconds to improve reliability on bad networks.
+ - Removed the persisted sidebar on Android tablets.
  - Changed "Copy Permalink" to "Copy Link" for readability.
  
 ### Bug Fixes
