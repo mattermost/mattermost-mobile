@@ -37,10 +37,11 @@ exports[`LoginOptions should show dark background when user has dark color schem
     style={
       Array [
         Object {
-          "fontSize": 32,
-          "fontWeight": "600",
-          "marginBottom": 15,
-          "marginTop": 15,
+          "fontSize": 24,
+          "fontWeight": "500",
+          "lineHeight": 28,
+          "marginBottom": 32,
+          "marginTop": 32,
           "textAlign": "center",
         },
         Object {
@@ -55,11 +56,10 @@ exports[`LoginOptions should show dark background when user has dark color schem
     style={
       Array [
         Object {
-          "color": "#777",
           "fontSize": 16,
           "fontWeight": "300",
           "lineHeight": 22,
-          "marginBottom": 15,
+          "marginBottom": 32,
           "textAlign": "center",
         },
         Object {
@@ -69,24 +69,22 @@ exports[`LoginOptions should show dark background when user has dark color schem
     }
   />
   <FormattedText
-    defaultMessage="Choose your login method"
+    defaultMessage="Log in to your account with"
     id="mobile.login_options.choose_title"
     style={
       Array [
         Object {
-          "color": "#777",
           "fontSize": 16,
           "fontWeight": "300",
           "lineHeight": 22,
-          "marginBottom": 15,
+          "marginBottom": 32,
           "textAlign": "center",
         },
         Object {
-          "fontWeight": "bold",
-          "marginTop": 10,
+          "color": "#dbdbdb",
         },
         Object {
-          "color": "#dbdbdb",
+          "marginBottom": 24,
         },
       ]
     }
@@ -131,10 +129,11 @@ exports[`LoginOptions should show light background when user has light color sch
     style={
       Array [
         Object {
-          "fontSize": 32,
-          "fontWeight": "600",
-          "marginBottom": 15,
-          "marginTop": 15,
+          "fontSize": 24,
+          "fontWeight": "500",
+          "lineHeight": 28,
+          "marginBottom": 32,
+          "marginTop": 32,
           "textAlign": "center",
         },
         Object {
@@ -149,11 +148,10 @@ exports[`LoginOptions should show light background when user has light color sch
     style={
       Array [
         Object {
-          "color": "#777",
           "fontSize": 16,
           "fontWeight": "300",
           "lineHeight": 22,
-          "marginBottom": 15,
+          "marginBottom": 32,
           "textAlign": "center",
         },
         Object {
@@ -163,24 +161,22 @@ exports[`LoginOptions should show light background when user has light color sch
     }
   />
   <FormattedText
-    defaultMessage="Choose your login method"
+    defaultMessage="Log in to your account with"
     id="mobile.login_options.choose_title"
     style={
       Array [
         Object {
-          "color": "#777",
           "fontSize": 16,
           "fontWeight": "300",
           "lineHeight": 22,
-          "marginBottom": 15,
+          "marginBottom": 32,
           "textAlign": "center",
         },
         Object {
-          "fontWeight": "bold",
-          "marginTop": 10,
+          "color": "#171717",
         },
         Object {
-          "color": "#171717",
+          "marginBottom": 24,
         },
       ]
     }

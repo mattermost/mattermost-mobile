@@ -62,10 +62,11 @@ exports[`Login should show dark background when user has dark color scheme set 1
           style={
             Array [
               Object {
-                "fontSize": 32,
-                "fontWeight": "600",
-                "marginBottom": 15,
-                "marginTop": 15,
+                "fontSize": 24,
+                "fontWeight": "500",
+                "lineHeight": 28,
+                "marginBottom": 32,
+                "marginTop": 32,
                 "textAlign": "center",
               },
               Object {
@@ -80,11 +81,10 @@ exports[`Login should show dark background when user has dark color scheme set 1
           style={
             Array [
               Object {
-                "color": "#777",
                 "fontSize": 16,
                 "fontWeight": "300",
                 "lineHeight": 22,
-                "marginBottom": 15,
+                "marginBottom": 32,
                 "textAlign": "center",
               },
               Object {
@@ -114,18 +114,20 @@ exports[`Login should show dark background when user has dark color scheme set 1
           Array [
             Object {
               "alignSelf": "stretch",
-              "borderRadius": 3,
-              "borderWidth": 2,
-              "color": "#3d3c40",
+              "borderRadius": 4,
               "fontSize": 16,
               "height": 45,
-              "marginBottom": 5,
-              "marginTop": 5,
               "paddingLeft": 10,
             },
             Object {
               "borderColor": "#9b9b9b",
               "color": "#dbdbdb",
+            },
+            Object {
+              "borderWidth": 1,
+            },
+            Object {
+              "marginBottom": 16,
             },
           ]
         }
@@ -151,18 +153,20 @@ exports[`Login should show dark background when user has dark color scheme set 1
           Array [
             Object {
               "alignSelf": "stretch",
-              "borderRadius": 3,
-              "borderWidth": 2,
-              "color": "#3d3c40",
+              "borderRadius": 4,
               "fontSize": 16,
               "height": 45,
-              "marginBottom": 5,
-              "marginTop": 5,
               "paddingLeft": 10,
             },
             Object {
               "borderColor": "#9b9b9b",
               "color": "#dbdbdb",
+            },
+            Object {
+              "borderWidth": 1,
+            },
+            Object {
+              "marginBottom": 16,
             },
           ]
         }
@@ -180,7 +184,7 @@ exports[`Login should show dark background when user has dark color scheme set 1
                 "alignItems": "center",
                 "alignSelf": "stretch",
                 "borderRadius": 3,
-                "marginTop": 10,
+                "marginBottom": 16,
                 "padding": 15,
               },
               Object {
@@ -189,6 +193,7 @@ exports[`Login should show dark background when user has dark color scheme set 1
               Object {
                 "backgroundColor": "#2e2e2e",
               },
+              Object {},
             ],
             Object {},
           ]
@@ -197,7 +202,7 @@ exports[`Login should show dark background when user has dark color scheme set 1
         onPress={[Function]}
       >
         <FormattedText
-          defaultMessage="Sign in"
+          defaultMessage="Log in"
           id="login.signIn"
           style={
             Array [
@@ -307,10 +312,11 @@ exports[`Login should show light background when user has light color scheme set
           style={
             Array [
               Object {
-                "fontSize": 32,
-                "fontWeight": "600",
-                "marginBottom": 15,
-                "marginTop": 15,
+                "fontSize": 24,
+                "fontWeight": "500",
+                "lineHeight": 28,
+                "marginBottom": 32,
+                "marginTop": 32,
                 "textAlign": "center",
               },
               Object {
@@ -325,11 +331,10 @@ exports[`Login should show light background when user has light color scheme set
           style={
             Array [
               Object {
-                "color": "#777",
                 "fontSize": 16,
                 "fontWeight": "300",
                 "lineHeight": 22,
-                "marginBottom": 15,
+                "marginBottom": 32,
                 "textAlign": "center",
               },
               Object {
@@ -359,18 +364,20 @@ exports[`Login should show light background when user has light color scheme set
           Array [
             Object {
               "alignSelf": "stretch",
-              "borderRadius": 3,
-              "borderWidth": 2,
-              "color": "#3d3c40",
+              "borderRadius": 4,
               "fontSize": 16,
               "height": 45,
-              "marginBottom": 5,
-              "marginTop": 5,
               "paddingLeft": 10,
             },
             Object {
               "borderColor": "#dbdbdb",
               "color": "#171717",
+            },
+            Object {
+              "borderWidth": 1,
+            },
+            Object {
+              "marginBottom": 16,
             },
           ]
         }
@@ -396,18 +403,20 @@ exports[`Login should show light background when user has light color scheme set
           Array [
             Object {
               "alignSelf": "stretch",
-              "borderRadius": 3,
-              "borderWidth": 2,
-              "color": "#3d3c40",
+              "borderRadius": 4,
               "fontSize": 16,
               "height": 45,
-              "marginBottom": 5,
-              "marginTop": 5,
               "paddingLeft": 10,
             },
             Object {
               "borderColor": "#dbdbdb",
               "color": "#171717",
+            },
+            Object {
+              "borderWidth": 1,
+            },
+            Object {
+              "marginBottom": 16,
             },
           ]
         }
@@ -425,7 +434,7 @@ exports[`Login should show light background when user has light color scheme set
                 "alignItems": "center",
                 "alignSelf": "stretch",
                 "borderRadius": 3,
-                "marginTop": 10,
+                "marginBottom": 16,
                 "padding": 15,
               },
               Object {
@@ -434,6 +443,7 @@ exports[`Login should show light background when user has light color scheme set
               Object {
                 "backgroundColor": "#dbdbdb",
               },
+              Object {},
             ],
             Object {},
           ]
@@ -442,7 +452,7 @@ exports[`Login should show light background when user has light color scheme set
         onPress={[Function]}
       >
         <FormattedText
-          defaultMessage="Sign in"
+          defaultMessage="Log in"
           id="login.signIn"
           style={
             Array [

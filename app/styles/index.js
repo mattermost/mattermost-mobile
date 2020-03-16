@@ -6,8 +6,6 @@ no-magic-numbers */
 
 import {StyleSheet} from 'react-native';
 
-import {error} from 'app/styles/colors';
-
 export const GlobalStyles = StyleSheet.create({
     container: {
         flex: 1,
@@ -35,24 +33,24 @@ export const GlobalStyles = StyleSheet.create({
     },
     header: {
         textAlign: 'center',
-        marginTop: 15,
-        marginBottom: 15,
-        fontSize: 32,
-        fontWeight: '600',
+        marginTop: 32,
+        marginBottom: 32,
+        fontSize: 24,
+        lineHeight: 28,
+        fontWeight: '500',
     },
     subheader: {
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '300',
-        color: '#777',
-        marginBottom: 15,
+        marginBottom: 32,
         lineHeight: 22,
     },
     authButton: {
         borderRadius: 3,
         alignItems: 'center',
         alignSelf: 'stretch',
-        marginTop: 10,
+        marginBottom: 16,
         padding: 15,
     },
     authButtonText: {
@@ -88,40 +86,37 @@ export const GlobalStyles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '400',
     },
-
     errorLabel: {
         color: 'red',
-        marginTop: 15,
-        marginBottom: 15,
-        fontSize: 12,
+        marginTop: 12,
+        marginBottom: 12,
+        fontSize: 14,
         textAlign: 'left',
+        lineHeight: 20,
     },
-
     switchUp: {
         padding: 0,
         backgroundColor: 'green',
         paddingBottom: 50,
         alignItems: 'center',
     },
-
     inputBox: {
         fontSize: 16,
         height: 45,
-        borderWidth: 2,
-        marginTop: 5,
-        marginBottom: 5,
         paddingLeft: 10,
         alignSelf: 'stretch',
-        borderRadius: 3,
-        color: '#3d3c40',
+        borderRadius: 4,
+    },
+    inputBoxBlur: {
+        borderWidth: 1,
     },
     inputBoxDisabled: {
         borderWidth: 0,
     },
     inputBoxError: {
-        borderColor: error,
+        borderWidth: 2,
     },
-    textError: {
-        color: error,
+    inputBoxFocused: {
+        borderWidth: 2,
     },
 });

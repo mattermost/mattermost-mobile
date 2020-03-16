@@ -178,6 +178,11 @@ describe('app/actions/navigation', () => {
         const push = jest.spyOn(Navigation, 'push');
 
         const defaultOptions = {
+            animations: {
+                push: {
+                    waitForRender: true,
+                },
+            },
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },

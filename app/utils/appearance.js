@@ -34,6 +34,9 @@ function createStyleSheet(colors) {
             backgroundColor: colors.inputBoxBgDisabled,
             color: colors.inputBoxTextDisabled,
         },
+        inputBoxError: {
+            borderColor: colors.inputBoxBorderError,
+        },
         inputBoxFocused: {
             borderColor: colors.inputBoxBorderFocused,
             color: colors.inputBoxTextFocused,
@@ -48,11 +51,13 @@ function createStyleSheet(colors) {
     });
 }
 
-export function getButtonStyle(isDisabled, colorStyles) {
+export function getButtonStyle(isDisabled, colorStyles, margins = {}) {
     const buttonStyle = [GlobalStyles.authButton, colorStyles.authButton];
     if (isDisabled) {
         buttonStyle.push(colorStyles.buttonDisabled);
     }
+    buttonStyle.push(margins);
+
     return buttonStyle;
 }
 
@@ -68,12 +73,19 @@ export function getColorStyles(colorScheme) {
     return colorScheme === 'dark' ? createStyleSheet(darkColors) : createStyleSheet(lightColors);
 }
 
-export function getInputStyle(isDisabled, colorStyles) {
+export function getInputStyle(isDisabled, error, colorStyles, margin = {}) {
     const inputStyle = [GlobalStyles.inputBox, colorStyles.inputBox];
     if (isDisabled) {
         inputStyle.push(GlobalStyles.inputBoxDisabled);
         inputStyle.push(colorStyles.inputBoxDisabled);
+    } else if (error) {
+        inputStyle.push(GlobalStyles.inputBoxError);
+        inputStyle.push(colorStyles.inputBoxError);
+    } else {
+        inputStyle.push(GlobalStyles.inputBoxBlur);
     }
+
+    inputStyle.push(margin);
     return inputStyle;
 }
 

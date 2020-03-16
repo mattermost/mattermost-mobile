@@ -203,7 +203,6 @@ export default class SelectServer extends PureComponent {
         }
 
         if (!isValidUrl(url)) {
-            this.setErrorStyle();
             this.setState({
                 error: {
                     intl: {
@@ -248,7 +247,7 @@ export default class SelectServer extends PureComponent {
         let title;
         if (options) {
             screen = 'LoginOptions';
-            title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Chooser'});
+            title = formatMessage({id: 'mobile.routes.loginOptions', defaultMessage: 'Login Method'});
         } else {
             screen = 'Login';
             title = formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
@@ -350,10 +349,6 @@ export default class SelectServer extends PureComponent {
                 setServerVersion(Client4.getServerVersion());
             }
 
-            if (result.error) {
-                this.setErrorStyle();
-            }
-
             this.setState({
                 connected: !result.error,
                 connecting: false,
@@ -402,21 +397,22 @@ export default class SelectServer extends PureComponent {
         return !allowOtherServers || connected || connecting;
     };
 
-    setErrorStyle() {
-        this.setStyle(GlobalStyles.inputBoxError);
+    setFocusStyle() {
+        this.textInput.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
     }
 
-    setStyle(style) {
-        this.textInput.setNativeProps({style});
+    setBlurStyle() {
+        this.textInput.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
     }
 
     render() {
-        const {colorStyles, logo} = this.state;
         const {formatMessage} = this.context.intl;
         const {
+            colorStyles,
             connected,
             connecting,
             error,
+            logo,
             url,
         } = this.state;
 
@@ -451,6 +447,8 @@ export default class SelectServer extends PureComponent {
             statusStyle = 'light-content';
         }
 
+        const buttonMargins = error ? {marginTop: 12} : {marginTop: 24};
+
         return (
             <SafeAreaView
                 style={[GlobalStyles.container, colorStyles.container]}
@@ -473,7 +471,7 @@ export default class SelectServer extends PureComponent {
 
                             <View>
                                 <FormattedText
-                                    style={[GlobalStyles.header, GlobalStyles.label, colorStyles.header]}
+                                    style={[GlobalStyles.header, colorStyles.header]}
                                     id='mobile.components.select_server_view.enterServerUrl'
                                     defaultMessage='Enter Server URL'
                                 />
@@ -482,11 +480,11 @@ export default class SelectServer extends PureComponent {
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!this.isInputDisabled()}
-                                onBlur={this.setStyle.bind(this, colorStyles.inputBox)}
+                                onBlur={this.setBlurStyle.bind(this)}
                                 onChangeText={this.handleTextChanged}
-                                onFocus={this.setStyle.bind(this, colorStyles.inputBoxFocused)}
+                                onFocus={this.setFocusStyle.bind(this)}
                                 onSubmitEditing={this.handleConnect}
-                                style={getInputStyle(this.isInputDisabled(), colorStyles)}
+                                style={getInputStyle(this.isInputDisabled(), error, colorStyles)}
                                 autoCapitalize='none'
                                 autoCorrect={false}
                                 keyboardType='url'
@@ -503,7 +501,7 @@ export default class SelectServer extends PureComponent {
                             <Button
                                 disabled={this.isConnectButtonDisabled()}
                                 onPress={this.handleConnect}
-                                containerStyle={getButtonStyle(this.isConnectButtonDisabled(), colorStyles)}
+                                containerStyle={getButtonStyle(this.isConnectButtonDisabled(), colorStyles, buttonMargins)}
                             >
                                 {buttonIcon}
                                 <Text style={getButtonTextStyle(this.isConnectButtonDisabled(), colorStyles)}>

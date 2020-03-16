@@ -252,11 +252,7 @@ export default class Login extends PureComponent {
     }
 
     getLoginErrorMessage = (error) => {
-        const errorMessage = this.getServerErrorForLogin(error) || this.state.error;
-        if (errorMessage && this.loginId && this.passwd) {
-            this.setErrorStyle();
-        }
-        return errorMessage;
+        return this.getServerErrorForLogin(error) || this.state.error;
     };
 
     getServerErrorForLogin = (error) => {
@@ -327,21 +323,24 @@ export default class Login extends PureComponent {
         return !(this.props.loginId && this.props.password);
     };
 
-    setErrorStyle() {
-        this.setLoginStyle(GlobalStyles.inputBoxError);
-        this.setPasswordStyle(GlobalStyles.inputBoxError);
+    setLoginFocusStyle() {
+        this.loginId.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
     }
 
-    setLoginStyle(style) {
-        this.loginId.setNativeProps({style});
+    setLoginBlurStyle() {
+        this.loginId.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
     }
 
-    setPasswordStyle(style) {
-        this.passwd.setNativeProps({style});
+    setPasswordFocusStyle() {
+        this.passwd.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
+    }
+
+    setPasswordBlurStyle() {
+        this.passwd.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
     }
 
     render() {
-        const {colorStyles, logo, isLoading} = this.state;
+        const {colorStyles, error, logo, isLoading} = this.state;
 
         let proceed;
         if (isLoading) {
@@ -366,15 +365,16 @@ export default class Login extends PureComponent {
                 additionalTextStyle.color = this.props.config.EmailLoginButtonTextColor;
             }
 
+            const margins = error ? {marginTop: 12} : {};
             proceed = (
                 <Button
                     disabled={this.isLoginButtonDisabled()}
                     onPress={this.preSignIn}
-                    containerStyle={[getButtonStyle(this.isLoginButtonDisabled(), colorStyles), additionalStyle]}
+                    containerStyle={[getButtonStyle(this.isLoginButtonDisabled(), colorStyles, margins), additionalStyle]}
                 >
                     <FormattedText
                         id='login.signIn'
-                        defaultMessage='Sign in'
+                        defaultMessage='Log in'
                         style={[getButtonTextStyle(this.isLoginButtonDisabled(), colorStyles), additionalTextStyle]}
                     />
                 </Button>
@@ -427,10 +427,10 @@ export default class Login extends PureComponent {
                         <TextInput
                             ref={this.loginRef}
                             value={this.props.loginId}
-                            onBlur={this.setLoginStyle.bind(this, colorStyles.inputBox)}
+                            onBlur={this.setLoginBlurStyle.bind(this)}
                             onChangeText={this.props.actions.handleLoginIdChanged}
-                            onFocus={this.setLoginStyle.bind(this, colorStyles.inputBoxFocused)}
-                            style={getInputStyle(isLoading, colorStyles)}
+                            onFocus={this.setLoginFocusStyle.bind(this)}
+                            style={getInputStyle(isLoading, error, colorStyles, {marginBottom: 16})}
                             placeholder={this.createLoginPlaceholder()}
                             placeholderTextColor={colorStyles.inputBoxDisabled.color}
                             autoCorrect={false}
@@ -446,10 +446,10 @@ export default class Login extends PureComponent {
                         <TextInput
                             ref={this.passwordRef}
                             value={this.props.password}
-                            onBlur={this.setPasswordStyle.bind(this, colorStyles.inputBox)}
+                            onBlur={this.setPasswordBlurStyle.bind(this)}
                             onChangeText={this.props.actions.handlePasswordChanged}
-                            onFocus={this.setPasswordStyle.bind(this, colorStyles.inputBoxFocused)}
-                            style={[GlobalStyles.inputBox, colorStyles.inputBox]}
+                            onFocus={this.setPasswordFocusStyle.bind(this)}
+                            style={getInputStyle(isLoading, error, colorStyles, error ? {} : {marginBottom: 16})}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             placeholderTextColor={colorStyles.inputBoxDisabled.color}
                             secureTextEntry={true}

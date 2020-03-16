@@ -71,15 +71,12 @@ exports[`SelectServer should show dark background when user has dark color schem
             style={
               Array [
                 Object {
-                  "fontSize": 32,
-                  "fontWeight": "600",
-                  "marginBottom": 15,
-                  "marginTop": 15,
+                  "fontSize": 24,
+                  "fontWeight": "500",
+                  "lineHeight": 28,
+                  "marginBottom": 32,
+                  "marginTop": 32,
                   "textAlign": "center",
-                },
-                Object {
-                  "fontSize": 20,
-                  "fontWeight": "400",
                 },
                 Object {
                   "color": "#dbdbdb",
@@ -107,13 +104,9 @@ exports[`SelectServer should show dark background when user has dark color schem
             Array [
               Object {
                 "alignSelf": "stretch",
-                "borderRadius": 3,
-                "borderWidth": 2,
-                "color": "#3d3c40",
+                "borderRadius": 4,
                 "fontSize": 16,
                 "height": 45,
-                "marginBottom": 5,
-                "marginTop": 5,
                 "paddingLeft": 10,
               },
               Object {
@@ -127,6 +120,7 @@ exports[`SelectServer should show dark background when user has dark color schem
                 "backgroundColor": "#2e2e2e",
                 "color": "#9b9b9b",
               },
+              Object {},
             ]
           }
           underlineColorAndroid="transparent"
@@ -142,7 +136,7 @@ exports[`SelectServer should show dark background when user has dark color schem
                 "alignItems": "center",
                 "alignSelf": "stretch",
                 "borderRadius": 3,
-                "marginTop": 10,
+                "marginBottom": 16,
                 "padding": 15,
               },
               Object {
@@ -150,6 +144,9 @@ exports[`SelectServer should show dark background when user has dark color schem
               },
               Object {
                 "backgroundColor": "#2e2e2e",
+              },
+              Object {
+                "marginTop": 24,
               },
             ]
           }
@@ -256,15 +253,12 @@ exports[`SelectServer should show light background when user has light color sch
             style={
               Array [
                 Object {
-                  "fontSize": 32,
-                  "fontWeight": "600",
-                  "marginBottom": 15,
-                  "marginTop": 15,
+                  "fontSize": 24,
+                  "fontWeight": "500",
+                  "lineHeight": 28,
+                  "marginBottom": 32,
+                  "marginTop": 32,
                   "textAlign": "center",
-                },
-                Object {
-                  "fontSize": 20,
-                  "fontWeight": "400",
                 },
                 Object {
                   "color": "#171717",
@@ -292,13 +286,9 @@ exports[`SelectServer should show light background when user has light color sch
             Array [
               Object {
                 "alignSelf": "stretch",
-                "borderRadius": 3,
-                "borderWidth": 2,
-                "color": "#3d3c40",
+                "borderRadius": 4,
                 "fontSize": 16,
                 "height": 45,
-                "marginBottom": 5,
-                "marginTop": 5,
                 "paddingLeft": 10,
               },
               Object {
@@ -312,6 +302,7 @@ exports[`SelectServer should show light background when user has light color sch
                 "backgroundColor": "#dbdbdb",
                 "color": "#5c5c5c",
               },
+              Object {},
             ]
           }
           underlineColorAndroid="transparent"
@@ -327,7 +318,7 @@ exports[`SelectServer should show light background when user has light color sch
                 "alignItems": "center",
                 "alignSelf": "stretch",
                 "borderRadius": 3,
-                "marginTop": 10,
+                "marginBottom": 16,
                 "padding": 15,
               },
               Object {
@@ -335,6 +326,9 @@ exports[`SelectServer should show light background when user has light color sch
               },
               Object {
                 "backgroundColor": "#dbdbdb",
+              },
+              Object {
+                "marginTop": 24,
               },
             ]
           }

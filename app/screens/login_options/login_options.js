@@ -100,7 +100,7 @@ export default class LoginOptions extends PureComponent {
                 borderColor: config.EmailLoginButtonBorderColor || 'transparent',
             };
             const additionalTextStyle = {
-                color: config.EmailLoginButtonTextColor || colorStyles.authButton.color,
+                color: config.EmailLoginButtonTextColor || colorStyles.authButtonText.color,
             };
 
             return (
@@ -123,6 +123,7 @@ export default class LoginOptions extends PureComponent {
 
     renderLdapOption = () => {
         const {config, license} = this.props;
+        const {colorStyles} = this.state;
         const forceHideFromLocal = LocalConfig.HideLDAPLoginExperimental;
 
         if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
@@ -135,7 +136,7 @@ export default class LoginOptions extends PureComponent {
                 additionalStyle.borderColor = config.LDAPLoginButtonBorderColor;
             }
 
-            const textColor = config.LDAPLoginButtonTextColor || 'white';
+            const textColor = config.LDAPLoginButtonTextColor || colorStyles.authButtonText.color;
 
             let buttonText;
             if (config.LdapLoginFieldName) {
@@ -170,6 +171,7 @@ export default class LoginOptions extends PureComponent {
 
     renderGitlabOption = () => {
         const {config} = this.props;
+        const {colorStyles} = this.state;
 
         const forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
 
@@ -185,7 +187,7 @@ export default class LoginOptions extends PureComponent {
                         style={{height: 18, marginRight: 5, width: 18}}
                     />
                     <Text
-                        style={[GlobalStyles.authButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.authButtonText, colorStyles.authButtonText]}
                     >
                         {'GitLab'}
                     </Text>
@@ -198,6 +200,7 @@ export default class LoginOptions extends PureComponent {
 
     renderO365Option = () => {
         const {config, license} = this.props;
+        const {colorStyles} = this.state;
         const forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
 
@@ -211,7 +214,7 @@ export default class LoginOptions extends PureComponent {
                 additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
             }
 
-            const textColor = config.EmailLoginButtonTextColor || 'white';
+            const textColor = config.EmailLoginButtonTextColor || colorStyles.authButtonText.color;
 
             return (
                 <Button
@@ -233,6 +236,7 @@ export default class LoginOptions extends PureComponent {
 
     renderSamlOption = () => {
         const {config, license} = this.props;
+        const {colorStyles} = this.state;
         const forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
 
         if (!forceHideFromLocal && config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
@@ -246,7 +250,7 @@ export default class LoginOptions extends PureComponent {
                 additionalStyle.borderColor = config.SamlLoginButtonBorderColor;
             }
 
-            const textColor = config.SamlLoginButtonTextColor || 'white';
+            const textColor = config.SamlLoginButtonTextColor || colorStyles.authButtonText.color;
 
             return (
                 <Button
@@ -292,9 +296,9 @@ export default class LoginOptions extends PureComponent {
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
                 <FormattedText
-                    style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}, colorStyles.header]}
+                    style={[GlobalStyles.subheader, colorStyles.header, {marginBottom: 24}]}
                     id='mobile.login_options.choose_title'
-                    defaultMessage='Choose your login method'
+                    defaultMessage='Log in to your account with'
                 />
                 {this.renderEmailOption()}
                 {this.renderLdapOption()}

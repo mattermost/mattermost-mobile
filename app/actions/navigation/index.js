@@ -179,6 +179,11 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const componentId = EphemeralStore.getNavigationTopComponentId();
     const defaultOptions = {
+        animations: {
+            push: {
+                waitForRender: true,
+            },
+        },
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },

@@ -25,7 +25,14 @@ import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 
-import {getButtonStyle, getButtonTextStyle, getColorStyles, getLogo, getStyledNavigationOptions} from 'app/utils/appearance';
+import {
+    getButtonStyle,
+    getButtonTextStyle,
+    getColorStyles,
+    getInputStyle,
+    getLogo,
+    getStyledNavigationOptions,
+} from 'app/utils/appearance';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 
@@ -108,16 +115,16 @@ export default class ForgotPassword extends PureComponent {
         return !this.state.email;
     }
 
-    setErrorStyle() {
-        this.setStyle(GlobalStyles.inputBoxError);
+    setFocusStyle() {
+        this.emailId.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
     }
 
-    setStyle(style) {
-        this.emailId.setNativeProps({style});
+    setBlurStyle() {
+        this.emailId.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
     }
 
     render() {
-        const {colorStyles, logo} = this.state;
+        const {colorStyles, error, logo} = this.state;
         const {formatMessage} = this.context.intl;
         let displayError;
         if (this.state.error) {
@@ -127,7 +134,6 @@ export default class ForgotPassword extends PureComponent {
                     textStyle={style.errorText}
                 />
             );
-            this.setErrorStyle();
         }
 
         let passwordFormView;
@@ -153,16 +159,16 @@ export default class ForgotPassword extends PureComponent {
             passwordFormView = (
                 <View>
                     <FormattedText
-                        style={[GlobalStyles.subheader, colorStyles.header, style.defaultTopPadding]}
+                        style={[GlobalStyles.subheader, colorStyles.header, {marginTop: 32}]}
                         id='password_send.description'
                         defaultMessage='To reset your password, enter the email address you used to sign up'
                     />
                     <TextInput
                         ref={this.emailIdRef}
-                        onBlur={this.setStyle.bind(this, colorStyles.inputBox)}
+                        onBlur={this.setBlurStyle.bind(this)}
                         onChangeText={this.changeEmail}
-                        onFocus={this.setStyle.bind(this, colorStyles.inputBoxFocused)}
-                        style={[GlobalStyles.inputBox, colorStyles.inputBox]}
+                        onFocus={this.setFocusStyle.bind(this)}
+                        style={getInputStyle(false, error, colorStyles, error ? {} : {marginBottom: 16})}
                         placeholder={formatMessage({id: 'login.email', defaultMessage: 'Email'})}
                         placeholderTextColor={colorStyles.inputBoxDisabled.color}
                         autoCorrect={false}
@@ -174,7 +180,7 @@ export default class ForgotPassword extends PureComponent {
                     />
                     {displayError}
                     <Button
-                        containerStyle={getButtonStyle(this.isResetButtonDisabled(), colorStyles)}
+                        containerStyle={getButtonStyle(this.isResetButtonDisabled(), colorStyles, error ? {marginTop: 12} : {})}
                         disabled={this.isResetButtonDisabled()}
                         onPress={this.submitResetPassword}
                     >

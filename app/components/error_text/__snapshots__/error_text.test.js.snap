@@ -6,9 +6,10 @@ exports[`ErrorText should match snapshot 1`] = `
     Array [
       Object {
         "color": "red",
-        "fontSize": 12,
-        "marginBottom": 15,
-        "marginTop": 15,
+        "fontSize": 14,
+        "lineHeight": 20,
+        "marginBottom": 12,
+        "marginTop": 12,
         "textAlign": "left",
       },
       Object {
