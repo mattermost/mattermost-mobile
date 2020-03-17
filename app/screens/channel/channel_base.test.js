@@ -71,10 +71,10 @@ describe('ChannelBase', () => {
 
         const newThemeOptions = optionsForTheme(Preferences.THEMES.mattermostDark);
         expect(mergeNavigationOptions.mock.calls).toEqual([
+            [baseProps.componentId, newThemeOptions],
             [componentIds[2], newThemeOptions],
             [componentIds[1], newThemeOptions],
             [componentIds[0], newThemeOptions],
-            [baseProps.componentId, newThemeOptions],
         ]);
     });
 });

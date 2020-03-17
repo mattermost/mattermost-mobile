@@ -31,7 +31,6 @@ import {
     goToScreen,
     popToRoot,
     dismissModal,
-    dismissAllModals,
     setButtons,
 } from 'app/actions/navigation';
 
@@ -110,7 +109,6 @@ export default class UserProfile extends PureComponent {
             return;
         }
 
-        await dismissAllModals();
         await popToRoot();
     };
 

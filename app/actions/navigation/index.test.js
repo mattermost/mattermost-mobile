@@ -443,6 +443,10 @@ describe('app/actions/navigation', () => {
         const showOverlay = jest.spyOn(Navigation, 'showOverlay');
 
         const defaultOptions = {
+            layout: {
+                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
+            },
             overlay: {
                 interceptTouchOutside: false,
             },

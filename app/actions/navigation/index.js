@@ -348,6 +348,10 @@ export function mergeNavigationOptions(componentId, options) {
 
 export function showOverlay(name, passProps, options = {}) {
     const defaultOptions = {
+        layout: {
+            backgroundColor: 'transparent',
+            componentBackgroundColor: 'transparent',
+        },
         overlay: {
             interceptTouchOutside: false,
         },
