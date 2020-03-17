@@ -73,7 +73,6 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('PostOptions', () => gestureHandlerRootHOC(wrapper(require('app/screens/post_options').default)), () => require('app/screens/post_options').default);
     Navigation.registerComponent('ReactionList', () => gestureHandlerRootHOC(wrapper(require('app/screens/reaction_list').default)), () => require('app/screens/reaction_list').default);
     Navigation.registerComponent('RecentMentions', () => wrapper(require('app/screens/recent_mentions').default), () => require('app/screens/recent_mentions').default);
-    Navigation.registerComponent('Root', () => wrapper(Root), () => Root);
     Navigation.registerComponent('Search', () => wrapper(require('app/screens/search').default), () => require('app/screens/search').default);
     Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
     Navigation.registerComponent('SelectServer', () => wrapper(require('app/screens/select_server').default, true), () => require('app/screens/select_server').default);

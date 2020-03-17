@@ -467,6 +467,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 20,
         },
         wrapper: {
+            backgroundColor: theme.centerChannelBg,
             borderRadius: 6,
             flex: 1,
             margin: 10,
@@ -474,7 +475,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         header: {
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
             borderTopLeftRadius: 6,
             borderTopRightRadius: 6,
             flexDirection: 'row',
@@ -506,7 +506,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
         },
         postList: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         bottom: {

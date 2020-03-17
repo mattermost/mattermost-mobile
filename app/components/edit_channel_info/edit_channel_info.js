@@ -370,7 +370,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,

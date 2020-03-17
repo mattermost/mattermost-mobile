@@ -472,6 +472,16 @@ export default class Login extends PureComponent {
 }
 
 const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    innerContainer: {
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingHorizontal: 15,
+        paddingVertical: 50,
+    },
     forgotPasswordBtn: {
         borderColor: 'transparent',
         marginTop: 15,

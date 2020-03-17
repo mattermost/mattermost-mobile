@@ -96,7 +96,6 @@ describe('app/actions/navigation', () => {
                                     },
                                 },
                                 layout: {
-                                    backgroundColor: colorStyles.container.backgroundColor,
                                     componentBackgroundColor: colorStyles.container.backgroundColor,
                                 },
                                 statusBar: {

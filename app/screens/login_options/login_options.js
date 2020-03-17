@@ -309,3 +309,16 @@ export default class LoginOptions extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    innerContainer: {
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        paddingHorizontal: 15,
+        flex: 1,
+    },
+});

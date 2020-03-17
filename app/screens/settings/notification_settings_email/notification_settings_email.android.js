@@ -244,7 +244,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         separator: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),

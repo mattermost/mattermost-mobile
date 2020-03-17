@@ -22,7 +22,6 @@ import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -82,10 +81,6 @@ export default class EditPost extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
         const {editPostRequest} = nextProps;
 
         if (this.props.editPostRequest !== editPostRequest) {
@@ -263,7 +258,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,
