@@ -84,7 +84,6 @@ describe('app/actions/navigation', () => {
                             },
                             options: {
                                 layout: {
-                                    backgroundColor: theme.centerChannelBg,
                                     componentBackgroundColor: theme.centerChannelBg,
                                 },
                                 statusBar: {

@@ -16,22 +16,14 @@ import {getCodeFont} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 
 export default class TextPreview extends React.PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
     };
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
-    }
 
     countLines = (content) => {
         return content.split('\n').length;

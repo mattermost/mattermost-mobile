@@ -28,7 +28,6 @@ import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {popTopScreen, setButtons} from 'app/actions/navigation';
@@ -90,16 +89,11 @@ export default class ChannelMembers extends PureComponent {
         this.getProfiles();
     }
 
-    componentDidUpdate(prevProps) {
-        const {componentId, theme} = this.props;
+    componentDidUpdate() {
         const {removing, selectedIds} = this.state;
         const enabled = Object.keys(selectedIds).length > 0 && !removing;
 
         this.enableRemoveOption(enabled);
-
-        if (theme !== prevProps.theme) {
-            setNavigatorStyles(componentId, theme);
-        }
     }
 
     navigationButtonPressed({buttonId}) {

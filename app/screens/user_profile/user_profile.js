@@ -23,7 +23,7 @@ import StatusBar from 'app/components/status_bar';
 import {BotTag, GuestTag} from 'app/components/tag';
 
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {isGuest} from 'app/utils/users';
 
@@ -80,12 +80,6 @@ export default class UserProfile extends PureComponent {
             };
 
             setButtons(props.componentId, buttons);
-        }
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
         }
     }
 

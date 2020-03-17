@@ -122,4 +122,10 @@ describe('PostOptions', () => {
         expect(actions.deletePost).toBeCalled();
         expect(actions.removePost).toBeCalled();
     });
+
+    test('should not show reply option without create_post permission', () => {
+        const wrapper = getWrapper({canPost: false});
+
+        expect(wrapper.findWhere((node) => node.key() === 'reply')).toMatchObject({});
+    });
 });

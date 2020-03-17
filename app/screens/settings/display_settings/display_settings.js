@@ -16,7 +16,6 @@ import {goToScreen} from 'app/actions/navigation';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
@@ -156,8 +155,8 @@ export default class DisplaySettings extends PureComponent {
                     />
                     {timezoneOption}
                     <View style={style.divider}/>
+                    {clockDisplayModal}
                 </View>
-                {clockDisplayModal}
             </View>
         );
     }
@@ -167,10 +166,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             ...Platform.select({
                 ios: {
