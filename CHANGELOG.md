@@ -7,7 +7,9 @@
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
- 
+
+**Note:** The persisted sidebar on Android tablets was removed in order to significantly improve the mobile app performance.
+
 **Note:** An issue was fixed where a user's status was set as online when replying to a message from a push notification. This fix only works in combination with server v5.20.0+.
  
 ### Improvements

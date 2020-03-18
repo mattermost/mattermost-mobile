@@ -133,7 +133,7 @@ export default class Reactions extends PureComponent {
     };
 
     render() {
-        const {position, reactions, canAddMoreReactions} = this.props;
+        const {position, reactions, canAddMoreReactions, canAddReaction} = this.props;
         const styles = getStyleSheet(this.props.theme);
 
         if (!reactions) {
@@ -141,7 +141,7 @@ export default class Reactions extends PureComponent {
         }
 
         let addMoreReactions = null;
-        if (canAddMoreReactions) {
+        if (canAddReaction && canAddMoreReactions) {
             addMoreReactions = (
                 <TouchableWithFeedback
                     key='addReaction'

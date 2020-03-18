@@ -129,7 +129,11 @@ export default class EmojiSuggestion extends PureComponent {
 
             const emojiData = getEmojiByName(emoji);
             if (emojiData?.filename && !BuiltInEmojis.includes(emojiData.filename)) {
-                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, String.fromCodePoint(parseInt(emojiData.filename, 16)));
+                const codeArray = emojiData.filename.split('-');
+                const code = codeArray.reduce((acc, c) => {
+                    return acc + String.fromCodePoint(parseInt(c, 16));
+                }, '');
+                completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `${code} `);
             } else {
                 completedDraft = emojiPart.replace(EMOJI_REGEX_WITHOUT_PREFIX, `${prefix}${emoji}: `);
             }
