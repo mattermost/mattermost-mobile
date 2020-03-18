@@ -189,16 +189,26 @@ class GlobalEventHandler {
 
     onOrientationChange = (dimensions) => {
         if (this.store) {
-            const {dispatch} = this.store;
+            const {dispatch, getState} = this.store;
+            const deviceState = getState().device;
+
             if (DeviceInfo.isTablet()) {
                 dispatch(setDeviceAsTablet());
             }
 
             const {height, width} = dimensions.window;
             const orientation = height > width ? 'PORTRAIT' : 'LANDSCAPE';
+            const savedOrientation = deviceState?.orientation;
+            const savedDimension = deviceState?.dimension;
 
-            dispatch(setDeviceOrientation(orientation));
-            dispatch(setDeviceDimensions(height, width));
+            if (orientation !== savedOrientation) {
+                dispatch(setDeviceOrientation(orientation));
+            }
+
+            if (height !== savedDimension?.deviceHeight ||
+                width !== savedDimension?.deviceWidth) {
+                dispatch(setDeviceDimensions(height, width));
+            }
         }
     };
 
