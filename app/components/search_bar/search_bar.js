@@ -325,7 +325,6 @@ export default class Search extends PureComponent {
                         editable={this.props.editable}
                         cancelButtonTitle={this.props.cancelTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                         cancelButtonProps={{
-                            buttonStyle: searchBarStyle.cancelButton,
                             buttonTextStyle: {
                                 ...styles.text,
                                 ...searchBarStyle.cancelButtonText,
@@ -369,9 +368,6 @@ const getSearchBarStyle = memoizeResult((
     titleCancelColor,
     searchBarRightMargin,
 ) => ({
-    cancelButton: {
-        minWidth: 75,
-    },
     cancelButtonText: {
         ...cancelButtonStyle,
         color: titleCancelColor,
