@@ -434,7 +434,7 @@ function markAsViewedAndReadBatch(channelId, prevChannelId = '', markOnServer = 
     return (dispatch, getState) => {
         const actions = [];
         const state = getState();
-        const {channels, myMembers} = getState().entities.channels;
+        const {channels, myMembers} = state.entities.channels;
         const channel = channels[channelId];
         const member = myMembers[channelId];
         const prevMember = myMembers[prevChannelId];
