@@ -19,6 +19,8 @@ function getThemeFromState() {
 export function resetToChannel(passProps = {}) {
     const theme = getThemeFromState();
 
+    EphemeralStore.clearNavigationComponents();
+
     const stack = {
         children: [{
             component: {
