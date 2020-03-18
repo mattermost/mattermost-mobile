@@ -31,6 +31,7 @@ exports[`Permalink should match snapshot 1`] = `
       onTransitionEnd={[Function]}
       style={
         Object {
+          "backgroundColor": "#ffffff",
           "borderRadius": 6,
           "flex": 1,
           "margin": 10,
@@ -43,7 +44,6 @@ exports[`Permalink should match snapshot 1`] = `
         style={
           Object {
             "alignItems": "center",
-            "backgroundColor": "#ffffff",
             "borderTopLeftRadius": 6,
             "borderTopRightRadius": 6,
             "flexDirection": "row",
@@ -116,7 +116,6 @@ exports[`Permalink should match snapshot 1`] = `
         style={
           Array [
             Object {
-              "backgroundColor": "#ffffff",
               "flex": 1,
             },
             null,

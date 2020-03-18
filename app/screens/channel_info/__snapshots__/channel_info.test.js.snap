@@ -4,7 +4,6 @@ exports[`channel_info should match snapshot 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }

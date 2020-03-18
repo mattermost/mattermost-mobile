@@ -34,7 +34,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>274</string>
+	<string>276</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -63,7 +63,7 @@
 	<key>NSCalendarsUsageDescription</key>
 	<string>Share contacts in your Mattermost instance</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Take a Photo or Video and upload it to your mattermost instance</string>
+	<string>Take a Photo or Video and upload it to your Mattermost instance</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Send your current location to your Mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

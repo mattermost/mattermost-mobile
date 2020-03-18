@@ -4,7 +4,6 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
@@ -101,7 +100,6 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
@@ -198,7 +196,6 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
@@ -302,7 +299,6 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
@@ -399,7 +395,6 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }
@@ -496,7 +491,6 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
 <View
   style={
     Object {
-      "backgroundColor": "#ffffff",
       "flex": 1,
     }
   }

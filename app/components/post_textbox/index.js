@@ -50,6 +50,14 @@ function mapStateToProps(state, ownProps) {
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
     const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
+    const canPost = haveIChannelPermission(
+        state,
+        {
+            channel: currentChannel.id,
+            team: currentChannel.team_id,
+            permission: Permissions.CREATE_POST,
+        },
+    );
 
     let useChannelMentions = true;
     if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
@@ -83,6 +91,7 @@ function mapStateToProps(state, ownProps) {
         currentChannelMembersCount,
         isTimezoneEnabled,
         isLandscape: isLandscape(state),
+        canPost,
         useChannelMentions,
     };
 }

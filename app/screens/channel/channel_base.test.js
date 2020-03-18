@@ -47,7 +47,7 @@ describe('ChannelBase', () => {
                 rightButtonColor: theme.sidebarHeaderTextColor,
             },
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
         };
     };
@@ -55,6 +55,7 @@ describe('ChannelBase', () => {
     test('should call mergeNavigationOptions on all navigation components when theme changes', () => {
         const mergeNavigationOptions = jest.spyOn(NavigationActions, 'mergeNavigationOptions');
 
+        EphemeralStore.addNavigationComponentId(channelBaseComponentId);
         componentIds.forEach((componentId) => {
             EphemeralStore.addNavigationComponentId(componentId);
         });
@@ -63,20 +64,17 @@ describe('ChannelBase', () => {
             <ChannelBase {...baseProps}/>,
         );
 
-        const themeOptions = optionsForTheme(Preferences.THEMES.default);
-        expect(mergeNavigationOptions.mock.calls).toEqual([
-            [baseProps.componentId, themeOptions],
-        ]);
+        expect(mergeNavigationOptions.mock.calls).toEqual([]);
         mergeNavigationOptions.mockClear();
 
         wrapper.setProps({theme: Preferences.THEMES.mattermostDark});
 
         const newThemeOptions = optionsForTheme(Preferences.THEMES.mattermostDark);
         expect(mergeNavigationOptions.mock.calls).toEqual([
-            [baseProps.componentId, newThemeOptions],
             [componentIds[2], newThemeOptions],
             [componentIds[1], newThemeOptions],
             [componentIds[0], newThemeOptions],
+            [baseProps.componentId, newThemeOptions],
         ]);
     });
 });

@@ -7,7 +7,7 @@ import {bindActionCreators} from 'redux';
 import {getRedirectLocation} from 'mattermost-redux/actions/general';
 import {Preferences} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getOpenGraphMetadataForUrl} from 'mattermost-redux/selectors/entities/posts';
+import {getOpenGraphMetadataForUrl, getExpandedLink} from 'mattermost-redux/selectors/entities/posts';
 import {getBool, getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {ViewTypes} from 'app/constants';
@@ -46,6 +46,10 @@ function makeMapStateToProps() {
     return function mapStateToProps(state, ownProps) {
         const config = getConfig(state);
         const link = getFirstLink(ownProps.message);
+        let expandedLink;
+        if (link) {
+            expandedLink = getExpandedLink(state, link);
+        }
 
         // Link previews used to be an advanced settings until server version 4.4 when it was changed to be a display setting.
         // We are checking both here until we bump the server requirement for the mobile apps.
@@ -64,6 +68,7 @@ function makeMapStateToProps() {
             ...getDimensions(state),
             googleDeveloperKey: config.GoogleDeveloperKey,
             link,
+            expandedLink,
             openGraphData,
             showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true' && !removeLinkPreview,
             theme: getTheme(state),
