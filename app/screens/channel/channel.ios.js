@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
@@ -13,6 +13,7 @@ import PostTextbox from 'app/components/post_textbox';
 import SafeAreaView from 'app/components/safe_area_view';
 import SettingsSidebar from 'app/components/sidebars/settings';
 import StatusBar from 'app/components/status_bar';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import LocalConfig from 'assets/config';
 
@@ -57,6 +58,7 @@ export default class ChannelIOS extends ChannelBase {
             return channelLoadingOrFailed;
         }
 
+        const style = getStyle(theme);
         const drawerContent = (
             <>
                 <SafeAreaView>
@@ -98,7 +100,7 @@ export default class ChannelIOS extends ChannelBase {
         return (
             <MainSidebar ref={this.mainSidebarRef}>
                 <SettingsSidebar ref={this.settingsSidebarRef}>
-                    <View style={style.flex}>
+                    <View style={style.backdrop}>
                         {drawerContent}
                     </View>
                 </SettingsSidebar>
@@ -110,8 +112,9 @@ export default class ChannelIOS extends ChannelBase {
     }
 }
 
-export const style = StyleSheet.create({
-    flex: {
+const getStyle = makeStyleSheetFromTheme((theme) => ({
+    backdrop: {
         flex: 1,
+        backgroundColor: theme.centerChannelBg,
     },
-});
+}));

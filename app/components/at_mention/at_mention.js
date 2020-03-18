@@ -33,18 +33,15 @@ export default class AtMention extends React.PureComponent {
     constructor(props) {
         super(props);
 
-        const user = this.getUserDetailsFromMentionName(props);
+        const user = this.getUserDetailsFromMentionName();
         this.state = {
             user,
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.mentionName !== this.props.mentionName || nextProps.usersByUsername !== this.props.usersByUsername) {
-            const user = this.getUserDetailsFromMentionName(nextProps);
-            this.setState({
-                user,
-            });
+    componentDidUpdate(prevProps) {
+        if (this.props.mentionName !== prevProps.mentionName || this.props.usersByUsername !== prevProps.usersByUsername) {
+            this.updateUsername();
         }
     }
 
@@ -59,12 +56,13 @@ export default class AtMention extends React.PureComponent {
         goToScreen(screen, title, passProps);
     };
 
-    getUserDetailsFromMentionName(props) {
-        let mentionName = props.mentionName.toLowerCase();
+    getUserDetailsFromMentionName() {
+        const {usersByUsername} = this.props;
+        let mentionName = this.props.mentionName.toLowerCase();
 
         while (mentionName.length > 0) {
-            if (props.usersByUsername.hasOwnProperty(mentionName)) {
-                return props.usersByUsername[mentionName];
+            if (usersByUsername.hasOwnProperty(mentionName)) {
+                return usersByUsername[mentionName];
             }
 
             // Repeatedly trim off trailing punctuation in case this is at the end of a sentence
@@ -110,6 +108,13 @@ export default class AtMention extends React.PureComponent {
 
         Clipboard.setString(`@${username}`);
     };
+
+    updateUsername = () => {
+        const user = this.getUserDetailsFromMentionName();
+        this.setState({
+            user,
+        });
+    }
 
     render() {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;

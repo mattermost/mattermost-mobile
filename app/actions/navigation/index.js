@@ -19,6 +19,8 @@ function getThemeFromState() {
 export function resetToChannel(passProps = {}) {
     const theme = getThemeFromState();
 
+    EphemeralStore.clearNavigationComponents();
+
     const stack = {
         children: [{
             component: {
@@ -92,6 +94,7 @@ export function resetToSelectServer(allowOtherServers) {
                         },
                         options: {
                             layout: {
+                                backgroundColor: theme.centerChannelBg,
                                 componentBackgroundColor: theme.centerChannelBg,
                             },
                             statusBar: {
@@ -265,6 +268,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
+            backgroundColor: 'transparent',
             componentBackgroundColor: 'transparent',
         },
         topBar: {
@@ -346,6 +350,10 @@ export function mergeNavigationOptions(componentId, options) {
 
 export function showOverlay(name, passProps, options = {}) {
     const defaultOptions = {
+        layout: {
+            backgroundColor: 'transparent',
+            componentBackgroundColor: 'transparent',
+        },
         overlay: {
             interceptTouchOutside: false,
         },

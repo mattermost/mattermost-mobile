@@ -106,8 +106,11 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.theme !== prevProps.theme) {
+            setNavigatorStyles(this.props.componentId, this.props.theme);
             EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
-                setNavigatorStyles(componentId, this.props.theme);
+                if (this.props.componentId !== componentId) {
+                    setNavigatorStyles(componentId, this.props.theme);
+                }
             });
         }
 
