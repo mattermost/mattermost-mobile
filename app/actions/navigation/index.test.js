@@ -42,11 +42,6 @@ describe('app/actions/navigation', () => {
                             name: 'Channel',
                             passProps,
                             options: {
-                                animations: {
-                                    setRoot: {
-                                        waitForRender: true,
-                                    },
-                                },
                                 layout: {
                                     componentBackgroundColor: theme.centerChannelBg,
                                 },
@@ -90,11 +85,6 @@ describe('app/actions/navigation', () => {
                                 allowOtherServers,
                             },
                             options: {
-                                animations: {
-                                    setRoot: {
-                                        waitForRender: true,
-                                    },
-                                },
                                 layout: {
                                     componentBackgroundColor: colorStyles.container.backgroundColor,
                                 },
@@ -127,11 +117,6 @@ describe('app/actions/navigation', () => {
         const setRoot = jest.spyOn(Navigation, 'setRoot');
 
         const defaultOptions = {
-            animations: {
-                setRoot: {
-                    waitForRender: true,
-                },
-            },
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },
@@ -177,11 +162,6 @@ describe('app/actions/navigation', () => {
         const push = jest.spyOn(Navigation, 'push');
 
         const defaultOptions = {
-            animations: {
-                push: {
-                    waitForRender: true,
-                },
-            },
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },
@@ -301,7 +281,6 @@ describe('app/actions/navigation', () => {
             },
             animations: {
                 showModal: {
-                    waitForRender: true,
                     enabled: animationsEnabled,
                     alpha: {
                         from: 0,

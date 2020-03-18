@@ -50,6 +50,20 @@ const launchApp = (credentials) => {
         'start:channel_screen',
     ]);
 
+    Navigation.setDefaultOptions({
+        animations: {
+            push: {
+                waitForRender: true,
+            },
+            setRoot: {
+                waitForRender: true,
+            },
+            showModal: {
+                waitForRender: true,
+            },
+        },
+    });
+
     if (credentials) {
         waitForHydration(store, async () => {
             store.dispatch(loadMe());
