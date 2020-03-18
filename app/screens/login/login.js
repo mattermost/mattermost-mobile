@@ -320,7 +320,7 @@ export default class Login extends PureComponent {
     }
 
     isLoginButtonDisabled = () => {
-        return !(this.props.loginId && this.props.password);
+        return !(this.props.loginId && this.props.password) || this.state.isLoading;
     };
 
     setLoginFocusStyle() {
@@ -328,7 +328,9 @@ export default class Login extends PureComponent {
     }
 
     setLoginBlurStyle() {
-        this.loginId.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+        if (!this.isLoginButtonDisabled()) {
+            this.loginId.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+        }
     }
 
     setPasswordFocusStyle() {
@@ -336,7 +338,9 @@ export default class Login extends PureComponent {
     }
 
     setPasswordBlurStyle() {
-        this.passwd.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+        if (!this.isLoginButtonDisabled()) {
+            this.passwd.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+        }
     }
 
     render() {
@@ -353,15 +357,15 @@ export default class Login extends PureComponent {
             );
         } else {
             const additionalStyle = {};
-            if (this.props.config.EmailLoginButtonColor) {
+            if (this.props.config.EmailLoginButtonColor && !this.isLoginButtonDisabled()) {
                 additionalStyle.backgroundColor = this.props.config.EmailLoginButtonColor;
             }
-            if (this.props.config.EmailLoginButtonBorderColor) {
+            if (this.props.config.EmailLoginButtonBorderColor && !this.isLoginButtonDisabled()) {
                 additionalStyle.borderColor = this.props.config.EmailLoginButtonBorderColor;
             }
 
             const additionalTextStyle = {};
-            if (this.props.config.EmailLoginButtonTextColor) {
+            if (this.props.config.EmailLoginButtonTextColor && !this.isLoginButtonDisabled()) {
                 additionalTextStyle.color = this.props.config.EmailLoginButtonTextColor;
             }
 

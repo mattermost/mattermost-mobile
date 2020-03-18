@@ -296,7 +296,7 @@ export default class LoginOptions extends PureComponent {
                     defaultMessage='All team communication in one place, searchable and accessible anywhere'
                 />
                 <FormattedText
-                    style={[GlobalStyles.subheader, colorStyles.header, {marginBottom: 24}]}
+                    style={[GlobalStyles.subheader, colorStyles.header, {marginBottom: 24, fontWeight: '500'}]}
                     id='mobile.login_options.choose_title'
                     defaultMessage='Log in to your account with'
                 />
@@ -309,16 +309,3 @@ export default class LoginOptions extends PureComponent {
         );
     }
 }
-
-const style = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        flex: 1,
-    },
-});

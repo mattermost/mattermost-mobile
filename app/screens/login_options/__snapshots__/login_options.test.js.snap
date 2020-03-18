@@ -84,6 +84,7 @@ exports[`LoginOptions should show dark background when user has dark color schem
           "color": "#dbdbdb",
         },
         Object {
+          "fontWeight": "500",
           "marginBottom": 24,
         },
       ]
@@ -176,6 +177,7 @@ exports[`LoginOptions should show light background when user has light color sch
           "color": "#171717",
         },
         Object {
+          "fontWeight": "500",
           "marginBottom": 24,
         },
       ]

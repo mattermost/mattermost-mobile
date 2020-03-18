@@ -120,7 +120,9 @@ export default class ForgotPassword extends PureComponent {
     }
 
     setBlurStyle() {
-        this.emailId.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+        if (!this.isResetButtonDisabled()) {
+            this.emailId.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+        }
     }
 
     render() {
