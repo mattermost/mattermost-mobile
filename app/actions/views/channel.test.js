@@ -66,7 +66,7 @@ describe('Actions.Views.Channel', () => {
         type: MOCK_SELECT_CHANNEL_TYPE,
         data: 'selected-channel-id',
     });
-    const postActions = require('mattermost-redux/actions/posts');
+    const postActions = require('./post');
     postActions.getPostsSince = jest.fn(() => {
         return {
             type: MOCK_RECEIVED_POSTS_SINCE,
@@ -116,6 +116,7 @@ describe('Actions.Views.Channel', () => {
             },
             channels: {
                 currentChannelId,
+                manuallyUnread: {},
                 channels: {
                     'channel-id': {id: 'channel-id', display_name: 'Test Channel'},
                     'channel-id-2': {id: 'channel-id-2', display_name: 'Test Channel'},
@@ -296,7 +297,8 @@ describe('Actions.Views.Channel', () => {
 
         await store.dispatch(handleSelectChannel(channelId));
         const storeActions = store.getActions();
-        const selectChannelWithMember = storeActions.find(({type}) => type === ChannelTypes.SELECT_CHANNEL);
+        const storeBatchActions = storeActions.find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const selectChannelWithMember = storeBatchActions?.payload.find(({type}) => type === ChannelTypes.SELECT_CHANNEL);
         const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
         const readAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_READ);
 
