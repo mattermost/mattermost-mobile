@@ -13,12 +13,6 @@ import {
     markChannelAsViewed,
     leaveChannel as serviceLeaveChannel,
 } from 'mattermost-redux/actions/channels';
-import {
-    getPosts,
-    getPostsBefore,
-    getPostsSince,
-    getPostThread,
-} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {loadRolesIfNeeded} from 'mattermost-redux/actions/roles';
@@ -56,6 +50,7 @@ import telemetry from 'app/telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, isDirectMessageVisible, isGroupMessageVisible, isDirectChannelAutoClosed} from 'app/utils/channels';
 import {buildPreference} from 'app/utils/preferences';
 
+import {getPosts, getPostsBefore, getPostsSince, getPostThread} from './post';
 import {forceLogoutIfNecessary} from './user';
 
 const MAX_RETRIES = 3;
@@ -359,7 +354,8 @@ export function handleSelectChannel(channelId) {
         dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
         if (channel && currentChannelId !== channelId) {
-            dispatch({
+            const actions = markAsViewedAndReadBatch(state, channelId, currentChannelId);
+            actions.push({
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
                 extra: {
@@ -368,11 +364,10 @@ export function handleSelectChannel(channelId) {
                     teamId: channel.team_id || currentTeamId,
                 },
             });
-
-            dispatch(markChannelViewedAndRead(channelId, currentChannelId));
+            dispatch(batchActions(actions));
         }
 
-        console.log('channel switch to', channel?.display_name, (Date.now() - dt), 'ms'); //eslint-disable-line
+        console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
     };
 }
 
@@ -433,6 +428,81 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
         dispatch(markChannelAsRead(channelId, previousChannelId, markOnServer));
         dispatch(markChannelAsViewed(channelId, previousChannelId));
     };
+}
+
+function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', markOnServer = true) {
+    const actions = [];
+    const {channels, myMembers} = state.entities.channels;
+    const channel = channels[channelId];
+    const member = myMembers[channelId];
+    const prevMember = myMembers[prevChannelId];
+    const prevChanManuallyUnread = isManuallyUnread(state, prevChannelId);
+    const prevChannel = (!prevChanManuallyUnread && prevChannelId) ? channels[prevChannelId] : null; // May be null since prevChannelId is optional
+
+    if (markOnServer) {
+        Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId);
+    }
+
+    if (member) {
+        actions.push({
+            type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
+            data: {...member, last_viewed_at: Date.now()},
+        });
+
+        if (isManuallyUnread(state, channelId)) {
+            actions.push({
+                type: ChannelTypes.REMOVE_MANUALLY_UNREAD,
+                data: {channelId},
+            });
+        }
+
+        if (channel) {
+            actions.push({
+                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                data: {
+                    teamId: channel.team_id,
+                    channelId,
+                    amount: channel.total_msg_count - member.msg_count,
+                },
+            }, {
+                type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,
+                data: {
+                    teamId: channel.team_id,
+                    channelId,
+                    amount: member.mention_count,
+                },
+            });
+        }
+    }
+
+    if (prevMember) {
+        if (!prevChanManuallyUnread) {
+            actions.push({
+                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
+                data: {...prevMember, last_viewed_at: Date.now()},
+            });
+        }
+
+        if (prevChannel) {
+            actions.push({
+                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                data: {
+                    teamId: prevChannel.team_id,
+                    channelId: prevChannelId,
+                    amount: prevChannel.total_msg_count - prevMember.msg_count,
+                },
+            }, {
+                type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,
+                data: {
+                    teamId: prevChannel.team_id,
+                    channelId: prevChannelId,
+                    amount: prevMember.mention_count,
+                },
+            });
+        }
+    }
+
+    return actions;
 }
 
 export function markChannelViewedAndReadOnReconnect(channelId) {
