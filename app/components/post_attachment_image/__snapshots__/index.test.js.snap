@@ -19,7 +19,7 @@ exports[`PostAttachmentImage should match snapshot 1`] = `
   type="none"
 >
   <View>
-    <ForwardRef(forwardConnectRef)
+    <Connect(ProgressiveImage)
       imageUri="uri"
       onError={[MockFunction]}
       resizeMode="contain"

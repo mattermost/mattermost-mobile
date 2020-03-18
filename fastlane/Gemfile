@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "fastlane"
+gem "fastlane", "2.141.0"
 gem "nokogiri"
 gem "aws-sdk-s3"
 

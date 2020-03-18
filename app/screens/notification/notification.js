@@ -277,7 +277,7 @@ export default class Notification extends PureComponent {
     };
 
     render() {
-        const {deviceWidth, notification} = this.props;
+        const {notification} = this.props;
         const {data, message} = notification;
 
         if (message) {
@@ -301,13 +301,15 @@ export default class Notification extends PureComponent {
                 >
                     <Animatable.View
                         duration={250}
+                        style={style.container}
                         useNativeDriver={true}
                         animation={this.state.keyFrames}
                     >
-                        <View style={[style.container, {width: deviceWidth}]}>
+                        <View style={{flex: 1}}>
                             <TouchableOpacity
                                 style={{flex: 1, flexDirection: 'row'}}
                                 onPress={this.notificationTapped}
+                                activeOpacity={1}
                             >
                                 <View style={style.iconContainer}>
                                     {icon}
@@ -338,10 +340,11 @@ export default class Notification extends PureComponent {
 const style = StyleSheet.create({
     container: {
         alignItems: 'flex-start',
-        backgroundColor: changeOpacity('#000', 0.9),
+        backgroundColor: changeOpacity('#000', 1),
         flexDirection: 'row',
         justifyContent: 'flex-start',
         paddingHorizontal: 10,
+        width: '100%',
         ...Platform.select({
             android: {
                 height: 68,
