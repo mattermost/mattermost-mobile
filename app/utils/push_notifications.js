@@ -11,7 +11,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {markChannelViewedAndRead, retryGetPostsAction} from 'app/actions/views/channel';
 import {dismissAllModals, popToRoot} from 'app/actions/navigation';
-import {getPosts} from 'app/actions//views/post';
+import {getPosts} from 'app/actions/views/post';
 import {
     createPostForNotificationReply,
     loadFromPushNotification,
