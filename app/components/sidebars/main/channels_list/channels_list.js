@@ -151,7 +151,6 @@ export default class ChannelsList extends PureComponent {
                     onFocus={this.onSearchFocused}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
-                    searchBarRightMargin={5}
                     leftComponentWidth={67}
                     leftComponent={(
                         <SwitchTeamsButton
@@ -226,10 +225,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         searchContainer: {
             flex: 1,
-            paddingRight: 10,
+            flexDirection: 'row',
             ...Platform.select({
                 android: {
                     marginBottom: 1,
+                    paddingRight: 17,
                 },
                 ios: {
                     marginBottom: 3,

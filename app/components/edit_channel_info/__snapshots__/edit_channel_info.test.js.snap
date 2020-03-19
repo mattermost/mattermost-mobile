@@ -283,7 +283,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             value="header"
           />
         </View>
-        <Connect(Autocomplete)
+        <ForwardRef(forwardConnectRef)
           cursorPosition={6}
           expandDown={true}
           maxHeight={200}

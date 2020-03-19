@@ -20,6 +20,8 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         Array [
           Object {
             "backgroundColor": "rgba(61,60,64,0.2)",
+            "height": 50,
+            "paddingLeft": 8,
             "paddingVertical": 5,
           },
           null,

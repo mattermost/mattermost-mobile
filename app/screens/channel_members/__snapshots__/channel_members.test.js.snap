@@ -1,13 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelMembers should match snapshot 1`] = `
-<Connect(KeyboardLayout)>
+<ForwardRef(forwardConnectRef)>
   <Connect(StatusBar) />
   <View
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]
@@ -93,5 +95,5 @@ exports[`ChannelMembers should match snapshot 1`] = `
       }
     }
   />
-</Connect(KeyboardLayout)>
+</ForwardRef(forwardConnectRef)>
 `;

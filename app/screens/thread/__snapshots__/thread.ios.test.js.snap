@@ -42,7 +42,7 @@ exports[`thread should match snapshot, has root post 1`] = `
       <View
         nativeID="threadAccessoriesContainer"
       >
-        <Connect(Autocomplete)
+        <ForwardRef(forwardConnectRef)
           cursorPositionEvent="onThreadTextBoxCursorChange"
           maxHeight={200}
           onChangeText={[Function]}
@@ -56,7 +56,7 @@ exports[`thread should match snapshot, has root post 1`] = `
     accessoriesContainerID="threadAccessoriesContainer"
     scrollViewNativeID="threadPostList"
   >
-    <Connect(PostTextBoxIOS)
+    <ForwardRef(forwardConnectRef)
       channelId="channel_id"
       channelIsArchived={false}
       cursorPositionEvent="onThreadTextBoxCursorChange"

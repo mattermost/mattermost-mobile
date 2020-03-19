@@ -508,6 +508,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         searchBar: {
             marginVertical: 5,
+            height: 38,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
         },
         loadingContainer: {
             alignItems: 'center',

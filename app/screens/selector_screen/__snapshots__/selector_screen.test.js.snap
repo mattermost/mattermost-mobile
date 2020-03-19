@@ -13,7 +13,9 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]
@@ -114,7 +116,9 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]
@@ -215,7 +219,9 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]
@@ -323,7 +329,9 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]
@@ -424,7 +432,9 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]
@@ -525,7 +535,9 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]

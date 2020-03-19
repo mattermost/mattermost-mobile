@@ -317,6 +317,7 @@ export default class Search extends PureComponent {
                             ...styles.inputMargin,
                             ...searchBarStyle.inputStyle,
                         }}
+                        leftIconContainerStyle={styles.leftIcon}
                         placeholder={this.props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         placeholderTextColor={this.props.placeholderTextColor}
                         selectionColor={this.props.selectionColor}
@@ -402,6 +403,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         height: containerHeight,
+        flex: 1,
     },
     defaultColor: {
         color: 'grey',
@@ -410,6 +412,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     inputContainer: {
+        marginLeft: 0,
         borderRadius: Platform.select({
             ios: 6,
             android: 0,
@@ -417,6 +420,9 @@ const styles = StyleSheet.create({
     },
     inputMargin: {
         marginLeft: 10,
+    },
+    leftIcon: {
+        marginLeft: 4,
     },
     searchContainer: {
         paddingTop: 0,
