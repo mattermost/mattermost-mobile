@@ -63,6 +63,7 @@ export default class Search extends PureComponent {
         searchIconSize: PropTypes.number,
         backArrowSize: PropTypes.number,
         deleteIconSize: PropTypes.number,
+        showCancel: PropTypes.bool,
     };
 
     static contextTypes = {
@@ -78,6 +79,7 @@ export default class Search extends PureComponent {
         placeholderTextColor: 'grey',
         value: '',
         showArrow: false,
+        showCancel: true,
         searchIconSize: 24,
         backArrowSize: 24,
         deleteIconSize: 20,
@@ -345,7 +347,7 @@ export default class Search extends PureComponent {
                         enablesReturnKeyAutomatically={true}
                         keyboardAppearance={this.props.keyboardAppearance}
                         autoFocus={this.props.autoFocus}
-                        showCancel={true}
+                        showCancel={this.props.showCancel}
                         value={this.props.value}
                         platform={Platform.OS}
                         clearIcon={clearIcon}
