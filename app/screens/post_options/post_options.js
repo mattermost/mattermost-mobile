@@ -88,21 +88,6 @@ export default class PostOptions extends PureComponent {
         );
     }
 
-    getAddReactionOption = () => {
-        const {canAddReaction} = this.props;
-
-        if (canAddReaction) {
-            const key = 'reaction';
-            const icon = 'emoji';
-            const message = {id: t('mobile.post_info.add_reaction'), defaultMessage: 'Add Reaction'};
-            const onPress = this.handleAddReactionScreen;
-
-            return this.getOption(key, icon, message, onPress);
-        }
-
-        return null;
-    };
-
     getReplyOption = () => {
         const {canReply} = this.props;
 
@@ -289,7 +274,7 @@ export default class PostOptions extends PureComponent {
     };
 
     handleAddReaction = (emoji) => {
-        this.close(() => {
+        this.closeWithAnimation(() => {
             this.handleAddReactionToPost(emoji);
         });
     }

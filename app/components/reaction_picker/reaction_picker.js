@@ -11,6 +11,7 @@ import {
 
 import Emoji from 'app/components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {hapticFeedback} from 'app/utils/general';
 import addReactionIcon from 'assets/images/icons/reaction.png';
 
 export default class Reaction extends PureComponent {
@@ -40,8 +41,10 @@ export default class Reaction extends PureComponent {
         this.setState({
             selectedIndex: index,
         });
-        const {addReaction} = this.props;
-        addReaction(emoji);
+        hapticFeedback();
+        setTimeout(() => {
+            this.props.addReaction(emoji);
+        }, 250);
     }
 
     render() {
@@ -50,21 +53,23 @@ export default class Reaction extends PureComponent {
         } = this.props;
         const style = getStyleSheet(theme);
         const list = [];
+
+        // Mixing recent emojis with default list and removing duplicates
         const emojis = Array.from(new Set(this.props.recentEmojis.concat(this.state.defaultEmojis)));
 
         emojis.forEach((emoji, index) => {
-            const button = (
-                <TouchableWithoutFeedback onPress={() => this.handlePress(emoji, index)}>
-                    <View style={[style.reactionContainer, this.state.selectedIndex === index ? style.highlight : null]}>
-                        <Emoji
-                            emojiName={emoji}
-                            textStyle={style.emoji}
-                            size={25}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-            );
             if (index < 6) {
+                const button = (
+                    <TouchableWithoutFeedback onPress={() => this.handlePress(emoji, index)}>
+                        <View style={[style.reactionContainer, this.state.selectedIndex === index ? style.highlight : null]}>
+                            <Emoji
+                                emojiName={emoji}
+                                textStyle={style.emoji}
+                                size={25}
+                            />
+                        </View>
+                    </TouchableWithoutFeedback>
+                );
                 list.push(button);
             }
         });
