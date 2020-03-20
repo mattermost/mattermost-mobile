@@ -16,6 +16,8 @@ import {showModal, dismissModal} from 'app/actions/navigation';
 
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
+import ReactionPicker from '../../components/reaction_picker';
+
 import PostOption from './post_option';
 
 export default class PostOptions extends PureComponent {
@@ -93,7 +95,7 @@ export default class PostOptions extends PureComponent {
             const key = 'reaction';
             const icon = 'emoji';
             const message = {id: t('mobile.post_info.add_reaction'), defaultMessage: 'Add Reaction'};
-            const onPress = this.handleAddReaction;
+            const onPress = this.handleAddReactionScreen;
 
             return this.getOption(key, icon, message, onPress);
         }
@@ -249,7 +251,6 @@ export default class PostOptions extends PureComponent {
     getPostOptions = () => {
         const actions = [
             this.getReplyOption(),
-            this.getAddReactionOption(),
             this.getMarkAsUnreadOption(),
             this.getCopyPermalink(),
             this.getFlagOption(),
@@ -262,7 +263,7 @@ export default class PostOptions extends PureComponent {
         return actions.filter((a) => a !== null);
     };
 
-    handleAddReaction = () => {
+    handleAddReactionScreen = () => {
         const {theme} = this.props;
         const {formatMessage} = this.context.intl;
 
@@ -286,6 +287,12 @@ export default class PostOptions extends PureComponent {
             EventEmitter.emit('goToThread', post);
         });
     };
+
+    handleAddReaction = (emoji) => {
+        this.close(() => {
+            this.handleAddReactionToPost(emoji);
+        });
+    }
 
     handleAddReactionToPost = (emoji) => {
         const {actions, post} = this.props;
@@ -422,6 +429,13 @@ export default class PostOptions extends PureComponent {
                     key={marginFromTop}
                     theme={theme}
                 >
+                    {
+                        this.props.canAddReaction &&
+                        <ReactionPicker
+                            addReaction={this.handleAddReaction}
+                            openReactionScreen={this.handleAddReactionScreen}
+                        />
+                    }
                     {options}
                 </SlideUpPanel>
             </View>

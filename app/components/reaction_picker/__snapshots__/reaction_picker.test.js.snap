@@ -1,0 +1,461 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Reactions Should match snapshot with default emojis 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "flex": 1,
+      "flexDirection": "row",
+      "height": 64,
+      "justifyContent": "space-between",
+      "paddingLeft": 20,
+      "paddingRight": 20,
+    }
+  }
+>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="thumbsup"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="smiley"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="white_check_mark"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="heart"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="eyes"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="raised_hands"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[MockFunction]}
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "rgba(61,60,64,0.04)",
+          "borderRadius": 4,
+          "height": 45,
+          "justifyContent": "center",
+          "width": 45,
+        }
+      }
+    >
+      <Image
+        height={24}
+        source={
+          Object {
+            "testUri": "../../../dist/assets/images/icons/reaction.png",
+          }
+        }
+        style={
+          Array [
+            Object {
+              "tintColor": "#3d3c40",
+            },
+          ]
+        }
+        width={28}
+      />
+    </View>
+  </TouchableWithoutFeedback>
+</View>
+`;
+
+exports[`Reactions Should match snapshot with default emojis 2`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "flex": 1,
+      "flexDirection": "row",
+      "height": 64,
+      "justifyContent": "space-between",
+      "paddingLeft": 20,
+      "paddingRight": 20,
+    }
+  }
+>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="rocket"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="100"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="thumbsup"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="smiley"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="white_check_mark"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[Function]}
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "height": 45,
+            "justifyContent": "center",
+            "width": 45,
+          },
+          null,
+        ]
+      }
+    >
+      <Connect(Emoji)
+        emojiName="heart"
+        size={25}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
+        }
+      />
+    </View>
+  </TouchableWithoutFeedback>
+  <TouchableWithoutFeedback
+    onPress={[MockFunction]}
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "rgba(61,60,64,0.04)",
+          "borderRadius": 4,
+          "height": 45,
+          "justifyContent": "center",
+          "width": 45,
+        }
+      }
+    >
+      <Image
+        height={24}
+        source={
+          Object {
+            "testUri": "../../../dist/assets/images/icons/reaction.png",
+          }
+        }
+        style={
+          Array [
+            Object {
+              "tintColor": "#3d3c40",
+            },
+          ]
+        }
+        width={28}
+      />
+    </View>
+  </TouchableWithoutFeedback>
+</View>
+`;
