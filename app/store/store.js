@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
-import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
@@ -15,13 +14,10 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';
-import {throttle} from 'app/utils/general';
 import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
-import mattermostBucket from 'app/mattermost_bucket';
-
-import {messageRetention} from './middleware';
+import {middlewares} from './middleware';
 import {createThunkMiddleware} from './thunk';
 import {transformSet, getStateForReset} from './utils';
 
@@ -151,51 +147,6 @@ export default function configureAppStore(initialState) {
 
             let purging = false;
 
-            // for iOS write the entities to a shared file
-            if (Platform.OS === 'ios') {
-                store.subscribe(throttle(() => {
-                    const state = store.getState();
-                    if (state.entities) {
-                        const channelsInTeam = {...state.entities.channels.channelsInTeam};
-                        Object.keys(channelsInTeam).forEach((teamId) => {
-                            channelsInTeam[teamId] = Array.from(channelsInTeam[teamId]);
-                        });
-
-                        const profilesInChannel = {...state.entities.users.profilesInChannel};
-                        Object.keys(profilesInChannel).forEach((channelId) => {
-                            profilesInChannel[channelId] = Array.from(profilesInChannel[channelId]);
-                        });
-
-                        let url;
-                        if (state.entities.users.currentUserId) {
-                            url = state.entities.general.credentials.url || state.views.selectServer.serverUrl;
-                        }
-
-                        const entities = {
-                            ...state.entities,
-                            general: {
-                                ...state.entities.general,
-                                credentials: {
-                                    url,
-                                },
-                            },
-                            channels: {
-                                ...state.entities.channels,
-                                channelsInTeam,
-                            },
-                            users: {
-                                ...state.entities.users,
-                                profilesInChannel,
-                                profilesNotInTeam: [],
-                                profilesWithoutTeam: [],
-                                profilesNotInChannel: [],
-                            },
-                        };
-                        mattermostBucket.writeToFile('entities', JSON.stringify(entities));
-                    }
-                }, 1000));
-            }
-
             // check to see if the logout request was successful
             store.subscribe(async () => {
                 const state = store.getState();
@@ -273,7 +224,7 @@ export default function configureAppStore(initialState) {
         additionalMiddleware: [
             createThunkMiddleware(),
             createSentryMiddleware(),
-            messageRetention,
+            ...middlewares,
         ],
         enableThunk: false, // We override the default thunk middleware
     };
