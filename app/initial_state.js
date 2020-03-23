@@ -143,7 +143,6 @@ const state = {
         root: {
             deepLinkURL: '',
             hydrationComplete: false,
-            purge: false,
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl,
