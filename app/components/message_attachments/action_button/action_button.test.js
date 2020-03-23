@@ -5,7 +5,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import ActionButton from './action_button';
 import {changeOpacity} from 'app/utils/theme';
-import {STATUS_COLORS} from 'app/constants/colors';
+import {getStatusColors} from 'app/utils/message_attachment_colors';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -62,6 +62,7 @@ describe('ActionButton', () => {
         const buttonTextChild = wrapper.getElement().props.children;
         const dynamicButtonStyles = wrapper.getElement().props.containerStyle[1];
 
+        const STATUS_COLORS = getStatusColors(Preferences.THEMES.default);
         expect(dynamicButtonStyles.borderColor).toBe(changeOpacity(STATUS_COLORS[buttonConfig.style], 0.25));
         expect(buttonTextChild.props.style.color).toBe(STATUS_COLORS[buttonConfig.style]);
     });

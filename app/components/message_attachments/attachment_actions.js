@@ -62,6 +62,6 @@ export default class AttachmentActions extends PureComponent {
             }
         });
 
-        return content;
+        return content.length ? content : null;
     }
 }
