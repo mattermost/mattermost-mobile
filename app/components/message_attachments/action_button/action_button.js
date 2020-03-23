@@ -7,7 +7,7 @@ import Button from 'react-native-button';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {STATUS_COLORS} from 'app/constants/colors';
+import {getStatusColors} from 'app/utils/message_attachment_colors';
 import ActionButtonText from './action_button_text';
 
 export default class ActionButton extends PureComponent {
@@ -19,7 +19,7 @@ export default class ActionButton extends PureComponent {
         name: PropTypes.string.isRequired,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        cookie: PropTypes.string.isRequired,
+        cookie: PropTypes.string,
         disabled: PropTypes.bool,
         buttonColor: PropTypes.string,
     };
@@ -36,6 +36,7 @@ export default class ActionButton extends PureComponent {
         let customButtonTextStyle;
 
         if (buttonColor) {
+            const STATUS_COLORS = getStatusColors(theme);
             const hexColor = STATUS_COLORS[buttonColor] || theme[buttonColor] || buttonColor;
             customButtonStyle = {borderColor: changeOpacity(hexColor, 0.25), backgroundColor: '#ffffff'};
             customButtonTextStyle = {color: hexColor};
@@ -58,6 +59,7 @@ export default class ActionButton extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    const STATUS_COLORS = getStatusColors(theme);
     return {
         button: {
             borderRadius: 4,
