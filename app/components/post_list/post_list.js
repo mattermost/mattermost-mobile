@@ -518,7 +518,6 @@ export default class PostList extends PureComponent {
             <FlatList
                 contentContainerStyle={styles.postListContent}
                 data={postIds}
-                disableVirtualization={true}
                 extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
