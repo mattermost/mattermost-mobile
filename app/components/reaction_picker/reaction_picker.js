@@ -13,6 +13,7 @@ import Emoji from 'app/components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {hapticFeedback} from 'app/utils/general';
 import addReactionIcon from 'assets/images/icons/reaction.png';
+import {REACTION_PICKER_HEIGHT} from '../../screens/post_options/post_options_utils';
 
 export default class Reaction extends PureComponent {
     static propTypes = {
@@ -110,7 +111,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             paddingLeft: 20,
             paddingRight: 20,
-            height: 64,
+            height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
         },
         reactionContainer: {

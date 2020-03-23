@@ -15,7 +15,7 @@ import {t} from 'app/utils/i18n';
 import {showModal, dismissModal} from 'app/actions/navigation';
 
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
-import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
+import {OPTION_HEIGHT, REACTION_PICKER_HEIGHT, getInitialPosition} from './post_options_utils';
 import ReactionPicker from '../../components/reaction_picker';
 
 import PostOption from './post_option';
@@ -400,7 +400,7 @@ export default class PostOptions extends PureComponent {
             return null;
         }
 
-        const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
+        const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT) - REACTION_PICKER_HEIGHT;
         const initialPosition = getInitialPosition(deviceHeight, marginFromTop);
 
         return (
