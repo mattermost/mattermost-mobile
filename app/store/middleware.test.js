@@ -10,10 +10,12 @@ import {
     cleanUpPostsInChannel,
     cleanUpState,
     getAllFromPostsInChannel,
-    messageRetention,
+    middlewares,
 } from 'app/store/middleware';
 
 describe('messageRetention', () => {
+    const messageRetention = middlewares[0];
+
     describe('should chain the same incoming action type', () => {
         const actions = [
             {
