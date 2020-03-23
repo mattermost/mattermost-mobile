@@ -14,7 +14,7 @@ exports[`PostList setting channel deep link 1`] = `
       "post-id-2",
     ]
   }
-  disableVirtualization={true}
+  disableVirtualization={false}
   extraData={
     Array [
       "channel-id",
@@ -83,7 +83,7 @@ exports[`PostList setting permalink deep link 1`] = `
       "post-id-2",
     ]
   }
-  disableVirtualization={true}
+  disableVirtualization={false}
   extraData={
     Array [
       "channel-id",
@@ -152,7 +152,7 @@ exports[`PostList should match snapshot 1`] = `
       "post-id-2",
     ]
   }
-  disableVirtualization={true}
+  disableVirtualization={false}
   extraData={
     Array [
       "channel-id",
