@@ -11,7 +11,7 @@ import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
 import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
-import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
+import {close as closeWebSocket} from '@actions/websocket';
 import {GeneralTypes} from 'mattermost-redux/action_types';
 import {Client4} from 'mattermost-redux/client';
 import {General} from 'mattermost-redux/constants';
@@ -141,7 +141,9 @@ class GlobalEventHandler {
 
     onDeepLink = (event) => {
         const {url} = event;
-        this.store.dispatch(setDeepLinkURL(url));
+        if (url) {
+            this.store.dispatch(setDeepLinkURL(url));
+        }
     };
 
     onManagedConfigurationChange = () => {

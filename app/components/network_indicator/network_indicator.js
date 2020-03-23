@@ -169,7 +169,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     connected = () => {
-        this.props.actions.setChannelRetryFailed(false);
+        // this.props.actions.setChannelRetryFailed(false);
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {
@@ -302,7 +302,7 @@ export default class NetworkIndicator extends PureComponent {
             certificate = await mattermostBucket.getPreference('cert');
         }
 
-        initWebSocket(platform, null, null, null, {certificate, forceConnection: true}).catch(() => {
+        initWebSocket({certificate, forceConnection: true}).catch(() => {
             // we should dispatch a failure and show the app as disconnected
             Alert.alert(
                 formatMessage({id: 'mobile.authentication_error.title', defaultMessage: 'Authentication Error'}),
