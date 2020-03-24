@@ -412,8 +412,15 @@ const styles = StyleSheet.create({
     container: {
         height: HEIGHT,
         width: '100%',
-        zIndex: 9,
         position: 'absolute',
+        ...Platform.select({
+            android: {
+                elevation: 9,
+            },
+            ios: {
+                zIndex: 9,
+            },
+        }),
     },
     wrapper: {
         alignItems: 'center',

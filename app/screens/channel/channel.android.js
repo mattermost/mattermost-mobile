@@ -40,7 +40,6 @@ export default class ChannelAndroid extends ChannelBase {
 
         const drawerContent = (
             <>
-                <NetworkIndicator/>
                 <ChannelNavBar
                     openMainSidebar={this.openMainSidebar}
                     openSettingsSidebar={this.openSettingsSidebar}
@@ -55,6 +54,7 @@ export default class ChannelAndroid extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
+                <NetworkIndicator/>
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>
         );
