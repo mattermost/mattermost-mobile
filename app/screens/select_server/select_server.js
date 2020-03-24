@@ -102,6 +102,13 @@ export default class SelectServer extends PureComponent {
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
+        if (LocalConfig.EnableMobileClientUpgrade) {
+            console.log('9990000000');
+        } else {
+            console.log('44444');
+            
+        }
+            
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -317,8 +324,25 @@ export default class SelectServer extends PureComponent {
 
             this.cancelPing = null;
         };
+        const cookies = ''
+// console.log('Client4.getServerVersion()', Client4.getServerVersion());
 
-        getPing().then((result) => {
+        if (!Client4.getServerVersion()) {
+            loadConfigAndLicense(cookies);
+            setServerVersion('5.12.0.5.12.0.3a592809bfb66534154b59c6f68d0cfd.false');
+
+            this.setState({
+                connected: true,
+                connecting: false,
+                error: undefined,
+            });
+            return
+        }
+
+
+        getPing(cookies).then((result) => {
+            console.log('result', result);
+            
             if (cancel) {
                 return;
             }
@@ -329,7 +353,7 @@ export default class SelectServer extends PureComponent {
             }
 
             if (!result.error) {
-                loadConfigAndLicense();
+                loadConfigAndLicense(cookies);
                 setServerVersion(Client4.getServerVersion());
             }
 

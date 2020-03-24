@@ -16,6 +16,7 @@ import getClientUpgrade from 'app/selectors/client_upgrade';
 
 import SelectServer from './select_server';
 
+
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);

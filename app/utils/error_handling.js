@@ -52,7 +52,7 @@ class JavascriptAndNativeErrorHandler {
         dispatch(closeWebSocket());
 
         if (Client4.getUrl()) {
-            dispatch(logError(e));
+            dispatch(console.log(e));
         }
 
         if (isFatal && e instanceof Error) {

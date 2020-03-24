@@ -72,7 +72,7 @@ export default class ClientUpgrade extends PureComponent {
             return;
         }
 
-        const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion, actions.logError);
+        const upgradeType = checkUpgradeType(currentVersion, minVersion, latestVersion, console.log);
 
         if (upgradeType === UpgradeTypes.NO_UPGRADE) {
             return;

@@ -26,12 +26,12 @@ export function startDataCleanup() {
     };
 }
 
-export function loadConfigAndLicense() {
+export function loadConfigAndLicense(cookies) {
     return async (dispatch, getState) => {
         const {currentUserId} = getState().entities.users;
         const [configData, licenseData] = await Promise.all([
-            getClientConfig()(dispatch, getState),
-            getLicenseConfig()(dispatch, getState),
+            getClientConfig(cookies)(dispatch, getState),
+            getLicenseConfig(cookies)(dispatch, getState),
         ]);
 
         const config = configData.data || {};
