@@ -75,19 +75,21 @@ export function selectAttachmentMenuAction(postId, actionId, text, value) {
 }
 
 export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         try {
+            const state = getState();
+            const {postsInChannel} = state.entities.posts;
+            const postForChannel = postsInChannel[channelId];
             const data = await Client4.getPosts(channelId, page, perPage);
             const posts = Object.values(data.posts);
+            const actions = [];
 
-            // Even if the request does not return any posts we'll dispatch the actions
-            // so the block for postsInChannel gets created
-            const actions = [
-                receivedPosts(data),
-                receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''),
-            ];
+            if (posts?.length || !postForChannel) {
+                actions.push(receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''));
+            }
 
             if (posts?.length) {
+                actions.push(receivedPosts(data));
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
                 if (additional.length) {
                     actions.push(...additional);

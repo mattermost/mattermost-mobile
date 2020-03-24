@@ -78,3 +78,7 @@ export function throttle(fn, limit, ...args) {
         }
     };
 }
+
+export function isPendingPost(postId, userId) {
+    return postId.startsWith(userId);
+}
