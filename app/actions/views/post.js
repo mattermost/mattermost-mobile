@@ -80,19 +80,21 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
             const data = await Client4.getPosts(channelId, page, perPage);
             const posts = Object.values(data.posts);
 
-            if (posts?.length) {
-                const actions = [
-                    receivedPosts(data),
-                    receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''),
-                ];
+            // Even if the request does not return any posts we'll dispatch the actions
+            // so the block for postsInChannel gets created
+            const actions = [
+                receivedPosts(data),
+                receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''),
+            ];
 
+            if (posts?.length) {
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
                 if (additional.length) {
                     actions.push(...additional);
                 }
-
-                dispatch(batchActions(actions));
             }
+
+            dispatch(batchActions(actions));
 
             return {data};
         } catch (error) {

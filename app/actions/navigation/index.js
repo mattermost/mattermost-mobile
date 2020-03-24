@@ -10,6 +10,8 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import store from 'app/store';
 import EphemeralStore from 'app/store/ephemeral_store';
 
+const CHANNEL_SCREEN = 'Channel';
+
 function getThemeFromState() {
     const state = store.getState();
 
@@ -24,8 +26,8 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
-                id: 'Channel',
-                name: 'Channel',
+                id: CHANNEL_SCREEN,
+                name: CHANNEL_SCREEN,
                 passProps,
                 options: {
                     layout: {
@@ -397,10 +399,8 @@ export function closeMainSideMenu() {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
     Keyboard.dismiss();
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             left: {visible: false},
         },
@@ -412,9 +412,7 @@ export function enableMainSideMenu(enabled, visible = true) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             left: {enabled, visible},
         },
@@ -426,10 +424,8 @@ export function openSettingsSideMenu() {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
     Keyboard.dismiss();
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             right: {visible: true},
         },
@@ -441,10 +437,8 @@ export function closeSettingsSideMenu() {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
     Keyboard.dismiss();
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             right: {visible: false},
         },
