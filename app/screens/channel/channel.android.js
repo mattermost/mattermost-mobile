@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -12,6 +12,7 @@ import InteractiveDialogController from 'app/components/interactive_dialog_contr
 import NetworkIndicator from 'app/components/network_indicator';
 import PostTextbox from 'app/components/post_textbox';
 import {NavigationTypes} from 'app/constants';
+import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import LocalConfig from 'assets/config';
 
@@ -38,6 +39,7 @@ export default class ChannelAndroid extends ChannelBase {
             return channelLoadingOrFailed;
         }
 
+        const style = getStyle(theme);
         const drawerContent = (
             <>
                 <NetworkIndicator/>
@@ -61,7 +63,7 @@ export default class ChannelAndroid extends ChannelBase {
 
         return (
             <>
-                <View style={style.flex}>
+                <View style={style.backdrop}>
                     {drawerContent}
                 </View>
                 <InteractiveDialogController
@@ -72,8 +74,12 @@ export default class ChannelAndroid extends ChannelBase {
     }
 }
 
-const style = StyleSheet.create({
+const getStyle = makeStyleSheetFromTheme((theme) => ({
     flex: {
         flex: 1,
     },
-});
+    backdrop: {
+        flex: 1,
+        backgroundColor: theme.centerChannelBg,
+    },
+}));
