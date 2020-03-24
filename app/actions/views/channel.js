@@ -647,6 +647,7 @@ export function increasePostVisibility(channelId, postId) {
     return async (dispatch, getState) => {
         const state = getState();
         const {loadingPosts} = state.views.channel;
+        const currentUserId = getCurrentUserId(state);
 
         if (loadingPosts[channelId]) {
             return true;
@@ -654,6 +655,11 @@ export function increasePostVisibility(channelId, postId) {
 
         if (!postId) {
             // No posts are visible, so the channel is empty
+            return true;
+        }
+
+        if (postId.startsWith(currentUserId)) {
+            // This is the first created post in the channel
             return true;
         }
 
