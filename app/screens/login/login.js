@@ -86,8 +86,10 @@ export default class Login extends PureComponent {
         const {intl} = this.context;
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
+        const loginId = this.loginId?._lastNativeText; //eslint-disable-line no-underscore-dangle
+        const password = this.passwd?._lastNativeText; //eslint-disable-line no-underscore-dangle
 
-        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse});
+        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, loginId, password});
     };
 
     blur = () => {

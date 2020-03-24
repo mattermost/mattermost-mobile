@@ -27,7 +27,6 @@ class EMMProvider {
 
         this.allowOtherServers = true;
         this.emmServerUrl = null;
-        this.emmUsername = null;
     }
 
     checkIfDeviceIsTrusted = (store) => {
@@ -109,7 +108,6 @@ class EMMProvider {
             const credentials = await getAppCredentials();
             if (!credentials) {
                 this.emmServerUrl = managedConfig.serverUrl;
-                this.emmUsername = managedConfig.username;
 
                 if (managedConfig.allowOtherServers && managedConfig.allowOtherServers === 'false') {
                     this.allowOtherServers = false;
