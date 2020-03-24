@@ -394,7 +394,10 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         return (
-            <Animated.View style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.state.opacity}]}>
+            <Animated.View
+                pointerEvents='none'
+                style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.state.opacity}]}
+            >
                 <Animated.View style={styles.wrapper}>
                     <FormattedText
                         defaultMessage={defaultMessage}
