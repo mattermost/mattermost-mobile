@@ -9,12 +9,12 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Improvements
- - Mobile performance related to themes, links
- - Animated gifs posted as file attachments now animate
- - Support different interactive message button styles on mobile.
- - Added "Unarchive Channel" option to the channel info screen
- - Removed mark as unread option from post menus for archived channels
- - Enter key on hardware Android keyboard now posts a message
+ - Improved Mobile performance related to themes and links.
+ - Animated gifs posted as file attachments now animate.
+ - Added support for different interactive message button styles on mobile.
+ - Enter key on hardware Android keyboard now posts a message.
+ - Added "Unarchive Channel" option to the channel info screen.
+ - Removed mark as unread option from post menus for archived channels.
  
 ### Bug Fixes
  - Fixed an issue on iOS where the modal popped down when attempting to scroll down to see if there are more emoji.
