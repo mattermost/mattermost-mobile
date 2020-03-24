@@ -48,6 +48,7 @@ import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from 'app/constants/post_textbox';
 import {getChannelReachable} from 'app/selectors/channel';
 import telemetry from 'app/telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, isDirectMessageVisible, isGroupMessageVisible, isDirectChannelAutoClosed} from 'app/utils/channels';
+import {isPendingPost} from 'app/utils/general';
 import {buildPreference} from 'app/utils/preferences';
 
 import {getPosts, getPostsBefore, getPostsSince, getPostThread} from './post';
@@ -647,6 +648,7 @@ export function increasePostVisibility(channelId, postId) {
     return async (dispatch, getState) => {
         const state = getState();
         const {loadingPosts} = state.views.channel;
+        const currentUserId = getCurrentUserId(state);
 
         if (loadingPosts[channelId]) {
             return true;
@@ -654,6 +656,11 @@ export function increasePostVisibility(channelId, postId) {
 
         if (!postId) {
             // No posts are visible, so the channel is empty
+            return true;
+        }
+
+        if (isPendingPost(postId, currentUserId)) {
+            // This is the first created post in the channel
             return true;
         }
 
