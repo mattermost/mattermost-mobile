@@ -151,7 +151,7 @@ export default class MainSidebarBase extends Component {
             return;
         }
 
-        this.selectChannel(result.data.channel || result.data, currentChannelId, true);
+        this.selectChannel(result.data.channel || result.data, currentChannelId, false);
     };
 
     onSearchEnds = () => {
