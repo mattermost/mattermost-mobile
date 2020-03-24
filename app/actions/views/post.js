@@ -75,24 +75,28 @@ export function selectAttachmentMenuAction(postId, actionId, text, value) {
 }
 
 export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         try {
+            const state = getState();
+            const {postsInChannel} = state.entities.posts;
+            const postForChannel = postsInChannel[channelId];
             const data = await Client4.getPosts(channelId, page, perPage);
             const posts = Object.values(data.posts);
+            const actions = [];
+
+            if (posts?.length || !postForChannel) {
+                actions.push(receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''));
+            }
 
             if (posts?.length) {
-                const actions = [
-                    receivedPosts(data),
-                    receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''),
-                ];
-
+                actions.push(receivedPosts(data));
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
                 if (additional.length) {
                     actions.push(...additional);
                 }
-
-                dispatch(batchActions(actions));
             }
+
+            dispatch(batchActions(actions));
 
             return {data};
         } catch (error) {
