@@ -10,8 +10,8 @@ exports[`PostOptions should match snapshot, no option for system message to user
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={250}
-    marginFromTop={350}
+    initialPosition={314}
+    marginFromTop={286}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -204,8 +204,8 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={300}
-    marginFromTop={300}
+    initialPosition={364}
+    marginFromTop={236}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -434,8 +434,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={300}
-    marginFromTop={300}
+    initialPosition={364}
+    marginFromTop={236}
     onRequestClose={[Function]}
     theme={
       Object {
