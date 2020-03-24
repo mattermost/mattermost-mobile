@@ -271,7 +271,12 @@ export default class Search extends PureComponent {
                 };
 
             // Making sure the icon won't change depending on whether the input is in focus on Android devices
-            cancelIcon = searchIcon;
+            cancelIcon = {
+                type: 'material',
+                size: 25,
+                color: searchBarStyle.clearIconColorAndroid,
+                name: 'arrow-back',
+            };
 
             clearIcon = {
                 type: 'material',

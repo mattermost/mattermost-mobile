@@ -151,7 +151,7 @@ export default class ChannelsList extends PureComponent {
                     onFocus={this.onSearchFocused}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
-                    showCancel={false}
+                    showCancel={Platform.OS === 'android'}
                     leftComponentWidth={67}
                     leftComponent={(
                         <SwitchTeamsButton
