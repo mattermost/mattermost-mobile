@@ -47,7 +47,6 @@ module.exports = [
     './node_modules/app/reducers/views/extension.js',
     './node_modules/app/reducers/views/i18n.js',
     './node_modules/app/reducers/views/index.js',
-    './node_modules/app/reducers/views/login.js',
     './node_modules/app/reducers/views/post.js',
     './node_modules/app/reducers/views/recent_emojis.js',
     './node_modules/app/reducers/views/root.js',

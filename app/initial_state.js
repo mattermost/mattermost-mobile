@@ -136,10 +136,6 @@ const state = {
         i18n: {
             locale: '',
         },
-        login: {
-            loginId: '',
-            password: '',
-        },
         root: {
             deepLinkURL: '',
             hydrationComplete: false,

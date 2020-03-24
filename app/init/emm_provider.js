@@ -3,7 +3,6 @@
 
 import {Alert, Platform} from 'react-native';
 
-import {handleLoginIdChanged} from 'app/actions/views/login';
 import {setServerUrl} from 'app/actions/views/select_server';
 import {getTranslations} from 'app/i18n';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -123,10 +122,6 @@ class EMMProvider {
 
             if (this.emmServerUrl) {
                 dispatch(setServerUrl(this.emmServerUrl));
-            }
-
-            if (this.emmUsername) {
-                dispatch(handleLoginIdChanged(this.emmUsername));
             }
         }
 
