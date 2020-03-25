@@ -7,8 +7,9 @@ import {batchActions} from 'redux-batched-actions';
 import {DeviceTypes} from 'app/constants';
 
 export function connection(isOnline) {
-    return async (dispatch) => {
-        if (isOnline !== undefined) { //eslint-disable-line no-undefined
+    return async (dispatch, getState) => {
+        const state = getState();
+        if (isOnline !== undefined && isOnline !== state.device.connection) { //eslint-disable-line no-undefined
             dispatch(batchActions([
                 networkStatusChangedAction(isOnline), {
                     type: DeviceTypes.CONNECTION_CHANGED,
