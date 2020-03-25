@@ -124,7 +124,7 @@ const setTransformer = createTransform(
     },
 );
 
-export const persistConfig = {
+const persistConfig = {
     effect: (effect, action) => {
         if (typeof effect !== 'function') {
             throw new Error('Offline Action: effect must be a function.');
