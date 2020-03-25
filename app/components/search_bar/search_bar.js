@@ -429,6 +429,11 @@ const styles = StyleSheet.create({
     },
     inputMargin: {
         marginLeft: 4,
+        paddingTop: 0,
+        marginTop: Platform.select({
+            ios: 0,
+            android: 8,
+        }),
     },
     leftIcon: {
         marginLeft: 4,

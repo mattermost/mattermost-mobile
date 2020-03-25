@@ -124,11 +124,6 @@ export default class ChannelsList extends PureComponent {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
             color: theme.sidebarHeaderTextColor,
             fontSize: 15,
-            ...Platform.select({
-                android: {
-                    marginBottom: -5,
-                },
-            }),
         };
 
         const title = (
@@ -138,7 +133,7 @@ export default class ChannelsList extends PureComponent {
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'
-                    inputHeight={32}
+                    inputHeight={33}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}

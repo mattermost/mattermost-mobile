@@ -338,11 +338,7 @@ export default class ChannelMembers extends PureComponent {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             color: theme.centerChannelColor,
             fontSize: 15,
-            ...Platform.select({
-                android: {
-                    marginBottom: -5,
-                },
-            }),
+
         };
 
         let data;
