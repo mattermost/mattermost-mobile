@@ -221,7 +221,7 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         let moreBelow = null;
-        if (this.rowsSliced) {
+        if (this.rowsSliced || contentHeight > MAX_HEIGHT) {
             const width = renderAsFlex ? '100%' : Math.min(tableWidth, containerWidth);
 
             moreBelow = (
@@ -236,7 +236,7 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         let expandButton = null;
-        if (expandButtonOffset > 0 && (this.rowsSliced || this.colsSliced)) {
+        if (expandButtonOffset > 0 && (moreRight || moreBelow)) {
             expandButton = (
                 <TouchableWithFeedback
                     type={'opacity'}
@@ -332,7 +332,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 10,
         },
         moreBelow: {
-            bottom: 34,
+            bottom: Platform.select({
+                ios: 34,
+                android: 33.75,
+            }),
             height: 20,
             position: 'absolute',
             left: 0,
