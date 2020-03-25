@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Alert} from 'react-native';
+import {Alert, Platform, StatusBar} from 'react-native';
 import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
@@ -12,7 +12,7 @@ import CameraButton from './camera_button';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
+    launchCamera: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
 describe('CameraButton', () => {
@@ -62,5 +62,56 @@ describe('CameraButton', () => {
         expect(Permissions.request).not.toHaveBeenCalled();
         expect(Alert.alert).toHaveBeenCalled();
         expect(hasPermission).toBe(false);
+    });
+
+    test('hasCameraPermission returns true when permission has been granted', async () => {
+        const platformPermissions = [{
+            platform: 'ios',
+            permission: Permissions.PERMISSIONS.IOS.CAMERA,
+        }, {
+            platform: 'android',
+            permission: Permissions.PERMISSIONS.ANDROID.CAMERA,
+        }];
+
+        for (let i = 0; i < platformPermissions.length; i++) {
+            const {platform, permission} = platformPermissions[i];
+            Platform.OS = platform;
+
+            const check = jest.spyOn(Permissions, 'check');
+            const request = jest.spyOn(Permissions, 'request');
+            request.mockReturnValue(Permissions.RESULTS.GRANTED);
+
+            const wrapper = shallow(
+                <CameraButton {...baseProps}/>,
+                {context: {intl: {formatMessage}}},
+            );
+            const instance = wrapper.instance();
+
+            check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
+            let hasPermission = await instance.hasCameraPermission(); // eslint-disable-line no-await-in-loop
+            expect(check).toHaveBeenCalledWith(permission);
+            expect(request).toHaveBeenCalled();
+            expect(hasPermission).toBe(true);
+
+            check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
+            hasPermission = await instance.hasCameraPermission(); // eslint-disable-line no-await-in-loop
+            expect(check).toHaveBeenCalledWith(permission);
+            expect(request).toHaveBeenCalled();
+            expect(hasPermission).toBe(true);
+        }
+    });
+
+    test('should re-enable StatusBar after ImagePicker launchCamera finishes', async () => {
+        const wrapper = shallow(
+            <CameraButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'hasCameraPermission').mockReturnValue(true);
+        jest.spyOn(StatusBar, 'setHidden');
+
+        await instance.attachFileFromCamera();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 });

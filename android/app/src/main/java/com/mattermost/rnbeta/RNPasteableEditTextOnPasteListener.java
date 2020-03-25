@@ -19,6 +19,7 @@ import com.mattermost.share.RealPathUtil;
 import com.mattermost.share.ShareModule;
 
 import java.io.FileNotFoundException;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
@@ -133,9 +134,16 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
 
     private String moveToImagesCache(String src, String fileName) {
         ReactContext ctx = (ReactContext)mEditText.getContext();
-        String dest = ctx.getCacheDir().getAbsolutePath() + "/Images/" + fileName;
+        String cacheFolder = ctx.getCacheDir().getAbsolutePath() + "/Images/";
+        String dest = cacheFolder + fileName;
+        File folder = new File(cacheFolder);
+
 
         try {
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
             Files.move(Paths.get(src), Paths.get(dest));
         } catch (Exception err) {
             return null;

@@ -15,8 +15,8 @@ jest.mock('react-intl');
 describe('ChannelNavBar', () => {
     const baseProps = {
         isLandscape: false,
-        openChannelDrawer: jest.fn(),
-        openSettingsDrawer: jest.fn(),
+        openMainSidebar: jest.fn(),
+        openSettingsSidebar: jest.fn(),
         onPress: jest.fn(),
         theme: Preferences.THEMES.default,
     };

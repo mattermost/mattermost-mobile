@@ -26,6 +26,7 @@ import Config from 'assets/config';
 import FilteredList from './filtered_list';
 
 const DEFAULT_SEARCH_ORDER = ['unreads', 'dms', 'channels', 'members', 'nonmembers', 'archived'];
+const emptyArray = [];
 
 const pastDirectMessages = createSelector(
     getDirectShowPreferences,
@@ -98,15 +99,17 @@ const getGroupChannelMemberDetails = createSelector(
 
 function mapStateToProps(state) {
     const {currentUserId} = state.entities.users;
+    const config = getConfig(state);
 
     const profiles = getUsers(state);
     let teamProfiles = {};
-    const restrictDms = getConfig(state).RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY;
+    const restrictDms = config.RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY;
     if (restrictDms) {
         teamProfiles = getTeamProfiles(state);
     }
 
     const searchOrder = Config.DrawerSearchOrder ? Config.DrawerSearchOrder : DEFAULT_SEARCH_ORDER;
+    const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
 
     return {
         channels: getChannelsWithUnreadSection(state),
@@ -114,7 +117,7 @@ function mapStateToProps(state) {
         currentTeam: getCurrentTeam(state),
         currentUserId,
         otherChannels: getOtherChannels(state, false),
-        archivedChannels: getArchivedChannels(state),
+        archivedChannels: viewArchivedChannels ? getArchivedChannels(state) : emptyArray,
         groupChannelMemberDetails: getGroupChannelMemberDetails(state),
         profiles,
         teamProfiles,

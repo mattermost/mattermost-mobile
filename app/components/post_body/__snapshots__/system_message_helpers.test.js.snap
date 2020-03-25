@@ -3,6 +3,7 @@
 exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] = `
 <Connect(Markdown)
   baseTextStyle={Object {}}
+  disableAtChannelMentionHighlight={true}
   onPostPress={[MockFunction]}
   textStyles={Object {}}
   value="{username} updated the channel display name from: {oldDisplayName} to: {newDisplayName}"
@@ -12,6 +13,7 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
 exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
 <Connect(Markdown)
   baseTextStyle={Object {}}
+  disableAtChannelMentionHighlight={true}
   onPostPress={[MockFunction]}
   textStyles={Object {}}
   value="{username} updated the channel header from: {oldHeader} to: {newHeader}"
@@ -21,6 +23,7 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
 exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
 <Connect(Markdown)
   baseTextStyle={Object {}}
+  disableAtChannelMentionHighlight={true}
   onPostPress={[MockFunction]}
   textStyles={Object {}}
   value="{username} updated the channel purpose from: {oldPurpose} to: {newPurpose}"
@@ -30,8 +33,21 @@ exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
 exports[`renderSystemMessage uses renderer for archived channel 1`] = `
 <Connect(Markdown)
   baseTextStyle={Object {}}
+  disableAtChannelMentionHighlight={true}
   onPostPress={[MockFunction]}
   textStyles={Object {}}
   value="{username} archived the channel"
 />
 `;
+
+exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
+<Connect(Markdown)
+  baseTextStyle={Object {}}
+  disableAtChannelMentionHighlight={true}
+  onPostPress={[MockFunction]}
+  textStyles={Object {}}
+  value="{username} unarchived the channel"
+/>
+`;
+
+exports[`renderSystemMessage uses renderer for unarchived channel 2`] = `null`;

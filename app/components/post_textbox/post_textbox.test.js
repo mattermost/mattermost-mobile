@@ -46,7 +46,6 @@ describe('PostTextBox', () => {
         channelId: 'channel-id',
         channelDisplayName: 'Test Channel',
         channelTeamId: 'channel-team-id',
-        channelIsLoading: false,
         channelIsReadOnly: false,
         currentUserId: 'current-user-id',
         deactivatedChannel: false,
@@ -64,6 +63,10 @@ describe('PostTextBox', () => {
         valueEvent: '',
         isLandscape: false,
         screenId: 'NavigationScreen1',
+        canPost: true,
+        currentChannelMembersCount: 50,
+        enableConfirmNotificationsToChannel: true,
+        useChannelMentions: true,
     };
 
     test('should match, full snapshot', () => {
@@ -115,6 +118,38 @@ describe('PostTextBox', () => {
 
         expect(Alert.alert).toBeCalled();
         expect(Alert.alert).toHaveBeenCalledTimes(1);
+    });
+
+    test('should send an alert when sending a message with a channel mention', () => {
+        const wrapper = shallowWithIntl(
+            <PostTextbox {...baseProps}/>,
+        );
+        const message = '@all';
+        const instance = wrapper.instance();
+        instance.handleTextChange(message);
+
+        expect(wrapper.state('value')).toBe(message);
+
+        instance.sendMessage();
+        expect(Alert.alert).toBeCalled();
+        expect(Alert.alert).toHaveBeenCalledWith('Confirm sending notifications to entire channel', expect.anything(), expect.anything());
+    });
+
+    test('should not send an alert when sending a message with a channel mention when the user does not have channel mentions permission', () => {
+        const wrapper = shallowWithIntl(
+            <PostTextbox
+                {...baseProps}
+                useChannelMentions={false}
+            />,
+        );
+        const message = '@all';
+        const instance = wrapper.instance();
+        instance.handleTextChange(message);
+
+        expect(wrapper.state('value')).toBe(message);
+
+        instance.sendMessage();
+        expect(Alert.alert).not.toHaveBeenCalled();
     });
 
     test('should return correct @all (same for @channel)', () => {
@@ -519,6 +554,16 @@ describe('PostTextBox', () => {
         expect(wrapper.state('value')).toEqual('');
         wrapper.setProps({value: 'value', channelId: 'channel-id2'});
         expect(wrapper.state('value')).toEqual('value');
+    });
+
+    test('should be disabled without the create_post permission', () => {
+        const props = {...baseProps, canPost: false};
+
+        const wrapper = shallowWithIntl(
+            <PostTextbox {...props}/>,
+        );
+
+        expect(wrapper.find(PasteableTextInput).prop('editable')).toBe(false);
     });
 });
 

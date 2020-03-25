@@ -15,7 +15,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
     onKeyboardDidShow={[Function]}
     style={
       Object {
-        "backgroundColor": "#ffffff",
         "flex": 1,
       }
     }
@@ -284,7 +283,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             value="header"
           />
         </View>
-        <ForwardRef(forwardConnectRef)
+        <Connect(Autocomplete)
           cursorPosition={6}
           expandDown={true}
           maxHeight={200}

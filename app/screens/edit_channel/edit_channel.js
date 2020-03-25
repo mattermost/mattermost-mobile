@@ -14,8 +14,7 @@ import {General, RequestStatus} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
-import {ViewTypes} from 'app/constants';
-import {setNavigatorStyles} from 'app/utils/theme';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import {cleanUpUrlable} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
 import {popTopScreen, setButtons} from 'app/actions/navigation';
@@ -65,7 +64,6 @@ export default class EditChannel extends PureComponent {
         channel: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         updateChannelRequest: PropTypes.object.isRequired,
-        closeButton: PropTypes.object,
     };
 
     static contextTypes = {
@@ -141,17 +139,13 @@ export default class EditChannel extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.theme !== this.props.theme) {
-            setNavigatorStyles(prevProps.componentId, this.props.theme);
-        }
-
         if (prevProps.updateChannelRequest !== this.props.updateChannelRequest) {
             switch (this.props.updateChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitUpdating(true);
                 break;
             case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_channel_drawer');
+                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
                     this.close();

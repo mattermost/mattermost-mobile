@@ -45,8 +45,8 @@ export function makeMapStateToProps() {
         const reactions = getReactionsForPostSelector(state, post.id);
         const channelIsArchived = channel.delete_at !== 0;
         const {serverVersion} = state.entities.general;
-        const canMarkAsUnread = isMinimumServerVersion(serverVersion, 5, 18);
 
+        let canMarkAsUnread = true;
         let canAddReaction = true;
         let canReply = true;
         let canCopyPermalink = true;
@@ -56,6 +56,14 @@ export function makeMapStateToProps() {
         let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
+        const canPost = haveIChannelPermission(
+            state,
+            {
+                channel: post.channel_id,
+                team: channel.team_id,
+                permission: Permissions.CREATE_POST,
+            },
+        );
 
         if (hasNewPermissions(state)) {
             canAddReaction = haveIChannelPermission(state, {
@@ -83,6 +91,10 @@ export function makeMapStateToProps() {
             }
         }
 
+        if (!canPost) {
+            canReply = false;
+        }
+
         if (ownProps.isSystemMessage) {
             canAddReaction = false;
             canReply = false;
@@ -105,6 +117,10 @@ export function makeMapStateToProps() {
 
         if (reactions && Object.values(reactions).length >= MAX_ALLOWED_REACTIONS) {
             canAddReaction = false;
+        }
+
+        if (!isMinimumServerVersion(serverVersion, 5, 18) || channelIsArchived) {
+            canMarkAsUnread = false;
         }
 
         return {

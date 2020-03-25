@@ -109,18 +109,14 @@ describe('PostList', () => {
         instance.loadToFillContent = jest.fn();
 
         wrapper.setProps({
-            extraData: true,
+            extraData: false,
         });
         expect(instance.loadToFillContent).toHaveBeenCalledTimes(0);
 
-        wrapper.setState({
-            postListHeight: 500,
-            contentHeight: 200,
-        });
-        expect(instance.loadToFillContent).toHaveBeenCalledTimes(1);
-
+        instance.postListHeight = 500;
+        instance.contentHeight = 200;
         wrapper.setProps({
-            extraData: false,
+            extraData: true,
         });
 
         expect(instance.loadToFillContent).toHaveBeenCalledTimes(1);

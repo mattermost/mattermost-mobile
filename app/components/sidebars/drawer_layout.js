@@ -120,16 +120,6 @@ export default class DrawerLayout extends Component {
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.handleDimensionsChange);
-        if (Platform.OS === 'ios') {
-            // on iOS force closing the drawers to prevent them for partially showing
-            // when channging the device orientation, probably caused by RN61
-            Animated.timing(this.openValue, {
-                toValue: 0,
-                duration: 10,
-                easing: Easing.out(Easing.cubic),
-                useNativeDriver: this.props.useNativeAnimations,
-            }).start();
-        }
     }
 
     componentWillUnmount() {
@@ -198,9 +188,12 @@ export default class DrawerLayout extends Component {
         };
         /* Drawer styles */
         let outputRange;
-        // ios main sidebar sits mostly under the main screen, with slight move
-        const translateDistance = Platform.OS === 'ios' && drawerPosition === 'left' ?
-            Math.floor(drawerWidth * 0.2) : drawerWidth
+        let translateDistance = drawerWidth;
+        if (Platform.OS === 'ios') {
+            // ios main sidebar sits mostly under the main screen, with slight move
+            translateDistance = drawerPosition === 'left' ?
+            Math.floor(drawerWidth * 0.2) : Math.floor(drawerWidth * 1.2)
+        }
 
         if (this.getDrawerPosition() === 'left') {
             outputRange = [-translateDistance, 0];
@@ -221,7 +214,7 @@ export default class DrawerLayout extends Component {
         // 1 - main | tablet
         // 2 - overlay
         // 3 - android main drawer | settings drawer
-        const drawerZIndex = drawerPosition === 'left' && Platform.OS === 'ios' ? 0 : 3
+        const drawerZIndex = drawerPosition === 'left' ? 0 : 3
 
         return (
             <React.Fragment>
@@ -269,7 +262,7 @@ export default class DrawerLayout extends Component {
         }
 
         const mainStyles = [styles.main]
-        if (drawerPosition === 'left' && Platform.OS === 'ios') {
+        if (drawerPosition === 'left') {
             /* Drawer styles */
             let outputRange;
             
@@ -417,10 +410,7 @@ export default class DrawerLayout extends Component {
                     return true;
                 }
             } else {
-                const filter = Platform.select({
-                    ios: moveX > 0 && dx > 35,
-                    android: moveX <= 35 && dx > 0
-                });
+                const filter = moveX > 0 && dx > 35;
                 if (filter) {
                     this._isClosing = false;
                     return true;
@@ -454,7 +444,7 @@ export default class DrawerLayout extends Component {
     };
 
     _panResponderMove = (e: EventType, { moveX, dx }: PanResponderEventType) => {
-        const useDx = Platform.OS === 'ios' && this.getDrawerPosition() === 'left';
+        const useDx = this.getDrawerPosition() === 'left' && !this._isClosing;
         let openValue = this._getOpenValueForX(useDx ? dx : moveX);
 
         if (this._isClosing) {

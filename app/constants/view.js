@@ -2,6 +2,10 @@
 // See LICENSE.txt for license information.
 
 import keyMirror from 'mattermost-redux/utils/key_mirror';
+import DeviceInfo from 'react-native-device-info';
+
+// The iPhone 11 and iPhone 11 Pro Max have a navbar height of 44 and iPhone 11 Pro has 32
+const IPHONE_11_LANDSCAPE_HEIGHT = ['iPhone 11', 'iPhone 11 Pro Max'];
 
 export const UpgradeTypes = {
     CAN_UPGRADE: 'can_upgrade',
@@ -62,7 +66,6 @@ const ViewTypes = keyMirror({
     SET_CHANNEL_RETRY_FAILED: null,
     SET_CHANNEL_DISPLAY_NAME: null,
 
-    SET_LAST_CHANNEL_FOR_TEAM: null,
     REMOVE_LAST_CHANNEL_FOR_TEAM: null,
 
     GITLAB: null,
@@ -70,13 +73,9 @@ const ViewTypes = keyMirror({
     SAML: null,
 
     SET_INITIAL_POST_VISIBILITY: null,
-    INCREASE_POST_VISIBILITY: null,
     RECEIVED_FOCUSED_POST: null,
     LOADING_POSTS: null,
     SET_LOAD_MORE_POSTS_VISIBLE: null,
-
-    SET_INITIAL_POST_COUNT: null,
-    INCREASE_POST_COUNT: null,
 
     RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
 
@@ -94,7 +93,6 @@ const ViewTypes = keyMirror({
 
     SELECTED_ACTION_MENU: null,
     SUBMIT_ATTACHMENT_MENU_ACTION: null,
-    SELECT_CHANNEL_WITH_MEMBER: null,
 
     PORTRAIT: null,
     LANDSCAPE: null,
@@ -110,7 +108,7 @@ export default {
     MAX_CHANNELNAME_LENGTH: 64,
     ANDROID_TOP_LANDSCAPE: 46,
     ANDROID_TOP_PORTRAIT: 56,
-    IOS_TOP_LANDSCAPE: 32,
+    IOS_TOP_LANDSCAPE: IPHONE_11_LANDSCAPE_HEIGHT.includes(DeviceInfo.getModel()) ? 44 : 32,
     IOS_TOP_PORTRAIT: 64,
     IOS_INSETS_TOP_PORTRAIT: 88,
     STATUS_BAR_HEIGHT: 20,
@@ -121,7 +119,4 @@ export default {
     NotificationLevels,
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
-    INPUT_LINE_HEIGHT: 20,
-    INPUT_VERTICAL_PADDING: 18,
-    INPUT_INITIAL_HEIGHT: 38,
 };

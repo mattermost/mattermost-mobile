@@ -7,6 +7,7 @@ import Button from 'react-native-button';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import {getStatusColors} from 'app/utils/message_attachment_colors';
 import ActionButtonText from './action_button_text';
 
 export default class ActionButton extends PureComponent {
@@ -18,8 +19,9 @@ export default class ActionButton extends PureComponent {
         name: PropTypes.string.isRequired,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        cookie: PropTypes.string.isRequired,
+        cookie: PropTypes.string,
         disabled: PropTypes.bool,
+        buttonColor: PropTypes.string,
     };
 
     handleActionPress = preventDoubleTap(() => {
@@ -28,19 +30,28 @@ export default class ActionButton extends PureComponent {
     }, 4000);
 
     render() {
-        const {name, theme, disabled} = this.props;
+        const {name, theme, disabled, buttonColor} = this.props;
         const style = getStyleSheet(theme);
+        let customButtonStyle;
+        let customButtonTextStyle;
+
+        if (buttonColor) {
+            const STATUS_COLORS = getStatusColors(theme);
+            const hexColor = STATUS_COLORS[buttonColor] || theme[buttonColor] || buttonColor;
+            customButtonStyle = {borderColor: changeOpacity(hexColor, 0.25), backgroundColor: '#ffffff'};
+            customButtonTextStyle = {color: hexColor};
+        }
 
         return (
             <Button
-                containerStyle={style.button}
+                containerStyle={[style.button, customButtonStyle]}
                 disabledContainerStyle={style.buttonDisabled}
                 onPress={this.handleActionPress}
                 disabled={disabled}
             >
                 <ActionButtonText
                     message={name}
-                    style={style.text}
+                    style={{...style.text, ...customButtonTextStyle}}
                 />
             </Button>
         );
@@ -48,26 +59,26 @@ export default class ActionButton extends PureComponent {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+    const STATUS_COLORS = getStatusColors(theme);
     return {
         button: {
-            borderRadius: 2,
-            backgroundColor: theme.buttonBg,
+            borderRadius: 4,
+            borderColor: changeOpacity(STATUS_COLORS.default, 0.25),
+            borderWidth: 2,
             opacity: 1,
             alignItems: 'center',
-            marginBottom: 2,
-            marginRight: 5,
-            marginTop: 10,
-            paddingHorizontal: 10,
-            paddingVertical: 7,
+            marginTop: 12,
+            justifyContent: 'center',
+            height: 36,
         },
         buttonDisabled: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.3),
         },
         text: {
-            color: theme.buttonColor,
-            fontSize: 12,
+            color: STATUS_COLORS.default,
+            fontSize: 15,
             fontWeight: '600',
-            lineHeight: 13,
+            lineHeight: 17,
         },
     };
 });

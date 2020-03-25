@@ -55,12 +55,13 @@ export default class AttachmentActions extends PureComponent {
                         name={action.name}
                         postId={postId}
                         disabled={action.disabled}
+                        buttonColor={action.style}
                     />,
                 );
                 break;
             }
         });
 
-        return content;
+        return content.length ? content : null;
     }
 }

@@ -168,12 +168,10 @@ export default class FileUploadItem extends PureComponent {
         const realFill = Number(fill.toFixed(0));
 
         return (
-            <View style={styles.progressContent}>
-                <View style={styles.progressCirclePercentage}>
-                    <Text style={styles.progressText}>
-                        {`${realFill}%`}
-                    </Text>
-                </View>
+            <View>
+                <Text style={styles.progressText}>
+                    {`${realFill}%`}
+                </Text>
             </View>
         );
     };
@@ -204,8 +202,8 @@ export default class FileUploadItem extends PureComponent {
                     <FileAttachmentIcon
                         file={file}
                         theme={theme}
-                        wrapperHeight={60}
-                        wrapperWidth={60}
+                        wrapperHeight={53}
+                        wrapperWidth={53}
                     />
                 </View>
             );
@@ -227,13 +225,12 @@ export default class FileUploadItem extends PureComponent {
                     {file.loading && !file.failed &&
                     <View style={styles.progressCircleContent}>
                         <AnimatedCircularProgress
-                            size={64}
+                            size={36}
                             fill={progress}
-                            width={4}
+                            width={2}
                             backgroundColor='rgba(255, 255, 255, 0.5)'
                             tintColor='white'
                             rotation={0}
-                            style={styles.progressCircle}
                         >
                             {this.renderProgress}
                         </AnimatedCircularProgress>
@@ -254,51 +251,33 @@ export default class FileUploadItem extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     preview: {
-        paddingTop: 12,
+        paddingTop: 5,
         marginLeft: 12,
     },
     previewContainer: {
-        height: 64,
-        width: 64,
-        elevation: 10,
+        height: 56,
+        width: 56,
         borderRadius: 4,
-    },
-    progressCircle: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-        width: '100%',
     },
     progressCircleContent: {
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        height: 64,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        height: 56,
+        width: 56,
         justifyContent: 'center',
         position: 'absolute',
-        width: 64,
-    },
-    progressCirclePercentage: {
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'center',
-    },
-    progressContent: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-        left: 0,
-        position: 'absolute',
-        width: '100%',
+        borderRadius: 4,
     },
     progressText: {
         color: 'white',
-        fontSize: 18,
+        fontSize: 11,
+        fontWeight: 'bold',
     },
     filePreview: {
         borderColor: changeOpacity(theme.centerChannelColor, 0.15),
-        borderRadius: 5,
+        borderRadius: 4,
         borderWidth: 1,
-        width: 64,
-        height: 64,
+        width: 56,
+        height: 56,
     },
 }));

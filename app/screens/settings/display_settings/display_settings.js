@@ -4,10 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    Platform,
-    View,
-} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import {DeviceTypes} from 'app/constants';
 import StatusBar from 'app/components/status_bar';
@@ -19,7 +16,6 @@ import {goToScreen} from 'app/actions/navigation';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
@@ -111,7 +107,7 @@ export default class DisplaySettings extends PureComponent {
         }
 
         let sidebar;
-        if (DeviceTypes.IS_TABLET) {
+        if (DeviceTypes.IS_TABLET && Platform.OS === 'ios') {
             sidebar = (
                 <SettingsItem
                     defaultMessage='Sidebar'
@@ -159,8 +155,8 @@ export default class DisplaySettings extends PureComponent {
                     />
                     {timezoneOption}
                     <View style={style.divider}/>
+                    {clockDisplayModal}
                 </View>
-                {clockDisplayModal}
             </View>
         );
     }
@@ -170,10 +166,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             flex: 1,
             ...Platform.select({
                 ios: {

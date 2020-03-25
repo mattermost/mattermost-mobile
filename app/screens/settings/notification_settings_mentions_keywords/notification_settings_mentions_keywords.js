@@ -12,14 +12,12 @@ import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_lo
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {popTopScreen} from 'app/actions/navigation';
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         keywords: PropTypes.string,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
@@ -36,12 +34,6 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
     }
 
     handleSubmit = () => {

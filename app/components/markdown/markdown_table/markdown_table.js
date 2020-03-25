@@ -40,14 +40,16 @@ export default class MarkdownTable extends React.PureComponent {
         this.state = {
             containerWidth: 0,
             contentHeight: 0,
-            contentWidth: 0,
-            maxPreviewColumns: MAX_PREVIEW_COLUMNS,
             cellWidth: 0,
+            rowsSliced: false,
         };
     }
 
     componentDidMount() {
         Dimensions.addEventListener('change', this.setMaxPreviewColumns);
+
+        const window = Dimensions.get('window');
+        this.setMaxPreviewColumns({window});
     }
 
     componentWillUnmount() {
@@ -60,13 +62,10 @@ export default class MarkdownTable extends React.PureComponent {
     }
 
     getTableWidth = (isFullView = false) => {
-        let columns = this.props.numColumns;
+        const maxPreviewColumns = this.state.maxPreviewColumns || MAX_PREVIEW_COLUMNS;
+        const columns = Math.min(this.props.numColumns, maxPreviewColumns);
 
-        if (columns > MAX_PREVIEW_COLUMNS) {
-            columns = MAX_PREVIEW_COLUMNS;
-        }
-
-        return isFullView || columns === 1 ? columns * CELL_MAX_WIDTH : columns * CELL_MIN_WIDTH;
+        return (isFullView || columns === 1) ? columns * CELL_MAX_WIDTH : columns * CELL_MIN_WIDTH;
     };
 
     handlePress = preventDoubleTap(() => {
@@ -98,30 +97,7 @@ export default class MarkdownTable extends React.PureComponent {
     };
 
     renderPreviewRows = (isFullView = false) => {
-        const {maxPreviewColumns} = this.state;
-        const tableStyle = this.getTableStyle(isFullView);
-
-        // Add an extra prop to the last row of the table so that it knows not to render a bottom border
-        // since the container should be rendering that
-        const rows = React.Children.toArray(this.props.children).slice(0, maxPreviewColumns).map((row) => {
-            const children = React.Children.toArray(row.props.children).slice(0, maxPreviewColumns);
-            return {
-                ...row,
-                props: {
-                    ...row.props,
-                    children,
-                },
-            };
-        });
-        rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
-            isLastRow: true,
-        });
-
-        return (
-            <View style={tableStyle}>
-                {rows}
-            </View>
-        );
+        return this.renderRows(isFullView, true);
     }
 
     shouldRenderAsFlex = (isFullView = false) => {
@@ -165,12 +141,33 @@ export default class MarkdownTable extends React.PureComponent {
         return tableStyle;
     }
 
-    renderRows = (isFullView = false) => {
+    renderRows = (isFullView = false, isPreview = false) => {
         const tableStyle = this.getTableStyle(isFullView);
+
+        let rows = React.Children.toArray(this.props.children);
+        if (isPreview) {
+            const {maxPreviewColumns} = this.state;
+            const prevRowLength = rows.length;
+            const prevColLength = React.Children.toArray(rows[0].props.children).length;
+
+            rows = rows.slice(0, maxPreviewColumns).map((row) => {
+                const children = React.Children.toArray(row.props.children).slice(0, maxPreviewColumns);
+                return {
+                    ...row,
+                    props: {
+                        ...row.props,
+                        children,
+                    },
+                };
+            });
+
+            const rowsSliced = prevRowLength > rows.length;
+            const colsSliced = prevColLength > React.Children.toArray(rows[0].props.children).length;
+            this.setState({rowsSliced, colsSliced});
+        }
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
         // since the container should be rendering that
-        const rows = React.Children.toArray(this.props.children);
         rows[rows.length - 1] = React.cloneElement(rows[rows.length - 1], {
             isLastRow: true,
         });
@@ -188,43 +185,53 @@ export default class MarkdownTable extends React.PureComponent {
     }
 
     render() {
-        const style = getStyleSheet(this.props.theme);
-        let moreRight = null;
+        const {containerWidth, contentHeight} = this.state;
+        const {theme} = this.props;
+        const style = getStyleSheet(theme);
         const tableWidth = this.getTableWidth();
         const renderAsFlex = this.shouldRenderAsFlex();
 
         let leftOffset;
-        if (renderAsFlex || tableWidth > this.state.containerWidth) {
-            leftOffset = this.state.containerWidth - 20;
+        if (renderAsFlex || tableWidth > containerWidth) {
+            leftOffset = containerWidth - 20;
         } else {
             leftOffset = tableWidth - 20;
         }
+        let expandButtonOffset = leftOffset;
+        if (Platform.OS === 'android') {
+            expandButtonOffset -= 10;
+        }
 
-        // Renders when table width exceeds the container, or if the columns exceed maximum allowed for previews
-        if ((this.state.containerWidth && tableWidth > this.state.containerWidth && !renderAsFlex) ||
+        // Renders when the columns were sliced, or the table width exceeds the container,
+        // or if the columns exceed maximum allowed for previews
+        let moreRight = null;
+        if (this.state.colsSliced ||
+            (containerWidth && tableWidth > containerWidth && !renderAsFlex) ||
             (this.props.numColumns > MAX_PREVIEW_COLUMNS)) {
             moreRight = (
                 <LinearGradient
                     colors={[
-                        changeOpacity(this.props.theme.centerChannelColor, 0.0),
-                        changeOpacity(this.props.theme.centerChannelColor, 0.1),
+                        changeOpacity(theme.centerChannelColor, 0.0),
+                        changeOpacity(theme.centerChannelColor, 0.1),
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={[style.moreRight, {height: this.state.contentHeight, left: leftOffset}]}
+                    style={[style.moreRight, {height: contentHeight, left: leftOffset}]}
                 />
             );
         }
 
         let moreBelow = null;
-        if (this.state.contentHeight > MAX_HEIGHT) {
+        if (this.state.rowsSliced) {
+            const width = renderAsFlex ? '100%' : Math.min(tableWidth, containerWidth);
+
             moreBelow = (
                 <LinearGradient
                     colors={[
-                        changeOpacity(this.props.theme.centerChannelColor, 0.0),
-                        changeOpacity(this.props.theme.centerChannelColor, 0.1),
+                        changeOpacity(theme.centerChannelColor, 0.0),
+                        changeOpacity(theme.centerChannelColor, 0.1),
                     ]}
-                    style={[style.moreBelow, renderAsFlex ? style.fullWidth : {width: tableWidth}]}
+                    style={[style.moreBelow, {width}]}
                 />
             );
         }
@@ -233,7 +240,7 @@ export default class MarkdownTable extends React.PureComponent {
             <TouchableWithFeedback
                 type={'opacity'}
                 onPress={this.handlePress}
-                style={[style.expandButton, {left: leftOffset}]}
+                style={[style.expandButton, {left: expandButtonOffset}]}
             >
                 <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
                     <View style={style.iconButton}>
@@ -314,9 +321,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         displayFlex: {
             flex: 1,
         },
-        fullWidth: {
-            width: '100%',
-        },
         table: {
             width: '100%',
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -326,12 +330,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 10,
         },
         moreBelow: {
-            bottom: 30,
+            bottom: 34,
             height: 20,
             position: 'absolute',
             left: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 1,
         },
         moreRight: {
             maxHeight: MAX_HEIGHT,

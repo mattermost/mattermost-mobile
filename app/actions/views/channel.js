@@ -5,41 +5,32 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes, ChannelTypes} from 'mattermost-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     markChannelAsRead,
     markChannelAsViewed,
     leaveChannel as serviceLeaveChannel,
-    selectChannel,
-    getChannelStats,
 } from 'mattermost-redux/actions/channels';
-import {
-    getPosts,
-    getPostsBefore,
-    getPostsSince,
-    getPostThread,
-} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
+import {loadRolesIfNeeded} from 'mattermost-redux/actions/roles';
 import {getTeamMembersByIds, selectTeam} from 'mattermost-redux/actions/teams';
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
+import {Client4} from 'mattermost-redux/client';
 import {General, Preferences} from 'mattermost-redux/constants';
 import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
 import {
-    getChannel,
     getCurrentChannelId,
-    getMyChannelMember,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
     isManuallyUnread,
 } from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId, getTeamByName} from 'mattermost-redux/selectors/entities/teams';
-
-import {getChannelReachable} from 'app/selectors/channel';
-
-import telemetry from 'app/telemetry';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUserIdsInChannels, getUsers} from 'mattermost-redux/selectors/entities/users';
+import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     getChannelByName,
@@ -54,15 +45,16 @@ import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
 
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from 'app/constants/post_textbox';
-import {isDirectChannelVisible, isGroupChannelVisible} from 'app/utils/channels';
+import {getChannelReachable} from 'app/selectors/channel';
+import telemetry from 'app/telemetry';
+import {isDirectChannelVisible, isGroupChannelVisible, isDirectMessageVisible, isGroupMessageVisible, isDirectChannelAutoClosed} from 'app/utils/channels';
+import {isPendingPost} from 'app/utils/general';
+import {buildPreference} from 'app/utils/preferences';
 
-const MAX_POST_TRIES = 3;
+import {getPosts, getPostsBefore, getPostsSince, getPostThread} from './post';
+import {forceLogoutIfNecessary} from './user';
 
-export function loadChannelsIfNecessary(teamId) {
-    return async (dispatch) => {
-        await dispatch(fetchMyChannelsAndMembers(teamId));
-    };
-}
+const MAX_RETRIES = 3;
 
 export function loadChannelsByTeamName(teamName, errorHandler) {
     return async (dispatch, getState) => {
@@ -175,7 +167,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         }
 
         if (actions.length) {
-            dispatch(batchActions(actions), getState);
+            dispatch(batchActions(actions));
         }
     };
 }
@@ -190,22 +182,10 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
         const time = Date.now();
 
         let loadMorePostsVisible = true;
-        let received;
+        let postAction;
         if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
             // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-            received = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
-
-            if (received?.order) {
-                const count = received.order.length;
-                loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-                actions.push({
-                    type: ViewTypes.SET_INITIAL_POST_COUNT,
-                    data: {
-                        channelId,
-                        count,
-                    },
-                });
-            }
+            postAction = getPosts(channelId);
         } else {
             const lastConnectAt = state.websocket?.lastConnectAt || 0;
             const lastGetPosts = state.views.channel.lastGetPosts[channelId];
@@ -221,20 +201,10 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 since = getLastCreateAt(postsForChannel);
             }
 
-            received = await retryGetPostsAction(getPostsSince(channelId, since), dispatch, getState);
-
-            if (received?.order) {
-                const count = received.order.length;
-                loadMorePostsVisible = postsIds.length + count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-                actions.push({
-                    type: ViewTypes.SET_INITIAL_POST_COUNT,
-                    data: {
-                        channelId,
-                        count: postsIds.length + count,
-                    },
-                });
-            }
+            postAction = getPostsSince(channelId, since);
         }
+
+        const received = await retryGetPostsAction(postAction, dispatch, getState);
 
         if (received) {
             actions.push({
@@ -242,6 +212,11 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
                 channelId,
                 time,
             });
+
+            if (received?.order) {
+                const count = received.order.length;
+                loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
+            }
         }
 
         actions.push(setLoadMorePostsVisible(loadMorePostsVisible));
@@ -249,8 +224,8 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
     };
 }
 
-export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_POST_TRIES) {
-    for (let i = 0; i < maxTries; i++) {
+export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_RETRIES) {
+    for (let i = 0; i <= maxTries; i++) {
         const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
         if (data) {
@@ -337,7 +312,6 @@ export function selectPenultimateChannel(teamId) {
             lastChannel.delete_at === 0 &&
             (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
         ) {
-            dispatch(setChannelLoading(true));
             dispatch(handleSelectChannel(lastChannelId));
             return;
         }
@@ -352,7 +326,6 @@ export function selectDefaultChannel(teamId) {
 
         const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
         const channel = getChannelByNameSelector(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
-
         let channelId;
         if (channel) {
             channelId = channel.id;
@@ -370,39 +343,32 @@ export function selectDefaultChannel(teamId) {
     };
 }
 
-export function handleSelectChannel(channelId, fromPushNotification = false) {
+export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
+        const dt = Date.now();
         const state = getState();
-        const channel = getChannel(state, channelId);
-        const currentTeamId = getCurrentTeamId(state);
-        const currentChannelId = getCurrentChannelId(state);
-        const sameChannel = channelId === currentChannelId;
-        const member = getMyChannelMember(state, channelId);
+        const {channels, currentChannelId, myMembers} = state.entities.channels;
+        const {currentTeamId} = state.entities.teams;
+        const channel = channels[channelId];
+        const member = myMembers[channelId];
 
-        dispatch(setLoadMorePostsVisible(true));
+        dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
-        // If the app is open from push notification, we already fetched the posts.
-        if (!fromPushNotification) {
-            dispatch(loadPostsIfNecessaryWithRetry(channelId));
+        if (channel && currentChannelId !== channelId) {
+            const actions = markAsViewedAndReadBatch(state, channelId, currentChannelId);
+            actions.push({
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId,
+                extra: {
+                    channel,
+                    member,
+                    teamId: channel.team_id || currentTeamId,
+                },
+            });
+            dispatch(batchActions(actions));
         }
 
-        let previousChannelId;
-        if (!fromPushNotification && !sameChannel) {
-            previousChannelId = currentChannelId;
-        }
-
-        const actions = [
-            selectChannel(channelId),
-            getChannelStats(channelId),
-            setChannelDisplayName(channel.display_name),
-            setInitialPostVisibility(channelId),
-            setChannelLoading(false),
-            setLastChannelForTeam(currentTeamId, channelId),
-            selectChannelWithMember(channelId, channel, member),
-        ];
-
-        dispatch(batchActions(actions));
-        dispatch(markChannelViewedAndRead(channelId, previousChannelId));
+        console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
     };
 }
 
@@ -440,12 +406,10 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
 }
 
 export function handlePostDraftChanged(channelId, draft) {
-    return async (dispatch, getState) => {
-        dispatch({
-            type: ViewTypes.POST_DRAFT_CHANGED,
-            channelId,
-            draft,
-        }, getState);
+    return {
+        type: ViewTypes.POST_DRAFT_CHANGED,
+        channelId,
+        draft,
     };
 }
 
@@ -465,6 +429,81 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
         dispatch(markChannelAsRead(channelId, previousChannelId, markOnServer));
         dispatch(markChannelAsViewed(channelId, previousChannelId));
     };
+}
+
+function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', markOnServer = true) {
+    const actions = [];
+    const {channels, myMembers} = state.entities.channels;
+    const channel = channels[channelId];
+    const member = myMembers[channelId];
+    const prevMember = myMembers[prevChannelId];
+    const prevChanManuallyUnread = isManuallyUnread(state, prevChannelId);
+    const prevChannel = (!prevChanManuallyUnread && prevChannelId) ? channels[prevChannelId] : null; // May be null since prevChannelId is optional
+
+    if (markOnServer) {
+        Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId);
+    }
+
+    if (member) {
+        actions.push({
+            type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
+            data: {...member, last_viewed_at: Date.now()},
+        });
+
+        if (isManuallyUnread(state, channelId)) {
+            actions.push({
+                type: ChannelTypes.REMOVE_MANUALLY_UNREAD,
+                data: {channelId},
+            });
+        }
+
+        if (channel) {
+            actions.push({
+                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                data: {
+                    teamId: channel.team_id,
+                    channelId,
+                    amount: channel.total_msg_count - member.msg_count,
+                },
+            }, {
+                type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,
+                data: {
+                    teamId: channel.team_id,
+                    channelId,
+                    amount: member.mention_count,
+                },
+            });
+        }
+    }
+
+    if (prevMember) {
+        if (!prevChanManuallyUnread) {
+            actions.push({
+                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
+                data: {...prevMember, last_viewed_at: Date.now()},
+            });
+        }
+
+        if (prevChannel) {
+            actions.push({
+                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                data: {
+                    teamId: prevChannel.team_id,
+                    channelId: prevChannelId,
+                    amount: prevChannel.total_msg_count - prevMember.msg_count,
+                },
+            }, {
+                type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,
+                data: {
+                    teamId: prevChannel.team_id,
+                    channelId: prevChannelId,
+                    amount: prevMember.mention_count,
+                },
+            });
+        }
+    }
+
+    return actions;
 }
 
 export function markChannelViewedAndReadOnReconnect(channelId) {
@@ -608,8 +647,8 @@ export function setChannelDisplayName(displayName) {
 export function increasePostVisibility(channelId, postId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {loadingPosts, postVisibility} = state.views.channel;
-        const currentPostVisibility = postVisibility[channelId] || 0;
+        const {loadingPosts} = state.views.channel;
+        const currentUserId = getCurrentUserId(state);
 
         if (loadingPosts[channelId]) {
             return true;
@@ -620,17 +659,8 @@ export function increasePostVisibility(channelId, postId) {
             return true;
         }
 
-        // Check if we already have the posts that we want to show
-        const loadedPostCount = state.views.channel.postCountInChannel[channelId] || 0;
-        const desiredPostVisibility = currentPostVisibility + ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
-
-        if (loadedPostCount >= desiredPostVisibility) {
-            // We already have the posts, so we just need to show them
-            dispatch(batchActions([
-                doIncreasePostVisibility(channelId),
-                setLoadMorePostsVisible(true),
-            ]));
-
+        if (isPendingPost(postId, currentUserId)) {
+            // This is the first created post in the channel
             return true;
         }
 
@@ -658,18 +688,6 @@ export function increasePostVisibility(channelId, postId) {
             const count = result.order.length;
             hasMorePost = count >= pageSize;
 
-            actions.push({
-                type: ViewTypes.INCREASE_POST_COUNT,
-                data: {
-                    channelId,
-                    count,
-                },
-            });
-
-            // make sure to increment the posts visibility
-            // only if we got results
-            actions.push(doIncreasePostVisibility(channelId));
-
             actions.push(setLoadMorePostsVisible(hasMorePost));
         }
 
@@ -681,24 +699,6 @@ export function increasePostVisibility(channelId, postId) {
     };
 }
 
-export function increasePostVisibilityByOne(channelId) {
-    return (dispatch) => {
-        dispatch({
-            type: ViewTypes.INCREASE_POST_VISIBILITY,
-            data: channelId,
-            amount: 1,
-        });
-    };
-}
-
-function doIncreasePostVisibility(channelId) {
-    return {
-        type: ViewTypes.INCREASE_POST_VISIBILITY,
-        data: channelId,
-        amount: ViewTypes.POST_VISIBILITY_CHUNK_SIZE,
-    };
-}
-
 function setLoadMorePostsVisible(visible) {
     return {
         type: ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE,
@@ -706,26 +706,203 @@ function setLoadMorePostsVisible(visible) {
     };
 }
 
-function setInitialPostVisibility(channelId) {
-    return {
-        type: ViewTypes.SET_INITIAL_POST_VISIBILITY,
-        data: channelId,
+export function loadChannelsForTeam(teamId) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+
+        if (currentUserId) {
+            const data = {sync: true, teamId};
+            for (let i = 0; i <= MAX_RETRIES; i++) {
+                try {
+                    console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
+                    const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                        Client4.getMyChannels(teamId, true),
+                        Client4.getMyChannelMembers(teamId),
+                    ]);
+
+                    data.channels = channels;
+                    data.channelMembers = channelMembers;
+                    break;
+                } catch (err) {
+                    const result = await dispatch(forceLogoutIfNecessary(err)); //eslint-disable-line no-await-in-loop
+                    if (result || i === MAX_RETRIES) {
+                        const hasChannelsLoaded = state.entities.channels.channelsInTeam[teamId]?.size > 0;
+                        return {error: hasChannelsLoaded ? null : err};
+                    }
+                }
+            }
+
+            if (data.channels) {
+                const roles = new Set();
+                const members = data.channelMembers;
+                for (const member of members) {
+                    for (const role of member.roles.split(' ')) {
+                        roles.add(role);
+                    }
+                }
+
+                if (roles.size > 0) {
+                    dispatch(loadRolesIfNeeded(roles));
+                }
+
+                // Fetch needed profiles from channel creators and direct channels
+                dispatch(loadSidebarDirectMessagesProfiles(data));
+
+                dispatch({
+                    type: ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS,
+                    data,
+                });
+            }
+
+            return {data};
+        }
+
+        return {error: 'Cannot fetch channels without a current user'};
     };
 }
 
-function setLastChannelForTeam(teamId, channelId) {
-    return {
-        type: ViewTypes.SET_LAST_CHANNEL_FOR_TEAM,
-        teamId,
-        channelId,
+export function loadSidebarDirectMessagesProfiles(data) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const {channels, channelMembers} = data;
+        const currentUserId = getCurrentUserId(state);
+        const usersInChannel = getUserIdsInChannels(state);
+        const directChannels = Object.values(channels).filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
+        const prefs = [];
+        const promises = []; //only fetch profiles that we don't have and the Direct channel should be visible
+
+        // Prepare preferences and start fetching profiles to batch them
+        directChannels.forEach((c) => {
+            const profilesInChannel = Array.from(usersInChannel[c.id] || []).filter((u) => u.id !== currentUserId);
+            switch (c.type) {
+            case General.DM_CHANNEL: {
+                const dm = fetchDirectMessageProfileIfNeeded(state, c, channelMembers, profilesInChannel, prefs);
+
+                if (dm) {
+                    promises.push(dispatch(dm));
+                }
+                break;
+            }
+            case General.GM_CHANNEL: {
+                const gm = fetchGroupMessageProfilesIfNeeded(state, c, channelMembers, profilesInChannel, prefs);
+
+                if (gm) {
+                    promises.push(dispatch(gm));
+                }
+                break;
+            }
+            }
+        });
+
+        // Save preferences if there are any changes
+        if (prefs.length) {
+            dispatch(savePreferences(currentUserId, prefs));
+        }
+
+        getProfilesFromPromises(dispatch, promises, directChannels);
+
+        return {data: true};
     };
 }
 
-function selectChannelWithMember(channelId, channel, member) {
-    return {
-        type: ViewTypes.SELECT_CHANNEL_WITH_MEMBER,
-        data: channelId,
-        channel,
-        member,
+export function getUsersInChannel(channelId) {
+    return async (dispatch, getState) => {
+        try {
+            const state = getState();
+            const currentUserId = getCurrentUserId(state);
+            const profiles = await Client4.getProfilesInChannel(channelId);
+
+            // When fetching profiles in channels we exclude our own user
+            const users = profiles.filter((p) => p.id !== currentUserId);
+            const data = {
+                channelId,
+                users,
+            };
+
+            return {data};
+        } catch (error) {
+            return {error};
+        }
     };
+}
+
+async function getProfilesFromPromises(dispatch, promiseArray, directChannels) {
+    // Get the profiles returned by the promises and retry those that failed
+    let promises = promiseArray;
+    for (let i = 0; i <= MAX_RETRIES; i++) {
+        if (!promises.length) {
+            return;
+        }
+
+        const result = await Promise.all(promises); //eslint-disable-line no-await-in-loop
+        const failed = [];
+
+        result.forEach((p, index) => {
+            if (p.error) {
+                failed.push(directChannels[index].id);
+            }
+        });
+
+        dispatch({
+            type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
+            data: result,
+        });
+
+        if (failed.length) {
+            promises = failed.map((id) => dispatch(getUsersInChannel(id))); //eslint-disable-line no-loop-func
+            continue;
+        }
+
+        return;
+    }
+}
+
+function fetchDirectMessageProfileIfNeeded(state, channel, channelMembers, profilesInChannel, newPreferences) {
+    const currentUserId = getCurrentUserId(state);
+    const preferences = getMyPreferences(state);
+    const users = getUsers(state);
+    const config = getConfig(state);
+    const currentChannelId = getCurrentChannelId(state);
+    const otherUserId = getUserIdFromChannelName(currentUserId, channel.name);
+    const otherUser = users[otherUserId];
+    const dmVisible = isDirectMessageVisible(preferences, channel.id);
+    const dmAutoClosed = isDirectChannelAutoClosed(config, preferences, channel.id, channel.last_post_at, otherUser?.delete_at, currentChannelId); //eslint-disable-line camelcase
+    const dmIsUnread = channelMembers[channel.id]?.mention_count > 0; //eslint-disable-line camelcase
+    const dmFetchProfile = dmIsUnread || (dmVisible && !dmAutoClosed);
+
+    // when then DM is hidden but has new messages
+    if ((!dmVisible || dmAutoClosed) && dmIsUnread) {
+        newPreferences.push(buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId));
+        newPreferences.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channel.id, Date.now().toString()));
+    }
+
+    if (dmFetchProfile && !profilesInChannel.includes(otherUserId) && otherUserId !== currentUserId) {
+        return getUsersInChannel(channel.id);
+    }
+
+    return null;
+}
+
+function fetchGroupMessageProfilesIfNeeded(state, channel, channelMembers, profilesInChannel, newPreferences) {
+    const currentUserId = getCurrentUserId(state);
+    const preferences = getMyPreferences(state);
+    const config = getConfig(state);
+    const gmVisible = isGroupMessageVisible(preferences, channel.id);
+    const gmAutoClosed = isDirectChannelAutoClosed(config, preferences, channel.id, channel.last_post_at);
+    const channelMember = channelMembers[channel.id];
+    const gmIsUnread = channelMember?.mention_count > 0 || channelMember?.msg_count < channel.total_msg_count; //eslint-disable-line camelcase
+    const gmFetchProfile = gmIsUnread || (gmVisible && !gmAutoClosed);
+
+    // when then GM is hidden but has new messages
+    if ((!gmVisible || gmAutoClosed) && gmIsUnread) {
+        newPreferences.push(buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, channel.id));
+        newPreferences.push(buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channel.id, Date.now().toString()));
+    }
+
+    if (gmFetchProfile && !profilesInChannel.length) {
+        return getUsersInChannel(channel.id);
+    }
+
+    return null;
 }

@@ -8,8 +8,6 @@ import {
     AppState,
     BackHandler,
     findNodeHandle,
-    Image,
-    InteractionManager,
     Keyboard,
     NativeModules,
     Platform,
@@ -17,10 +15,12 @@ import {
     TouchableOpacity,
     ScrollView,
     View,
+    Image,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
 import Button from 'react-native-button';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
 
@@ -43,6 +43,7 @@ import FileUploadPreview from 'app/components/file_upload_preview';
 import EphemeralStore from 'app/store/ephemeral_store';
 import {t} from 'app/utils/i18n';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
+import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -50,6 +51,8 @@ import {
 } from 'app/utils/theme';
 
 const {RNTextInputReset} = NativeModules;
+const INPUT_LINE_HEIGHT = 20;
+const EXTRA_INPUT_PADDING = 3;
 
 export default class PostTextBoxBase extends PureComponent {
     static propTypes = {
@@ -73,7 +76,6 @@ export default class PostTextBoxBase extends PureComponent {
         channelId: PropTypes.string.isRequired,
         channelDisplayName: PropTypes.string,
         channelTeamId: PropTypes.string.isRequired,
-        channelIsLoading: PropTypes.bool,
         channelIsReadOnly: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deactivatedChannel: PropTypes.bool.isRequired,
@@ -95,6 +97,8 @@ export default class PostTextBoxBase extends PureComponent {
         currentChannel: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
         screenId: PropTypes.string.isRequired,
+        canPost: PropTypes.bool.isRequired,
+        useChannelMentions: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -121,6 +125,7 @@ export default class PostTextBoxBase extends PureComponent {
             channelId: props.channelId,
             channelTimezoneCount: 0,
             longMessageAlertShown: false,
+            extraInputPadding: 0,
         };
     }
 
@@ -129,6 +134,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.on(event, this.handleInsertTextToDraft);
         AppState.addEventListener('change', this.handleAppStateChange);
+        HWKeyboardEvent.onHWKeyPressed(this.handleHardwareEnterPress);
 
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -156,6 +162,7 @@ export default class PostTextBoxBase extends PureComponent {
 
         EventEmitter.off(event, this.handleInsertTextToDraft);
         AppState.removeEventListener('change', this.handleAppStateChange);
+        HWKeyboardEvent.removeOnHWKeyPressed();
 
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -251,7 +258,7 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     getTextInputButton = (actionType) => {
-        const {channelIsReadOnly, theme} = this.props;
+        const {channelIsReadOnly, theme, canPost} = this.props;
         const style = getStyleSheet(theme);
 
         let button = null;
@@ -259,7 +266,7 @@ export default class PostTextBoxBase extends PureComponent {
         let iconColor = changeOpacity(theme.centerChannelColor, 0.64);
         let isDisabled = false;
 
-        if (!channelIsReadOnly) {
+        if (!channelIsReadOnly && canPost) {
             switch (actionType) {
             case 'at':
                 isDisabled = this.state.value[this.state.value.length - 1] === '@';
@@ -307,7 +314,7 @@ export default class PostTextBoxBase extends PureComponent {
     }
 
     getMediaButton = (actionType) => {
-        const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme} = this.props;
+        const {canUploadFiles, channelIsReadOnly, files, maxFileSize, theme, canPost} = this.props;
         const style = getStyleSheet(theme);
         let button = null;
         const props = {
@@ -322,7 +329,7 @@ export default class PostTextBoxBase extends PureComponent {
             buttonContainerStyle: style.iconWrapper,
         };
 
-        if (canUploadFiles && !channelIsReadOnly) {
+        if (canUploadFiles && !channelIsReadOnly && canPost) {
             switch (actionType) {
             case 'file':
                 button = (
@@ -345,11 +352,11 @@ export default class PostTextBoxBase extends PureComponent {
     }
 
     getInputContainerStyle = () => {
-        const {channelIsReadOnly, theme} = this.props;
+        const {channelIsReadOnly, theme, canPost} = this.props;
         const style = getStyleSheet(theme);
         const inputContainerStyle = [style.inputContainer];
 
-        if (channelIsReadOnly) {
+        if (channelIsReadOnly || !canPost) {
             inputContainerStyle.push(style.readonlyContainer);
         }
 
@@ -357,10 +364,10 @@ export default class PostTextBoxBase extends PureComponent {
     };
 
     getPlaceHolder = () => {
-        const {channelIsReadOnly, rootId} = this.props;
+        const {channelIsReadOnly, rootId, canPost} = this.props;
         let placeholder;
 
-        if (channelIsReadOnly) {
+        if (channelIsReadOnly || !canPost) {
             placeholder = {id: t('mobile.create_post.read_only'), defaultMessage: 'This channel is read-only.'};
         } else if (rootId) {
             placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
@@ -374,6 +381,14 @@ export default class PostTextBoxBase extends PureComponent {
     handleAndroidKeyboard = () => {
         this.blur();
     };
+
+    handleHardwareEnterPress = (keyEvent) => {
+        switch (keyEvent.pressedKey) {
+        case 'enter': this.handleSendMessage();
+            break;
+        case 'shift-enter': this.handleInsertTextToDraft('\n');
+        }
+    }
 
     handleAndroidBack = () => {
         const {channelId, files, rootId} = this.props;
@@ -396,17 +411,25 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
-    handlePostDraftSelectionChanged = (event) => {
-        const cursorPosition = event.nativeEvent.selection.end;
+    handleOnSelectionChange = (event) => {
+        this.handlePostDraftSelectionChanged(event, false);
+    };
+
+    handlePostDraftSelectionChanged = (event, fromHandleTextChange) => {
+        const cursorPosition = fromHandleTextChange ? this.state.cursorPosition : event.nativeEvent.selection.end;
+
         const {cursorPositionEvent} = this.props;
 
         if (cursorPositionEvent) {
             EventEmitter.emit(cursorPositionEvent, cursorPosition);
         }
 
-        this.setState({
-            cursorPosition,
-        });
+        if (Platform.OS === 'ios') {
+            const keyboardType = switchKeyboardForCodeBlocks(this.state.value, cursorPosition);
+            this.setState({cursorPosition, keyboardType});
+        } else {
+            this.setState({cursorPosition});
+        }
     };
 
     handleSendMessage = () => {
@@ -504,7 +527,13 @@ export default class PostTextBoxBase extends PureComponent {
 
         this.checkMessageLength(value);
 
-        this.setState(nextState);
+        // Workaround to avoid iOS emdash autocorrect in Code Blocks
+        if (Platform.OS === 'ios') {
+            const callback = () => this.handlePostDraftSelectionChanged(null, true);
+            this.setState(nextState, callback);
+        } else {
+            this.setState(nextState);
+        }
 
         if (value) {
             actions.userTyping(channelId, rootId);
@@ -545,7 +574,7 @@ export default class PostTextBoxBase extends PureComponent {
         const {value} = this.state;
 
         const currentMembersCount = this.props.currentChannelMembersCount;
-        const notificationsToChannel = this.props.enableConfirmNotificationsToChannel;
+        const notificationsToChannel = this.props.enableConfirmNotificationsToChannel && this.props.useChannelMentions;
         const toAllOrChannel = this.textContainsAtAllAtChannel(value);
 
         if (value.indexOf('/') === 0) {
@@ -640,10 +669,26 @@ export default class PostTextBoxBase extends PureComponent {
             actions.handleClearFiles(channelId, rootId);
         }
 
-        InteractionManager.runAfterInteractions(() => {
+        if (Platform.OS === 'ios') {
+            // On iOS, if the PostTextbox height increases from its
+            // initial height (due to a multiline post or a post whose
+            // message wraps, for example), then when the text is cleared
+            // the PostTextbox height decrease will be animated. This
+            // animation in conjunction with the PostList animation as it
+            // receives the newly created post is causing issues in the iOS
+            // PostList component as it fails to properly react to its content
+            // size changes. While a proper fix is determined for the PostList
+            // component, a small delay in triggering the height decrease
+            // animation gives the PostList enough time to first handle content
+            // size changes from the new post.
+            setTimeout(() => {
+                this.handleTextChange('');
+                this.setState({sendingMessage: false});
+            }, 250);
+        } else {
             this.handleTextChange('');
             this.setState({sendingMessage: false});
-        });
+        }
 
         this.changeDraft('');
 
@@ -827,6 +872,16 @@ export default class PostTextBoxBase extends PureComponent {
         }
     };
 
+    handleInputSizeChange = ({nativeEvent: {contentSize}}) => {
+        const {extraInputPadding} = this.state;
+        const numLines = contentSize.height / INPUT_LINE_HEIGHT;
+        if (numLines >= 2 && extraInputPadding !== EXTRA_INPUT_PADDING) {
+            this.setState({extraInputPadding: EXTRA_INPUT_PADDING});
+        } else if (numLines < 2 && extraInputPadding !== 0) {
+            this.setState({extraInputPadding: 0});
+        }
+    }
+
     renderDeactivatedChannel = () => {
         const {intl} = this.context;
         const style = getStyleSheet(this.props.theme);
@@ -843,21 +898,26 @@ export default class PostTextBoxBase extends PureComponent {
 
     renderTextBox = () => {
         const {intl} = this.context;
-        const {channelDisplayName, channelIsArchived, channelIsLoading, channelIsReadOnly, theme, isLandscape, files, rootId} = this.props;
+        const {channelDisplayName, channelIsArchived, channelIsReadOnly, theme, isLandscape, files, rootId, canPost} = this.props;
         const style = getStyleSheet(theme);
 
         if (channelIsArchived) {
             return this.archivedView(theme, style);
         }
 
-        const {value} = this.state;
-        const textValue = channelIsLoading ? '' : value;
+        const {value, extraInputPadding} = this.state;
         const placeholder = this.getPlaceHolder();
 
         let maxHeight = 150;
 
         if (isLandscape) {
             maxHeight = 88;
+        }
+
+        const inputStyle = {};
+        if (extraInputPadding) {
+            inputStyle.paddingBottom = style.input.paddingBottom + extraInputPadding;
+            inputStyle.paddingTop = style.input.paddingTop + extraInputPadding;
         }
 
         return (
@@ -878,23 +938,24 @@ export default class PostTextBoxBase extends PureComponent {
                 >
                     <PasteableTextInput
                         ref={this.input}
-                        value={textValue}
+                        value={value}
+                        style={{...style.input, ...inputStyle, maxHeight}}
                         onChangeText={this.handleTextChange}
-                        onSelectionChange={this.handlePostDraftSelectionChanged}
+                        onSelectionChange={this.handleOnSelectionChange}
                         placeholder={intl.formatMessage(placeholder, {channelDisplayName})}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         multiline={true}
                         blurOnSubmit={false}
                         underlineColorAndroid='transparent'
-                        style={{...style.input, maxHeight}}
                         keyboardType={this.state.keyboardType}
                         onEndEditing={this.handleEndEditing}
                         disableFullscreenUI={true}
-                        editable={!channelIsReadOnly}
+                        editable={!channelIsReadOnly && canPost}
                         onPaste={this.handlePasteFiles}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        onContentSizeChange={Platform.OS === 'android' ? this.handleInputSizeChange : null}
                     />
-                    {!channelIsReadOnly &&
+                    {!channelIsReadOnly && canPost &&
                     <React.Fragment>
                         <FileUploadPreview
                             files={files}
@@ -936,6 +997,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
+            paddingBottom: Platform.select({
+                ios: 1,
+                android: 2,
+            }),
         },
         slashIcon: {
             width: ICON_SIZE,
@@ -958,12 +1023,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         input: {
             color: theme.centerChannelColor,
-            fontSize: 16,
-            lineHeight: 20,
+            fontSize: 15,
+            lineHeight: INPUT_LINE_HEIGHT,
             paddingHorizontal: 12,
-            paddingTop: 12,
-            paddingBottom: 6,
-            minHeight: 38,
+            paddingTop: Platform.select({
+                ios: 6,
+                android: 8,
+            }),
+            paddingBottom: Platform.select({
+                ios: 6,
+                android: 2,
+            }),
+            minHeight: 30,
         },
         inputContainer: {
             flex: 1,
@@ -971,12 +1042,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         inputContentContainer: {
             alignItems: 'stretch',
+            paddingTop: Platform.select({
+                ios: 7,
+                android: 0,
+            }),
         },
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
             justifyContent: 'center',
-            paddingBottom: 8,
+            paddingBottom: 2,
             backgroundColor: theme.centerChannelBg,
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),

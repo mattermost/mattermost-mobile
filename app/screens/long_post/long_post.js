@@ -194,7 +194,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         header: {
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderBottomWidth: 1,
             borderTopLeftRadius: 6,
@@ -221,7 +220,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
         },
         postList: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         footer: {

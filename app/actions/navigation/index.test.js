@@ -14,6 +14,7 @@ import * as NavigationActions from 'app/actions/navigation';
 jest.unmock('app/actions/navigation');
 jest.mock('app/store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
+    clearNavigationComponents: jest.fn(),
 }));
 
 describe('app/actions/navigation', () => {
@@ -37,11 +38,12 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: 'Channel',
                             name: 'Channel',
                             passProps,
                             options: {
                                 layout: {
-                                    backgroundColor: 'transparent',
+                                    componentBackgroundColor: theme.centerChannelBg,
                                 },
                                 statusBar: {
                                     visible: true,
@@ -50,14 +52,10 @@ describe('app/actions/navigation', () => {
                                     visible: false,
                                     height: 0,
                                     backButton: {
-                                        color: theme.sidebarHeaderTextColor,
-                                        title: '',
+                                        visible: false,
                                     },
                                     background: {
                                         color: theme.sidebarHeaderBg,
-                                    },
-                                    title: {
-                                        color: theme.sidebarHeaderTextColor,
                                     },
                                 },
                             },
@@ -80,11 +78,16 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: 'SelectServer',
                             name: 'SelectServer',
                             passProps: {
                                 allowOtherServers,
                             },
                             options: {
+                                layout: {
+                                    backgroundColor: theme.centerChannelBg,
+                                    componentBackgroundColor: theme.centerChannelBg,
+                                },
                                 statusBar: {
                                     visible: true,
                                 },
@@ -115,7 +118,7 @@ describe('app/actions/navigation', () => {
 
         const defaultOptions = {
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -141,6 +144,7 @@ describe('app/actions/navigation', () => {
                 stack: {
                     children: [{
                         component: {
+                            id: name,
                             name,
                             passProps,
                             options: merge(defaultOptions, options),
@@ -159,7 +163,12 @@ describe('app/actions/navigation', () => {
 
         const defaultOptions = {
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
+            },
+            popGesture: true,
+            sideMenu: {
+                left: {enabled: false},
+                right: {enabled: false},
             },
             topBar: {
                 animate: true,
@@ -180,6 +189,7 @@ describe('app/actions/navigation', () => {
 
         const expectedLayout = {
             component: {
+                id: name,
                 name,
                 passProps,
                 options: merge(defaultOptions, options),
@@ -212,8 +222,9 @@ describe('app/actions/navigation', () => {
         const showModal = jest.spyOn(Navigation, 'showModal');
 
         const defaultOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -241,6 +252,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: name,
                         name,
                         passProps,
                         options: merge(defaultOptions, options),
@@ -262,6 +274,7 @@ describe('app/actions/navigation', () => {
             modalPresentationStyle: 'overCurrentContext',
             layout: {
                 backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
             },
             topBar: {
                 visible: false,
@@ -269,6 +282,7 @@ describe('app/actions/navigation', () => {
             },
             animations: {
                 showModal: {
+                    waitForRender: true,
                     enabled: animationsEnabled,
                     alpha: {
                         from: 0,
@@ -287,8 +301,9 @@ describe('app/actions/navigation', () => {
             },
         };
         const showModalOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -317,6 +332,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: name,
                         name,
                         passProps,
                         options: merge(showModalOptions, defaultOptions),
@@ -343,8 +359,9 @@ describe('app/actions/navigation', () => {
             },
         };
         const defaultOptions = {
+            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
             layout: {
-                backgroundColor: theme.centerChannelBg,
+                componentBackgroundColor: theme.centerChannelBg,
             },
             statusBar: {
                 visible: true,
@@ -372,6 +389,7 @@ describe('app/actions/navigation', () => {
             stack: {
                 children: [{
                     component: {
+                        id: showSearchModalName,
                         name: showSearchModalName,
                         passProps: showSearchModalPassProps,
                         options: merge(defaultOptions, showSearchModalOptions),
@@ -396,27 +414,6 @@ describe('app/actions/navigation', () => {
 
         await NavigationActions.dismissAllModals(options);
         expect(dismissAllModals).toHaveBeenCalledWith(options);
-    });
-
-    test('peek should call Navigation.push', async () => {
-        const push = jest.spyOn(Navigation, 'push');
-
-        const defaultOptions = {
-            preview: {
-                commit: false,
-            },
-        };
-
-        const expectedLayout = {
-            component: {
-                name,
-                passProps,
-                options: merge(defaultOptions, options),
-            },
-        };
-
-        await NavigationActions.peek(name, passProps, options);
-        expect(push).toHaveBeenCalledWith(topComponentId, expectedLayout);
     });
 
     test('mergeNavigationOptions should call Navigation.mergeOptions', () => {
@@ -447,6 +444,10 @@ describe('app/actions/navigation', () => {
         const showOverlay = jest.spyOn(Navigation, 'showOverlay');
 
         const defaultOptions = {
+            layout: {
+                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
+            },
             overlay: {
                 interceptTouchOutside: false,
             },

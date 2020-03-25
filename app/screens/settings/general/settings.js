@@ -29,7 +29,6 @@ class Settings extends PureComponent {
             clearErrors: PropTypes.func.isRequired,
             purgeOfflineStore: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string,
         config: PropTypes.object.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -115,12 +114,11 @@ class Settings extends PureComponent {
     });
 
     goToSelectTeam = preventDoubleTap(() => {
-        const {currentUrl, intl, theme} = this.props;
+        const {currentUrl, intl} = this.props;
         const screen = 'SelectTeam';
         const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
         const passProps = {
             currentUrl,
-            theme,
         };
 
         goToScreen(screen, title, passProps);

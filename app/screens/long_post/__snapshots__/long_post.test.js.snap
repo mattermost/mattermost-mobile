@@ -260,7 +260,6 @@ LongPost {
               style={
                 Object {
                   "alignItems": "center",
-                  "backgroundColor": "#ffffff",
                   "borderBottomColor": "rgba(61,60,64,0.2)",
                   "borderBottomWidth": 1,
                   "borderTopLeftRadius": 6,
@@ -323,7 +322,6 @@ LongPost {
             <ScrollView
               style={
                 Object {
-                  "backgroundColor": "#ffffff",
                   "flex": 1,
                 }
               }

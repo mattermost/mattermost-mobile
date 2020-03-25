@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Alert} from 'react-native';
+import {Alert, Platform, StatusBar} from 'react-native';
 import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
@@ -12,7 +12,7 @@ import ImageUploadButton from './image_upload_button';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
+    launchImageLibrary: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
 describe('ImageUploadButton', () => {
@@ -63,5 +63,56 @@ describe('ImageUploadButton', () => {
         expect(Permissions.request).not.toHaveBeenCalled();
         expect(Alert.alert).toHaveBeenCalled();
         expect(hasPermission).toBe(false);
+    });
+
+    test('hasPhotoPermission returns true when permission has been granted', async () => {
+        const platformPermissions = [{
+            platform: 'ios',
+            permission: Permissions.PERMISSIONS.IOS.PHOTO_LIBRARY,
+        }, {
+            platform: 'android',
+            permission: Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+        }];
+
+        for (let i = 0; i < platformPermissions.length; i++) {
+            const {platform, permission} = platformPermissions[i];
+            Platform.OS = platform;
+
+            const check = jest.spyOn(Permissions, 'check');
+            const request = jest.spyOn(Permissions, 'request');
+            request.mockReturnValue(Permissions.RESULTS.GRANTED);
+
+            const wrapper = shallow(
+                <ImageUploadButton {...baseProps}/>,
+                {context: {intl: {formatMessage}}},
+            );
+            const instance = wrapper.instance();
+
+            check.mockReturnValueOnce(Permissions.RESULTS.DENIED);
+            let hasPermission = await instance.hasPhotoPermission(); // eslint-disable-line no-await-in-loop
+            expect(check).toHaveBeenCalledWith(permission);
+            expect(request).toHaveBeenCalled();
+            expect(hasPermission).toBe(true);
+
+            check.mockReturnValueOnce(Permissions.RESULTS.UNAVAILABLE);
+            hasPermission = await instance.hasPhotoPermission(); // eslint-disable-line no-await-in-loop
+            expect(check).toHaveBeenCalledWith(permission);
+            expect(request).toHaveBeenCalled();
+            expect(hasPermission).toBe(true);
+        }
+    });
+
+    test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
+        const wrapper = shallow(
+            <ImageUploadButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'hasPhotoPermission').mockReturnValue(true);
+        jest.spyOn(StatusBar, 'setHidden');
+
+        await instance.attachFileFromLibrary();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 });

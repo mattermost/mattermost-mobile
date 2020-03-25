@@ -5,7 +5,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import Permissions from 'react-native-permissions';
-import {Alert} from 'react-native';
+import {Alert, StatusBar} from 'react-native';
 
 import Preferences from 'mattermost-redux/constants/preferences';
 
@@ -15,7 +15,8 @@ import AttachmentButton from './index';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
+    launchCamera: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
+    launchImageLibrary: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
 describe('AttachmentButton', () => {
@@ -103,5 +104,33 @@ describe('AttachmentButton', () => {
         expect(Permissions.request).not.toHaveBeenCalled();
         expect(Alert.alert).toHaveBeenCalled();
         expect(hasPhotoPermission).toBe(false);
+    });
+
+    test('should re-enable StatusBar after ImagePicker launchCamera finishes', async () => {
+        const wrapper = shallow(
+            <AttachmentButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'hasPhotoPermission').mockReturnValue(true);
+        jest.spyOn(StatusBar, 'setHidden');
+
+        await instance.attachFileFromCamera();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
+    });
+
+    test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
+        const wrapper = shallow(
+            <AttachmentButton {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
+        );
+
+        const instance = wrapper.instance();
+        jest.spyOn(instance, 'hasPhotoPermission').mockReturnValue(true);
+        jest.spyOn(StatusBar, 'setHidden');
+
+        await instance.attachFileFromLibrary();
+        expect(StatusBar.setHidden).toHaveBeenCalledWith(false);
     });
 });

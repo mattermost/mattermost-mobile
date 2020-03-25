@@ -20,7 +20,7 @@ describe('Actions.Views.SelectServer', () => {
         store = mockStore({});
     });
 
-    test('handleServerUrlChanged', async () => {
+    test('handleServerUrlChanged', () => {
         const serverUrl = 'https://mattermost.example.com';
         const actions = batchActions([
             {type: GeneralTypes.CLIENT_CONFIG_RESET},

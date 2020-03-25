@@ -7,7 +7,7 @@ import {shallow} from 'enzyme';
 import Preferences from 'mattermost-redux/constants/preferences';
 
 import {DeviceTypes} from 'app/constants';
-import MainSidebar from 'app/components/sidebars/main/main_sidebar';
+import MainSidebar from 'app/components/sidebars/main/main_sidebar.ios';
 import SidebarSettings from './index';
 
 jest.mock('react-intl');

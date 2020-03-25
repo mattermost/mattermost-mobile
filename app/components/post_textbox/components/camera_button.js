@@ -6,6 +6,7 @@ import {intlShape} from 'react-intl';
 import {
     Alert,
     Platform,
+    StatusBar,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {ICON_SIZE} from 'app/constants/post_textbox';
@@ -93,6 +94,7 @@ export default class AttachmentButton extends PureComponent {
 
         if (hasCameraPermission) {
             ImagePicker.launchCamera(options, (response) => {
+                StatusBar.setHidden(false);
                 if (response.error || response.didCancel) {
                     return;
                 }
@@ -103,47 +105,45 @@ export default class AttachmentButton extends PureComponent {
     };
 
     hasCameraPermission = async () => {
-        if (Platform.OS === 'ios') {
-            const {formatMessage} = this.context.intl;
-            let permissionRequest;
-            const targetSource = Permissions.PERMISSIONS.IOS.CAMERA;
-            const hasPermission = await Permissions.check(targetSource);
+        const {formatMessage} = this.context.intl;
+        const targetSource = Platform.OS === 'ios' ?
+            Permissions.PERMISSIONS.IOS.CAMERA :
+            Permissions.PERMISSIONS.ANDROID.CAMERA;
+        const hasPermission = await Permissions.check(targetSource);
 
-            switch (hasPermission) {
-            case Permissions.RESULTS.DENIED:
-            case Permissions.RESULTS.UNAVAILABLE:
-                permissionRequest = await Permissions.request(targetSource);
-                if (permissionRequest !== Permissions.RESULTS.AUTHORIZED) {
-                    return false;
-                }
-                break;
-            case Permissions.RESULTS.BLOCKED: {
-                const grantOption = {
-                    text: formatMessage({
-                        id: 'mobile.permission_denied_retry',
-                        defaultMessage: 'Settings',
-                    }),
-                    onPress: () => Permissions.openSettings(),
-                };
+        switch (hasPermission) {
+        case Permissions.RESULTS.DENIED:
+        case Permissions.RESULTS.UNAVAILABLE: {
+            const permissionRequest = await Permissions.request(targetSource);
 
-                const {title, text} = this.getPermissionDeniedMessage();
+            return permissionRequest === Permissions.RESULTS.GRANTED;
+        }
+        case Permissions.RESULTS.BLOCKED: {
+            const grantOption = {
+                text: formatMessage({
+                    id: 'mobile.permission_denied_retry',
+                    defaultMessage: 'Settings',
+                }),
+                onPress: () => Permissions.openSettings(),
+            };
 
-                Alert.alert(
-                    title,
-                    text,
-                    [
-                        grantOption,
-                        {
-                            text: formatMessage({
-                                id: 'mobile.permission_denied_dismiss',
-                                defaultMessage: 'Don\'t Allow',
-                            }),
-                        },
-                    ],
-                );
-                return false;
-            }
-            }
+            const {title, text} = this.getPermissionDeniedMessage();
+
+            Alert.alert(
+                title,
+                text,
+                [
+                    grantOption,
+                    {
+                        text: formatMessage({
+                            id: 'mobile.permission_denied_dismiss',
+                            defaultMessage: 'Don\'t Allow',
+                        }),
+                    },
+                ],
+            );
+            return false;
+        }
         }
 
         return true;

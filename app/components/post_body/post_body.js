@@ -143,7 +143,7 @@ export default class PostBody extends PureComponent {
         };
         const options = {
             layout: {
-                backgroundColor: changeOpacity('#000', 0.2),
+                componentBackgroundColor: changeOpacity('#000', 0.2),
             },
         };
 
@@ -410,6 +410,7 @@ export default class PostBody extends PureComponent {
                         onPostPress={onPress}
                         textStyles={textStyles}
                         value={message}
+                        disableAtChannelMentionHighlight={postProps.mentionHighlightDisabled}
                     />
                 </View>
             );
@@ -431,6 +432,7 @@ export default class PostBody extends PureComponent {
                     <ShowMoreButton
                         highlight={highlight}
                         onPress={this.openLongPost}
+                        theme={theme}
                     />
                     }
                     {this.renderPostAdditionalContent(blockStyles, messageStyle, textStyles)}

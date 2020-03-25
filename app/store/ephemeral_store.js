@@ -19,6 +19,11 @@ class EphemeralStore {
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
 
+    clearNavigationComponents = () => {
+        this.navigationComponentIdStack = [];
+        this.allNavigationComponentIds = [];
+    };
+
     addNavigationComponentId = (componentId) => {
         this.addToNavigationComponentIdStack(componentId);
         this.addToAllNavigationComponentIds(componentId);
@@ -45,6 +50,14 @@ class EphemeralStore {
             this.navigationComponentIdStack.splice(index, 1);
         }
     }
+
+    getStartFromNotification = () => {
+        return this.appStartedFromPushNotification;
+    };
+
+    setStartFromNotification = (value) => {
+        this.appStartedFromPushNotification = value;
+    };
 }
 
 export default new EphemeralStore();

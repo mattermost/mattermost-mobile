@@ -371,8 +371,6 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
     }
 
     componentDidUpdate(prevProps) {
-        super.componentDidUpdate(prevProps);
-
         const {updateMeRequest, intl} = this.props;
         if (updateMeRequest !== prevProps.updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(
@@ -754,7 +752,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
-            backgroundColor: theme.centerChannelBg,
         },
         input: {
             color: theme.centerChannelColor,

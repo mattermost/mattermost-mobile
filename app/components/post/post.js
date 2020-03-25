@@ -28,8 +28,6 @@ import {t} from 'app/utils/i18n';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
 
-import Config from 'assets/config';
-
 export default class Post extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -262,8 +260,6 @@ export default class Post extends PureComponent {
 
         const style = getStyleSheet(theme);
         const isReplyPost = this.isReplyPost();
-        const onUsernamePress =
-            Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly ? this.autofillUserMention : this.viewUserProfile;
         const mergeMessage = consecutivePost && !hasComments && !isBot;
         const highlightFlagged = isFlagged && !skipFlaggedHeader;
         const hightlightPinned = post.is_pinned && !skipPinnedHeader;
@@ -300,7 +296,7 @@ export default class Post extends PureComponent {
                     shouldRenderReplyButton={shouldRenderReplyButton}
                     showFullDate={showFullDate}
                     onPress={this.handleReply}
-                    onUsernamePress={onUsernamePress}
+                    onUsernamePress={this.viewUserProfile}
                     renderReplies={renderReplies}
                     theme={theme}
                     previousPostExists={previousPostExists}
@@ -320,7 +316,7 @@ export default class Post extends PureComponent {
                     underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     cancelTouchOnPanning={true}
                 >
-                    <React.Fragment>
+                    <>
                         <PostPreHeader
                             isConsecutive={mergeMessage}
                             isFlagged={isFlagged}
@@ -355,7 +351,7 @@ export default class Post extends PureComponent {
                                 />
                             </View>
                         </View>
-                    </React.Fragment>
+                    </>
                 </TouchableWithFeedback>
             </View>
         );
