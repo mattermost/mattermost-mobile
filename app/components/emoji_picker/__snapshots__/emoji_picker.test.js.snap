@@ -34,6 +34,7 @@ exports[`components/emoji_picker/EmojiPicker should match snapshot 1`] = `
         backgroundColor="transparent"
         blurOnSubmit={false}
         cancelTitle="Cancel"
+        containerHeight={40}
         deleteIconSize={20}
         editable={true}
         inputHeight={33}

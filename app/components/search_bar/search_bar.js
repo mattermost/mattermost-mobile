@@ -23,9 +23,6 @@ import {memoizeResult} from 'mattermost-redux/utils/helpers';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
-const containerHeight = 40;
-const middleHeight = 20;
-
 export default class Search extends PureComponent {
     static propTypes = {
         onBlur: PropTypes.func,
@@ -64,6 +61,7 @@ export default class Search extends PureComponent {
         backArrowSize: PropTypes.number,
         deleteIconSize: PropTypes.number,
         showCancel: PropTypes.bool,
+        containerHeight: PropTypes.number,
     };
 
     static contextTypes = {
@@ -86,6 +84,7 @@ export default class Search extends PureComponent {
         searchBarRightMargin: 0,
         returnKeyType: 'search',
         keyboardType: 'default',
+        containerHeight: 40,
     };
 
     constructor(props) {
@@ -213,7 +212,7 @@ export default class Search extends PureComponent {
     }
 
     render() {
-        const {backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin} = this.props;
+        const {backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin, containerHeight} = this.props;
         const searchBarStyle = getSearchBarStyle(
             backgroundColor,
             cancelButtonStyle,
@@ -224,6 +223,7 @@ export default class Search extends PureComponent {
             tintColorSearch,
             titleCancelColor,
             searchBarRightMargin,
+            containerHeight,
         );
         const {intl} = this.context;
 
@@ -245,10 +245,7 @@ export default class Search extends PureComponent {
                     size={24}
                     style={[
                         styles.fullWidth,
-                        {
-                            color: searchBarStyle.searchIconColor,
-                            top: middleHeight - 10,
-                        },
+                        searchBarStyle.searchIcon,
                     ]}
                 />
             );
@@ -287,7 +284,7 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <View style={styles.container}>
+            <View style={searchBarStyle.container}>
                 {((this.props.leftComponent) ?
                     <Animated.View
                         style={{
@@ -375,10 +372,18 @@ const getSearchBarStyle = memoizeResult((
     tintColorSearch,
     titleCancelColor,
     searchBarRightMargin,
+    containerHeight,
 ) => ({
     cancelButtonText: {
         ...cancelButtonStyle,
         color: titleCancelColor,
+    },
+    container: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        height: containerHeight,
+        flex: 1,
     },
     clearIconColorIos: tintColorDelete || styles.defaultColor.color,
     clearIconColorAndroid: titleCancelColor || placeholderTextColor,
@@ -401,17 +406,14 @@ const getSearchBarStyle = memoizeResult((
     searchBarContainer: {
         backgroundColor,
     },
+    searchIcon: {
+        color: tintColorSearch || placeholderTextColor,
+        top: 10,
+    },
     searchIconColor: tintColorSearch || placeholderTextColor,
 }));
 
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        height: containerHeight,
-        flex: 1,
-    },
     defaultColor: {
         color: 'grey',
     },
@@ -421,12 +423,12 @@ const styles = StyleSheet.create({
     inputContainer: {
         marginLeft: 0,
         borderRadius: Platform.select({
-            ios: 6,
+            ios: 2,
             android: 0,
         }),
     },
     inputMargin: {
-        marginLeft: 10,
+        marginLeft: 4,
     },
     leftIcon: {
         marginLeft: 4,

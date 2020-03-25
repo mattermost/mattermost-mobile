@@ -734,6 +734,7 @@ export default class Search extends PureComponent {
                             containerStyle={style.searchBarContainer}
                             backArrowSize={28}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            containerHeight={33}
                         />
                     </View>
                     <SectionList
@@ -775,6 +776,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 ios: {
                     height: 44,
                     paddingLeft: 8,
+                    paddingBottom: 10,
                 },
             }),
         },
