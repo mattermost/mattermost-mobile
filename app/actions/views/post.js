@@ -304,7 +304,7 @@ export function getPostsAdditionalDataBatch(posts = []) {
             const state = getState();
             const promises = [];
             const promiseTrace = [];
-            const extra = profilesStatusesAndToLoadFromPosts(state, posts);
+            const extra = userMetadataToLoadFromPosts(state, posts);
 
             if (extra?.userIds.length) {
                 promises.push(Client4.getProfilesByIds(extra.userIds));
@@ -355,7 +355,7 @@ export function getPostsAdditionalDataBatch(posts = []) {
     };
 }
 
-function profilesStatusesAndToLoadFromPosts(state, posts = []) {
+function userMetadataToLoadFromPosts(state, posts = []) {
     const {currentUserId, profiles, statuses} = state.entities.users;
 
     // Profiles of users mentioned in the posts
