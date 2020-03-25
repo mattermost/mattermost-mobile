@@ -14,7 +14,7 @@ export function connection(isOnline) {
                     type: DeviceTypes.CONNECTION_CHANGED,
                     data: isOnline,
                 },
-            ]));
+            ], 'BATCH_CONNECTION_CHANGED'));
         }
     };
 }

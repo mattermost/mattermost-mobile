@@ -18,7 +18,7 @@ import {GlobalState} from 'mattermost-redux/types/store';
 import {UserProfile} from 'mattermost-redux/types/users';
 import {RelationOneToMany} from 'mattermost-redux/types/utilities';
 
-import {isDirectMessageVisible, isGroupMessageVisible} from '@utils/channels';
+import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
 import {buildPreference} from '@utils/preferences';
 
 export async function loadSidebarDirectMessagesProfiles(state: GlobalState, channels: Array<Channel>, channelMembers: Array<ChannelMembership>) {
@@ -264,7 +264,7 @@ function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel,
     const currentChannelId = getCurrentChannelId(state);
     const otherUserId = getUserIdFromChannelName(currentUserId, channel.name);
     const otherUser = users[otherUserId];
-    const dmVisible = isDirectMessageVisible(myPreferences, channel.id);
+    const dmVisible = isDirectChannelVisible(currentUserId, myPreferences, channel.id);
     const dmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, otherUser ? otherUser.delete_at : 0, currentChannelId);
     const member = channelMembers.find((cm) => cm.channel_id === channel.id);
     const dmIsUnread = member ? member.mention_count > 0 : false;
@@ -291,7 +291,7 @@ function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel,
     const currentUserId = getCurrentUserId(state);
     const myPreferences = getMyPreferences(state);
     const config = getConfig(state);
-    const gmVisible = isGroupMessageVisible(myPreferences, channel.id);
+    const gmVisible = isGroupChannelVisible(myPreferences, channel.id);
     const gmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, 0);
     const channelMember = channelMembers.find((cm) => cm.channel_id === channel.id);
     let hasMentions = false;
