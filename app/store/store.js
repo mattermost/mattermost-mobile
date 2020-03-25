@@ -9,7 +9,6 @@ import {General} from 'mattermost-redux/constants';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import configureStore from 'mattermost-redux/store';
 
-import initialState from 'app/initial_state';
 import appReducer from 'app/reducers';
 import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
@@ -168,7 +167,7 @@ const persistConfig = {
     },
 };
 
-export default function configureAppStore() {
+export default function configureAppStore(initialState) {
     const clientOptions = {
         additionalMiddleware: [
             createThunkMiddleware(),
