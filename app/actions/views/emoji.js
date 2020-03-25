@@ -79,7 +79,7 @@ export function getEmojisInPosts(posts) {
             }
 
             if (actions.length) {
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_EMOJIS_FOR_POSTS'));
             }
         }
     };

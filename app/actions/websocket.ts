@@ -125,7 +125,7 @@ export function doFirstConnect(now: number) {
             }
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_WS_CONNCET'));
 
         return {data: true};
     };
@@ -230,7 +230,7 @@ export function doReconnect(now: number) {
                 }
     
                 if (actions.length) {
-                    dispatch(batchActions(actions));
+                    dispatch(batchActions(actions, 'BATCH_WS_RECONNECT'));
                 }
             }
         } catch (e) {
@@ -376,7 +376,6 @@ function handleNewPostEvent(msg: WebSocketMessage) {
 
             const myChannelMember = selectMyChannelMember(state, post.channel_id);
             if (!myChannelMember) {
-                console.log('The channel member?')
                 const member = await fetchMyChannelMember(post.channel_id);
                 if (member.data) {
                     actions.push({
@@ -463,7 +462,7 @@ function handleNewPostEvent(msg: WebSocketMessage) {
                 }
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_WS_NEW_POST'));
         }
 
         return {data: true};
@@ -480,7 +479,7 @@ function handlePostEdited(msg: WebSocketMessage) {
             actions.push(...additional.data);
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_WS_POST_EDITED'));
         return {data: true};
     };
 }
@@ -533,7 +532,7 @@ function handleLeaveTeamEvent(msg: Partial<WebSocketMessage>) {
                     actions.push(...notVisible);
                 }
             }
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_WS_LEAVE_TEAM'));
 
             // if they are on the team being removed deselect the current team and channel
             if (currentTeamId === msg.data.team_id) {
@@ -567,7 +566,7 @@ function handleTeamAddedEvent(msg: WebSocketMessage) {
                 data: teamUnreads,
             }];
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_WS_TEAM_ADDED'));
         } catch {
             // do nothing
         }
@@ -626,7 +625,7 @@ function handleUserAddedEvent(msg: WebSocketMessage) {
                 }
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_WS_USER_ADDED'));
         } catch (error) {
             //do nothing
         }
@@ -706,7 +705,7 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
                 });
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_WS_USER_REMOVED'));
         } catch {
             // do nothing
         }
@@ -775,7 +774,7 @@ function handleChannelCreatedEvent(msg: WebSocketMessage) {
         if (teamId === currentTeamId && !channels[channelId]) {
             const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
             if (channelActions.length) {
-                dispatch(batchActions(channelActions));
+                dispatch(batchActions(channelActions, 'BATCH_WS_CHANNEL_CREATED'));
             }
         }
         return {data: true};
@@ -810,7 +809,7 @@ function handleChannelDeletedEvent(msg: WebSocketMessage) {
             }
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_WS_CHANNEL_ARCHIVED'));
 
         return {data: true};
     };
@@ -842,7 +841,7 @@ function handleChannelUnarchiveEvent(msg: WebSocketMessage) {
                 });
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_WS_CHANNEL_UNARCHIVED'));
         }
         return {data: true};
     };
@@ -924,7 +923,7 @@ function handleChannelMemberUpdatedEvent(msg: WebSocketMessage) {
                 });
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_WS_CHANNEL_MEMBER_UPDATE'));
         } catch {
             //do nothing
         }
@@ -936,7 +935,7 @@ function handleChannelSchemeUpdatedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc) => {
         const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
         if (channelActions.length) {
-            dispatch(batchActions(channelActions));
+            dispatch(batchActions(channelActions, 'BATCH_WS_SCHEME_UPDATE'));
         }
         return {data: true};
     };
@@ -946,7 +945,7 @@ function handleDirectAddedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc) => {
         const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
         if (channelActions.length) {
-            dispatch(batchActions(channelActions));
+            dispatch(batchActions(channelActions, 'BATCH_WS_DM_ADDED'));
         }
         return {data: true};
     };
@@ -965,7 +964,7 @@ function handlePreferenceChangedEvent(msg: WebSocketMessage) {
             actions.push(...dmActions);
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_WS_PREFERENCE_CHANGED'));
         return {data: true};
     };
 }
@@ -990,7 +989,7 @@ function handlePreferencesChangedEvent(msg: WebSocketMessage) {
             actions.push(...dmActions);
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_WS_PREFERENCES_CHANGED'));
         return {data: true};
     };
 }

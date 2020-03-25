@@ -93,7 +93,7 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
                     actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS'));
             }
 
             return {data};
@@ -118,7 +118,7 @@ export function getPost(postId) {
                     actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POST'));
             }
 
             return {data};
@@ -145,7 +145,7 @@ export function getPostsSince(channelId, since) {
                     actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_SINCE'));
             }
 
             return {data};
@@ -172,7 +172,7 @@ export function getPostsBefore(channelId, postId, page = 0, perPage = Posts.POST
                     actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_BEFORE'));
             }
 
             return {data};
@@ -203,7 +203,7 @@ export function getPostThread(rootId, skipDispatch = false) {
                     return {data: actions};
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_THREAD'));
             }
 
             return {data};
@@ -250,7 +250,7 @@ export function getPostsAround(channelId, postId, perPage = Posts.POST_CHUNK_SIZ
                     actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_AROUND'));
             }
 
             return {data};

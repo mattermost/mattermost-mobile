@@ -67,7 +67,7 @@ export function getMe() {
                 });
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_GET_ME'));
             return {data};
         } catch (error) {
             return {error};
@@ -146,7 +146,7 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             }
 
             if (!skipDispatch) {
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_LOAD_ME'));
             }
         } catch (error) {
             console.log('login error', error.stack); // eslint-disable-line no-console

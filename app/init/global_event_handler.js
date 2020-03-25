@@ -290,7 +290,7 @@ class GlobalEventHandler {
                     type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
                     data: state.entities.general.deviceToken,
                 },
-            ]));
+            ], 'BATCH_RESET_STATE'));
         } catch (e) {
             // clear error
         }

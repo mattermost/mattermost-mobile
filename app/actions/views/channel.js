@@ -159,7 +159,7 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
         }
 
         if (actions.length) {
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_LOAD_PROFILES_FOR_SIDEBAR'));
         }
     };
 }
@@ -213,7 +213,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
         }
 
         actions.push(setLoadMorePostsVisible(loadMorePostsVisible));
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_LOAD_POSTS_IN_CHANNEL'));
     };
 }
 
@@ -357,7 +357,7 @@ export function handleSelectChannel(channelId) {
                     teamId: channel.team_id || currentTeamId,
                 },
             });
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
         }
 
         console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
@@ -427,7 +427,7 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
         const state = getState();
         const actions = markAsViewedAndReadBatch(state, channelId, previousChannelId, markOnServer);
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_MARK_CHANNEL_VIEWED_AND_READ'));
     };
 }
 
@@ -587,7 +587,7 @@ export function refreshChannelWithRetry(channelId) {
             actions.push(setChannelRetryFailed(false));
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_REEFRESH_CHANNEL'));
         return posts;
     };
 }
@@ -694,7 +694,7 @@ export function increasePostVisibility(channelId, postId) {
             actions.push(setLoadMorePostsVisible(hasMorePost));
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_LOAD_MORE_POSTS'));
         telemetry.end(['posts:loading']);
         telemetry.save();
 
@@ -761,7 +761,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                         }
                     }
 
-                    dispatch(batchActions(actions));
+                    dispatch(batchActions(actions, 'BATCH_LOAD_CHANNELS_FOR_TEAM'));
                 }
 
                 // Fetch needed profiles from channel creators and direct channels
@@ -780,7 +780,7 @@ function loadSidebar(data) {
 
         const sidebarActions = await loadSidebarDirectMessagesProfiles(state, channels, channelMembers);
         if (sidebarActions.length) {
-            dispatch(batchActions(sidebarActions));
+            dispatch(batchActions(sidebarActions, 'BATCH_LOAD_SIDEBAR'));
         }
     };
 }
