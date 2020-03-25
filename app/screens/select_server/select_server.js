@@ -24,6 +24,7 @@ import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import merge from 'deepmerge';
+import urlParse from 'url-parse';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -65,6 +66,7 @@ export default class SelectServer extends PureComponent {
         license: PropTypes.object,
         minVersion: PropTypes.string,
         serverUrl: PropTypes.string.isRequired,
+        deepLinkURL: PropTypes.string,
     };
 
     static contextTypes = {
@@ -73,12 +75,18 @@ export default class SelectServer extends PureComponent {
 
     constructor(props) {
         super(props);
+        const {allowOtherServers, serverUrl, deepLinkURL} = props;
+
+        let theUrl = serverUrl;
+        if (allowOtherServers && deepLinkURL) {
+            theUrl = 'https://' + urlParse(deepLinkURL).host;
+        }
 
         this.state = {
             connected: false,
             connecting: false,
             error: null,
-            url: props.serverUrl,
+            url: theUrl,
         };
 
         this.cancelPing = null;
@@ -144,7 +152,6 @@ export default class SelectServer extends PureComponent {
     };
 
     getUrl = () => {
-        const urlParse = require('url-parse');
         let preUrl = urlParse(this.state.url, true);
 
         if (!preUrl.host || preUrl.protocol === 'file:') {

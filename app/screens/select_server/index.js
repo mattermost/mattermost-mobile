@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {getPing, resetPing, setServerVersion} from 'mattermost-redux/actions/general';
 import {login} from 'mattermost-redux/actions/users';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
+import {getConfig, getLicense, getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';
@@ -22,9 +22,10 @@ function mapStateToProps(state) {
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
 
     return {
-        ...state.views.selectServer,
+        serverURL: getCurrentUrl(state),
         config,
         currentVersion,
+        deepLinkURL: state.views.root.deepLinkURL,
         hasConfigAndLicense: Object.keys(config).length > 0 && Object.keys(license).length > 0,
         latestVersion,
         license,
