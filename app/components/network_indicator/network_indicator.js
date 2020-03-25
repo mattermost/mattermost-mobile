@@ -169,7 +169,6 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     connected = () => {
-        // this.props.actions.setChannelRetryFailed(false);
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {
