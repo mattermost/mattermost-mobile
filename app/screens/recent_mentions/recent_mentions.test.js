@@ -11,7 +11,7 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import RecentMentions from './recent_mentions';
 
 jest.mock('rn-placeholder', () => ({
-    ImageContent: () => {},
+    ImageContent: () => null,
 }));
 
 describe('RecentMentions', () => {

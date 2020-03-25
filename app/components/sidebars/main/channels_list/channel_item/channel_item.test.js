@@ -31,7 +31,7 @@ describe('ChannelItem', () => {
         isUnread: true,
         hasDraft: false,
         mentions: 0,
-        onSelectChannel: () => {}, // eslint-disable-line no-empty-function
+        onSelectChannel: () => true,
         shouldHideChannel: false,
         showUnreadForMsgs: true,
         theme: Preferences.THEMES.default,

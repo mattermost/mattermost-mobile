@@ -51,7 +51,7 @@ import {
 import {loadChannelsForTeam, markAsViewedAndReadBatch} from '@actions/views/channel';
 import {getPost, getPosts, getPostsAdditionalDataBatch, getPostThread} from '@actions/views/post';
 import {getMe, loadMe} from '@actions/views/user';
-import { GlobalState } from 'mattermost-redux/types/store';
+import {GlobalState} from 'mattermost-redux/types/store';
 
 export type WebsocketBroadcast = {
     omit_users: Dictionary<boolean>;
@@ -90,14 +90,14 @@ export function init(additionalOptions: any = {}) {
 
 let reconnect = false;
 export function close(shouldReconnect = false) {
-        reconnect = shouldReconnect;
-        websocketClient.close(true);
+    reconnect = shouldReconnect;
+    websocketClient.close(true);
 
-        return {
-            type: GeneralTypes.WEBSOCKET_CLOSED,
-            timestamp: Date.now(),
-            data: null,
-        };
+    return {
+        type: GeneralTypes.WEBSOCKET_CLOSED,
+        timestamp: Date.now(),
+        data: null,
+    };
 }
 
 export function doFirstConnect(now: number) {
@@ -110,7 +110,7 @@ export function doFirstConnect(now: number) {
             data: null,
         }];
 
-        if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) &&  lastDisconnectAt) {
+        if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) && lastDisconnectAt) {
             const currentUserId = getCurrentUserId(state);
             const users = getUsers(state);
             const userIds = Object.keys(users);
@@ -171,20 +171,20 @@ export function doReconnect(now: number) {
                     type: TeamTypes.RECEIVED_MY_TEAM_MEMBERS,
                     data: me.teamMembers,
                 });
-    
+
                 const currentTeamMembership = me.teamMembers.find((tm: TeamMembership) => tm.team_id === currentTeamId && tm.delete_at === 0);
-    
+
                 if (currentTeamMembership) {
                     const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true));
-    
+
                     if (myData?.channels && myData?.channelMembers) {
                         actions.push({
                             type: ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS,
                             data: myData,
                         });
-    
+
                         const stillMemberOfCurrentChannel = myData.channelMembers.find((cm: ChannelMembership) => cm.channel_id === currentChannelId);
-    
+
                         const channelStillExists = myData.channels.find((c: Channel) => c.id === currentChannelId);
                         const config = getConfig(getState());
                         const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
@@ -208,14 +208,14 @@ export function doReconnect(now: number) {
                     };
                     dispatch(handleLeaveTeamEvent(newMsg));
                 }
-    
+
                 if (roles.length) {
                     actions.push({
                         type: RoleTypes.RECEIVED_ROLES,
                         data: roles,
                     });
                 }
-    
+
                 if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) && lastDisconnectAt) {
                     const userIds = Object.keys(users);
                     const userUpdates = await Client4.getProfilesByIds(userIds, {since: lastDisconnectAt});
@@ -228,7 +228,7 @@ export function doReconnect(now: number) {
                         });
                     }
                 }
-    
+
                 if (actions.length) {
                     dispatch(batchActions(actions, 'BATCH_WS_RECONNECT'));
                 }
@@ -248,10 +248,9 @@ function handleFirstConnect() {
         if (reconnect) {
             reconnect = false;
             return dispatch(doReconnect(now));
-        } else {
-            return dispatch(doFirstConnect(now));
         }
-    }
+        return dispatch(doFirstConnect(now));
+    };
 }
 
 function handleReconnect() {
@@ -347,7 +346,7 @@ function handleEvent(msg: WebSocketMessage) {
         }
 
         return {data: true};
-    }
+    };
 }
 
 function handleNewPostEvent(msg: WebSocketMessage) {
@@ -386,6 +385,7 @@ function handleNewPostEvent(msg: WebSocketMessage) {
             }
 
             actions.push(receivedNewPost(post));
+
             // If we don't have the thread for this post, fetch it from the server
             // and include the actions in the batch
             if (post.root_id) {
@@ -429,7 +429,7 @@ function handleNewPostEvent(msg: WebSocketMessage) {
                     actions.push(dmAction);
                 }
             } else if (msg.data.channel_type === General.GM_CHANNEL) {
-                const gmActions = await makeGroupMessageVisibleIfNecessary(state, post.channel_id)
+                const gmActions = await makeGroupMessageVisibleIfNecessary(state, post.channel_id);
                 if (gmActions) {
                     actions.push(...gmActions);
                 }
@@ -619,7 +619,7 @@ function handleUserAddedEvent(msg: WebSocketMessage) {
 
             if (teamId === currentTeamId && msg.data.user_id === currentUserId) {
                 const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
-                
+
                 if (channelActions.length) {
                     actions.push(...channelActions);
                 }
@@ -667,7 +667,7 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
 
             if (msg.broadcast.user_id === currentUser.id && currentTeamId) {
                 const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true));
-    
+
                 if (myData?.channels && myData?.channelMembers) {
                     actions.push({
                         type: ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS,
@@ -971,11 +971,11 @@ function handlePreferenceChangedEvent(msg: WebSocketMessage) {
 
 function handlePreferencesChangedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const preferences = JSON.parse(msg.data.preferences) as PreferenceType[];
+        const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
         const posts = getAllPosts(getState());
         const actions: Array<GenericAction> = [{
             type: PreferenceTypes.RECEIVED_PREFERENCES,
-            data: preferences
+            data: preferences,
         }];
 
         preferences.forEach((pref) => {
@@ -1033,7 +1033,6 @@ export function handleUserTypingEvent(msg: WebSocketMessage) {
                 now: Date.now(),
             };
 
-            console.log('typing');
             dispatch({
                 type: WebsocketEvents.TYPING,
                 data,
@@ -1044,7 +1043,6 @@ export function handleUserTypingEvent(msg: WebSocketMessage) {
                 const typing = newState.entities.typing;
 
                 if (typing[data.id]) {
-                    console.log('remove typing', data.id);
                     dispatch({
                         type: WebsocketEvents.STOP_TYPING,
                         data,
@@ -1129,16 +1127,16 @@ function handleOpenDialogEvent(msg: WebSocketMessage) {
 
 // Helpers
 function notVisibleUsersActions(state: GlobalState): Array<GenericAction> {
-        const knownUsers = getKnownUsers(state);
-        const allUsers = Object.keys(getUsers(state));
-        const usersToRemove = new Set(allUsers.filter((x) => !knownUsers.has(x)));
+    const knownUsers = getKnownUsers(state);
+    const allUsers = Object.keys(getUsers(state));
+    const usersToRemove = new Set(allUsers.filter((x) => !knownUsers.has(x)));
 
-        const actions = [];
-        for (const userToRemove of usersToRemove.values()) {
-            actions.push({type: UserTypes.PROFILE_NO_LONGER_VISIBLE, data: {user_id: userToRemove}});
-        }
+    const actions = [];
+    for (const userToRemove of usersToRemove.values()) {
+        actions.push({type: UserTypes.PROFILE_NO_LONGER_VISIBLE, data: {user_id: userToRemove}});
+    }
 
-        return actions;
+    return actions;
 }
 
 let lastTimeTypingSent = 0;

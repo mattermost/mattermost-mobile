@@ -4,8 +4,8 @@
 
 export function isInRole(roles, inRole) {
     if (roles) {
-        var parts = roles.split(' ');
-        for (var i = 0; i < parts.length; i++) {
+        const parts = roles.split(' ');
+        for (let i = 0; i < parts.length; i++) {
             if (parts[i] === inRole) {
                 return true;
             }
