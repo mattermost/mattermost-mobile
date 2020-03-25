@@ -79,7 +79,7 @@ export default class SelectServer extends PureComponent {
 
         let theUrl = serverUrl;
         if (allowOtherServers && deepLinkURL) {
-            theUrl = 'https://' + urlParse(deepLinkURL).host;
+            theUrl = urlParse(deepLinkURL).host;
         }
 
         this.state = {
