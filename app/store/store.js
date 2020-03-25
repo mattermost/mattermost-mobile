@@ -173,11 +173,10 @@ export default function configureAppStore() {
         additionalMiddleware: [
             createThunkMiddleware(),
             createSentryMiddleware(),
-            ...middlewares,
+            ...middlewares(persistConfig),
         ],
         enableThunk: false, // We override the default thunk middleware
     };
 
-    // return configureStore(initialState, appReducer, offlineOptions, getAppReducer, clientOptions);
     return configureStore(initialState, appReducer, persistConfig, getAppReducer, clientOptions);
 }

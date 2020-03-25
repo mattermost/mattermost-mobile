@@ -15,7 +15,6 @@ import {General} from 'mattermost-redux/constants';
 import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {persistConfig} from 'app/store/store';
 import mattermostBucket from 'app/mattermost_bucket';
 
 import {getStateForReset} from './utils';
@@ -94,7 +93,7 @@ const saveStateToFile = async (store) => {
     }
 };
 
-const purgeAppCache = (store) => {
+const purgeAppCacheWrapper = (persistConfig) => (store) => {
     return (next) => (action) => {
         if (action.type === General.OFFLINE_STORE_PURGE) {
             purgeStoredState({...persistConfig, storage: AsyncStorage});
@@ -138,7 +137,6 @@ const purgeAppCache = (store) => {
                 EventEmitter.emit(NavigationTypes.RESTART_APP);
             }, 500);
         }
-
         return next(action);
     };
 };
@@ -558,8 +556,16 @@ function removePendingPost(pendingPostIds, id) {
     }
 }
 
-export const middlewares = [messageRetention, purgeAppCache];
+export const middlewares = (persistConfig) => {
+    const middlewareFunctions = [
+        messageRetention,
+        purgeAppCacheWrapper(persistConfig),
+    ];
 
-if (Platform.OS === 'ios') {
-    middlewares.push(saveShareExtensionState);
-}
+    if (Platform.OS === 'ios') {
+        middlewareFunctions.push(saveShareExtensionState);
+    }
+
+    return middlewareFunctions;
+};
+
