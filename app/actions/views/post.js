@@ -233,7 +233,7 @@ export function getPostsAround(channelId, postId, perPage = Posts.POST_CHUNK_SIZ
     };
 }
 
-function getPostsAdditionalDataBatch(posts = []) {
+export function getPostsAdditionalDataBatch(posts = []) {
     return async (dispatch, getState) => {
         const actions = [];
 

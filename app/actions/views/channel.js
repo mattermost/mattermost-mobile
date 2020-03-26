@@ -13,6 +13,11 @@ import {
     markChannelAsViewed,
     leaveChannel as serviceLeaveChannel,
 } from 'mattermost-redux/actions/channels';
+import {
+    receivedPosts,
+    receivedPostsInChannel,
+    receivedPostsSince,
+} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {loadRolesIfNeeded} from 'mattermost-redux/actions/roles';
@@ -26,6 +31,7 @@ import {
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
     isManuallyUnread,
+    getUnreadChannelIds,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
@@ -51,7 +57,7 @@ import {isDirectChannelVisible, isGroupChannelVisible, isDirectMessageVisible, i
 import {isPendingPost} from 'app/utils/general';
 import {buildPreference} from 'app/utils/preferences';
 
-import {getPosts, getPostsBefore, getPostsSince, getPostThread} from './post';
+import {getPosts, getPostsBefore, getPostsSince, getPostThread, getPostsAdditionalDataBatch} from './post';
 import {forceLogoutIfNecessary} from './user';
 
 const MAX_RETRIES = 3;
@@ -172,35 +178,40 @@ export function loadProfilesAndTeamMembersForDMSidebar(teamId) {
     };
 }
 
+function getChannelSinceValue(state, channelId, postIds) {
+    const lastGetPosts = state.views.channel.lastGetPosts[channelId];
+    const lastConnectAt = state.websocket?.lastConnectAt || 0;
+
+    let since;
+    if (lastGetPosts && lastGetPosts < lastConnectAt) {
+        // Since the websocket disconnected, we may have missed some posts since then
+        since = lastGetPosts;
+    } else {
+        // Trust that we've received all posts since the last time the websocket disconnected
+        // so just get any that have changed since the latest one we've received
+        const {posts} = state.entities.posts;
+        const channelPosts = postIds.map((id) => posts[id]);
+        since = getLastCreateAt(channelPosts);
+    }
+
+    return since;
+}
+
 export function loadPostsIfNecessaryWithRetry(channelId) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {posts} = state.entities.posts;
-        const postsIds = getPostIdsInChannel(state, channelId);
+        const postIds = getPostIdsInChannel(state, channelId);
         const actions = [];
 
         const time = Date.now();
 
         let loadMorePostsVisible = true;
         let postAction;
-        if (!postsIds || postsIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
+        if (!postIds || postIds.length < ViewTypes.POST_VISIBILITY_CHUNK_SIZE) {
             // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
             postAction = getPosts(channelId);
         } else {
-            const lastConnectAt = state.websocket?.lastConnectAt || 0;
-            const lastGetPosts = state.views.channel.lastGetPosts[channelId];
-
-            let since;
-            if (lastGetPosts && lastGetPosts < lastConnectAt) {
-                // Since the websocket disconnected, we may have missed some posts since then
-                since = lastGetPosts;
-            } else {
-                // Trust that we've received all posts since the last time the websocket disconnected
-                // so just get any that have changed since the latest one we've received
-                const postsForChannel = postsIds.map((id) => posts[id]);
-                since = getLastCreateAt(postsForChannel);
-            }
-
+            const since = getChannelSinceValue(state, channelId, postIds);
             postAction = getPostsSince(channelId, since);
         }
 
@@ -224,17 +235,23 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
     };
 }
 
-export async function retryGetPostsAction(action, dispatch, getState, maxTries = MAX_RETRIES) {
+export async function retryGetPostsAction(action, dispatch, getState, setRetryFailed = true, maxTries = MAX_RETRIES) {
     for (let i = 0; i <= maxTries; i++) {
         const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
         if (data) {
-            dispatch(setChannelRetryFailed(false));
+            if (setRetryFailed) {
+                dispatch(setChannelRetryFailed(false));
+            }
+
             return data;
         }
     }
 
-    dispatch(setChannelRetryFailed(true));
+    if (setRetryFailed) {
+        dispatch(setChannelRetryFailed(true));
+    }
+
     return null;
 }
 
@@ -753,6 +770,8 @@ export function loadChannelsForTeam(teamId) {
                     type: ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS,
                     data,
                 });
+
+                dispatch(loadUnreadChannelPosts());
             }
 
             return {data};
@@ -905,4 +924,70 @@ function fetchGroupMessageProfilesIfNeeded(state, channel, channelMembers, profi
     }
 
     return null;
+}
+
+function loadUnreadChannelPosts() {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const unreadChannelIds = getUnreadChannelIds(state);
+
+        const promises = [];
+        const promiseTrace = [];
+        unreadChannelIds.forEach((channelId) => {
+            const postIds = getPostIdsInChannel(state, channelId);
+
+            let promise;
+            const trace = {
+                channelId,
+                since: false,
+            };
+            if (!postIds || !postIds.length) {
+                // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+                promise = Client4.getPosts(channelId);
+            } else {
+                const since = getChannelSinceValue(state, channelId, postIds);
+                promise = Client4.getPostsSince(channelId, since);
+                trace.since = since;
+            }
+
+            promises.push(promise);
+            promiseTrace.push(trace);
+        });
+
+        let posts = [];
+        const actions = [];
+        if (promises.length) {
+            const results = await Promise.all(promises);
+            results.forEach((data, index) => {
+                const channelPosts = Object.values(data.posts);
+                if (channelPosts.length) {
+                    posts = posts.concat(channelPosts);
+
+                    const trace = promiseTrace[index];
+                    if (trace.since) {
+                        actions.push(receivedPostsSince(data, trace.channelId));
+                    } else {
+                        actions.push(receivedPostsInChannel(data, trace.channelId, true, data.prev_post_id === ''));
+                    }
+
+                    actions.push({
+                        type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
+                        channelId: trace.channelId,
+                        time: Date.now(),
+                    });
+                }
+            });
+        }
+
+        console.log(`Fetched ${posts.length} posts from ${unreadChannelIds.length} unread channels`); //eslint-disable-line no-console
+        if (posts.length) {
+            actions.push(receivedPosts({posts}));
+            const additional = await dispatch(getPostsAdditionalDataBatch(posts));
+            if (additional.length) {
+                actions.push(...additional);
+            }
+
+            dispatch(batchActions(actions));
+        }
+    };
 }
