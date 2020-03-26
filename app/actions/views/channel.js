@@ -215,7 +215,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             postAction = getPostsSince(channelId, since);
         }
 
-        const received = await retryGetPostsAction(postAction, dispatch, getState);
+        const received = await retryGetPostsAction(postAction, dispatch);
 
         if (received) {
             actions.push({
@@ -235,22 +235,18 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
     };
 }
 
-export async function retryGetPostsAction(action, dispatch, getState, setRetryFailed = true, maxTries = MAX_RETRIES) {
+export async function retryGetPostsAction(action, dispatch, maxTries = MAX_RETRIES) {
     for (let i = 0; i <= maxTries; i++) {
         const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
         if (data) {
-            if (setRetryFailed) {
-                dispatch(setChannelRetryFailed(false));
-            }
+            dispatch(setChannelRetryFailed(false));
 
             return data;
         }
     }
 
-    if (setRetryFailed) {
-        dispatch(setChannelRetryFailed(true));
-    }
+    dispatch(setChannelRetryFailed(true));
 
     return null;
 }
@@ -596,9 +592,9 @@ export function closeGMChannel(channel) {
 }
 
 export function refreshChannelWithRetry(channelId) {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         dispatch(setChannelRefreshing(true));
-        const posts = await retryGetPostsAction(getPosts(channelId), dispatch, getState);
+        const posts = await retryGetPostsAction(getPosts(channelId), dispatch);
         dispatch(setChannelRefreshing(false));
         return posts;
     };
@@ -692,7 +688,7 @@ export function increasePostVisibility(channelId, postId) {
 
         const pageSize = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 
-        const result = await retryGetPostsAction(getPostsBefore(channelId, postId, 0, pageSize), dispatch, getState);
+        const result = await retryGetPostsAction(getPostsBefore(channelId, postId, 0, pageSize), dispatch);
 
         const actions = [{
             type: ViewTypes.LOADING_POSTS,

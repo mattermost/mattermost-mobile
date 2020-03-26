@@ -75,7 +75,7 @@ class PushNotificationUtils {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
         } else if (data.type === 'message') {
             // get the posts for the channel as soon as possible
-            retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+            retryGetPostsAction(getPosts(data.channel_id), dispatch);
 
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
@@ -121,7 +121,7 @@ class PushNotificationUtils {
                 Client4.setToken(token);
             }
 
-            retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+            retryGetPostsAction(getPosts(data.channel_id), dispatch);
             const result = await dispatch(createPostForNotificationReply(post));
             if (result.error) {
                 const locale = getCurrentLocale(state);
