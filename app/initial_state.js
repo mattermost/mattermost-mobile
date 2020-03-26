@@ -155,6 +155,11 @@ const state = {
             drafts: {},
         },
     },
+    websocket: {
+        connected: false,
+        lastConnectAt: 0,
+        lastDisconnectAt: 0,
+    },
 };
 
 export default state;

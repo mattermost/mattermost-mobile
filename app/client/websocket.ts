@@ -147,7 +147,7 @@ class WebSocketClient {
                         }
                         this.initialize(token, opts);
                     },
-                    retryTime
+                    retryTime,
                 );
             };
 

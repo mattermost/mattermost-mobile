@@ -130,6 +130,7 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
             for (const role of data.user.roles.split(' ')) {
                 rolesToLoad.add(role);
             }
+
             for (const teamMember of teamMembers) {
                 for (const role of teamMember.roles.split(' ')) {
                     rolesToLoad.add(role);

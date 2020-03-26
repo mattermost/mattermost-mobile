@@ -70,7 +70,7 @@ export type WebSocketMessage = {
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const config = getConfig(getState());
-        let connUrl = config.WebsocketURL || Client4.getUrl();
+        let connUrl = additionalOptions.websocketUrl || config.WebsocketURL || Client4.getUrl();
         const authToken = Client4.getToken();
 
         connUrl += `${Client4.getUrlVersion()}/websocket`;
@@ -149,7 +149,7 @@ export function doReconnect(now: number) {
         });
 
         try {
-            const {data: me}: any = await dispatch(loadMe(currentUser, null, true));
+            const {data: me}: any = await dispatch(loadMe(null, null, true));
 
             if (!me.error) {
                 const roles = [];
@@ -186,7 +186,7 @@ export function doReconnect(now: number) {
                         const stillMemberOfCurrentChannel = myData.channelMembers.find((cm: ChannelMembership) => cm.channel_id === currentChannelId);
 
                         const channelStillExists = myData.channels.find((c: Channel) => c.id === currentChannelId);
-                        const config = getConfig(getState());
+                        const config = me.config || getConfig(getState());
                         const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
                         if (!stillMemberOfCurrentChannel || !channelStillExists || (!viewArchivedChannels && channelStillExists.delete_at !== 0)) {
                             EventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
@@ -357,6 +357,7 @@ function handleNewPostEvent(msg: WebSocketMessage) {
         const actions: Array<GenericAction> = [];
 
         const exists = selectPost(state, post.pending_post_id);
+
         if (!exists) {
             if (getCurrentChannelId(state) === post.channel_id) {
                 EventEmitter.emit(WebsocketEvents.INCREASE_POST_VISIBILITY_BY_ONE);
@@ -1040,9 +1041,9 @@ export function handleUserTypingEvent(msg: WebSocketMessage) {
 
             setTimeout(() => {
                 const newState = getState();
-                const typing = newState.entities.typing;
+                const {typing} = newState.entities;
 
-                if (typing[data.id]) {
+                if (typing && typing[data.id]) {
                     dispatch({
                         type: WebsocketEvents.STOP_TYPING,
                         data,
@@ -1126,7 +1127,7 @@ function handleOpenDialogEvent(msg: WebSocketMessage) {
 }
 
 // Helpers
-function notVisibleUsersActions(state: GlobalState): Array<GenericAction> {
+export function notVisibleUsersActions(state: GlobalState): Array<GenericAction> {
     const knownUsers = getKnownUsers(state);
     const allUsers = Object.keys(getUsers(state));
     const usersToRemove = new Set(allUsers.filter((x) => !knownUsers.has(x)));

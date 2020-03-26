@@ -96,9 +96,9 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
                 if (additional.data.length) {
                     actions.push(...additional.data);
                 }
-
-                dispatch(batchActions(actions, 'BATCH_GET_POSTS'));
             }
+
+            dispatch(batchActions(actions, 'BATCH_GET_POSTS'));
 
             return {data};
         } catch (error) {

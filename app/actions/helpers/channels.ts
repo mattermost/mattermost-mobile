@@ -157,29 +157,29 @@ export function makeDirectChannelVisibleIfNecessary(state: GlobalState, otherUse
 
 export async function makeGroupMessageVisibleIfNecessary(state: GlobalState, channelId: string) {
     try {
-            const myPreferences = getMyPreferences(state);
-            const currentUserId = getCurrentUserId(state);
+        const myPreferences = getMyPreferences(state);
+        const currentUserId = getCurrentUserId(state);
 
-            let preference = myPreferences[getPreferenceKey(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, channelId)];
+        let preference = myPreferences[getPreferenceKey(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, channelId)];
 
-            if (!preference || preference.value === 'false') {
-                preference = {
-                    user_id: currentUserId,
-                    category: Preferences.CATEGORY_GROUP_CHANNEL_SHOW,
-                    name: channelId,
-                    value: 'true',
-                };
+        if (!preference || preference.value === 'false') {
+            preference = {
+                user_id: currentUserId,
+                category: Preferences.CATEGORY_GROUP_CHANNEL_SHOW,
+                name: channelId,
+                value: 'true',
+            };
 
-                const profilesInChannel = await fetchUsersInChannel(state, channelId);
+            const profilesInChannel = await fetchUsersInChannel(state, channelId);
 
-                return  [{
-                    type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
-                    data: [profilesInChannel],
-                }, {
-                    type: PreferenceTypes.RECEIVED_PREFERENCES,
-                    data: [preference],
-                }];
-        };
+            return [{
+                type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
+                data: [profilesInChannel],
+            }, {
+                type: PreferenceTypes.RECEIVED_PREFERENCES,
+                data: [preference],
+            }];
+        }
 
         return null;
     } catch {
@@ -220,40 +220,39 @@ export async function fetchChannelAndMyMember(channelId: string): Promise<Array<
 }
 
 export async function getAddedDmUsersIfNecessary(state: GlobalState, preferences: PreferenceType[]): Promise<Array<GenericAction>> {
-        const userIds: string[] = [];
-        const actions: Array<GenericAction> = [];
+    const userIds: string[] = [];
+    const actions: Array<GenericAction> = [];
 
-        for (const preference of preferences) {
-            if (preference.category === Preferences.CATEGORY_DIRECT_CHANNEL_SHOW && preference.value === 'true') {
-                userIds.push(preference.name);
+    for (const preference of preferences) {
+        if (preference.category === Preferences.CATEGORY_DIRECT_CHANNEL_SHOW && preference.value === 'true') {
+            userIds.push(preference.name);
+        }
+    }
+
+    if (userIds.length !== 0) {
+        const profiles = getUsers(state);
+        const currentUserId = getCurrentUserId(state);
+
+        const needProfiles: string[] = [];
+
+        for (const userId of userIds) {
+            if (!profiles[userId] && userId !== currentUserId) {
+                needProfiles.push(userId);
             }
         }
 
-        if (userIds.length !== 0) {
-            const profiles = getUsers(state);
-            const currentUserId = getCurrentUserId(state);
-
-            const needProfiles: string[] = [];
-
-            for (const userId of userIds) {
-                if (!profiles[userId] && userId !== currentUserId) {
-                    needProfiles.push(userId);
-                }
-            }
-
-            if (needProfiles.length > 0) {
-                const profiles = await Client4.getProfilesByIds(userIds);
-                if (profiles.lenght) {
-                    actions.push({
-                        type: UserTypes.RECEIVED_PROFILES_LIST,
-                        data: profiles,
-                    });
-                }
+        if (needProfiles.length > 0) {
+            const data = await Client4.getProfilesByIds(userIds);
+            if (profiles.lenght) {
+                actions.push({
+                    type: UserTypes.RECEIVED_PROFILES_LIST,
+                    data,
+                });
             }
         }
+    }
 
     return actions;
-        
 }
 
 function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel, channelMembers: Array<ChannelMembership>, profilesInChannel: Array<string>) {
@@ -264,7 +263,7 @@ function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel,
     const currentChannelId = getCurrentChannelId(state);
     const otherUserId = getUserIdFromChannelName(currentUserId, channel.name);
     const otherUser = users[otherUserId];
-    const dmVisible = isDirectChannelVisible(currentUserId, myPreferences, channel.id);
+    const dmVisible = isDirectChannelVisible(currentUserId, myPreferences, channel);
     const dmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, otherUser ? otherUser.delete_at : 0, currentChannelId);
     const member = channelMembers.find((cm) => cm.channel_id === channel.id);
     const dmIsUnread = member ? member.mention_count > 0 : false;
