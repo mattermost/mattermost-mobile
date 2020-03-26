@@ -5,17 +5,23 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import initialState from 'app/initial_state';
-import {ChannelTypes} from 'mattermost-redux/action_types';
+import {Client4} from 'mattermost-redux/client';
+import {ChannelTypes, PostTypes} from 'mattermost-redux/action_types';
 import testHelper from 'test/test_helper';
 
+import {ViewTypes} from 'app/constants';
 import * as ChannelActions from 'app/actions/views/channel';
 const {
     handleSelectChannel,
     handleSelectChannelByName,
     loadPostsIfNecessaryWithRetry,
+    loadUnreadChannelPosts,
 } = ChannelActions;
 
 import postReducer from 'mattermost-redux/reducers/entities/posts';
+
+import * as PostSelectors from 'mattermost-redux/selectors/entities/posts';
+import * as ChannelSelectors from 'mattermost-redux/selectors/entities/channels';
 
 const MOCK_CHANNEL_MARK_AS_READ = 'MOCK_CHANNEL_MARK_AS_READ';
 const MOCK_CHANNEL_MARK_AS_VIEWED = 'MOCK_CHANNEL_MARK_AS_VIEWED';
@@ -213,7 +219,7 @@ describe('Actions.Views.Channel', () => {
         const storeActions = store.getActions();
         const storeBatchActions = storeActions.filter(({type}) => type === 'BATCHING_REDUCER.BATCH');
         const receivedPosts = storeActions.find(({type}) => type === MOCK_RECEIVED_POSTS);
-        const receivedPostsAtAction = storeBatchActions[0].payload.some((action) => action.type === 'RECEIVED_POSTS_FOR_CHANNEL_AT_TIME');
+        const receivedPostsAtAction = storeBatchActions[0].payload.some((action) => action.type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
 
         nextPostState = postReducer(store.getState().entities.posts, receivedPosts);
         nextPostState = postReducer(nextPostState, {
@@ -326,5 +332,79 @@ describe('Actions.Views.Channel', () => {
         }
         expect(viewedAction).not.toBe(null);
         expect(readAction).not.toBe(null);
+    });
+
+    test('loadUnreadChannelPosts does not dispatch actions if no unread channels', async () => {
+        ChannelSelectors.getUnreadChannelIds = jest.fn().mockReturnValueOnce([]);
+        store = mockStore(storeObj);
+        await store.dispatch(loadUnreadChannelPosts());
+        const storeActions = store.getActions();
+        expect(storeActions).toStrictEqual([]);
+    });
+
+    test('loadUnreadChannelPosts dispatches actions for unread channels with no postIds in channel', async () => {
+        const unreadChannelIds = ['channel-1', 'channel-2', 'channel-3'];
+        ChannelSelectors.getUnreadChannelIds = jest.fn().mockReturnValueOnce(unreadChannelIds);
+        Client4.getPosts = jest.fn().mockResolvedValue({posts: ['post-1', 'post-2']});
+
+        store = mockStore(storeObj);
+        await store.dispatch(loadUnreadChannelPosts());
+
+        const actionTypes = store.getActions()[0].payload.map((action) => action.type);
+
+        // Actions dispatched:
+        // RECEIVED_POSTS_IN_CHANNEL and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
+        // RECEIVED_POSTS once, with all channel posts combined.
+        expect(actionTypes.length).toBe((2 * unreadChannelIds.length) + 1);
+
+        const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_IN_CHANNEL);
+        expect(receivedPostsInChannelActions.length).toBe(unreadChannelIds.length);
+
+        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
+        expect(receivedPostsForChannelAtTimeActions.length).toBe(unreadChannelIds.length);
+
+        const receivedPosts = actionTypes.filter((type) => type === 'RECEIVED_POSTS');
+        expect(receivedPosts.length).toBe(1);
+    });
+
+    test('loadUnreadChannelPosts dispatches actions for unread channels with postIds in channel', async () => {
+        const unreadChannelIds = ['channel-1', 'channel-2', 'channel-3'];
+        ChannelSelectors.getUnreadChannelIds = jest.fn().mockReturnValueOnce(unreadChannelIds);
+        PostSelectors.getPostIdsInChannel = jest.fn().mockReturnValue(['post-id-in-channel']);
+        Client4.getPostsSince = jest.fn().mockResolvedValue({posts: ['post-1', 'post-2']});
+
+        const lastGetPosts = {};
+        unreadChannelIds.forEach((id) => {
+            lastGetPosts[id] = Date.now();
+        });
+        const lastConnectAt = Date.now() + 1000;
+        store = mockStore({
+            ...storeObj,
+            views: {
+                channel: {
+                    lastGetPosts,
+                },
+            },
+            websocket: {
+                lastConnectAt,
+            },
+        });
+        await store.dispatch(loadUnreadChannelPosts());
+
+        const actionTypes = store.getActions()[0].payload.map((action) => action.type);
+
+        // Actions dispatched:
+        // RECEIVED_POSTS_SINCE and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
+        // RECEIVED_POSTS once, with all channel posts combined.
+        expect(actionTypes.length).toBe((2 * unreadChannelIds.length) + 1);
+
+        const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_SINCE);
+        expect(receivedPostsInChannelActions.length).toBe(unreadChannelIds.length);
+
+        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
+        expect(receivedPostsForChannelAtTimeActions.length).toBe(unreadChannelIds.length);
+
+        const receivedPosts = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS);
+        expect(receivedPosts.length).toBe(1);
     });
 });

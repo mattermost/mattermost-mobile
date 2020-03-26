@@ -926,7 +926,7 @@ function fetchGroupMessageProfilesIfNeeded(state, channel, channelMembers, profi
     return null;
 }
 
-function loadUnreadChannelPosts() {
+export function loadUnreadChannelPosts() {
     return async (dispatch, getState) => {
         const state = getState();
         const unreadChannelIds = getUnreadChannelIds(state);
