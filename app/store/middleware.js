@@ -3,12 +3,21 @@
 
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {batchActions} from 'redux-batched-actions';
+import AsyncStorage from '@react-native-community/async-storage';
+import {purgeStoredState} from 'redux-persist';
 
-import {ViewTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
 import {throttle} from 'app/utils/general';
 
+import {General} from '@mm-redux/constants';
+import {ErrorTypes, GeneralTypes} from '@mm-redux/action_types';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import mattermostBucket from 'app/mattermost_bucket';
+
+import {getStateForReset} from './utils';
 
 import {
     captureException,
@@ -41,6 +50,7 @@ const saveShareExtensionState = (store) => {
 const saveStateToFile = async (store) => {
     if (Platform.OS === 'ios') {
         const state = store.getState();
+
         if (state.entities) {
             const channelsInTeam = {...state.entities.channels.channelsInTeam};
             Object.keys(channelsInTeam).forEach((teamId) => {
@@ -81,6 +91,54 @@ const saveStateToFile = async (store) => {
             mattermostBucket.writeToFile('entities', JSON.stringify(entities));
         }
     }
+};
+
+const purgeAppCacheWrapper = (persistConfig) => (store) => {
+    return (next) => (action) => {
+        if (action.type === General.OFFLINE_STORE_PURGE) {
+            purgeStoredState({...persistConfig, storage: AsyncStorage});
+
+            const state = store.getState();
+            const resetState = getStateForReset(initialState, state);
+
+            store.dispatch(batchActions([
+                {
+                    type: General.OFFLINE_STORE_RESET,
+                    data: resetState,
+                },
+                {
+                    type: ErrorTypes.RESTORE_ERRORS,
+                    data: [...state.errors],
+                },
+                {
+                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
+                    data: state.entities.general.deviceToken,
+                },
+                {
+                    type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
+                    data: {
+                        url: state.entities.general.credentials.url,
+                    },
+                },
+                {
+                    type: ViewTypes.SERVER_URL_CHANGED,
+                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
+                },
+                {
+                    type: GeneralTypes.RECEIVED_SERVER_VERSION,
+                    data: state.entities.general.serverVersion,
+                },
+                {
+                    type: General.STORE_REHYDRATION_COMPLETE,
+                },
+            ], 'BATCH_FOR_RESTART'));
+
+            setTimeout(() => {
+                EventEmitter.emit(NavigationTypes.RESTART_APP);
+            }, 500);
+        }
+        return next(action);
+    };
 };
 
 const messageRetention = (store) => {
@@ -507,8 +565,16 @@ function removePendingPost(pendingPostIds, id) {
     }
 }
 
-export const middlewares = [messageRetention];
+export const middlewares = (persistConfig) => {
+    const middlewareFunctions = [
+        messageRetention,
+        purgeAppCacheWrapper(persistConfig),
+    ];
 
-if (Platform.OS === 'ios') {
-    middlewares.push(saveShareExtensionState);
-}
+    if (Platform.OS === 'ios') {
+        middlewareFunctions.push(saveShareExtensionState);
+    }
+
+    return middlewareFunctions;
+};
+
