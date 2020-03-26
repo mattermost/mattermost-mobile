@@ -41,7 +41,6 @@ export default class MarkdownTable extends React.PureComponent {
             containerWidth: 0,
             contentHeight: 0,
             cellWidth: 0,
-            rowsSliced: false,
         };
     }
 
@@ -161,9 +160,8 @@ export default class MarkdownTable extends React.PureComponent {
                 };
             });
 
-            const rowsSliced = prevRowLength > rows.length;
-            const colsSliced = prevColLength > React.Children.toArray(rows[0].props.children).length;
-            this.setState({rowsSliced, colsSliced});
+            this.rowsSliced = prevRowLength > rows.length;
+            this.colsSliced = prevColLength > React.Children.toArray(rows[0].props.children).length;
         }
 
         // Add an extra prop to the last row of the table so that it knows not to render a bottom border
@@ -190,6 +188,7 @@ export default class MarkdownTable extends React.PureComponent {
         const style = getStyleSheet(theme);
         const tableWidth = this.getTableWidth();
         const renderAsFlex = this.shouldRenderAsFlex();
+        const previewRows = this.renderPreviewRows();
 
         let leftOffset;
         if (renderAsFlex || tableWidth > containerWidth) {
@@ -205,7 +204,7 @@ export default class MarkdownTable extends React.PureComponent {
         // Renders when the columns were sliced, or the table width exceeds the container,
         // or if the columns exceed maximum allowed for previews
         let moreRight = null;
-        if (this.state.colsSliced ||
+        if (this.colsSliced ||
             (containerWidth && tableWidth > containerWidth && !renderAsFlex) ||
             (this.props.numColumns > MAX_PREVIEW_COLUMNS)) {
             moreRight = (
@@ -222,7 +221,7 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         let moreBelow = null;
-        if (this.state.rowsSliced) {
+        if (this.rowsSliced || contentHeight > MAX_HEIGHT) {
             const width = renderAsFlex ? '100%' : Math.min(tableWidth, containerWidth);
 
             moreBelow = (
@@ -236,22 +235,25 @@ export default class MarkdownTable extends React.PureComponent {
             );
         }
 
-        const expandButton = (
-            <TouchableWithFeedback
-                type={'opacity'}
-                onPress={this.handlePress}
-                style={[style.expandButton, {left: expandButtonOffset}]}
-            >
-                <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
-                    <View style={style.iconButton}>
-                        <Icon
-                            name={'expand'}
-                            style={style.icon}
-                        />
+        let expandButton = null;
+        if (expandButtonOffset > 0 && (moreRight || moreBelow)) {
+            expandButton = (
+                <TouchableWithFeedback
+                    type={'opacity'}
+                    onPress={this.handlePress}
+                    style={[style.expandButton, {left: expandButtonOffset}]}
+                >
+                    <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
+                        <View style={style.iconButton}>
+                            <Icon
+                                name={'expand'}
+                                style={style.icon}
+                            />
+                        </View>
                     </View>
-                </View>
-            </TouchableWithFeedback>
-        );
+                </TouchableWithFeedback>
+            );
+        }
 
         return (
             <TouchableWithFeedback
@@ -266,7 +268,7 @@ export default class MarkdownTable extends React.PureComponent {
                     showsVerticalScrollIndicator={false}
                     style={style.container}
                 >
-                    {this.renderPreviewRows()}
+                    {previewRows}
                 </ScrollView>
                 {moreRight}
                 {moreBelow}
@@ -330,7 +332,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 10,
         },
         moreBelow: {
-            bottom: 34,
+            bottom: Platform.select({
+                ios: 34,
+                android: 33.75,
+            }),
             height: 20,
             position: 'absolute',
             left: 0,

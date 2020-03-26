@@ -59,7 +59,7 @@ export default class ChannelsList extends PureComponent {
 
     cancelSearch = () => {
         if (this.searchBarRef) {
-            this.searchBarRef.cancel();
+            this.searchBarRef.onCancel();
         }
     };
 
@@ -124,11 +124,6 @@ export default class ChannelsList extends PureComponent {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.2),
             color: theme.sidebarHeaderTextColor,
             fontSize: 15,
-            ...Platform.select({
-                android: {
-                    marginBottom: -5,
-                },
-            }),
         };
 
         const title = (
@@ -137,7 +132,6 @@ export default class ChannelsList extends PureComponent {
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    inputCollapsedMargin={0}
                     backgroundColor='transparent'
                     inputHeight={33}
                     inputStyle={searchBarInput}
@@ -150,16 +144,15 @@ export default class ChannelsList extends PureComponent {
                     onCancelButtonPress={this.onSearchCancel}
                     onChangeText={this.onSearch}
                     onFocus={this.onSearchFocused}
-                    searchIconCollapsedMargin={5}
-                    searchIconExpandedMargin={5}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
+                    showCancel={Platform.OS === 'android'}
+                    leftComponentWidth={67}
                     leftComponent={(
                         <SwitchTeamsButton
                             onShowTeams={onShowTeams}
                         />
                     )}
-                    positionRightDelete={5}
                 />
             </View>
         );
@@ -228,10 +221,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         searchContainer: {
             flex: 1,
-            paddingRight: 10,
+            flexDirection: 'row',
             ...Platform.select({
                 android: {
                     marginBottom: 1,
+                    paddingRight: 17,
                 },
                 ios: {
                     marginBottom: 3,

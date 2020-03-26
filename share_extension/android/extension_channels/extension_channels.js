@@ -10,6 +10,7 @@ import {
     SectionList,
     Text,
     View,
+    Platform,
 } from 'react-native';
 
 import {Preferences} from 'mattermost-redux/constants';
@@ -251,6 +252,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         searchContainer: {
             paddingBottom: 2,
+            height: 38,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
         },
         searchBarInput: {
             backgroundColor: '#fff',
