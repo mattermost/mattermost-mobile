@@ -188,7 +188,7 @@ function getChannelSinceValue(state, channelId, postIds) {
         since = lastGetPosts;
     } else {
         // Trust that we've received all posts since the last time the websocket disconnected
-        // so just get any that have changed since the latest one we've received
+        // so set `since` to the `create_at` of latest one we've received
         const {posts} = state.entities.posts;
         const channelPosts = postIds.map((id) => posts[id]);
         since = getLastCreateAt(channelPosts);
