@@ -506,6 +506,12 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         searchBar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             paddingVertical: 5,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
+            height: 50,
         },
         sectionList: {
             ...Platform.select({

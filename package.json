@@ -39,6 +39,7 @@
     "react-native-device-info": "github:mattermost/react-native-device-info#f7175f10822d8f66b9806206e3313eaf2f4aabc6",
     "react-native-doc-viewer": "github:mattermost/react-native-doc-viewer#c913e54ec8e4a60753bc7dd39256fa4be8229d19",
     "react-native-document-picker": "3.3.0",
+    "react-native-elements": "1.2.7",
     "react-native-exception-handler": "2.10.8",
     "react-native-fast-image": "8.1.5",
     "react-native-gesture-handler": "1.6.0",
