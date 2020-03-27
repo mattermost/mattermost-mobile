@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {TeamTypes} from '@redux/action_types';
-import teamsReducer from 'reducers/entities/teams';
+import teamsReducer from '@redux/reducers/entities/teams';
 
 describe('Reducers.teams.myMembers', () => {
     it('initial state', async () => {

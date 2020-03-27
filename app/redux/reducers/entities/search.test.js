@@ -8,7 +8,7 @@ import {
     SearchTypes,
     UserTypes,
 } from '@redux/action_types';
-import reducer from 'reducers/entities/search';
+import reducer from '@redux/reducers/entities/search';
 
 describe('reducers.entities.search', () => {
     describe('results', () => {

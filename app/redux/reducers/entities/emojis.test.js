@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {PostTypes} from '@redux/action_types';
-import {customEmoji as customEmojiReducer} from 'reducers/entities/emojis';
+import {customEmoji as customEmojiReducer} from '@redux/reducers/entities/emojis';
 import deepFreeze from '@redux/utils/deep_freeze';
 
 describe('reducers/entities/emojis', () => {

@@ -4,10 +4,10 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from 'actions/channels';
-import {addUserToTeam} from 'actions/teams';
-import {getProfilesByIds, login} from 'actions/users';
-import {createIncomingHook, createOutgoingHook} from 'actions/integrations';
+import * as Actions from '@redux/actions/channels';
+import {addUserToTeam} from '@redux/actions/teams';
+import {getProfilesByIds, login} from '@redux/actions/users';
+import {createIncomingHook, createOutgoingHook} from '@redux/actions/integrations';
 import {Client4} from '@redux/client';
 import {General, RequestStatus, Preferences, Permissions} from '../constants';
 import {getPreferenceKey} from '@redux/utils/preference_utils';

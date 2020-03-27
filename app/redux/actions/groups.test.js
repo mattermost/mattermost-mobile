@@ -4,7 +4,7 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from 'actions/groups';
+import * as Actions from '@redux/actions/groups';
 import {Client4} from '@redux/client';
 
 import {RequestStatus, Groups} from '../constants';

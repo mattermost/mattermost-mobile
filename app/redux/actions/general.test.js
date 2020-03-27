@@ -6,7 +6,7 @@ import nock from 'nock';
 
 import {FormattedError} from './helpers.ts';
 import {GeneralTypes} from '@redux/action_types';
-import * as Actions from 'actions/general';
+import * as Actions from '@redux/actions/general';
 import {Client4} from '@redux/client';
 
 import TestHelper from 'test/test_helper';

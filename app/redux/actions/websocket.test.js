@@ -8,14 +8,14 @@ import thunk from 'redux-thunk';
 import configureMockStore from 'redux-mock-store';
 
 import * as PostSelectors from '@redux/selectors/entities/posts';
-import * as Actions from 'actions/websocket';
-import * as ChannelActions from 'actions/channels';
-import * as PostActions from 'actions/posts';
-import * as PreferenceActions from 'actions/preferences';
-import * as TeamActions from 'actions/teams';
-import * as UserActions from 'actions/users';
+import * as Actions from '@redux/actions/websocket';
+import * as ChannelActions from '@redux/actions/channels';
+import * as PostActions from '@redux/actions/posts';
+import * as PreferenceActions from '@redux/actions/preferences';
+import * as TeamActions from '@redux/actions/teams';
+import * as UserActions from '@redux/actions/users';
 import EventEmitter from '@redux/utils/event_emitter';
-import {loadRolesIfNeeded as mockLoadRolesIfNeeded} from 'actions/roles';
+import {loadRolesIfNeeded as mockLoadRolesIfNeeded} from '@redux/actions/roles';
 import {batchActions} from '@redux/types/actions';
 
 import {Client4} from '@redux/client';

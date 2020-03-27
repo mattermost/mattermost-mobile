@@ -10,7 +10,7 @@ import {
     PostTypes,
 } from '@redux/action_types';
 import {Posts} from '../../constants';
-import * as reducers from 'reducers/entities/posts';
+import * as reducers from '@redux/reducers/entities/posts';
 import deepFreeze from '@redux/utils/deep_freeze';
 
 describe('posts', () => {

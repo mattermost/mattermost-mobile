@@ -5,8 +5,8 @@ import assert from 'assert';
 import nock from 'nock';
 import fs from 'fs';
 
-import * as Actions from 'actions/teams';
-import {login} from 'actions/users';
+import * as Actions from '@redux/actions/teams';
+import {login} from '@redux/actions/users';
 import {Client4} from '@redux/client';
 import {General, RequestStatus} from '../constants';
 import {GeneralTypes} from '@redux/action_types';

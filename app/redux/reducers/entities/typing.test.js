@@ -5,7 +5,7 @@ import assert from 'assert';
 
 import {WebsocketEvents} from '../../constants';
 
-import typingReducer from 'reducers/entities/typing';
+import typingReducer from '@redux/reducers/entities/typing';
 
 import TestHelper from 'test/test_helper';
 

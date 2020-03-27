@@ -4,8 +4,8 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as BotActions from 'actions/bots';
-import * as UserActions from 'actions/users';
+import * as BotActions from '@redux/actions/bots';
+import * as UserActions from '@redux/actions/users';
 import {Client4} from '@redux/client';
 
 import TestHelper from 'test/test_helper';

@@ -5,7 +5,7 @@ import assert from 'assert';
 import nock from 'nock';
 import fs from 'fs';
 
-import * as Actions from 'actions/users';
+import * as Actions from '@redux/actions/users';
 import {Client4} from '@redux/client';
 import {RequestStatus} from '../constants';
 import TestHelper from 'test/test_helper';

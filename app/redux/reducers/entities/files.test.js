@@ -7,7 +7,7 @@ import {PostTypes} from '@redux/action_types';
 import {
     files as filesReducer,
     fileIdsByPostId as fileIdsByPostIdReducer,
-} from 'reducers/entities/files';
+} from '@redux/reducers/entities/files';
 import deepFreeze from '@redux/utils/deep_freeze';
 
 describe('reducers/entities/files', () => {

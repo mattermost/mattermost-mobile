@@ -4,7 +4,7 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from 'actions/search';
+import * as Actions from '@redux/actions/search';
 import {Client4} from '@redux/client';
 
 import TestHelper from 'test/test_helper';

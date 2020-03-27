@@ -5,7 +5,7 @@ import fs from 'fs';
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from 'actions/emojis';
+import * as Actions from '@redux/actions/emojis';
 import {Client4} from '@redux/client';
 
 import {GeneralTypes} from '@redux/action_types';
