@@ -105,6 +105,7 @@ export default class PostTextBoxBase extends PureComponent {
         files: [],
         rootId: '',
         value: '',
+        canPost: true,
     };
 
     static contextTypes = {
