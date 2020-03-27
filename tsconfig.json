@@ -36,6 +36,7 @@
             "@selectors/*": ["app/selectors/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
+            "@redux/*": ["app/redux/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"]
         }
