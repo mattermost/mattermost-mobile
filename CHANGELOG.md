@@ -10,7 +10,6 @@
  
 ### Improvements
  - Improved Mobile performance related to themes and links.
- - Animated gifs posted as file attachments now animate.
  - Added support for different interactive message button styles on mobile.
  - Enter key on hardware Android keyboard now posts a message.
  - Added "Unarchive Channel" option to the channel info screen.
