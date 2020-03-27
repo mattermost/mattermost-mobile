@@ -24,7 +24,6 @@ Otherwise, link the JIRA ticket.
 Place an '[x]' (no spaces) in all applicable fields. Please remove unrelated fields.
 -->
 - [ ] Added or updated unit tests (required for all new features)
-- [ ] All new/modified APIs include changes to [mattermost-redux](https://github.com/mattermost/mattermost-redux) (please link)
 - [ ] Has UI changes
 - [ ] Includes text changes and localization file updates
 
