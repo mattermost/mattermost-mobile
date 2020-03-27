@@ -24,7 +24,7 @@
     "intl": "1.2.5",
     "jail-monkey": "2.3.2",
     "mime-db": "1.43.0",
-    "moment-timezone": "0.5.28",
+    "moment-timezone": "0.5.26",
     "prop-types": "15.7.2",
     "react": "16.13.0",
     "react-intl": "2.8.0",
