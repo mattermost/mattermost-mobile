@@ -3163,13 +3163,23 @@ describe('Selectors.Channels.getDirectChannelIds', () => {
     });
 
     it('get direct channel ids for channels with non-null values', () => {
-        const dmChannel1 = TestHelper.fakeDmChannel(user1.id, 'fakeUserId1');
-        const dmChannel2 = TestHelper.fakeDmChannel(user1.id, 'fakeUserId2');
+        const user2 = TestHelper.fakeUserWithId();
+        const user3 = TestHelper.fakeUserWithId();
+        const dmChannel1 = TestHelper.fakeDmChannel(user1.id, user2.id);
+        const dmChannel2 = TestHelper.fakeDmChannel(user1.id, user3.id);
 
         const modifiedState = {
             ...testState,
             entities: {
                 ...testState.entities,
+                users: {
+                    ...testState.entities.users,
+                    profiles: {
+                        ...testState.entities.users.profiles,
+                        [user2.id]: user2,
+                        [user3.id]: user3,
+                    },
+                },
                 channels: {
                     ...testState.entities.channels,
                     channels: {

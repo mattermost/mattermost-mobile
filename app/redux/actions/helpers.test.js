@@ -6,7 +6,7 @@ import assert from 'assert';
 import {UserTypes} from '@redux/action_types';
 import {forceLogoutIfNecessary} from '@redux/actions/helpers';
 import {Client4} from '@redux/client';
-import {ClientError} from 'client/client4';
+import {ClientError} from '@redux/client/client4';
 import configureStore, {mockDispatch} from 'test/test_store';
 
 describe('Actions.Helpers', () => {

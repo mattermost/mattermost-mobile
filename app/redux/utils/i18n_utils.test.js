@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {setLocalizeFunction, localizeMessage} from '@redux/utils/i18n_utils';
-const en = require('assets/base/i18n/en.json');
+const en = require('assets/i18n/en.json');
 const [testKey, testValue] = Object.entries(en)[0];
 
 describe('i18n utils', () => {
@@ -23,7 +23,7 @@ describe('i18n utils', () => {
         }
 
         setLocalizeFunction(mockFunc);
-        assert.not.equal(testValue, prevValue);
+        assert.notEqual(testValue, prevValue);
         assert.equal(localizeMessage(testKey, testValue), prevValue);
     });
 });

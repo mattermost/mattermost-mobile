@@ -11,7 +11,7 @@ import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 
 const mockStore = configureStore([thunk]);
 
-jest.mock('mattermost-redux/actions/users', () => ({
+jest.mock('@redux/actions/users', () => ({
     getStatus: (...args) => ({type: 'MOCK_GET_STATUS', args}),
     getStatusesByIds: (...args) => ({type: 'MOCK_GET_STATUS_BY_IDS', args}),
     startPeriodicStatusUpdates: () => ({type: 'MOCK_PERIODIC_STATUS_UPDATES'}),

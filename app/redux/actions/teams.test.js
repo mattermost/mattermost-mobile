@@ -178,7 +178,7 @@ describe('Actions.Teams', () => {
     });
 
     it('deleteTeam', async () => {
-        const secondClient = TestHelper.createClient4();
+        const secondClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -261,7 +261,7 @@ describe('Actions.Teams', () => {
     });
 
     it('Join Open Team', async () => {
-        const client = TestHelper.createClient4();
+        const client = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -715,7 +715,7 @@ describe('Actions.Teams', () => {
     });
 
     it('searchTeams', async () => {
-        const userClient = TestHelper.createClient4();
+        const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').

@@ -393,7 +393,7 @@ describe('Actions.Channels', () => {
     });
 
     it('deleteChannel', async () => {
-        const secondClient = TestHelper.createClient4();
+        const secondClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -493,7 +493,7 @@ describe('Actions.Channels', () => {
     });
 
     it('unarchiveChannel', async () => {
-        const secondClient = TestHelper.createClient4();
+        const secondClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -1409,7 +1409,7 @@ describe('Actions.Channels', () => {
     });
 
     it('getChannels', async () => {
-        const userClient = TestHelper.createClient4();
+        const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -1460,7 +1460,7 @@ describe('Actions.Channels', () => {
     });
 
     it('getArchivedChannels', async () => {
-        const userClient = TestHelper.createClient4();
+        const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -1511,7 +1511,7 @@ describe('Actions.Channels', () => {
     });
 
     it('getAllChannels', async () => {
-        const userClient = TestHelper.createClient4();
+        const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -1555,7 +1555,7 @@ describe('Actions.Channels', () => {
     });
 
     it('getAllChannelsWithCount', async () => {
-        const userClient = TestHelper.createClient4();
+        const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -1605,7 +1605,7 @@ describe('Actions.Channels', () => {
     });
 
     it('searchAllChannels', async () => {
-        const userClient = TestHelper.createClient4();
+        const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -1659,7 +1659,7 @@ describe('Actions.Channels', () => {
     });
 
     it('searchArchivedChannels', async () => {
-        const userClient = TestHelper.createClient4();
+        const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
@@ -2044,7 +2044,7 @@ describe('Actions.Channels', () => {
     });
 
     it('joinChannelByName', async () => {
-        const secondClient = TestHelper.createClient4();
+        const secondClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').

@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {PostTypes} from 'constants/posts';
+import {PostTypes} from '@redux/constants/posts';
 import {Permissions} from '../constants';
 
 import {

@@ -4,7 +4,7 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import {ClientError, HEADER_X_VERSION_ID} from 'client/client4';
+import {ClientError, HEADER_X_VERSION_ID} from '@redux/client/client4';
 import TestHelper from 'test/test_helper';
 import {isMinimumServerVersion} from '@redux/utils/helpers';
 
@@ -21,7 +21,7 @@ describe('Client4', () => {
 
     describe('doFetchWithResponse', () => {
         it('serverVersion should be set from response header', async () => {
-            const client = TestHelper.createClient4();
+            const client = TestHelper.createClient();
 
             assert.equal(client.serverVersion, '');
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
-import reducerRegistry from 'store/reducer_registry';
+import reducerRegistry from '@redux/store/reducer_registry';
 import configureStore from 'test/test_store';
 
 describe('ReducerRegistry', () => {

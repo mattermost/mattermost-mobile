@@ -6,8 +6,8 @@ import * as PostUtils from '@redux/utils/post_utils';
 
 import {makeMapStateToProps} from './index.js';
 
-jest.mock('mattermost-redux/selectors/entities/channels', () => {
-    const channels = require.requireActual('mattermost-redux/selectors/entities/channels');
+jest.mock('@redux/selectors/entities/channels', () => {
+    const channels = require.requireActual('@redux/selectors/entities/channels');
 
     return {
         ...channels,
@@ -17,16 +17,16 @@ jest.mock('mattermost-redux/selectors/entities/channels', () => {
     };
 });
 
-jest.mock('mattermost-redux/selectors/entities/preferences', () => {
-    const preferences = require.requireActual('mattermost-redux/selectors/entities/preferences');
+jest.mock('@redux/selectors/entities/preferences', () => {
+    const preferences = require.requireActual('@redux/selectors/entities/preferences');
     return {
         ...preferences,
         getTheme: jest.fn(),
     };
 });
 
-jest.mock('mattermost-redux/selectors/entities/general', () => {
-    const general = require.requireActual('mattermost-redux/selectors/entities/general');
+jest.mock('@redux/selectors/entities/general', () => {
+    const general = require.requireActual('@redux/selectors/entities/general');
     return {
         ...general,
         getConfig: jest.fn(),
@@ -34,8 +34,8 @@ jest.mock('mattermost-redux/selectors/entities/general', () => {
     };
 });
 
-jest.mock('mattermost-redux/selectors/entities/users', () => {
-    const users = require.requireActual('mattermost-redux/selectors/entities/users');
+jest.mock('@redux/selectors/entities/users', () => {
+    const users = require.requireActual('@redux/selectors/entities/users');
     return {
         ...users,
         getCurrentUserId: jest.fn(),
@@ -43,24 +43,24 @@ jest.mock('mattermost-redux/selectors/entities/users', () => {
     };
 });
 
-jest.mock('mattermost-redux/selectors/entities/teams', () => {
-    const teams = require.requireActual('mattermost-redux/selectors/entities/teams');
+jest.mock('@redux/selectors/entities/teams', () => {
+    const teams = require.requireActual('@redux/selectors/entities/teams');
     return {
         ...teams,
         getCurrentTeamId: jest.fn(),
     };
 });
 
-jest.mock('mattermost-redux/selectors/entities/emojis', () => {
-    const emojis = require.requireActual('mattermost-redux/selectors/entities/emojis');
+jest.mock('@redux/selectors/entities/emojis', () => {
+    const emojis = require.requireActual('@redux/selectors/entities/emojis');
     return {
         ...emojis,
         getCustomEmojisByName: jest.fn(),
     };
 });
 
-jest.mock('mattermost-redux/selectors/entities/posts', () => {
-    const posts = require.requireActual('mattermost-redux/selectors/entities/posts');
+jest.mock('@redux/selectors/entities/posts', () => {
+    const posts = require.requireActual('@redux/selectors/entities/posts');
     return {
         ...posts,
         makeGetReactionsForPost: () => jest.fn(),

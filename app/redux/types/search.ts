@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Dictionary} from '@redux/types/utilities';
+
 export type Search = {
     terms: string;
     isOrSearch: boolean;
@@ -9,6 +11,10 @@ export type Search = {
 export type SearchState = {
     current: any;
     results: Array<string>;
+    flagged: Array<string>;
+    pinned: Dictionary<Array<string>>;
+    isSearchingTerm: boolean;
+    isSearchGettingMore: boolean;
     recent: {
         [x: string]: Array<Search>;
     };

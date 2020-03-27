@@ -98,6 +98,10 @@ const state: GlobalState = {
             current: {},
             recent: {},
             matches: {},
+            flagged: [],
+            pinned: {},
+            isSearchingTerm: false,
+            isSearchGettingMore: false,
         },
         typing: {},
         roles: {

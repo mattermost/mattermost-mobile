@@ -11,7 +11,7 @@ import * as deviceSelectors from 'app/selectors/device';
 import * as preferencesSelectors from '@redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from '@redux/utils/helpers';
 
-jest.mock('mattermost-redux/utils/post_utils');
+jest.mock('@redux/utils/post_utils');
 
 channelSelectors.getChannel = jest.fn();
 channelSelectors.getCurrentChannelId = jest.fn();

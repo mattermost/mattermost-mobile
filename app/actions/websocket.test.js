@@ -26,8 +26,6 @@ import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 import initial_state from 'app/initial_state';
 
-require('isomorphic-fetch');
-
 global.WebSocket = MockWebSocket;
 
 const mockConfigRequest = (config = {}) => {

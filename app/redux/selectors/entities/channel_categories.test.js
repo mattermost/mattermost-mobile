@@ -10,10 +10,10 @@ import {getLastPostPerChannel} from '@redux/selectors/entities/posts';
 import {getMyPreferences} from '@redux/selectors/entities/preferences';
 import {getCurrentUserId} from '@redux/selectors/entities/users';
 
-import mergeObjects from 'test/merge_objects';
-
 import {isGroupOrDirectChannelVisible} from '@redux/utils/channel_utils';
 import {getPreferenceKey} from '@redux/utils/preference_utils';
+
+import mergeObjects from 'test/merge_objects';
 
 import * as Selectors from './channel_categories';
 
