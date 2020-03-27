@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {PostTypes} from '@redux/constants/posts';
+import {PostTypes} from '@mm-redux/constants/posts';
 import {Permissions} from '../constants';
 
 import {
@@ -14,7 +14,7 @@ import {
     shouldFilterJoinLeavePost,
     isPostCommentMention,
     getEmbedFromMetadata,
-} from '@redux/utils/post_utils';
+} from '@mm-redux/utils/post_utils';
 
 describe('PostUtils', () => {
     describe('shouldFilterJoinLeavePost', () => {

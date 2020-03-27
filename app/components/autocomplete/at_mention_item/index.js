@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUserId, getUser} from '@redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import AtMentionItem from './at_mention_item';
 

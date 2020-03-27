@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getCurrentTeamId, getMyTeamsCount, getChannelDrawerBadgeCount} from '@redux/selectors/entities/teams';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentTeamId, getMyTeamsCount, getChannelDrawerBadgeCount} from '@mm-redux/selectors/entities/teams';
 
 import SwitchTeamsButton from './switch_teams_button';
 

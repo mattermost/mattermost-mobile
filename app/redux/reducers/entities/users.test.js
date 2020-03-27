@@ -3,8 +3,8 @@
 
 import assert from 'assert';
 
-import {UserTypes, ChannelTypes} from '@redux/action_types';
-import reducer from '@redux/reducers/entities/users';
+import {UserTypes, ChannelTypes} from '@mm-redux/action_types';
+import reducer from '@mm-redux/reducers/entities/users';
 
 describe('Reducers.users', () => {
     describe('profilesInChannel', () => {

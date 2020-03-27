@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {RoleTypes, UserTypes} from '@redux/action_types';
-import {GenericAction} from '@redux/types/actions';
-import {Dictionary} from '@redux/types/utilities';
-import {Role} from '@redux/types/roles';
+import {RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Dictionary} from '@mm-redux/types/utilities';
+import {Role} from '@mm-redux/types/roles';
 
 function pending(state: Set<string> = new Set(), action: GenericAction) {
     switch (action.type) {

@@ -4,16 +4,16 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {isMinimumServerVersion} from '@redux/utils/helpers';
-import {General, Permissions} from '@redux/constants';
-import {createPost} from '@redux/actions/posts';
-import {setStatus} from '@redux/actions/users';
-import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats} from '@redux/selectors/entities/channels';
-import {haveIChannelPermission} from '@redux/selectors/entities/roles';
-import {canUploadFilesOnMobile, getConfig} from '@redux/selectors/entities/general';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getCurrentUserId, getStatusForUserId} from '@redux/selectors/entities/users';
-import {getChannelTimezones} from '@redux/actions/channels';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {General, Permissions} from '@mm-redux/constants';
+import {createPost} from '@mm-redux/actions/posts';
+import {setStatus} from '@mm-redux/actions/users';
+import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
+import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
+import {canUploadFilesOnMobile, getConfig} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
+import {getChannelTimezones} from '@mm-redux/actions/channels';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';

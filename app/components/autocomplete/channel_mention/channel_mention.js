@@ -5,9 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, SectionList} from 'react-native';
 
-import {RequestStatus} from '@redux/constants';
-import {isMinimumServerVersion} from '@redux/utils/helpers';
-import {debounce} from '@redux/actions/helpers';
+import {RequestStatus} from '@mm-redux/constants';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {debounce} from '@mm-redux/actions/helpers';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';

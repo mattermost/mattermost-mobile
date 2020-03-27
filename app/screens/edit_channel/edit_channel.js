@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import SafeAreaView from 'app/components/safe_area_view';
-import {General, RequestStatus} from '@redux/constants';
-import EventEmitter from '@redux/utils/event_emitter';
+import {General, RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
 import {NavigationTypes, ViewTypes} from 'app/constants';

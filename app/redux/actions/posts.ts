@@ -1,20 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@redux/client';
+import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@mm-redux/client';
 import {General, Preferences, Posts, WebsocketEvents} from '../constants';
-import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@redux/action_types';
+import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
-import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@redux/selectors/entities/channels';
-import {getCustomEmojisByName as selectCustomEmojisByName} from '@redux/selectors/entities/emojis';
-import {getConfig} from '@redux/selectors/entities/general';
-import * as Selectors from '@redux/selectors/entities/posts';
-import {getCurrentUserId, getUsersByUsername} from '@redux/selectors/entities/users';
+import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
+import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import * as Selectors from '@mm-redux/selectors/entities/posts';
+import {getCurrentUserId, getUsersByUsername} from '@mm-redux/selectors/entities/users';
 
-import {getUserIdFromChannelName} from '@redux/utils/channel_utils';
-import {parseNeededCustomEmojisFromText} from '@redux/utils/emoji_utils';
-import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@redux/utils/post_utils';
-import {isCombinedUserActivityPost} from '@redux/utils/post_list';
+import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
+import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
+import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
+import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
 import {systemEmojis, getCustomEmojiByName, getCustomEmojisByName} from './emojis';
@@ -28,15 +28,15 @@ import {
     savePreferences,
 } from './preferences';
 import {getProfilesByIds, getProfilesByUsernames, getStatusesByIds} from './users';
-import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericAction} from '@redux/types/actions';
-import {ChannelUnread} from '@redux/types/channels';
-import {GlobalState} from '@redux/types/store';
-import {Post} from '@redux/types/posts';
-import {Error} from '@redux/types/errors';
-import {Reaction} from '@redux/types/reactions';
-import {UserProfile} from '@redux/types/users';
-import {Dictionary} from '@redux/types/utilities';
-import {CustomEmoji} from '@redux/types/emojis';
+import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericAction} from '@mm-redux/types/actions';
+import {ChannelUnread} from '@mm-redux/types/channels';
+import {GlobalState} from '@mm-redux/types/store';
+import {Post} from '@mm-redux/types/posts';
+import {Error} from '@mm-redux/types/errors';
+import {Reaction} from '@mm-redux/types/reactions';
+import {UserProfile} from '@mm-redux/types/users';
+import {Dictionary} from '@mm-redux/types/utilities';
+import {CustomEmoji} from '@mm-redux/types/emojis';
 
 // receivedPost should be dispatched after a single post from the server. This typically happens when an existing post
 // is updated.

@@ -5,8 +5,8 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {login} from 'app/actions/views/user';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getConfig, getLicense} from '@redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {isLandscape} from 'app/selectors/device';
 import LoginActions from 'app/actions/views/login';
 

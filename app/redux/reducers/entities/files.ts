@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {FileTypes, PostTypes, UserTypes} from '@redux/action_types';
-import {GenericAction} from '@redux/types/actions';
-import {Post} from '@redux/types/posts';
-import {FileInfo} from '@redux/types/files';
-import {Dictionary} from '@redux/types/utilities';
+import {FileTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Post} from '@mm-redux/types/posts';
+import {FileInfo} from '@mm-redux/types/files';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 export function files(state: Dictionary<FileInfo> = {}, action: GenericAction) {
     switch (action.type) {

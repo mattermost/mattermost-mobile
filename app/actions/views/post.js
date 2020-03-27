@@ -3,7 +3,7 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {UserTypes} from '@redux/action_types';
+import {UserTypes} from '@mm-redux/action_types';
 import {
     doPostAction,
     getNeededAtMentionedUsernames,
@@ -14,11 +14,11 @@ import {
     receivedPostsInChannel,
     receivedPostsSince,
     receivedPostsInThread,
-} from '@redux/actions/posts';
-import {Client4} from '@redux/client';
-import {Posts} from '@redux/constants';
-import {getPost as selectPost} from '@redux/selectors/entities/posts';
-import {removeUserFromList} from '@redux/utils/user_utils';
+} from '@mm-redux/actions/posts';
+import {Client4} from '@mm-redux/client';
+import {Posts} from '@mm-redux/constants';
+import {getPost as selectPost} from '@mm-redux/selectors/entities/posts';
+import {removeUserFromList} from '@mm-redux/utils/user_utils';
 
 import {ViewTypes} from 'app/constants';
 import {generateId} from 'app/utils/file';

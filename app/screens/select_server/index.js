@@ -4,9 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getPing, resetPing, setServerVersion} from '@redux/actions/general';
-import {login} from '@redux/actions/users';
-import {getConfig, getLicense} from '@redux/selectors/entities/general';
+import {getPing, resetPing, setServerVersion} from '@mm-redux/actions/general';
+import {login} from '@mm-redux/actions/users';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import {handleSuccessfulLogin, scheduleExpiredNotification} from 'app/actions/views/login';

@@ -3,8 +3,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from '@redux/constants/preferences';
-import {General} from '@redux/constants';
+import Preferences from '@mm-redux/constants/preferences';
+import {General} from '@mm-redux/constants';
 
 import * as NavigationActions from 'app/actions/navigation';
 

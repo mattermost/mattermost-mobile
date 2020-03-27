@@ -3,7 +3,7 @@
 
 import {CategoryTypes} from '../../constants/channel_categories';
 
-import {ChannelCategoryTypes, TeamTypes} from '@redux/action_types';
+import {ChannelCategoryTypes, TeamTypes} from '@mm-redux/action_types';
 
 import * as Reducers from './channel_categories';
 

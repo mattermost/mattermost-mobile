@@ -6,8 +6,8 @@ import PropTypes from 'prop-types';
 import {Alert, FlatList, InteractionManager, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
-import EventEmitter from '@redux/utils/event_emitter';
-import * as PostListUtils from '@redux/utils/post_list';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import * as PostListUtils from '@mm-redux/utils/post_list';
 
 import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
 import Post from 'app/components/post';

@@ -5,10 +5,10 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
-import {getAutocompleteCommands} from '@redux/actions/integrations';
-import {getAutocompleteCommandsList} from '@redux/selectors/entities/integrations';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
+import {getAutocompleteCommands} from '@mm-redux/actions/integrations';
+import {getAutocompleteCommandsList} from '@mm-redux/selectors/entities/integrations';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isLandscape} from 'app/selectors/device';
 
 import SlashSuggestion from './slash_suggestion';

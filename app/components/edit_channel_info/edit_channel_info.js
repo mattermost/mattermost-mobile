@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import {General} from '@redux/constants';
+import {General} from '@mm-redux/constants';
 
 import Autocomplete from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';

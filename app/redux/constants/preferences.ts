@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Theme} from '@redux/types/preferences';
-import {Dictionary} from '@redux/types/utilities';
+import {Theme} from '@mm-redux/types/preferences';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 const Preferences: Dictionary<any> = {
     CATEGORY_CHANNEL_OPEN_TIME: 'channel_open_time',

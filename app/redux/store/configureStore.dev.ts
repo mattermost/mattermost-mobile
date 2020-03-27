@@ -22,12 +22,12 @@ const devToolsEnhancer = typeof window !== 'undefined' && window.__REDUX_DEVTOOL
         });
     };
 import serviceReducer from '../reducers';
-import deepFreezeAndThrowOnMutation from '@redux/utils/deep_freeze';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import initialState from './initial_state';
 import {offlineConfig, createReducer} from './helpers';
 import {createMiddleware} from './middleware';
-import {Reducer, Action} from '@redux/types/actions';
-import {GlobalState} from '@redux/types/store';
+import {Reducer, Action} from '@mm-redux/types/actions';
+import {GlobalState} from '@mm-redux/types/store';
 
 /**
  * Configures and constructs the redux store. Accepts the following parameters:

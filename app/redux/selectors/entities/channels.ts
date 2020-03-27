@@ -2,27 +2,27 @@
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
 import {General, Permissions} from '../../constants';
-import {getCurrentChannelId, getCurrentUser, getUsers, getMyChannelMemberships, getMyCurrentChannelMembership} from '@redux/selectors/entities/common';
-import {getConfig, getLicense, hasNewPermissions} from '@redux/selectors/entities/general';
-import {getFavoritesPreferences, getMyPreferences, getTeammateNameDisplaySetting, getVisibleTeammate, getVisibleGroupIds} from '@redux/selectors/entities/preferences';
-import {getLastPostPerChannel, getAllPosts} from '@redux/selectors/entities/posts';
-import {getCurrentTeamId, getCurrentTeamMembership, getMyTeams, getTeamMemberships} from '@redux/selectors/entities/teams';
-import {haveICurrentChannelPermission, haveIChannelPermission, haveITeamPermission} from '@redux/selectors/entities/roles';
-import {isCurrentUserSystemAdmin, getCurrentUserId} from '@redux/selectors/entities/users';
-import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency} from '@redux/utils/channel_utils';
-import {createIdsSelector} from '@redux/utils/helpers';
+import {getCurrentChannelId, getCurrentUser, getUsers, getMyChannelMemberships, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/common';
+import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {getFavoritesPreferences, getMyPreferences, getTeammateNameDisplaySetting, getVisibleTeammate, getVisibleGroupIds} from '@mm-redux/selectors/entities/preferences';
+import {getLastPostPerChannel, getAllPosts} from '@mm-redux/selectors/entities/posts';
+import {getCurrentTeamId, getCurrentTeamMembership, getMyTeams, getTeamMemberships} from '@mm-redux/selectors/entities/teams';
+import {haveICurrentChannelPermission, haveIChannelPermission, haveITeamPermission} from '@mm-redux/selectors/entities/roles';
+import {isCurrentUserSystemAdmin, getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {buildDisplayableChannelListWithUnreadSection, canManageMembersOldPermissions, completeDirectChannelInfo, completeDirectChannelDisplayName, getUserIdFromChannelName, getChannelByName as getChannelByNameHelper, isChannelMuted, getDirectChannelName, isAutoClosed, isDirectChannelVisible, isGroupChannelVisible, isGroupOrDirectChannelVisible, sortChannelsByDisplayName, isFavoriteChannel, isDefault, sortChannelsByRecency} from '@mm-redux/utils/channel_utils';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
 
 export {getCurrentChannelId, getMyChannelMemberships, getMyCurrentChannelMembership};
-import {GlobalState} from '@redux/types/store';
-import {Channel, ChannelStats, ChannelMembership, ChannelModeration} from '@redux/types/channels';
-import {UsersState, UserProfile} from '@redux/types/users';
-import {PreferenceType} from '@redux/types/preferences';
-import {Post} from '@redux/types/posts';
-import {TeamMembership, Team} from '@redux/types/teams';
-import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@redux/types/utilities';
+import {GlobalState} from '@mm-redux/types/store';
+import {Channel, ChannelStats, ChannelMembership, ChannelModeration} from '@mm-redux/types/channels';
+import {UsersState, UserProfile} from '@mm-redux/types/users';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {Post} from '@mm-redux/types/posts';
+import {TeamMembership, Team} from '@mm-redux/types/teams';
+import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@mm-redux/types/utilities';
 
 import {getUserIdsInChannels} from './users';
-import {Config} from '@redux/types/config';
+import {Config} from '@mm-redux/types/config';
 type SortingType = 'recent' | 'alpha';
 
 export function getAllChannels(state: GlobalState): IDMappedObjects<Channel> {

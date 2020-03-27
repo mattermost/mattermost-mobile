@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 
-import {displayUsername} from '@redux/utils/user_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';

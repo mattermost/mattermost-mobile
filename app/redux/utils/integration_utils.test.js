@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
-import {checkDialogElementForError, checkIfErrorsMatchElements} from '@redux/utils/integration_utils';
+import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
 
 describe('integration utils', () => {
     describe('checkDialogElementForError', () => {

@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getMissingProfilesByIds} from '@redux/actions/users';
-import {makeGetReactionsForPost} from '@redux/selectors/entities/posts';
-import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from '@redux/selectors/entities/users';
-import {getTeammateNameDisplaySetting, getTheme} from '@redux/selectors/entities/preferences';
+import {getMissingProfilesByIds} from '@mm-redux/actions/users';
+import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
+import {getCurrentUserId, makeGetProfilesByIdsAndUsernames} from '@mm-redux/selectors/entities/users';
+import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {isLandscape} from 'app/selectors/device';
 import {getUniqueUserIds} from 'app/utils/reaction';

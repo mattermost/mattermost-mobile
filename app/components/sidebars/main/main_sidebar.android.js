@@ -5,7 +5,7 @@ import React from 'react';
 import {Dimensions, Keyboard} from 'react-native';
 import {IntlProvider} from 'react-intl';
 
-import EventEmitter from '@redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {closeMainSideMenu, enableMainSideMenu} from 'app/actions/navigation';
 import {NavigationTypes} from 'app/constants';

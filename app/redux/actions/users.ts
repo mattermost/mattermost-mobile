@@ -1,27 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc} from '@redux/types/actions';
-import {UserProfile, UserStatus} from '@redux/types/users';
-import {TeamMembership} from '@redux/types/teams';
-import {Client4} from '@redux/client';
+import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {UserProfile, UserStatus} from '@mm-redux/types/users';
+import {TeamMembership} from '@mm-redux/types/teams';
+import {Client4} from '@mm-redux/client';
 import {General} from '../constants';
-import {UserTypes, TeamTypes} from '@redux/action_types';
+import {UserTypes, TeamTypes} from '@mm-redux/action_types';
 import {getAllCustomEmojis} from './emojis';
 import {getClientConfig, setServerVersion} from './general';
 import {getMyTeams, getMyTeamMembers, getMyTeamUnreads} from './teams';
 import {loadRolesIfNeeded} from './roles';
-import {getUserIdFromChannelName, isDirectChannel, isDirectChannelVisible, isGroupChannel, isGroupChannelVisible} from '@redux/utils/channel_utils';
-import {removeUserFromList} from '@redux/utils/user_utils';
-import {isMinimumServerVersion} from '@redux/utils/helpers';
+import {getUserIdFromChannelName, isDirectChannel, isDirectChannelVisible, isGroupChannel, isGroupChannelVisible} from '@mm-redux/utils/channel_utils';
+import {removeUserFromList} from '@mm-redux/utils/user_utils';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import {getConfig, getServerVersion} from '@redux/selectors/entities/general';
+import {getConfig, getServerVersion} from '@mm-redux/selectors/entities/general';
 
-import {getCurrentUserId, getUsers} from '@redux/selectors/entities/users';
+import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
-import {Dictionary} from '@redux/types/utilities';
+import {Dictionary} from '@mm-redux/types/utilities';
 export function checkMfa(loginId: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         dispatch({type: UserTypes.CHECK_MFA_REQUEST, data: null});

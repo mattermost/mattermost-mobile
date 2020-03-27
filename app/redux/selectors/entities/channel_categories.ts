@@ -7,21 +7,21 @@ import shallowEquals from 'shallow-equals';
 import {General, Preferences} from '../../constants';
 import {CategoryTypes} from '../../constants/channel_categories';
 
-import {getCurrentChannelId, getMyChannelMemberships} from '@redux/selectors/entities/channels';
-import {getCurrentUserLocale} from '@redux/selectors/entities/i18n';
-import {getLastPostPerChannel} from '@redux/selectors/entities/posts';
-import {getMyPreferences, getTeammateNameDisplaySetting, shouldAutocloseDMs} from '@redux/selectors/entities/preferences';
-import {getCurrentUserId} from '@redux/selectors/entities/users';
+import {getCurrentChannelId, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
+import {getLastPostPerChannel} from '@mm-redux/selectors/entities/posts';
+import {getMyPreferences, getTeammateNameDisplaySetting, shouldAutocloseDMs} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
-import {Channel, ChannelMembership} from '@redux/types/channels';
-import {ChannelCategory} from '@redux/types/channel_categories';
-import {GlobalState} from '@redux/types/store';
-import {UserProfile} from '@redux/types/users';
-import {IDMappedObjects, RelationOneToOne} from '@redux/types/utilities';
+import {Channel, ChannelMembership} from '@mm-redux/types/channels';
+import {ChannelCategory} from '@mm-redux/types/channel_categories';
+import {GlobalState} from '@mm-redux/types/store';
+import {UserProfile} from '@mm-redux/types/users';
+import {IDMappedObjects, RelationOneToOne} from '@mm-redux/types/utilities';
 
-import {getUserIdFromChannelName, isFavoriteChannel, isUnreadChannel} from '@redux/utils/channel_utils';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
-import {displayUsername} from '@redux/utils/user_utils';
+import {getUserIdFromChannelName, isFavoriteChannel, isUnreadChannel} from '@mm-redux/utils/channel_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 export function getCategoryIdsForTeam(state: GlobalState, teamId: string): string[] | undefined {
     return state.entities.channelCategories.orderByTeam[teamId];

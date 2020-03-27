@@ -2,16 +2,16 @@
 // See LICENSE.txt for license information.
 import {makeMapStateToProps} from './index';
 
-import * as channelSelectors from '@redux/selectors/entities/channels';
-import * as generalSelectors from '@redux/selectors/entities/general';
-import * as userSelectors from '@redux/selectors/entities/users';
-import * as commonSelectors from '@redux/selectors/entities/common';
-import * as teamSelectors from '@redux/selectors/entities/teams';
+import * as channelSelectors from '@mm-redux/selectors/entities/channels';
+import * as generalSelectors from '@mm-redux/selectors/entities/general';
+import * as userSelectors from '@mm-redux/selectors/entities/users';
+import * as commonSelectors from '@mm-redux/selectors/entities/common';
+import * as teamSelectors from '@mm-redux/selectors/entities/teams';
 import * as deviceSelectors from 'app/selectors/device';
-import * as preferencesSelectors from '@redux/selectors/entities/preferences';
-import {isMinimumServerVersion} from '@redux/utils/helpers';
+import * as preferencesSelectors from '@mm-redux/selectors/entities/preferences';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-jest.mock('@redux/utils/post_utils');
+jest.mock('@mm-redux/utils/post_utils');
 
 channelSelectors.getChannel = jest.fn();
 channelSelectors.getCurrentChannelId = jest.fn();

@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import * as EmojiUtils from '@redux/utils/emoji_utils';
+import * as EmojiUtils from '@mm-redux/utils/emoji_utils';
 
 describe('EmojiUtils', () => {
     describe('parseNeededCustomEmojisFromText', () => {

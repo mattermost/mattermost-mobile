@@ -6,7 +6,7 @@ import {Dimensions, Keyboard} from 'react-native';
 import {intlShape} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import EventEmitter from '@redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes, NavigationTypes} from 'app/constants';

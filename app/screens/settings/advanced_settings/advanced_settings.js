@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
-import {getFormattedFileSize} from '@redux/utils/file_utils';
+import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';

@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import TestHelper from 'test/test_helper';
-import deepFreezeAndThrowOnMutation from '@redux/utils/deep_freeze';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 
 import {getAllCommands, getAutocompleteCommandsList, getOutgoingHooksInCurrentTeam} from './integrations';
 

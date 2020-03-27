@@ -3,21 +3,21 @@
 
 import {connect} from 'react-redux';
 
-import {General} from '@redux/constants';
+import {General} from '@mm-redux/constants';
 import {
     getSortedFavoriteChannelIds,
     getSortedUnreadChannelIds,
     getOrderedChannelIds,
-} from '@redux/selectors/entities/channels';
-import {getCurrentUserId, getCurrentUserRoles} from '@redux/selectors/entities/users';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
-import {getTheme, getFavoritesPreferences, getSidebarPreferences} from '@redux/selectors/entities/preferences';
-import {showCreateOption} from '@redux/utils/channel_utils';
-import {memoizeResult} from '@redux/utils/helpers';
-import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@redux/utils/user_utils';
-import {getConfig, getLicense, hasNewPermissions} from '@redux/selectors/entities/general';
-import {haveITeamPermission} from '@redux/selectors/entities/roles';
-import Permissions from '@redux/constants/permissions';
+} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getTheme, getFavoritesPreferences, getSidebarPreferences} from '@mm-redux/selectors/entities/preferences';
+import {showCreateOption} from '@mm-redux/utils/channel_utils';
+import {memoizeResult} from '@mm-redux/utils/helpers';
+import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
+import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
+import Permissions from '@mm-redux/constants/permissions';
 
 import {isLandscape} from 'app/selectors/device';
 import {DeviceTypes, ViewTypes} from 'app/constants';

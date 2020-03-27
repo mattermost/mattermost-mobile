@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme, get as getPreference} from '@redux/selectors/entities/preferences';
-import {getCurrentUserId} from '@redux/selectors/entities/users';
-import {savePreferences} from '@redux/actions/preferences';
-import Preferences from '@redux/constants/preferences';
+import {getTheme, get as getPreference} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {savePreferences} from '@mm-redux/actions/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 import {isLandscape} from 'app/selectors/device';
 import ClockDisplay from './clock_display';
 

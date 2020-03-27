@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {ChannelTypes, GeneralTypes, PostTypes, UserTypes} from '@redux/action_types';
+import {ChannelTypes, GeneralTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
 import {Posts} from '../../constants';
-import {comparePosts} from '@redux/utils/post_utils';
-import {Post, PostsState, PostOrderBlock, MessageHistory} from '@redux/types/posts';
-import {RelationOneToOne, Dictionary, IDMappedObjects, RelationOneToMany} from '@redux/types/utilities';
-import {GenericAction} from '@redux/types/actions';
-import {Reaction} from '@redux/types/reactions';
+import {comparePosts} from '@mm-redux/utils/post_utils';
+import {Post, PostsState, PostOrderBlock, MessageHistory} from '@mm-redux/types/posts';
+import {RelationOneToOne, Dictionary, IDMappedObjects, RelationOneToMany} from '@mm-redux/types/utilities';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Reaction} from '@mm-redux/types/reactions';
 
 export function removeUnneededMetadata(post: Post) {
     if (!post.metadata) {

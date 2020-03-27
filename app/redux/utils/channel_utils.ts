@@ -3,15 +3,15 @@
 
 import {General, Preferences, Permissions, Users} from '../constants';
 
-import {hasNewPermissions} from '@redux/selectors/entities/general';
-import {haveITeamPermission, haveIChannelPermission} from '@redux/selectors/entities/roles';
-import {Channel, ChannelMembership, ChannelType, ChannelNotifyProps} from '@redux/types/channels';
-import {Post} from '@redux/types/posts';
-import {UserProfile, UsersState, UserNotifyProps} from '@redux/types/users';
-import {GlobalState} from '@redux/types/store';
-import {TeamMembership} from '@redux/types/teams';
-import {PreferenceType} from '@redux/types/preferences';
-import {RelationOneToOne, IDMappedObjects} from '@redux/types/utilities';
+import {hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {haveITeamPermission, haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
+import {Channel, ChannelMembership, ChannelType, ChannelNotifyProps} from '@mm-redux/types/channels';
+import {Post} from '@mm-redux/types/posts';
+import {UserProfile, UsersState, UserNotifyProps} from '@mm-redux/types/users';
+import {GlobalState} from '@mm-redux/types/store';
+import {TeamMembership} from '@mm-redux/types/teams';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {RelationOneToOne, IDMappedObjects} from '@mm-redux/types/utilities';
 
 import {getPreferenceKey, getPreferencesByCategory} from './preference_utils';
 import {displayUsername} from './user_utils';

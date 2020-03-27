@@ -13,7 +13,7 @@ import {
     filterChannelsMatchingTerm,
     sortChannelsByRecency,
     sortChannelsByDisplayName,
-} from '@redux/utils/channel_utils';
+} from '@mm-redux/utils/channel_utils';
 
 describe('ChannelUtils', () => {
     it('canManageMembersOldPermissions', () => {

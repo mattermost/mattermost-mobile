@@ -5,7 +5,7 @@ import {Keyboard, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import merge from 'deepmerge';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import store from 'app/store';
 import EphemeralStore from 'app/store/ephemeral_store';

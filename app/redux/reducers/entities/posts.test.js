@@ -8,10 +8,10 @@ import {
     ChannelTypes,
     GeneralTypes,
     PostTypes,
-} from '@redux/action_types';
+} from '@mm-redux/action_types';
 import {Posts} from '../../constants';
-import * as reducers from '@redux/reducers/entities/posts';
-import deepFreeze from '@redux/utils/deep_freeze';
+import * as reducers from '@mm-redux/reducers/entities/posts';
+import deepFreeze from '@mm-redux/utils/deep_freeze';
 
 describe('posts', () => {
     for (const actionType of [

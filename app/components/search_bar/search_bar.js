@@ -19,7 +19,7 @@ import EvilIcon from 'react-native-vector-icons/EvilIcons';
 
 import {SearchBar} from 'react-native-elements';
 
-import {memoizeResult} from '@redux/utils/helpers';
+import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 

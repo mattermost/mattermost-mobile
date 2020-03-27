@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 import {shallowWithIntl} from 'test/intl-test-helper';

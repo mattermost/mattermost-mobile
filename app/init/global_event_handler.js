@@ -9,16 +9,16 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {batchActions} from 'redux-batched-actions';
 import semver from 'semver/preload';
 
-import {setAppState, setServerVersion} from '@redux/actions/general';
-import {autoUpdateTimezone} from '@redux/actions/timezone';
+import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
-import {GeneralTypes} from '@redux/action_types';
-import {Client4} from '@redux/client';
-import {General} from '@redux/constants';
-import EventEmitter from '@redux/utils/event_emitter';
-import {getCurrentChannelId} from '@redux/selectors/entities/channels';
-import {getCurrentUserId, getUser} from '@redux/selectors/entities/users';
-import {isTimezoneEnabled} from '@redux/selectors/entities/timezone';
+import {GeneralTypes} from '@mm-redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';

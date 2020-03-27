@@ -3,15 +3,15 @@
 
 import {connect} from 'react-redux';
 
-import {Preferences} from '@redux/constants';
-import {makeGetCommentCountForPost} from '@redux/selectors/entities/posts';
-import {getBool, getTeammateNameDisplaySetting, getTheme} from '@redux/selectors/entities/preferences';
-import {isTimezoneEnabled} from '@redux/selectors/entities/timezone';
-import {getUser, getCurrentUser} from '@redux/selectors/entities/users';
-import {isPostPendingOrFailed, isSystemMessage} from '@redux/utils/post_utils';
-import {getUserCurrentTimezone} from '@redux/utils/timezone_utils';
-import {displayUsername} from '@redux/utils/user_utils';
-import {getConfig} from '@redux/selectors/entities/general';
+import {Preferences} from '@mm-redux/constants';
+import {makeGetCommentCountForPost} from '@mm-redux/selectors/entities/posts';
+import {getBool, getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getUser, getCurrentUser} from '@mm-redux/selectors/entities/users';
+import {isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
+import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 
 import {fromAutoResponder} from 'app/utils/general';
 import {isGuest} from 'app/utils/users';

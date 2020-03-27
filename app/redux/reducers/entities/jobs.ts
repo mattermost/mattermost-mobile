@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {JobTypes} from '@redux/action_types';
-import {JobsState, JobType, Job, JobsByType} from '@redux/types/jobs';
-import {GenericAction} from '@redux/types/actions';
-import {IDMappedObjects} from '@redux/types/utilities';
+import {JobTypes} from '@mm-redux/action_types';
+import {JobsState, JobType, Job, JobsByType} from '@mm-redux/types/jobs';
+import {GenericAction} from '@mm-redux/types/actions';
+import {IDMappedObjects} from '@mm-redux/types/utilities';
 
 function jobs(state: IDMappedObjects<Job> = {}, action: GenericAction): IDMappedObjects<Job> {
     switch (action.type) {

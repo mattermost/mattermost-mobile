@@ -3,9 +3,9 @@
 
 import assert from 'assert';
 import TestHelper from 'test/test_helper';
-import deepFreezeAndThrowOnMutation from '@redux/utils/deep_freeze';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 
-import {getCustomEmojiIdsSortedByName} from '@redux/selectors/entities/emojis';
+import {getCustomEmojiIdsSortedByName} from '@mm-redux/selectors/entities/emojis';
 
 describe('Selectors.Integrations', () => {
     TestHelper.initBasic();

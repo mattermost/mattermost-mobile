@@ -6,10 +6,10 @@ import nock from 'nock';
 
 import Config from 'assets/config.json';
 
-import Client from '@redux/client/client4';
+import Client from '@mm-redux/client/client4';
 
-import {DEFAULT_LOCALE} from '@redux/constants/general';
-import {generateId} from '@redux/utils/helpers';
+import {DEFAULT_LOCALE} from '@mm-redux/constants/general';
+import {generateId} from '@mm-redux/utils/helpers';
 
 const PASSWORD = 'password1';
 

@@ -4,7 +4,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {TouchableOpacity} from 'react-native';
 
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import ReactionHeaderItem from './reaction_header_item';
 

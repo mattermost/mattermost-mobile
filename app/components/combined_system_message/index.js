@@ -4,10 +4,10 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {getMissingProfilesByIds, getMissingProfilesByUsernames} from '@redux/actions/users';
-import {Preferences} from '@redux/constants';
-import {getBool} from '@redux/selectors/entities/preferences';
-import {getCurrentUser, makeGetProfilesByIdsAndUsernames} from '@redux/selectors/entities/users';
+import {getMissingProfilesByIds, getMissingProfilesByUsernames} from '@mm-redux/actions/users';
+import {Preferences} from '@mm-redux/constants';
+import {getBool} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUser, makeGetProfilesByIdsAndUsernames} from '@mm-redux/selectors/entities/users';
 
 import CombinedSystemMessage from './combined_system_message';
 

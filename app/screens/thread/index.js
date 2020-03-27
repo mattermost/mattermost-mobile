@@ -4,11 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {selectPost} from '@redux/actions/posts';
-import {makeGetChannel, getMyCurrentChannelMembership} from '@redux/selectors/entities/channels';
-import {makeGetPostIdsForThread} from '@redux/selectors/entities/posts';
+import {selectPost} from '@mm-redux/actions/posts';
+import {makeGetChannel, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
+import {makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 
 import Thread from './thread';
 

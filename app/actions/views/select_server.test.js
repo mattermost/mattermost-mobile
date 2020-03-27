@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import {GeneralTypes} from '@redux/action_types';
+import {GeneralTypes} from '@mm-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 

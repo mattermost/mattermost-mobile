@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUrl} from '@redux/selectors/entities/general';
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {getCurrentLocale} from 'app/selectors/i18n';
 import {removeProtocol} from 'app/utils/url';

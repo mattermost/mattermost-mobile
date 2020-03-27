@@ -1,26 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 import {General} from '../constants';
-import {ChannelTypes, TeamTypes, UserTypes} from '@redux/action_types';
-import EventEmitter from '@redux/utils/event_emitter';
+import {ChannelTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {isCompatibleWithJoinViewTeamPermissions} from '@redux/selectors/entities/general';
+import {isCompatibleWithJoinViewTeamPermissions} from '@mm-redux/selectors/entities/general';
 
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
-import {getCurrentUserId} from '@redux/selectors/entities/users';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
-import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult, batchActions, Action} from '@redux/types/actions';
+import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult, batchActions, Action} from '@mm-redux/types/actions';
 
-import {Team, TeamMembership, TeamMemberWithError} from '@redux/types/teams';
+import {Team, TeamMembership, TeamMemberWithError} from '@mm-redux/types/teams';
 
 import {selectChannel} from './channels';
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {getProfilesByIds, getStatusesByIds} from './users';
 import {loadRolesIfNeeded} from './roles';
-import {UserProfile} from '@redux/types/users';
+import {UserProfile} from '@mm-redux/types/users';
 
 async function getProfilesAndStatusesForMembers(userIds: string[], dispatch: DispatchFunc, getState: GetStateFunc) {
     const {

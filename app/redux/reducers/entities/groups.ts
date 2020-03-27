@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {GroupTypes} from '@redux/action_types';
-import {GroupChannel, GroupSyncables, GroupTeam, Group} from '@redux/types/groups';
-import {GenericAction} from '@redux/types/actions';
-import {Team, TeamMembership} from '@redux/types/teams';
-import {ChannelMembership} from '@redux/types/channels';
-import {Dictionary} from '@redux/types/utilities';
+import {GroupTypes} from '@mm-redux/action_types';
+import {GroupChannel, GroupSyncables, GroupTeam, Group} from '@mm-redux/types/groups';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Team, TeamMembership} from '@mm-redux/types/teams';
+import {ChannelMembership} from '@mm-redux/types/channels';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 function syncables(state: Dictionary<GroupSyncables> = {}, action: GenericAction) {
     switch (action.type) {

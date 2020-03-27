@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Theme} from '@redux/types/preferences';
+import {Theme} from '@mm-redux/types/preferences';
 import {Preferences} from '../constants';
 
 export function makeStyleFromTheme(getStyleFromTheme: (a: any) => any): (a: any) => any {

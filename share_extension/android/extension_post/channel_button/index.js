@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getChannel} from '@redux/selectors/entities/channels';
+import {getChannel} from '@mm-redux/selectors/entities/channels';
 
 import ChannelButton from './channel_button';
 

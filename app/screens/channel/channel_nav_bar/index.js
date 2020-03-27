@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 
 import {isLandscape} from 'app/selectors/device';
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import ChannelNavBar from './channel_nav_bar';
 

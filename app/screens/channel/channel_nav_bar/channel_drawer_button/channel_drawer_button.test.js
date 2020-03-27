@@ -4,7 +4,7 @@
 import React from 'react';
 import NotificationsIOS from 'react-native-notifications';
 
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import Badge from 'app/components/badge';
 import PushNotification from 'app/push_notifications/push_notifications.ios';

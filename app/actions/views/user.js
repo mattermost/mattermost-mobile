@@ -3,15 +3,15 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {GeneralTypes, RoleTypes, UserTypes} from '@redux/action_types';
-import {getDataRetentionPolicy} from '@redux/actions/general';
-import * as HelperActions from '@redux/actions/helpers';
-import {autoUpdateTimezone} from '@redux/actions/timezone';
-import {Client4} from '@redux/client';
-import {General} from '@redux/constants';
-import {getConfig, getLicense} from '@redux/selectors/entities/general';
-import {isTimezoneEnabled} from '@redux/selectors/entities/timezone';
-import {getCurrentUserId, getStatusForUserId} from '@redux/selectors/entities/users';
+import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
+import * as HelperActions from '@mm-redux/actions/helpers';
+import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 
 import {setAppCredentials} from 'app/init/credentials';
 import {setCSRFFromCookie} from '@utils/security';

@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {GifTypes} from '@redux/action_types';
-import {GenericAction} from '@redux/types/actions';
-import {Dictionary} from '@redux/types/utilities';
+import {GifTypes} from '@mm-redux/action_types';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 const SEARCH_SELECTORS: Dictionary<Function> = {
     [GifTypes.SELECT_SEARCH_TEXT]: (state: any, action: GenericAction) => ({

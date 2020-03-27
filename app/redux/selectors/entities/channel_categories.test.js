@@ -4,14 +4,14 @@
 import {General, Preferences} from '../../constants';
 import {CategoryTypes} from '../../constants/channel_categories';
 
-import {getCurrentChannelId, getMyChannelMemberships} from '@redux/selectors/entities/channels';
-import {getConfig} from '@redux/selectors/entities/general';
-import {getLastPostPerChannel} from '@redux/selectors/entities/posts';
-import {getMyPreferences} from '@redux/selectors/entities/preferences';
-import {getCurrentUserId} from '@redux/selectors/entities/users';
+import {getCurrentChannelId, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getLastPostPerChannel} from '@mm-redux/selectors/entities/posts';
+import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
-import {isGroupOrDirectChannelVisible} from '@redux/utils/channel_utils';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
+import {isGroupOrDirectChannelVisible} from '@mm-redux/utils/channel_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
 import mergeObjects from 'test/merge_objects';
 

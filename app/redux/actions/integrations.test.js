@@ -4,9 +4,9 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from '@redux/actions/integrations';
-import * as TeamsActions from '@redux/actions/teams';
-import {Client4} from '@redux/client';
+import * as Actions from '@mm-redux/actions/integrations';
+import * as TeamsActions from '@mm-redux/actions/teams';
+import {Client4} from '@mm-redux/client';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';

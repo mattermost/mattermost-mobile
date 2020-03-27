@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getCurrentChannel, canManageChannelMembers} from '@redux/selectors/entities/channels';
-import {makeGetProfilesInChannel} from '@redux/selectors/entities/users';
-import {getProfilesInChannel, searchProfiles} from '@redux/actions/users';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentChannel, canManageChannelMembers} from '@mm-redux/selectors/entities/channels';
+import {makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
+import {getProfilesInChannel, searchProfiles} from '@mm-redux/actions/users';
 
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
 import {isLandscape} from 'app/selectors/device';

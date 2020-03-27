@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {PostTypes, PreferenceTypes, SearchTypes, UserTypes} from '@redux/action_types';
+import {PostTypes, PreferenceTypes, SearchTypes, UserTypes} from '@mm-redux/action_types';
 import {Preferences} from '../../constants';
-import {PreferenceType} from '@redux/types/preferences';
-import {GenericAction} from '@redux/types/actions';
-import {Post} from '@redux/types/posts';
-import {Dictionary} from '@redux/types/utilities';
-import {Search} from '@redux/types/search';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Post} from '@mm-redux/types/posts';
+import {Dictionary} from '@mm-redux/types/utilities';
+import {Search} from '@mm-redux/types/search';
 
 function results(state: Array<string> = [], action: GenericAction) {
     switch (action.type) {

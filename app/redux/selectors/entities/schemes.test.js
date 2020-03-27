@@ -3,10 +3,10 @@
 
 import assert from 'assert';
 
-import deepFreezeAndThrowOnMutation from '@redux/utils/deep_freeze';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import TestHelper from 'test/test_helper';
-import * as Selectors from '@redux/selectors/entities/schemes';
-import {ScopeTypes} from '@redux/constants/schemes';
+import * as Selectors from '@mm-redux/selectors/entities/schemes';
+import {ScopeTypes} from '@mm-redux/constants/schemes';
 
 describe('Selectors.Schemes', () => {
     const scheme1 = TestHelper.mockSchemeWithId();

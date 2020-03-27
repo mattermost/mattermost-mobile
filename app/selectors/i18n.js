@@ -3,8 +3,8 @@
 
 import DeviceInfo from 'react-native-device-info';
 
-import {DEFAULT_LOCALE} from '@redux/constants/general';
-import {getCurrentUserLocale} from '@redux/selectors/entities/i18n';
+import {DEFAULT_LOCALE} from '@mm-redux/constants/general';
+import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 
 // Not a proper selector since the device locale isn't in the redux store
 export function getCurrentLocale(state) {

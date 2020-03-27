@@ -4,7 +4,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import FileAttachment from './file_attachment.js';
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 jest.mock('react-native-doc-viewer', () => ({
     openDoc: jest.fn(),

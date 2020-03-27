@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
-import {EmojiTypes} from '@redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {EmojiTypes} from '@mm-redux/action_types';
 import {General, Emoji} from '../constants';
 import {getProfilesByIds} from './users';
-import {getCustomEmojisByName as selectCustomEmojisByName} from '@redux/selectors/entities/emojis';
-import {parseNeededCustomEmojisFromText} from '@redux/utils/emoji_utils';
+import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 
-import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult} from '@redux/types/actions';
+import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult} from '@mm-redux/types/actions';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-import {SystemEmoji, CustomEmoji} from '@redux/types/emojis';
-import {Dictionary} from '@redux/types/utilities';
+import {SystemEmoji, CustomEmoji} from '@mm-redux/types/emojis';
+import {Dictionary} from '@mm-redux/types/utilities';
 export let systemEmojis: Map<string, SystemEmoji> = new Map();
 export function setSystemEmojis(emojis: Map<string, SystemEmoji>) {
     systemEmojis = emojis;

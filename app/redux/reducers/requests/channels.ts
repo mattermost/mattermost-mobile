@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {ChannelTypes} from '@redux/action_types';
+import {ChannelTypes} from '@mm-redux/action_types';
 
-import {GenericAction} from '@redux/types/actions';
-import {ChannelsRequestsStatuses, RequestStatusType} from '@redux/types/requests';
+import {GenericAction} from '@mm-redux/types/actions';
+import {ChannelsRequestsStatuses, RequestStatusType} from '@mm-redux/types/requests';
 
 import {handleRequest, initialRequestState} from './helpers';
 

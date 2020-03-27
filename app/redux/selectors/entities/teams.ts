@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 import * as reselect from 'reselect';
 import {Permissions} from '../../constants';
-import {getConfig, getCurrentUrl, isCompatibleWithJoinViewTeamPermissions} from '@redux/selectors/entities/general';
-import {haveISystemPermission} from '@redux/selectors/entities/roles_helpers';
-import {createIdsSelector} from '@redux/utils/helpers';
-import {isTeamAdmin} from '@redux/utils/user_utils';
-import {sortTeamsWithLocale} from '@redux/utils/team_utils';
-import {Team, TeamMembership} from '@redux/types/teams';
-import {IDMappedObjects} from '@redux/types/utilities';
-import {GlobalState} from '@redux/types/store';
+import {getConfig, getCurrentUrl, isCompatibleWithJoinViewTeamPermissions} from '@mm-redux/selectors/entities/general';
+import {haveISystemPermission} from '@mm-redux/selectors/entities/roles_helpers';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
+import {isTeamAdmin} from '@mm-redux/utils/user_utils';
+import {sortTeamsWithLocale} from '@mm-redux/utils/team_utils';
+import {Team, TeamMembership} from '@mm-redux/types/teams';
+import {IDMappedObjects} from '@mm-redux/types/utilities';
+import {GlobalState} from '@mm-redux/types/store';
 
 export function getCurrentTeamId(state: GlobalState) {
     return state.entities.teams.currentTeamId;

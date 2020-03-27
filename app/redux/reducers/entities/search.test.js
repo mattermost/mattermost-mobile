@@ -7,8 +7,8 @@ import {
     PostTypes,
     SearchTypes,
     UserTypes,
-} from '@redux/action_types';
-import reducer from '@redux/reducers/entities/search';
+} from '@mm-redux/action_types';
+import reducer from '@mm-redux/reducers/entities/search';
 
 describe('reducers.entities.search', () => {
     describe('results', () => {

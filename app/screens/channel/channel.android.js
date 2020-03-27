@@ -4,7 +4,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import EventEmitter from '@redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {openMainSideMenu, openSettingsSideMenu} from 'app/actions/navigation';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';

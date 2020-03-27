@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 
-import {General} from '@redux/constants';
+import {General} from '@mm-redux/constants';
 
 import Icon from 'app/components/vector_icon';
 

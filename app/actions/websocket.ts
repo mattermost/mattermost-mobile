@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 import websocketClient from '@websocket';
 
-import {ChannelTypes, GeneralTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes} from '@redux/action_types';
-import {General, Preferences} from '@redux/constants';
+import {ChannelTypes, GeneralTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes} from '@mm-redux/action_types';
+import {General, Preferences} from '@mm-redux/constants';
 import {
     getAllChannels,
     getChannel,
@@ -17,26 +17,26 @@ import {
     getChannelMembersInChannels,
     isManuallyUnread,
     getKnownUsers,
-} from '@redux/selectors/entities/channels';
-import {getConfig} from '@redux/selectors/entities/general';
-import {getAllPosts, getPost as selectPost} from '@redux/selectors/entities/posts';
-import {getCurrentTeamId, getTeams as getTeamsSelector} from '@redux/selectors/entities/teams';
-import {getCurrentUser, getCurrentUserId, getUsers, getUserStatuses} from '@redux/selectors/entities/users';
-import {getChannelByName, getUserIdFromChannelName} from '@redux/utils/channel_utils';
-import EventEmitter from '@redux/utils/event_emitter';
-import {isMinimumServerVersion} from '@redux/utils/helpers';
-import {isGuest, removeUserFromList} from '@redux/utils/user_utils';
-import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@redux/utils/post_utils';
+} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getAllPosts, getPost as selectPost} from '@mm-redux/selectors/entities/posts';
+import {getCurrentTeamId, getTeams as getTeamsSelector} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUser, getCurrentUserId, getUsers, getUserStatuses} from '@mm-redux/selectors/entities/users';
+import {getChannelByName, getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {isGuest, removeUserFromList} from '@mm-redux/utils/user_utils';
+import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 
-import {DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@redux/types/actions';
+import {DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux/types/actions';
 
-import {getCustomEmojiForReaction, getUnreadPostData, postDeleted, receivedNewPost, receivedPost} from '@redux/actions/posts';
-import {markChannelAsRead} from '@redux/actions/channels';
-import {getProfilesByIds, getStatusesByIds} from '@redux/actions/users';
-import {Channel, ChannelMembership} from '@redux/types/channels';
-import {PreferenceType} from '@redux/types/preferences';
-import {TeamMembership} from '@redux/types/teams';
-import {Dictionary} from '@redux/types/utilities';
+import {getCustomEmojiForReaction, getUnreadPostData, postDeleted, receivedNewPost, receivedPost} from '@mm-redux/actions/posts';
+import {markChannelAsRead} from '@mm-redux/actions/channels';
+import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
+import {Channel, ChannelMembership} from '@mm-redux/types/channels';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {TeamMembership} from '@mm-redux/types/teams';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 import {WebsocketEvents} from '@constants';
 import {
@@ -51,7 +51,7 @@ import {
 import {loadChannelsForTeam, markAsViewedAndReadBatch} from '@actions/views/channel';
 import {getPost, getPosts, getPostsAdditionalDataBatch, getPostThread} from '@actions/views/post';
 import {getMe, loadMe} from '@actions/views/user';
-import {GlobalState} from '@redux/types/store';
+import {GlobalState} from '@mm-redux/types/store';
 
 export type WebsocketBroadcast = {
     omit_users: Dictionary<boolean>;

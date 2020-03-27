@@ -14,7 +14,7 @@ import {
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {intlShape} from 'react-intl';
 
-import EventEmitter from '@redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import PostAttachmentImage from 'app/components/post_attachment_image';

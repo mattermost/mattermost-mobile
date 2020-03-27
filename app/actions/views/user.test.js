@@ -4,14 +4,14 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import {UserTypes} from '@redux/action_types';
-import {General} from '@redux/constants';
+import {UserTypes} from '@mm-redux/action_types';
+import {General} from '@mm-redux/constants';
 
 import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 
 const mockStore = configureStore([thunk]);
 
-jest.mock('@redux/actions/users', () => ({
+jest.mock('@mm-redux/actions/users', () => ({
     getStatus: (...args) => ({type: 'MOCK_GET_STATUS', args}),
     getStatusesByIds: (...args) => ({type: 'MOCK_GET_STATUS_BY_IDS', args}),
     startPeriodicStatusUpdates: () => ({type: 'MOCK_PERIODIC_STATUS_UPDATES'}),

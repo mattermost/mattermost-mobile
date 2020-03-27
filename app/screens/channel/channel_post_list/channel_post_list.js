@@ -9,8 +9,8 @@ import {
     View,
 } from 'react-native';
 
-import {getLastPostIndex} from '@redux/utils/post_list';
-import EventEmitter from '@redux/utils/event_emitter';
+import {getLastPostIndex} from '@mm-redux/utils/post_list';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';

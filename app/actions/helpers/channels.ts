@@ -1,22 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@redux/action_types';
-import {Client4} from '@redux/client';
-import {General, Preferences} from '@redux/constants';
-import {getCurrentChannelId} from '@redux/selectors/entities/channels';
-import {getConfig} from '@redux/selectors/entities/general';
-import {getMyPreferences} from '@redux/selectors/entities/preferences';
-import {getCurrentUserId, getUsers, getUserIdsInChannels} from '@redux/selectors/entities/users';
-import {getUserIdFromChannelName, isAutoClosed} from '@redux/utils/channel_utils';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
+import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {General, Preferences} from '@mm-redux/constants';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUsers, getUserIdsInChannels} from '@mm-redux/selectors/entities/users';
+import {getUserIdFromChannelName, isAutoClosed} from '@mm-redux/utils/channel_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
-import {ActionResult, GenericAction} from '@redux/types/actions';
-import {Channel, ChannelMembership} from '@redux/types/channels';
-import {PreferenceType} from '@redux/types/preferences';
-import {GlobalState} from '@redux/types/store';
-import {UserProfile} from '@redux/types/users';
-import {RelationOneToMany} from '@redux/types/utilities';
+import {ActionResult, GenericAction} from '@mm-redux/types/actions';
+import {Channel, ChannelMembership} from '@mm-redux/types/channels';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {GlobalState} from '@mm-redux/types/store';
+import {UserProfile} from '@mm-redux/types/users';
+import {RelationOneToMany} from '@mm-redux/types/utilities';
 
 import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
 import {buildPreference} from '@utils/preferences';

@@ -9,7 +9,7 @@ import {
     filterProfilesMatchingTerm,
     getSuggestionsSplitBy,
     getSuggestionsSplitByMultiple,
-} from '@redux/utils/user_utils';
+} from '@mm-redux/utils/user_utils';
 
 describe('user utils', () => {
     describe('displayUsername', () => {

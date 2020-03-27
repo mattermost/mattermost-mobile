@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@redux/client';
-import {BotTypes} from '@redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {BotTypes} from '@mm-redux/action_types';
 import {bindClientFunc} from './helpers';
 
-import {ActionFunc} from '@redux/types/actions';
-import {Bot, BotPatch} from '@redux/types/bots';
+import {ActionFunc} from '@mm-redux/types/actions';
+import {Bot, BotPatch} from '@mm-redux/types/bots';
 
 const BOTS_PER_PAGE_DEFAULT = 20;
 

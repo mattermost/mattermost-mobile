@@ -6,7 +6,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import DateHeader from './date_header.js';
 

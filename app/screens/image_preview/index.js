@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {canDownloadFilesOnMobile} from '@redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
 
 import {getDimensions} from 'app/selectors/device';
 

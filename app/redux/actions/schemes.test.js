@@ -4,8 +4,8 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from '@redux/actions/schemes';
-import {Client4} from '@redux/client';
+import * as Actions from '@mm-redux/actions/schemes';
+import {Client4} from '@mm-redux/client';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';

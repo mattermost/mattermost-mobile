@@ -5,16 +5,16 @@ import fs from 'fs';
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from '@redux/actions/posts';
-import {getChannelStats} from '@redux/actions/channels';
-import {login} from '@redux/actions/users';
-import {setSystemEmojis, createCustomEmoji} from '@redux/actions/emojis';
-import {Client4} from '@redux/client';
+import * as Actions from '@mm-redux/actions/posts';
+import {getChannelStats} from '@mm-redux/actions/channels';
+import {login} from '@mm-redux/actions/users';
+import {setSystemEmojis, createCustomEmoji} from '@mm-redux/actions/emojis';
+import {Client4} from '@mm-redux/client';
 import {Preferences, Posts, RequestStatus} from '../constants';
-import {ChannelTypes, PostTypes} from '@redux/action_types';
+import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
 const OK_RESPONSE = {status: 'OK'};
 

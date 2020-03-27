@@ -39,7 +39,7 @@ jest.mock('react-native-status-bar-size', () => ({
     addEventListener: jest.fn(),
 }));
 
-jest.mock('@redux/actions/general', () => ({
+jest.mock('@mm-redux/actions/general', () => ({
     setAppState: jest.fn(),
     setServerVersion: jest.fn().mockReturnValue('setServerVersion'),
 }));

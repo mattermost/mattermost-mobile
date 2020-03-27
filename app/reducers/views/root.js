@@ -3,7 +3,7 @@
 
 import {combineReducers} from 'redux';
 
-import {General} from '@redux/constants';
+import {General} from '@mm-redux/constants';
 
 import {ViewTypes} from 'app/constants';
 

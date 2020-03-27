@@ -3,23 +3,23 @@
 
 import {connect} from 'react-redux';
 
-import {General, Posts} from '@redux/constants';
-import {getChannel, canManageChannelMembers, getCurrentChannelId} from '@redux/selectors/entities/channels';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getConfig, getLicense} from '@redux/selectors/entities/general';
-import {getCurrentUserId, getCurrentUserRoles} from '@redux/selectors/entities/users';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
-import {getCustomEmojisByName} from '@redux/selectors/entities/emojis';
-import {makeGetReactionsForPost} from '@redux/selectors/entities/posts';
-import {memoizeResult} from '@redux/utils/helpers';
+import {General, Posts} from '@mm-redux/constants';
+import {getChannel, canManageChannelMembers, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
+import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import {
     isEdited,
     isPostEphemeral,
     isSystemMessage,
     canDeletePost,
-} from '@redux/utils/post_utils';
-import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@redux/utils/user_utils';
+} from '@mm-redux/utils/post_utils';
+import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 
 import {getDimensions} from 'app/selectors/device';
 

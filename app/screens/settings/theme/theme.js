@@ -6,7 +6,7 @@ import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';

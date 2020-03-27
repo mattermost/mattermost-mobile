@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUrl} from '@redux/selectors/entities/general';
+import {getCurrentUrl} from '@mm-redux/selectors/entities/general';
 
 import {getDimensions} from 'app/selectors/device';
 

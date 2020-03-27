@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {getUsersByUsername, getCurrentUserMentionKeys} from '@redux/selectors/entities/users';
+import {getUsersByUsername, getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
 
-import {getTeammateNameDisplaySetting, getTheme} from '@redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import AtMention from './at_mention';
 

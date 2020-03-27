@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {Posts} from '@redux/constants';
-import {getPost} from '@redux/selectors/entities/posts';
+import {Posts} from '@mm-redux/constants';
+import {getPost} from '@mm-redux/selectors/entities/posts';
 
 import SearchResultPost from './search_result_post';
 

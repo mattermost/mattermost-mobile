@@ -10,7 +10,7 @@ import {
 import {intlShape} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import EventEmitter from '@redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {DeviceTypes} from 'app/constants';
 import FormattedText from 'app/components/formatted_text';

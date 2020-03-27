@@ -4,8 +4,8 @@
 import assert from 'assert';
 
 import {Posts, Preferences} from '../constants';
-import deepFreeze from '@redux/utils/deep_freeze';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
+import deepFreeze from '@mm-redux/utils/deep_freeze';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
 import {
     COMBINED_USER_ACTIVITY,

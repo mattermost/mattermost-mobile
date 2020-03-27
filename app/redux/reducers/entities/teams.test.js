@@ -3,8 +3,8 @@
 
 import assert from 'assert';
 
-import {TeamTypes} from '@redux/action_types';
-import teamsReducer from '@redux/reducers/entities/teams';
+import {TeamTypes} from '@mm-redux/action_types';
+import teamsReducer from '@mm-redux/reducers/entities/teams';
 
 describe('Reducers.teams.myMembers', () => {
     it('initial state', async () => {

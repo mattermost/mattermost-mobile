@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 import {Preferences} from '../constants';
-import {PreferenceTypes} from '@redux/action_types';
-import {getMyPreferences as getMyPreferencesSelector, makeGetCategory} from '@redux/selectors/entities/preferences';
-import {getCurrentUserId} from '@redux/selectors/entities/users';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
+import {PreferenceTypes} from '@mm-redux/action_types';
+import {getMyPreferences as getMyPreferencesSelector, makeGetCategory} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
-import {GetStateFunc, DispatchFunc, ActionFunc} from '@redux/types/actions';
+import {GetStateFunc, DispatchFunc, ActionFunc} from '@mm-redux/types/actions';
 
-import {PreferenceType} from '@redux/types/preferences';
+import {PreferenceType} from '@mm-redux/types/preferences';
 
 import {bindClientFunc} from './helpers';
 import {getProfilesByIds, getProfilesInChannel} from './users';

@@ -5,10 +5,10 @@ import fs from 'fs';
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from '@redux/actions/emojis';
-import {Client4} from '@redux/client';
+import * as Actions from '@mm-redux/actions/emojis';
+import {Client4} from '@mm-redux/client';
 
-import {GeneralTypes} from '@redux/action_types';
+import {GeneralTypes} from '@mm-redux/action_types';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 

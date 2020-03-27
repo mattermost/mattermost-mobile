@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {General, Users} from '@redux/constants';
+import {General, Users} from '@mm-redux/constants';
 
 import StatusBar from 'app/components/status_bar';
 import {preventDoubleTap} from 'app/utils/tap';

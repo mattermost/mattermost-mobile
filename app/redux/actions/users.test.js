@@ -5,12 +5,12 @@ import assert from 'assert';
 import nock from 'nock';
 import fs from 'fs';
 
-import * as Actions from '@redux/actions/users';
-import {Client4} from '@redux/client';
+import * as Actions from '@mm-redux/actions/users';
+import {Client4} from '@mm-redux/client';
 import {RequestStatus} from '../constants';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
-import deepFreeze from '@redux/utils/deep_freeze';
+import deepFreeze from '@mm-redux/utils/deep_freeze';
 
 const OK_RESPONSE = {status: 'OK'};
 

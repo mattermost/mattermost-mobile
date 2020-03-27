@@ -7,7 +7,7 @@ import {
     FileTypes,
     PostTypes,
     UserTypes,
-} from '@redux/action_types';
+} from '@mm-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 

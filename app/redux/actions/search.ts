@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
-import {SearchTypes} from '@redux/action_types';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
-import {getCurrentUserId, getCurrentUserMentionKeys} from '@redux/selectors/entities/users';
+import {Client4} from '@mm-redux/client';
+import {SearchTypes} from '@mm-redux/action_types';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUserId, getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
 
 import {getChannelAndMyMember, getChannelMembers} from './channels';
 import {forceLogoutIfNecessary} from './helpers';
 import {logError} from './errors';
 import {getProfilesAndStatusesForPosts, receivedPosts} from './posts';
-import {ActionResult, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@redux/types/actions';
-import {RelationOneToOne} from '@redux/types/utilities';
-import {Post} from '@redux/types/posts';
-import {SearchParameter} from '@redux/types/search';
+import {ActionResult, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
+import {RelationOneToOne} from '@mm-redux/types/utilities';
+import {Post} from '@mm-redux/types/posts';
+import {SearchParameter} from '@mm-redux/types/search';
 const WEBAPP_SEARCH_PER_PAGE = 20;
 export function getMissingChannelsFromPosts(posts: RelationOneToOne<Post, Post>): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

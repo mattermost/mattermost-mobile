@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {makeGetMatchTermForDateMention} from 'app/selectors/autocomplete';
 import {getCurrentLocale} from 'app/selectors/i18n';

@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {IntegrationTypes} from '@redux/action_types';
+import {IntegrationTypes} from '@mm-redux/action_types';
 import {General} from '../constants';
-import {Client4} from '@redux/client';
-import {getCurrentUserId} from '@redux/selectors/entities/users';
-import {getCurrentChannelId} from '@redux/selectors/entities/channels';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
+import {Client4} from '@mm-redux/client';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
-import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@redux/types/actions';
+import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
-import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@redux/types/integrations';
+import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';

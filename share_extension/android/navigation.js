@@ -4,7 +4,7 @@
 import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
 
-import {Preferences} from '@redux/constants';
+import {Preferences} from '@mm-redux/constants';
 
 import ExtensionChannels from './extension_channels';
 import ExtensionPost from './extension_post';

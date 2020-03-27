@@ -5,11 +5,11 @@ import assert from 'assert';
 import nock from 'nock';
 import fs from 'fs';
 
-import * as Actions from '@redux/actions/teams';
-import {login} from '@redux/actions/users';
-import {Client4} from '@redux/client';
+import * as Actions from '@mm-redux/actions/teams';
+import {login} from '@mm-redux/actions/users';
+import {Client4} from '@mm-redux/client';
 import {General, RequestStatus} from '../constants';
-import {GeneralTypes} from '@redux/action_types';
+import {GeneralTypes} from '@mm-redux/action_types';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 

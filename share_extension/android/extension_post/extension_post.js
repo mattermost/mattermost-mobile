@@ -22,9 +22,9 @@ import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
 import RNFetchBlob from 'rn-fetch-blob';
 
-import {Client4} from '@redux/client';
-import {Preferences} from '@redux/constants';
-import {getFormattedFileSize, lookupMimeType} from '@redux/utils/file_utils';
+import {Client4} from '@mm-redux/client';
+import {Preferences} from '@mm-redux/constants';
+import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
 
 import Loading from 'app/components/loading';
 import PaperPlane from 'app/components/paper_plane';

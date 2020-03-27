@@ -4,7 +4,7 @@
 import {latinise} from './latinise.js';
 import {escapeRegex} from './markdown';
 
-import {Files} from '@redux/constants';
+import {Files} from '@mm-redux/constants';
 
 import {DeepLinkTypes} from 'app/constants';
 

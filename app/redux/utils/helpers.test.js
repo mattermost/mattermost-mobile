@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {buildQueryString, isMinimumServerVersion, isEmail} from '@redux/utils/helpers';
+import {buildQueryString, isMinimumServerVersion, isEmail} from '@mm-redux/utils/helpers';
 
 describe('Helpers', () => {
     it('isMinimumServerVersion', () => {

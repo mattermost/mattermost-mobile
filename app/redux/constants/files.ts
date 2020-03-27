@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dictionary} from '@redux/types/utilities';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 const Files: Dictionary<string[]> = {
     AUDIO_TYPES: ['mp3', 'wav', 'wma', 'm4a', 'flac', 'aac', 'ogg'],

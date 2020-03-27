@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentChannel} from '@redux/selectors/entities/channels';
-import {getCurrentTeamUrl} from '@redux/selectors/entities/teams';
-import {patchChannel, getChannel} from '@redux/actions/channels';
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
+import {getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
+import {patchChannel, getChannel} from '@mm-redux/actions/channels';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
 import {getDimensions} from 'app/selectors/device';

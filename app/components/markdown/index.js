@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {getAutolinkedUrlSchemes, getConfig} from '@redux/selectors/entities/general';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getCurrentUserMentionKeys} from '@redux/selectors/entities/users';
+import {getAutolinkedUrlSchemes, getConfig} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
 
 import Markdown from './markdown';
 

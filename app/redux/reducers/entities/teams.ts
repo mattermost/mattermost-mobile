@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {ChannelTypes, TeamTypes, UserTypes, SchemeTypes, GroupTypes} from '@redux/action_types';
-import {teamListToMap} from '@redux/utils/team_utils';
-import {Team, TeamMembership, TeamUnread} from '@redux/types/teams';
-import {UserProfile} from '@redux/types/users';
-import {RelationOneToOne, IDMappedObjects} from '@redux/types/utilities';
-import {GenericAction} from '@redux/types/actions';
+import {ChannelTypes, TeamTypes, UserTypes, SchemeTypes, GroupTypes} from '@mm-redux/action_types';
+import {teamListToMap} from '@mm-redux/utils/team_utils';
+import {Team, TeamMembership, TeamUnread} from '@mm-redux/types/teams';
+import {UserProfile} from '@mm-redux/types/users';
+import {RelationOneToOne, IDMappedObjects} from '@mm-redux/types/utilities';
+import {GenericAction} from '@mm-redux/types/actions';
 
 function currentTeamId(state = '', action: GenericAction) {
     switch (action.type) {

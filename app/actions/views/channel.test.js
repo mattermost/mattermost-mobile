@@ -5,7 +5,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import initialState from 'app/initial_state';
-import {ChannelTypes} from '@redux/action_types';
+import {ChannelTypes} from '@mm-redux/action_types';
 import testHelper from 'test/test_helper';
 
 import * as ChannelActions from 'app/actions/views/channel';
@@ -15,13 +15,13 @@ const {
     loadPostsIfNecessaryWithRetry,
 } = ChannelActions;
 
-import postReducer from '@redux/reducers/entities/posts';
+import postReducer from '@mm-redux/reducers/entities/posts';
 
 const MOCK_CHANNEL_MARK_AS_READ = 'MOCK_CHANNEL_MARK_AS_READ';
 const MOCK_CHANNEL_MARK_AS_VIEWED = 'MOCK_CHANNEL_MARK_AS_VIEWED';
 
-jest.mock('@redux/actions/channels', () => {
-    const channelActions = require.requireActual('@redux/actions/channels');
+jest.mock('@mm-redux/actions/channels', () => {
+    const channelActions = require.requireActual('@mm-redux/actions/channels');
     return {
         ...channelActions,
         markChannelAsRead: jest.fn().mockReturnValue({type: 'MOCK_CHANNEL_MARK_AS_READ'}),
@@ -29,8 +29,8 @@ jest.mock('@redux/actions/channels', () => {
     };
 });
 
-jest.mock('@redux/selectors/entities/teams', () => {
-    const teamSelectors = require.requireActual('@redux/selectors/entities/teams');
+jest.mock('@mm-redux/selectors/entities/teams', () => {
+    const teamSelectors = require.requireActual('@mm-redux/selectors/entities/teams');
     return {
         ...teamSelectors,
         getTeamByName: jest.fn(() => ({name: 'current-team-name'})),
@@ -48,7 +48,7 @@ describe('Actions.Views.Channel', () => {
     const MOCK_RECEIVED_POSTS_IN_CHANNEL = 'RECEIVED_POSTS_IN_CHANNEL';
     const MOCK_RECEIVED_POSTS_SINCE = 'MOCK_RECEIVED_POSTS_SINCE';
 
-    const actions = require('@redux/actions/channels');
+    const actions = require('@mm-redux/actions/channels');
     actions.getChannelByNameAndTeamName = jest.fn((teamName) => {
         if (teamName) {
             return {
@@ -96,7 +96,7 @@ describe('Actions.Views.Channel', () => {
         };
     });
 
-    const postUtils = require('@redux/utils/post_utils');
+    const postUtils = require('@mm-redux/utils/post_utils');
     postUtils.getLastCreateAt = jest.fn((array) => {
         return array[0].create_at;
     });
@@ -138,7 +138,7 @@ describe('Actions.Views.Channel', () => {
         },
     };
 
-    const channelSelectors = require('@redux/selectors/entities/channels');
+    const channelSelectors = require('@mm-redux/selectors/entities/channels');
     channelSelectors.getChannel = jest.fn((state, channelId) => ({data: channelId}));
     channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
     channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));

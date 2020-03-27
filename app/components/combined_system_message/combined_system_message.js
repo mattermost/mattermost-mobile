@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 
-import {Posts} from '@redux/constants';
+import {Posts} from '@mm-redux/constants';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';

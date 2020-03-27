@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {makeGetChannel} from '@redux/selectors/entities/channels';
-import {getPost} from '@redux/selectors/entities/posts';
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
+import {getPost} from '@mm-redux/selectors/entities/posts';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isLandscape} from 'app/selectors/device';
 import ChannelDisplayName from './channel_display_name';
 

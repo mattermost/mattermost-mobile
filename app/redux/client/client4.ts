@@ -1,28 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {buildQueryString, isMinimumServerVersion} from '@redux/utils/helpers';
-import {cleanUrlForLogging} from '@redux/utils/sentry';
+import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {cleanUrlForLogging} from '@mm-redux/utils/sentry';
 import {General} from '../constants';
 
-import {isSystemAdmin} from '@redux/utils/user_utils';
+import {isSystemAdmin} from '@mm-redux/utils/user_utils';
 
 import fetch from './fetch_etag';
-import {UserProfile, UserStatus} from '@redux/types/users';
-import {Team} from '@redux/types/teams';
-import {Channel, ChannelModerationPatch} from '@redux/types/channels';
-import {Post} from '@redux/types/posts';
-import {Job} from '@redux/types/jobs';
-import {Role} from '@redux/types/roles';
-import {Scheme} from '@redux/types/schemes';
-import {Options} from '@redux/types/client4';
-import {PreferenceType} from '@redux/types/preferences';
-import {IncomingWebhook, OutgoingWebhook, Command, OAuthApp, DialogSubmission} from '@redux/types/integrations';
-import {CustomEmoji} from '@redux/types/emojis';
-import {Config} from '@redux/types/config';
-import {Bot, BotPatch} from '@redux/types/bots';
-import {Dictionary} from '@redux/types/utilities';
-import {SyncablePatch} from '@redux/types/groups';
+import {UserProfile, UserStatus} from '@mm-redux/types/users';
+import {Team} from '@mm-redux/types/teams';
+import {Channel, ChannelModerationPatch} from '@mm-redux/types/channels';
+import {Post} from '@mm-redux/types/posts';
+import {Job} from '@mm-redux/types/jobs';
+import {Role} from '@mm-redux/types/roles';
+import {Scheme} from '@mm-redux/types/schemes';
+import {Options} from '@mm-redux/types/client4';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {IncomingWebhook, OutgoingWebhook, Command, OAuthApp, DialogSubmission} from '@mm-redux/types/integrations';
+import {CustomEmoji} from '@mm-redux/types/emojis';
+import {Config} from '@mm-redux/types/config';
+import {Bot, BotPatch} from '@mm-redux/types/bots';
+import {Dictionary} from '@mm-redux/types/utilities';
+import {SyncablePatch} from '@mm-redux/types/groups';
 
 const FormData = require('form-data');
 const HEADER_AUTH = 'Authorization';

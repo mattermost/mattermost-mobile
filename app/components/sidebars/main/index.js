@@ -4,11 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {joinChannel} from '@redux/actions/channels';
-import {getTeams} from '@redux/actions/teams';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getCurrentTeamId, getMyTeamsCount} from '@redux/selectors/entities/teams';
-import {getCurrentUser} from '@redux/selectors/entities/users';
+import {joinChannel} from '@mm-redux/actions/channels';
+import {getTeams} from '@mm-redux/actions/teams';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentTeamId, getMyTeamsCount} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';

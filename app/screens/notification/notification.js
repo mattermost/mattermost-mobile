@@ -16,10 +16,10 @@ import {Navigation} from 'react-native-navigation';
 import * as Animatable from 'react-native-animatable';
 import {PanGestureHandler} from 'react-native-gesture-handler';
 
-import {Client4} from '@redux/client';
-import {isDirectChannel} from '@redux/utils/channel_utils';
-import EventEmitter from '@redux/utils/event_emitter';
-import {displayUsername} from '@redux/utils/user_utils';
+import {Client4} from '@mm-redux/client';
+import {isDirectChannel} from '@mm-redux/utils/channel_utils';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import {popToRoot, dismissAllModals, dismissOverlay} from 'app/actions/navigation';
 import FormattedText from 'app/components/formatted_text';

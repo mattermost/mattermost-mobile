@@ -3,12 +3,12 @@
 
 import * as reselect from 'reselect';
 
-import {getCurrentUserLocale} from '@redux/selectors/entities/i18n';
+import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 
-import {sortFileInfos} from '@redux/utils/file_utils';
+import {sortFileInfos} from '@mm-redux/utils/file_utils';
 
-import * as types from '@redux/types';
-import {GlobalState} from '@redux/types/store';
+import * as types from '@mm-redux/types';
+import {GlobalState} from '@mm-redux/types/store';
 
 function getAllFiles(state: types.store.GlobalState) {
     return state.entities.files.files;

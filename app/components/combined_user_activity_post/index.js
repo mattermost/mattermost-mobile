@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {makeGenerateCombinedPost} from '@redux/utils/post_list';
+import {makeGenerateCombinedPost} from '@mm-redux/utils/post_list';
 
 import Post from 'app/components/post';
 

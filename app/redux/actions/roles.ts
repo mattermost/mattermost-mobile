@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
-import {RoleTypes} from '@redux/action_types';
-import {getRoles} from '@redux/selectors/entities/roles_helpers';
-import {hasNewPermissions} from '@redux/selectors/entities/general';
+import {Client4} from '@mm-redux/client';
+import {RoleTypes} from '@mm-redux/action_types';
+import {getRoles} from '@mm-redux/selectors/entities/roles_helpers';
+import {hasNewPermissions} from '@mm-redux/selectors/entities/general';
 
-import {DispatchFunc, GetStateFunc, ActionFunc} from '@redux/types/actions';
-import {Role} from '@redux/types/roles';
+import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
+import {Role} from '@mm-redux/types/roles';
 
 import {bindClientFunc} from './helpers';
 export function getRolesByNames(rolesNames: Array<string>) {

@@ -4,8 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {submitInteractiveDialog} from '@redux/actions/integrations';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {submitInteractiveDialog} from '@mm-redux/actions/integrations';
 
 import InteractiveDialog from './interactive_dialog';
 

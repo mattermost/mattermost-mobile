@@ -3,17 +3,17 @@
 
 import {connect} from 'react-redux';
 
-import {isSystemMessage} from '@redux/utils/post_utils';
-import {Client4} from '@redux/client';
+import {isSystemMessage} from '@mm-redux/utils/post_utils';
+import {Client4} from '@mm-redux/client';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getConfig} from '@redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 
 import {fromAutoResponder} from 'app/utils/general';
 
 import PostProfilePicture from './post_profile_picture';
 
-import {getUser} from '@redux/selectors/entities/users';
+import {getUser} from '@mm-redux/selectors/entities/users';
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);

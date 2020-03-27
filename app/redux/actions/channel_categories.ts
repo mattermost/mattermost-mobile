@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelCategoryTypes} from '@redux/action_types';
+import {ChannelCategoryTypes} from '@mm-redux/action_types';
 
 export function expandCategory(categoryId: string) {
     return {

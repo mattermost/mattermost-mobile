@@ -1,25 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '../constants';
-import {ChannelTypes, PreferenceTypes, UserTypes} from '@redux/action_types';
+import {ChannelTypes, PreferenceTypes, UserTypes} from '@mm-redux/action_types';
 import {savePreferences, deletePreferences} from './preferences';
-import {getChannelsIdForTeam, getChannelByName} from '@redux/utils/channel_utils';
+import {getChannelsIdForTeam, getChannelByName} from '@mm-redux/utils/channel_utils';
 import {
     getChannelsNameMapInTeam,
     getMyChannelMember as getMyChannelMemberSelector,
     getRedirectChannelNameForTeam,
     isManuallyUnread,
-} from '@redux/selectors/entities/channels';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
-import {getConfig, getServerVersion} from '@redux/selectors/entities/general';
-import {isMinimumServerVersion} from '@redux/utils/helpers';
+} from '@mm-redux/selectors/entities/channels';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getConfig, getServerVersion} from '@mm-redux/selectors/entities/general';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@redux/types/actions';
+import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
-import {Channel, ChannelNotifyProps, ChannelMembership, ChannelModerationPatch} from '@redux/types/channels';
+import {Channel, ChannelNotifyProps, ChannelMembership, ChannelModerationPatch} from '@mm-redux/types/channels';
 
-import {PreferenceType} from '@redux/types/preferences';
+import {PreferenceType} from '@mm-redux/types/preferences';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';

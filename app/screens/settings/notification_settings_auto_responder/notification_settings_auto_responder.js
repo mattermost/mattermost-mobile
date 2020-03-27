@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {General} from '@redux/constants';
+import {General} from '@mm-redux/constants';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';

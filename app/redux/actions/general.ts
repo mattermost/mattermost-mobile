@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 
-import {GeneralTypes} from '@redux/action_types';
+import {GeneralTypes} from '@mm-redux/action_types';
 
-import {getServerVersion} from '@redux/selectors/entities/general';
-import {isMinimumServerVersion} from '@redux/utils/helpers';
-import {GeneralState} from '@redux/types/general';
-import {logLevel} from '@redux/types/client4';
-import {GetStateFunc, DispatchFunc, ActionFunc, batchActions} from '@redux/types/actions';
+import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {GeneralState} from '@mm-redux/types/general';
+import {logLevel} from '@mm-redux/types/client4';
+import {GetStateFunc, DispatchFunc, ActionFunc, batchActions} from '@mm-redux/types/actions';
 
 import {logError} from './errors';
 import {loadRolesIfNeeded} from './roles';

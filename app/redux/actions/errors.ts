@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {ErrorTypes} from '@redux/action_types';
+import {ErrorTypes} from '@mm-redux/action_types';
 import {serializeError, ErrorObject} from 'serialize-error';
-import {Client4} from '@redux/client';
-import EventEmitter from '@redux/utils/event_emitter';
-import {DispatchFunc, ActionFunc} from '@redux/types/actions';
-import {Error} from '@redux/types/errors';
+import {Client4} from '@mm-redux/client';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {DispatchFunc, ActionFunc} from '@mm-redux/types/actions';
+import {Error} from '@mm-redux/types/errors';
 export function dismissErrorObject(index: number) {
     return {
         type: ErrorTypes.DISMISS_ERROR,

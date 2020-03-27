@@ -7,11 +7,11 @@ import {intlShape} from 'react-intl';
 import {Platform, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {debounce} from '@redux/actions/helpers';
-import {General} from '@redux/constants';
-import EventEmitter from '@redux/utils/event_emitter';
-import {getGroupDisplayNameFromUserIds} from '@redux/utils/channel_utils';
-import {displayUsername, filterProfilesMatchingTerm} from '@redux/utils/user_utils';
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getGroupDisplayNameFromUserIds} from '@mm-redux/utils/channel_utils';
+import {displayUsername, filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';

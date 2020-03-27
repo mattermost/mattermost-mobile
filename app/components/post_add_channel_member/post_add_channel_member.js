@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 
 import {Text} from 'react-native';
 
-import {General} from '@redux/constants';
+import {General} from '@mm-redux/constants';
 
 import {concatStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';

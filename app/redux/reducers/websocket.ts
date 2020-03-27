@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {GeneralTypes, UserTypes} from '@redux/action_types';
-import {GenericAction} from '@redux/types/actions';
+import {GeneralTypes, UserTypes} from '@mm-redux/action_types';
+import {GenericAction} from '@mm-redux/types/actions';
 
 function getInitialState() {
     return {

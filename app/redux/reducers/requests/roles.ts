@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {RoleTypes} from '@redux/action_types';
+import {RoleTypes} from '@mm-redux/action_types';
 
-import {GenericAction} from '@redux/types/actions';
-import {RolesRequestsStatuses, RequestStatusType} from '@redux/types/requests';
+import {GenericAction} from '@mm-redux/types/actions';
+import {RolesRequestsStatuses, RequestStatusType} from '@mm-redux/types/requests';
 
 import {handleRequest, initialRequestState} from './helpers';
 

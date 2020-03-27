@@ -3,12 +3,12 @@
 
 import * as reselect from 'reselect';
 import {General, Preferences} from '../../constants';
-import {getConfig, getLicense} from '@redux/selectors/entities/general';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
-import {createShallowSelector} from '@redux/utils/helpers';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
-import {GlobalState} from '@redux/types/store';
-import {PreferencesType, PreferenceType} from '@redux/types/preferences';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {createShallowSelector} from '@mm-redux/utils/helpers';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import {GlobalState} from '@mm-redux/types/store';
+import {PreferencesType, PreferenceType} from '@mm-redux/types/preferences';
 
 export function getMyPreferences(state: GlobalState) {
     return state.entities.preferences.myPreferences;

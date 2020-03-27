@@ -16,7 +16,7 @@ import {
 import deepEqual from 'deep-equal';
 import PropTypes from 'prop-types';
 
-import {RequestStatus} from '@redux/constants';
+import {RequestStatus} from '@mm-redux/constants';
 
 import FormattedText from 'app/components/formatted_text';
 import RadioButtonGroup from 'app/components/radio_button';

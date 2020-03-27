@@ -7,14 +7,14 @@ import {Alert, Clipboard, StyleSheet, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import EventEmitter from '@redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
 import {t} from 'app/utils/i18n';
 import {showModal, dismissModal} from 'app/actions/navigation';
 
-import {isSystemMessage} from '@redux/utils/post_utils';
+import {isSystemMessage} from '@mm-redux/utils/post_utils';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 import PostOption from './post_option';
 

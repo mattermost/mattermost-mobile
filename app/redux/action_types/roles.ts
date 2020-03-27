@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import keyMirror from '@redux/utils/key_mirror';
+import keyMirror from '@mm-redux/utils/key_mirror';
 
 export default keyMirror({
     ROLES_BY_NAMES_REQUEST: null,

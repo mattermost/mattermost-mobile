@@ -7,7 +7,7 @@ import ActionButton from './action_button';
 import {changeOpacity} from 'app/utils/theme';
 import {getStatusColors} from 'app/utils/message_attachment_colors';
 
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 describe('ActionButton', () => {
     test('correct styles when from global theme', () => {

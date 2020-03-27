@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import * as reselect from 'reselect';
 import shallowEqual from 'shallow-equals';
-import {Dictionary} from '@redux/types/utilities';
+import {Dictionary} from '@mm-redux/types/utilities';
 export function memoizeResult<F extends Function>(func: F): any {
     let lastArgs: IArguments|null = null;
     let lastResult: any = null;

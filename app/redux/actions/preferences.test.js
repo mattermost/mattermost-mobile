@@ -4,9 +4,9 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from '@redux/actions/preferences';
-import {login} from '@redux/actions/users';
-import {Client4} from '@redux/client';
+import * as Actions from '@mm-redux/actions/preferences';
+import {login} from '@mm-redux/actions/users';
+import {Client4} from '@mm-redux/client';
 import {Preferences, RequestStatus} from '../constants';
 
 import TestHelper from 'test/test_helper';

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {getCurrentUser} from '@redux/selectors/entities/users';
-import {getUserTimezone} from '@redux/selectors/entities/timezone';
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
+import {getUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {updateMe} from './users';
-import {DispatchFunc, GetStateFunc} from '@redux/types/actions';
+import {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 export function autoUpdateTimezone(deviceTimezone: string) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const currentUer = getCurrentUser(getState());

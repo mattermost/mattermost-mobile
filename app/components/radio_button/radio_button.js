@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {Animated, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const DISABLED_OPACITY = 0.26;

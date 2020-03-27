@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {RequestStatus} from '@redux/constants';
-import EventEmitter from '@redux/utils/event_emitter';
-import {isMinimumServerVersion} from '@redux/utils/helpers';
+import {RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';

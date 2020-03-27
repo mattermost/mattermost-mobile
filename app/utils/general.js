@@ -4,7 +4,7 @@
 import {Alert} from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
-import {Posts} from '@redux/constants';
+import {Posts} from '@mm-redux/constants';
 
 export function fromAutoResponder(post) {
     return Boolean(post.type && (post.type === Posts.SYSTEM_AUTO_RESPONDER));

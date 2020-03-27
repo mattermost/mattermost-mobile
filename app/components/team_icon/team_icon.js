@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 

@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
-import {getCurrentChannelId, getCurrentUser, getCurrentUserId, getMyCurrentChannelMembership, getUsers} from '@redux/selectors/entities/common';
-import {getConfig, getLicense} from '@redux/selectors/entities/general';
-import {getDirectShowPreferences, getTeammateNameDisplaySetting} from '@redux/selectors/entities/preferences';
-import {displayUsername, filterProfilesMatchingTerm, sortByUsername, isSystemAdmin, profileListToMap} from '@redux/utils/user_utils';
+import {getCurrentChannelId, getCurrentUser, getCurrentUserId, getMyCurrentChannelMembership, getUsers} from '@mm-redux/selectors/entities/common';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {getDirectShowPreferences, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {displayUsername, filterProfilesMatchingTerm, sortByUsername, isSystemAdmin, profileListToMap} from '@mm-redux/utils/user_utils';
 export {getCurrentUserId, getCurrentUser, getUsers};
-import {GlobalState} from '@redux/types/store';
-import {UserProfile} from '@redux/types/users';
-import {Reaction} from '@redux/types/reactions';
-import {Team} from '@redux/types/teams';
-import {Channel} from '@redux/types/channels';
-import {RelationOneToOne, RelationOneToMany, IDMappedObjects, UsernameMappedObjects, EmailMappedObjects, $ID, $Username, $Email, Dictionary} from '@redux/types/utilities';
+import {GlobalState} from '@mm-redux/types/store';
+import {UserProfile} from '@mm-redux/types/users';
+import {Reaction} from '@mm-redux/types/reactions';
+import {Team} from '@mm-redux/types/teams';
+import {Channel} from '@mm-redux/types/channels';
+import {RelationOneToOne, RelationOneToMany, IDMappedObjects, UsernameMappedObjects, EmailMappedObjects, $ID, $Username, $Email, Dictionary} from '@mm-redux/types/utilities';
 type Filters = {
     role?: string;
     inactive?: boolean;

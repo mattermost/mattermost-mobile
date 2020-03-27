@@ -3,12 +3,12 @@
 
 import assert from 'assert';
 
-import {PostTypes} from '@redux/action_types';
+import {PostTypes} from '@mm-redux/action_types';
 import {
     files as filesReducer,
     fileIdsByPostId as fileIdsByPostIdReducer,
-} from '@redux/reducers/entities/files';
-import deepFreeze from '@redux/utils/deep_freeze';
+} from '@mm-redux/reducers/entities/files';
+import deepFreeze from '@mm-redux/utils/deep_freeze';
 
 describe('reducers/entities/files', () => {
     describe('files', () => {

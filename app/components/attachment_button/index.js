@@ -19,7 +19,7 @@ import DocumentPicker from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
-import {lookupMimeType} from '@redux/utils/file_utils';
+import {lookupMimeType} from '@mm-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import emmProvider from 'app/init/emm_provider';

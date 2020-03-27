@@ -11,9 +11,9 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {debounce} from '@redux/actions/helpers';
-import {General} from '@redux/constants';
-import {filterProfilesMatchingTerm} from '@redux/utils/user_utils';
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';

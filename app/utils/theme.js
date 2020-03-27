@@ -4,7 +4,7 @@
 import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
-import * as ThemeUtils from '@redux/utils/theme_utils';
+import * as ThemeUtils from '@mm-redux/utils/theme_utils';
 
 import {mergeNavigationOptions} from 'app/actions/navigation';
 

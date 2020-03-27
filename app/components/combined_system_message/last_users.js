@@ -6,7 +6,7 @@ import React from 'react';
 import {Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {Posts} from '@redux/constants';
+import {Posts} from '@mm-redux/constants';
 
 import FormattedMarkdownText from 'app/components/formatted_markdown_text';
 import FormattedText from 'app/components/formatted_text';

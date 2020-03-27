@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
-import {getCurrentChannelId, getUsers} from '@redux/selectors/entities/common';
-import {getTeammateNameDisplaySetting} from '@redux/selectors/entities/preferences';
-import {displayUsername} from '@redux/utils/user_utils';
-import {Typing} from '@redux/types/typing';
-import {UserProfile} from '@redux/types/users';
-import {GlobalState} from '@redux/types/store';
-import {IDMappedObjects} from '@redux/types/utilities';
+import {getCurrentChannelId, getUsers} from '@mm-redux/selectors/entities/common';
+import {getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {displayUsername} from '@mm-redux/utils/user_utils';
+import {Typing} from '@mm-redux/types/typing';
+import {UserProfile} from '@mm-redux/types/users';
+import {GlobalState} from '@mm-redux/types/store';
+import {IDMappedObjects} from '@mm-redux/types/utilities';
 
 const getUsersTypingImpl = (profiles: IDMappedObjects<UserProfile>, teammateNameDisplay: string, channelId: string, parentPostId: string, typing: Typing): Array<string> => {
     const id = channelId + parentPostId;

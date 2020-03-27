@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
-import {getCurrentUser} from '@redux/selectors/entities/common';
-import {getMyPreferences} from '@redux/selectors/entities/preferences';
-import {createIdsSelector} from '@redux/utils/helpers';
+import {getCurrentUser} from '@mm-redux/selectors/entities/common';
+import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
 import {Posts, Preferences} from '../../constants';
-import {isPostEphemeral, isSystemMessage, shouldFilterJoinLeavePost, comparePosts, isPostPendingOrFailed, isPostCommentMention} from '@redux/utils/post_utils';
-import {getPreferenceKey} from '@redux/utils/preference_utils';
-import {GlobalState} from '@redux/types/store';
-import {Post, PostWithFormatData, MessageHistory, PostOrderBlock} from '@redux/types/posts';
-import {Reaction} from '@redux/types/reactions';
-import {UserProfile} from '@redux/types/users';
-import {Channel} from '@redux/types/channels';
-import {$ID, IDMappedObjects, RelationOneToOne, RelationOneToMany, Dictionary} from '@redux/types/utilities';
+import {isPostEphemeral, isSystemMessage, shouldFilterJoinLeavePost, comparePosts, isPostPendingOrFailed, isPostCommentMention} from '@mm-redux/utils/post_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import {GlobalState} from '@mm-redux/types/store';
+import {Post, PostWithFormatData, MessageHistory, PostOrderBlock} from '@mm-redux/types/posts';
+import {Reaction} from '@mm-redux/types/reactions';
+import {UserProfile} from '@mm-redux/types/users';
+import {Channel} from '@mm-redux/types/channels';
+import {$ID, IDMappedObjects, RelationOneToOne, RelationOneToMany, Dictionary} from '@mm-redux/types/utilities';
 export function getAllPosts(state: GlobalState) {
     return state.entities.posts.posts;
 }

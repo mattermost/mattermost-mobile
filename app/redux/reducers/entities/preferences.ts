@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {PreferenceTypes, UserTypes} from '@redux/action_types';
-import {GenericAction} from '@redux/types/actions';
-import {PreferenceType} from '@redux/types/preferences';
-import {Dictionary} from '@redux/types/utilities';
+import {PreferenceTypes, UserTypes} from '@mm-redux/action_types';
+import {GenericAction} from '@mm-redux/types/actions';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 function getKey(preference: PreferenceType) {
     return `${preference.category}--${preference.name}`;

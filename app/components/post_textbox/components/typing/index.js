@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {getUsersTyping} from '@redux/selectors/entities/typing';
+import {getUsersTyping} from '@mm-redux/selectors/entities/typing';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import Typing from './typing';
 

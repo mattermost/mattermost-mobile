@@ -7,7 +7,7 @@ import {
     ScrollView,
     View,
 } from 'react-native';
-import {Preferences} from '@redux/constants';
+import {Preferences} from '@mm-redux/constants';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';

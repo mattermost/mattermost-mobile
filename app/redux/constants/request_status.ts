@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {RequestStatusOption} from '@redux/types/requests';
-import {Dictionary} from '@redux/types/utilities';
+import {RequestStatusOption} from '@mm-redux/types/requests';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 const status: Dictionary<RequestStatusOption> = {
     NOT_STARTED: 'not_started',

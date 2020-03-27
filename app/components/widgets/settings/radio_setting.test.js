@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 import {TouchableOpacity} from 'react-native';
 import RadioSetting from './radio_setting.js';
 import CheckMark from 'app/components/checkmark';

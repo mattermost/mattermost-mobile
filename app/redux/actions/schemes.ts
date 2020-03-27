@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@redux/client';
-import {SchemeTypes} from '@redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {SchemeTypes} from '@mm-redux/action_types';
 import {General} from '../constants';
 
-import {Scheme, SchemeScope, SchemePatch} from '@redux/types/schemes';
+import {Scheme, SchemeScope, SchemePatch} from '@mm-redux/types/schemes';
 
-import {ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@redux/types/actions';
+import {ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {logError} from './errors';

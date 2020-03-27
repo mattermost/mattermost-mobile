@@ -4,12 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from '@redux/actions/users';
-import {getCurrentChannelId} from '@redux/selectors/entities/channels';
-import {getCurrentTeamId} from '@redux/selectors/entities/teams';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {shouldShowTermsOfService} from '@redux/selectors/entities/users';
-import {getChannelStats} from '@redux/actions/channels';
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from '@mm-redux/actions/users';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
+import {getChannelStats} from '@mm-redux/actions/channels';
 
 import {
     loadChannelsForTeam,

@@ -4,8 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {editPost} from '@redux/actions/posts';
-import {getTheme} from '@redux/selectors/entities/preferences';
+import {editPost} from '@mm-redux/actions/posts';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {getDimensions, isLandscape} from 'app/selectors/device';
 

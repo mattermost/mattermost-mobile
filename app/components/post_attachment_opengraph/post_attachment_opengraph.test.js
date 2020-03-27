@@ -6,7 +6,7 @@ import {shallow} from 'enzyme';
 import {Image} from 'react-native';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import Preferences from '@redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
 

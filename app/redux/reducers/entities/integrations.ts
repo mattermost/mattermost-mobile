@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {IntegrationTypes, UserTypes, ChannelTypes} from '@redux/action_types';
-import {GenericAction} from '@redux/types/actions';
-import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp} from '@redux/types/integrations';
-import {Dictionary, IDMappedObjects} from '@redux/types/utilities';
+import {IntegrationTypes, UserTypes, ChannelTypes} from '@mm-redux/action_types';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp} from '@mm-redux/types/integrations';
+import {Dictionary, IDMappedObjects} from '@mm-redux/types/utilities';
 
 function incomingHooks(state: IDMappedObjects<IncomingWebhook> = {}, action: GenericAction) {
     switch (action.type) {

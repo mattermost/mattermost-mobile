@@ -4,9 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getStatusesByIdsBatchedDebounced} from '@redux/actions/users';
-import {getCurrentUserId, getStatusForUserId, getUser} from '@redux/selectors/entities/users';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getStatusesByIdsBatchedDebounced} from '@mm-redux/actions/users';
+import {getCurrentUserId, getStatusForUserId, getUser} from '@mm-redux/selectors/entities/users';
 
 import {setProfileImageUri} from 'app/actions/views/edit_profile';
 import {getProfileImageUri} from 'app/selectors/views';

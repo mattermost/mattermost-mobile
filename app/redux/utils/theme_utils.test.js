@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {Preferences} from '../constants';
-import * as ThemeUtils from '@redux/utils/theme_utils';
+import * as ThemeUtils from '@mm-redux/utils/theme_utils';
 
 describe('ThemeUtils', () => {
     describe('getComponents', () => {

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {ImageContent} from 'rn-placeholder';
 
-import EventEmitter from '@redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';

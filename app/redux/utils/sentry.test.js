@@ -3,9 +3,9 @@
 
 import assert from 'assert';
 
-import Client4 from '@redux/client/client4';
+import Client4 from '@mm-redux/client/client4';
 
-import {cleanUrlForLogging} from '@redux/utils/sentry';
+import {cleanUrlForLogging} from '@mm-redux/utils/sentry';
 
 describe('utils/sentry', () => {
     describe('cleanUrlForLogging', () => {

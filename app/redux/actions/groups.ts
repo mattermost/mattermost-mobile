@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {GroupTypes} from '@redux/action_types';
+import {GroupTypes} from '@mm-redux/action_types';
 import {General, Groups} from '../constants';
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 
-import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@redux/types/actions';
-import {SyncableType, SyncablePatch} from '@redux/types/groups';
+import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {SyncableType, SyncablePatch} from '@mm-redux/types/groups';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';

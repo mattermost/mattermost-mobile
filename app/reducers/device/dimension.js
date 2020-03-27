@@ -3,7 +3,7 @@
 
 import {Dimensions} from 'react-native';
 
-import {UserTypes} from '@redux/action_types';
+import {UserTypes} from '@mm-redux/action_types';
 import {DeviceTypes} from 'app/constants';
 
 const {height, width} = Dimensions.get('window');

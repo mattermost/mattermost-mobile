@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {UserTimezone} from '@redux/types/users';
+import {UserTimezone} from '@mm-redux/types/users';
 export function getUserCurrentTimezone(userTimezone?: UserTimezone): string | undefined | null {
     if (!userTimezone) {
         return null;

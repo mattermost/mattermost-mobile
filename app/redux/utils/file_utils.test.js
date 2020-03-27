@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import assert from 'assert';
-import {Client4} from '@redux/client';
+import {Client4} from '@mm-redux/client';
 
-import * as FileUtils from '@redux/utils/file_utils';
+import * as FileUtils from '@mm-redux/utils/file_utils';
 
 describe('FileUtils', () => {
     const serverUrl = Client4.getUrl();

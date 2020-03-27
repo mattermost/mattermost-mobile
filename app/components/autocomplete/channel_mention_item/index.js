@@ -3,10 +3,10 @@
 
 import {connect} from 'react-redux';
 
-import {General} from '@redux/constants';
-import {getChannel} from '@redux/selectors/entities/channels';
-import {getTheme} from '@redux/selectors/entities/preferences';
-import {getUser} from '@redux/selectors/entities/users';
+import {General} from '@mm-redux/constants';
+import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getUser} from '@mm-redux/selectors/entities/users';
 
 import {getChannelNameForSearchAutocomplete} from 'app/selectors/channel';
 import {isLandscape} from 'app/selectors/device';

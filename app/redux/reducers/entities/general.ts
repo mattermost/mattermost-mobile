@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {GeneralTypes, UserTypes} from '@redux/action_types';
-import {GenericAction} from '@redux/types/actions';
-import {Config} from '@redux/types/config';
+import {GeneralTypes, UserTypes} from '@mm-redux/action_types';
+import {GenericAction} from '@mm-redux/types/actions';
+import {Config} from '@mm-redux/types/config';
 
 function config(state: Partial<Config> = {}, action: GenericAction) {
     switch (action.type) {
