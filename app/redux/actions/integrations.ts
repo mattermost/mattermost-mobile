@@ -9,7 +9,7 @@ import {getCurrentTeamId} from '@redux/selectors/entities/teams';
 
 import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@redux/types/actions';
 
-import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from 'types/integrations';
+import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@redux/types/integrations';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';

@@ -10,7 +10,7 @@ import {getCurrentUser} from '@redux/selectors/entities/users';
 import {createIdsSelector, memoizeResult} from '@redux/utils/helpers';
 import {isUserActivityPost, shouldFilterJoinLeavePost} from '@redux/utils/post_utils';
 import {getUserCurrentTimezone} from '@redux/utils/timezone_utils';
-import * as types from 'types';
+import * as types from '@redux/types';
 export const COMBINED_USER_ACTIVITY = 'user-activity-';
 export const DATE_LINE = 'date-';
 export const START_OF_NEW_MESSAGES = 'start-of-new-messages';

@@ -17,7 +17,7 @@ import {Role} from 'types/roles';
 import {Scheme} from 'types/schemes';
 import {Options} from '@redux/types/client4';
 import {PreferenceType} from '@redux/types/preferences';
-import {IncomingWebhook, OutgoingWebhook, Command, OAuthApp, DialogSubmission} from 'types/integrations';
+import {IncomingWebhook, OutgoingWebhook, Command, OAuthApp, DialogSubmission} from '@redux/types/integrations';
 import {CustomEmoji} from 'types/emojis';
 import {Config} from 'types/config';
 import {Bot, BotPatch} from 'types/bots';

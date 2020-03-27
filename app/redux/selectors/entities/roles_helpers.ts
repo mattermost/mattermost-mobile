@@ -3,7 +3,7 @@
 import * as reselect from 'reselect';
 import {GlobalState} from '@redux/types/store';
 import {getCurrentUser} from '@redux/selectors/entities/common';
-import * as types from 'types';
+import * as types from '@redux/types';
 
 export type PermissionsOptions = {
     channel?: string;

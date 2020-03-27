@@ -5,7 +5,7 @@ import * as reselect from 'reselect';
 
 import {getCurrentTeamId} from '@redux/selectors/entities/teams';
 
-import * as types from 'types';
+import * as types from '@redux/types';
 
 export const getCurrentSearchForCurrentTeam = reselect.createSelector(
     (state: types.store.GlobalState) => state.entities.search.current,

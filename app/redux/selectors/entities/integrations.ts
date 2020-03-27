@@ -4,7 +4,7 @@
 import * as reselect from 'reselect';
 
 import {getCurrentTeamId} from '@redux/selectors/entities/teams';
-import * as types from 'types';
+import * as types from '@redux/types';
 
 export function getIncomingHooks(state: types.store.GlobalState) {
     return state.entities.integrations.incomingHooks;

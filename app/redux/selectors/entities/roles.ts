@@ -3,7 +3,7 @@
 import * as reselect from 'reselect';
 import {getCurrentUser, getCurrentChannelId} from '@redux/selectors/entities/common';
 import {getTeamMemberships, getCurrentTeamId} from './teams';
-import * as types from 'types';
+import * as types from '@redux/types';
 import {getMySystemPermissions, getMySystemRoles, getRoles, PermissionsOptions} from '@redux/selectors/entities/roles_helpers';
 import {GlobalState} from '@redux/types/store';
 import {Dictionary} from '@redux/types/utilities';

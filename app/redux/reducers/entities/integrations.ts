@@ -4,7 +4,7 @@
 import {combineReducers} from 'redux';
 import {IntegrationTypes, UserTypes, ChannelTypes} from '@redux/action_types';
 import {GenericAction} from '@redux/types/actions';
-import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp} from 'types/integrations';
+import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp} from '@redux/types/integrations';
 import {Dictionary, IDMappedObjects} from '@redux/types/utilities';
 
 function incomingHooks(state: IDMappedObjects<IncomingWebhook> = {}, action: GenericAction) {

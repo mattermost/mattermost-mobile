@@ -7,7 +7,7 @@ import {getCurrentUserLocale} from '@redux/selectors/entities/i18n';
 
 import {sortFileInfos} from '@redux/utils/file_utils';
 
-import * as types from 'types';
+import * as types from '@redux/types';
 import {GlobalState} from '@redux/types/store';
 
 function getAllFiles(state: types.store.GlobalState) {
