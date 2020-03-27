@@ -116,7 +116,7 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
         }
 
         if (actions.length) {
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_SELECT_TEAM_AND_CHANNEL'));
         }
 
         EphemeralStore.setStartFromNotification(false);

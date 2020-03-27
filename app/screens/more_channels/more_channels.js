@@ -423,11 +423,6 @@ export default class MoreChannels extends PureComponent {
                 backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
                 color: theme.centerChannelColor,
                 fontSize: 15,
-                ...Platform.select({
-                    android: {
-                        marginBottom: -5,
-                    },
-                }),
             };
 
             let activeChannels = channels;
@@ -508,6 +503,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         searchBar: {
             marginVertical: 5,
+            height: 38,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
         },
         loadingContainer: {
             alignItems: 'center',

@@ -79,9 +79,9 @@ export default class TeamsList extends PureComponent {
                 tracker.teamSwitch = Date.now();
                 actions.handleTeamChange(teamId);
             }
-
-            closeMainSidebar();
         });
+
+        closeMainSidebar();
     };
 
     goToSelectTeam = preventDoubleTap(async () => {

@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {userTyping as wsUserTyping} from 'mattermost-redux/actions/websocket';
+import {userTyping as wsUserTyping} from '@actions/websocket';
 
 export function userTyping(channelId, rootId) {
     return async (dispatch, getState) => {
-        const {websocket} = getState();
+        const state = getState();
+        const {websocket} = state;
         if (websocket.connected) {
-            wsUserTyping(channelId, rootId)(dispatch, getState);
+            wsUserTyping(state, channelId, rootId);
         }
     };
 }

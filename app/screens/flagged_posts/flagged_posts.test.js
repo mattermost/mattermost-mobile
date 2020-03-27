@@ -11,7 +11,7 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import FlaggedPosts from './flagged_posts';
 
 jest.mock('rn-placeholder', () => ({
-    ImageContent: () => {},
+    ImageContent: () => null,
 }));
 
 describe('FlaggedPosts', () => {

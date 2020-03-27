@@ -7,17 +7,23 @@ exports[`ChannelMembers should match snapshot 1`] = `
     style={
       Array [
         Object {
+          "height": 38,
           "marginVertical": 5,
+          "paddingLeft": 8,
         },
         null,
       ]
     }
   >
-    <SearchBarIos
+    <Search
       autoCapitalize="none"
+      backArrowSize={24}
       backgroundColor="transparent"
-      blurOnSubmit={true}
+      blurOnSubmit={false}
       cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
       inputHeight={33}
       inputStyle={
         Object {
@@ -27,17 +33,20 @@ exports[`ChannelMembers should match snapshot 1`] = `
         }
       }
       keyboardAppearance="light"
-      leftComponent={null}
+      keyboardShouldPersist={false}
+      keyboardType="default"
       onBlur={[Function]}
       onCancelButtonPress={[Function]}
       onChangeText={[Function]}
-      onFocus={[Function]}
       onSearchButtonPress={[Function]}
       onSelectionChange={[Function]}
       placeholder="Search"
       placeholderTextColor="rgba(61,60,64,0.5)"
-      searchIconCollapsedMargin={10}
-      searchIconExpandedMargin={10}
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      showArrow={false}
+      showCancel={true}
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"

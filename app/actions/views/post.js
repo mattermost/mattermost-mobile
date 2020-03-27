@@ -8,6 +8,7 @@ import {
     doPostAction,
     getNeededAtMentionedUsernames,
     receivedNewPost,
+    receivedPost,
     receivedPosts,
     receivedPostsBefore,
     receivedPostsInChannel,
@@ -16,6 +17,7 @@ import {
 } from 'mattermost-redux/actions/posts';
 import {Client4} from 'mattermost-redux/client';
 import {Posts} from 'mattermost-redux/constants';
+import {getPost as selectPost} from 'mattermost-redux/selectors/entities/posts';
 import {removeUserFromList} from 'mattermost-redux/utils/user_utils';
 
 import {ViewTypes} from 'app/constants';
@@ -91,12 +93,37 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
             if (posts?.length) {
                 actions.push(receivedPosts(data));
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-                if (additional.length) {
-                    actions.push(...additional);
+                if (additional.data.length) {
+                    actions.push(...additional.data);
                 }
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_GET_POSTS'));
+
+            return {data};
+        } catch (error) {
+            return {error};
+        }
+    };
+}
+
+export function getPost(postId) {
+    return async (dispatch) => {
+        try {
+            const data = await Client4.getPost(postId);
+
+            if (data) {
+                const actions = [
+                    receivedPost(data),
+                ];
+
+                const additional = await dispatch(getPostsAdditionalDataBatch([data]));
+                if (additional.data.length) {
+                    actions.push(...additional.data);
+                }
+
+                dispatch(batchActions(actions, 'BATCH_GET_POST'));
+            }
 
             return {data};
         } catch (error) {
@@ -118,11 +145,11 @@ export function getPostsSince(channelId, since) {
                 ];
 
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-                if (additional.length) {
-                    actions.push(...additional);
+                if (additional.data.length) {
+                    actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_SINCE'));
             }
 
             return {data};
@@ -145,11 +172,11 @@ export function getPostsBefore(channelId, postId, page = 0, perPage = Posts.POST
                 ];
 
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-                if (additional.length) {
-                    actions.push(...additional);
+                if (additional.data.length) {
+                    actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_BEFORE'));
             }
 
             return {data};
@@ -159,7 +186,7 @@ export function getPostsBefore(channelId, postId, page = 0, perPage = Posts.POST
     };
 }
 
-export function getPostThread(rootId) {
+export function getPostThread(rootId, skipDispatch = false) {
     return async (dispatch) => {
         try {
             const data = await Client4.getPostThread(rootId);
@@ -172,11 +199,15 @@ export function getPostThread(rootId) {
                 ];
 
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-                if (additional.length) {
-                    actions.push(...additional);
+                if (additional.data.length) {
+                    actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                if (skipDispatch) {
+                    return {data: actions};
+                }
+
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_THREAD'));
             }
 
             return {data};
@@ -219,11 +250,11 @@ export function getPostsAround(channelId, postId, perPage = Posts.POST_CHUNK_SIZ
                 ];
 
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-                if (additional.length) {
-                    actions.push(...additional);
+                if (additional.data.length) {
+                    actions.push(...additional.data);
                 }
 
-                dispatch(batchActions(actions));
+                dispatch(batchActions(actions, 'BATCH_GET_POSTS_AROUND'));
             }
 
             return {data};
@@ -233,12 +264,40 @@ export function getPostsAround(channelId, postId, perPage = Posts.POST_CHUNK_SIZ
     };
 }
 
+export function handleNewPostBatch(WebSocketMessage) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const post = JSON.parse(WebSocketMessage.data.post);
+        const actions = [receivedNewPost(post)];
+
+        // If we don't have the thread for this post, fetch it from the server
+        // and include the actions in the batch
+        if (post.root_id) {
+            const rootPost = selectPost(state, post.root_id);
+
+            if (!rootPost) {
+                const thread = await dispatch(getPostThread(post.root_id, true));
+                if (thread.actions?.length) {
+                    actions.push(...thread.actions);
+                }
+            }
+        }
+
+        const additional = await dispatch(getPostsAdditionalDataBatch([post]));
+        if (additional.data.length) {
+            actions.push(...additional.data);
+        }
+
+        return actions;
+    };
+}
+
 export function getPostsAdditionalDataBatch(posts = []) {
     return async (dispatch, getState) => {
-        const actions = [];
+        const data = [];
 
         if (!posts.length) {
-            return actions;
+            return {data};
         }
 
         // Custom Emojis used in the posts
@@ -249,7 +308,7 @@ export function getPostsAdditionalDataBatch(posts = []) {
             const state = getState();
             const promises = [];
             const promiseTrace = [];
-            const extra = dispatch(profilesStatusesAndToLoadFromPosts(posts));
+            const extra = userMetadataToLoadFromPosts(state, posts);
 
             if (extra?.userIds.length) {
                 promises.push(Client4.getProfilesByIds(extra.userIds));
@@ -273,7 +332,7 @@ export function getPostsAdditionalDataBatch(posts = []) {
                         const type = promiseTrace[index];
                         switch (type) {
                         case 'statuses':
-                            actions.push({
+                            data.push({
                                 type: UserTypes.RECEIVED_STATUSES,
                                 data: p,
                             });
@@ -282,7 +341,7 @@ export function getPostsAdditionalDataBatch(posts = []) {
                             const {currentUserId} = state.entities.users;
 
                             removeUserFromList(currentUserId, p);
-                            actions.push({
+                            data.push({
                                 type: UserTypes.RECEIVED_PROFILES_LIST,
                                 data: p,
                             });
@@ -296,42 +355,39 @@ export function getPostsAdditionalDataBatch(posts = []) {
             // do nothing
         }
 
-        return actions;
+        return {data};
     };
 }
 
-function profilesStatusesAndToLoadFromPosts(posts = []) {
-    return (dispatch, getState) => {
-        const state = getState();
-        const {currentUserId, profiles, statuses} = state.entities.users;
+function userMetadataToLoadFromPosts(state, posts = []) {
+    const {currentUserId, profiles, statuses} = state.entities.users;
 
-        // Profiles of users mentioned in the posts
-        const usernamesToLoad = getNeededAtMentionedUsernames(state, posts);
+    // Profiles of users mentioned in the posts
+    const usernamesToLoad = getNeededAtMentionedUsernames(state, posts);
 
-        // Statuses and profiles of the users who made the posts
-        const userIdsToLoad = new Set();
-        const statusesToLoad = new Set();
+    // Statuses and profiles of the users who made the posts
+    const userIdsToLoad = new Set();
+    const statusesToLoad = new Set();
 
-        posts.forEach((post) => {
-            const userId = post.user_id;
+    posts.forEach((post) => {
+        const userId = post.user_id;
 
-            if (!statuses[userId]) {
-                statusesToLoad.add(userId);
-            }
+        if (!statuses[userId]) {
+            statusesToLoad.add(userId);
+        }
 
-            if (userId === currentUserId) {
-                return;
-            }
+        if (userId === currentUserId) {
+            return;
+        }
 
-            if (!profiles[userId]) {
-                userIdsToLoad.add(userId);
-            }
-        });
+        if (!profiles[userId]) {
+            userIdsToLoad.add(userId);
+        }
+    });
 
-        return {
-            usernames: Array.from(usernamesToLoad),
-            userIds: Array.from(userIdsToLoad),
-            statuses: Array.from(statusesToLoad),
-        };
+    return {
+        usernames: Array.from(usernamesToLoad),
+        userIds: Array.from(userIdsToLoad),
+        statuses: Array.from(statusesToLoad),
     };
 }

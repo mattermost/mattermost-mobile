@@ -44,6 +44,15 @@ export function messageRetention(store) {
             return next(nextAction);
         }
 
+        /* Uncomment the following lines to log the actions being dispatched */
+        // if (action.type === 'BATCHING_REDUCER.BATCH') {
+        //     action.payload.forEach((p) => {
+        //         console.log('BATCHED ACTIONS', p.type);
+        //     });
+        // } else {
+        //     console.log('ACTION', action.type);
+        // }
+
         return next(action);
     };
 }
