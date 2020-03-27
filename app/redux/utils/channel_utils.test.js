@@ -9,7 +9,9 @@ import TestHelper from 'test/test_helper';
 import {
     areChannelMentionsIgnored,
     canManageMembersOldPermissions,
+    compareNotifyProps,
     isAutoClosed,
+    isChannelMuted,
     filterChannelsMatchingTerm,
     sortChannelsByRecency,
     sortChannelsByDisplayName,
