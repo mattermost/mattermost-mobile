@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 import {FileTypes, PostTypes, UserTypes} from '@redux/action_types';
 import {GenericAction} from '@redux/types/actions';
 import {Post} from '@redux/types/posts';
-import {FileInfo} from 'types/files';
+import {FileInfo} from '@redux/types/files';
 import {Dictionary} from '@redux/types/utilities';
 
 export function files(state: Dictionary<FileInfo> = {}, action: GenericAction) {

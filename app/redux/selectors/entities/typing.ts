@@ -4,7 +4,7 @@ import {createSelector} from 'reselect';
 import {getCurrentChannelId, getUsers} from '@redux/selectors/entities/common';
 import {getTeammateNameDisplaySetting} from '@redux/selectors/entities/preferences';
 import {displayUsername} from '@redux/utils/user_utils';
-import {Typing} from 'types/typing';
+import {Typing} from '@redux/types/typing';
 import {UserProfile} from '@redux/types/users';
 import {GlobalState} from '@redux/types/store';
 import {IDMappedObjects} from '@redux/types/utilities';

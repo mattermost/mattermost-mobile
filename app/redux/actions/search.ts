@@ -12,7 +12,7 @@ import {getProfilesAndStatusesForPosts, receivedPosts} from './posts';
 import {ActionResult, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@redux/types/actions';
 import {RelationOneToOne} from '@redux/types/utilities';
 import {Post} from '@redux/types/posts';
-import {SearchParameter} from 'types/search';
+import {SearchParameter} from '@redux/types/search';
 const WEBAPP_SEARCH_PER_PAGE = 20;
 export function getMissingChannelsFromPosts(posts: RelationOneToOne<Post, Post>): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

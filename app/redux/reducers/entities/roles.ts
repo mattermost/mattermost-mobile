@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 import {RoleTypes, UserTypes} from '@redux/action_types';
 import {GenericAction} from '@redux/types/actions';
 import {Dictionary} from '@redux/types/utilities';
-import {Role} from 'types/roles';
+import {Role} from '@redux/types/roles';
 
 function pending(state: Set<string> = new Set(), action: GenericAction) {
     switch (action.type) {

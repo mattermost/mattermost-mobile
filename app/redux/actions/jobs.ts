@@ -5,7 +5,7 @@ import {Client4} from '@redux/client';
 import {General} from '../constants';
 
 import {ActionFunc} from '@redux/types/actions';
-import {JobType, Job} from 'types/jobs';
+import {JobType, Job} from '@redux/types/jobs';
 
 import {bindClientFunc} from './helpers';
 export function createJob(job: Job): ActionFunc {

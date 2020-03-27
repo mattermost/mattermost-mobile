@@ -5,7 +5,7 @@ import {General, Groups} from '../constants';
 import {Client4} from '@redux/client';
 
 import {Action, ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@redux/types/actions';
-import {SyncableType, SyncablePatch} from 'types/groups';
+import {SyncableType, SyncablePatch} from '@redux/types/groups';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';

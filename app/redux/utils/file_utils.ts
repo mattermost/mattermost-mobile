@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {Files, General} from '../constants';
 import {Client4} from '@redux/client';
-import {FileInfo} from 'types/files';
+import {FileInfo} from '@redux/types/files';
 import {Dictionary} from '@redux/types/utilities';
 
 const mimeDB = require('mime-db');

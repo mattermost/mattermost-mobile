@@ -4,7 +4,7 @@ import {combineReducers} from 'redux';
 import {RoleTypes} from '@redux/action_types';
 
 import {GenericAction} from '@redux/types/actions';
-import {RolesRequestsStatuses, RequestStatusType} from 'types/requests';
+import {RolesRequestsStatuses, RequestStatusType} from '@redux/types/requests';
 
 import {handleRequest, initialRequestState} from './helpers';
 

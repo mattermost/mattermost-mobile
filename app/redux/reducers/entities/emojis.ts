@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
 import {EmojiTypes, PostTypes, UserTypes} from '@redux/action_types';
-import {EmojisState, CustomEmoji} from 'types/emojis';
+import {EmojisState, CustomEmoji} from '@redux/types/emojis';
 import * as types from '@redux/types';
 
 export function customEmoji(state: types.utilities.IDMappedObjects<CustomEmoji> = {}, action: types.actions.GenericAction): types.utilities.IDMappedObjects<CustomEmoji> {

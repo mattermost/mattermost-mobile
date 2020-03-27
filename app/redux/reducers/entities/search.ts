@@ -7,7 +7,7 @@ import {PreferenceType} from '@redux/types/preferences';
 import {GenericAction} from '@redux/types/actions';
 import {Post} from '@redux/types/posts';
 import {Dictionary} from '@redux/types/utilities';
-import {Search} from 'types/search';
+import {Search} from '@redux/types/search';
 
 function results(state: Array<string> = [], action: GenericAction) {
     switch (action.type) {

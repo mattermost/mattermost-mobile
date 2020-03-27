@@ -4,7 +4,7 @@ import {combineReducers} from 'redux';
 import {BotTypes, UserTypes} from '@redux/action_types';
 import {GenericAction} from '@redux/types/actions';
 import {Dictionary} from '@redux/types/utilities';
-import {Bot} from 'types/bots';
+import {Bot} from '@redux/types/bots';
 
 function accounts(state: Dictionary<Bot> = {}, action: GenericAction) {
     switch (action.type) {

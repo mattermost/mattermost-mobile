@@ -8,7 +8,7 @@ import {displayUsername, filterProfilesMatchingTerm, sortByUsername, isSystemAdm
 export {getCurrentUserId, getCurrentUser, getUsers};
 import {GlobalState} from '@redux/types/store';
 import {UserProfile} from '@redux/types/users';
-import {Reaction} from 'types/reactions';
+import {Reaction} from '@redux/types/reactions';
 import {Team} from '@redux/types/teams';
 import {Channel} from '@redux/types/channels';
 import {RelationOneToOne, RelationOneToMany, IDMappedObjects, UsernameMappedObjects, EmailMappedObjects, $ID, $Username, $Email, Dictionary} from '@redux/types/utilities';

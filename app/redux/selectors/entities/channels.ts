@@ -22,7 +22,7 @@ import {TeamMembership, Team} from '@redux/types/teams';
 import {NameMappedObjects, UserIDMappedObjects, IDMappedObjects, RelationOneToOne, RelationOneToMany} from '@redux/types/utilities';
 
 import {getUserIdsInChannels} from './users';
-import {Config} from 'types/config';
+import {Config} from '@redux/types/config';
 type SortingType = 'recent' | 'alpha';
 
 export function getAllChannels(state: GlobalState): IDMappedObjects<Channel> {

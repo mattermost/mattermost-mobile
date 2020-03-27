@@ -6,7 +6,7 @@ import {comparePosts} from '@redux/utils/post_utils';
 import {Post, PostsState, PostOrderBlock, MessageHistory} from '@redux/types/posts';
 import {RelationOneToOne, Dictionary, IDMappedObjects, RelationOneToMany} from '@redux/types/utilities';
 import {GenericAction} from '@redux/types/actions';
-import {Reaction} from 'types/reactions';
+import {Reaction} from '@redux/types/reactions';
 
 export function removeUnneededMetadata(post: Post) {
     if (!post.metadata) {

@@ -7,7 +7,7 @@ import * as types from '@redux/types';
 import {getMySystemPermissions, getMySystemRoles, getRoles, PermissionsOptions} from '@redux/selectors/entities/roles_helpers';
 import {GlobalState} from '@redux/types/store';
 import {Dictionary} from '@redux/types/utilities';
-import {Role} from 'types/roles';
+import {Role} from '@redux/types/roles';
 import {Channel} from '@redux/types/channels';
 import {Team} from '@redux/types/teams';
 

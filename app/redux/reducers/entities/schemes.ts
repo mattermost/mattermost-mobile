@@ -3,7 +3,7 @@
 import {combineReducers} from 'redux';
 import {SchemeTypes, UserTypes} from '@redux/action_types';
 import {GenericAction} from '@redux/types/actions';
-import {SchemesState, Scheme} from 'types/schemes';
+import {SchemesState, Scheme} from '@redux/types/schemes';
 
 function schemes(state: {
     [x: string]: Scheme;

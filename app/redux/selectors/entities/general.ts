@@ -4,7 +4,7 @@ import {createSelector} from 'reselect';
 import {isMinimumServerVersion} from '@redux/utils/helpers';
 import {General} from '../../constants';
 import {GlobalState} from '@redux/types/store';
-import {Config} from 'types/config';
+import {Config} from '@redux/types/config';
 
 export function getConfig(state: GlobalState): Partial<Config> {
     return state.entities.general.config;

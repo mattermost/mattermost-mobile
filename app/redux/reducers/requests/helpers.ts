@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {RequestStatus} from '../../constants';
 import {GenericAction} from '@redux/types/actions';
-import {RequestStatusType} from 'types/requests';
+import {RequestStatusType} from '@redux/types/requests';
 export function initialRequestState(): RequestStatusType {
     return {
         status: RequestStatus.NOT_STARTED,

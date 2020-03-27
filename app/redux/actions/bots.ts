@@ -6,7 +6,7 @@ import {BotTypes} from '@redux/action_types';
 import {bindClientFunc} from './helpers';
 
 import {ActionFunc} from '@redux/types/actions';
-import {Bot, BotPatch} from 'types/bots';
+import {Bot, BotPatch} from '@redux/types/bots';
 
 const BOTS_PER_PAGE_DEFAULT = 20;
 

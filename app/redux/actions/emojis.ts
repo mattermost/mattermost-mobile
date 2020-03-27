@@ -11,7 +11,7 @@ import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult} from '@redux/types
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-import {SystemEmoji, CustomEmoji} from 'types/emojis';
+import {SystemEmoji, CustomEmoji} from '@redux/types/emojis';
 import {Dictionary} from '@redux/types/utilities';
 export let systemEmojis: Map<string, SystemEmoji> = new Map();
 export function setSystemEmojis(emojis: Map<string, SystemEmoji>) {

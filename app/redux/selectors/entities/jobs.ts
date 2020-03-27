@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {createSelector} from 'reselect';
 import {GlobalState} from '@redux/types/store';
-import {JobType, Job, JobsByType} from 'types/jobs';
+import {JobType, Job, JobsByType} from '@redux/types/jobs';
 import {IDMappedObjects} from '@redux/types/utilities';
 export function getAllJobs(state: GlobalState): IDMappedObjects<Job> {
     return state.entities.jobs.jobs;

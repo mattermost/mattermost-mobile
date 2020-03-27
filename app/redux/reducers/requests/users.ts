@@ -5,7 +5,7 @@ import {RequestStatus} from '../../constants';
 import {UserTypes} from '@redux/action_types';
 
 import {GenericAction} from '@redux/types/actions';
-import {UsersRequestsStatuses, RequestStatusType} from 'types/requests';
+import {UsersRequestsStatuses, RequestStatusType} from '@redux/types/requests';
 
 import {handleRequest, initialRequestState} from './helpers';
 

@@ -3,7 +3,7 @@
 import {createSelector} from 'reselect';
 import {createIdsSelector} from '@redux/utils/helpers';
 import {GlobalState} from '@redux/types/store';
-import {CustomEmoji} from 'types/emojis';
+import {CustomEmoji} from '@redux/types/emojis';
 import {IDMappedObjects} from '@redux/types/utilities';
 export function getCustomEmojis(state: GlobalState): IDMappedObjects<CustomEmoji> {
     if (state.entities.general.config.EnableCustomEmoji !== 'true') {

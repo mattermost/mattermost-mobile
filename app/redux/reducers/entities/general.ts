@@ -4,7 +4,7 @@
 import {combineReducers} from 'redux';
 import {GeneralTypes, UserTypes} from '@redux/action_types';
 import {GenericAction} from '@redux/types/actions';
-import {Config} from 'types/config';
+import {Config} from '@redux/types/config';
 
 function config(state: Partial<Config> = {}, action: GenericAction) {
     switch (action.type) {

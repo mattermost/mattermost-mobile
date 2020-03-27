@@ -4,7 +4,7 @@ import {combineReducers} from 'redux';
 import {SearchTypes} from '@redux/action_types';
 
 import {GenericAction} from '@redux/types/actions';
-import {SearchRequestsStatuses, RequestStatusType} from 'types/requests';
+import {SearchRequestsStatuses, RequestStatusType} from '@redux/types/requests';
 
 import {handleRequest, initialRequestState} from './helpers';
 

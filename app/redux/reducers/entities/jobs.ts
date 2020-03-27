@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
 import {JobTypes} from '@redux/action_types';
-import {JobsState, JobType, Job, JobsByType} from 'types/jobs';
+import {JobsState, JobType, Job, JobsByType} from '@redux/types/jobs';
 import {GenericAction} from '@redux/types/actions';
 import {IDMappedObjects} from '@redux/types/utilities';
 

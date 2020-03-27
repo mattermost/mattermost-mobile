@@ -4,7 +4,7 @@ import {combineReducers} from 'redux';
 import {ChannelTypes} from '@redux/action_types';
 
 import {GenericAction} from '@redux/types/actions';
-import {ChannelsRequestsStatuses, RequestStatusType} from 'types/requests';
+import {ChannelsRequestsStatuses, RequestStatusType} from '@redux/types/requests';
 
 import {handleRequest, initialRequestState} from './helpers';
 

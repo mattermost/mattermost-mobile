@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {ScopeTypes} from 'constants/schemes';
+import {ScopeTypes} from '@redux/constants/schemes';
 
 import {createSelector} from 'reselect';
 import {getAllChannels} from '@redux/selectors/entities/channels';
 import {getTeams} from '@redux/selectors/entities/teams';
 import {GlobalState} from '@redux/types/store';
-import {Scheme} from 'types/schemes';
+import {Scheme} from '@redux/types/schemes';
 import {Channel} from '@redux/types/channels';
 import {Team} from '@redux/types/teams';
 

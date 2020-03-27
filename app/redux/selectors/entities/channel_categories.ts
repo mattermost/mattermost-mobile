@@ -14,7 +14,7 @@ import {getMyPreferences, getTeammateNameDisplaySetting, shouldAutocloseDMs} fro
 import {getCurrentUserId} from '@redux/selectors/entities/users';
 
 import {Channel, ChannelMembership} from '@redux/types/channels';
-import {ChannelCategory} from 'types/channel_categories';
+import {ChannelCategory} from '@redux/types/channel_categories';
 import {GlobalState} from '@redux/types/store';
 import {UserProfile} from '@redux/types/users';
 import {IDMappedObjects, RelationOneToOne} from '@redux/types/utilities';

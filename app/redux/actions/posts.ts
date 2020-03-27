@@ -32,11 +32,11 @@ import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericA
 import {ChannelUnread} from '@redux/types/channels';
 import {GlobalState} from '@redux/types/store';
 import {Post} from '@redux/types/posts';
-import {Error} from 'types/errors';
-import {Reaction} from 'types/reactions';
+import {Error} from '@redux/types/errors';
+import {Reaction} from '@redux/types/reactions';
 import {UserProfile} from '@redux/types/users';
 import {Dictionary} from '@redux/types/utilities';
-import {CustomEmoji} from 'types/emojis';
+import {CustomEmoji} from '@redux/types/emojis';
 
 // receivedPost should be dispatched after a single post from the server. This typically happens when an existing post
 // is updated.

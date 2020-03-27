@@ -4,7 +4,7 @@ import {Client4} from '@redux/client';
 import {SchemeTypes} from '@redux/action_types';
 import {General} from '../constants';
 
-import {Scheme, SchemeScope, SchemePatch} from 'types/schemes';
+import {Scheme, SchemeScope, SchemePatch} from '@redux/types/schemes';
 
 import {ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@redux/types/actions';
 

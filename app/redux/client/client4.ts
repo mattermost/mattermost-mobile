@@ -12,17 +12,17 @@ import {UserProfile, UserStatus} from '@redux/types/users';
 import {Team} from '@redux/types/teams';
 import {Channel, ChannelModerationPatch} from '@redux/types/channels';
 import {Post} from '@redux/types/posts';
-import {Job} from 'types/jobs';
-import {Role} from 'types/roles';
-import {Scheme} from 'types/schemes';
+import {Job} from '@redux/types/jobs';
+import {Role} from '@redux/types/roles';
+import {Scheme} from '@redux/types/schemes';
 import {Options} from '@redux/types/client4';
 import {PreferenceType} from '@redux/types/preferences';
 import {IncomingWebhook, OutgoingWebhook, Command, OAuthApp, DialogSubmission} from '@redux/types/integrations';
-import {CustomEmoji} from 'types/emojis';
-import {Config} from 'types/config';
-import {Bot, BotPatch} from 'types/bots';
+import {CustomEmoji} from '@redux/types/emojis';
+import {Config} from '@redux/types/config';
+import {Bot, BotPatch} from '@redux/types/bots';
 import {Dictionary} from '@redux/types/utilities';
-import {SyncablePatch} from 'types/groups';
+import {SyncablePatch} from '@redux/types/groups';
 
 const FormData = require('form-data');
 const HEADER_AUTH = 'Authorization';
@@ -295,15 +295,17 @@ export default class Client4 {
     }
 
     getCSRFFromCookie() {
-        if (typeof document !== 'undefined' && typeof document.cookie !== 'undefined') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith('MMCSRF=')) {
-                    return cookie.replace('MMCSRF=', '');
-                }
-            }
-        }
+
+        // NOT NEEDED IN THE MOBILE APP
+        // if (typeof document !== 'undefined' && typeof document.cookie !== 'undefined') {
+        //     const cookies = document.cookie.split(';');
+        //     for (let i = 0; i < cookies.length; i++) {
+        //         const cookie = cookies[i].trim();
+        //         if (cookie.startsWith('MMCSRF=')) {
+        //             return cookie.replace('MMCSRF=', '');
+        //         }
+        //     }
+        // }
         return '';
     }
 
@@ -465,7 +467,7 @@ export default class Client4 {
         );
     }
 
-    uploadProfileImage = async (userId: string, imageData: File) => {
+    uploadProfileImage = async (userId: string, imageData: any) => {
         this.trackEvent('api', 'api_users_update_profile_picture');
 
         const formData = new FormData();
@@ -1222,7 +1224,7 @@ export default class Client4 {
         );
     };
 
-    importTeam = async (teamId: string, file: File, importFrom: string) => {
+    importTeam = async (teamId: string, file: any, importFrom: string) => {
         const formData = new FormData();
         formData.append('file', file, file.name);
         formData.append('filesize', file.size);
@@ -1254,7 +1256,7 @@ export default class Client4 {
         return `${this.getTeamRoute(teamId)}/image${buildQueryString(params)}`;
     };
 
-    setTeamIcon = async (teamId: string, imageData: File) => {
+    setTeamIcon = async (teamId: string, imageData: any) => {
         this.trackEvent('api', 'api_team_set_team_icon');
 
         const formData = new FormData();
@@ -2199,7 +2201,7 @@ export default class Client4 {
 
     // Emoji Routes
 
-    createCustomEmoji = async (emoji: CustomEmoji, imageData: File) => {
+    createCustomEmoji = async (emoji: CustomEmoji, imageData: any) => {
         this.trackEvent('api', 'api_emoji_custom_add');
 
         const formData = new FormData();
@@ -2429,7 +2431,7 @@ export default class Client4 {
         );
     };
 
-    uploadBrandImage = async (imageData: File) => {
+    uploadBrandImage = async (imageData: any) => {
         const formData = new FormData();
         formData.append('image', imageData);
         const request: any = {
@@ -2506,7 +2508,7 @@ export default class Client4 {
         );
     };
 
-    uploadPublicSamlCertificate = async (fileData: File) => {
+    uploadPublicSamlCertificate = async (fileData: any) => {
         const formData = new FormData();
         formData.append('certificate', fileData);
 
@@ -2519,7 +2521,7 @@ export default class Client4 {
         );
     };
 
-    uploadPrivateSamlCertificate = async (fileData: File) => {
+    uploadPrivateSamlCertificate = async (fileData: any) => {
         const formData = new FormData();
         formData.append('certificate', fileData);
 
@@ -2532,7 +2534,7 @@ export default class Client4 {
         );
     };
 
-    uploadIdpSamlCertificate = async (fileData: File) => {
+    uploadIdpSamlCertificate = async (fileData: any) => {
         const formData = new FormData();
         formData.append('certificate', fileData);
 
@@ -2580,7 +2582,7 @@ export default class Client4 {
         );
     };
 
-    uploadLicense = async (fileData: File) => {
+    uploadLicense = async (fileData: any) => {
         this.trackEvent('api', 'api_license_upload');
 
         const formData = new FormData();
@@ -2706,7 +2708,7 @@ export default class Client4 {
 
     // Plugin Routes - EXPERIMENTAL - SUBJECT TO CHANGE
 
-    uploadPlugin = async (fileData: File, force = false) => {
+    uploadPlugin = async (fileData: any, force = false) => {
         this.trackEvent('api', 'api_plugin_upload');
 
         const formData = new FormData();

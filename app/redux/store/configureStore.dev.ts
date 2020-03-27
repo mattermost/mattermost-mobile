@@ -8,10 +8,11 @@ import defaultOfflineConfig from 'redux-offline/lib/defaults';
 import reducerRegistry from './reducer_registry';
 import devTools from 'remote-redux-devtools';
 
-const windowAny = window as any;
+const globalAny = global as any;
+const window = globalAny.window;
 
-const devToolsEnhancer = typeof windowAny !== 'undefined' && windowAny.__REDUX_DEVTOOLS_EXTENSION__ ? // eslint-disable-line no-underscore-dangle
-    windowAny.__REDUX_DEVTOOLS_EXTENSION__ : // eslint-disable-line no-underscore-dangle
+const devToolsEnhancer = typeof window !== 'undefined' && window.__REDUX_DEVTOOLS_EXTENSION__ ? // eslint-disable-line no-underscore-dangle
+    window.__REDUX_DEVTOOLS_EXTENSION__ : // eslint-disable-line no-underscore-dangle
     () => {
         return devTools({
             name: 'Mattermost',

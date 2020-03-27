@@ -5,7 +5,7 @@ import {serializeError, ErrorObject} from 'serialize-error';
 import {Client4} from '@redux/client';
 import EventEmitter from '@redux/utils/event_emitter';
 import {DispatchFunc, ActionFunc} from '@redux/types/actions';
-import {Error} from 'types/errors';
+import {Error} from '@redux/types/errors';
 export function dismissErrorObject(index: number) {
     return {
         type: ErrorTypes.DISMISS_ERROR,

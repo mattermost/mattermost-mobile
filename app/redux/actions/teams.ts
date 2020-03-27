@@ -671,7 +671,7 @@ export function joinTeam(inviteId: string, teamId: string): ActionFunc {
     };
 }
 
-export function setTeamIcon(teamId: string, imageData: File): ActionFunc {
+export function setTeamIcon(teamId: string, imageData: any): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.setTeamIcon,
         params: [

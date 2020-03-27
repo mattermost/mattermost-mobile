@@ -6,7 +6,7 @@ import {getRoles} from '@redux/selectors/entities/roles_helpers';
 import {hasNewPermissions} from '@redux/selectors/entities/general';
 
 import {DispatchFunc, GetStateFunc, ActionFunc} from '@redux/types/actions';
-import {Role} from 'types/roles';
+import {Role} from '@redux/types/roles';
 
 import {bindClientFunc} from './helpers';
 export function getRolesByNames(rolesNames: Array<string>) {

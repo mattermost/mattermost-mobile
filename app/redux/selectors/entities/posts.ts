@@ -9,7 +9,7 @@ import {isPostEphemeral, isSystemMessage, shouldFilterJoinLeavePost, comparePost
 import {getPreferenceKey} from '@redux/utils/preference_utils';
 import {GlobalState} from '@redux/types/store';
 import {Post, PostWithFormatData, MessageHistory, PostOrderBlock} from '@redux/types/posts';
-import {Reaction} from 'types/reactions';
+import {Reaction} from '@redux/types/reactions';
 import {UserProfile} from '@redux/types/users';
 import {Channel} from '@redux/types/channels';
 import {$ID, IDMappedObjects, RelationOneToOne, RelationOneToMany, Dictionary} from '@redux/types/utilities';
