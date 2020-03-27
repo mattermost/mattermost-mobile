@@ -11,7 +11,7 @@ export function handleServerUrlChanged(serverUrl) {
         {type: GeneralTypes.CLIENT_CONFIG_RESET},
         {type: GeneralTypes.CLIENT_LICENSE_RESET},
         {type: ViewTypes.SERVER_URL_CHANGED, serverUrl},
-    ]);
+    ], 'BATCH_SERVER_URL_CHANGED');
 }
 
 export function setServerUrl(serverUrl) {

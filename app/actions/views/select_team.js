@@ -23,7 +23,7 @@ export function handleTeamChange(teamId) {
         dispatch(batchActions([
             {type: TeamTypes.SELECT_TEAM, data: teamId},
             {type: ChannelTypes.SELECT_CHANNEL, data: '', extra: {}},
-        ]));
+        ], 'BATCH_SWITCH_TEAM'));
     };
 }
 

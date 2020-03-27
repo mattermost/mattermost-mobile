@@ -67,7 +67,9 @@ const launchApp = (credentials) => {
     EphemeralStore.appStarted = true;
 
     Linking.getInitialURL().then((url) => {
-        store.dispatch(setDeepLinkURL(url));
+        if (url) {
+            store.dispatch(setDeepLinkURL(url));
+        }
     });
 };
 
