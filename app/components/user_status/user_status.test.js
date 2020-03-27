@@ -4,8 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import {General} from 'mattermost-redux/constants';
-import Preferences from 'mattermost-redux/constants/preferences';
+import {General} from '@redux/constants';
+import Preferences from '@redux/constants/preferences';
 
 import UserStatus from './user_status';
 

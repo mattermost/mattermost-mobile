@@ -10,8 +10,8 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import DocumentPicker from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 
-import {Client4} from 'mattermost-redux/client';
-import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
+import {Client4} from '@redux/client';
+import {getFormattedFileSize} from '@redux/utils/file_utils';
 
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';

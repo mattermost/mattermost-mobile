@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Posts} from 'mattermost-redux/constants';
+import {Posts} from '@redux/constants';
 import Markdown from 'app/components/markdown';
 import {t} from 'app/utils/i18n';
 

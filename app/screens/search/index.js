@@ -4,16 +4,16 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectFocusedPostId, selectPost} from 'mattermost-redux/actions/posts';
-import {clearSearch, removeSearchTerms, searchPostsWithParams, getMorePostsForSearch} from 'mattermost-redux/actions/search';
-import {getCurrentChannelId, filterPostIds} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
-import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {selectFocusedPostId, selectPost} from '@redux/actions/posts';
+import {clearSearch, removeSearchTerms, searchPostsWithParams, getMorePostsForSearch} from '@redux/actions/search';
+import {getCurrentChannelId, filterPostIds} from '@redux/selectors/entities/channels';
+import {getCurrentTeamId} from '@redux/selectors/entities/teams';
+import {getConfig} from '@redux/selectors/entities/general';
+import {getTheme} from '@redux/selectors/entities/preferences';
+import {isTimezoneEnabled} from '@redux/selectors/entities/timezone';
+import {isMinimumServerVersion} from '@redux/utils/helpers';
+import {getUserCurrentTimezone} from '@redux/utils/timezone_utils';
+import {getCurrentUser} from '@redux/selectors/entities/users';
 
 import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
 import {handleSearchDraftChanged} from 'app/actions/views/search';

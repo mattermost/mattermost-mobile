@@ -6,7 +6,7 @@ import nock from 'nock';
 
 import Config from 'assets/config.json';
 
-import Client from 'mattermost-redux/client/client4';
+import Client from '@redux/client/client4';
 
 const PASSWORD = 'password1';
 

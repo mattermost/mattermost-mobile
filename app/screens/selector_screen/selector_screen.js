@@ -9,11 +9,11 @@ import {
     View,
 } from 'react-native';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {General} from 'mattermost-redux/constants';
-import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-import {filterChannelsMatchingTerm} from 'mattermost-redux/utils/channel_utils';
-import {memoizeResult} from 'mattermost-redux/utils/helpers';
+import {debounce} from '@redux/actions/helpers';
+import {General} from '@redux/constants';
+import {filterProfilesMatchingTerm} from '@redux/utils/user_utils';
+import {filterChannelsMatchingTerm} from '@redux/utils/channel_utils';
+import {memoizeResult} from '@redux/utils/helpers';
 
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';

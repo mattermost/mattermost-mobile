@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {NavigationTypes} from 'app/constants';
-import {UserTypes} from 'mattermost-redux/action_types';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {UserTypes} from '@redux/action_types';
+import EventEmitter from '@redux/utils/event_emitter';
 
 export default function(state = '', action) {
     switch (action.type) {

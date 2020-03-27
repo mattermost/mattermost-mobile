@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import MarkdownTable from './markdown_table';
 

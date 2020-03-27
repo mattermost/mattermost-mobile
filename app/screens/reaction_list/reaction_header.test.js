@@ -4,7 +4,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {ScrollView} from 'react-native';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import ReactionHeader from './reaction_header';
 

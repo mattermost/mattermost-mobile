@@ -6,8 +6,8 @@ import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {General} from '@redux/constants';
+import EventEmitter from '@redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
 import UserStatus from 'app/components/user_status';

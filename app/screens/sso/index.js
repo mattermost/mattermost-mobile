@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {scheduleExpiredNotification} from 'app/actions/views/login';
 import {ssoLogin} from 'app/actions/views/user';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@redux/selectors/entities/preferences';
 import {isLandscape} from 'app/selectors/device';
 
 import SSO from './sso';

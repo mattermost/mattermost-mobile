@@ -24,9 +24,9 @@ import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
+import {General, RequestStatus} from '@redux/constants';
+import EventEmitter from '@redux/utils/event_emitter';
+import {getFormattedFileSize} from '@redux/utils/file_utils';
 
 import FileUploadButton from './components/file_upload_button';
 import ImageUploadButton from './components/image_upload_button';

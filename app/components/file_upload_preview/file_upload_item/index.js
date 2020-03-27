@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@redux/selectors/entities/preferences';
 
 import {handleRemoveFile, retryFileUpload, uploadComplete, uploadFailed} from 'app/actions/views/file_upload';
 

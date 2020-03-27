@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getChannel} from 'mattermost-redux/selectors/entities/channels';
-import * as PostUtils from 'mattermost-redux/utils/post_utils';
+import {getChannel} from '@redux/selectors/entities/channels';
+import * as PostUtils from '@redux/utils/post_utils';
 
 import {makeMapStateToProps} from './index.js';
 

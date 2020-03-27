@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {General} from 'mattermost-redux/constants';
-import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+import {debounce} from '@redux/actions/helpers';
+import {General} from '@redux/constants';
+import {filterProfilesMatchingTerm} from '@redux/utils/user_utils';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';

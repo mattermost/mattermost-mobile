@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import RecentItem from './recent_item';
 

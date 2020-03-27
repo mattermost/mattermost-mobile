@@ -5,7 +5,7 @@ import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import mimeDB from 'mime-db';
 
-import {lookupMimeType} from 'mattermost-redux/utils/file_utils';
+import {lookupMimeType} from '@redux/utils/file_utils';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;

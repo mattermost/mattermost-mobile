@@ -3,11 +3,11 @@
 
 import {connect} from 'react-redux';
 
-import {General} from 'mattermost-redux/constants';
-import {getCurrentChannel, getMyCurrentChannelMembership, getCurrentChannelStats} from 'mattermost-redux/selectors/entities/channels';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName, isChannelMuted} from 'mattermost-redux/utils/channel_utils';
+import {General} from '@redux/constants';
+import {getCurrentChannel, getMyCurrentChannelMembership, getCurrentChannelStats} from '@redux/selectors/entities/channels';
+import {getTheme} from '@redux/selectors/entities/preferences';
+import {getCurrentUserId, getUser} from '@redux/selectors/entities/users';
+import {getUserIdFromChannelName, isChannelMuted} from '@redux/utils/channel_utils';
 
 import {isGuest} from 'app/utils/users';
 

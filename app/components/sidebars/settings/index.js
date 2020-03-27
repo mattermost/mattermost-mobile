@@ -4,9 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {setStatus} from 'mattermost-redux/actions/users';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {setStatus} from '@redux/actions/users';
+import {getTheme} from '@redux/selectors/entities/preferences';
+import {getCurrentUser, getStatusForUserId} from '@redux/selectors/entities/users';
 
 import {logout} from 'app/actions/views/user';
 

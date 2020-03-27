@@ -12,17 +12,17 @@ import {
     unpinPost,
     removePost,
     setUnreadPost,
-} from 'mattermost-redux/actions/posts';
-import {General, Permissions} from 'mattermost-redux/constants';
-import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
-import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
-import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
-import {canEditPost} from 'mattermost-redux/utils/post_utils';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+} from '@redux/actions/posts';
+import {General, Permissions} from '@redux/constants';
+import {makeGetReactionsForPost} from '@redux/selectors/entities/posts';
+import {getChannel, getCurrentChannelId} from '@redux/selectors/entities/channels';
+import {getCurrentUserId} from '@redux/selectors/entities/users';
+import {getConfig, getLicense, hasNewPermissions} from '@redux/selectors/entities/general';
+import {getTheme} from '@redux/selectors/entities/preferences';
+import {haveIChannelPermission} from '@redux/selectors/entities/roles';
+import {getCurrentTeamId, getCurrentTeamUrl} from '@redux/selectors/entities/teams';
+import {canEditPost} from '@redux/utils/post_utils';
+import {isMinimumServerVersion} from '@redux/utils/helpers';
 
 import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
 import {THREAD} from 'app/constants/screen';

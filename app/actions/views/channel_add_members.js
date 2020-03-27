@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {addChannelMember} from 'mattermost-redux/actions/channels';
+import {addChannelMember} from '@redux/actions/channels';
 
 export function handleAddChannelMembers(channelId, members) {
     return async (dispatch) => {

@@ -6,7 +6,7 @@ import {Alert, Platform} from 'react-native';
 import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import FileUploadButton from './file_upload_button';
 

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentChannelId} from '@redux/selectors/entities/channels';
+import {getTheme} from '@redux/selectors/entities/preferences';
 
 import {getDimensions} from 'app/selectors/device';
 import {checkForFileUploadingInChannel} from 'app/selectors/file';

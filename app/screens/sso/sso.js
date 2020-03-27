@@ -13,7 +13,7 @@ import {WebView} from 'react-native-webview';
 import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@redux/client';
 
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';

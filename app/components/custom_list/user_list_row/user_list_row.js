@@ -9,7 +9,7 @@ import {
     View,
 } from 'react-native';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {displayUsername} from '@redux/utils/user_utils';
 
 import CustomListRow from 'app/components/custom_list/custom_list_row';
 import ProfilePicture from 'app/components/profile_picture';

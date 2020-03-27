@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 import RadioSetting from 'app/components/widgets/settings/radio_setting';
 import BoolSetting from 'app/components/widgets/settings/bool_setting';
 import DialogElement from './dialog_element.js';

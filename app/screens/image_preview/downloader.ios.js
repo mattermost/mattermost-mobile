@@ -10,7 +10,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {intlShape} from 'react-intl';
 import CameraRoll from '@react-native-community/cameraroll';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@redux/client';
 
 import FormattedText from 'app/components/formatted_text';
 import mattermostBucket from 'app/mattermost_bucket';

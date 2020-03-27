@@ -13,7 +13,7 @@ import {
 import RNFetchBlob from 'rn-fetch-blob';
 import {intlShape} from 'react-intl';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@redux/client';
 
 import {DeviceTypes} from 'app/constants/';
 import FormattedText from 'app/components/formatted_text';

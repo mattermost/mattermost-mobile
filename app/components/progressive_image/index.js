@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@redux/selectors/entities/preferences';
 
 import ProgressiveImage from './progressive_image';
 

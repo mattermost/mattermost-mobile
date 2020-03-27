@@ -1,22 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from 'mattermost-redux/action_types';
-import {Client4} from 'mattermost-redux/client';
-import {General, Preferences} from 'mattermost-redux/constants';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId, getUsers, getUserIdsInChannels} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName, isAutoClosed} from 'mattermost-redux/utils/channel_utils';
-import {getPreferenceKey} from 'mattermost-redux/utils/preference_utils';
+import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@redux/action_types';
+import {Client4} from '@redux/client';
+import {General, Preferences} from '@redux/constants';
+import {getCurrentChannelId} from '@redux/selectors/entities/channels';
+import {getConfig} from '@redux/selectors/entities/general';
+import {getMyPreferences} from '@redux/selectors/entities/preferences';
+import {getCurrentUserId, getUsers, getUserIdsInChannels} from '@redux/selectors/entities/users';
+import {getUserIdFromChannelName, isAutoClosed} from '@redux/utils/channel_utils';
+import {getPreferenceKey} from '@redux/utils/preference_utils';
 
-import {ActionResult, GenericAction} from 'mattermost-redux/types/actions';
-import {Channel, ChannelMembership} from 'mattermost-redux/types/channels';
-import {PreferenceType} from 'mattermost-redux/types/preferences';
-import {GlobalState} from 'mattermost-redux/types/store';
-import {UserProfile} from 'mattermost-redux/types/users';
-import {RelationOneToMany} from 'mattermost-redux/types/utilities';
+import {ActionResult, GenericAction} from '@redux/types/actions';
+import {Channel, ChannelMembership} from '@redux/types/channels';
+import {PreferenceType} from '@redux/types/preferences';
+import {GlobalState} from '@redux/types/store';
+import {UserProfile} from '@redux/types/users';
+import {RelationOneToMany} from '@redux/types/utilities';
 
 import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
 import {buildPreference} from '@utils/preferences';

@@ -4,8 +4,8 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import {UserTypes} from 'mattermost-redux/action_types';
-import {General} from 'mattermost-redux/constants';
+import {UserTypes} from '@redux/action_types';
+import {General} from '@redux/constants';
 
 import {setCurrentUserStatusOffline} from 'app/actions/views/user';
 

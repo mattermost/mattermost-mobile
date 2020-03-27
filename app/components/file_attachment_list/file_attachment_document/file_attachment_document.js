@@ -19,7 +19,7 @@ import {CircularProgress} from 'react-native-circular-progress';
 import {intlShape} from 'react-intl';
 import tinyColor from 'tinycolor2';
 
-import {getFileUrl} from 'mattermost-redux/utils/file_utils.js';
+import {getFileUrl} from '@redux/utils/file_utils';
 
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';

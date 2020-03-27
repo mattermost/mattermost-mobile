@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {Preferences} from 'mattermost-redux/constants';
+import {Preferences} from '@redux/constants';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const defaultTheme = Preferences.THEMES.default;

@@ -5,7 +5,7 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {Dimensions, Keyboard, View} from 'react-native';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
 import DrawerLayout, {DRAWER_INITIAL_OFFSET, TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';

@@ -14,8 +14,8 @@ import {
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
+import {debounce} from '@redux/actions/helpers';
+import {isDateLine, getDateForDateLine} from '@redux/utils/post_list';
 
 import Autocomplete from 'app/components/autocomplete';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';

@@ -4,13 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getChannel as getChannelAction, joinChannel} from 'mattermost-redux/actions/channels';
-import {selectPost} from 'mattermost-redux/actions/posts';
-import {makeGetChannel, getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
-import {makeGetPostIdsAroundPost, getPost} from 'mattermost-redux/selectors/entities/posts';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getChannel as getChannelAction, joinChannel} from '@redux/actions/channels';
+import {selectPost} from '@redux/actions/posts';
+import {makeGetChannel, getMyChannelMemberships} from '@redux/selectors/entities/channels';
+import {makeGetPostIdsAroundPost, getPost} from '@redux/selectors/entities/posts';
+import {getTheme} from '@redux/selectors/entities/preferences';
+import {getCurrentTeamId} from '@redux/selectors/entities/teams';
+import {getCurrentUserId} from '@redux/selectors/entities/users';
 
 import {
     handleSelectChannel,

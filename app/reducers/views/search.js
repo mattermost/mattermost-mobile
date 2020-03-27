@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ViewTypes} from 'app/constants';
-import {UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes} from '@redux/action_types';
 
 export default function search(state = '', action) {
     switch (action.type) {

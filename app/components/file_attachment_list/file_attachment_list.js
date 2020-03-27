@@ -6,8 +6,8 @@ import PropTypes from 'prop-types';
 import {Dimensions, StyleSheet, View} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import {Client4} from 'mattermost-redux/client';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {Client4} from '@redux/client';
+import EventEmitter from '@redux/utils/event_emitter';
 
 import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
 import {DeviceTypes} from 'app/constants';

@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {displayUsername} from '@redux/utils/user_utils';
 
 export default class SelectedUser extends React.PureComponent {
     static propTypes = {

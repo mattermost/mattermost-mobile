@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
 import SafeAreaView from 'app/components/safe_area_view';

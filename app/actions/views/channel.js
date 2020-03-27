@@ -5,27 +5,27 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {ChannelTypes, RoleTypes, UserTypes} from 'mattermost-redux/action_types';
+import {ChannelTypes, RoleTypes, UserTypes} from '@redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     leaveChannel as serviceLeaveChannel,
-} from 'mattermost-redux/actions/channels';
-import {getFilesForPost} from 'mattermost-redux/actions/files';
-import {savePreferences} from 'mattermost-redux/actions/preferences';
-import {getTeamMembersByIds, selectTeam} from 'mattermost-redux/actions/teams';
-import {getProfilesInChannel} from 'mattermost-redux/actions/users';
-import {Client4} from 'mattermost-redux/client';
-import {General, Preferences} from 'mattermost-redux/constants';
-import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
+} from '@redux/actions/channels';
+import {getFilesForPost} from '@redux/actions/files';
+import {savePreferences} from '@redux/actions/preferences';
+import {getTeamMembersByIds, selectTeam} from '@redux/actions/teams';
+import {getProfilesInChannel} from '@redux/actions/users';
+import {Client4} from '@redux/client';
+import {General, Preferences} from '@redux/constants';
+import {getPostIdsInChannel} from '@redux/selectors/entities/posts';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
     isManuallyUnread,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
+} from '@redux/selectors/entities/channels';
+import {getCurrentUserId} from '@redux/selectors/entities/users';
+import {getTeamByName} from '@redux/selectors/entities/teams';
 
 import {
     getChannelByName,
@@ -34,10 +34,10 @@ import {
     isDirectChannel,
     isGroupChannel,
     getChannelByName as getChannelByNameSelector,
-} from 'mattermost-redux/utils/channel_utils';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
-import {getPreferencesByCategory} from 'mattermost-redux/utils/preference_utils';
+} from '@redux/utils/channel_utils';
+import EventEmitter from '@redux/utils/event_emitter';
+import {getLastCreateAt} from '@redux/utils/post_utils';
+import {getPreferencesByCategory} from '@redux/utils/preference_utils';
 
 import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread} from '@actions/views/post';

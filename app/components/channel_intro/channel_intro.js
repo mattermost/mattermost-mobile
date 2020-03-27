@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
-import {General} from 'mattermost-redux/constants';
+import {displayUsername} from '@redux/utils/user_utils';
+import {General} from '@redux/constants';
 
 import {goToScreen} from 'app/actions/navigation';
 import ProfilePicture from 'app/components/profile_picture';

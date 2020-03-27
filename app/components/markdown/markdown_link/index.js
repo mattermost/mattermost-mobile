@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getConfig, getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
+import {getConfig, getCurrentUrl} from '@redux/selectors/entities/general';
 import {handleSelectChannelByName} from 'app/actions/views/channel';
 
 import MarkdownLink from './markdown_link';

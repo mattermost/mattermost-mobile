@@ -13,12 +13,12 @@ import {
     unarchiveChannel,
     unfavoriteChannel,
     updateChannelNotifyProps,
-} from 'mattermost-redux/actions/channels';
-import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
-import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
-import {clearPinnedPosts} from 'mattermost-redux/actions/search';
-import {General} from 'mattermost-redux/constants';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+} from '@redux/actions/channels';
+import {getCustomEmojisInText} from '@redux/actions/emojis';
+import {selectFocusedPostId} from '@redux/actions/posts';
+import {clearPinnedPosts} from '@redux/actions/search';
+import {General} from '@redux/constants';
+import {getTheme} from '@redux/selectors/entities/preferences';
 import {
     canManageChannelMembers,
     getCurrentChannel,
@@ -26,17 +26,17 @@ import {
     getSortedFavoriteChannelIds,
     getMyCurrentChannelMembership,
     isCurrentChannelReadOnly,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
-import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
-import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
-import Permissions from 'mattermost-redux/constants/permissions';
-import {haveITeamPermission} from 'mattermost-redux/selectors/entities/roles';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+} from '@redux/selectors/entities/channels';
+import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from '@redux/selectors/entities/users';
+import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from '@redux/utils/channel_utils';
+import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from '@redux/utils/user_utils';
+import {getConfig, getLicense, hasNewPermissions} from '@redux/selectors/entities/general';
+import {isTimezoneEnabled} from '@redux/selectors/entities/timezone';
+import {getUserCurrentTimezone} from '@redux/utils/timezone_utils';
+import Permissions from '@redux/constants/permissions';
+import {haveITeamPermission} from '@redux/selectors/entities/roles';
+import {getCurrentTeamId} from '@redux/selectors/entities/teams';
+import {isMinimumServerVersion} from '@redux/utils/helpers';
 
 import {
     closeDMChannel,

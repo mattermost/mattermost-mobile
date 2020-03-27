@@ -4,9 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {canDownloadFilesOnMobile} from 'mattermost-redux/selectors/entities/general';
-import {makeGetFilesForPost} from 'mattermost-redux/selectors/entities/files';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {canDownloadFilesOnMobile} from '@redux/selectors/entities/general';
+import {makeGetFilesForPost} from '@redux/selectors/entities/files';
+import {getTheme} from '@redux/selectors/entities/preferences';
 
 import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
 

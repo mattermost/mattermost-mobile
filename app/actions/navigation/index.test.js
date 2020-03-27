@@ -6,7 +6,7 @@ import {Navigation} from 'react-native-navigation';
 
 import merge from 'deepmerge';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 import * as NavigationActions from 'app/actions/navigation';

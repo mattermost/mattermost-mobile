@@ -3,7 +3,7 @@
 
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlobFS from 'rn-fetch-blob/fs';
-import keyMirror from 'mattermost-redux/utils/key_mirror';
+import keyMirror from '@redux/utils/key_mirror';
 
 const deviceTypes = keyMirror({
     CONNECTION_CHANGED: null,

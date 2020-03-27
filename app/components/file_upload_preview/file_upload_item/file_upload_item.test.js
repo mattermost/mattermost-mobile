@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import {Preferences} from 'mattermost-redux/constants';
+import {Preferences} from '@redux/constants';
 import ImageCacheManager from 'app/utils/image_cache_manager';
 import FileUploadItem from './file_upload_item';
 

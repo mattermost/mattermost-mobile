@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTeams, addUserToTeam, joinTeam} from 'mattermost-redux/actions/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getTeams, addUserToTeam, joinTeam} from '@redux/actions/teams';
+import {getTheme} from '@redux/selectors/entities/preferences';
+import {getJoinableTeams} from '@redux/selectors/entities/teams';
+import {getCurrentUser} from '@redux/selectors/entities/users';
 
 import {logout} from 'app/actions/views/user';
 import {handleTeamChange} from 'app/actions/views/select_team';

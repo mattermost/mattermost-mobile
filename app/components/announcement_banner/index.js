@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from '@redux/selectors/entities/general';
+import {getTheme} from '@redux/selectors/entities/preferences';
 
 import {isLandscape} from 'app/selectors/device';
 

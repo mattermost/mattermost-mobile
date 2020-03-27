@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting, getTheme} from '@redux/selectors/entities/preferences';
 
 import {setAutocompleteSelector} from 'app/actions/views/post';
 

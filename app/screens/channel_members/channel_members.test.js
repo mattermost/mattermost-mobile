@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 

@@ -4,11 +4,11 @@
 import {Platform} from 'react-native';
 import Config from 'assets/config';
 
-import {Client4} from 'mattermost-redux/client';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
-import {getCurrentTeam, getCurrentTeamMembership} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentChannel, getMyCurrentChannelMembership} from 'mattermost-redux/selectors/entities/channels';
+import {Client4} from '@redux/client';
+import {getConfig} from '@redux/selectors/entities/general';
+import {getCurrentUser} from '@redux/selectors/entities/users';
+import {getCurrentTeam, getCurrentTeamMembership} from '@redux/selectors/entities/teams';
+import {getCurrentChannel, getMyCurrentChannelMembership} from '@redux/selectors/entities/channels';
 
 export const LOGGER_EXTENSION = 'extension';
 export const LOGGER_JAVASCRIPT = 'javascript';

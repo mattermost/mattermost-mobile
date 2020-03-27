@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
+import {isDateLine, getDateForDateLine} from '@redux/utils/post_list';
 
 import ChannelLoader from 'app/components/channel_loader';
 import DateHeader from 'app/components/post_list/date_header';

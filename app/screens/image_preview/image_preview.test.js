@@ -7,7 +7,7 @@ import {TouchableOpacity} from 'react-native';
 
 // import RNFetchBlob from 'rn-fetch-blob';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 

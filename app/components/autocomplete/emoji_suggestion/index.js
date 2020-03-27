@@ -5,11 +5,11 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
 
-import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
-import {autocompleteCustomEmojis} from 'mattermost-redux/actions/emojis';
+import {getCustomEmojisByName} from '@redux/selectors/entities/emojis';
+import {autocompleteCustomEmojis} from '@redux/actions/emojis';
 
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@redux/selectors/entities/preferences';
 import {EmojiIndicesByAlias} from 'app/utils/emojis';
 
 import EmojiSuggestion from './emoji_suggestion';

@@ -4,8 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import Preferences from '@redux/constants/preferences';
+import {General, RequestStatus} from '@redux/constants';
 
 import PostList from 'app/components/post_list';
 import * as NavigationActions from 'app/actions/navigation';

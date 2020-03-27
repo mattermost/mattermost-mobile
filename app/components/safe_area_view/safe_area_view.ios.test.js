@@ -4,7 +4,7 @@ import React from 'react';
 import SafeArea from 'react-native-safe-area';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';

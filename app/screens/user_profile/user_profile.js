@@ -12,8 +12,8 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
-import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
+import {displayUsername} from '@redux/utils/user_utils';
+import {getUserCurrentTimezone} from '@redux/utils/timezone_utils';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ProfilePicture from 'app/components/profile_picture';

@@ -4,14 +4,14 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {getReactionsForPost, removeReaction} from 'mattermost-redux/actions/posts';
-import {makeGetReactionsForPost, getPost} from 'mattermost-redux/selectors/entities/posts';
-import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
-import {hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
-import Permissions from 'mattermost-redux/constants/permissions';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getChannel, isChannelReadOnlyById} from 'mattermost-redux/selectors/entities/channels';
+import {getReactionsForPost, removeReaction} from '@redux/actions/posts';
+import {makeGetReactionsForPost, getPost} from '@redux/selectors/entities/posts';
+import {haveIChannelPermission} from '@redux/selectors/entities/roles';
+import {hasNewPermissions} from '@redux/selectors/entities/general';
+import Permissions from '@redux/constants/permissions';
+import {getCurrentUserId} from '@redux/selectors/entities/users';
+import {getTheme} from '@redux/selectors/entities/preferences';
+import {getChannel, isChannelReadOnlyById} from '@redux/selectors/entities/channels';
 
 import {addReaction} from 'app/actions/views/emoji';
 import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';

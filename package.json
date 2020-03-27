@@ -69,6 +69,7 @@
     "react-navigation-stack": "1.9.4",
     "react-redux": "7.2.0",
     "redux": "4.0.5",
+    "redux-action-buffer": "1.2.0",
     "redux-batched-actions": "0.4.1",
     "redux-offline": "github:mattermost/redux-offline#885024de96b6ec73650c340c8928066585c413df",
     "redux-persist": "4.10.2",
@@ -78,6 +79,7 @@
     "rn-fetch-blob": "0.12.0",
     "rn-placeholder": "github:mattermost/rn-placeholder#02c629c65d0123a2eee623ada0fd17186415d3c3",
     "semver": "7.1.3",
+    "serialize-error": "5.0.0",
     "shallow-equals": "1.0.0",
     "tinycolor2": "1.4.1",
     "url-parse": "1.4.7"

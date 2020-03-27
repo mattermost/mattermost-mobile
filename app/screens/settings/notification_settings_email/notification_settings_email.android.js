@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 
-import {Preferences} from 'mattermost-redux/constants';
+import {Preferences} from '@redux/constants';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';

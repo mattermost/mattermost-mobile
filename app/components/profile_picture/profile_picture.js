@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Image, Platform, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@redux/client';
 
 import UserStatus from 'app/components/user_status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';

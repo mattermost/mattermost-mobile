@@ -23,7 +23,7 @@ import PushNotifications from 'app/push_notifications';
 import networkConnectionListener, {checkConnection} from 'app/utils/network';
 import {t} from 'app/utils/i18n';
 
-import {RequestStatus} from 'mattermost-redux/constants';
+import {RequestStatus} from '@redux/constants';
 
 const HEIGHT = 38;
 const MAX_WEBSOCKET_RETRIES = 3;

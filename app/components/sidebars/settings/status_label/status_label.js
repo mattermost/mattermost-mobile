@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@redux/constants';
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';

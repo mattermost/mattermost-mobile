@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {purgeOfflineStore} from 'app/actions/views/root';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@redux/selectors/entities/preferences';
 import {isLandscape} from 'app/selectors/device';
 import AdvancedSettings from './advanced_settings';
 

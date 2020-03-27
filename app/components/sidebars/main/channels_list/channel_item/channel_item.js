@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@redux/constants';
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';

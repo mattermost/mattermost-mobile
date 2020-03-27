@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Dimensions, Platform, View} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@redux/utils/event_emitter';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';

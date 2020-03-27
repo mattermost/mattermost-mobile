@@ -4,12 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getMyPreferences, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+import {getCurrentUser, getStatusForUserId} from '@redux/selectors/entities/users';
+import {getConfig} from '@redux/selectors/entities/general';
+import {getMyPreferences, getTheme} from '@redux/selectors/entities/preferences';
+import {isMinimumServerVersion} from '@redux/utils/helpers';
 import {isLandscape} from 'app/selectors/device';
-import {updateMe} from 'mattermost-redux/actions/users';
+import {updateMe} from '@redux/actions/users';
 
 import NotificationSettings from './notification_settings';
 

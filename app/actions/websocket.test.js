@@ -8,16 +8,16 @@ import {batchActions} from 'redux-batched-actions';
 import thunk from 'redux-thunk';
 import configureMockStore from 'redux-mock-store';
 
-import {ChannelTypes, GeneralTypes, RoleTypes, TeamTypes, UserTypes} from 'mattermost-redux/action_types';
-import * as ChannelActions from 'mattermost-redux/actions/channels';
-import * as PostActions from 'mattermost-redux/actions/posts';
-import * as PreferenceActions from 'mattermost-redux/actions/preferences';
-import * as TeamActions from 'mattermost-redux/actions/teams';
-import * as UserActions from 'mattermost-redux/actions/users';
-import {Client4} from 'mattermost-redux/client';
-import {General, Posts, RequestStatus} from 'mattermost-redux/constants';
-import * as PostSelectors from 'mattermost-redux/selectors/entities/posts';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {ChannelTypes, GeneralTypes, RoleTypes, TeamTypes, UserTypes} from '@redux/action_types';
+import * as ChannelActions from '@redux/actions/channels';
+import * as PostActions from '@redux/actions/posts';
+import * as PreferenceActions from '@redux/actions/preferences';
+import * as TeamActions from '@redux/actions/teams';
+import * as UserActions from '@redux/actions/users';
+import {Client4} from '@redux/client';
+import {General, Posts, RequestStatus} from '@redux/constants';
+import * as PostSelectors from '@redux/selectors/entities/posts';
+import EventEmitter from '@redux/utils/event_emitter';
 
 import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';

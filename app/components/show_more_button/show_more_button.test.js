@@ -5,7 +5,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import LinearGradient from 'react-native-linear-gradient';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@redux/constants/preferences';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import ShowMoreButton from './index';
