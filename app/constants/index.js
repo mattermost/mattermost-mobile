@@ -5,7 +5,9 @@ import DeepLinkTypes from './deep_linking';
 import DeviceTypes from './device';
 import ListTypes from './list';
 import NavigationTypes from './navigation';
+import Types from './types';
 import ViewTypes, {UpgradeTypes} from './view';
+import WebsocketEvents from './websocket';
 
 export {
     DeepLinkTypes,
@@ -13,5 +15,7 @@ export {
     ListTypes,
     NavigationTypes,
     UpgradeTypes,
+    Types,
     ViewTypes,
+    WebsocketEvents,
 };

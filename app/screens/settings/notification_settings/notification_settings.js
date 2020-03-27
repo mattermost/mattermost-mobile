@@ -19,7 +19,7 @@ import NotificationPreferences from 'app/notification_preferences';
 import SettingsItem from 'app/screens/settings/settings_item';
 import {getNotificationProps} from 'app/utils/notify_props';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {goToScreen} from 'app/actions/navigation';
 
@@ -28,7 +28,6 @@ export default class NotificationSettings extends PureComponent {
         actions: PropTypes.shape({
             updateMe: PropTypes.func.isRequired,
         }),
-        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         updateMeRequest: PropTypes.object.isRequired,
@@ -42,10 +41,6 @@ export default class NotificationSettings extends PureComponent {
     };
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
         const {updateMeRequest} = nextProps;
         const {intl} = this.context;
         if (this.props.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {

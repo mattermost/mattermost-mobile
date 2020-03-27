@@ -3,14 +3,14 @@
 
 /* eslint-disable no-console */
 
-var fs = require('fs');
+const fs = require('fs');
 
 // Takes the files in rootA/path, overwrites or merges them with the corresponding file in rootB/path, and places the
 // resulting file in dest/path. JSON files that exist in both places are shallowly (TODO maybe deeply) merged and all
 // other types of files are overwritten.
 function leftMergeDirs(rootA, rootB, dest, path) {
-    var pathA = rootA + path;
-    var pathB = rootB + path;
+    const pathA = rootA + path;
+    const pathB = rootB + path;
 
     try {
         fs.mkdirSync(dest + path);
@@ -22,11 +22,11 @@ function leftMergeDirs(rootA, rootB, dest, path) {
         }
     }
 
-    for (var file of fs.readdirSync(pathA)) {
-        var filePathA = pathA + file;
-        var filePathB = pathB + file;
+    for (const file of fs.readdirSync(pathA)) {
+        const filePathA = pathA + file;
+        const filePathB = pathB + file;
 
-        var stat;
+        let stat;
         try {
             stat = fs.statSync(filePathA);
         } catch (e) {
@@ -37,7 +37,7 @@ function leftMergeDirs(rootA, rootB, dest, path) {
         if (stat.isDirectory()) {
             leftMergeDirs(rootA, rootB, dest, path + file + '/');
         } else {
-            var fileA;
+            let fileA;
             try {
                 fileA = fs.readFileSync(filePathA);
             } catch (e) {
@@ -45,8 +45,8 @@ function leftMergeDirs(rootA, rootB, dest, path) {
                 throw e;
             }
 
-            var outPath = dest + path + file;
-            var out;
+            const outPath = dest + path + file;
+            let out;
             try {
                 out = fs.createWriteStream(outPath);
             } catch (e) {
@@ -54,7 +54,7 @@ function leftMergeDirs(rootA, rootB, dest, path) {
                 throw e;
             }
 
-            var fileB = null;
+            let fileB = null;
             try {
                 fileB = fs.readFileSync(filePathB);
             } catch (e) {
@@ -64,8 +64,8 @@ function leftMergeDirs(rootA, rootB, dest, path) {
             if (fileB) {
                 if (file.endsWith('.json')) {
                     // We need to merge these files
-                    var objA = JSON.parse(fileA);
-                    var objB = JSON.parse(fileB);
+                    const objA = JSON.parse(fileA);
+                    const objB = JSON.parse(fileB);
 
                     console.log('Merging ' + filePathA + ' with ' + filePathB + ' into ' + outPath);
                     out.write(JSON.stringify(Object.assign({}, objA, objB)));

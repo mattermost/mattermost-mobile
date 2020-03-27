@@ -25,7 +25,7 @@ import TeamIcon from 'app/components/team_icon';
 import {NavigationTypes} from 'app/constants';
 import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
 const TEAMS_PER_PAGE = 50;
@@ -39,7 +39,6 @@ export default class SelectTeam extends PureComponent {
             addUserToTeam: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
         }).isRequired,
-        componentId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         currentUserIsGuest: PropTypes.bool.isRequired,
         currentUserId: PropTypes.string.isRequired,
@@ -74,10 +73,6 @@ export default class SelectTeam extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
-
         if (this.props.teams !== nextProps.teams) {
             this.buildData(nextProps);
         }
@@ -299,7 +294,6 @@ export default class SelectTeam extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         headingContainer: {

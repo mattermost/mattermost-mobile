@@ -14,6 +14,7 @@ import * as NavigationActions from 'app/actions/navigation';
 jest.unmock('app/actions/navigation');
 jest.mock('app/store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
+    clearNavigationComponents: jest.fn(),
 }));
 
 describe('app/actions/navigation', () => {
@@ -272,6 +273,7 @@ describe('app/actions/navigation', () => {
         const showModalOverCurrentContextOptions = {
             modalPresentationStyle: 'overCurrentContext',
             layout: {
+                backgroundColor: 'transparent',
                 componentBackgroundColor: 'transparent',
             },
             topBar: {
@@ -442,6 +444,10 @@ describe('app/actions/navigation', () => {
         const showOverlay = jest.spyOn(Navigation, 'showOverlay');
 
         const defaultOptions = {
+            layout: {
+                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
+            },
             overlay: {
                 interceptTouchOutside: false,
             },

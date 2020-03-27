@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 // Credit to http://semplicewebsites.com/removing-accents-javascript
 
-var latinMap = {
+const latinMap = {
     Á: 'A', // LATIN CAPITAL LETTER A WITH ACUTE
     Ă: 'A', // LATIN CAPITAL LETTER A WITH BREVE
     Ắ: 'A', // LATIN CAPITAL LETTER A WITH BREVE AND ACUTE

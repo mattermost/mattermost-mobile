@@ -3,6 +3,8 @@
 
 import React from 'react';
 import {Platform} from 'react-native';
+import {ThemeProvider} from 'react-native-elements';
+
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
@@ -16,9 +18,11 @@ export function registerScreens(store, Provider) {
 
     const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
         <Provider store={store}>
-            <Root>
-                <Comp {...props}/>
-            </Root>
+            <ThemeProvider>
+                <Root>
+                    <Comp {...props}/>
+                </Root>
+            </ThemeProvider>
         </Provider>
     );
 
@@ -61,7 +65,6 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('PostOptions', () => gestureHandlerRootHOC(wrapper(require('app/screens/post_options').default)), () => require('app/screens/post_options').default);
     Navigation.registerComponent('ReactionList', () => gestureHandlerRootHOC(wrapper(require('app/screens/reaction_list').default)), () => require('app/screens/reaction_list').default);
     Navigation.registerComponent('RecentMentions', () => wrapper(require('app/screens/recent_mentions').default), () => require('app/screens/recent_mentions').default);
-    Navigation.registerComponent('Root', () => wrapper(Root), () => Root);
     Navigation.registerComponent('Search', () => wrapper(require('app/screens/search').default), () => require('app/screens/search').default);
     Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
     Navigation.registerComponent('SelectServer', () => wrapper(require('app/screens/select_server').default), () => require('app/screens/select_server').default);

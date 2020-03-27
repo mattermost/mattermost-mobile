@@ -142,7 +142,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             width: '100%',
-            zIndex: 10,
+            ...Platform.select({
+                android: {
+                    elevation: 10,
+                },
+                ios: {
+                    zIndex: 10,
+                },
+            }),
         },
     };
 });

@@ -27,7 +27,6 @@ import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -94,16 +93,11 @@ export default class MoreDirectMessages extends PureComponent {
         this.mounted = false;
     }
 
-    componentDidUpdate(prevProps) {
-        const {componentId, theme} = this.props;
+    componentDidUpdate() {
         const {selectedCount, startingConversation} = this.state;
         const canStart = selectedCount > 0 && !startingConversation;
 
         this.updateNavigationButtons(canStart);
-
-        if (theme !== prevProps.theme) {
-            setNavigatorStyles(componentId, theme);
-        }
     }
 
     navigationButtonPressed({buttonId}) {
@@ -430,11 +424,6 @@ export default class MoreDirectMessages extends PureComponent {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             color: theme.centerChannelColor,
             fontSize: 15,
-            ...Platform.select({
-                android: {
-                    marginBottom: -5,
-                },
-            }),
         };
 
         let data;
@@ -514,6 +503,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         searchBar: {
             marginVertical: 5,
+            height: 38,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
         },
         loadingContainer: {
             alignItems: 'center',

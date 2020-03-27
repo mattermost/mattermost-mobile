@@ -7,11 +7,9 @@ import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
 import {getNotificationProps} from 'app/utils/notify_props';
-import {setNavigatorStyles} from 'app/utils/theme';
 
 export default class NotificationSettingsMentionsBase extends PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         currentUser: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         onBack: PropTypes.func.isRequired,
@@ -34,12 +32,6 @@ export default class NotificationSettingsMentionsBase extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
     }
 
     componentDidDisappear() {

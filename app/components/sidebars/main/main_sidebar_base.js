@@ -10,11 +10,11 @@ import {
     View,
 } from 'react-native';
 
-import {General, WebsocketEvents} from 'mattermost-redux/constants';
+import {General} from 'mattermost-redux/constants';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
 import SafeAreaView from 'app/components/safe_area_view';
-import {NavigationTypes} from 'app/constants';
+import {NavigationTypes, WebsocketEvents} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
 

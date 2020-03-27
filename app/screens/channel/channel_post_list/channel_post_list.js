@@ -184,7 +184,7 @@ export default class ChannelPostList extends PureComponent {
                 <PostList
                     postIds={postIds}
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
-                    extraData={postIds.length === 0}
+                    extraData={postIds.length !== 0}
                     onLoadMoreUp={this.loadMorePostsTop}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}

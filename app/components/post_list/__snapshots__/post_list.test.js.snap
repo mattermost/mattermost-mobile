@@ -24,18 +24,19 @@ exports[`PostList setting channel deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={7}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
+  listKey="recyclerFor-channel-id"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={10}
+  maxToRenderPerBatch={5}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -55,7 +56,7 @@ exports[`PostList setting channel deep link 1`] = `
       tintColor="#3d3c40"
     />
   }
-  removeClippedSubviews={true}
+  removeClippedSubviews={false}
   renderItem={[Function]}
   scrollEventThrottle={60}
   style={
@@ -64,7 +65,7 @@ exports[`PostList setting channel deep link 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={50}
+  windowSize={11}
 />
 `;
 
@@ -92,18 +93,19 @@ exports[`PostList setting permalink deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={7}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
+  listKey="recyclerFor-channel-id"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={10}
+  maxToRenderPerBatch={5}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -123,7 +125,7 @@ exports[`PostList setting permalink deep link 1`] = `
       tintColor="#3d3c40"
     />
   }
-  removeClippedSubviews={true}
+  removeClippedSubviews={false}
   renderItem={[Function]}
   scrollEventThrottle={60}
   style={
@@ -132,7 +134,7 @@ exports[`PostList setting permalink deep link 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={50}
+  windowSize={11}
 />
 `;
 
@@ -160,18 +162,19 @@ exports[`PostList should match snapshot 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={7}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
+  listKey="recyclerFor-channel-id"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={10}
+  maxToRenderPerBatch={5}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -191,7 +194,7 @@ exports[`PostList should match snapshot 1`] = `
       tintColor="#3d3c40"
     />
   }
-  removeClippedSubviews={true}
+  removeClippedSubviews={false}
   renderItem={[Function]}
   scrollEventThrottle={60}
   style={
@@ -200,6 +203,6 @@ exports[`PostList should match snapshot 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={50}
+  windowSize={11}
 />
 `;

@@ -12,26 +12,11 @@ import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general
 import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
-import {ViewTypes} from 'app/constants';
 import {setAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
 import {getDeviceTimezoneAsync} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {loadConfigAndLicense} from 'app/actions/views/root';
-
-export function handleLoginIdChanged(loginId) {
-    return {
-        type: ViewTypes.LOGIN_ID_CHANGED,
-        loginId,
-    };
-}
-
-export function handlePasswordChanged(password) {
-    return {
-        type: ViewTypes.PASSWORD_CHANGED,
-        password,
-    };
-}
 
 export function handleSuccessfulLogin() {
     return async (dispatch, getState) => {
@@ -122,8 +107,6 @@ export function scheduleExpiredNotification(intl) {
 }
 
 export default {
-    handleLoginIdChanged,
-    handlePasswordChanged,
     handleSuccessfulLogin,
     scheduleExpiredNotification,
 };

@@ -8,7 +8,6 @@ import channel from './channel';
 import clientUpgrade from './client_upgrade';
 import extension from './extension';
 import i18n from './i18n';
-import login from './login';
 import recentEmojis from './recent_emojis';
 import root from './root';
 import search from './search';
@@ -25,7 +24,6 @@ export default combineReducers({
     clientUpgrade,
     extension,
     i18n,
-    login,
     recentEmojis,
     root,
     search,

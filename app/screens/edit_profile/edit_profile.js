@@ -585,7 +585,6 @@ export default class EditProfile extends PureComponent {
                 <KeyboardAwareScrollView
                     bounces={false}
                     innerRef={this.scrollViewRef}
-                    style={style.container}
                 >
                     {displayError}
                     <View style={[style.scrollView]}>
@@ -613,9 +612,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
             flex: 1,
-        },
-        container: {
-            backgroundColor: theme.centerChannelBg,
         },
         scrollView: {
             flex: 1,

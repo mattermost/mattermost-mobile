@@ -12,6 +12,10 @@ import {
 } from 'app/init/fetch';
 
 describe('Fetch', () => {
+    beforeAll(() => {
+        global.fetch = jest.fn(() => Promise.resolve());
+    });
+
     test('doFetchWithResponse handles empty headers', async () => {
         const setToken = jest.spyOn(Client4, 'setToken');
         const response = {

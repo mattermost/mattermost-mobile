@@ -169,7 +169,6 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     connected = () => {
-        this.props.actions.setChannelRetryFailed(false);
         Animated.sequence([
             Animated.timing(
                 this.backgroundColor, {
@@ -302,7 +301,7 @@ export default class NetworkIndicator extends PureComponent {
             certificate = await mattermostBucket.getPreference('cert');
         }
 
-        initWebSocket(platform, null, null, null, {certificate, forceConnection: true}).catch(() => {
+        initWebSocket({certificate, forceConnection: true}).catch(() => {
             // we should dispatch a failure and show the app as disconnected
             Alert.alert(
                 formatMessage({id: 'mobile.authentication_error.title', defaultMessage: 'Authentication Error'}),
@@ -394,7 +393,10 @@ export default class NetworkIndicator extends PureComponent {
         }
 
         return (
-            <Animated.View style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.state.opacity}]}>
+            <Animated.View
+                pointerEvents='none'
+                style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.state.opacity}]}
+            >
                 <Animated.View style={styles.wrapper}>
                     <FormattedText
                         defaultMessage={defaultMessage}
@@ -412,8 +414,15 @@ const styles = StyleSheet.create({
     container: {
         height: HEIGHT,
         width: '100%',
-        zIndex: 9,
         position: 'absolute',
+        ...Platform.select({
+            android: {
+                elevation: 9,
+            },
+            ios: {
+                zIndex: 9,
+            },
+        }),
     },
     wrapper: {
         alignItems: 'center',

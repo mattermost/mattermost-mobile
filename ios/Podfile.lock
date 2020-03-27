@@ -21,7 +21,7 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.5)
-  - jail-monkey (2.3.1):
+  - jail-monkey (2.3.2):
     - React
   - libwebp (1.1.0):
     - libwebp/demux (= 1.1.0)
@@ -32,9 +32,9 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
-  - Permission-Camera (2.0.9):
+  - Permission-Camera (2.0.10):
     - RNPermissions
-  - Permission-PhotoLibrary (2.0.9):
+  - Permission-PhotoLibrary (2.0.10):
     - RNPermissions
   - RCTRequired (0.61.5)
   - RCTTypeSafety (0.61.5):
@@ -202,17 +202,15 @@ PODS:
     - React-cxxreact (= 0.61.5)
     - React-jsi (= 0.61.5)
   - React-jsinspector (0.61.5)
-  - react-native-cameraroll (1.3.0):
+  - react-native-cameraroll (1.4.1):
     - React
   - react-native-cookies (3.2.0):
     - React
-  - react-native-document-picker (3.2.4):
+  - react-native-document-picker (3.3.0):
     - React
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (2.0.0):
-    - React
-  - react-native-local-auth (1.5.0):
+  - react-native-image-picker (2.3.1):
     - React
   - react-native-netinfo (4.4.0):
     - React
@@ -268,43 +266,43 @@ PODS:
     - React
   - ReactNativeKeyboardTrackingView (5.6.1):
     - React
-  - ReactNativeNavigation (6.1.1):
+  - ReactNativeNavigation (6.3.0):
     - React
     - React-RCTImage
     - React-RCTText
   - rn-fetch-blob (0.12.0):
     - React-Core
-  - RNCAsyncStorage (1.7.1):
+  - RNCAsyncStorage (1.8.1):
     - React
   - RNDeviceInfo (2.1.2):
     - React
-  - RNFastImage (7.0.2):
+  - RNFastImage (8.1.5):
     - React
     - SDWebImage (~> 5.0)
-    - SDWebImageWebPCoder (~> 0.2.3)
-  - RNGestureHandler (1.5.3):
+    - SDWebImageWebPCoder (~> 0.4.1)
+  - RNGestureHandler (1.6.0):
     - React
   - RNKeychain (4.0.5):
     - React
-  - RNPermissions (2.0.9):
+  - RNPermissions (2.0.10):
     - React
   - RNReactNativeDocViewer (1.0.0):
     - React
-  - RNReactNativeHapticFeedback (1.8.2):
+  - RNReactNativeHapticFeedback (1.9.0):
     - React
-  - RNSentry (1.2.1):
+  - RNSentry (1.3.3):
     - React
     - Sentry (~> 4.4.0)
-  - RNSVG (10.1.0):
+  - RNSVG (12.0.3):
     - React
   - RNVectorIcons (6.6.0):
     - React
-  - SDWebImage (5.4.2):
-    - SDWebImage/Core (= 5.4.2)
-  - SDWebImage/Core (5.4.2)
-  - SDWebImageWebPCoder (0.2.5):
+  - SDWebImage (5.6.1):
+    - SDWebImage/Core (= 5.6.1)
+  - SDWebImage/Core (5.6.1)
+  - SDWebImageWebPCoder (0.4.1):
     - libwebp (~> 1.0)
-    - SDWebImage/Core (~> 5.0)
+    - SDWebImage/Core (~> 5.5)
   - Sentry (4.4.3):
     - Sentry/Core (= 4.4.3)
   - Sentry/Core (4.4.3)
@@ -340,7 +338,6 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
-  - react-native-local-auth (from `../node_modules/react-native-local-auth`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-passcode-status (from `../node_modules/react-native-passcode-status`)
@@ -437,8 +434,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
-  react-native-local-auth:
-    :path: "../node_modules/react-native-local-auth"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-notifications:
@@ -512,10 +507,10 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: 118d0d177724c2d67f08a59136eb29ef5943ec75
   Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
-  jail-monkey: 8eb1b5d4ab5f2a55937dd123e6450cbbff0c8032
+  jail-monkey: d7c5048b2336f22ee9c9e0efa145f1f917338ea9
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
-  Permission-Camera: b0fec577b27488314a885f9c74433e02f3585b9b
-  Permission-PhotoLibrary: 51718ddf8c0baf1cebf323c68cedcb2ff0cf304a
+  Permission-Camera: 8f0e5decca5f28f70f28a8dc31f012c9bad40ad8
+  Permission-PhotoLibrary: b209bf23b784c9e1409a57d81c6d11ab1d3079c1
   RCTRequired: b153add4da6e7dbc44aebf93f3cf4fcae392ddf1
   RCTTypeSafety: 9aa1b91d7f9310fc6eadc3cf95126ffe818af320
   RCTYouTube: 5e94bfa005371c41d307f3f93c51b3e8eabfb0c8
@@ -526,12 +521,11 @@ SPEC CHECKSUMS:
   React-jsi: cb2cd74d7ccf4cffb071a46833613edc79cdf8f7
   React-jsiexecutor: d5525f9ed5f782fdbacb64b9b01a43a9323d2386
   React-jsinspector: fa0ecc501688c3c4c34f28834a76302233e29dc0
-  react-native-cameraroll: ad20f5a93c25cb83a76455df57a2c62fbb63aaed
+  react-native-cameraroll: 035c425c733acd3333e6c673db5ab66a559ca2e0
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
-  react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
+  react-native-document-picker: 0573c02d742d4bef38a5d16b5f039754cfa69888
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: ba7fe85b3373ff33d4827210d989dfcbbd68f7f9
-  react-native-local-auth: 5081a70211643de74bb207e007401a0c81b37a20
+  react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
@@ -550,21 +544,21 @@ SPEC CHECKSUMS:
   ReactCommon: 198c7c8d3591f975e5431bec1b0b3b581aa1c5dd
   ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
   ReactNativeKeyboardTrackingView: a240a6a0dba852bb107109a7ec7e98b884055977
-  ReactNativeNavigation: 8f781c932c53011889d4952c90589e22d982dbb3
+  ReactNativeNavigation: 4f06df65c965c1e96f29c5cc907f22a186ead8e3
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
-  RNCAsyncStorage: 8539fc80a0075fcc9c8e2dff84cd22dc5bf1dacf
+  RNCAsyncStorage: 00bdf63f7f1e0f11d3323533dba4f222e58bf092
   RNDeviceInfo: fd8296de6fca8b743cdc499b896f48e8a9f1faf5
-  RNFastImage: 9b0c22643872bb7494c8d87bbbb66cc4c0d9e7a2
-  RNGestureHandler: 02905abe54e1f6e59c081a10b4bd689721e17aa6
+  RNFastImage: 35ae972d6727c84ee3f5c6897e07f84d0a3445e9
+  RNGestureHandler: dde546180bf24af0b5f737c8ad04b6f3fa51609a
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
-  RNPermissions: 6db7e0a4d94c9c02390d11020b1d3d187aaf77e5
+  RNPermissions: 8afd37dbc1be65748363c6a90caffd1806567651
   RNReactNativeDocViewer: 571c6ac38483531b8fb521d02a6ba54652ed10a7
-  RNReactNativeHapticFeedback: e11a4da0ce174e9f88b03cbaf5d76d94633cdee2
-  RNSentry: 9b1d983b2d5d1c215ba6490348fd2a4cc23a8a9d
-  RNSVG: 069864be08c9fe065a2cf7e63656a34c78653c99
+  RNReactNativeHapticFeedback: 2566b468cc8d0e7bb2f84b23adc0f4614594d071
+  RNSentry: 86baf0c87120cd5eb491d073989f8cbc1a2174c6
+  RNSVG: 7e16ddfc6e00d5aa69c9eb83e699bcce5dcb85d4
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
-  SDWebImage: 4ca2dc4eefae4224bea8f504251cda485a363745
-  SDWebImageWebPCoder: 947093edd1349d820c40afbd9f42acb6cdecd987
+  SDWebImage: 7edb9c3ea661e77a66661f7f044de8c1b55d1120
+  SDWebImageWebPCoder: 36f8f47bd9879a8aea6044765c1351120fd8e3a8
   Sentry: 14bdd673870e8cf64932b149fad5bbbf39a9b390
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f

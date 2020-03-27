@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
@@ -12,7 +12,6 @@ import InteractiveDialogController from 'app/components/interactive_dialog_contr
 import NetworkIndicator from 'app/components/network_indicator';
 import PostTextbox from 'app/components/post_textbox';
 import {NavigationTypes} from 'app/constants';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import LocalConfig from 'assets/config';
 
@@ -39,10 +38,8 @@ export default class ChannelAndroid extends ChannelBase {
             return channelLoadingOrFailed;
         }
 
-        const style = getStyleFromTheme(theme);
         const drawerContent = (
             <>
-                <NetworkIndicator/>
                 <ChannelNavBar
                     openMainSidebar={this.openMainSidebar}
                     openSettingsSidebar={this.openSettingsSidebar}
@@ -57,13 +54,14 @@ export default class ChannelAndroid extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
+                <NetworkIndicator/>
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>
         );
 
         return (
             <>
-                <View style={style.backdrop}>
+                <View style={style.flex}>
                     {drawerContent}
                 </View>
                 <InteractiveDialogController
@@ -74,14 +72,8 @@ export default class ChannelAndroid extends ChannelBase {
     }
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        backdrop: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-        },
-        flex: {
-            flex: 1,
-        },
-    };
+const style = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
 });

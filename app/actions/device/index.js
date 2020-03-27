@@ -2,16 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {networkStatusChangedAction} from 'redux-offline';
+import {batchActions} from 'redux-batched-actions';
 
 import {DeviceTypes} from 'app/constants';
 
 export function connection(isOnline) {
-    return async (dispatch) => {
-        dispatch(networkStatusChangedAction(isOnline));
-        dispatch({
-            type: DeviceTypes.CONNECTION_CHANGED,
-            data: isOnline,
-        });
+    return async (dispatch, getState) => {
+        const state = getState();
+        if (isOnline !== undefined && isOnline !== state.device.connection) { //eslint-disable-line no-undefined
+            dispatch(batchActions([
+                networkStatusChangedAction(isOnline), {
+                    type: DeviceTypes.CONNECTION_CHANGED,
+                    data: isOnline,
+                },
+            ], 'BATCH_CONNECTION_CHANGED'));
+        }
     };
 }
 

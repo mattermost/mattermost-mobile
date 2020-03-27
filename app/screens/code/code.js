@@ -17,26 +17,18 @@ import {getCodeFont} from 'app/utils/markdown';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {popTopScreen} from 'app/actions/navigation';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
-        componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
     };
 
     componentDidMount() {
         BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
     }
 
     componentWillUnmount() {

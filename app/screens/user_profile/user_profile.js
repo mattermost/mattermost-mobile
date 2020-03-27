@@ -23,7 +23,7 @@ import StatusBar from 'app/components/status_bar';
 import {BotTag, GuestTag} from 'app/components/tag';
 
 import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme, setNavigatorStyles} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {isGuest} from 'app/utils/users';
 
@@ -31,7 +31,6 @@ import {
     goToScreen,
     popToRoot,
     dismissModal,
-    dismissAllModals,
     setButtons,
 } from 'app/actions/navigation';
 
@@ -83,12 +82,6 @@ export default class UserProfile extends PureComponent {
         }
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.theme !== prevProps.theme) {
-            setNavigatorStyles(this.props.componentId, this.props.theme);
-        }
-    }
-
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
@@ -116,7 +109,6 @@ export default class UserProfile extends PureComponent {
             return;
         }
 
-        await dismissAllModals();
         await popToRoot();
     };
 
@@ -225,7 +217,7 @@ export default class UserProfile extends PureComponent {
         const email = this.props.user.email;
 
         return () => {
-            var hydrated = link.replace(/{email}/, email);
+            let hydrated = link.replace(/{email}/, email);
             hydrated = hydrated.replace(/{username}/, username);
             Linking.openURL(hydrated);
         };
@@ -252,7 +244,7 @@ export default class UserProfile extends PureComponent {
         const profileLinks = Config.ExperimentalProfileLinks;
 
         const additionalOptions = profileLinks.map((l) => {
-            var action;
+            let action;
             if (l.type === 'link') {
                 action = this.handleLinkPress(l.url);
             }
