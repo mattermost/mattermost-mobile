@@ -20,17 +20,6 @@ export function isFavoriteChannel(preferences, channelId) {
     return fav ? fav.value === 'true' : false;
 }
 
-// New to replace the ones above
-export function isDirectMessageVisible(preferences, channelId) {
-    const dm = preferences[`${Preferences.CATEGORY_DIRECT_CHANNEL_SHOW}--${channelId}`];
-    return dm ? dm.value === 'true' : true;
-}
-
-export function isGroupMessageVisible(preferences, channelId) {
-    const gm = preferences[`${Preferences.CATEGORY_GROUP_CHANNEL_SHOW}--${channelId}`];
-    return gm ? gm.value === 'true' : true;
-}
-
 export function isDirectChannelAutoClosed(config, preferences, channelId, channelActivity, channelArchiveTime = 0, currentChannelId = '') {
     // When the config is not set or is a favorite channel
     if (config.CloseUnusedDirectMessages !== 'true' || isFavoriteChannel(preferences, channelId)) {

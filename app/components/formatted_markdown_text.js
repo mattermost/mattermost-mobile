@@ -92,7 +92,7 @@ class FormattedMarkdownText extends React.PureComponent {
     }
 
     renderLink = ({children, href}) => {
-        var url = href[0] === TARGET_BLANK_URL_PREFIX ? href.substring(1, href.length) : href;
+        const url = href[0] === TARGET_BLANK_URL_PREFIX ? href.substring(1, href.length) : href;
         return <MarkdownLink href={url}>{children}</MarkdownLink>;
     }
 

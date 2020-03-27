@@ -9,7 +9,7 @@ import Preferences from 'mattermost-redux/constants/preferences';
 import ChannelLoader from './channel_loader';
 
 jest.mock('rn-placeholder', () => ({
-    ImageContent: () => {},
+    ImageContent: () => null,
 }));
 
 describe('ChannelLoader', () => {

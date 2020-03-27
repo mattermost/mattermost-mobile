@@ -211,7 +211,7 @@ describe('Actions.Views.Channel', () => {
         expect(postActions.getPosts).toBeCalled();
 
         const storeActions = store.getActions();
-        const storeBatchActions = storeActions.filter(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const storeBatchActions = storeActions.filter(({type}) => type === 'BATCH_LOAD_POSTS_IN_CHANNEL');
         const receivedPosts = storeActions.find(({type}) => type === MOCK_RECEIVED_POSTS);
         const receivedPostsAtAction = storeBatchActions[0].payload.some((action) => action.type === 'RECEIVED_POSTS_FOR_CHANNEL_AT_TIME');
 
@@ -297,7 +297,7 @@ describe('Actions.Views.Channel', () => {
 
         await store.dispatch(handleSelectChannel(channelId));
         const storeActions = store.getActions();
-        const storeBatchActions = storeActions.find(({type}) => type === 'BATCHING_REDUCER.BATCH');
+        const storeBatchActions = storeActions.find(({type}) => type === 'BATCH_SWITCH_CHANNEL');
         const selectChannelWithMember = storeBatchActions?.payload.find(({type}) => type === ChannelTypes.SELECT_CHANNEL);
         const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
         const readAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_READ);

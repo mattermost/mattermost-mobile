@@ -17,7 +17,13 @@ describe('Actions.Views.Thread', () => {
     let store;
 
     beforeEach(() => {
-        store = mockStore({});
+        store = mockStore({
+            views: {
+                thread: {
+                    drafts: {},
+                },
+            },
+        });
     });
 
     test('handleCommentDraftChanged', () => {
