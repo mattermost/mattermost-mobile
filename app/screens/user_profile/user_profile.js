@@ -12,7 +12,7 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {displayUsername, getFullName} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
@@ -143,7 +143,14 @@ export default class UserProfile extends PureComponent {
         const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
 
-        if (user.hasOwnProperty(property) && user[property].length > 0) {
+        if (property == "fullname" && getFullName(user)) {
+            return (
+                <View>
+                    <Text style={[style.header, padding(isLandscape)]}>NAME</Text>
+                    <Text style={[style.text, padding(isLandscape)]}>{getFullName(user)}</Text>
+                </View>
+            );
+        } else if (user.hasOwnProperty(property) && user[property].length > 0) {
             return (
                 <View>
                     <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase()}</Text>
@@ -287,6 +294,7 @@ export default class UserProfile extends PureComponent {
                 {this.props.enableTimezone && this.buildTimezoneBlock()}
                 {this.buildDisplayBlock('username')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
+                {this.buildDisplayBlock('fullname')}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}
             </View>
