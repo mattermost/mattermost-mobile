@@ -260,4 +260,33 @@ describe('ChannelUtils', () => {
         assert.equal(sortChannelsByDisplayName('en', channelA, channelB), -1);
         assert.equal(sortChannelsByDisplayName('en', channelB, channelA), 1);
     });
+
+    it('isChannelMuted', () => {
+        const mutedChannelMember = {
+            notify_props: {mark_unread: 'mention'},
+        };
+
+        const unmutedChannelMember = {
+            notify_props: {mark_unread: 'all'},
+        };
+
+        assert.equal(true, isChannelMuted(mutedChannelMember));
+        assert.equal(false, isChannelMuted(unmutedChannelMember));
+    });
+
+    it('compareNotifyProps', () => {
+        const baseProps = {
+            desktop: 'default',
+            email: 'all',
+            mark_unread: 'mention',
+            push: 'default',
+            ignore_channel_mentions: 'on',
+        };
+
+        assert.equal(true, compareNotifyProps(baseProps, {...baseProps}));
+        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, desktop: 'all'}));
+        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, email: 'mention'}));
+        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, push: 'none'}));
+        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, ignore_channel_mentions: 'off'}));
+    });
 });

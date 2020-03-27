@@ -4,7 +4,7 @@ import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '../constants';
 import {ChannelTypes, PreferenceTypes, UserTypes} from '@mm-redux/action_types';
 import {savePreferences, deletePreferences} from './preferences';
-import {getChannelsIdForTeam, getChannelByName} from '@mm-redux/utils/channel_utils';
+import {compareNotifyProps, getChannelsIdForTeam, getChannelByName} from '@mm-redux/utils/channel_utils';
 import {
     getChannelsNameMapInTeam,
     getMyChannelMember as getMyChannelMemberSelector,
@@ -377,13 +377,17 @@ export function updateChannelNotifyProps(userId: string, channelId: string, prop
         const member = getState().entities.channels.myMembers[channelId] || {};
         const currentNotifyProps = member.notify_props || {};
 
-        dispatch({
-            type: ChannelTypes.RECEIVED_CHANNEL_PROPS,
-            data: {
-                channel_id: channelId,
-                notifyProps: {...currentNotifyProps, ...notifyProps},
-            },
-        });
+        // This triggers a re-sorting of channel sidebar, so ensure it's called only when
+        // notification settings for a channel actually change.
+        if (!compareNotifyProps(notifyProps, currentNotifyProps)) {
+            dispatch({
+                type: ChannelTypes.RECEIVED_CHANNEL_PROPS,
+                data: {
+                    channel_id: channelId,
+                    notifyProps: {...currentNotifyProps, ...notifyProps},
+                },
+            });
+        }
 
         return {data: true};
     };

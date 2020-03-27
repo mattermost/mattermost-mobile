@@ -644,6 +644,18 @@ export function isChannelMuted(member: ChannelMembership): boolean {
     return member && member.notify_props ? (member.notify_props.mark_unread === 'mention') : false;
 }
 
+export function compareNotifyProps(propsA: Partial<ChannelNotifyProps>, propsB: Partial<ChannelNotifyProps>): boolean {
+    if (propsA.desktop !== propsB.desktop ||
+        propsA.email !== propsB.email ||
+        propsA.mark_unread !== propsB.mark_unread ||
+        propsA.push !== propsB.push ||
+        propsA.ignore_channel_mentions !== propsB.ignore_channel_mentions) {
+        return false;
+    }
+
+    return true;
+}
+
 export function areChannelMentionsIgnored(channelMemberNotifyProps: ChannelNotifyProps, currentUserNotifyProps: UserNotifyProps) {
     let ignoreChannelMentionsDefault = Users.IGNORE_CHANNEL_MENTIONS_OFF;
 
