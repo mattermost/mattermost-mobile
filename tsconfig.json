@@ -5,6 +5,7 @@
             "es6"
         ],
         "allowJs": true,
+        "skipLibCheck": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "isolatedModules": true,
