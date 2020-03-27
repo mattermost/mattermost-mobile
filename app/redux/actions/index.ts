@@ -19,7 +19,6 @@ import * as schemes from './schemes';
 import * as search from './search';
 import * as teams from './teams';
 import * as timezone from './timezone';
-import * as websocket from './websocket';
 import * as users from './users';
 
 export {
@@ -41,7 +40,6 @@ export {
     search,
     teams,
     timezone,
-    websocket,
     users,
 };
 
