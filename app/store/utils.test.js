@@ -85,8 +85,7 @@ describe('getStateForReset', () => {
         const {myPreferences} = resetState.entities.preferences;
         const preferenceKeys = Object.keys(myPreferences);
         const themeKeys = preferenceKeys.filter((key) => key.startsWith('theme--'));
-        expect(themeKeys.length).not.toEqual(0);
-        expect(themeKeys.length).toEqual(preferenceKeys.length);
+        expect(themeKeys.length).toEqual(2);
     });
 
     it('should set previous version as current', () => {

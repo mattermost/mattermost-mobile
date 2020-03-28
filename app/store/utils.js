@@ -76,12 +76,7 @@ export function getStateForReset(initialState, currentState) {
     const {currentUserId} = currentState.entities.users;
     const currentUserProfile = currentState.entities.users.profiles[currentUserId];
     const {currentTeamId} = currentState.entities.teams;
-    const myPreferences = {...currentState.entities.preferences.myPreferences};
-    Object.keys(myPreferences).forEach((key) => {
-        if (!key.startsWith('theme--')) {
-            Reflect.deleteProperty(myPreferences, key);
-        }
-    });
+    const preferences = currentState.entities.preferences;
 
     const resetState = merge(initialState, {
         app: {
@@ -99,9 +94,7 @@ export function getStateForReset(initialState, currentState) {
             teams: {
                 currentTeamId,
             },
-            preferences: {
-                myPreferences,
-            },
+            preferences,
         },
         errors: currentState.errors,
         views: {
