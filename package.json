@@ -113,6 +113,7 @@
     "eslint-plugin-react": "7.19.0",
     "harmony-reflect": "1.6.1",
     "isomorphic-fetch": "2.2.1",
+    "husky": "4.2.3",
     "jest": "25.1.0",
     "jest-cli": "25.1.0",
     "jest-enzyme": "7.1.2",
@@ -136,12 +137,17 @@
     "underscore": "1.9.2",
     "util": "0.12.2"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "sh ./scripts/pre-commit.sh"
+    }
+  },
   "scripts": {
     "start": "node ./node_modules/react-native/local-cli/cli.js start",
     "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . && npm run tsc",
     "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
     "postinstall": "make post-install",
-    "tsc": "tsc --noEmit --skipLibCheck",
+    "tsc": "tsc --noEmit",
     "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
