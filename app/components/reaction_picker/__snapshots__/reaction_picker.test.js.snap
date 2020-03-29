@@ -7,10 +7,10 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
       "alignItems": "center",
       "flex": 1,
       "flexDirection": "row",
-      "height": 64,
+      "height": 72,
       "justifyContent": "space-between",
-      "paddingLeft": 20,
-      "paddingRight": 20,
+      "paddingLeft": 12,
+      "paddingRight": 12,
     }
   }
 >
@@ -24,17 +24,19 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="thumbsup"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -54,17 +56,19 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="smiley"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -84,17 +88,19 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="white_check_mark"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -114,17 +120,19 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="heart"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -144,17 +152,19 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="eyes"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -174,17 +184,19 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="raised_hands"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -199,18 +211,22 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
   >
     <View
       style={
-        Object {
-          "alignItems": "center",
-          "backgroundColor": "rgba(61,60,64,0.04)",
-          "borderRadius": 4,
-          "height": 45,
-          "justifyContent": "center",
-          "width": 45,
-        }
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "justifyContent": "center",
+          },
+          Object {
+            "height": 48,
+            "width": 48,
+          },
+        ]
       }
     >
       <Image
-        height={24}
+        height={32}
         source={
           Object {
             "testUri": "../../../dist/assets/images/icons/reaction.png",
@@ -223,7 +239,7 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
             },
           ]
         }
-        width={28}
+        width={32}
       />
     </View>
   </TouchableWithoutFeedback>
@@ -237,10 +253,10 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
       "alignItems": "center",
       "flex": 1,
       "flexDirection": "row",
-      "height": 64,
+      "height": 72,
       "justifyContent": "space-between",
-      "paddingLeft": 20,
-      "paddingRight": 20,
+      "paddingLeft": 12,
+      "paddingRight": 12,
     }
   }
 >
@@ -254,17 +270,19 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="rocket"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -284,17 +302,19 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="100"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -314,17 +334,19 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="thumbsup"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -344,17 +366,19 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="smiley"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -374,17 +398,19 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="white_check_mark"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -404,17 +430,19 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
             "alignItems": "center",
             "backgroundColor": "rgba(61,60,64,0.04)",
             "borderRadius": 4,
-            "height": 45,
             "justifyContent": "center",
-            "width": 45,
           },
           null,
+          Object {
+            "height": 48,
+            "width": 48,
+          },
         ]
       }
     >
       <Connect(Emoji)
         emojiName="heart"
-        size={25}
+        size={32}
         textStyle={
           Object {
             "color": "#000",
@@ -429,18 +457,22 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
   >
     <View
       style={
-        Object {
-          "alignItems": "center",
-          "backgroundColor": "rgba(61,60,64,0.04)",
-          "borderRadius": 4,
-          "height": 45,
-          "justifyContent": "center",
-          "width": 45,
-        }
+        Array [
+          Object {
+            "alignItems": "center",
+            "backgroundColor": "rgba(61,60,64,0.04)",
+            "borderRadius": 4,
+            "justifyContent": "center",
+          },
+          Object {
+            "height": 48,
+            "width": 48,
+          },
+        ]
       }
     >
       <Image
-        height={24}
+        height={32}
         source={
           Object {
             "testUri": "../../../dist/assets/images/icons/reaction.png",
@@ -453,7 +485,7 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
             },
           ]
         }
-        width={28}
+        width={32}
       />
     </View>
   </TouchableWithoutFeedback>

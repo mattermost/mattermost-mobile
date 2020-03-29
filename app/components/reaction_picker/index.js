@@ -6,13 +6,11 @@ import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import ReactionPicker from './reaction_picker';
 
-function makeMapStateToProps() {
-    return function mapStateToProps(state) {
-        return {
-            theme: getTheme(state),
-            recentEmojis: state.views.recentEmojis,
-        };
+function mapStateToProps(state) {
+    return {
+        theme: getTheme(state),
+        recentEmojis: state.views.recentEmojis,
     };
 }
 
-export default connect(makeMapStateToProps)(ReactionPicker);
+export default connect(mapStateToProps)(ReactionPicker);

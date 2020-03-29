@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Dimensions,
     Image,
     View,
     TouchableWithoutFeedback,
@@ -13,7 +14,15 @@ import Emoji from 'app/components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {hapticFeedback} from 'app/utils/general';
 import addReactionIcon from 'assets/images/icons/reaction.png';
-import {REACTION_PICKER_HEIGHT} from '../../screens/post_options/post_options_utils';
+import {
+    REACTION_PICKER_HEIGHT,
+    DEFAULT_EMOJIS,
+    SMALL_ICON_BREAKPOINT,
+    SMALL_CONTAINER_SIZE,
+    LARGE_CONTAINER_SIZE,
+    SMALL_ICON_SIZE,
+    LARGE_ICON_SIZE,
+} from 'app/constants/reaction_picker';
 
 export default class Reaction extends PureComponent {
     static propTypes = {
@@ -27,25 +36,14 @@ export default class Reaction extends PureComponent {
         super(props);
         this.state = {
             selectedIndex: -1,
-            defaultEmojis: [
-                'thumbsup',
-                'smiley',
-                'white_check_mark',
-                'heart',
-                'eyes',
-                'raised_hands',
-            ],
         };
     }
 
     handlePress = (emoji, index) => {
-        this.setState({
-            selectedIndex: index,
-        });
         hapticFeedback();
-        setTimeout(() => {
+        this.setState({selectedIndex: index}, () => {
             this.props.addReaction(emoji);
-        }, 250);
+        });
     }
 
     render() {
@@ -53,38 +51,63 @@ export default class Reaction extends PureComponent {
             theme,
         } = this.props;
         const style = getStyleSheet(theme);
-        const list = [];
+        const isSmallDevice = Dimensions.get('window').width < SMALL_ICON_BREAKPOINT;
+
+        let containerSize = LARGE_CONTAINER_SIZE;
+        let iconSize = LARGE_ICON_SIZE;
+
+        if (isSmallDevice) {
+            containerSize = SMALL_CONTAINER_SIZE;
+            iconSize = SMALL_ICON_SIZE;
+        }
 
         // Mixing recent emojis with default list and removing duplicates
-        const emojis = Array.from(new Set(this.props.recentEmojis.concat(this.state.defaultEmojis)));
+        const emojis = Array.from(new Set(this.props.recentEmojis.concat(DEFAULT_EMOJIS))).splice(0, 6);
 
-        emojis.forEach((emoji, index) => {
-            if (index < 6) {
-                const button = (
-                    <TouchableWithoutFeedback onPress={() => this.handlePress(emoji, index)}>
-                        <View style={[style.reactionContainer, this.state.selectedIndex === index ? style.highlight : null]}>
-                            <Emoji
-                                emojiName={emoji}
-                                textStyle={style.emoji}
-                                size={25}
-                            />
-                        </View>
-                    </TouchableWithoutFeedback>
-                );
-                list.push(button);
-            }
+        const list = emojis.map((emoji, index) => {
+            return (
+                <TouchableWithoutFeedback
+                    key={emoji}
+                    onPress={() => this.handlePress(emoji, index)}
+                >
+                    <View
+                        style={[
+                            style.reactionContainer,
+                            this.state.selectedIndex === index ? style.highlight : null,
+                            {
+                                width: containerSize,
+                                height: containerSize,
+                            },
+                        ]}
+                    >
+                        <Emoji
+                            emojiName={emoji}
+                            textStyle={style.emoji}
+                            size={iconSize}
+                        />
+                    </View>
+                </TouchableWithoutFeedback>
+            );
         });
 
         return (
             <View style={style.reactionListContainer}>
                 {list}
                 <TouchableWithoutFeedback onPress={this.props.openReactionScreen}>
-                    <View style={style.reactionContainer}>
+                    <View
+                        style={[
+                            style.reactionContainer,
+                            {
+                                width: containerSize,
+                                height: containerSize,
+                            },
+                        ]}
+                    >
                         <Image
                             source={addReactionIcon}
                             style={[style.iconImage]}
-                            height={24}
-                            width={28}
+                            width={iconSize}
+                            height={iconSize}
                         />
                     </View>
                 </TouchableWithoutFeedback>
@@ -109,14 +132,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            paddingLeft: 20,
-            paddingRight: 20,
+            paddingLeft: 12,
+            paddingRight: 12,
             height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
         },
         reactionContainer: {
-            height: 45,
-            width: 45,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
             borderRadius: 4,
             alignItems: 'center',

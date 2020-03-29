@@ -15,7 +15,8 @@ import {t} from 'app/utils/i18n';
 import {showModal, dismissModal} from 'app/actions/navigation';
 
 import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
-import {OPTION_HEIGHT, REACTION_PICKER_HEIGHT, getInitialPosition} from './post_options_utils';
+import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
+import {REACTION_PICKER_HEIGHT} from 'app/constants/reaction_picker';
 import ReactionPicker from '../../components/reaction_picker';
 
 import PostOption from './post_option';
@@ -394,13 +395,26 @@ export default class PostOptions extends PureComponent {
     };
 
     render() {
-        const {deviceHeight, theme} = this.props;
+        const {deviceHeight, theme, canAddReaction} = this.props;
         const options = this.getPostOptions();
+        let reactionHeight = 0;
+        let reactionPicker;
+
         if (!options || !options.length) {
             return null;
         }
 
-        const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT) - REACTION_PICKER_HEIGHT;
+        if (canAddReaction) {
+            reactionHeight = REACTION_PICKER_HEIGHT;
+            reactionPicker = (
+                <ReactionPicker
+                    addReaction={this.handleAddReaction}
+                    openReactionScreen={this.handleAddReactionScreen}
+                />
+            );
+        }
+
+        const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT) - reactionHeight;
         const initialPosition = getInitialPosition(deviceHeight, marginFromTop);
 
         return (
@@ -414,13 +428,7 @@ export default class PostOptions extends PureComponent {
                     key={marginFromTop}
                     theme={theme}
                 >
-                    {
-                        this.props.canAddReaction &&
-                        <ReactionPicker
-                            addReaction={this.handleAddReaction}
-                            openReactionScreen={this.handleAddReactionScreen}
-                        />
-                    }
+                    {reactionPicker}
                     {options}
                 </SlideUpPanel>
             </View>

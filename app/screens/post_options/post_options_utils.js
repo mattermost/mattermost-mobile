@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 export const OPTION_HEIGHT = 50;
-export const REACTION_PICKER_HEIGHT = 64;
 const BOTTOM_HEIGHT = 18;
 export const MAX_INITIAL_POSITION_MULTIPLIER = 0.75;
 
