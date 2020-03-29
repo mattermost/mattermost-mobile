@@ -4,7 +4,7 @@ exports[`ProgressiveImage should match snapshot 1`] = `
 <View
   style={Object {}}
 >
-  <AnimatedComponent
+  <ForwardRef(AnimatedComponentWrapper)
     blurRadius={5}
     onError={[MockFunction]}
     onLoadEnd={[Function]}
@@ -31,7 +31,7 @@ exports[`ProgressiveImage should match snapshot 1`] = `
       ]
     }
   />
-  <AnimatedComponent
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {

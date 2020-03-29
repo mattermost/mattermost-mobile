@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-underscore-dangle */
+
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
@@ -141,7 +143,7 @@ export default class Search extends PureComponent {
 
                 Keyboard.dismiss();
                 if (this.listRef?._wrapperListRef) {
-                    this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+                    this.listRef._wrapperListRef.getListRef().scrollToOffset({
                         animated: true,
                         offset,
                     });
@@ -483,7 +485,7 @@ export default class Search extends PureComponent {
 
     scrollToTop = () => {
         if (this.listRef?._wrapperListRef) {
-            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({
                 animated: false,
                 offset: 0,
             });

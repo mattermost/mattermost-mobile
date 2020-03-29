@@ -138,6 +138,11 @@ export default class MoreDirectMessages extends PureComponent {
     handleSelectProfile = (id) => {
         const {currentUserId} = this.props;
 
+        if (this.state.selectedIds[id]) {
+            this.handleRemoveProfile(id);
+            return;
+        }
+
         if (id === currentUserId) {
             const selectedId = {};
             selectedId[currentUserId] = true;
@@ -471,13 +476,13 @@ export default class MoreDirectMessages extends PureComponent {
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         value={term}
                     />
-                    <SelectedUsers
-                        selectedIds={this.state.selectedIds}
-                        warnCount={5}
-                        maxCount={7}
-                        onRemove={this.handleRemoveProfile}
-                    />
                 </View>
+                <SelectedUsers
+                    selectedIds={this.state.selectedIds}
+                    warnCount={5}
+                    maxCount={7}
+                    onRemove={this.handleRemoveProfile}
+                />
                 <CustomList
                     data={data}
                     extraData={selectedIds}

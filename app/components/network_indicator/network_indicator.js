@@ -174,6 +174,7 @@ export default class NetworkIndicator extends PureComponent {
                 this.backgroundColor, {
                     toValue: 1,
                     duration: 100,
+                    useNativeDriver: false,
                 },
             ),
             Animated.timing(
@@ -181,6 +182,7 @@ export default class NetworkIndicator extends PureComponent {
                     toValue: (this.getNavBarHeight() - HEIGHT),
                     duration: 300,
                     delay: 500,
+                    useNativeDriver: false,
                 },
             ),
         ]).start(() => {
@@ -339,6 +341,7 @@ export default class NetworkIndicator extends PureComponent {
             this.top, {
                 toValue: this.getNavBarHeight(),
                 duration: 300,
+                useNativeDriver: false,
             },
         ).start(() => {
             this.props.actions.setCurrentUserStatusOffline();
