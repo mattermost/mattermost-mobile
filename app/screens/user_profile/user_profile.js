@@ -146,7 +146,7 @@ export default class UserProfile extends PureComponent {
         if (user.hasOwnProperty(property) && user[property].length > 0) {
             return (
                 <View>
-                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase().replace("_", " ")}</Text>
+                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase().replace('_', ' ')}</Text>
                     <Text style={[style.text, padding(isLandscape)]}>{user[property]}</Text>
                 </View>
             );
