@@ -151,6 +151,68 @@ exports[`user_profile should match snapshot 1`] = `
             ]
           }
         >
+          FIRST NAME
+        </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              },
+              null,
+            ]
+          }
+        >
+          test
+        </Text>
+      </View>
+      <View>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": undefined,
+                "fontSize": 13,
+                "fontWeight": "600",
+                "marginBottom": 10,
+                "marginTop": 25,
+              },
+              null,
+            ]
+          }
+        >
+          LAST NAME
+        </Text>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
+              },
+              null,
+            ]
+          }
+        >
+          fake
+        </Text>
+      </View>
+      <View>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": undefined,
+                "fontSize": 13,
+                "fontWeight": "600",
+                "marginBottom": 10,
+                "marginTop": 25,
+              },
+              null,
+            ]
+          }
+        >
           USERNAME
         </Text>
         <Text
