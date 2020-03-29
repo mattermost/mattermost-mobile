@@ -12,7 +12,7 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {displayUsername, getFullName} from 'mattermost-redux/utils/user_utils';
+import {displayUsername} from 'mattermost-redux/utils/user_utils';
 import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
@@ -143,17 +143,10 @@ export default class UserProfile extends PureComponent {
         const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
 
-        if (property == "fullname" && getFullName(user)) {
+        if (user.hasOwnProperty(property) && user[property].length > 0) {
             return (
                 <View>
-                    <Text style={[style.header, padding(isLandscape)]}>NAME</Text>
-                    <Text style={[style.text, padding(isLandscape)]}>{getFullName(user)}</Text>
-                </View>
-            );
-        } else if (user.hasOwnProperty(property) && user[property].length > 0) {
-            return (
-                <View>
-                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase()}</Text>
+                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase().replace("_", " ")}</Text>
                     <Text style={[style.text, padding(isLandscape)]}>{user[property]}</Text>
                 </View>
             );
@@ -292,9 +285,10 @@ export default class UserProfile extends PureComponent {
         return (
             <View style={style.content}>
                 {this.props.enableTimezone && this.buildTimezoneBlock()}
+                {this.buildDisplayBlock('first_name')}
+                {this.buildDisplayBlock('last_name')}
                 {this.buildDisplayBlock('username')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
-                {this.buildDisplayBlock('fullname')}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}
             </View>
