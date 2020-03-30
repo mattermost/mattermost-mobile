@@ -22,9 +22,9 @@ import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels'
 import {removeUserFromList} from 'mattermost-redux/utils/user_utils';
 import {isUnreadChannel} from 'mattermost-redux/utils/channel_utils';
 
-import {getChannelSinceValue} from '@actions/views/channel';
-import {ViewTypes} from 'app/constants';
-import {generateId} from 'app/utils/file';
+import {ViewTypes} from '@constants';
+import {generateId} from '@utils/file';
+import {getChannelSinceValue} from '@utils/channels';
 
 import {getEmojisInPosts} from './emoji';
 

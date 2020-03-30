@@ -3,6 +3,7 @@
 
 import {Preferences} from 'mattermost-redux/constants';
 import {getUserIdFromChannelName} from 'mattermost-redux/utils/channel_utils';
+import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 
 export function isDirectChannelVisible(userId, myPreferences, channel) {
     const channelId = getUserIdFromChannelName(userId, channel.name);
@@ -55,4 +56,23 @@ export function isDirectChannelAutoClosed(config, preferences, channelId, channe
     }
 
     return false;
+}
+
+export function getChannelSinceValue(state, channelId, postIds) {
+    const lastGetPosts = state.views.channel.lastGetPosts[channelId];
+    const lastConnectAt = state.websocket?.lastConnectAt || 0;
+
+    let since;
+    if (lastGetPosts && lastGetPosts < lastConnectAt) {
+        // Since the websocket disconnected, we may have missed some posts since then
+        since = lastGetPosts;
+    } else {
+        // Trust that we've received all posts since the last time the websocket disconnected
+        // so set `since` to the `create_at` of latest one we've received
+        const {posts} = state.entities.posts;
+        const channelPosts = postIds.map((id) => posts[id]);
+        since = getLastCreateAt(channelPosts);
+    }
+
+    return since;
 }

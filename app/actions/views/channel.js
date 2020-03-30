@@ -25,16 +25,15 @@ import {
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
-import {getChannelByName as getChannelByNameSelector} from 'mattermost-redux/utils/channel_utils';
+import {getChannelByName as selectChannelByName} from 'mattermost-redux/utils/channel_utils';
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 
 import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_textbox';
 import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
-import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
+import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 
 const MAX_RETRIES = 3;
@@ -55,25 +54,6 @@ export function loadChannelsByTeamName(teamName, errorHandler) {
     };
 }
 
-export function getChannelSinceValue(state, channelId, postIds) {
-    const lastGetPosts = state.views.channel.lastGetPosts[channelId];
-    const lastConnectAt = state.websocket?.lastConnectAt || 0;
-
-    let since;
-    if (lastGetPosts && lastGetPosts < lastConnectAt) {
-        // Since the websocket disconnected, we may have missed some posts since then
-        since = lastGetPosts;
-    } else {
-        // Trust that we've received all posts since the last time the websocket disconnected
-        // so set `since` to the `create_at` of latest one we've received
-        const {posts} = state.entities.posts;
-        const channelPosts = postIds.map((id) => posts[id]);
-        since = getLastCreateAt(channelPosts);
-    }
-
-    return since;
-}
-
 export function loadPostsIfNecessaryWithRetry(channelId) {
     return async (dispatch, getState) => {
         const state = getState();
@@ -92,7 +72,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             postAction = getPostsSince(channelId, since);
         }
 
-        const received = await retryGetPostsAction(postAction, dispatch);
+        const received = await dispatch(fetchPostActionWithRetry(postAction));
 
         if (received) {
             actions.push({
@@ -113,18 +93,20 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
     };
 }
 
-export async function retryGetPostsAction(action, dispatch, maxTries = MAX_RETRIES) {
-    for (let i = 0; i <= maxTries; i++) {
-        const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
+export function fetchPostActionWithRetry(action, maxTries = MAX_RETRIES) {
+    return async (dispatch) => {
+        for (let i = 0; i <= maxTries; i++) {
+            const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
-        if (data) {
-            return data;
+            if (data) {
+                return data;
+            }
         }
-    }
 
-    dispatch(setChannelRetryFailed(true));
+        dispatch(setChannelRetryFailed(true));
 
-    return null;
+        return null;
+    };
 }
 
 export function loadFilesForPostIfNecessary(postId) {
@@ -214,7 +196,7 @@ export function selectDefaultChannel(teamId) {
         const state = getState();
 
         const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
-        const channel = getChannelByNameSelector(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
+        const channel = selectChannelByName(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
         let channelId;
         if (channel) {
             channelId = channel.id;
@@ -477,7 +459,7 @@ export function closeGMChannel(channel) {
 export function refreshChannelWithRetry(channelId) {
     return async (dispatch) => {
         dispatch(setChannelRefreshing(true));
-        const posts = await retryGetPostsAction(getPosts(channelId), dispatch);
+        const posts = await dispatch(fetchPostActionWithRetry(getPosts(channelId)));
         const actions = [setChannelRefreshing(false)];
 
         if (posts) {
@@ -577,7 +559,8 @@ export function increasePostVisibility(channelId, postId) {
 
         const pageSize = ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
 
-        const result = await retryGetPostsAction(getPostsBefore(channelId, postId, 0, pageSize), dispatch);
+        const postAction = getPostsBefore(channelId, postId, 0, pageSize);
+        const result = await dispatch(fetchPostActionWithRetry(postAction));
 
         const actions = [{
             type: ViewTypes.LOADING_POSTS,
