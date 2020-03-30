@@ -18,6 +18,7 @@ import {
 import {Client4} from 'mattermost-redux/client';
 import {Posts} from 'mattermost-redux/constants';
 import {getPost as selectPost, getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
+import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {removeUserFromList} from 'mattermost-redux/utils/user_utils';
 import {isUnreadChannel} from 'mattermost-redux/utils/channel_utils';
 
@@ -397,6 +398,7 @@ function userMetadataToLoadFromPosts(state, posts = []) {
 export function loadUnreadChannelPosts(channels, channelMembers) {
     return async (dispatch, getState) => {
         const state = getState();
+        const currentChannelId = getCurrentChannelId(state);
 
         const promises = [];
         const promiseTrace = [];
@@ -407,6 +409,10 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
         });
 
         channels.forEach((channel) => {
+            if (channel.id === currentChannelId) {
+                return;
+            }
+
             const isUnread = isUnreadChannel(channelMembersByChannel, channel);
             if (!isUnread) {
                 return;

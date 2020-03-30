@@ -19,8 +19,16 @@ describe('Actions.Views.Post', () => {
     const mockStore = configureStore([thunk]);
 
     let store;
+    const currentChannelId = 'current-channel-id';
     const storeObj = {
         ...initialState,
+        entities: {
+            ...initialState.entities,
+            channels: {
+                ...initialState.entities.channels,
+                currentChannelId,
+            },
+        },
     };
 
     const channels = [
@@ -32,9 +40,21 @@ describe('Actions.Views.Post', () => {
 
     test('loadUnreadChannelPosts does not dispatch actions if no unread channels', async () => {
         ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(false);
-        store = mockStore(storeObj);
 
+        store = mockStore(storeObj);
         await store.dispatch(loadUnreadChannelPosts(channels, channelMembers));
+
+        const storeActions = store.getActions();
+        expect(storeActions).toStrictEqual([]);
+    });
+
+    test('loadUnreadChannelPosts does not dispatch actions for current channel', async () => {
+        ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(true);
+        Client4.getPosts = jest.fn().mockResolvedValue({posts: ['post-1', 'post-2']});
+
+        store = mockStore(storeObj);
+        await store.dispatch(loadUnreadChannelPosts([{id: currentChannelId}], channelMembers));
+
         const storeActions = store.getActions();
         expect(storeActions).toStrictEqual([]);
     });
