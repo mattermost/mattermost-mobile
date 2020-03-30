@@ -194,7 +194,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         JSONObject json = new JSONObject();
         try {
             json.put("user_id", data.getString("currentUserId"));
-            if (data.hasKey("channel_id")) {
+            if (data.hasKey("channelId")) {
                 json.put("channel_id", data.getString("channelId"));
             }
             if (data.hasKey("value")) {
