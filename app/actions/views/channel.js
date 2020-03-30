@@ -11,11 +11,6 @@ import {
     getChannelByNameAndTeamName,
     leaveChannel as serviceLeaveChannel,
 } from 'mattermost-redux/actions/channels';
-import {
-    receivedPosts,
-    receivedPostsInChannel,
-    receivedPostsSince,
-} from 'mattermost-redux/actions/posts';
 import {getFilesForPost} from 'mattermost-redux/actions/files';
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {selectTeam} from 'mattermost-redux/actions/teams';
@@ -27,7 +22,6 @@ import {
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
     isManuallyUnread,
-    getUnreadChannelIds,
 } from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
@@ -36,7 +30,7 @@ import EventEmitter from 'mattermost-redux/utils/event_emitter';
 import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
 
 import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
-import {getPosts, getPostsBefore, getPostsSince, getPostThread, getPostsAdditionalDataBatch} from '@actions/views/post';
+import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_textbox';
 import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
@@ -61,7 +55,7 @@ export function loadChannelsByTeamName(teamName, errorHandler) {
     };
 }
 
-function getChannelSinceValue(state, channelId, postIds) {
+export function getChannelSinceValue(state, channelId, postIds) {
     const lastGetPosts = state.views.channel.lastGetPosts[channelId];
     const lastConnectAt = state.websocket?.lastConnectAt || 0;
 
@@ -676,7 +670,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 // Fetch needed profiles from channel creators and direct channels
                 dispatch(loadSidebar(data));
 
-                dispatch(loadUnreadChannelPosts());
+                dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
         }
 
@@ -692,72 +686,6 @@ function loadSidebar(data) {
         const sidebarActions = await loadSidebarDirectMessagesProfiles(state, channels, channelMembers);
         if (sidebarActions.length) {
             dispatch(batchActions(sidebarActions, 'BATCH_LOAD_SIDEBAR'));
-        }
-    };
-}
-
-export function loadUnreadChannelPosts() {
-    return async (dispatch, getState) => {
-        const state = getState();
-        const unreadChannelIds = getUnreadChannelIds(state);
-
-        const promises = [];
-        const promiseTrace = [];
-        unreadChannelIds.forEach((channelId) => {
-            const postIds = getPostIdsInChannel(state, channelId);
-
-            let promise;
-            const trace = {
-                channelId,
-                since: false,
-            };
-            if (!postIds || !postIds.length) {
-                // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
-                promise = Client4.getPosts(channelId);
-            } else {
-                const since = getChannelSinceValue(state, channelId, postIds);
-                promise = Client4.getPostsSince(channelId, since);
-                trace.since = since;
-            }
-
-            promises.push(promise);
-            promiseTrace.push(trace);
-        });
-
-        let posts = [];
-        const actions = [];
-        if (promises.length) {
-            const results = await Promise.all(promises);
-            results.forEach((data, index) => {
-                const channelPosts = Object.values(data.posts);
-                if (channelPosts.length) {
-                    posts = posts.concat(channelPosts);
-
-                    const trace = promiseTrace[index];
-                    if (trace.since) {
-                        actions.push(receivedPostsSince(data, trace.channelId));
-                    } else {
-                        actions.push(receivedPostsInChannel(data, trace.channelId, true, data.prev_post_id === ''));
-                    }
-
-                    actions.push({
-                        type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
-                        channelId: trace.channelId,
-                        time: Date.now(),
-                    });
-                }
-            });
-        }
-
-        console.log(`Fetched ${posts.length} posts from ${unreadChannelIds.length} unread channels`); //eslint-disable-line no-console
-        if (posts.length) {
-            actions.push(receivedPosts({posts}));
-            const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-            if (additional.length) {
-                actions.push(...additional);
-            }
-
-            dispatch(batchActions(actions));
         }
     };
 }
