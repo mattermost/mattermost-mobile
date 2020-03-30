@@ -19,7 +19,7 @@ module.exports = {
                 '@telemetry': './app/telemetry',
                 '@utils': './app/utils',
                 '@websocket': './app/client/websocket',
-                '@mm-redux': './app/redux',
+                '@mm-redux': './app/mm-redux',
             },
         }],
     ],
