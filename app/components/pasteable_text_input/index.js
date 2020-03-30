@@ -30,7 +30,7 @@ export class PasteableTextInput extends React.PureComponent {
         let data = null;
         let error = null;
 
-        if (Platform.os === 'android') {
+        if (Platform.OS === 'android') {
             const {nativeEvent} = event;
             data = nativeEvent.data;
             error = nativeEvent.error;
