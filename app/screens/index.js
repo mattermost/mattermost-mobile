@@ -3,6 +3,8 @@
 
 import React from 'react';
 import {Platform} from 'react-native';
+import {ThemeProvider} from 'react-native-elements';
+
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
@@ -16,9 +18,11 @@ export function registerScreens(store, Provider) {
 
     const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
         <Provider store={store}>
-            <Root>
-                <Comp {...props}/>
-            </Root>
+            <ThemeProvider>
+                <Root>
+                    <Comp {...props}/>
+                </Root>
+            </ThemeProvider>
         </Provider>
     );
 

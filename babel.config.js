@@ -13,6 +13,12 @@ module.exports = {
             root: ['.'],
             alias: {
                 assets: './dist/assets',
+                '@actions': './app/actions',
+                '@constants': './app/constants',
+                '@selectors': './app/selectors',
+                '@telemetry': './app/telemetry',
+                '@utils': './app/utils',
+                '@websocket': './app/client/websocket',
             },
         }],
     ],

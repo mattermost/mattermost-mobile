@@ -18,10 +18,10 @@ describe('ErrorTeamsList', () => {
 
     const baseProps = {
         actions: {
-            loadMe: () => {}, // eslint-disable-line no-empty-function
-            connection: () => {}, // eslint-disable-line no-empty-function
-            logout: () => {}, // eslint-disable-line no-empty-function
-            selectDefaultTeam: () => {}, // eslint-disable-line no-empty-function
+            loadMe: () => true,
+            connection: () => true,
+            logout: () => true,
+            selectDefaultTeam: () => true,
         },
         componentId: 'component-id',
         theme: Preferences.THEMES.default,

@@ -729,10 +729,12 @@ export default class Search extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             onSelectionChange={this.handleSelectionChange}
                             autoCapitalize='none'
+                            showArrow={true}
                             value={value}
                             containerStyle={style.searchBarContainer}
                             backArrowSize={28}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            containerHeight={33}
                         />
                     </View>
                     <SectionList
@@ -773,6 +775,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 },
                 ios: {
                     height: 44,
+                    paddingLeft: 8,
+                    paddingBottom: 10,
                 },
             }),
         },

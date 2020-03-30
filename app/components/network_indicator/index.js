@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {stopPeriodicStatusUpdates, startPeriodicStatusUpdates} from 'mattermost-redux/actions/users';
-import {init as initWebSocket, close as closeWebSocket} from 'mattermost-redux/actions/websocket';
+import {init as initWebSocket, close as closeWebSocket} from '@actions/websocket';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
 import {connection} from 'app/actions/device';

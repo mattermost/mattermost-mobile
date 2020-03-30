@@ -136,10 +136,6 @@ const state = {
         i18n: {
             locale: '',
         },
-        login: {
-            loginId: '',
-            password: '',
-        },
         root: {
             deepLinkURL: '',
             hydrationComplete: false,
@@ -154,6 +150,11 @@ const state = {
         thread: {
             drafts: {},
         },
+    },
+    websocket: {
+        connected: false,
+        lastConnectAt: 0,
+        lastDisconnectAt: 0,
     },
 };
 

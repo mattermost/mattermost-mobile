@@ -6,8 +6,8 @@ GEM
       public_suffix (>= 2.0.2, < 5.0)
     atomos (0.1.3)
     aws-eventstream (1.0.3)
-    aws-partitions (1.281.0)
-    aws-sdk-core (3.91.0)
+    aws-partitions (1.289.0)
+    aws-sdk-core (3.92.0)
       aws-eventstream (~> 1.0, >= 1.0.2)
       aws-partitions (~> 1, >= 1.239.0)
       aws-sigv4 (~> 1.1)
@@ -15,7 +15,7 @@ GEM
     aws-sdk-kms (1.30.0)
       aws-sdk-core (~> 3, >= 3.71.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.61.0)
+    aws-sdk-s3 (1.61.1)
       aws-sdk-core (~> 3, >= 3.83.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.1)
@@ -34,7 +34,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     dotenv (2.7.5)
     emoji_regex (1.0.1)
-    excon (0.72.0)
+    excon (0.73.0)
     faraday (0.17.3)
       multipart-post (>= 1.2, < 3)
     faraday-cookie_jar (0.0.6)
@@ -43,9 +43,10 @@ GEM
     faraday_middleware (0.13.1)
       faraday (>= 0.7.4, < 1.0)
     fastimage (2.1.7)
-    fastlane (2.141.0)
+    fastlane (2.144.0)
       CFPropertyList (>= 2.3, < 4.0.0)
       addressable (>= 2.3, < 3.0.0)
+      aws-sdk-s3 (~> 1.0)
       babosa (>= 1.0.2, < 2.0.0)
       bundler (>= 1.12.0, < 3.0.0)
       colored
@@ -143,7 +144,7 @@ GEM
     rouge (2.0.7)
     rubyzip (1.3.0)
     security (0.1.3)
-    signet (0.13.0)
+    signet (0.13.2)
       addressable (~> 2.3)
       faraday (>= 0.17.3, < 2.0)
       jwt (>= 1.5, < 3.0)
@@ -180,8 +181,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk-s3
-  fastlane (= 2.141.0)
+  fastlane
   fastlane-plugin-android_change_package_identifier
   fastlane-plugin-android_change_string_app_name
   fastlane-plugin-find_replace_string

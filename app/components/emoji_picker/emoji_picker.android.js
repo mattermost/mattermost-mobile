@@ -20,7 +20,6 @@ export default class EmojiPicker extends EmojiPickerBase {
             backgroundColor: theme.centerChannelBg,
             color: theme.centerChannelColor,
             fontSize: 13,
-            marginBottom: -3,
         };
 
         return (

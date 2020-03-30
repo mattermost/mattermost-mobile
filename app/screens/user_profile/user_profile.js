@@ -217,7 +217,7 @@ export default class UserProfile extends PureComponent {
         const email = this.props.user.email;
 
         return () => {
-            var hydrated = link.replace(/{email}/, email);
+            let hydrated = link.replace(/{email}/, email);
             hydrated = hydrated.replace(/{username}/, username);
             Linking.openURL(hydrated);
         };
@@ -244,7 +244,7 @@ export default class UserProfile extends PureComponent {
         const profileLinks = Config.ExperimentalProfileLinks;
 
         const additionalOptions = profileLinks.map((l) => {
-            var action;
+            let action;
             if (l.type === 'link') {
                 action = this.handleLinkPress(l.url);
             }
