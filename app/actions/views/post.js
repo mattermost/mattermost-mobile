@@ -84,16 +84,16 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
             const posts = Object.values(data.posts);
             const actions = [];
 
-            if (posts?.length || !postForChannel) {
-                actions.push(receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''));
-            }
-
             if (posts?.length) {
                 actions.push(receivedPosts(data));
                 const additional = await dispatch(getPostsAdditionalDataBatch(posts));
                 if (additional.length) {
                     actions.push(...additional);
                 }
+            }
+
+            if (posts?.length || !postForChannel) {
+                actions.push(receivedPostsInChannel(data, channelId, page === 0, data.prev_post_id === ''));
             }
 
             dispatch(batchActions(actions));
