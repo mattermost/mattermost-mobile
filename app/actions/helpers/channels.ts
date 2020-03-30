@@ -28,11 +28,14 @@ export async function loadSidebarDirectMessagesProfiles(state: GlobalState, chan
     const prefs: Array<PreferenceType> = [];
     const promises: Array<Promise<ActionResult>> = []; //only fetch profiles that we don't have and the Direct channel should be visible
     const actions = [];
+    const userIds: Array<string> = [];
 
     // Prepare preferences and start fetching profiles to batch them
     directChannels.forEach((c) => {
         const profileIds = Array.from(usersInChannel[c.id] || []);
         const profilesInChannel: Array<string> = profileIds.filter((u: string) => u !== currentUserId);
+        userIds.push(...profilesInChannel);
+
         switch (c.type) {
         case General.DM_CHANNEL: {
             const dm = fetchDirectMessageProfileIfNeeded(state, c, channelMembers, profilesInChannel);
@@ -70,8 +73,28 @@ export async function loadSidebarDirectMessagesProfiles(state: GlobalState, chan
     }
 
     const profilesAction = await getProfilesFromPromises(promises);
+    const userIdsSet: Set<string> = new Set(userIds);
+
     if (profilesAction) {
         actions.push(profilesAction);
+        profilesAction.data.forEach((d: any) => {
+            const {users} = d.data;
+            users.forEach((u: UserProfile) => userIdsSet.add(u.id));
+        });
+    }
+
+    if (userIdsSet.size > 0) {
+        try {
+            const statuses = await Client4.getStatusesByIds(Array.from(userIdsSet));
+            if (statuses.length) {
+                actions.push({
+                    type: UserTypes.RECEIVED_STATUSES,
+                    data: statuses,
+                });
+            }
+        } catch {
+            // do nothing (status will get fetched later on regardless)
+        }
     }
 
     return actions;
@@ -290,7 +313,7 @@ function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel,
     const currentUserId = getCurrentUserId(state);
     const myPreferences = getMyPreferences(state);
     const config = getConfig(state);
-    const gmVisible = isGroupChannelVisible(myPreferences, channel.id);
+    const gmVisible = isGroupChannelVisible(myPreferences, channel);
     const gmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, 0);
     const channelMember = channelMembers.find((cm) => cm.channel_id === channel.id);
     let hasMentions = false;
