@@ -771,10 +771,13 @@ export function loadSidebarDirectMessagesProfiles(data) {
         const directChannels = Object.values(channels).filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
         const prefs = [];
         const promises = []; //only fetch profiles that we don't have and the Direct channel should be visible
+        const userIds = [];
 
         // Prepare preferences and start fetching profiles to batch them
         directChannels.forEach((c) => {
             const profilesInChannel = Array.from(usersInChannel[c.id] || []).filter((u) => u.id !== currentUserId);
+            userIds.push(...profilesInChannel);
+
             switch (c.type) {
             case General.DM_CHANNEL: {
                 const dm = fetchDirectMessageProfileIfNeeded(state, c, channelMembers, profilesInChannel, prefs);
@@ -800,7 +803,34 @@ export function loadSidebarDirectMessagesProfiles(data) {
             dispatch(savePreferences(currentUserId, prefs));
         }
 
-        getProfilesFromPromises(dispatch, promises, directChannels);
+        const actions = [];
+        const userIdsSet = new Set(userIds);
+        const profilesAction = await getProfilesFromPromises(promises);
+        if (profilesAction) {
+            actions.push(profilesAction);
+            profilesAction.data.forEach((d) => {
+                const {users} = d.data;
+                users.forEach((u) => userIdsSet.add(u.id));
+            });
+        }
+
+        if (userIdsSet.size > 0) {
+            try {
+                const statuses = await Client4.getStatusesByIds(Array.from(userIdsSet));
+                if (statuses.length) {
+                    actions.push({
+                        type: UserTypes.RECEIVED_STATUSES,
+                        data: statuses,
+                    });
+                }
+            } catch {
+                // do nothing (status will get fetched later on regardless)
+            }
+        }
+
+        if (actions.length) {
+            dispatch(batchActions(actions));
+        }
 
         return {data: true};
     };
@@ -827,35 +857,19 @@ export function getUsersInChannel(channelId) {
     };
 }
 
-async function getProfilesFromPromises(dispatch, promiseArray, directChannels) {
-    // Get the profiles returned by the promises and retry those that failed
-    let promises = promiseArray;
-    for (let i = 0; i <= MAX_RETRIES; i++) {
-        if (!promises.length) {
-            return;
-        }
-
-        const result = await Promise.all(promises); //eslint-disable-line no-await-in-loop
-        const failed = [];
-
-        result.forEach((p, index) => {
-            if (p.error) {
-                failed.push(directChannels[index].id);
-            }
-        });
-
-        dispatch({
-            type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
-            data: result,
-        });
-
-        if (failed.length) {
-            promises = failed.map((id) => dispatch(getUsersInChannel(id))); //eslint-disable-line no-loop-func
-            continue;
-        }
-
-        return;
+async function getProfilesFromPromises(promises) {
+    // Get the profiles returned by the promises
+    if (!promises.length) {
+        return null;
     }
+
+    const result = await Promise.all(promises);
+    const data = result.filter((p) => !p.error);
+
+    return {
+        type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
+        data,
+    };
 }
 
 function fetchDirectMessageProfileIfNeeded(state, channel, channelMembers, profilesInChannel, newPreferences) {
