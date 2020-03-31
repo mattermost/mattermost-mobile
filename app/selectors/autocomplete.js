@@ -75,8 +75,8 @@ export const filterMembersInChannel = createSelector(
             profiles = profilesInChannel.filter((p) => {
                 return (p.delete_at === 0 && (
                     p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
-                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm ||
-                    p.nickname.toLowerCase().includes(matchTerm))));
+                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm) ||
+                    p.nickname.toLowerCase().includes(matchTerm)));
             });
         } else {
             profiles = profilesInChannel.filter((p) => p.delete_at === 0);
@@ -130,8 +130,8 @@ export const filterMembersInCurrentTeam = createSelector(
         if (matchTerm) {
             profiles = [...profilesInTeam, currentUser].filter((p) => {
                 return (p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
-                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm ||
-                    p.nickname.toLowerCase().includes(matchTerm)));
+                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm) ||
+                    p.nickname.toLowerCase().includes(matchTerm));
             });
         } else {
             profiles = [...profilesInTeam, currentUser];
