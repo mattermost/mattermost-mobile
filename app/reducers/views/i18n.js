@@ -4,7 +4,7 @@
 import {combineReducers} from 'redux';
 import DeviceInfo from 'react-native-device-info';
 
-import {UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes} from '@mm-redux/action_types';
 
 const defaultLocale = DeviceInfo.getDeviceLocale().split('-')[0];
 

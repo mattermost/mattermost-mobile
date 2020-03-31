@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {getOpenGraphMetadata} from 'mattermost-redux/actions/posts';
+import {getOpenGraphMetadata} from '@mm-redux/actions/posts';
 
 import {getDimensions} from 'app/selectors/device';
 

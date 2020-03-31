@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
-import {GeneralTypes} from 'mattermost-redux/action_types';
+import {GeneralTypes} from '@mm-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 

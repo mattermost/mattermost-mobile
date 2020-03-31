@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {clearErrors} from 'mattermost-redux/actions/errors';
-import {getCurrentUrl, getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getJoinableTeams} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {clearErrors} from '@mm-redux/actions/errors';
+import {getCurrentUrl, getConfig} from '@mm-redux/selectors/entities/general';
+import {getJoinableTeams} from '@mm-redux/selectors/entities/teams';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {purgeOfflineStore} from 'app/actions/views/root';
 import {isLandscape} from 'app/selectors/device';

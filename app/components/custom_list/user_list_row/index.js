@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
+import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {isLandscape} from 'app/selectors/device';
 import UserListRow from './user_list_row';
 

@@ -5,7 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
-import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
+import {getLastPostIndex} from '@mm-redux/utils/post_list';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import Loading from 'app/components/loading';
