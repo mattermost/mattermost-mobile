@@ -137,7 +137,6 @@ export function doReconnect(now: number) {
         const currentTeamId = getCurrentTeamId(state);
         const currentChannelId = getCurrentChannelId(state);
         const currentUserId = getCurrentUserId(state);
-        const currentUser = getCurrentUser(state);
         const users = getUsers(state);
         const {lastDisconnectAt} = state.websocket;
         const actions: Array<GenericAction> = [];

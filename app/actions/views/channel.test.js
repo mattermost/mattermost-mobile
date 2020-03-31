@@ -8,6 +8,7 @@ import initialState from 'app/initial_state';
 import {ChannelTypes} from '@mm-redux/action_types';
 import testHelper from 'test/test_helper';
 
+import {ViewTypes} from 'app/constants';
 import * as ChannelActions from 'app/actions/views/channel';
 const {
     handleSelectChannel,
@@ -213,7 +214,7 @@ describe('Actions.Views.Channel', () => {
         const storeActions = store.getActions();
         const storeBatchActions = storeActions.filter(({type}) => type === 'BATCH_LOAD_POSTS_IN_CHANNEL');
         const receivedPosts = storeActions.find(({type}) => type === MOCK_RECEIVED_POSTS);
-        const receivedPostsAtAction = storeBatchActions[0].payload.some((action) => action.type === 'RECEIVED_POSTS_FOR_CHANNEL_AT_TIME');
+        const receivedPostsAtAction = storeBatchActions[0].payload.some((action) => action.type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
 
         nextPostState = postReducer(store.getState().entities.posts, receivedPosts);
         nextPostState = postReducer(nextPostState, {

@@ -490,7 +490,7 @@ export function pinPost(postId: string) {
                 {
                     type: ChannelTypes.INCREMENT_PINNED_POST_COUNT,
                     id: post.channel_id,
-                }
+                },
             );
         }
 
@@ -1087,7 +1087,7 @@ export function removePost(post: ExtendedPost) {
                     {
                         type: ChannelTypes.DECREMENT_PINNED_POST_COUNT,
                         id: post.channel_id,
-                    }
+                    },
                 );
             }
         }

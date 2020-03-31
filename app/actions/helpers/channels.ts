@@ -236,7 +236,7 @@ export async function fetchChannelAndMyMember(channelId: string): Promise<Array<
             });
         }
     } catch {
-    // do nothing   
+        // do nothing
     }
 
     return actions;

@@ -100,7 +100,7 @@ export function getCustomEmojis(
     page = 0,
     perPage: number = General.PAGE_SIZE_DEFAULT,
     sort: string = Emoji.SORT_BY_NAME,
-    loadUsers = false
+    loadUsers = false,
 ): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;

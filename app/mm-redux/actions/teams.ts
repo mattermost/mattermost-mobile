@@ -235,7 +235,7 @@ export function deleteTeam(teamId: string): ActionFunc {
             {
                 type: TeamTypes.RECEIVED_TEAM_DELETED,
                 data: {id: teamId},
-            }
+            },
         );
 
         dispatch(batchActions(actions));
@@ -704,7 +704,7 @@ export function updateTeamMemberSchemeRoles(
     teamId: string,
     userId: string,
     isSchemeUser: boolean,
-    isSchemeAdmin: boolean
+    isSchemeAdmin: boolean,
 ): ActionFunc {
     return bindClientFunc({
         clientFunc: async () => {
