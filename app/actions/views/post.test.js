@@ -4,11 +4,11 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import {Client4} from 'mattermost-redux/client';
-import {PostTypes} from 'mattermost-redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {PostTypes} from '@mm-redux/action_types';
 
-import * as PostSelectors from 'mattermost-redux/selectors/entities/posts';
-import * as ChannelUtils from 'mattermost-redux/utils/channel_utils';
+import * as PostSelectors from '@mm-redux/selectors/entities/posts';
+import * as ChannelUtils from '@mm-redux/utils/channel_utils';
 
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';

@@ -129,7 +129,7 @@ export function purgeOfflineStore() {
     return {type: General.OFFLINE_STORE_PURGE};
 }
 
-// A non-optimistic version of the createPost action in mattermost-redux with the file handling
+// A non-optimistic version of the createPost action in app/mm-redux with the file handling
 // removed since it's not needed.
 export function createPostForNotificationReply(post) {
     return async (dispatch, getState) => {
