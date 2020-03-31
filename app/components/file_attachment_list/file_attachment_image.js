@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@mm-redux/client';
 
 import ProgressiveImage from 'app/components/progressive_image';
 import {isGif} from 'app/utils/file';
@@ -95,7 +95,7 @@ export default class FileAttachmentImage extends PureComponent {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
-            imageProps.imageUri = isGif(file) ? Client4.getFileUrl(file.id) : Client4.getFilePreviewUrl(file.id);
+            imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
         }
         return imageProps;
     };

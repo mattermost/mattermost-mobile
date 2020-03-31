@@ -4,15 +4,9 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import * as GeneralActions from 'mattermost-redux/actions/general';
+import * as GeneralActions from '@mm-redux/actions/general';
 
-import {ViewTypes} from 'app/constants';
-
-import {
-    handleLoginIdChanged,
-    handlePasswordChanged,
-    handleSuccessfulLogin,
-} from 'app/actions/views/login';
+import {handleSuccessfulLogin} from 'app/actions/views/login';
 
 jest.mock('app/init/credentials', () => ({
     setAppCredentials: () => jest.fn(),
@@ -49,28 +43,6 @@ describe('Actions.Views.Login', () => {
                 },
             },
         });
-    });
-
-    test('handleLoginIdChanged', () => {
-        const loginId = 'email@example.com';
-
-        const action = {
-            type: ViewTypes.LOGIN_ID_CHANGED,
-            loginId,
-        };
-        store.dispatch(handleLoginIdChanged(loginId));
-        expect(store.getActions()).toEqual([action]);
-    });
-
-    test('handlePasswordChanged', () => {
-        const password = 'password';
-        const action = {
-            type: ViewTypes.PASSWORD_CHANGED,
-            password,
-        };
-
-        store.dispatch(handlePasswordChanged(password));
-        expect(store.getActions()).toEqual([action]);
     });
 
     test('handleSuccessfulLogin gets config and license ', async () => {

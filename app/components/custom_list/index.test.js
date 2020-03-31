@@ -5,7 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import CustomList, {FLATLIST, SECTIONLIST} from './index';
 

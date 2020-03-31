@@ -3,7 +3,6 @@
 
 import {Alert, Platform} from 'react-native';
 
-import {handleLoginIdChanged} from 'app/actions/views/login';
 import {setServerUrl} from 'app/actions/views/select_server';
 import {getTranslations} from 'app/i18n';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -28,7 +27,6 @@ class EMMProvider {
 
         this.allowOtherServers = true;
         this.emmServerUrl = null;
-        this.emmUsername = null;
     }
 
     checkIfDeviceIsTrusted = (store) => {
@@ -110,7 +108,6 @@ class EMMProvider {
             const credentials = await getAppCredentials();
             if (!credentials) {
                 this.emmServerUrl = managedConfig.serverUrl;
-                this.emmUsername = managedConfig.username;
 
                 if (managedConfig.allowOtherServers && managedConfig.allowOtherServers === 'false') {
                     this.allowOtherServers = false;
@@ -123,10 +120,6 @@ class EMMProvider {
 
             if (this.emmServerUrl) {
                 dispatch(setServerUrl(this.emmServerUrl));
-            }
-
-            if (this.emmUsername) {
-                dispatch(handleLoginIdChanged(this.emmUsername));
             }
         }
 

@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
+import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {isLandscape} from 'app/selectors/device';
 import ChannelListRow from './channel_list_row';
 

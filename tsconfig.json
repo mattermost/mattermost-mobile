@@ -5,6 +5,7 @@
             "es6"
         ],
         "allowJs": true,
+        "skipLibCheck": true,
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "isolatedModules": true,
@@ -36,6 +37,7 @@
             "@selectors/*": ["app/selectors/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
+            "@mm-redux/*": ["app/mm-redux/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"]
         }

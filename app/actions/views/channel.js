@@ -5,28 +5,29 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {ChannelTypes, RoleTypes} from 'mattermost-redux/action_types';
+import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     leaveChannel as serviceLeaveChannel,
-} from 'mattermost-redux/actions/channels';
-import {getFilesForPost} from 'mattermost-redux/actions/files';
-import {savePreferences} from 'mattermost-redux/actions/preferences';
-import {selectTeam} from 'mattermost-redux/actions/teams';
-import {Client4} from 'mattermost-redux/client';
-import {General, Preferences} from 'mattermost-redux/constants';
-import {getPostIdsInChannel} from 'mattermost-redux/selectors/entities/posts';
+} from '@mm-redux/actions/channels';
+import {getFilesForPost} from '@mm-redux/actions/files';
+import {savePreferences} from '@mm-redux/actions/preferences';
+import {selectTeam} from '@mm-redux/actions/teams';
+import {Client4} from '@mm-redux/client';
+import {General, Preferences} from '@mm-redux/constants';
+import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
     isManuallyUnread,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {getTeamByName} from 'mattermost-redux/selectors/entities/teams';
-import {getChannelByName as selectChannelByName} from 'mattermost-redux/utils/channel_utils';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getTeamByName} from '@mm-redux/selectors/entities/teams';
+
+import {getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_utils';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';

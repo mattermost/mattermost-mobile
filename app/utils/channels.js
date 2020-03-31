@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from 'mattermost-redux/constants';
-import {getUserIdFromChannelName} from 'mattermost-redux/utils/channel_utils';
-import {getLastCreateAt} from 'mattermost-redux/utils/post_utils';
+import {Preferences} from '@mm-redux/constants';
+import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
+import {getLastCreateAt} from '@mm-redux/utils/post_utils';
 
 export function isDirectChannelVisible(userId, myPreferences, channel) {
     const channelId = getUserIdFromChannelName(userId, channel.name);

@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {clearSearch} from 'mattermost-redux/actions/search';
+import {clearSearch} from '@mm-redux/actions/search';
 
 import ChannelSearchButton from './channel_search_button';
 

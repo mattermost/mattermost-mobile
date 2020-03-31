@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import deepEqual from 'deep-equal';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from '@mm-redux/constants';
 
 import StatusBar from 'app/components/status_bar';
 import NotificationPreferences from 'app/notification_preferences';

@@ -4,8 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentTeamId, getMySortedTeamIds, getJoinableTeamIds} from '@mm-redux/selectors/entities/teams';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {getCurrentLocale} from 'app/selectors/i18n';
