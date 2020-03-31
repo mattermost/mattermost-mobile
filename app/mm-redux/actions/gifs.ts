@@ -173,11 +173,11 @@ export function searchGfycat({searchText, count = 30, startIndex = 0}: { searchT
                 Client4.trackEvent(
                     'gfycat',
                     'views',
-                    {context, count: json.gfycats.length, keyword: searchText}
+                    {context, count: json.gfycats.length, keyword: searchText},
                 );
             }
         }).catch(
-            (err: any) => dispatch(errorSearching(err, searchText))
+            (err: any) => dispatch(errorSearching(err, searchText)),
         );
     };
 }
@@ -207,7 +207,7 @@ export function searchCategory({tagName = '', gfyCount = 30, cursorPos = undefin
                     Client4.trackEvent(
                         'gfycat',
                         'views',
-                        {context: 'category', count: json.gfycats.length, keyword: tagName}
+                        {context: 'category', count: json.gfycats.length, keyword: tagName},
                     );
 
                     // preload categories list
@@ -215,7 +215,7 @@ export function searchCategory({tagName = '', gfyCount = 30, cursorPos = undefin
                         dispatch(requestCategoriesListIfNeeded() as any);
                     }
                 }
-            }
+            },
         ).catch((err: any) => dispatch(errorSearching(err, tagName)));
     };
 }
@@ -276,7 +276,7 @@ export function searchById(gfyId: string) {
             (response: any) => {
                 dispatch(receiveSearchById(gfyId, response.gfyItem));
                 dispatch(cacheGifsRequest([response.gfyItem]));
-            }
+            },
         ).catch((err: any) => dispatch(errorSearchById(err, gfyId)));
     };
 }
@@ -366,7 +366,7 @@ export function requestCategoriesList({count = 60} = {}) {
         }).catch(
             (err: any) => {
                 dispatch(categoriesListFailure(err));
-            }
+            },
         );
     };
 }

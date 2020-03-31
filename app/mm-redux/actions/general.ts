@@ -20,7 +20,7 @@ export function getPing(): ActionFunc {
         let data;
         let pingError = new FormattedError(
             'mobile.server_ping_failed',
-            'Cannot connect to the server. Please check your server URL and internet connection.'
+            'Cannot connect to the server. Please check your server URL and internet connection.',
         );
         try {
             data = await Client4.ping();

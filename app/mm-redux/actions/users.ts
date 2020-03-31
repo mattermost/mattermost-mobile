@@ -881,14 +881,14 @@ export function autocompleteUsers(term: string, teamId = '', channelId = '', opt
                     type: UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL,
                     data: data.users,
                     id: channelId,
-                }
+                },
             );
             actions.push(
                 {
                     type: UserTypes.RECEIVED_PROFILES_LIST_NOT_IN_CHANNEL,
                     data: data.out_of_channel,
                     id: channelId,
-                }
+                },
             );
         }
 
@@ -898,7 +898,7 @@ export function autocompleteUsers(term: string, teamId = '', channelId = '', opt
                     type: UserTypes.RECEIVED_PROFILES_LIST_IN_TEAM,
                     data: users,
                     id: teamId,
-                }
+                },
             );
         }
 
@@ -983,7 +983,7 @@ export function startPeriodicStatusUpdates(): ActionFunc {
 
                 getStatusesByIds(userIds)(dispatch, getState);
             },
-            General.STATUS_INTERVAL
+            General.STATUS_INTERVAL,
         );
 
         return {data: true};
@@ -1253,7 +1253,7 @@ export function createUserAccessToken(userId: string, description: string): Acti
                 {
                     type: UserTypes.RECEIVED_MY_USER_ACCESS_TOKEN,
                     data: {...data, token: ''},
-                }
+                },
             );
         }
 
@@ -1282,7 +1282,7 @@ export function getUserAccessToken(tokenId: string): ActionFunc {
                 {
                     type: UserTypes.RECEIVED_MY_USER_ACCESS_TOKEN,
                     data,
-                }
+                },
             );
         }
 
@@ -1327,7 +1327,7 @@ export function getUserAccessTokensForUser(userId: string, page = 0, perPage: nu
                 {
                     type: UserTypes.RECEIVED_MY_USER_ACCESS_TOKENS,
                     data,
-                }
+                },
             );
         }
 
