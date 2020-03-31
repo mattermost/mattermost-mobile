@@ -53,6 +53,7 @@ import {
 const {RNTextInputReset} = NativeModules;
 const INPUT_LINE_HEIGHT = 20;
 const EXTRA_INPUT_PADDING = 3;
+const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 
 export default class PostTextBoxBase extends PureComponent {
     static propTypes = {
@@ -387,7 +388,7 @@ export default class PostTextBoxBase extends PureComponent {
         switch (keyEvent.pressedKey) {
         case 'enter': this.handleSendMessage();
             break;
-        case 'shift-enter': this.handleInsertTextToDraft('\n');
+        case 'shift-enter': this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
         }
     }
 
