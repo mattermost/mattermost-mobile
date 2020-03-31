@@ -175,6 +175,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         above: {
             backgroundColor: theme.mentionBg,
             top: 40,
+            height: 40,
+            borderRadius: 4,
+            paddingTop: 12,
+            paddingRight: 16,
+            paddingBottom: 12,
+            paddingLeft: 16,
         },
         action: {
             color: changeOpacity(theme.sidebarText, 0.4),

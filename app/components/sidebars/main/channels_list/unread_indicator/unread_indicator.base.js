@@ -35,16 +35,16 @@ export default class UnreadIndicatorBase extends PureComponent {
                 style={[style.wrapper, this.props.style]}
                 pointerEvents={visible ? 'auto' : 'none'}
             >
-                <FormattedText
-                    style={[style.indicatorText, this.props.textStyle]}
-                    id='sidebar.unreads'
-                    defaultMessage='More unreads'
-                />
                 <IonIcon
                     size={14}
                     name='md-arrow-round-up'
                     color={theme.mentionColor}
                     style={style.arrow}
+                />
+                <FormattedText
+                    style={[style.indicatorText, this.props.textStyle]}
+                    id='sidebar.unreads'
+                    defaultMessage='More unreads'
                 />
             </View>
         );
@@ -66,6 +66,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         arrow: {
             position: 'relative',
             bottom: -1,
+            marginRight: 8,
         },
         container: {
             justifyContent: 'center',
