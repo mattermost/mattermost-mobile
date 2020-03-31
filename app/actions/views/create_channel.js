@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {handleSelectChannel, setChannelDisplayName} from './channel';
-import {createChannel} from 'mattermost-redux/actions/channels';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {cleanUpUrlable} from 'mattermost-redux/utils/channel_utils';
-import {generateId} from 'mattermost-redux/utils/helpers';
+import {createChannel} from '@mm-redux/actions/channels';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {cleanUpUrlable} from '@mm-redux/utils/channel_utils';
+import {generateId} from '@mm-redux/utils/helpers';
 
 export function generateChannelNameFromDisplayName(displayName) {
     let name = cleanUpUrlable(displayName);

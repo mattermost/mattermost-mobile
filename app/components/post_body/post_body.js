@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Posts} from 'mattermost-redux/constants';
+import {Posts} from '@mm-redux/constants';
 
 import CombinedSystemMessage from 'app/components/combined_system_message';
 import {renderSystemMessage} from './system_message_helpers';

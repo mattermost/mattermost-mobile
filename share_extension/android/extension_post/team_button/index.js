@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getTeam} from 'mattermost-redux/selectors/entities/teams';
+import {getTeam} from '@mm-redux/selectors/entities/teams';
 
 import TeamButton from './team_button';
 

@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getStatusForUserId} from '@mm-redux/selectors/entities/users';
 
 import UserStatus from './user_status';
 

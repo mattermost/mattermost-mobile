@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 import FormattedText from 'app/components/formatted_text';
 
 export default class ChannelTitle extends PureComponent {

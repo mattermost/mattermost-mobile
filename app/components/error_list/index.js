@@ -4,8 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getDisplayableErrors} from 'mattermost-redux/selectors/errors';
-import {dismissError, clearErrors} from 'mattermost-redux/actions/errors';
+import {getDisplayableErrors} from '@mm-redux/selectors/errors';
+import {dismissError, clearErrors} from '@mm-redux/actions/errors';
 
 import ErrorList from './error_list';
 

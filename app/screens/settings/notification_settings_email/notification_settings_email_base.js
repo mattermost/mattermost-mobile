@@ -6,8 +6,8 @@ import {Platform} from 'react-native';
 import PropTypes from 'prop-types';
 import {Navigation} from 'react-native-navigation';
 
-import {Preferences} from 'mattermost-redux/constants';
-import {getEmailInterval} from 'mattermost-redux/utils/notify_props';
+import {Preferences} from '@mm-redux/constants';
+import {getEmailInterval} from '@mm-redux/utils/notify_props';
 
 export default class NotificationSettingsEmailBase extends PureComponent {
     static propTypes = {

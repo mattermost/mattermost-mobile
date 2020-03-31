@@ -16,7 +16,7 @@ const modulePaths = moduleNames.map((moduleName) => {
     if (moduleName.startsWith(localPrefix)) {
         return `./${moduleName.substring(localPrefix.length)}`;
     }
-    if (moduleName.endsWith('.js')) {
+    if (moduleName.endsWith('.js') || moduleName.endsWith('.ts')) {
         return `./node_modules/${moduleName}`;
     }
     try {

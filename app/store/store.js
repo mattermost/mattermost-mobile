@@ -7,11 +7,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, persistStore} from 'redux-persist';
 
-import {ErrorTypes, GeneralTypes} from 'mattermost-redux/action_types';
-import {General} from 'mattermost-redux/constants';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import configureStore from 'mattermost-redux/store';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {ErrorTypes, GeneralTypes} from '@mm-redux/action_types';
+import {General} from '@mm-redux/constants';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import configureStore from '@mm-redux/store';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import appReducer from 'app/reducers';

@@ -8,7 +8,7 @@ import {
     FlatList,
     Platform,
 } from 'react-native';
-import {getTimezoneRegion} from 'mattermost-redux/utils/timezone_utils';
+import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
 import {intlShape} from 'react-intl';
 
 import SearchBar from 'app/components/search_bar';

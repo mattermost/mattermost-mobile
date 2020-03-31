@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Dimensions, ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {checkDialogElementForError, checkIfErrorsMatchElements} from 'mattermost-redux/utils/integration_utils';
+import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
 
 import ErrorText from 'app/components/error_text';
 import StatusBar from 'app/components/status_bar';

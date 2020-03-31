@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Clipboard, Text} from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
