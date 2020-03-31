@@ -3,8 +3,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
-import {General} from 'mattermost-redux/constants';
+import Preferences from '@mm-redux/constants/preferences';
+import {General} from '@mm-redux/constants';
 
 import ChannelInfoHeader from './channel_info_header.js';
 

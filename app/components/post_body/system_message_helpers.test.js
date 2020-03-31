@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as SystemMessageHelpers from './system_message_helpers';
-import {Posts} from 'mattermost-redux/constants';
+import {Posts} from '@mm-redux/constants';
 
 const basePostBodyProps = {
     postProps: {

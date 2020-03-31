@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@mm-redux/client';
 
 import ProgressiveImage from 'app/components/progressive_image';
 import {changeOpacity} from 'app/utils/theme';

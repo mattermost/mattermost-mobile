@@ -17,8 +17,8 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomePro from 'react-native-vector-icons/Ionicons';
 
-import {General} from 'mattermost-redux/constants';
-import {debounce} from 'mattermost-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {debounce} from '@mm-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';

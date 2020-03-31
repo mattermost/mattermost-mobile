@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {connect} from 'react-redux';
 
-import {getTeam} from 'mattermost-redux/selectors/entities/teams';
+import {getTeam} from '@mm-redux/selectors/entities/teams';
 
 import TeamItem from './team_item';
 

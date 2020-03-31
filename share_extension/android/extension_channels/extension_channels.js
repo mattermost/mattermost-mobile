@@ -12,7 +12,7 @@ import {
     View,
 } from 'react-native';
 
-import {Preferences} from 'mattermost-redux/constants';
+import {Preferences} from '@mm-redux/constants';
 
 import SearchBar from 'app/components/search_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';

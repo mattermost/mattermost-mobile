@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getUsers} from 'mattermost-redux/selectors/entities/users';
+import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getUsers} from '@mm-redux/selectors/entities/users';
 
 import SelectedUsers from './selected_users';
 

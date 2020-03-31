@@ -5,21 +5,21 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
-import {searchChannels} from 'mattermost-redux/actions/channels';
-import {getProfilesInTeam, searchProfiles} from 'mattermost-redux/actions/users';
-import {makeGroupMessageVisibleIfNecessary} from 'mattermost-redux/actions/preferences';
-import {General} from 'mattermost-redux/constants';
+import {searchChannels} from '@mm-redux/actions/channels';
+import {getProfilesInTeam, searchProfiles} from '@mm-redux/actions/users';
+import {makeGroupMessageVisibleIfNecessary} from '@mm-redux/actions/preferences';
+import {General} from '@mm-redux/constants';
 import {
     getChannelsWithUnreadSection,
     getCurrentChannel,
     getGroupChannels,
     getArchivedChannels,
     getOtherChannels,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
-import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from 'mattermost-redux/selectors/entities/users';
-import {getDirectShowPreferences, getTeammateNameDisplaySetting, getTheme} from 'mattermost-redux/selectors/entities/preferences';
+} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from '@mm-redux/selectors/entities/users';
+import {getDirectShowPreferences, getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isLandscape} from 'app/selectors/device';
 import Config from 'assets/config';
 

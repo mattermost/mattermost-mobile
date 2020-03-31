@@ -3,7 +3,7 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {getBadgeCount} from 'app/selectors/views';
 import ChannelDrawerButton from './channel_drawer_button';

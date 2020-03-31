@@ -3,15 +3,15 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {GeneralTypes, RoleTypes, UserTypes} from 'mattermost-redux/action_types';
-import {getDataRetentionPolicy} from 'mattermost-redux/actions/general';
-import * as HelperActions from 'mattermost-redux/actions/helpers';
-import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
-import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
+import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
+import * as HelperActions from '@mm-redux/actions/helpers';
+import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 
 import {setAppCredentials} from 'app/init/credentials';
 import {setCSRFFromCookie} from '@utils/security';

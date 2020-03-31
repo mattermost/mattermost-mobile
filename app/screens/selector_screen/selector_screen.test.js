@@ -4,7 +4,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {IntlProvider} from 'react-intl';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import SelectorScreen from './selector_screen.js';
 

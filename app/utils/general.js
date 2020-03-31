@@ -4,7 +4,7 @@
 import {Alert} from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
-import {Posts} from 'mattermost-redux/constants';
+import {Posts} from '@mm-redux/constants';
 
 import {logout} from 'app/actions/views/user';
 import EphemeralStore from 'app/store/ephemeral_store';

@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import {DeviceTypes} from 'app/constants';
 import MainSidebar from 'app/components/sidebars/main/main_sidebar.ios';
