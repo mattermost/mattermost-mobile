@@ -8,6 +8,10 @@
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
  
+**Note:** v5.9.0 as our Extended Support Release (ESR) is coming to the end of its lifecycle. v5.19.0 will continue to be our current existing ESR until October 15, 2020. [Learn more in our forum post](https://forum.mattermost.org/t/upcoming-extended-support-release-updates/8526).
+
+**Note:** The Channel Moderation Settings feature is supported on mobile app versions v1.30 and later. In earlier versions of the mobile app, users who attempt to post or react to posts without proper permissions will see an error.
+ 
 ### Improvements
  - Improved Mobile performance related to themes and links.
  - Added support for different interactive message button styles on mobile.
@@ -21,6 +25,7 @@
  - Fixed a few crash issues.
  - Fixed an issue where the navigation bar tucked under status bar when using photo or camera post icons in landscape.
  - Fixed an issue where double dashes in mobile inside a code block got converted to emdash.
+ - Fixed an issue on iOS where the "Refreshing message failed" error was shown when starting a Direct Message with a new user without a verified email.
 
 ## 1.29.0 Release
 - Release Date: March 16, 2020
