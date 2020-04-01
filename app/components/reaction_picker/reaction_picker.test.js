@@ -6,7 +6,7 @@ import {shallow} from 'enzyme';
 
 import ReactionPicker from './reaction_picker';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 describe('Reactions', () => {
     const baseProps = {
