@@ -83,14 +83,19 @@ export default class AtMentionItem extends PureComponent {
                     theme={theme}
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
-                {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
-                {hasNickname && <Text style={style.rowFullname}>{` (${nickname})`}</Text>}
-                {isCurrentUser &&
-                    <FormattedText
-                        style={style.rowFullname}
-                        id='suggestion.mention.you'
-                        defaultMessage='(you)'
-                    />}
+                <Text
+                    style={style.rowFullname}
+                    numberOfLines={1}
+                >
+                    {hasFullName && <Text>{`${firstName} ${lastName}`}</Text>}
+                    {hasNickname && <Text>{` (${nickname})`}</Text>}
+                    {isCurrentUser &&
+                        <FormattedText
+                            style={style.rowFullname}
+                            id='suggestion.mention.you'
+                            defaultMessage='(you)'
+                        />}
+                </Text>
             </TouchableWithFeedback>
         );
     }
@@ -117,6 +122,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         rowFullname: {
             color: theme.centerChannelColor,
             opacity: 0.6,
+            flex: 1,
         },
     };
 });
