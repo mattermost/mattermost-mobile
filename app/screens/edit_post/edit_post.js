@@ -6,6 +6,7 @@ import {intlShape} from 'react-intl';
 import {
     Platform,
     View,
+    Keyboard,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
@@ -80,23 +81,39 @@ export default class EditPost extends PureComponent {
         this.focus();
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {editPostRequest} = nextProps;
+    static getDerivedStateFromProps(props, state) {
+        const {status, error} = props.editPostRequest;
+        if (status === RequestStatus.STARTED) {
+            return {
+                ...state,
+                editing: true,
+                error: null,
+            };
+        } else if (status === RequestStatus.FAILURE) {
+            return {
+                ...state,
+                editing: false,
+                error,
+            };
+        }
 
-        if (this.props.editPostRequest !== editPostRequest) {
+        return null;
+    }
+
+    componentDidUpdate(prevProps) {
+        const {editPostRequest} = this.props;
+
+        if (editPostRequest.status !== prevProps.editPostRequest.status) {
             switch (editPostRequest.status) {
             case RequestStatus.STARTED:
                 this.emitEditing(true);
-                this.setState({error: null, editing: true});
-                break;
-            case RequestStatus.SUCCESS:
-                this.emitEditing(false);
-                this.setState({error: null, editing: false});
-                this.close();
                 break;
             case RequestStatus.FAILURE:
                 this.emitEditing(false);
-                this.setState({error: editPostRequest.error, editing: false});
+                break;
+            case RequestStatus.SUCCESS:
+                this.emitEditing(false);
+                this.close();
                 break;
             }
         }
@@ -114,6 +131,7 @@ export default class EditPost extends PureComponent {
     }
 
     close = () => {
+        Keyboard.dismiss();
         dismissModal();
     };
 
@@ -134,7 +152,9 @@ export default class EditPost extends PureComponent {
     };
 
     focus = () => {
-        this.messageInput.focus();
+        if (this.messageInput) {
+            this.messageInput.focus();
+        }
     };
 
     messageRef = (ref) => {
