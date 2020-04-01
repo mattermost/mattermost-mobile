@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {getTimezoneRegion} from 'mattermost-redux/utils/timezone_utils';
+import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
 
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';

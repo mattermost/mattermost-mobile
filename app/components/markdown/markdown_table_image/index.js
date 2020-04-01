@@ -3,8 +3,8 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import MarkdownTableImage from './markdown_table_image';
 

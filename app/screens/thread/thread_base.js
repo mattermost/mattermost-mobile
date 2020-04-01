@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Keyboard} from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import {General, RequestStatus} from '@mm-redux/constants';
 
 import Loading from 'app/components/loading';
 import DeletedPost from 'app/components/deleted_post';

@@ -8,16 +8,16 @@ import {batchActions} from 'redux-batched-actions';
 import thunk from 'redux-thunk';
 import configureMockStore from 'redux-mock-store';
 
-import {ChannelTypes, GeneralTypes, RoleTypes, TeamTypes, UserTypes} from 'mattermost-redux/action_types';
-import * as ChannelActions from 'mattermost-redux/actions/channels';
-import * as PostActions from 'mattermost-redux/actions/posts';
-import * as PreferenceActions from 'mattermost-redux/actions/preferences';
-import * as TeamActions from 'mattermost-redux/actions/teams';
-import * as UserActions from 'mattermost-redux/actions/users';
-import {Client4} from 'mattermost-redux/client';
-import {General, Posts, RequestStatus} from 'mattermost-redux/constants';
-import * as PostSelectors from 'mattermost-redux/selectors/entities/posts';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {ChannelTypes, GeneralTypes, RoleTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
+import * as ChannelActions from '@mm-redux/actions/channels';
+import * as PostActions from '@mm-redux/actions/posts';
+import * as PreferenceActions from '@mm-redux/actions/preferences';
+import * as TeamActions from '@mm-redux/actions/teams';
+import * as UserActions from '@mm-redux/actions/users';
+import {Client4} from '@mm-redux/client';
+import {General, Posts, RequestStatus} from '@mm-redux/constants';
+import * as PostSelectors from '@mm-redux/selectors/entities/posts';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';
@@ -25,8 +25,6 @@ import {WebsocketEvents} from '@constants';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 import initial_state from 'app/initial_state';
-
-require('isomorphic-fetch');
 
 global.WebSocket = MockWebSocket;
 

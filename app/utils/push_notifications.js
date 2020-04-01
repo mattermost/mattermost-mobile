@@ -4,18 +4,18 @@
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {setDeviceToken} from 'mattermost-redux/actions/general';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {setDeviceToken} from '@mm-redux/actions/general';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {markChannelViewedAndRead, retryGetPostsAction} from 'app/actions/views/channel';
-import {dismissAllModals, popToRoot} from 'app/actions/navigation';
-import {getPosts} from 'app/actions/views/post';
+import {markChannelViewedAndRead, fetchPostActionWithRetry} from '@actions/views/channel';
+import {dismissAllModals, popToRoot} from '@actions/navigation';
+import {getPosts} from '@actions/views/post';
 import {
     createPostForNotificationReply,
     loadFromPushNotification,
-} from 'app/actions/views/root';
+} from '@actions/views/root';
 
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getLocalizedMessage} from 'app/i18n';
@@ -75,7 +75,7 @@ class PushNotificationUtils {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
         } else if (data.type === 'message') {
             // get the posts for the channel as soon as possible
-            retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+            dispatch(fetchPostActionWithRetry(getPosts(data.channel_id)));
 
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
@@ -121,7 +121,7 @@ class PushNotificationUtils {
                 Client4.setToken(token);
             }
 
-            retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+            dispatch(fetchPostActionWithRetry(getPosts(data.channel_id)));
             const result = await dispatch(createPostForNotificationReply(post));
             if (result.error) {
                 const locale = getCurrentLocale(state);

@@ -11,7 +11,7 @@ import {
     StyleSheet,
 } from 'react-native';
 
-import * as Utils from 'mattermost-redux/utils/file_utils.js';
+import * as Utils from '@mm-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isDocument, isGif} from 'app/utils/file';

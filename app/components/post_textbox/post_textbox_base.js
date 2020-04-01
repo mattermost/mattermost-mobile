@@ -24,9 +24,9 @@ import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import slashForwardBoxIcon from 'assets/images/icons/slash-forward-box.png';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
+import {General, RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 
 import FileUploadButton from './components/file_upload_button';
 import ImageUploadButton from './components/image_upload_button';
@@ -53,6 +53,7 @@ import {
 const {RNTextInputReset} = NativeModules;
 const INPUT_LINE_HEIGHT = 20;
 const EXTRA_INPUT_PADDING = 3;
+const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 
 export default class PostTextBoxBase extends PureComponent {
     static propTypes = {
@@ -105,6 +106,7 @@ export default class PostTextBoxBase extends PureComponent {
         files: [],
         rootId: '',
         value: '',
+        canPost: true,
     };
 
     static contextTypes = {
@@ -386,7 +388,7 @@ export default class PostTextBoxBase extends PureComponent {
         switch (keyEvent.pressedKey) {
         case 'enter': this.handleSendMessage();
             break;
-        case 'shift-enter': this.handleInsertTextToDraft('\n');
+        case 'shift-enter': this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
         }
     }
 

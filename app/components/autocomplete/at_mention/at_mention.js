@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {SectionList} from 'react-native';
 
-import {RequestStatus} from 'mattermost-redux/constants';
+import {RequestStatus} from '@mm-redux/constants';
 
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AtMentionItem from 'app/components/autocomplete/at_mention_item';

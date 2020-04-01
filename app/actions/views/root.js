@@ -3,13 +3,13 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {ChannelTypes, GeneralTypes, TeamTypes} from 'mattermost-redux/action_types';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import {fetchMyChannelsAndMembers} from 'mattermost-redux/actions/channels';
-import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
-import {receivedNewPost} from 'mattermost-redux/actions/posts';
-import {getMyTeams, getMyTeamMembers} from 'mattermost-redux/actions/teams';
+import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
+import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from '@mm-redux/actions/general';
+import {receivedNewPost} from '@mm-redux/actions/posts';
+import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
 
 import {ViewTypes} from 'app/constants';
 import EphemeralStore from 'app/store/ephemeral_store';
@@ -129,7 +129,7 @@ export function purgeOfflineStore() {
     return {type: General.OFFLINE_STORE_PURGE};
 }
 
-// A non-optimistic version of the createPost action in mattermost-redux with the file handling
+// A non-optimistic version of the createPost action in app/mm-redux with the file handling
 // removed since it's not needed.
 export function createPostForNotificationReply(post) {
     return async (dispatch, getState) => {

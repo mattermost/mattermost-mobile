@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import keyMirror from 'mattermost-redux/utils/key_mirror';
+import keyMirror from '@mm-redux/utils/key_mirror';
 import DeviceInfo from 'react-native-device-info';
 
 // The iPhone 11 and iPhone 11 Pro Max have a navbar height of 44 and iPhone 11 Pro has 32

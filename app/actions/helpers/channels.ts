@@ -1,22 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from 'mattermost-redux/action_types';
-import {Client4} from 'mattermost-redux/client';
-import {General, Preferences} from 'mattermost-redux/constants';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getMyPreferences} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId, getUsers, getUserIdsInChannels} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName, isAutoClosed} from 'mattermost-redux/utils/channel_utils';
-import {getPreferenceKey} from 'mattermost-redux/utils/preference_utils';
+import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {General, Preferences} from '@mm-redux/constants';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUsers, getUserIdsInChannels} from '@mm-redux/selectors/entities/users';
+import {getUserIdFromChannelName, isAutoClosed} from '@mm-redux/utils/channel_utils';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
-import {ActionResult, GenericAction} from 'mattermost-redux/types/actions';
-import {Channel, ChannelMembership} from 'mattermost-redux/types/channels';
-import {PreferenceType} from 'mattermost-redux/types/preferences';
-import {GlobalState} from 'mattermost-redux/types/store';
-import {UserProfile} from 'mattermost-redux/types/users';
-import {RelationOneToMany} from 'mattermost-redux/types/utilities';
+import {ActionResult, GenericAction} from '@mm-redux/types/actions';
+import {Channel, ChannelMembership} from '@mm-redux/types/channels';
+import {PreferenceType} from '@mm-redux/types/preferences';
+import {GlobalState} from '@mm-redux/types/store';
+import {UserProfile} from '@mm-redux/types/users';
+import {RelationOneToMany} from '@mm-redux/types/utilities';
 
 import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
 import {buildPreference} from '@utils/preferences';
@@ -28,11 +28,14 @@ export async function loadSidebarDirectMessagesProfiles(state: GlobalState, chan
     const prefs: Array<PreferenceType> = [];
     const promises: Array<Promise<ActionResult>> = []; //only fetch profiles that we don't have and the Direct channel should be visible
     const actions = [];
+    const userIds: Array<string> = [];
 
     // Prepare preferences and start fetching profiles to batch them
     directChannels.forEach((c) => {
         const profileIds = Array.from(usersInChannel[c.id] || []);
         const profilesInChannel: Array<string> = profileIds.filter((u: string) => u !== currentUserId);
+        userIds.push(...profilesInChannel);
+
         switch (c.type) {
         case General.DM_CHANNEL: {
             const dm = fetchDirectMessageProfileIfNeeded(state, c, channelMembers, profilesInChannel);
@@ -70,8 +73,28 @@ export async function loadSidebarDirectMessagesProfiles(state: GlobalState, chan
     }
 
     const profilesAction = await getProfilesFromPromises(promises);
+    const userIdsSet: Set<string> = new Set(userIds);
+
     if (profilesAction) {
         actions.push(profilesAction);
+        profilesAction.data.forEach((d: any) => {
+            const {users} = d.data;
+            users.forEach((u: UserProfile) => userIdsSet.add(u.id));
+        });
+    }
+
+    if (userIdsSet.size > 0) {
+        try {
+            const statuses = await Client4.getStatusesByIds(Array.from(userIdsSet));
+            if (statuses.length) {
+                actions.push({
+                    type: UserTypes.RECEIVED_STATUSES,
+                    data: statuses,
+                });
+            }
+        } catch {
+            // do nothing (status will get fetched later on regardless)
+        }
     }
 
     return actions;
@@ -213,7 +236,7 @@ export async function fetchChannelAndMyMember(channelId: string): Promise<Array<
             });
         }
     } catch {
-    // do nothing   
+        // do nothing
     }
 
     return actions;
@@ -290,7 +313,7 @@ function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel,
     const currentUserId = getCurrentUserId(state);
     const myPreferences = getMyPreferences(state);
     const config = getConfig(state);
-    const gmVisible = isGroupChannelVisible(myPreferences, channel.id);
+    const gmVisible = isGroupChannelVisible(myPreferences, channel);
     const gmAutoClosed = isAutoClosed(config, myPreferences, channel, channel.last_post_at, 0);
     const channelMember = channelMembers.find((cm) => cm.channel_id === channel.id);
     let hasMentions = false;

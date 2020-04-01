@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Posts} from 'mattermost-redux/constants';
-import {makeGetPostsForIds} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
-import {createIdsSelector} from 'mattermost-redux/utils/helpers';
+import {Posts} from '@mm-redux/constants';
+import {makeGetPostsForIds} from '@mm-redux/selectors/entities/posts';
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
 
-import {DATE_LINE} from 'mattermost-redux/utils/post_list';
+import {DATE_LINE} from '@mm-redux/utils/post_list';
 
 export {DATE_LINE};
 export const DATE_LINE_SUFFIX = '-index-';

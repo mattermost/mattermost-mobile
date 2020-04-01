@@ -3,8 +3,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {logError} from 'mattermost-redux/actions/errors';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {logError} from '@mm-redux/actions/errors';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {setLastUpgradeCheck} from 'app/actions/views/client_upgrade';
 import getClientUpgrade from 'app/selectors/client_upgrade';

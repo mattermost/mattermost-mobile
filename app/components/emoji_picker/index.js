@@ -5,10 +5,10 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getCustomEmojis, searchCustomEmojis} from 'mattermost-redux/actions/emojis';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getCustomEmojis, searchCustomEmojis} from '@mm-redux/actions/emojis';
 
 import {incrementEmojiPickerPage} from 'app/actions/views/emoji';
 import {getDimensions, isLandscape} from 'app/selectors/device';

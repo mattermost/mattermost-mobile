@@ -24,7 +24,7 @@ import Gallery from 'react-native-image-gallery';
 import DeviceInfo from 'react-native-device-info';
 import FastImage from 'react-native-fast-image';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';

@@ -3,7 +3,7 @@
 import {AsyncNodeStorage} from 'redux-persist-node-storage';
 import {createTransform, persistStore} from 'redux-persist';
 
-import configureStore from 'mattermost-redux/store';
+import configureStore from '@mm-redux/store';
 
 export default async function testConfigureStore(preloadedState) {
     const storageTransform = createTransform(
