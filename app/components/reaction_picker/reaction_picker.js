@@ -4,16 +4,14 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Dimensions,
     Image,
     View,
     TouchableWithoutFeedback,
 } from 'react-native';
 
-import Emoji from 'app/components/emoji';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {hapticFeedback} from 'app/utils/general';
 import addReactionIcon from 'assets/images/icons/reaction.png';
+import ReactionButton from './reaction_button';
 import {
     REACTION_PICKER_HEIGHT,
     DEFAULT_EMOJIS,
@@ -24,34 +22,26 @@ import {
     LARGE_ICON_SIZE,
 } from 'app/constants/reaction_picker';
 
-export default class Reaction extends PureComponent {
+export default class ReactionPicker extends PureComponent {
     static propTypes = {
         addReaction: PropTypes.func.isRequired,
         openReactionScreen: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         recentEmojis: PropTypes.array,
+        deviceWidth: PropTypes.number,
     }
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            selectedIndex: -1,
-        };
-    }
-
-    handlePress = (emoji, index) => {
-        hapticFeedback();
-        this.setState({selectedIndex: index}, () => {
-            this.props.addReaction(emoji);
-        });
+    handlePress = (emoji) => {
+        this.props.addReaction(emoji);
     }
 
     render() {
         const {
             theme,
+            deviceWidth,
         } = this.props;
         const style = getStyleSheet(theme);
-        const isSmallDevice = Dimensions.get('window').width < SMALL_ICON_BREAKPOINT;
+        const isSmallDevice = deviceWidth < SMALL_ICON_BREAKPOINT;
 
         let containerSize = LARGE_CONTAINER_SIZE;
         let iconSize = LARGE_ICON_SIZE;
@@ -64,29 +54,16 @@ export default class Reaction extends PureComponent {
         // Mixing recent emojis with default list and removing duplicates
         const emojis = Array.from(new Set(this.props.recentEmojis.concat(DEFAULT_EMOJIS))).splice(0, 6);
 
-        const list = emojis.map((emoji, index) => {
+        const list = emojis.map((emoji) => {
             return (
-                <TouchableWithoutFeedback
+                <ReactionButton
                     key={emoji}
-                    onPress={() => this.handlePress(emoji, index)}
-                >
-                    <View
-                        style={[
-                            style.reactionContainer,
-                            this.state.selectedIndex === index ? style.highlight : null,
-                            {
-                                width: containerSize,
-                                height: containerSize,
-                            },
-                        ]}
-                    >
-                        <Emoji
-                            emojiName={emoji}
-                            textStyle={style.emoji}
-                            size={iconSize}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
+                    theme={theme}
+                    addReaction={this.handlePress}
+                    emoji={emoji}
+                    iconSize={iconSize}
+                    containerSize={containerSize}
+                />
             );
         });
 
@@ -118,15 +95,8 @@ export default class Reaction extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        emoji: {
-            color: '#000',
-            fontWeight: 'bold',
-        },
         iconImage: {
             tintColor: theme.centerChannelColor,
-        },
-        highlight: {
-            backgroundColor: changeOpacity(theme.linkColor, 0.1),
         },
         reactionListContainer: {
             flex: 1,

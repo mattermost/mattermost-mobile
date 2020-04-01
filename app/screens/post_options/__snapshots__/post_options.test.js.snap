@@ -43,7 +43,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       }
     }
   >
-    <Connect(Reaction)
+    <Connect(ReactionPicker)
       addReaction={[Function]}
       openReactionScreen={[Function]}
     />
@@ -237,7 +237,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       }
     }
   >
-    <Connect(Reaction)
+    <Connect(ReactionPicker)
       addReaction={[Function]}
       openReactionScreen={[Function]}
     />
@@ -467,7 +467,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       }
     }
   >
-    <Connect(Reaction)
+    <Connect(ReactionPicker)
       addReaction={[Function]}
       openReactionScreen={[Function]}
     />

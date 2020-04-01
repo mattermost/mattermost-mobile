@@ -14,198 +14,216 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
     }
   }
 >
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="thumbsup"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="thumbsup"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="smiley"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="smiley"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="white_check_mark"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="white_check_mark"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="heart"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="heart"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="eyes"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="eyes"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="raised_hands"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="raised_hands"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
+    }
+  />
   <TouchableWithoutFeedback
     onPress={[MockFunction]}
   >
@@ -260,198 +278,216 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
     }
   }
 >
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="rocket"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="rocket"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="100"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="100"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="thumbsup"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="thumbsup"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="smiley"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="smiley"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="white_check_mark"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="white_check_mark"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
-  <TouchableWithoutFeedback
-    onPress={[Function]}
-  >
-    <View
-      style={
-        Array [
-          Object {
-            "alignItems": "center",
-            "backgroundColor": "rgba(61,60,64,0.04)",
-            "borderRadius": 4,
-            "justifyContent": "center",
-          },
-          null,
-          Object {
-            "height": 48,
-            "width": 48,
-          },
-        ]
+    }
+  />
+  <ReactionButton
+    addReaction={[Function]}
+    containerSize={48}
+    emoji="heart"
+    iconSize={32}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-    >
-      <Connect(Emoji)
-        emojiName="heart"
-        size={32}
-        textStyle={
-          Object {
-            "color": "#000",
-            "fontWeight": "bold",
-          }
-        }
-      />
-    </View>
-  </TouchableWithoutFeedback>
+    }
+  />
   <TouchableWithoutFeedback
     onPress={[MockFunction]}
   >
