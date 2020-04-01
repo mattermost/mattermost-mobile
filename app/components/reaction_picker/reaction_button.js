@@ -37,10 +37,10 @@ export default class ReactionButton extends PureComponent {
         };
     }
 
-    handlePress = (emoji) => {
+    handlePress = () => {
         hapticFeedback();
         this.setState({isSelected: true}, () => {
-            this.props.addReaction(emoji);
+            this.props.addReaction(this.props.emoji);
         });
     }
 
@@ -56,7 +56,7 @@ export default class ReactionButton extends PureComponent {
         return (
             <TouchableWithoutFeedback
                 key={emoji}
-                onPress={() => this.handlePress(emoji)}
+                onPress={this.handlePress}
             >
                 <View
                     style={[
