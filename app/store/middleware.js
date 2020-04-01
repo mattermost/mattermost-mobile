@@ -1,17 +1,147 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {batchActions} from 'redux-batched-actions';
+import AsyncStorage from '@react-native-community/async-storage';
+import {purgeStoredState} from 'redux-persist';
 
-import {ViewTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
+import {throttle} from 'app/utils/general';
+
+import {General} from '@mm-redux/constants';
+import {ErrorTypes, GeneralTypes} from '@mm-redux/action_types';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
+import mattermostBucket from 'app/mattermost_bucket';
+
+import {getStateForReset} from './utils';
 
 import {
     captureException,
     LOGGER_JAVASCRIPT_WARNING,
 } from 'app/utils/sentry';
 
-export function messageRetention(store) {
+const SAVE_STATE_ACTIONS = [
+    'CONNECTION_CHANGED',
+    'DATA_CLEANUP',
+    'LOGIN',
+    'Offline/STATUS_CHANGED',
+    'persist/REHYDRATE',
+    'RECEIVED_APP_STATE',
+    'WEBSOCKET_CLOSED',
+    'WEBSOCKET_SUCCESS',
+];
+
+// This middleware stores key parts of state entities into a file (in the App Group container) on certain actions.
+// iOS only. Allows the share extension to work, without having access available to the redux store object.
+// Remove this middleware if/when state is moved to a persisted solution.
+const saveShareExtensionState = (store) => {
+    return (next) => (action) => {
+        if (SAVE_STATE_ACTIONS.includes(action.type)) {
+            throttle(saveStateToFile(store));
+        }
+        return next(action);
+    };
+};
+
+const saveStateToFile = async (store) => {
+    if (Platform.OS === 'ios') {
+        const state = store.getState();
+
+        if (state.entities) {
+            const channelsInTeam = {...state.entities.channels.channelsInTeam};
+            Object.keys(channelsInTeam).forEach((teamId) => {
+                channelsInTeam[teamId] = Array.from(channelsInTeam[teamId]);
+            });
+
+            const profilesInChannel = {...state.entities.users.profilesInChannel};
+            Object.keys(profilesInChannel).forEach((channelId) => {
+                profilesInChannel[channelId] = Array.from(profilesInChannel[channelId]);
+            });
+
+            let url;
+            if (state.entities.users.currentUserId) {
+                url = state.entities.general.credentials.url || state.views.selectServer.serverUrl;
+            }
+
+            const entities = {
+                ...state.entities,
+                general: {
+                    ...state.entities.general,
+                    credentials: {
+                        url,
+                    },
+                },
+                channels: {
+                    ...state.entities.channels,
+                    channelsInTeam,
+                },
+                users: {
+                    ...state.entities.users,
+                    profilesInChannel,
+                    profilesNotInTeam: [],
+                    profilesWithoutTeam: [],
+                    profilesNotInChannel: [],
+                },
+            };
+
+            mattermostBucket.writeToFile('entities', JSON.stringify(entities));
+        }
+    }
+};
+
+const purgeAppCacheWrapper = (persistConfig) => (store) => {
+    return (next) => (action) => {
+        if (action.type === General.OFFLINE_STORE_PURGE) {
+            purgeStoredState({...persistConfig, storage: AsyncStorage});
+
+            const state = store.getState();
+            const resetState = getStateForReset(initialState, state);
+
+            store.dispatch(batchActions([
+                {
+                    type: General.OFFLINE_STORE_RESET,
+                    data: resetState,
+                },
+                {
+                    type: ErrorTypes.RESTORE_ERRORS,
+                    data: [...state.errors],
+                },
+                {
+                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
+                    data: state.entities.general.deviceToken,
+                },
+                {
+                    type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
+                    data: {
+                        url: state.entities.general.credentials.url,
+                    },
+                },
+                {
+                    type: ViewTypes.SERVER_URL_CHANGED,
+                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
+                },
+                {
+                    type: GeneralTypes.RECEIVED_SERVER_VERSION,
+                    data: state.entities.general.serverVersion,
+                },
+                {
+                    type: General.STORE_REHYDRATION_COMPLETE,
+                },
+            ], 'BATCH_FOR_RESTART'));
+
+            setTimeout(() => {
+                EventEmitter.emit(NavigationTypes.RESTART_APP);
+            }, 500);
+        }
+        return next(action);
+    };
+};
+
+const messageRetention = (store) => {
     return (next) => (action) => {
         if (action.type === 'persist/REHYDRATE') {
             const {app} = action.payload;
@@ -55,7 +185,7 @@ export function messageRetention(store) {
 
         return next(action);
     };
-}
+};
 
 function resetStateForNewVersion(action) {
     const {payload} = action;
@@ -434,3 +564,17 @@ function removePendingPost(pendingPostIds, id) {
         pendingPostIds.splice(pendingIndex, 1);
     }
 }
+
+export const middlewares = (persistConfig) => {
+    const middlewareFunctions = [
+        messageRetention,
+        purgeAppCacheWrapper(persistConfig),
+    ];
+
+    if (Platform.OS === 'ios') {
+        middlewareFunctions.push(saveShareExtensionState);
+    }
+
+    return middlewareFunctions;
+};
+
