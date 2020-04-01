@@ -186,7 +186,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         addReaction: {
             tintColor: changeOpacity(theme.centerChannelColor, 0.5),
             width: 23,
-            height: 20,
+            height: 23,
         },
         reaction: {
             alignItems: 'center',
