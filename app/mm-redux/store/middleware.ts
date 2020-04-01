@@ -3,7 +3,7 @@
 import thunk, {ThunkMiddleware} from 'redux-thunk';
 
 import createActionBuffer from 'redux-action-buffer';
-import {REHYDRATE} from 'redux-persist/constants';
+import {REHYDRATE} from 'redux-persist';
 
 const defaultOptions = {
     additionalMiddleware: [],

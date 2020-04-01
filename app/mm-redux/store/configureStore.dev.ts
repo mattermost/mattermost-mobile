@@ -3,16 +3,28 @@
 
 /* eslint-disable no-undefined */
 import * as redux from 'redux';
-import {createOfflineReducer, networkStatusChangedAction, offlineCompose} from 'redux-offline';
-import defaultOfflineConfig from 'redux-offline/lib/defaults';
-import reducerRegistry from './reducer_registry';
+import {persistReducer, persistStore} from 'redux-persist';
 import devTools from 'remote-redux-devtools';
+
+import {General} from '@mm-redux/constants';
+import {Reducer, Action} from '@mm-redux/types/actions';
+import {GlobalState} from '@mm-redux/types/store';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
+
+import {getSiteUrl, setSiteUrl} from '@utils/image_cache_manager';
+
+import serviceReducer from '../reducers';
+import reducerRegistry from './reducer_registry';
+import initialState from './initial_state';
+import {createReducer} from './helpers';
+import {createMiddleware} from './middleware';
 
 const globalAny = global as any;
 const window = globalAny.window;
 
 const devToolsEnhancer = typeof window !== 'undefined' && window.__REDUX_DEVTOOLS_EXTENSION__ ? // eslint-disable-line no-underscore-dangle
-    window.__REDUX_DEVTOOLS_EXTENSION__ : // eslint-disable-line no-underscore-dangle
+    window.__REDUX_DEVTOOLS_EXTENSION__() : // eslint-disable-line no-underscore-dangle
     () => {
         return devTools({
             name: 'Mattermost',
@@ -21,57 +33,58 @@ const devToolsEnhancer = typeof window !== 'undefined' && window.__REDUX_DEVTOOL
             realtime: true,
         });
     };
-import serviceReducer from '../reducers';
-import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
-import initialState from './initial_state';
-import {offlineConfig, createReducer} from './helpers';
-import {createMiddleware} from './middleware';
-import {Reducer, Action} from '@mm-redux/types/actions';
-import {GlobalState} from '@mm-redux/types/store';
 
 /**
  * Configures and constructs the redux store. Accepts the following parameters:
  * preloadedState - Any preloaded state to be applied to the store after it is initially configured.
  * appReducer - An object containing any app-specific reducer functions that the client needs.
- * userOfflineConfig - Any additional configuration data to be passed into redux-offline aside from the default values.
+ * persistConfig - Configuration for redux-persist.
  * getAppReducer - A function that returns the appReducer as defined above. Only used in development to enable hot reloading.
  * clientOptions - An object containing additional options used when configuring the redux store. The following options are available:
  *     additionalMiddleware - func | array - Allows for single or multiple additional middleware functions to be passed in from the client side.
  *     enableBuffer - bool - default = true - If true, the store will buffer all actions until offline state rehydration occurs.
  *     enableThunk - bool - default = true - If true, include the thunk middleware automatically. If false, thunk must be provided as part of additionalMiddleware.
  */
-export default function configureServiceStore(preloadedState: any, appReducer: any, userOfflineConfig: any, getAppReducer: any, clientOptions: any) {
-    const baseOfflineConfig = Object.assign({}, defaultOfflineConfig, offlineConfig, userOfflineConfig);
+export default function configureServiceStore(preloadedState: any, appReducer: any, persistConfig: any, getAppReducer: any, clientOptions: any) {
     const baseState = Object.assign({}, initialState, preloadedState);
 
-    const loadReduxDevtools = process.env.NODE_ENV !== 'test'; //eslint-disable-line no-process-env
+    const rootReducer = createReducer(serviceReducer as any, appReducer);
+    const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+    const enhancers = [
+        redux.applyMiddleware(...createMiddleware(clientOptions)),
+    ];
+    if (process.env.NODE_ENV !== 'test') { //eslint-disable-line no-process-env
+        enhancers.push(devToolsEnhancer());
+    }
 
     const store = redux.createStore(
-        createOfflineReducer(createDevReducer(baseState, serviceReducer, appReducer)),
+        persistedReducer,
         baseState,
-        offlineCompose(baseOfflineConfig)(
-            createMiddleware(clientOptions),
-            loadReduxDevtools ? [devToolsEnhancer()] : []
-        )
+        redux.compose(...enhancers),
     );
 
     reducerRegistry.setChangeListener((reducers: any) => {
-        store.replaceReducer(createOfflineReducer(createDevReducer(baseState, reducers)));
+        store.replaceReducer(createDevReducer(baseState, reducers));
     });
 
-    // launch store persistor
-    if (baseOfflineConfig.persist) {
-        baseOfflineConfig.persist(store, baseOfflineConfig.persistOptions, baseOfflineConfig.persistCallback);
-    }
-
-    if (baseOfflineConfig.detectNetwork) {
-        baseOfflineConfig.detectNetwork((online: boolean) => {
-            store.dispatch(networkStatusChangedAction(online));
+    const persistor = persistStore(store, null, () => {
+        store.dispatch({
+            type: General.STORE_REHYDRATION_COMPLETE,
         });
-    }
+
+        store.subscribe(async () => {
+            const state = store.getState();
+            const config = getConfig(state as any);
+
+            if (getSiteUrl() !== config?.SiteURL) {
+                setSiteUrl(config.SiteURL);
+            }
+        });
+    });
 
     if ((module as any).hot) {
-    // Enable Webpack hot module replacement for reducers
+        // Enable Webpack hot module replacement for reducers
         (module as any).hot.accept(() => {
             const nextServiceReducer = require('../reducers').default; // eslint-disable-line global-require
             let nextAppReducer;
@@ -82,7 +95,7 @@ export default function configureServiceStore(preloadedState: any, appReducer: a
         });
     }
 
-    return store;
+    return {store, persistor};
 }
 
 function createDevReducer(baseState: any, ...reducers: any) {

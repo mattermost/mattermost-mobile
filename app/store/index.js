@@ -4,6 +4,7 @@
 import initialState from 'app/initial_state';
 import configureAppStore from './store';
 
-const store = configureAppStore(initialState);
+const {store, persistor} = configureAppStore(initialState);
 
+export {persistor};
 export default store;

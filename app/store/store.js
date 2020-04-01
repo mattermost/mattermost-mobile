@@ -3,14 +3,11 @@
 
 import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
-import {createTransform, persistStore} from 'redux-persist';
+import {createTransform} from 'redux-persist';
 
-import {General} from '@mm-redux/constants';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 import configureStore from '@mm-redux/store';
 
 import appReducer from 'app/reducers';
-import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
 import {middlewares} from './middleware';
@@ -124,47 +121,16 @@ const setTransformer = createTransform(
 );
 
 const persistConfig = {
-    effect: (effect, action) => {
-        if (typeof effect !== 'function') {
-            throw new Error('Offline Action: effect must be a function.');
-        } else if (!action.meta.offline.commit) {
-            throw new Error('Offline Action: commit action must be present.');
-        }
-
-        return effect();
-    },
-    persist: (store, options) => {
-        const persistor = persistStore(store, {storage: AsyncStorage, ...options}, () => {
-            store.dispatch({
-                type: General.STORE_REHYDRATION_COMPLETE,
-            });
-        });
-
-        store.subscribe(async () => {
-            const state = store.getState();
-            const config = getConfig(state);
-
-            if (getSiteUrl() !== config?.SiteURL) {
-                setSiteUrl(config.SiteURL);
-            }
-        });
-
-        return persistor;
-    },
-    persistOptions: {
-        autoRehydrate: {
-            log: false,
-        },
-        blacklist: ['device', 'navigation', 'offline', 'requests'],
-        debounce: 500,
-        transforms: [
-            setTransformer,
-            viewsBlackListFilter,
-            typingBlackListFilter,
-            channelViewBlackListFilter,
-            emojiBlackListFilter,
-        ],
-    },
+    key: 'root',
+    storage: AsyncStorage,
+    blacklist: ['device', 'navigation', 'offline', 'requests'],
+    transforms: [
+        setTransformer,
+        viewsBlackListFilter,
+        typingBlackListFilter,
+        channelViewBlackListFilter,
+        emojiBlackListFilter,
+    ],
 };
 
 export default function configureAppStore(initialState) {

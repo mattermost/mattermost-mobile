@@ -18,7 +18,7 @@ import 'app/init/device';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
-import store from 'app/store';
+import store, {persistor} from 'app/store';
 import {waitForHydration} from 'app/store/utils';
 import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
@@ -37,7 +37,7 @@ const init = async () => {
         launchApp,
     });
 
-    registerScreens(store, Provider);
+    registerScreens(store, persistor, Provider);
 
     if (!EphemeralStore.appStarted) {
         launchAppAndAuthenticateIfNeeded(credentials);

@@ -1,24 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {networkStatusChangedAction} from 'redux-offline';
-import {batchActions} from 'redux-batched-actions';
-
 import {DeviceTypes} from 'app/constants';
-
-export function connection(isOnline) {
-    return async (dispatch, getState) => {
-        const state = getState();
-        if (isOnline !== undefined && isOnline !== state.device.connection) { //eslint-disable-line no-undefined
-            dispatch(batchActions([
-                networkStatusChangedAction(isOnline), {
-                    type: DeviceTypes.CONNECTION_CHANGED,
-                    data: isOnline,
-                },
-            ], 'BATCH_CONNECTION_CHANGED'));
-        }
-    };
-}
 
 export function setStatusBarHeight(height = 20) {
     return {
@@ -52,7 +35,6 @@ export function setDeviceAsTablet() {
 }
 
 export default {
-    connection,
     setDeviceDimensions,
     setDeviceOrientation,
     setDeviceAsTablet,
