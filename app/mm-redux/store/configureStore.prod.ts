@@ -40,7 +40,9 @@ export default function configureOfflineServiceStore(preloadedState: any, appRed
     );
 
     reducerRegistry.setChangeListener((reducers: any) => {
-        store.replaceReducer(createDevReducer(baseState, reducers));
+        const reducer = persistReducer(persistConfig, createReducer(baseState, reducers));
+
+        store.replaceReducer(reducer);
     });
 
     const persistor = persistStore(store, null, () => {

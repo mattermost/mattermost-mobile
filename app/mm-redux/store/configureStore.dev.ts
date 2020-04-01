@@ -48,7 +48,7 @@ const devToolsEnhancer = typeof window !== 'undefined' && window.__REDUX_DEVTOOL
 export default function configureServiceStore(preloadedState: any, appReducer: any, persistConfig: any, getAppReducer: any, clientOptions: any) {
     const baseState = Object.assign({}, initialState, preloadedState);
 
-    const rootReducer = createReducer(serviceReducer as any, appReducer);
+    const rootReducer = createDevReducer(baseState, serviceReducer as any, appReducer);
     const persistedReducer = persistReducer(persistConfig, rootReducer);
 
     const enhancers = [
@@ -65,7 +65,10 @@ export default function configureServiceStore(preloadedState: any, appReducer: a
     );
 
     reducerRegistry.setChangeListener((reducers: any) => {
-        store.replaceReducer(createDevReducer(baseState, reducers));
+        const devReducer = createDevReducer(baseState, reducers);
+        const persistedDevReducer = persistReducer(persistConfig, devReducer);
+
+        store.replaceReducer(persistedDevReducer);
     });
 
     const persistor = persistStore(store, null, () => {
@@ -91,7 +94,11 @@ export default function configureServiceStore(preloadedState: any, appReducer: a
             if (getAppReducer) {
                 nextAppReducer = getAppReducer(); // eslint-disable-line global-require
             }
-            store.replaceReducer(createDevReducer(baseState, reducerRegistry.getReducers(), nextServiceReducer, nextAppReducer));
+
+            const devReducer = createDevReducer(baseState, reducerRegistry.getReducers(), nextServiceReducer, nextAppReducer);
+            const persistedDevReducer = persistReducer(persistConfig, devReducer);
+
+            store.replaceReducer(persistedDevReducer);
         });
     }
 
