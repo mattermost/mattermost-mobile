@@ -4,11 +4,12 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Platform,
     TouchableWithoutFeedback,
     View,
     ViewPropTypes,
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -35,9 +36,9 @@ export default class UnreadIndicatorBase extends PureComponent {
                 style={[style.wrapper, this.props.style]}
                 pointerEvents={visible ? 'auto' : 'none'}
             >
-                <IonIcon
-                    size={14}
-                    name='md-arrow-round-up'
+                <MaterialIcon
+                    size={15}
+                    name='arrow-upward'
                     color={theme.mentionColor}
                     style={style.arrow}
                 />
@@ -64,9 +65,10 @@ export default class UnreadIndicatorBase extends PureComponent {
 export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         arrow: {
-            position: 'relative',
-            bottom: -1,
+            fontSize: 16,
             marginRight: 8,
+            position: 'relative',
+            textAlignVertical: 'center',
         },
         container: {
             justifyContent: 'center',
@@ -79,20 +81,35 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         indicatorText: {
             backgroundColor: 'transparent',
             color: theme.mentionColor,
-            fontSize: 14,
-            paddingVertical: 2,
-            paddingHorizontal: 4,
+            fontSize: 15,
             textAlign: 'center',
             textAlignVertical: 'center',
+            ...Platform.select({
+                ios: {
+                    fontWeight: '700',
+                },
+                android: {
+                    fontFamily: 'Roboto-Medium',
+                },
+            })
         },
         wrapper: {
             borderRadius: 15,
             height: 25,
             flexDirection: 'row',
-            paddingLeft: 10,
-            paddingRight: 12,
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingVertical: 13.5,
             justifyContent: 'center',
             alignItems: 'center',
+            elevation: 5,
+            shadowColor: theme.centerChannelColor,
+            shadowOffset: {
+                width: 0,
+                height: 6,
+            },
+            shadowOpacity: 0.12,
+            shadowRadius: 4,
         },
     };
 });
