@@ -88,13 +88,12 @@ export default class AtMentionItem extends PureComponent {
                     numberOfLines={1}
                 >
                     {hasFullName && `${firstName} ${lastName}`}
-                    {hasNickname && ` (${nickname})`}
+                    {hasNickname && ` (${nickname}) `}
                     {isCurrentUser &&
-                        <FormattedText
-                            style={style.rowFullname}
-                            id='suggestion.mention.you'
-                            defaultMessage='(you)'
-                        />}
+                    <FormattedText
+                        id='suggestion.mention.you'
+                        defaultMessage='(you)'
+                    />}
                 </Text>
             </TouchableWithFeedback>
         );
