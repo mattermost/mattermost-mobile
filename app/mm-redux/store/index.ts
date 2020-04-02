@@ -2,13 +2,16 @@
 // See LICENSE.txt for license information.
 
 import * as redux from 'redux';
-import {persistReducer, persistStore, Persistor} from 'redux-persist';
+import {persistReducer, persistStore, Persistor, createPersistoid} from 'redux-persist';
+import AsyncStorage from '@react-native-community/async-storage';
 
-import serviceReducer from '../reducers';
-import reducerRegistry from './reducer_registry';
-import {createReducer} from './helpers';
+import {General} from '@mm-redux/constants';
+import serviceReducer from '@mm-redux/reducers';
+
+import {createReducer, getStoredState} from './helpers';
 import initialState from './initial_state';
 import {createMiddleware} from './middleware';
+import reducerRegistry from './reducer_registry';
 
 /**
  * Configures and constructs the redux store. Accepts the following parameters:
@@ -34,36 +37,72 @@ type ClientOptions = {
     enhancers: [];
 }
 
-const defaultOptions: ClientOptions = {
+type V4Store = {
+    storeKeys: Array<string>;
+    restoredState: any;
+}
+
+const defaultClientOptions: ClientOptions = {
     additionalMiddleware: [],
     enableBuffer: true,
     enableThunk: true,
     enhancers: [],
 };
 
-export default function configureStore(preloadedState: any, appReducer: any, persistConfig: any, clientOptions: ClientOptions = defaultOptions): ReduxStore {
+export default function configureStore(preloadedState: any, appReducer: any, persistConfig: any, clientOptions: ClientOptions): ReduxStore {
     const baseState = Object.assign({}, initialState, preloadedState);
     const rootReducer = createReducer(serviceReducer as any, appReducer);
-    const persistedReducer = persistReducer({...persistConfig, debug: true}, rootReducer);
+    const persistedReducer = persistReducer({...persistConfig}, rootReducer);
+    const options = Object.assign({}, defaultClientOptions, clientOptions);
 
     const store = redux.createStore(
         persistedReducer,
         baseState,
         redux.compose(
             redux.applyMiddleware(
-                ...createMiddleware(clientOptions),
+                ...createMiddleware(options),
             ),
-            ...clientOptions.enhancers,
+            ...options.enhancers,
         ),
     );
 
     reducerRegistry.setChangeListener((reducers: any) => {
-        const reducer = persistReducer({...persistConfig, debug: true}, createReducer(baseState, reducers));
+        const reducer = persistReducer(persistConfig, createReducer(baseState, reducers));
 
         store.replaceReducer(reducer);
     });
 
     const persistor = persistStore(store, null);
+
+    getStoredState().then(({storeKeys, restoredState}: V4Store) => {
+        if (Object.keys(restoredState).length) {
+            const state = {
+                ...restoredState,
+                views: {
+                    ...restoredState.views,
+                    root: {
+                        hydrationComplete: true,
+                    },
+                },
+                _persist: persistor.getState(),
+            };
+
+            store.dispatch({
+                type: General.OFFLINE_STORE_PURGE,
+                state,
+            });
+
+            console.log('HYDRATED FROM v4', storeKeys); // eslint-disable-line no-console
+            const persistoid = createPersistoid(persistConfig);
+            store.subscribe(() => {
+                persistoid.update(store.getState());
+            });
+            store.dispatch({type: General.REHYDRATED});
+            AsyncStorage.multiRemove(storeKeys);
+        } else {
+            store.dispatch({type: General.REHYDRATED});
+        }
+    });
 
     return {store, persistor};
 }

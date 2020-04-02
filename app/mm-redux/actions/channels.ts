@@ -1381,7 +1381,7 @@ export function favoriteChannel(channelId: string): ActionFunc {
 
         Client4.trackEvent('action', 'action_channels_favorite');
 
-        return savePreferences(currentUserId, [preference])(dispatch);
+        return dispatch(savePreferences(currentUserId, [preference]));
     };
 }
 

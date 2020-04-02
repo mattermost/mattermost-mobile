@@ -155,7 +155,6 @@ module.exports = [
     'app/mm-redux/store/index.ts',
     'app/mm-redux/store/initial_state.ts',
     'app/mm-redux/store/middleware.ts',
-    'app/mm-redux/store/reducer_registry.ts',
     'app/mm-redux/types/actions.ts',
     'app/mm-redux/utils/channel_utils.ts',
     'app/mm-redux/utils/emoji_utils.ts',

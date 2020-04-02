@@ -23,7 +23,14 @@ describe('Actions.Channels', () => {
     });
 
     beforeEach(async () => {
-        store = await configureStore();
+        const initialState = {
+            entities: {
+                users: {
+                    currentUserId: TestHelper.basicUser.id,
+                },
+            },
+        };
+        store = await configureStore(initialState);
     });
 
     afterAll(async () => {

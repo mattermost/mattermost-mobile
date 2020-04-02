@@ -68,4 +68,5 @@ export default {
     DISABLED: 'disabled',
     DEFAULT_ON: 'default_on',
     DEFAULT_OFF: 'default_off',
+    REHYDRATED: 'app/REHYDRATED',
 };

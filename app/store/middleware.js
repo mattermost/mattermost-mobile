@@ -296,16 +296,20 @@ function resetStateForNewVersion(payload) {
 }
 
 function getLastChannelForTeam(payload) {
-    const lastChannelForTeam = {...payload.views.team.lastChannelForTeam};
-    const convertLastChannelForTeam = Object.values(lastChannelForTeam).some((value) => !Array.isArray(value));
+    if (payload?.views?.team?.lastChannelForTeam) {
+        const lastChannelForTeam = {...payload.views.team.lastChannelForTeam};
+        const convertLastChannelForTeam = Object.values(lastChannelForTeam).some((value) => !Array.isArray(value));
 
-    if (convertLastChannelForTeam) {
-        Object.keys(lastChannelForTeam).forEach((id) => {
-            lastChannelForTeam[id] = [lastChannelForTeam[id]];
-        });
+        if (convertLastChannelForTeam) {
+            Object.keys(lastChannelForTeam).forEach((id) => {
+                lastChannelForTeam[id] = [lastChannelForTeam[id]];
+            });
+        }
+
+        return lastChannelForTeam;
     }
 
-    return lastChannelForTeam;
+    return {};
 }
 
 export function cleanUpState(payload, keepCurrent = false) {

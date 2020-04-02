@@ -3,7 +3,8 @@
 import thunk, {ThunkMiddleware} from 'redux-thunk';
 
 import createActionBuffer from 'redux-action-buffer';
-import {REHYDRATE, PERSIST} from 'redux-persist';
+import {PERSIST} from 'redux-persist';
+import {General} from '@mm-redux/constants';
 
 export function createMiddleware(clientOptions: any): ThunkMiddleware[] {
     const {
@@ -26,7 +27,7 @@ export function createMiddleware(clientOptions: any): ThunkMiddleware[] {
     }
 
     if (enableBuffer) {
-        middleware.push(createActionBuffer({breaker: REHYDRATE, passthrough: [PERSIST]}));
+        middleware.push(createActionBuffer({breaker: General.REHYDRATED, passthrough: [PERSIST]}));
     }
 
     return middleware;

@@ -110,11 +110,12 @@ export function savePreferences(userId: string, preferences: Array<PreferenceTyp
             });
 
             await Client4.savePreferences(userId, preferences);
-        } catch {
+        } catch (error) {
             dispatch({
                 type: PreferenceTypes.DELETED_PREFERENCES,
                 data: preferences,
             });
+            return {error};
         }
 
         return {data: true};

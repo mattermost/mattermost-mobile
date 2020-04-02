@@ -154,7 +154,6 @@ module.exports = [
     './node_modules/app/mm-redux/store/index.ts',
     './node_modules/app/mm-redux/store/initial_state.ts',
     './node_modules/app/mm-redux/store/middleware.ts',
-    './node_modules/app/mm-redux/store/reducer_registry.ts',
     './node_modules/app/mm-redux/types/actions.ts',
     './node_modules/app/mm-redux/utils/channel_utils.ts',
     './node_modules/app/mm-redux/utils/emoji_utils.ts',

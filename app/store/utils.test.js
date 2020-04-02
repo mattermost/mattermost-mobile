@@ -52,6 +52,11 @@ describe('getStateForReset', () => {
                 },
             },
         },
+        views: {
+            selectServer: {
+                serverUrl: 'localhost:8065',
+            },
+        },
     };
 
     it('should keep the current user\'s ID and profile', () => {
