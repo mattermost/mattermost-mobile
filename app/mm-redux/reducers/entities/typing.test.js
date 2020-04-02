@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {WebsocketEvents} from '../../constants';
+import {WebsocketEvents} from '@constants';
 
 import typingReducer from '@mm-redux/reducers/entities/typing';
 
