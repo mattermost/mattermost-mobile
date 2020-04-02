@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 import General from './general';
 import RequestStatus from './request_status';
-import {WebsocketEvents} from '@constants';
 import Preferences from './preferences';
 import Posts from './posts';
 import Files from './files';
@@ -14,4 +13,4 @@ import Plugins from './plugins';
 import Groups from './groups';
 import Users from './users';
 import Roles from './roles';
-export {General, Preferences, Posts, Files, RequestStatus, WebsocketEvents, Teams, Stats, Permissions, Emoji, Plugins, Groups, Users, Roles};
+export {General, Preferences, Posts, Files, RequestStatus, Teams, Stats, Permissions, Emoji, Plugins, Groups, Users, Roles};
