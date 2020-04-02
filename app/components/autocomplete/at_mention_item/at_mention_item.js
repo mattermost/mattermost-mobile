@@ -87,8 +87,8 @@ export default class AtMentionItem extends PureComponent {
                     style={style.rowFullname}
                     numberOfLines={1}
                 >
-                    {hasFullName && <Text>{`${firstName} ${lastName}`}</Text>}
-                    {hasNickname && <Text>{` (${nickname})`}</Text>}
+                    {hasFullName && `${firstName} ${lastName}`}
+                    {hasNickname && ` (${nickname})`}
                     {isCurrentUser &&
                         <FormattedText
                             style={style.rowFullname}
