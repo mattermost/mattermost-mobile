@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4} from '@mm-redux/client';
-import {General, Preferences, Posts, WebsocketEvents} from '../constants';
+import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@mm-redux/client';
+import {General, Preferences, Posts} from '@mm-redux/constants';
+import {WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
