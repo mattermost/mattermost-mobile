@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import General from './general';
 import RequestStatus from './request_status';
-import WebsocketEvents from './websocket';
+import {WebsocketEvents} from '@constants';
 import Preferences from './preferences';
 import Posts from './posts';
 import Files from './files';
