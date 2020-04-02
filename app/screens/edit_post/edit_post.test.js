@@ -52,7 +52,6 @@ describe('EditPost', () => {
             <EditPost {...props}/>,
         );
         const instance = wrapper.instance();
-        instance.close = jest.fn();
         instance.emitEditing = jest.fn();
         instance.setState = jest.fn();
 
@@ -64,9 +63,8 @@ describe('EditPost', () => {
         ]);
         expect(instance.setState.mock.calls).toEqual([
             [{editing: true, error: null}],
-            [{editing: false, error}],
+            [{editing: false, error}, instance.focus],
         ]);
-        expect(instance.close).not.toHaveBeenCalled();
     });
 
     test('should handle edit post action success', async () => {
@@ -81,7 +79,6 @@ describe('EditPost', () => {
             <EditPost {...props}/>,
         );
         const instance = wrapper.instance();
-        instance.close = jest.fn();
         instance.emitEditing = jest.fn();
         instance.setState = jest.fn();
 

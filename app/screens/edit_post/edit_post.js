@@ -140,7 +140,7 @@ export default class EditPost extends PureComponent {
             this.setState({
                 editing: false,
                 error,
-            });
+            }, this.focus);
         } else {
             this.setState({editing: false}, this.close);
         }
