@@ -3,6 +3,18 @@
 
 import {DeviceTypes} from 'app/constants';
 
+export function connection(isOnline) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        if (isOnline !== undefined && isOnline !== state.device.connection) { //eslint-disable-line no-undefined
+            dispatch({
+                type: DeviceTypes.CONNECTION_CHANGED,
+                data: isOnline,
+            });
+        }
+    };
+}
+
 export function setStatusBarHeight(height = 20) {
     return {
         type: DeviceTypes.STATUSBAR_HEIGHT_CHANGED,

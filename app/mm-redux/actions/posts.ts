@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@mm-redux/client';
+import {Client4} from '@mm-redux/client';
 import {General, Preferences, Posts, WebsocketEvents} from '../constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
@@ -32,7 +32,6 @@ import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericA
 import {ChannelUnread} from '@mm-redux/types/channels';
 import {GlobalState} from '@mm-redux/types/store';
 import {Post} from '@mm-redux/types/posts';
-import {Error} from '@mm-redux/types/errors';
 import {Reaction} from '@mm-redux/types/reactions';
 import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
@@ -168,9 +167,9 @@ export function createPost(post: Post, files: any[] = []) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;
-
         const timestamp = Date.now();
         const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
+        let actions: Array<Action> = [];
 
         if (Selectors.isPostIdSending(state, pendingPostId)) {
             return {data: true};
@@ -196,79 +195,78 @@ export function createPost(post: Post, files: any[] = []) {
                 file_ids: fileIds,
             };
 
-            dispatch({
+            actions.push({
                 type: FileTypes.RECEIVED_FILES_FOR_POST,
                 postId: pendingPostId,
                 data: files,
             });
         }
 
-        dispatch({
+        actions.push({
             type: PostTypes.RECEIVED_NEW_POST,
             data: {
                 id: pendingPostId,
                 ...newPost,
             },
-            meta: {
-                offline: {
-                    effect: () => Client4.createPost({...newPost, create_at: 0}),
-                    commit: (result: any, payload: any) => {
-                        const actions: Action[] = [
-                            receivedPost(payload),
-                            {
-                                type: PostTypes.CREATE_POST_SUCCESS,
-                            },
-                            {
-                                type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
-                                data: {
-                                    channelId: newPost.channel_id,
-                                    amount: 1,
-                                },
-                            },
-                            {
-                                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
-                                data: {
-                                    channelId: newPost.channel_id,
-                                    amount: 1,
-                                },
-                            },
-                        ];
+        });
 
-                        if (files) {
-                            actions.push({
-                                type: FileTypes.RECEIVED_FILES_FOR_POST,
-                                postId: payload.id,
-                                data: files,
-                            });
-                        }
+        dispatch(batchActions(actions));
 
-                        dispatch(batchActions(actions));
-                    },
-                    maxRetry: 0,
-                    offlineRollback: true,
-                    rollback: (result: any, error: Error) => {
-                        const data = {
-                            ...newPost,
-                            id: pendingPostId,
-                            failed: true,
-                            update_at: Date.now(),
-                        };
-                        dispatch({type: PostTypes.CREATE_POST_FAILURE, error});
+        try {
+            const created = await Client4.createPost({...newPost, create_at: 0});
 
-                        // If the failure was because: the root post was deleted or
-                        // TownSquareIsReadOnly=true then remove the post
-                        if (error.server_error_id === 'api.post.create_post.root_id.app_error' ||
-                            error.server_error_id === 'api.post.create_post.town_square_read_only' ||
-                            error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
-                        ) {
-                            dispatch(removePost(data) as any);
-                        } else {
-                            dispatch(receivedPost(data));
-                        }
+            actions = [
+                receivedPost(created),
+                {
+                    type: PostTypes.CREATE_POST_SUCCESS,
+                },
+                {
+                    type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
                     },
                 },
-            },
-        });
+                {
+                    type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
+                    },
+                },
+            ];
+
+            if (files) {
+                actions.push({
+                    type: FileTypes.RECEIVED_FILES_FOR_POST,
+                    postId: created.id,
+                    data: files,
+                });
+            }
+
+            dispatch(batchActions(actions));
+        } catch (error) {
+            const data = {
+                ...newPost,
+                id: pendingPostId,
+                failed: true,
+                update_at: Date.now(),
+            };
+            actions = [{type: PostTypes.CREATE_POST_FAILURE, error}];
+
+            // If the failure was because: the root post was deleted or
+            // TownSquareIsReadOnly=true then remove the post
+            if (error.server_error_id === 'api.post.create_post.root_id.app_error' ||
+                error.server_error_id === 'api.post.create_post.town_square_read_only' ||
+                error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
+            ) {
+                actions.push(removePost(data) as any);
+            } else {
+                actions.push(receivedPost(data));
+            }
+
+            dispatch(batchActions(actions));
+        }
 
         return {data: true};
     };

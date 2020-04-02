@@ -37,7 +37,7 @@ const init = async () => {
         launchApp,
     });
 
-    registerScreens(store, persistor, Provider);
+    registerScreens(store, Provider);
 
     if (!EphemeralStore.appStarted) {
         launchAppAndAuthenticateIfNeeded(credentials);

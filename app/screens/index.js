@@ -7,10 +7,9 @@ import {ThemeProvider} from 'react-native-elements';
 
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
-import {PersistGate} from 'redux-persist/integration/react';
 
 let Root;
-export function registerScreens(store, persistor, Provider) {
+export function registerScreens(store, Provider) {
     // TODO consolidate this with app/utils/wrap_context_provider
 
     if (!Root) {
@@ -19,16 +18,11 @@ export function registerScreens(store, persistor, Provider) {
 
     const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
         <Provider store={store}>
-            <PersistGate
-                loading={null}
-                persistor={persistor}
-            >
-                <ThemeProvider>
-                    <Root>
-                        <Comp {...props}/>
-                    </Root>
-                </ThemeProvider>
-            </PersistGate>
+            <ThemeProvider>
+                <Root>
+                    <Comp {...props}/>
+                </Root>
+            </ThemeProvider>
         </Provider>
     );
 

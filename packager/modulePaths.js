@@ -151,7 +151,6 @@ module.exports = [
     './node_modules/app/mm-redux/selectors/entities/teams.ts',
     './node_modules/app/mm-redux/selectors/entities/timezone.ts',
     './node_modules/app/mm-redux/selectors/entities/users.ts',
-    './node_modules/app/mm-redux/store/configureStore.prod.ts',
     './node_modules/app/mm-redux/store/helpers.ts',
     './node_modules/app/mm-redux/store/index.ts',
     './node_modules/app/mm-redux/store/initial_state.ts',

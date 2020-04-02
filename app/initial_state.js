@@ -4,6 +4,10 @@
 import Config from 'assets/config.json';
 
 const state = {
+    app: {
+        version: '',
+        build: '',
+    },
     entities: {
         general: {
             appState: false,

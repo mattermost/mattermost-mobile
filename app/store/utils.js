@@ -73,6 +73,7 @@ export function getStateForReset(initialState, currentState) {
 
     const resetState = merge(initialState, {
         entities: {
+            general: currentState.entities.general,
             users: {
                 currentUserId,
                 profiles: {
@@ -83,6 +84,15 @@ export function getStateForReset(initialState, currentState) {
                 currentTeamId,
             },
             preferences,
+        },
+        errors: currentState.errors,
+        views: {
+            selectServer: {
+                serverUrl: currentState.views.selectServer.serverUrl,
+            },
+            root: {
+                hydrationComplete: true,
+            },
         },
     });
 
