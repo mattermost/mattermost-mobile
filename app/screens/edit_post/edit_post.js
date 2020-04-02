@@ -37,7 +37,6 @@ export default class EditPost extends PureComponent {
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
         deviceWidth: PropTypes.number,
-        editPostRequest: PropTypes.object.isRequired,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -79,44 +78,6 @@ export default class EditPost extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
 
         this.focus();
-    }
-
-    static getDerivedStateFromProps(props, state) {
-        const {status, error} = props.editPostRequest;
-        if (status === RequestStatus.STARTED) {
-            return {
-                ...state,
-                editing: true,
-                error: null,
-            };
-        } else if (status === RequestStatus.FAILURE) {
-            return {
-                ...state,
-                editing: false,
-                error,
-            };
-        }
-
-        return null;
-    }
-
-    componentDidUpdate(prevProps) {
-        const {editPostRequest} = this.props;
-
-        if (editPostRequest.status !== prevProps.editPostRequest.status) {
-            switch (editPostRequest.status) {
-            case RequestStatus.STARTED:
-                this.emitEditing(true);
-                break;
-            case RequestStatus.FAILURE:
-                this.emitEditing(false);
-                break;
-            case RequestStatus.SUCCESS:
-                this.emitEditing(false);
-                this.close();
-                break;
-            }
-        }
     }
 
     navigationButtonPressed({buttonId}) {
@@ -161,10 +122,28 @@ export default class EditPost extends PureComponent {
         this.messageInput = ref;
     };
 
-    onEditPost = () => {
+    onEditPost = async () => {
         const {message} = this.state;
-        const post = Object.assign({}, this.props.post, {message});
-        this.props.actions.editPost(post);
+        const {post, actions} = this.props;
+        const editedPost = Object.assign({}, post, {message});
+
+        this.setState({
+            editing: true,
+            error: null,
+        });
+
+        this.emitEditing(true);
+        const {error} = await actions.editPost(editedPost);
+        this.emitEditing(false);
+
+        if (error) {
+            this.setState({
+                editing: false,
+                error,
+            });
+        } else {
+            this.setState({editing: false}, this.close);
+        }
     };
 
     onPostChangeText = (message) => {
@@ -248,7 +227,6 @@ export default class EditPost extends PureComponent {
                             multiline={true}
                             numberOfLines={10}
                             style={[style.input, {height}]}
-                            autoFocus={true}
                             placeholder={{id: t('edit_post.editPost'), defaultMessage: 'Edit the post...'}}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
                             underlineColorAndroid='transparent'

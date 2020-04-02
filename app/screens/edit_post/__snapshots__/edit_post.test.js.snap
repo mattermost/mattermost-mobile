@@ -36,7 +36,6 @@ exports[`EditPost should match snapshot 1`] = `
       }
     >
       <TextInputWithLocalizedPlaceholder
-        autoFocus={true}
         blurOnSubmit={false}
         disableFullscreenUI={true}
         keyboardAppearance="light"

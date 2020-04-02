@@ -391,15 +391,20 @@ export function deletePost(post: ExtendedPost) {
 }
 
 export function editPost(post: Post) {
-    return bindClientFunc({
-        clientFunc: Client4.patchPost,
-        onRequest: PostTypes.EDIT_POST_REQUEST,
-        onSuccess: [PostTypes.RECEIVED_POST, PostTypes.EDIT_POST_SUCCESS],
-        onFailure: PostTypes.EDIT_POST_FAILURE,
-        params: [
-            post,
-        ],
-    });
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let data;
+
+        try {
+            data = await Client4.patchPost(post);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            return {error};
+        }
+
+        dispatch(receivedPost(post));
+
+        return {data};
+    };
 }
 
 export function getUnreadPostData(unreadChan: ChannelUnread, state: GlobalState) {
