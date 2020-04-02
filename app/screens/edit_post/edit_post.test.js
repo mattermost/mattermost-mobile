@@ -5,7 +5,6 @@ import React from 'react';
 import {Keyboard} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {RequestStatus} from '@mm-redux/constants';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 
@@ -16,7 +15,6 @@ describe('EditPost', () => {
         actions: {
             editPost: jest.fn(),
         },
-        editPostRequest: {},
         post: {},
         theme: Preferences.THEMES.default,
         isLandscape: false,
@@ -41,79 +39,61 @@ describe('EditPost', () => {
         expect(Keyboard.dismiss).toHaveBeenCalledTimes(1);
     });
 
-    test('should handle edit post request started', () => {
+    test('should handle edit post action error', async () => {
+        const error = 'error';
+        const props = {
+            ...baseProps,
+            actions: {
+                editPost: jest.fn().mockResolvedValueOnce({error}),
+            },
+        };
+
         const wrapper = shallowWithIntl(
-            <EditPost {...baseProps}/>,
+            <EditPost {...props}/>,
         );
         const instance = wrapper.instance();
         instance.close = jest.fn();
         instance.emitEditing = jest.fn();
+        instance.setState = jest.fn();
 
-        let state = wrapper.state();
-        expect(state.editing).toBeFalsy();
-        expect(state.error).toBeFalsy();
+        await instance.onEditPost();
 
-        const editPostRequest = {
-            status: RequestStatus.STARTED,
-        };
-        wrapper.setProps({editPostRequest});
-        state = wrapper.state();
-
+        expect(instance.emitEditing.mock.calls).toEqual([
+            [true],
+            [false],
+        ]);
+        expect(instance.setState.mock.calls).toEqual([
+            [{editing: true, error: null}],
+            [{editing: false, error}],
+        ]);
         expect(instance.close).not.toHaveBeenCalled();
-        expect(instance.emitEditing).toHaveBeenCalledTimes(1);
-        expect(instance.emitEditing).toHaveBeenCalledWith(true);
-        expect(state.editing).toBeTruthy();
-        expect(state.error).toBeFalsy();
     });
 
-    test('should handle edit post request failure', () => {
+    test('should handle edit post action success', async () => {
+        const props = {
+            ...baseProps,
+            actions: {
+                editPost: jest.fn().mockResolvedValueOnce({}),
+            },
+        };
+
         const wrapper = shallowWithIntl(
-            <EditPost {...baseProps}/>,
+            <EditPost {...props}/>,
         );
         const instance = wrapper.instance();
         instance.close = jest.fn();
         instance.emitEditing = jest.fn();
+        instance.setState = jest.fn();
 
-        let state = wrapper.state();
-        expect(state.editing).toBeFalsy();
-        expect(state.error).toBeFalsy();
+        await instance.onEditPost();
 
-        const editPostRequest = {
-            status: RequestStatus.FAILURE,
-            error: 'error',
-        };
-        wrapper.setProps({editPostRequest});
-        state = wrapper.state();
-
-        expect(instance.close).not.toHaveBeenCalled();
-        expect(instance.emitEditing).toHaveBeenCalledTimes(1);
-        expect(instance.emitEditing).toHaveBeenCalledWith(false);
-        expect(state.editing).toBeFalsy();
-        expect(state.error).toBeTruthy();
-    });
-
-    test('should handle edit post request success', () => {
-        const wrapper = shallowWithIntl(
-            <EditPost {...baseProps}/>,
-        );
-        const instance = wrapper.instance();
-        instance.close = jest.fn();
-        instance.emitEditing = jest.fn();
-
-        let state = wrapper.state();
-        expect(state.editing).toBeFalsy();
-        expect(state.error).toBeFalsy();
-
-        const editPostRequest = {
-            status: RequestStatus.SUCCESS,
-        };
-        wrapper.setProps({editPostRequest});
-        state = wrapper.state();
-
-        expect(instance.close).toHaveBeenCalled();
-        expect(instance.emitEditing).toHaveBeenCalledTimes(1);
-        expect(instance.emitEditing).toHaveBeenCalledWith(false);
-        expect(state.editing).toBeFalsy();
-        expect(state.error).toBeFalsy();
+        expect(instance.emitEditing.mock.calls).toEqual([
+            [true],
+            [false],
+        ]);
+        expect(instance.setState.mock.calls).toEqual([
+            [{editing: true, error: null}],
+            [{editing: false}, instance.close],
+        ]);
     });
 });
