@@ -91,7 +91,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 android: {
                     fontFamily: 'Roboto-Medium',
                 },
-            })
+            }),
         },
         wrapper: {
             borderRadius: 15,
