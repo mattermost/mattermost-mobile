@@ -38,6 +38,11 @@ describe('Actions.Views.Post', () => {
     ];
     const channelMembers = [];
 
+    beforeEach(() => {
+        ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(true);
+        ChannelUtils.isArchivedChannel = jest.fn().mockReturnValue(false);
+    });
+
     test('loadUnreadChannelPosts does not dispatch actions if no unread channels', async () => {
         ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(false);
 
@@ -48,8 +53,18 @@ describe('Actions.Views.Post', () => {
         expect(storeActions).toStrictEqual([]);
     });
 
+    test('loadUnreadChannelPosts does not dispatch actions for archived channels', async () => {
+        ChannelUtils.isArchivedChannel = jest.fn().mockReturnValue(true);
+        Client4.getPosts = jest.fn().mockResolvedValue({posts: ['post-1', 'post-2']});
+
+        store = mockStore(storeObj);
+        await store.dispatch(loadUnreadChannelPosts(channels, channelMembers));
+
+        const storeActions = store.getActions();
+        expect(storeActions).toStrictEqual([]);
+    });
+
     test('loadUnreadChannelPosts does not dispatch actions for current channel', async () => {
-        ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(true);
         Client4.getPosts = jest.fn().mockResolvedValue({posts: ['post-1', 'post-2']});
 
         store = mockStore(storeObj);
@@ -60,7 +75,6 @@ describe('Actions.Views.Post', () => {
     });
 
     test('loadUnreadChannelPosts dispatches actions for unread channels with no postIds in channel', async () => {
-        ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(true);
         Client4.getPosts = jest.fn().mockResolvedValue({posts: ['post-1', 'post-2']});
 
         store = mockStore(storeObj);
@@ -84,7 +98,6 @@ describe('Actions.Views.Post', () => {
     });
 
     test('loadUnreadChannelPosts dispatches actions for unread channels with postIds in channel', async () => {
-        ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(true);
         PostSelectors.getPostIdsInChannel = jest.fn().mockReturnValue(['post-id-in-channel']);
         Client4.getPostsSince = jest.fn().mockResolvedValue({posts: ['post-1', 'post-2']});
 
@@ -128,7 +141,6 @@ describe('Actions.Views.Post', () => {
             user_id: 'user-id',
             message: '@user post-1',
         }];
-        ChannelUtils.isUnreadChannel = jest.fn().mockReturnValue(true);
         PostSelectors.getPostIdsInChannel = jest.fn().mockReturnValue(['post-id-in-channel']);
         Client4.getPostsSince = jest.fn().mockResolvedValue({posts});
         Client4.getProfilesByIds = jest.fn().mockResolvedValue(['data']);
