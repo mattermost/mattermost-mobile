@@ -20,7 +20,7 @@ import {Posts} from '@mm-redux/constants';
 import {getPost as selectPost, getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
-import {isUnreadChannel} from '@mm-redux/utils/channel_utils';
+import {isUnreadChannel, isArchivedChannel} from '@mm-redux/utils/channel_utils';
 
 import {ViewTypes} from '@constants';
 import {generateId} from '@utils/file';
@@ -409,7 +409,7 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
         });
 
         channels.forEach((channel) => {
-            if (channel.id === currentChannelId) {
+            if (channel.id === currentChannelId || isArchivedChannel(channel)) {
                 return;
             }
 
