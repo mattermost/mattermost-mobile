@@ -36,7 +36,7 @@ exports[`PostList setting channel deep link 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={5}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -65,7 +65,7 @@ exports[`PostList setting channel deep link 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={11}
+  windowSize={50}
 />
 `;
 
@@ -105,7 +105,7 @@ exports[`PostList setting permalink deep link 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={5}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -134,7 +134,7 @@ exports[`PostList setting permalink deep link 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={11}
+  windowSize={50}
 />
 `;
 
@@ -174,7 +174,7 @@ exports[`PostList should match snapshot 1`] = `
       "minIndexForVisible": 0,
     }
   }
-  maxToRenderPerBatch={5}
+  maxToRenderPerBatch={10}
   numColumns={1}
   onContentSizeChange={[Function]}
   onEndReachedThreshold={2}
@@ -203,6 +203,6 @@ exports[`PostList should match snapshot 1`] = `
     }
   }
   updateCellsBatchingPeriod={50}
-  windowSize={11}
+  windowSize={50}
 />
 `;
