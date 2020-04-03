@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import {createTransform, KEY_PREFIX} from 'redux-persist';
 import reduxReset from 'redux-reset';
 
 import {General} from '@mm-redux/constants';
 import configureStore from '@mm-redux/store';
+import MMKVStorageAdapter from '@mm-redux/store/mmkv_adapter';
 
 import appReducer from 'app/reducers';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
@@ -122,7 +122,7 @@ const setTransformer = createTransform(
 
 const persistConfig = {
     key: 'root',
-    storage: AsyncStorage,
+    storage: MMKVStorageAdapter,
     blacklist: ['device', 'navigation', 'offline', 'requests'],
     transforms: [
         setTransformer,

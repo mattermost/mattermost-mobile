@@ -51,6 +51,7 @@
     "react-native-keychain": "4.0.5",
     "react-native-linear-gradient": "2.5.6",
     "react-native-local-auth": "1.6.0",
+    "react-native-mmkv-storage": "0.2.2",
     "react-native-navigation": "6.3.0",
     "react-native-notifications": "2.0.6",
     "react-native-passcode-status": "1.1.2",
