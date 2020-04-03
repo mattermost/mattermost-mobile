@@ -87,6 +87,9 @@ jest.doMock('react-native', () => {
             pick: jest.fn(),
         },
         RNPermissions: {},
+        RNFastStorage: {
+            setupLibrary: jest.fn(),
+        },
     };
 
     return Object.setPrototypeOf({
