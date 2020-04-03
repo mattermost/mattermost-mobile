@@ -341,7 +341,7 @@ PODS:
     - React
   - ReactNativeKeyboardTrackingView (5.6.1):
     - React
-  - ReactNativeNavigation (6.3.3):
+  - ReactNativeNavigation (6.4.0):
     - React
     - React-RCTImage
     - React-RCTText
@@ -647,7 +647,7 @@ SPEC CHECKSUMS:
   ReactCommon: d22162ab8f1358c53dfcd0f9c4d82d38facdbc48
   ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
   ReactNativeKeyboardTrackingView: a240a6a0dba852bb107109a7ec7e98b884055977
-  ReactNativeNavigation: 182e8d8d465acfdd62a0aa7cd1d08056926f9501
+  ReactNativeNavigation: 667586f6924fbd09512e2933fe70497db914b758
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: 00bdf63f7f1e0f11d3323533dba4f222e58bf092
   RNDeviceInfo: fd8296de6fca8b743cdc499b896f48e8a9f1faf5

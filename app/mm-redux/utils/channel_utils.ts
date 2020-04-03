@@ -571,6 +571,10 @@ function isNotDeletedChannel(channel: Channel) {
     return channel.delete_at === 0;
 }
 
+export function isArchivedChannel(channel: Channel) {
+    return channel.delete_at !== 0;
+}
+
 export function isOpenChannel(channel: Channel): boolean {
     return channel.type === General.OPEN_CHANNEL;
 }

@@ -17,7 +17,7 @@ export function createThunkMiddleware() {
             if (result instanceof Promise) {
                 return result.catch((error) => {
                     if (error.url) {
-                        // This is a connection error from mattermost-redux. This should've been handled
+                        // This is a connection error from app/mm-redux. This should've been handled
                         // within the action itself, so we'll log to Sentry enough to identify where
                         // that handling is missing.
                         captureMessage(

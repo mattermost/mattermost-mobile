@@ -108,7 +108,6 @@ module.exports = [
     'app/mm-redux/constants/stats.ts',
     'app/mm-redux/constants/teams.ts',
     'app/mm-redux/constants/users.ts',
-    'app/mm-redux/constants/websocket.ts',
     'app/mm-redux/reducers/entities/bots.ts',
     'app/mm-redux/reducers/entities/channels.ts',
     'app/mm-redux/reducers/entities/emojis.ts',

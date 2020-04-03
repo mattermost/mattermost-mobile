@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, FlatList, InteractionManager, RefreshControl, StyleSheet} from 'react-native';
+import {Alert, FlatList, InteractionManager, Platform, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -514,6 +514,7 @@ export default class PostList extends PureComponent {
                 tintColor={theme.centerChannelColor}
             />);
 
+        const hasPostsKey = postIds.length ? 'true' : 'false';
         return (
             <FlatList
                 contentContainerStyle={styles.postListContent}
@@ -521,14 +522,14 @@ export default class PostList extends PureComponent {
                 extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 inverted={true}
-                key={`recyclerFor-${channelId}`}
+                key={`recyclerFor-${channelId}-${hasPostsKey}`}
                 keyboardDismissMode={'interactive'}
                 keyboardShouldPersistTaps={'handled'}
                 keyExtractor={this.keyExtractor}
                 ListFooterComponent={this.props.renderFooter}
                 listKey={`recyclerFor-${channelId}`}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={5}
+                maxToRenderPerBatch={Platform.select({android: 5})}
                 nativeID={scrollViewNativeID}
                 onContentSizeChange={this.handleContentSizeChange}
                 onLayout={this.handleLayout}
@@ -541,7 +542,7 @@ export default class PostList extends PureComponent {
                 renderItem={this.renderItem}
                 scrollEventThrottle={60}
                 style={styles.flex}
-                windowSize={11}
+                windowSize={Platform.select({android: 11, ios: 50})}
             />
         );
     }

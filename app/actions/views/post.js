@@ -17,11 +17,14 @@ import {
 } from '@mm-redux/actions/posts';
 import {Client4} from '@mm-redux/client';
 import {Posts} from '@mm-redux/constants';
-import {getPost as selectPost} from '@mm-redux/selectors/entities/posts';
+import {getPost as selectPost, getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
+import {isUnreadChannel, isArchivedChannel} from '@mm-redux/utils/channel_utils';
 
-import {ViewTypes} from 'app/constants';
-import {generateId} from 'app/utils/file';
+import {ViewTypes} from '@constants';
+import {generateId} from '@utils/file';
+import {getChannelSinceValue} from '@utils/channels';
 
 import {getEmojisInPosts} from './emoji';
 
@@ -389,5 +392,86 @@ function userMetadataToLoadFromPosts(state, posts = []) {
         usernames: Array.from(usernamesToLoad),
         userIds: Array.from(userIdsToLoad),
         statuses: Array.from(statusesToLoad),
+    };
+}
+
+export function loadUnreadChannelPosts(channels, channelMembers) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentChannelId = getCurrentChannelId(state);
+
+        const promises = [];
+        const promiseTrace = [];
+
+        const channelMembersByChannel = {};
+        channelMembers.forEach((member) => {
+            channelMembersByChannel[member.channel_id] = member;
+        });
+
+        channels.forEach((channel) => {
+            if (channel.id === currentChannelId || isArchivedChannel(channel)) {
+                return;
+            }
+
+            const isUnread = isUnreadChannel(channelMembersByChannel, channel);
+            if (!isUnread) {
+                return;
+            }
+
+            const postIds = getPostIdsInChannel(state, channel.id);
+
+            let promise;
+            const trace = {
+                channelId: channel.id,
+                since: false,
+            };
+            if (!postIds || !postIds.length) {
+                // Get the first page of posts if it appears we haven't gotten it yet, like the webapp
+                promise = Client4.getPosts(channel.id);
+            } else {
+                const since = getChannelSinceValue(state, channel.id, postIds);
+                promise = Client4.getPostsSince(channel.id, since);
+                trace.since = since;
+            }
+
+            promises.push(promise);
+            promiseTrace.push(trace);
+        });
+
+        let posts = [];
+        const actions = [];
+        if (promises.length) {
+            const results = await Promise.all(promises);
+            results.forEach((data, index) => {
+                const channelPosts = Object.values(data.posts);
+                if (channelPosts.length) {
+                    posts = posts.concat(channelPosts);
+
+                    const trace = promiseTrace[index];
+                    if (trace.since) {
+                        actions.push(receivedPostsSince(data, trace.channelId));
+                    } else {
+                        actions.push(receivedPostsInChannel(data, trace.channelId, true, data.prev_post_id === ''));
+                    }
+
+                    actions.push({
+                        type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
+                        channelId: trace.channelId,
+                        time: Date.now(),
+                    });
+                }
+            });
+        }
+
+        console.log(`Fetched ${posts.length} posts from ${promises.length} unread channels`); //eslint-disable-line no-console
+        if (posts.length) {
+            actions.push(receivedPosts({posts}));
+            const additional = await dispatch(getPostsAdditionalDataBatch(posts));
+            if (additional.data.length) {
+                actions.push(...additional.data);
+            }
+
+            dispatch(batchActions(actions));
+        }
     };
 }

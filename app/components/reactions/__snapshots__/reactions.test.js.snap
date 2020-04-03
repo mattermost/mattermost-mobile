@@ -153,7 +153,7 @@ exports[`Reactions should match snapshot 1`] = `
       }
       style={
         Object {
-          "height": 20,
+          "height": 23,
           "tintColor": "rgba(61,60,64,0.5)",
           "width": 23,
         }
