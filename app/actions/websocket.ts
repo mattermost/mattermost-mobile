@@ -4,7 +4,7 @@
 import {Client4} from '@mm-redux/client';
 import websocketClient from '@websocket';
 
-import {ChannelTypes, GeneralTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes} from '@mm-redux/action_types';
+import {ChannelTypes, GeneralTypes, GroupTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes} from '@mm-redux/action_types';
 import {General, Preferences} from '@mm-redux/constants';
 import {
     getAllChannels,
@@ -342,8 +342,9 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleConfigChangedEvent(msg));
         case WebsocketEvents.OPEN_DIALOG:
             return dispatch(handleOpenDialogEvent(msg));
+        case WebsocketEvents.RECEIVED_GROUP:
+            dispatch(handleGroupUpdatedEvent(msg));
         }
-
         return {data: true};
     };
 }
@@ -1151,4 +1152,24 @@ export function userTyping(state: GlobalState, channelId: string, parentPostId: 
         websocketClient.userTyping(channelId, parentPostId);
         lastTimeTypingSent = t;
     }
+}
+
+function handleGroupUpdatedEvent(msg: WebSocketMessage) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let data;
+
+        try {
+            data = msg.data ? JSON.parse(msg.data.group) : null;
+        } catch (err) {
+            return {error: err};
+        }
+
+        if (data) {
+            dispatch({
+                type: GroupTypes.RECEIVED_GROUP,
+                data,
+            });
+        }
+        return {data: true};
+    };
 }

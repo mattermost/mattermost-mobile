@@ -247,6 +247,27 @@ class TestHelper {
         };
     }
 
+    fakeGroup = (groupId) => {
+        const name = 'software-engineers';
+
+        return {
+            name,
+            id: groupId,
+            display_name: 'software engineers',
+            delete_at: 0,
+        };
+    };
+
+    fakeGroupWithId = (groupId) => {
+        return {
+            ...this.fakeGroup(groupId),
+            id: this.generateId(),
+            create_at: 1507840900004,
+            update_at: 1507840900004,
+            delete_at: 0,
+        };
+    };
+
     generateId = () => {
         // Implementation taken from http://stackoverflow.com/a/2117523
         let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
@@ -366,6 +387,7 @@ class TestHelper {
             },
         };
         this.basicScheme = this.mockSchemeWithId();
+        this.basicGroup = this.fakeGroupWithId();
     }
 
     initBasic = async (client = this.createClient()) => {

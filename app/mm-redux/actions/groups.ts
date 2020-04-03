@@ -26,7 +26,7 @@ export function linkGroupSyncable(groupID: string, syncableID: string, syncableT
         let type = '';
         switch (syncableType) {
         case Groups.SYNCABLE_TYPE_TEAM:
-            dispatches.push({type: GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_TEAM, data: {teamID: syncableID, groups: [{id: groupID}]}});
+            dispatches.push({type: GroupTypes.RECEIVED_GROUP_ASSOCIATED_TO_TEAM, data: {teamID: syncableID, groups: [{id: groupID}]}});
             type = GroupTypes.LINKED_GROUP_TEAM;
             break;
         case Groups.SYNCABLE_TYPE_CHANNEL:

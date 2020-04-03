@@ -28,13 +28,14 @@ function syncables(state: Dictionary<GroupSyncables> = {}, action: GenericAction
             },
         };
     }
+    case GroupTypes.PATCHED_GROUP_TEAM:
     case GroupTypes.LINKED_GROUP_TEAM: {
         let nextGroupTeams: GroupTeam[] = [];
-
-        if (!state[action.data.group_id] || !state[action.data.group_id].teams) {
+        if (!state[action.data.group_id] || !state[action.data.group_id].teams || state[action.data.group_id].teams.length === 0) {
             nextGroupTeams = [action.data];
         } else {
-            nextGroupTeams = {...state}[action.data.group_id].teams;
+            nextGroupTeams = {...state}[action.data.group_id].teams.slice();
+
             for (let i = 0, len = nextGroupTeams.length; i < len; i++) {
                 if (nextGroupTeams[i].team_id === action.data.team_id) {
                     nextGroupTeams[i] = action.data;
@@ -50,13 +51,15 @@ function syncables(state: Dictionary<GroupSyncables> = {}, action: GenericAction
             },
         };
     }
+
+    case GroupTypes.PATCHED_GROUP_CHANNEL:
     case GroupTypes.LINKED_GROUP_CHANNEL: {
         let nextGroupChannels: GroupChannel[] = [];
 
         if (!state[action.data.group_id] || !state[action.data.group_id].channels) {
             nextGroupChannels = [action.data];
         } else {
-            nextGroupChannels = {...state}[action.data.group_id].channels;
+            nextGroupChannels = {...state}[action.data.group_id].channels.slice();
             for (let i = 0, len = nextGroupChannels.length; i < len; i++) {
                 if (nextGroupChannels[i].channel_id === action.data.channel_id) {
                     nextGroupChannels[i] = action.data;
@@ -113,50 +116,6 @@ function syncables(state: Dictionary<GroupSyncables> = {}, action: GenericAction
             [action.data.group_id]: {
                 ...state[action.data.group_id],
                 channels: nextChannels,
-            },
-        };
-    }
-    case GroupTypes.PATCHED_GROUP_TEAM: {
-        let nextGroupTeams: GroupTeam[] = [];
-
-        if (!state[action.data.group_id] || !state[action.data.group_id].teams) {
-            nextGroupTeams = [action.data];
-        } else {
-            nextGroupTeams = {...state}[action.data.group_id].teams.slice();
-            for (let i = 0, len = nextGroupTeams.length; i < len; i++) {
-                if (nextGroupTeams[i].team_id === action.data.team_id) {
-                    nextGroupTeams[i] = action.data;
-                }
-            }
-        }
-
-        return {
-            ...state,
-            [action.data.group_id]: {
-                ...state[action.data.group_id],
-                teams: nextGroupTeams,
-            },
-        };
-    }
-    case GroupTypes.PATCHED_GROUP_CHANNEL: {
-        let nextGroupChannels: GroupChannel[] = [];
-
-        if (!state[action.data.group_id] || !state[action.data.group_id].channels) {
-            nextGroupChannels = [action.data];
-        } else {
-            nextGroupChannels = {...state}[action.data.group_id].channels.slice();
-            for (let i = 0, len = nextGroupChannels.length; i < len; i++) {
-                if (nextGroupChannels[i].team_id === action.data.team_id) {
-                    nextGroupChannels[i] = action.data;
-                }
-            }
-        }
-
-        return {
-            ...state,
-            [action.data.group_id]: {
-                ...state[action.data.group_id],
-                channels: nextGroupChannels,
             },
         };
     }

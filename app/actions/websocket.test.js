@@ -8,7 +8,7 @@ import {batchActions} from 'redux-batched-actions';
 import thunk from 'redux-thunk';
 import configureMockStore from 'redux-mock-store';
 
-import {ChannelTypes, GeneralTypes, RoleTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
+import {ChannelTypes, GeneralTypes, GroupTypes, RoleTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
 import * as ChannelActions from '@mm-redux/actions/channels';
 import * as PostActions from '@mm-redux/actions/posts';
 import * as PreferenceActions from '@mm-redux/actions/preferences';
@@ -614,6 +614,43 @@ describe('Actions.Websocket', () => {
         assert.ok(dialog.url === 'someurl');
         assert.ok(dialog.trigger_id === 'sometriggerid');
         assert.ok(dialog.dialog);
+    });
+
+    it('Websocket handle group updated', (done) => {
+        async function test() {
+            mockServer.emit('message', JSON.stringify({event: WebsocketEvents.RECEIVED_GROUP, data: {group: `{"id":"${TestHelper.basicGroup.id}","name":"${TestHelper.basicGroup.name}","display_name":"${TestHelper.basicGroup.display_name}","description":"","source":"ldap","remote_id":"12264aae-0279-103a-8a56-1dc005bf4d9c","create_at":1585096089656,"update_at":1585196227880,"delete_at":0,"has_syncables":false,"member_count":2}`}, broadcast: {user_id: '', channel_id: '', team_id: ''}, seq: 26}));
+
+            setTimeout(() => {
+                const state = store.getState();
+                const {groups} = state.entities.groups;
+                assert.strictEqual(Object.keys(groups).length, 1);
+                const updated = groups[TestHelper.basicGroup.id];
+                assert.ok(updated);
+                assert.strictEqual(updated.member_count, 2);
+                done();
+            }, 500);
+        }
+
+        test();
+    });
+
+    it('Websocket handle group deleted', (done) => {
+        async function test() {
+            const tempGroupId = TestHelper.generateId();
+            store.dispatch({type: GroupTypes.RECEIVED_GROUP, data: {id: tempGroupId, name: General.DEFAULT_GROUP, display_name: General.DEFAULT_GROUP}});
+            store.dispatch({type: GroupTypes.RECEIVED_GROUP, data: TestHelper.basicGroup});
+
+            mockServer.emit('message', JSON.stringify({event: WebsocketEvents.RECEIVED_GROUP, data: {group: `{"id":"${TestHelper.basicGroup.id}","name":"${TestHelper.basicGroup.name}","display_name":"${TestHelper.basicGroup.display_name}","description":"","source":"ldap","remote_id":"12264aae-0279-103a-8a56-1dc005bf4d9c","create_at":1585096089656,"update_at":1585196227880,"delete_at":123,"has_syncables":false,"member_count":2}`}, broadcast: {user_id: '', channel_id: '', team_id: ''}, seq: 26}));
+
+            setTimeout(() => {
+                const state = store.getState();
+                const {groups} = state.entities.groups;
+                assert.ok(groups[TestHelper.basicGroup.id].delete_at === 123);
+                done();
+            }, 500);
+        }
+
+        test();
     });
 });
 

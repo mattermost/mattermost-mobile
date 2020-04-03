@@ -363,6 +363,7 @@ function stats(state: any = {}, action: GenericAction) {
 
 function groupsAssociatedToTeam(state: RelationOneToOne<Team, {ids: string[]; totalCount: number}> = {}, action: GenericAction) {
     switch (action.type) {
+    case GroupTypes.RECEIVED_GROUP_ASSOCIATED_TO_TEAM:
     case GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_TEAM: {
         const {teamID, groups, totalGroupCount} = action.data;
         const nextState = {...state};
