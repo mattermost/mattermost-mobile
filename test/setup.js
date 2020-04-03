@@ -89,6 +89,7 @@ jest.doMock('react-native', () => {
         RNPermissions: {},
         RNFastStorage: {
             setupLibrary: jest.fn(),
+            setStringAsync: jest.fn(),
         },
     };
 
