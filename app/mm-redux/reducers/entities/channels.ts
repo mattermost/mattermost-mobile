@@ -42,8 +42,6 @@ function currentChannelId(state = '', action: GenericAction) {
     switch (action.type) {
     case ChannelTypes.SELECT_CHANNEL:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return '';
     default:
         return state;
     }
@@ -182,8 +180,6 @@ function channels(state: IDMappedObjects<Channel> = {}, action: GenericAction) {
         return hasNewValues ? nextState : state;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -217,8 +213,6 @@ function channelsInTeam(state: RelationOneToMany<Team, Channel> = {}, action: Ge
         };
         return channelListToSet(state, values);
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -396,8 +390,6 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
         return state;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -462,8 +454,6 @@ function membersInChannel(state: RelationOneToOne<Channel, UserIDMappedObjects<C
     case ChannelTypes.UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: {
         return updateChannelMemberSchemeRoles(state, action);
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -546,8 +536,6 @@ function stats(state: RelationOneToOne<Channel, ChannelStats> = {}, action: Gene
 
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -633,11 +621,6 @@ export function manuallyUnread(state: RelationOneToOne<Channel, boolean> = {}, a
         }
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS: {
-        // user is logging out, remove any reference
-        return {};
-    }
-
     case ChannelTypes.ADD_MANUALLY_UNREAD:
     case ChannelTypes.POST_UNREAD_SUCCESS: {
         return {...state, [action.data.channelId]: true};

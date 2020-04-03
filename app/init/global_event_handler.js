@@ -284,6 +284,9 @@ class GlobalEventHandler {
                     },
                 },
                 views: {
+                    i18n: {
+                        locale: DeviceInfo.getDeviceLocale().split('-')[0],
+                    },
                     root: {
                         hydrationComplete: true,
                     },

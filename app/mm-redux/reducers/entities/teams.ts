@@ -13,8 +13,6 @@ function currentTeamId(state = '', action: GenericAction) {
     case TeamTypes.SELECT_TEAM:
         return action.data;
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return '';
     default:
         return state;
     }
@@ -60,9 +58,6 @@ function teams(state: IDMappedObjects<Team> = {}, action: GenericAction) {
 
         return {...state, [teamId]: {...team, scheme_id: schemeId}};
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;
@@ -248,8 +243,6 @@ function myMembers(state: RelationOneToOne<Team, TeamMembership> = {}, action: G
 
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -328,8 +321,6 @@ function membersInTeam(state: RelationOneToOne<Team, RelationOneToOne<UserProfil
     case TeamTypes.UPDATED_TEAM_MEMBER_SCHEME_ROLES: {
         return updateTeamMemberSchemeRoles(state, action);
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -354,8 +345,6 @@ function stats(state: any = {}, action: GenericAction) {
 
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }

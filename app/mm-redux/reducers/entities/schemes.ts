@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {SchemeTypes, UserTypes} from '@mm-redux/action_types';
+import {SchemeTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
 import {SchemesState, Scheme} from '@mm-redux/types/schemes';
 
@@ -33,9 +33,6 @@ function schemes(state: {
         Reflect.deleteProperty(nextState, action.data.schemeId);
         return nextState;
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;

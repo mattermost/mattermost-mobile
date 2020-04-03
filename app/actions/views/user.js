@@ -3,12 +3,14 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {NavigationTypes} from 'app/constants';
 import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
@@ -194,7 +196,7 @@ export function ssoLogin(token) {
 }
 
 export function logout(skipServerLogout = false) {
-    return async (dispatch) => {
+    return async () => {
         if (!skipServerLogout) {
             try {
                 Client4.logout();
@@ -203,7 +205,8 @@ export function logout(skipServerLogout = false) {
             }
         }
 
-        dispatch({type: UserTypes.LOGOUT_SUCCESS});
+        EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+        return {data: true};
     };
 }
 
