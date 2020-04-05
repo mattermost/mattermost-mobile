@@ -1,5 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {NameMappedObjects} from '@mm-redux/types/utilities';
+
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 import * as reselect from 'reselect';
 import {GlobalState} from '@mm-redux/types/store';
 import {Group} from '@mm-redux/types/groups';
@@ -66,7 +70,7 @@ export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term
         return emptyList;
     }
     const filteredGroups = filterGroupsMatchingTerm(groups, term);
-    return filteredGroups;
+    return filteredGroups.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name));
 }
 
 export function getAssociatedGroupsForReference(state: GlobalState, teamId: string, channelId: string): Array<Group> {
@@ -94,26 +98,24 @@ export function getAssociatedGroupsForReference(state: GlobalState, teamId: stri
     } else {
         groupsForReference = getAllAssociatedGroupsForReference(state);
     }
-    return groupsForReference;
+    return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name));
 }
 
 const teamGroupIDs = (state: GlobalState, teamID: string) => {
     let returnArray;
-    if (state.entities.teams.groupsAssociatedToTeam[teamID] != null && state.entities.teams.groupsAssociatedToTeam[teamID].ids != null) {
+    if (state.entities.teams.groupsAssociatedToTeam[teamID] && state.entities.teams.groupsAssociatedToTeam[teamID].ids) {
         returnArray = state.entities.teams.groupsAssociatedToTeam[teamID].ids;
     }
     return returnArray || [];
-}
-
+};
 
 const channelGroupIDs = (state: GlobalState, channelID: string) => {
     let returnArray;
-    if (state.entities.channels.groupsAssociatedToChannel[channelID] != null && state.entities.channels.groupsAssociatedToChannel[channelID].ids != null) {
+    if (state.entities.channels.groupsAssociatedToChannel[channelID] && state.entities.channels.groupsAssociatedToChannel[channelID].ids) {
         returnArray = state.entities.channels.groupsAssociatedToChannel[channelID].ids;
-
     }
     return returnArray || [];
-}
+};
 
 const getTeamGroupIDSet = reselect.createSelector(
     teamGroupIDs,

@@ -659,7 +659,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
 
             if (data.team) {
                 let result = await Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true);
-                if (result.groups?.length) {
+                if (result.groups) {
                     actions.push({
                         type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
                         data: {groupsByChannelId: result.groups},
@@ -668,7 +668,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
 
                 if (data.team.group_constrained) {
                     result = await Client4.getAllGroupsAssociatedToTeam(teamId, true);
-                    if (result.length) {
+                    if (result) {
                         actions.push({
                             type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
                             data: result,
@@ -676,7 +676,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                     }
                 } else {
                     result = await Client4.getGroups(true);
-                    if (result.length) {
+                    if (result) {
                         actions.push({
                             type: GroupTypes.RECEIVED_GROUPS,
                             data: result,
