@@ -251,7 +251,7 @@ export default class AtMention extends PureComponent {
     };
 
     render() {
-        const {maxListHeight, theme, nestedScrollEnabled} = this.props;
+        const {maxListHeight, theme, nestedScrollEnabled, groups} = this.props;
         const {mentionComplete, sections} = this.state;
         if (sections.length === 0 || mentionComplete) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered

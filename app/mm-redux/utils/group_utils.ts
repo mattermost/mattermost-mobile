@@ -7,7 +7,6 @@ import {getSuggestionsSplitByMultiple} from './user_utils';
 export function filterGroupsMatchingTerm(groups: Array<Group>, term: string): Array<Group> {
     const lowercasedTerm = term.toLowerCase();
     let trimmedTerm = lowercasedTerm;
-
     if (trimmedTerm.startsWith('@')) {
         trimmedTerm = trimmedTerm.substr(1);
     }
