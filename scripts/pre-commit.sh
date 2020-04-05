@@ -10,7 +10,7 @@ if [ -n "$jsfiles" ]; then
     echo "Checking lint for:"
     for js in $jsfiles; do
         echo "$js"
-        e=$(node_modules/.bin/eslint --quiet $js)
+        e=$(node_modules/.bin/eslint --quiet $js --fix)
         if [[ -n "$e" ]]; then
             echo "$e"
             echo "ERROR: Check eslint hints."

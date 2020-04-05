@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
+import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
@@ -607,13 +607,15 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
                     console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
-                    const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                    const [channels, channelMembers, team] = await Promise.all([ //eslint-disable-line no-await-in-loop
                         Client4.getMyChannels(teamId, true),
                         Client4.getMyChannelMembers(teamId),
+                        Client4.getTeam(teamId),
                     ]);
 
                     data.channels = channels;
                     data.channelMembers = channelMembers;
+                    data.team = team;
                     break;
                 } catch (err) {
                     if (i === MAX_RETRIES) {
@@ -647,14 +649,44 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                             });
                         }
                     }
-
-                    dispatch(batchActions(actions, 'BATCH_LOAD_CHANNELS_FOR_TEAM'));
                 }
 
                 // Fetch needed profiles from channel creators and direct channels
                 dispatch(loadSidebar(data));
 
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
+            }
+
+            if (data.team) {
+                let result = await Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true);
+                if (result.groups?.length) {
+                    actions.push({
+                        type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                        data: {groupsByChannelId: result.groups},
+                    });
+                }
+
+                if (data.team.group_constrained) {
+                    result = await Client4.getAllGroupsAssociatedToTeam(teamId, true);
+                    if (result.length) {
+                        actions.push({
+                            type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
+                            data: result,
+                        });
+                    }
+                } else {
+                    result = await Client4.getGroups(true);
+                    if (result.length) {
+                        actions.push({
+                            type: GroupTypes.RECEIVED_GROUPS,
+                            data: result,
+                        });
+                    }
+                }
+            }
+
+            if (actions.length) {
+                dispatch(batchActions(actions, 'BATCH_LOAD_CHANNELS_FOR_TEAM'));
             }
         }
 
