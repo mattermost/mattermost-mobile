@@ -5,13 +5,10 @@ import {connect} from 'react-redux';
 
 import {getUsersTyping} from '@mm-redux/selectors/entities/typing';
 
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
 import Typing from './typing';
 
 function mapStateToProps(state) {
     return {
-        theme: getTheme(state),
         typing: getUsersTyping(state),
     };
 }
