@@ -17,7 +17,7 @@
   "channel_header.addMembers": "新增成員",
   "channel_header.directchannel.you": "{displayname} (你) ",
   "channel_header.manageMembers": "成員管理",
-  "channel_header.pinnedPosts": "釘選的訊息",
+  "channel_header.pinnedPosts": "See pinned posts",
   "channel_header.viewMembers": "檢視成員",
   "channel_info.header": "標題：",
   "channel_info.purpose": "用途",

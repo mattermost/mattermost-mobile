@@ -17,7 +17,7 @@
   "channel_header.addMembers": "メンバーを追加する",
   "channel_header.directchannel.you": "{displayname} (あなた) ",
   "channel_header.manageMembers": "メンバーを管理する",
-  "channel_header.pinnedPosts": "ピン留めされた投稿",
+  "channel_header.pinnedPosts": "ピン留めされた投稿を見る",
   "channel_header.viewMembers": "メンバーを見る",
   "channel_info.header": "ヘッダー:",
   "channel_info.purpose": "目的",
