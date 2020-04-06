@@ -138,7 +138,7 @@ export default function configureAppStore(initialState) {
         additionalMiddleware: [
             createThunkMiddleware(),
             createSentryMiddleware(),
-            ...middlewares(persistConfig),
+            ...middlewares(),
         ],
         enableThunk: false, // We override the default thunk middleware
         enhancers: [reduxReset(General.OFFLINE_STORE_PURGE)],

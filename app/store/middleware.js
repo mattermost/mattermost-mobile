@@ -35,7 +35,7 @@ const SAVE_STATE_ACTIONS = [
     'WEBSOCKET_SUCCESS',
 ];
 
-export const middlewares = (persistConfig) => {
+export const middlewares = () => {
     const middlewareFunctions = [
         messageRetention,
     ];
