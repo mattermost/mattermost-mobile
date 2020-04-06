@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
+exports[`SendAction should change theme backgroundColor to 0.3 opacity 1`] = `
 <View
   style={
     Object {
@@ -35,7 +35,7 @@ exports[`SendButton should change theme backgroundColor to 0.3 opacity 1`] = `
 </View>
 `;
 
-exports[`SendButton should match snapshot 1`] = `
+exports[`SendAction should match snapshot 1`] = `
 <TouchableWithFeedbackIOS
   onPress={[MockFunction]}
   style={
@@ -67,7 +67,7 @@ exports[`SendButton should match snapshot 1`] = `
 </TouchableWithFeedbackIOS>
 `;
 
-exports[`SendButton should render theme backgroundColor 1`] = `
+exports[`SendAction should render theme backgroundColor 1`] = `
 <TouchableWithFeedbackIOS
   onPress={[MockFunction]}
   style={

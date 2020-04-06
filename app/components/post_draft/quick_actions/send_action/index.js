@@ -5,8 +5,8 @@ import React, {memo} from 'react';
 import {View} from 'react-native';
 import PropTypes from 'prop-types';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 let PaperPlane = null;
 
@@ -15,7 +15,7 @@ function SendButton(props) {
     const style = getStyleSheet(theme);
 
     if (!PaperPlane) {
-        PaperPlane = require('app/components/paper_plane').default;
+        PaperPlane = require('./paper_plane').default;
     }
 
     if (props.disabled) {

@@ -8,7 +8,7 @@ import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import CameraButton from './camera_button';
+import CameraQuickAction from './index';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
@@ -18,16 +18,16 @@ jest.mock('react-native-image-picker', () => ({
 describe('CameraButton', () => {
     const formatMessage = jest.fn();
     const baseProps = {
+        blurTextBox: jest.fn(),
         fileCount: 0,
         maxFileCount: 5,
         onShowFileMaxWarning: jest.fn(),
         theme: Preferences.THEMES.default,
-        uploadFiles: jest.fn(),
-        buttonContainerStyle: {},
+        onUploadFiles: jest.fn(),
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<CameraButton {...baseProps}/>);
+        const wrapper = shallow(<CameraQuickAction {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -37,7 +37,7 @@ describe('CameraButton', () => {
         jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
         const wrapper = shallow(
-            <CameraButton {...baseProps}/>,
+            <CameraQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
@@ -53,7 +53,7 @@ describe('CameraButton', () => {
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
         const wrapper = shallow(
-            <CameraButton {...baseProps}/>,
+            <CameraQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
@@ -82,7 +82,7 @@ describe('CameraButton', () => {
             request.mockReturnValue(Permissions.RESULTS.GRANTED);
 
             const wrapper = shallow(
-                <CameraButton {...baseProps}/>,
+                <CameraQuickAction {...baseProps}/>,
                 {context: {intl: {formatMessage}}},
             );
             const instance = wrapper.instance();
@@ -103,7 +103,7 @@ describe('CameraButton', () => {
 
     test('should re-enable StatusBar after ImagePicker launchCamera finishes', async () => {
         const wrapper = shallow(
-            <CameraButton {...baseProps}/>,
+            <CameraQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 

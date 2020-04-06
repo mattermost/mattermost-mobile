@@ -3,47 +3,33 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    Alert,
-    NativeModules,
-    Platform,
-} from 'react-native';
+import {Alert, NativeModules, Platform, StyleSheet} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {ICON_SIZE} from 'app/constants/post_textbox';
 import AndroidOpenSettings from 'react-native-android-open-settings';
-
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import DocumentPicker from 'react-native-document-picker';
 import Permissions from 'react-native-permissions';
 
-import {changeOpacity} from 'app/utils/theme';
-
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ICON_SIZE} from '@constants/post_draft';
+import {changeOpacity} from '@utils/theme';
 
 const ShareExtension = NativeModules.MattermostShare;
 
-export default class FileUploadButton extends PureComponent {
+export default class FileQuickAction extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
-        browseFileTypes: PropTypes.string,
+        disabled: PropTypes.bool,
         fileCount: PropTypes.number,
-        maxFileCount: PropTypes.number.isRequired,
+        maxFileCount: PropTypes.number,
         onShowFileMaxWarning: PropTypes.func,
+        onUploadFiles: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        uploadFiles: PropTypes.func.isRequired,
-        buttonContainerStyle: PropTypes.object,
     };
 
     static defaultProps = {
-        browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
-        validMimeTypes: [],
-        canBrowseFiles: true,
-        canBrowsePhotoLibrary: true,
-        canBrowseVideoLibrary: true,
-        canTakePhoto: true,
-        canTakeVideo: true,
+        fileCount: 0,
         maxFileCount: 5,
-        extraOptions: null,
     };
 
     static contextTypes = {
@@ -66,8 +52,8 @@ export default class FileUploadButton extends PureComponent {
     }
 
     attachFileFromFiles = async () => {
-        const {browseFileTypes} = this.props;
         const hasPermission = await this.hasStoragePermission();
+        const browseFileTypes = Platform.OS === 'ios' ? 'public.item' : '*/*';
 
         if (hasPermission) {
             try {
@@ -85,7 +71,7 @@ export default class FileUploadButton extends PureComponent {
                 // Decode file uri to get the actual path
                 res.uri = decodeURIComponent(res.uri);
 
-                this.props.uploadFiles([res]);
+                this.props.onUploadFiles([res]);
             } catch (error) {
                 // Do nothing
             }
@@ -137,6 +123,7 @@ export default class FileUploadButton extends PureComponent {
 
     handleButtonPress = () => {
         const {
+            blurTextBox,
             fileCount,
             maxFileCount,
             onShowFileMaxWarning,
@@ -146,20 +133,26 @@ export default class FileUploadButton extends PureComponent {
             onShowFileMaxWarning();
             return;
         }
-        this.props.blurTextBox();
+
+        blurTextBox();
         this.attachFileFromFiles();
     };
 
     render() {
-        const {theme, buttonContainerStyle} = this.props;
+        const {disabled, theme} = this.props;
+        const color = disabled ?
+            changeOpacity(theme.centerChannelColor, 0.16) :
+            changeOpacity(theme.centerChannelColor, 0.64);
+
         return (
             <TouchableWithFeedback
+                disabled={disabled}
                 onPress={this.handleButtonPress}
-                style={buttonContainerStyle}
+                style={style.icon}
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    color={color}
                     name='file-document-outline'
                     size={ICON_SIZE}
                 />
@@ -167,3 +160,11 @@ export default class FileUploadButton extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    icon: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+    },
+});

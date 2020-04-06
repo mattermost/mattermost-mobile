@@ -3,76 +3,35 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    Alert,
-    Platform,
-    StatusBar,
-} from 'react-native';
+import {Alert, Platform, StatusBar, StyleSheet} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {ICON_SIZE} from 'app/constants/post_textbox';
-
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
-import {changeOpacity} from 'app/utils/theme';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ICON_SIZE} from '@constants/post_draft';
+import {changeOpacity} from '@utils/theme';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-
-export default class ImageUploadButton extends PureComponent {
+export default class ImageQuickAction extends PureComponent {
     static propTypes = {
         blurTextBox: PropTypes.func.isRequired,
+        disabled: PropTypes.bool,
         fileCount: PropTypes.number,
-        maxFileCount: PropTypes.number.isRequired,
+        maxFileCount: PropTypes.number,
         onShowFileMaxWarning: PropTypes.func,
+        onUploadFiles: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        uploadFiles: PropTypes.func.isRequired,
-        buttonContainerStyle: PropTypes.object,
     };
 
     static defaultProps = {
-        browseFileTypes: Platform.OS === 'ios' ? 'public.item' : '*/*',
-        validMimeTypes: [],
-        canBrowseFiles: true,
-        canBrowsePhotoLibrary: true,
-        canBrowseVideoLibrary: true,
-        canTakePhoto: true,
-        canTakeVideo: true,
+        fileCount: 0,
         maxFileCount: 5,
-        extraOptions: null,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
-
-    getPermissionDeniedMessage = () => {
-        const {formatMessage} = this.context.intl;
-        const applicationName = DeviceInfo.getApplicationName();
-        if (Platform.OS === 'android') {
-            return {
-                title: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_title',
-                    defaultMessage: '{applicationName} would like to access your photos',
-                }, {applicationName}),
-                text: formatMessage({
-                    id: 'mobile.android.photos_permission_denied_description',
-                    defaultMessage: 'Upload photos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo library.',
-                }),
-            };
-        }
-
-        return {
-            title: formatMessage({
-                id: 'mobile.ios.photos_permission_denied_title',
-                defaultMessage: '{applicationName} would like to access your photos',
-            }, {applicationName}),
-            text: formatMessage({
-                id: 'mobile.ios.photos_permission_denied_description',
-                defaultMessage: 'Upload photos and videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo and video library.',
-            }),
-        };
-    }
 
     attachFileFromLibrary = async () => {
         const {formatMessage} = this.context.intl;
@@ -101,9 +60,54 @@ export default class ImageUploadButton extends PureComponent {
                     return;
                 }
 
-                this.props.uploadFiles([response]);
+                this.props.onUploadFiles([response]);
             });
         }
+    };
+
+    getPermissionDeniedMessage = () => {
+        const {formatMessage} = this.context.intl;
+        const applicationName = DeviceInfo.getApplicationName();
+        if (Platform.OS === 'android') {
+            return {
+                title: formatMessage({
+                    id: 'mobile.android.photos_permission_denied_title',
+                    defaultMessage: '{applicationName} would like to access your photos',
+                }, {applicationName}),
+                text: formatMessage({
+                    id: 'mobile.android.photos_permission_denied_description',
+                    defaultMessage: 'Upload photos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo library.',
+                }),
+            };
+        }
+
+        return {
+            title: formatMessage({
+                id: 'mobile.ios.photos_permission_denied_title',
+                defaultMessage: '{applicationName} would like to access your photos',
+            }, {applicationName}),
+            text: formatMessage({
+                id: 'mobile.ios.photos_permission_denied_description',
+                defaultMessage: 'Upload photos and videos to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your photo and video library.',
+            }),
+        };
+    };
+
+    handleButtonPress = () => {
+        const {
+            blurTextBox,
+            fileCount,
+            maxFileCount,
+            onShowFileMaxWarning,
+        } = this.props;
+
+        if (fileCount === maxFileCount) {
+            onShowFileMaxWarning();
+            return;
+        }
+
+        blurTextBox();
+        this.attachFileFromLibrary();
     };
 
     hasPhotoPermission = async () => {
@@ -151,32 +155,21 @@ export default class ImageUploadButton extends PureComponent {
         return true;
     };
 
-    handleButtonPress = () => {
-        const {
-            fileCount,
-            maxFileCount,
-            onShowFileMaxWarning,
-        } = this.props;
-
-        if (fileCount === maxFileCount) {
-            onShowFileMaxWarning();
-            return;
-        }
-
-        this.props.blurTextBox();
-        this.attachFileFromLibrary();
-    };
-
     render() {
-        const {theme, buttonContainerStyle} = this.props;
+        const {disabled, theme} = this.props;
+        const color = disabled ?
+            changeOpacity(theme.centerChannelColor, 0.16) :
+            changeOpacity(theme.centerChannelColor, 0.64);
+
         return (
             <TouchableWithFeedback
+                disabled={disabled}
                 onPress={this.handleButtonPress}
-                style={buttonContainerStyle}
+                style={style.icon}
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    color={color}
                     name='image-outline'
                     size={ICON_SIZE}
                 />
@@ -184,3 +177,11 @@ export default class ImageUploadButton extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    icon: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+    },
+});

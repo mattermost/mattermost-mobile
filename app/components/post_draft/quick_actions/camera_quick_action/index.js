@@ -7,68 +7,35 @@ import {
     Alert,
     Platform,
     StatusBar,
+    StyleSheet,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {ICON_SIZE} from 'app/constants/post_textbox';
-
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
-import {changeOpacity} from 'app/utils/theme';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ICON_SIZE} from '@constants/post_draft';
+import {changeOpacity} from '@utils/theme';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-
-export default class AttachmentButton extends PureComponent {
+export default class CameraQuickAction extends PureComponent {
     static propTypes = {
+        blurTextBox: PropTypes.func.isRequired,
+        disabled: PropTypes.bool,
         fileCount: PropTypes.number,
-        maxFileCount: PropTypes.number.isRequired,
+        maxFileCount: PropTypes.number,
         onShowFileMaxWarning: PropTypes.func,
+        onUploadFiles: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        uploadFiles: PropTypes.func.isRequired,
-        buttonContainerStyle: PropTypes.object,
-    };
-
-    static defaultProps = {
-        validMimeTypes: [],
-        canTakePhoto: true,
-        canTakeVideo: true,
-        maxFileCount: 5,
     };
 
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
-    getPermissionDeniedMessage = () => {
-        const {formatMessage} = this.context.intl;
-        const applicationName = DeviceInfo.getApplicationName();
-        return {
-            title: formatMessage({
-                id: 'mobile.camera_photo_permission_denied_title',
-                defaultMessage: '{applicationName} would like to access your camera',
-            }, {applicationName}),
-            text: formatMessage({
-                id: 'mobile.camera_photo_permission_denied_description',
-                defaultMessage: 'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
-            }),
-        };
-    }
-
     attachFileFromCamera = async () => {
         const {formatMessage} = this.context.intl;
-        const {
-            fileCount,
-            maxFileCount,
-            onShowFileMaxWarning,
-        } = this.props;
-
         const {title, text} = this.getPermissionDeniedMessage();
-
-        if (fileCount === maxFileCount) {
-            onShowFileMaxWarning();
-            return;
-        }
 
         const options = {
             quality: 0.8,
@@ -99,9 +66,41 @@ export default class AttachmentButton extends PureComponent {
                     return;
                 }
 
-                this.props.uploadFiles([response]);
+                this.props.onUploadFiles([response]);
             });
         }
+    };
+
+    getPermissionDeniedMessage = () => {
+        const {formatMessage} = this.context.intl;
+        const applicationName = DeviceInfo.getApplicationName();
+        return {
+            title: formatMessage({
+                id: 'mobile.camera_photo_permission_denied_title',
+                defaultMessage: '{applicationName} would like to access your camera',
+            }, {applicationName}),
+            text: formatMessage({
+                id: 'mobile.camera_photo_permission_denied_description',
+                defaultMessage: 'Take photos and upload them to your Mattermost instance or save them to your device. Open Settings to grant Mattermost Read and Write access to your camera.',
+            }),
+        };
+    }
+
+    handleButtonPress = () => {
+        const {
+            blurTextBox,
+            fileCount,
+            maxFileCount,
+            onShowFileMaxWarning,
+        } = this.props;
+
+        if (fileCount === maxFileCount) {
+            onShowFileMaxWarning();
+            return;
+        }
+
+        blurTextBox();
+        this.attachFileFromCamera();
     };
 
     hasCameraPermission = async () => {
@@ -150,15 +149,20 @@ export default class AttachmentButton extends PureComponent {
     };
 
     render() {
-        const {theme, buttonContainerStyle} = this.props;
+        const {disabled, theme} = this.props;
+        const color = disabled ?
+            changeOpacity(theme.centerChannelColor, 0.16) :
+            changeOpacity(theme.centerChannelColor, 0.64);
+
         return (
             <TouchableWithFeedback
-                onPress={this.attachFileFromCamera}
-                style={buttonContainerStyle}
+                disabled={disabled}
+                onPress={this.handleButtonPress}
+                style={style.icon}
                 type={'opacity'}
             >
                 <MaterialCommunityIcons
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    color={color}
                     name='camera-outline'
                     size={ICON_SIZE}
                 />
@@ -166,3 +170,11 @@ export default class AttachmentButton extends PureComponent {
         );
     }
 }
+
+const style = StyleSheet.create({
+    icon: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+    },
+});

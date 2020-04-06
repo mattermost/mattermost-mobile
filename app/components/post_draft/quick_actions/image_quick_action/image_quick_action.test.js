@@ -8,14 +8,14 @@ import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import ImageUploadButton from './image_upload_button';
+import ImageQuickAction from './index';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
     launchImageLibrary: jest.fn().mockImplementation((options, callback) => callback({didCancel: true})),
 }));
 
-describe('ImageUploadButton', () => {
+describe('ImageQuickAction', () => {
     const formatMessage = jest.fn();
     const baseProps = {
         blurTextBox: jest.fn(),
@@ -23,12 +23,11 @@ describe('ImageUploadButton', () => {
         maxFileCount: 5,
         onShowFileMaxWarning: jest.fn(),
         theme: Preferences.THEMES.default,
-        uploadFiles: jest.fn(),
-        buttonContainerStyle: {},
+        onUploadFiles: jest.fn(),
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<ImageUploadButton {...baseProps}/>);
+        const wrapper = shallow(<ImageQuickAction {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -38,7 +37,7 @@ describe('ImageUploadButton', () => {
         jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
         const wrapper = shallow(
-            <ImageUploadButton {...baseProps}/>,
+            <ImageQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
@@ -54,7 +53,7 @@ describe('ImageUploadButton', () => {
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
         const wrapper = shallow(
-            <ImageUploadButton {...baseProps}/>,
+            <ImageQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
@@ -83,7 +82,7 @@ describe('ImageUploadButton', () => {
             request.mockReturnValue(Permissions.RESULTS.GRANTED);
 
             const wrapper = shallow(
-                <ImageUploadButton {...baseProps}/>,
+                <ImageQuickAction {...baseProps}/>,
                 {context: {intl: {formatMessage}}},
             );
             const instance = wrapper.instance();
@@ -104,7 +103,7 @@ describe('ImageUploadButton', () => {
 
     test('should re-enable StatusBar after ImagePicker launchImageLibrary finishes', async () => {
         const wrapper = shallow(
-            <ImageUploadButton {...baseProps}/>,
+            <ImageQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 

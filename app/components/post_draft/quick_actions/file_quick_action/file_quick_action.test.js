@@ -8,24 +8,22 @@ import Permissions from 'react-native-permissions';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import FileUploadButton from './file_upload_button';
+import FileQuickAction from './index';
 
 jest.mock('react-intl');
 jest.mock('react-native-image-picker', () => ({
     launchCamera: jest.fn(),
 }));
 
-describe('FileUploadButton', () => {
+describe('FileQuickAction', () => {
     const formatMessage = jest.fn();
     const baseProps = {
         blurTextBox: jest.fn(),
-        browseFileTypes: '*',
         fileCount: 0,
         maxFileCount: 5,
         onShowFileMaxWarning: jest.fn(),
         theme: Preferences.THEMES.default,
-        uploadFiles: jest.fn(),
-        buttonContainerStyle: {},
+        onUploadFiles: jest.fn(),
     };
 
     beforeAll(() => {
@@ -37,7 +35,7 @@ describe('FileUploadButton', () => {
     });
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<FileUploadButton {...baseProps}/>);
+        const wrapper = shallow(<FileQuickAction {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -47,7 +45,7 @@ describe('FileUploadButton', () => {
         jest.spyOn(Permissions, 'request').mockReturnValue(Permissions.RESULTS.DENIED);
 
         const wrapper = shallow(
-            <FileUploadButton {...baseProps}/>,
+            <FileQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
@@ -63,7 +61,7 @@ describe('FileUploadButton', () => {
         jest.spyOn(Alert, 'alert').mockReturnValue(true);
 
         const wrapper = shallow(
-            <FileUploadButton {...baseProps}/>,
+            <FileQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
 
@@ -76,7 +74,7 @@ describe('FileUploadButton', () => {
 
     test('hasStoragePermission returns true when permission has been granted', async () => {
         const wrapper = shallow(
-            <FileUploadButton {...baseProps}/>,
+            <FileQuickAction {...baseProps}/>,
             {context: {intl: {formatMessage}}},
         );
         const instance = wrapper.instance();

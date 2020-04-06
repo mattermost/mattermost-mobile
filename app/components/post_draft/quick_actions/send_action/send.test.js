@@ -5,11 +5,11 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {changeOpacity} from '@utils/theme';
 
-import SendButton from 'app/components/send_button';
-import {changeOpacity} from 'app/utils/theme';
+import SendAction from './index';
 
-describe('SendButton', () => {
+describe('SendAction', () => {
     const baseProps = {
         theme: Preferences.THEMES.default,
         handleSendMessage: jest.fn(),
@@ -18,7 +18,7 @@ describe('SendButton', () => {
 
     function getWrapper(props = {}) {
         return shallow(
-            <SendButton
+            <SendAction
                 {...baseProps}
                 {...props}
             />,

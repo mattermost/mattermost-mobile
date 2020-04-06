@@ -1,15 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FileUploadButton should match snapshot 1`] = `
+exports[`ImageQuickAction should match snapshot 1`] = `
 <TouchableWithFeedbackIOS
   onPress={[Function]}
-  style={Object {}}
+  style={
+    Object {
+      "alignItems": "center",
+      "justifyContent": "center",
+      "padding": 10,
+    }
+  }
   type="opacity"
 >
   <Icon
     allowFontScaling={false}
     color="rgba(61,60,64,0.64)"
-    name="file-document-outline"
+    name="image-outline"
     size={24}
   />
 </TouchableWithFeedbackIOS>
