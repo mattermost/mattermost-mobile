@@ -115,11 +115,4 @@ export default class ThreadBase extends PureComponent {
 
         return null;
     };
-
-    onCloseChannel = () => {
-        const passProps = {
-            disableTermsModal: true,
-        };
-        resetToChannel(passProps);
-    };
 }

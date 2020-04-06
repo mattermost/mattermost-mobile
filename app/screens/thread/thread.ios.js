@@ -5,16 +5,15 @@ import React from 'react';
 import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
+import Loading from '@components/loading';
+import PostList from '@components/post_list';
+import PostDraft from '@components/post_draft';
+import SafeAreaView from '@components/safe_area_view';
+import StatusBar from '@components/status_bar';
+import {THREAD} from '@constants/screen';
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
-
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
-import Loading from 'app/components/loading';
-import PostList from 'app/components/post_list';
-import PostTextbox from 'app/components/post_textbox';
-import SafeAreaView from 'app/components/safe_area_view';
-import StatusBar from 'app/components/status_bar';
-import {THREAD} from 'app/constants/screen';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadBase from './thread_base';
 
@@ -67,11 +66,10 @@ export default class ThreadIOS extends ThreadBase {
                     scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                     accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                 >
-                    <PostTextbox
+                    <PostDraft
                         channelId={channelId}
                         channelIsArchived={channelIsArchived}
                         cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
-                        onCloseChannel={this.onCloseChannel}
                         ref={this.postTextbox}
                         rootId={rootId}
                         screenId={this.props.componentId}

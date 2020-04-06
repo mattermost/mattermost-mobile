@@ -4,14 +4,14 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {THREAD} from 'app/constants/screen';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import Loading from 'app/components/loading';
-import PostList from 'app/components/post_list';
-import PostTextbox from 'app/components/post_textbox';
-import SafeAreaView from 'app/components/safe_area_view';
-import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import KeyboardLayout from '@components/layout/keyboard_layout';
+import Loading from '@components/loading';
+import PostList from '@components/post_list';
+import PostDraft from '@components/post_draft';
+import SafeAreaView from '@components/safe_area_view';
+import StatusBar from '@components/status_bar';
+import {THREAD} from '@constants/screen';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThreadBase from './thread_base';
 
@@ -43,10 +43,9 @@ export default class ThreadAndroid extends ThreadBase {
             );
 
             postTextBox = (
-                <PostTextbox
+                <PostDraft
                     channelId={channelId}
                     channelIsArchived={channelIsArchived}
-                    onCloseChannel={this.onCloseChannel}
                     rootId={rootId}
                     screenId={this.props.componentId}
                 />

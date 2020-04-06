@@ -71,7 +71,7 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentDidMount() {
-        EventEmitter.on(NavigationTypes.BLUR_POST_TEXTBOX, this.blurPostTextBox);
+        EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
         if (this.props.currentTeamId) {
@@ -134,13 +134,13 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off(NavigationTypes.BLUR_POST_TEXTBOX, this.blurPostTextBox);
+        EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 
-    blurPostTextBox = () => {
+    blurPostDraft = () => {
         if (this.postTextbox?.current) {
-            this.postTextbox.current.blur();
+            this.postTextbox.current.blurTextBox();
         }
     };
 

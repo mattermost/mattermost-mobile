@@ -27,8 +27,8 @@ import {Preferences} from '@mm-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
 
 import Loading from 'app/components/loading';
-import PaperPlane from 'app/components/paper_plane';
-import {MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import PaperPlane from 'app/components/post_draft/quick_actions/send_action/paper_plane';
+import {MAX_FILE_COUNT} from 'app/constants/post_draft';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import mattermostManaged from 'app/mattermost_managed';
 import {getExtensionFromMime} from 'app/utils/file';

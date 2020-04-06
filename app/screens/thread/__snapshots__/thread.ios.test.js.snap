@@ -56,11 +56,10 @@ exports[`thread should match snapshot, has root post 1`] = `
     accessoriesContainerID="threadAccessoriesContainer"
     scrollViewNativeID="threadPostList"
   >
-    <Connect(PostTextBoxIOS)
+    <Connect(PostDraft)
       channelId="channel_id"
       channelIsArchived={false}
       cursorPositionEvent="onThreadTextBoxCursorChange"
-      onCloseChannel={[Function]}
       rootId="root_id"
       valueEvent="onThreadTextBoxValueChange"
     />

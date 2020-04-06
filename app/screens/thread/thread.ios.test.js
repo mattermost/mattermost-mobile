@@ -53,23 +53,6 @@ describe('thread', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call resetToChannel on onCloseChannel', () => {
-        const resetToChannel = jest.spyOn(NavigationActions, 'resetToChannel');
-
-        const passProps = {
-            disableTermsModal: true,
-        };
-        const wrapper = shallow(
-            <ThreadIOS
-                {...baseProps}
-            />,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-        wrapper.instance().onCloseChannel();
-        expect(resetToChannel).toHaveBeenCalledTimes(1);
-        expect(resetToChannel).toBeCalledWith(passProps);
-    });
-
     test('should match snapshot, render footer', () => {
         const wrapper = shallow(
             <ThreadIOS {...baseProps}/>,
