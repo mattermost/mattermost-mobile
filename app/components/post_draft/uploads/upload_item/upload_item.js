@@ -9,28 +9,27 @@ import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 import {Client4} from '@mm-redux/client';
 
-import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import FileUploadRetry from 'app/components/file_upload_preview/file_upload_retry';
-import FileUploadRemove from 'app/components/file_upload_preview/file_upload_remove';
 import mattermostBucket from 'app/mattermost_bucket';
-import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
-import ImageCacheManager from 'app/utils/image_cache_manager';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import FileAttachmentImage from '@components/file_attachment_list/file_attachment_image';
+import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
+import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
+import {emptyFunction} from '@utils/general';
+import ImageCacheManager from '@utils/image_cache_manager';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-export default class FileUploadItem extends PureComponent {
+import UploadRemove from './upload_remove';
+import UploadRetry from './upload_retry';
+
+export default class UploadItem extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            handleRemoveFile: PropTypes.func.isRequired,
-            retryFileUpload: PropTypes.func.isRequired,
-            uploadComplete: PropTypes.func.isRequired,
-            uploadFailed: PropTypes.func.isRequired,
-        }).isRequired,
         channelId: PropTypes.string.isRequired,
         file: PropTypes.object.isRequired,
+        handleRemoveFile: PropTypes.func.isRequired,
+        retryFileUpload: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
+        uploadComplete: PropTypes.func.isRequired,
+        uploadFailed: PropTypes.func.isRequired,
     };
 
     state = {
@@ -58,11 +57,11 @@ export default class FileUploadItem extends PureComponent {
             return;
         }
 
-        this.props.actions.retryFileUpload(file, this.props.rootId);
+        this.props.retryFileUpload(file, this.props.rootId);
     };
 
     handleRemoveFile = (clientId, channelId, rootId) => {
-        const {handleRemoveFile} = this.props.actions;
+        const {handleRemoveFile} = this.props;
         if (this.uploadPromise) {
             this.uploadPromise.cancel(() => {
                 this.canceled = true;
@@ -74,7 +73,7 @@ export default class FileUploadItem extends PureComponent {
     };
 
     handleUploadCompleted = (res) => {
-        const {actions, channelId, file, rootId} = this.props;
+        const {channelId, file, rootId, uploadComplete, uploadFailed} = this.props;
         const response = JSON.parse(res.data);
         if (res.respInfo.status === 200 || res.respInfo.status === 201) {
             const data = response.file_infos.map((f) => {
@@ -83,17 +82,17 @@ export default class FileUploadItem extends PureComponent {
                     clientId: file.clientId,
                 };
             });
-            actions.uploadComplete(data, channelId, rootId);
+            uploadComplete(data, channelId, rootId);
         } else {
-            actions.uploadFailed([file.clientId], channelId, rootId, response.message);
+            uploadFailed([file.clientId], channelId, rootId, response.message);
         }
         this.uploadPromise = null;
     };
 
     handleUploadError = (error) => {
-        const {actions, channelId, file, rootId} = this.props;
+        const {channelId, file, rootId, uploadFailed} = this.props;
         if (!this.canceled) {
-            actions.uploadFailed([file.clientId], channelId, rootId, error);
+            uploadFailed([file.clientId], channelId, rootId, error);
         }
         this.uploadPromise = null;
     };
@@ -217,7 +216,7 @@ export default class FileUploadItem extends PureComponent {
                 <View style={styles.previewContainer}>
                     {filePreviewComponent}
                     {file.failed &&
-                    <FileUploadRetry
+                    <UploadRetry
                         file={file}
                         onPress={this.handleRetryFileUpload}
                     />
@@ -237,7 +236,7 @@ export default class FileUploadItem extends PureComponent {
                     </View>
                     }
                 </View>
-                <FileUploadRemove
+                <UploadRemove
                     theme={this.props.theme}
                     channelId={channelId}
                     clientId={file.clientId}

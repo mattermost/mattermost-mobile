@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    BackHandler,
     InteractionManager,
     ScrollView,
     Text,
@@ -14,21 +15,22 @@ import * as Animatable from 'react-native-animatable';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import FormattedText from 'app/components/formatted_text';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import FormattedText from '@components/formatted_text';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import FileUploadItem from './file_upload_item';
+import UploadItem from './upload_item';
 
 const showFiles = {opacity: 1, height: 68};
 const hideFiles = {opacity: 0, height: 0};
 const hideError = {height: 0};
 
-export default class FileUploadPreview extends PureComponent {
+export default class Uploads extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         files: PropTypes.array.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
+        handleRemoveLastFile: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -51,25 +53,33 @@ export default class FileUploadPreview extends PureComponent {
         EventEmitter.on('fileSizeWarning', this.handleFileSizeWarning);
 
         if (this.props.files.length) {
-            InteractionManager.runAfterInteractions(this.showOrHideContainer);
+            this.showOrHideContainer();
+        }
+
+        if (Platform.OS === 'android') {
+            BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBack);
         }
     }
 
     componentWillUnmount() {
         EventEmitter.off('fileMaxWarning', this.handleFileMaxWarning);
         EventEmitter.off('fileSizeWarning', this.handleFileSizeWarning);
+
+        if (Platform.OS === 'android') {
+            BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
+        }
     }
 
     componentDidUpdate(prevProps) {
         if (this.containerRef.current && this.props.files.length !== prevProps.files.length) {
-            InteractionManager.runAfterInteractions(this.showOrHideContainer);
+            this.showOrHideContainer();
         }
     }
 
     buildFilePreviews = () => {
         return this.props.files.map((file) => {
             return (
-                <FileUploadItem
+                <UploadItem
                     key={file.clientId}
                     channelId={this.props.channelId}
                     file={file}
@@ -88,6 +98,15 @@ export default class FileUploadPreview extends PureComponent {
             });
         }, delay || 0);
     }
+
+    handleAndroidBack = () => {
+        const {channelId, files, handleRemoveLastFile, rootId} = this.props;
+        if (files.length) {
+            handleRemoveLastFile(channelId, rootId);
+            return true;
+        }
+        return false;
+    };
 
     handleFileMaxWarning = () => {
         this.setState({showFileMaxWarning: true});

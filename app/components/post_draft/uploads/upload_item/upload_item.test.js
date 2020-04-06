@@ -4,17 +4,15 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import {Preferences} from '@mm-redux/constants';
-import ImageCacheManager from 'app/utils/image_cache_manager';
-import FileUploadItem from './file_upload_item';
+import ImageCacheManager from '@utils/image_cache_manager';
+import UploadItem from './upload_item';
 
-describe('FileUploadItem', () => {
+describe('UploadItem', () => {
     const props = {
-        actions: {
-            handleRemoveFile: jest.fn(),
-            retryFileUpload: jest.fn(),
-            uploadComplete: jest.fn(),
-            uploadFailed: jest.fn(),
-        },
+        handleRemoveFile: jest.fn(),
+        retryFileUpload: jest.fn(),
+        uploadComplete: jest.fn(),
+        uploadFailed: jest.fn(),
         channelId: 'channel-id',
         file: {
             loading: false,
@@ -24,7 +22,7 @@ describe('FileUploadItem', () => {
 
     describe('downloadAndUploadFile', () => {
         test('should upload file', async () => {
-            const component = shallow(<FileUploadItem {...props}/>);
+            const component = shallow(<UploadItem {...props}/>);
             component.instance().uploadFile = jest.fn();
             await component.instance().downloadAndUploadFile({
                 localPath: 'path/to/file',
@@ -36,7 +34,7 @@ describe('FileUploadItem', () => {
 
         test('should download file if file path is http', async () => {
             jest.spyOn(ImageCacheManager, 'cache').mockReturnValue('path/to/downloaded/image');
-            const component = shallow(<FileUploadItem {...props}/>);
+            const component = shallow(<UploadItem {...props}/>);
             component.instance().uploadFile = jest.fn();
             await component.instance().downloadAndUploadFile({
                 localPath: 'https://path.to/file',
@@ -47,7 +45,7 @@ describe('FileUploadItem', () => {
         });
 
         test('should upload next file when we pass new props', async () => {
-            const component = shallow(<FileUploadItem {...props}/>);
+            const component = shallow(<UploadItem {...props}/>);
             component.instance().uploadFile = jest.fn();
 
             component.setProps({file: {

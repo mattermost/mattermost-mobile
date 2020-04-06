@@ -6,9 +6,9 @@ import PropTypes from 'prop-types';
 import {StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 
-export default class FileUploadRetry extends PureComponent {
+export default class UploadRetry extends PureComponent {
     static propTypes = {
         file: PropTypes.object.isRequired,
         onPress: PropTypes.func.isRequired,

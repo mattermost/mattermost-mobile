@@ -5,11 +5,11 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-export default class FileUploadRemove extends PureComponent {
+export default class UploadRemove extends PureComponent {
     static propTypes = {
         channelId: PropTypes.string,
         clientId: PropTypes.string,
