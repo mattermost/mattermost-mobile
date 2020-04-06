@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
-import {createTransform, KEY_PREFIX} from 'redux-persist';
+import {createTransform} from 'redux-persist';
 import reduxReset from 'redux-reset';
 
 import {General} from '@mm-redux/constants';

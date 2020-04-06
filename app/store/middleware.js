@@ -3,21 +3,13 @@
 
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {batchActions} from 'redux-batched-actions';
-import AsyncStorage from '@react-native-community/async-storage';
-import {purgeStoredState, REHYDRATE} from 'redux-persist';
+import {REHYDRATE} from 'redux-persist';
 
-import {NavigationTypes, ViewTypes} from 'app/constants';
+import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
 import {throttle} from 'app/utils/general';
 
-import {General} from '@mm-redux/constants';
-import {ErrorTypes, GeneralTypes} from '@mm-redux/action_types';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
 import mattermostBucket from 'app/mattermost_bucket';
-
-import {getStateForReset} from './utils';
 
 import {
     captureException,
