@@ -245,7 +245,7 @@ export function createPost(post: Post, files: any[] = []) {
                 });
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_CREATE_POST'));
         } catch (error) {
             const data = {
                 ...newPost,
