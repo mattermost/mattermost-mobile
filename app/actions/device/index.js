@@ -47,6 +47,7 @@ export function setDeviceAsTablet() {
 }
 
 export default {
+    connection,
     setDeviceDimensions,
     setDeviceOrientation,
     setDeviceAsTablet,
