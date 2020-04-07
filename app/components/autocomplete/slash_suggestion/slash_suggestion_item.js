@@ -51,7 +51,7 @@ export default class SlashSuggestionItem extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
-            minHeight: 55,
+            paddingVertical: 8,
             justifyContent: 'center',
             paddingHorizontal: 8,
             backgroundColor: theme.centerChannelBg,
