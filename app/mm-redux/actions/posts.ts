@@ -211,7 +211,7 @@ export function createPost(post: Post, files: any[] = []) {
             },
         });
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_CREATE_POST_INIT'));
 
         try {
             const created = await Client4.createPost({...newPost, create_at: 0});
