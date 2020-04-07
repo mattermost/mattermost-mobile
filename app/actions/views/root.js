@@ -57,7 +57,7 @@ export function loadConfigAndLicense() {
                 }
             }
 
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_LOAD_CONFIG_AND_LICENSE'));
 
             return {config, license};
         } catch (error) {
