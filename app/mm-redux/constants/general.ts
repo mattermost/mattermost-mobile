@@ -51,7 +51,7 @@ export default {
     GM_CHANNEL: 'G',
     PUSH_NOTIFY_APPLE_REACT_NATIVE: 'apple_rn',
     PUSH_NOTIFY_ANDROID_REACT_NATIVE: 'android_rn',
-    STORE_REHYDRATION_COMPLETE: 'store_hydation_complete',
+    STORE_REHYDRATION_COMPLETE: 'store_hydration_complete',
     OFFLINE_STORE_RESET: 'offline_store_reset',
     OFFLINE_STORE_PURGE: 'offline_store_purge',
     TEAMMATE_NAME_DISPLAY: {
@@ -68,4 +68,5 @@ export default {
     DISABLED: 'disabled',
     DEFAULT_ON: 'default_on',
     DEFAULT_OFF: 'default_off',
+    REHYDRATED: 'app/REHYDRATED',
 };

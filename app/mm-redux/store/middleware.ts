@@ -3,20 +3,15 @@
 import thunk, {ThunkMiddleware} from 'redux-thunk';
 
 import createActionBuffer from 'redux-action-buffer';
-import {REHYDRATE} from 'redux-persist/constants';
+import {PERSIST} from 'redux-persist';
+import {General} from '@mm-redux/constants';
 
-const defaultOptions = {
-    additionalMiddleware: [],
-    enableBuffer: true,
-    enableThunk: true,
-};
 export function createMiddleware(clientOptions: any): ThunkMiddleware[] {
-    const options = Object.assign({}, defaultOptions, clientOptions);
     const {
         additionalMiddleware,
         enableBuffer,
         enableThunk,
-    } = options;
+    } = clientOptions;
     const middleware: ThunkMiddleware[] = [];
 
     if (enableThunk) {
@@ -32,7 +27,7 @@ export function createMiddleware(clientOptions: any): ThunkMiddleware[] {
     }
 
     if (enableBuffer) {
-        middleware.push(createActionBuffer(REHYDRATE));
+        middleware.push(createActionBuffer({breaker: General.REHYDRATED, passthrough: [PERSIST]}));
     }
 
     return middleware;

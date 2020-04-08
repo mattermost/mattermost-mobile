@@ -14,28 +14,26 @@ import {PreferenceType} from '@mm-redux/types/preferences';
 import {bindClientFunc} from './helpers';
 import {getProfilesByIds, getProfilesInChannel} from './users';
 import {getChannelAndMyMember, getMyChannelMember} from './channels';
+
 export function deletePreferences(userId: string, preferences: Array<PreferenceType>): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const myPreferences = getMyPreferencesSelector(state);
         const currentPreferences = preferences.map((pref) => myPreferences[getPreferenceKey(pref.category, pref.name)]);
 
-        dispatch({
-            type: PreferenceTypes.DELETED_PREFERENCES,
-            data: preferences,
-            meta: {
-                offline: {
-                    effect: () => Client4.deletePreferences(userId, preferences),
-                    commit: {
-                        type: PreferenceTypes.DELETED_PREFERENCES,
-                    },
-                    rollback: {
-                        type: PreferenceTypes.RECEIVED_PREFERENCES,
-                        data: currentPreferences,
-                    },
-                },
-            },
-        });
+        try {
+            dispatch({
+                type: PreferenceTypes.DELETED_PREFERENCES,
+                data: preferences,
+            });
+
+            await Client4.deletePreferences(userId, preferences);
+        } catch {
+            dispatch({
+                type: PreferenceTypes.RECEIVED_PREFERENCES,
+                data: currentPreferences,
+            });
+        }
 
         return {data: true};
     };
@@ -104,22 +102,21 @@ export function makeGroupMessageVisibleIfNecessary(channelId: string): ActionFun
 
 export function savePreferences(userId: string, preferences: Array<PreferenceType>) {
     return async (dispatch: DispatchFunc) => {
-        dispatch({
-            type: PreferenceTypes.RECEIVED_PREFERENCES,
-            data: preferences,
-            meta: {
-                offline: {
-                    effect: () => Client4.savePreferences(userId, preferences),
-                    commit: {
-                        type: PreferenceTypes.RECEIVED_PREFERENCES,
-                    },
-                    rollback: {
-                        type: PreferenceTypes.DELETED_PREFERENCES,
-                        data: preferences,
-                    },
-                },
-            },
-        });
+        try {
+            // Optimistic action
+            dispatch({
+                type: PreferenceTypes.RECEIVED_PREFERENCES,
+                data: preferences,
+            });
+
+            await Client4.savePreferences(userId, preferences);
+        } catch (error) {
+            dispatch({
+                type: PreferenceTypes.DELETED_PREFERENCES,
+                data: preferences,
+            });
+            return {error};
+        }
 
         return {data: true};
     };
