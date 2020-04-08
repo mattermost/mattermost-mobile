@@ -206,6 +206,10 @@ describe('Actions.Posts', () => {
         await Actions.createPost(TestHelper.fakePost(channelId))(store.dispatch, store.getState);
         const initialPosts = store.getState().entities.posts;
         const postId = Object.keys(initialPosts.posts)[0];
+
+        nock(Client4.getBaseRoute()).
+            delete(`/posts/${postId}`).
+            reply(200, {});
         await Actions.deletePost(initialPosts.posts[postId])(store.dispatch, store.getState);
 
         const state = store.getState();
@@ -243,6 +247,9 @@ describe('Actions.Posts', () => {
         assert.ok(reactions[post1.id]);
         assert.ok(reactions[post1.id][TestHelper.basicUser.id + '-' + emojiName]);
 
+        nock(Client4.getBaseRoute()).
+            delete(`/posts/${post1.id}`).
+            reply(200, {});
         await Actions.deletePost(post1)(store.dispatch, store.getState);
 
         reactions = store.getState().entities.posts.reactions;

@@ -433,18 +433,6 @@ describe('channels', () => {
             });
             expect(nextState.channel1).toBe(undefined);
         });
-        test('remove all marks if user logs out', () => {
-            const state = deepFreeze({
-                channel1: true,
-                channel231: false,
-            });
-            const nextState = Reducers.manuallyUnread(state, {
-                type: UserTypes.LOGOUT_SUCCESS,
-                data: {},
-            });
-            expect(nextState.channel1).toBe(undefined);
-            expect(nextState.channel231).toBe(undefined);
-        });
     });
     describe('RECEIVED_CHANNELS', () => {
         test('should not remove current channel', () => {

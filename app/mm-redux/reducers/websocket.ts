@@ -27,9 +27,5 @@ export default function(state = getInitialState(), action: GenericAction) {
         };
     }
 
-    if (action.type === UserTypes.LOGOUT_SUCCESS) {
-        return getInitialState();
-    }
-
     return state;
 }

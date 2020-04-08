@@ -100,17 +100,6 @@ describe('reducers.entities.search', () => {
             const actualState = reducer({results: inputState}, action);
             assert.deepEqual(actualState.results, expectedState);
         });
-
-        describe('UserTypes.LOGOUT_SUCCESS', () => {
-            const inputState = ['abcd', 'efgh'];
-            const action = {
-                type: UserTypes.LOGOUT_SUCCESS,
-            };
-            const expectedState = [];
-
-            const actualState = reducer({results: inputState}, action);
-            assert.deepEqual(actualState.results, expectedState);
-        });
     });
 
     describe('matches', () => {
@@ -245,20 +234,6 @@ describe('reducers.entities.search', () => {
             };
             const action = {
                 type: SearchTypes.REMOVE_SEARCH_POSTS,
-            };
-            const expectedState = [];
-
-            const actualState = reducer({matches: inputState}, action);
-            assert.deepEqual(actualState.matches, expectedState);
-        });
-
-        describe('UserTypes.LOGOUT_SUCCESS', () => {
-            const inputState = {
-                abcd: ['test', 'testing'],
-                efgh: ['tests'],
-            };
-            const action = {
-                type: UserTypes.LOGOUT_SUCCESS,
             };
             const expectedState = [];
 

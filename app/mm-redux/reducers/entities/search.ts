@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {PostTypes, PreferenceTypes, SearchTypes, UserTypes} from '@mm-redux/action_types';
+import {PostTypes, PreferenceTypes, SearchTypes} from '@mm-redux/action_types';
 import {Preferences} from '../../constants';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GenericAction} from '@mm-redux/types/actions';
@@ -28,7 +28,6 @@ function results(state: Array<string> = [], action: GenericAction) {
         return state;
     }
     case SearchTypes.REMOVE_SEARCH_POSTS:
-    case UserTypes.LOGOUT_SUCCESS:
         return [];
 
     default:
@@ -53,7 +52,6 @@ function matches(state: Dictionary<Array<string>> = {}, action: GenericAction) {
         return newState;
     }
     case SearchTypes.REMOVE_SEARCH_POSTS:
-    case UserTypes.LOGOUT_SUCCESS:
         return [];
 
     default:
@@ -115,7 +113,6 @@ function flagged(state: Array<string> = [], action: GenericAction) {
         return state;
     }
     case SearchTypes.REMOVE_SEARCH_POSTS:
-    case UserTypes.LOGOUT_SUCCESS:
         return [];
 
     default:
@@ -187,8 +184,6 @@ function pinned(state: Dictionary<Array<string>> = {}, action: GenericAction) {
 
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return [];
 
     default:
         return state;
@@ -232,8 +227,6 @@ function recent(state: Dictionary<Array<Search>> = {}, action: GenericAction) {
 
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;
@@ -254,8 +247,6 @@ function current(state: any = {}, action: GenericAction) {
             },
         };
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;
