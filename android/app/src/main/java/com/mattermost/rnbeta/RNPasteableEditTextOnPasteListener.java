@@ -146,7 +146,7 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
 
             Files.move(Paths.get(src), Paths.get(dest));
         } catch (FileAlreadyExistsException fileError) {
-            // No nothing and return dest path
+            // Do nothing and return dest path
         } catch (Exception err) {
             return null;
         }
