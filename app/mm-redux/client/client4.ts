@@ -1394,7 +1394,7 @@ export default class Client4 {
     };
 
     updateChannelNotifyProps = async (props: any) => {
-        this.trackEvent('api', 'api_users_update_channel_notifcations', {channel_id: props.channel_id});
+        this.trackEvent('api', 'api_users_update_channel_notifications', {channel_id: props.channel_id});
 
         return this.doFetch(
             `${this.getChannelMemberRoute(props.channel_id, props.user_id)}/notify_props`,
