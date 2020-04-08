@@ -361,11 +361,10 @@ export function resetCreatePostRequest() {
 }
 
 export function deletePost(post: ExtendedPost) {
-    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
-        const delPost = {...post};
-        if (delPost.type === Posts.POST_TYPES.COMBINED_USER_ACTIVITY && delPost.system_post_ids) {
-            delPost.system_post_ids.forEach((systemPostId) => {
+        if (post.type === Posts.POST_TYPES.COMBINED_USER_ACTIVITY && post.system_post_ids) {
+            post.system_post_ids.forEach((systemPostId) => {
                 const systemPost = Selectors.getPost(state, systemPostId);
                 if (systemPost) {
                     dispatch(deletePost(systemPost));
@@ -374,8 +373,14 @@ export function deletePost(post: ExtendedPost) {
         } else {
             dispatch({
                 type: PostTypes.POST_DELETED,
-                data: delPost,
+                data: post,
             });
+
+            try {
+                await Client4.deletePost(post.id);
+            } catch (error) {
+                dispatch(receivedPost(post));
+            }
         }
 
         return {data: true};
