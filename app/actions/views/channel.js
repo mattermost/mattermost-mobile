@@ -650,20 +650,20 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
         };
 
         const actions = [];
+        const serverVersion = state.entities.general.serverVersion;
 
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
                     console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
-                    const [channels, channelMembers, team] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                    const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
                         Client4.getMyChannels(teamId, true),
                         Client4.getMyChannelMembers(teamId),
-                        Client4.getTeam(teamId),
                     ]);
 
                     data.channels = channels;
                     data.channelMembers = channelMembers;
-                    data.team = team;
+                    data.team = getCurrentTeam(state);
                     break;
                 } catch (err) {
                     if (i === MAX_RETRIES) {

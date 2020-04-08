@@ -10,6 +10,8 @@ import {Group} from '@mm-redux/types/groups';
 import {filterGroupsMatchingTerm} from '@mm-redux/utils/group_utils';
 import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getUsers} from '@mm-redux/selectors/entities/common';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTeam} from '@mm-redux/selectors/entities/teams';
 import {Permissions} from '@mm-redux/constants';
@@ -63,7 +65,7 @@ export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term
         return emptyList;
     }
     const filteredGroups = filterGroupsMatchingTerm(groups, term);
-    return filteredGroups.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name));
+    return filteredGroups.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
 }
 
 export function getAssociatedGroupsForReference(state: GlobalState, teamId: string, channelId: string): Array<Group> {
