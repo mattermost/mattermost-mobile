@@ -12,7 +12,7 @@ import AtMentionItem from 'app/components/autocomplete/at_mention_item';
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
-import GroupMentionItem from 'app/components/autocomplete/at_mention_group';
+import GroupMentionItem from 'app/components/autocomplete/at_mention_group/at_mention_group';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
@@ -223,7 +223,6 @@ export default class AtMention extends PureComponent {
         return (
             <GroupMentionItem
                 completeHandle={item.name}
-                name={item.name}
                 onPress={this.completeMention}
                 theme={this.props.theme}
             />

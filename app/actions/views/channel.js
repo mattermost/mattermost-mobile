@@ -17,6 +17,7 @@ import {selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
@@ -24,7 +25,7 @@ import {
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getTeamByName} from '@mm-redux/selectors/entities/teams';
+import {getTeamByName, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 
 import {getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -602,20 +603,20 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
         const currentUserId = getCurrentUserId(state);
         const data = {sync: true, teamId};
         const actions = [];
+        const serverVersion = state.entities.general.serverVersion;
 
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
                     console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
-                    const [channels, channelMembers, team] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                    const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
                         Client4.getMyChannels(teamId, true),
                         Client4.getMyChannelMembers(teamId),
-                        Client4.getTeam(teamId),
                     ]);
 
                     data.channels = channels;
                     data.channelMembers = channelMembers;
-                    data.team = team;
+                    data.team = getCurrentTeam(state);
                     break;
                 } catch (err) {
                     if (i === MAX_RETRIES) {
@@ -657,32 +658,37 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
 
-            if (data.team) {
-                let result = await Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true);
-                if (result.groups) {
-                    actions.push({
-                        type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
-                        data: {groupsByChannelId: result.groups},
-                    });
-                }
+            try {
+                if (data.team && isMinimumServerVersion(serverVersion, 5, 22)) {
+                    let result = await Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true);
+                    if (result.groups) {
+                        actions.push({
+                            type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                            data: {groupsByChannelId: result.groups},
+                        });
+                    }
 
-                if (data.team.group_constrained) {
-                    result = await Client4.getAllGroupsAssociatedToTeam(teamId, true);
-                    if (result) {
-                        actions.push({
-                            type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
-                            data: result,
-                        });
-                    }
-                } else {
-                    result = await Client4.getGroups(true);
-                    if (result) {
-                        actions.push({
-                            type: GroupTypes.RECEIVED_GROUPS,
-                            data: result,
-                        });
+                    if (data.team.group_constrained) {
+                        result = await Client4.getAllGroupsAssociatedToTeam(teamId, true);
+                        if (result) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
+                                data: result,
+                            });
+                        }
+                    } else {
+                        result = await Client4.getGroups(true);
+                        if (result) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_GROUPS,
+                                data: result,
+                            });
+                        }
                     }
                 }
+            } catch (err) {
+                // What to be done if error?
+                return {err};
             }
 
             if (actions.length) {

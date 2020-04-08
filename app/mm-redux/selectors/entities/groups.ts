@@ -8,7 +8,10 @@ import * as reselect from 'reselect';
 import {GlobalState} from '@mm-redux/types/store';
 import {Group} from '@mm-redux/types/groups';
 import {filterGroupsMatchingTerm} from '@mm-redux/utils/group_utils';
+import {getUserLocale} from '@mm-redux/utils/channel_utils';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getUsers} from '@mm-redux/selectors/entities/common';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTeam} from '@mm-redux/selectors/entities/teams';
 
@@ -56,6 +59,10 @@ export function getGroupMembers(state: GlobalState, id: string) {
 }
 
 export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term: string, teamId: string, channelId: string): Array<Group> {
+    const currentUserId = getCurrentUserId(state);
+    const profiles = getUsers(state);
+    const locale = getUserLocale(currentUserId, profiles);
+
     // uncomment when USE_GROUP_MENTIONS is checked-in
     // if (!haveIChannelPermission(state, {
     //     permission: Permissions.USE_GROUP_MENTIONS,
@@ -70,12 +77,15 @@ export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term
         return emptyList;
     }
     const filteredGroups = filterGroupsMatchingTerm(groups, term);
-    return filteredGroups.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name));
+    return filteredGroups.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
 }
 
 export function getAssociatedGroupsForReference(state: GlobalState, teamId: string, channelId: string): Array<Group> {
     const team = getTeam(state, teamId);
     const channel = getChannel(state, channelId);
+    const currentUserId = getCurrentUserId(state);
+    const profiles = getUsers(state);
+    const locale = getUserLocale(currentUserId, profiles);
 
     // uncomment when USE_GROUP_MENTIONS is checked-in
     // if (!haveIChannelPermission(state, {
@@ -98,7 +108,7 @@ export function getAssociatedGroupsForReference(state: GlobalState, teamId: stri
     } else {
         groupsForReference = getAllAssociatedGroupsForReference(state);
     }
-    return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name));
+    return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
 }
 
 const teamGroupIDs = (state: GlobalState, teamID: string) => {
