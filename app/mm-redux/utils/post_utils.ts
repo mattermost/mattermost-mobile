@@ -30,7 +30,7 @@ export function isMeMessage(post: Post): boolean {
 }
 
 export function isFromWebhook(post: Post): boolean {
-    return post.props && post.props.from_webhook;
+    return post.props && post.props.from_webhook === 'true';
 }
 
 export function isPostEphemeral(post: Post): boolean {
