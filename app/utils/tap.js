@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export function preventDoubleTap(func, doublePressDelay = 300) {
+export function preventDoubleTap(func, doublePressDelay = 1000) {
     let canPressWrapped = true;
 
     return (...args) => {
