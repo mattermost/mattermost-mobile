@@ -18,6 +18,7 @@ function mapStateToProps(state, ownProps) {
     return {
         firstName: user.first_name,
         lastName: user.last_name,
+        nickname: user.nickname,
         username: user.username,
         isBot: Boolean(user.is_bot),
         isGuest: isGuest(user),

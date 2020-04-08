@@ -19,6 +19,7 @@ export default class AtMentionItem extends PureComponent {
     static propTypes = {
         firstName: PropTypes.string,
         lastName: PropTypes.string,
+        nickname: PropTypes.string,
         onPress: PropTypes.func.isRequired,
         userId: PropTypes.string.isRequired,
         username: PropTypes.string,
@@ -43,6 +44,7 @@ export default class AtMentionItem extends PureComponent {
         const {
             firstName,
             lastName,
+            nickname,
             userId,
             username,
             theme,
@@ -54,6 +56,7 @@ export default class AtMentionItem extends PureComponent {
 
         const style = getStyleFromTheme(theme);
         const hasFullName = firstName.length > 0 && lastName.length > 0;
+        const hasNickname = nickname.length > 0;
 
         return (
             <TouchableWithFeedback
@@ -80,13 +83,18 @@ export default class AtMentionItem extends PureComponent {
                     theme={theme}
                 />
                 {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
-                {hasFullName && <Text style={style.rowFullname}>{`${firstName} ${lastName}`}</Text>}
-                {isCurrentUser &&
+                <Text
+                    style={style.rowFullname}
+                    numberOfLines={1}
+                >
+                    {hasFullName && `${firstName} ${lastName}`}
+                    {hasNickname && ` (${nickname}) `}
+                    {isCurrentUser &&
                     <FormattedText
-                        style={style.rowFullname}
                         id='suggestion.mention.you'
                         defaultMessage='(you)'
                     />}
+                </Text>
             </TouchableWithFeedback>
         );
     }
@@ -113,6 +121,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         rowFullname: {
             color: theme.centerChannelColor,
             opacity: 0.6,
+            flex: 1,
         },
     };
 });
