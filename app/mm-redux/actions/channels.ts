@@ -638,6 +638,21 @@ export function leaveChannel(channelId: string): ActionFunc {
             },
         });
 
+        try {
+            await Client4.removeFromChannel(currentUserId, channelId);
+        } catch (error) {
+            dispatch(batchActions([
+                {
+                    type: ChannelTypes.RECEIVED_CHANNEL,
+                    data: channel,
+                },
+                {
+                    type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
+                    data: member,
+                },
+            ]));
+        }
+
         return {data: true};
     };
 }

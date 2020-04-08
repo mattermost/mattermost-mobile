@@ -1961,52 +1961,38 @@ describe('Actions.Channels', () => {
         assert.deepEqual(channel.purpose, purpose);
     });
 
-    it('leaveChannel', (done) => {
-        async function test() {
-            TestHelper.mockLogin();
-            await store.dispatch(login(TestHelper.basicUser.email, 'password1'));
-            nock(Client4.getBaseRoute()).
-                get(`/channels/${TestHelper.basicChannel.id}`).
-                reply(200, TestHelper.basicChannel);
+    it('leaveChannel', async () => {
+        TestHelper.mockLogin();
+        await store.dispatch(login(TestHelper.basicUser.email, 'password1'));
+        nock(Client4.getBaseRoute()).
+            get(`/channels/${TestHelper.basicChannel.id}`).
+            reply(200, TestHelper.basicChannel);
 
-            nock(Client4.getBaseRoute()).
-                post(`/channels/${TestHelper.basicChannel.id}/members`).
-                reply(201, {channel_id: TestHelper.basicChannel.id, roles: 'channel_user', user_id: TestHelper.basicUser.id});
+        nock(Client4.getBaseRoute()).
+            post(`/channels/${TestHelper.basicChannel.id}/members`).
+            reply(201, {channel_id: TestHelper.basicChannel.id, roles: 'channel_user', user_id: TestHelper.basicUser.id});
 
-            await store.dispatch(Actions.joinChannel(TestHelper.basicUser.id, TestHelper.basicTeam.id, TestHelper.basicChannel.id));
+        await store.dispatch(Actions.joinChannel(TestHelper.basicUser.id, TestHelper.basicTeam.id, TestHelper.basicChannel.id));
 
-            const {channels, myMembers} = store.getState().entities.channels;
-            assert.ok(channels[TestHelper.basicChannel.id]);
-            assert.ok(myMembers[TestHelper.basicChannel.id]);
+        let channelsState = store.getState().entities.channels;
+        assert.ok(channelsState.channels[TestHelper.basicChannel.id]);
+        assert.ok(channelsState.myMembers[TestHelper.basicChannel.id]);
 
-            nock(Client4.getBaseRoute()).
-                delete(`/channels/${TestHelper.basicChannel.id}/members/${TestHelper.basicUser.id}`).
-                reply(400, {});
+        nock(Client4.getBaseRoute()).
+            delete(`/channels/${TestHelper.basicChannel.id}/members/${TestHelper.basicUser.id}`).
+            reply(200, OK_RESPONSE);
 
-            nock(Client4.getBaseRoute()).
-                delete(`/channels/${TestHelper.basicChannel.id}/members/${TestHelper.basicUser.id}`).
-                reply(200, OK_RESPONSE);
+        await store.dispatch(Actions.leaveChannel(TestHelper.basicChannel.id));
 
-            // This action will retry after 1000ms
-            await store.dispatch(Actions.leaveChannel(TestHelper.basicChannel.id));
+        channelsState = store.getState().entities.channels;
 
-            setTimeout(test2, 300);
-        }
-
-        async function test2() {
-            // retry will have completed and should have left the channel successfully
-            const {channels, myMembers} = store.getState().entities.channels;
-
-            assert.ok(channels[TestHelper.basicChannel.id]);
-            assert.ifError(myMembers[TestHelper.basicChannel.id]);
-            done();
-        }
-
-        test();
+        assert.ok(channelsState.channels[TestHelper.basicChannel.id]);
+        assert.ifError(channelsState.myMembers[TestHelper.basicChannel.id]);
     });
 
     it('leave private channel', async () => {
         const newChannel = {
+            ...TestHelper.fakeChannelWithId(TestHelper.basicChannel.id),
             team_id: TestHelper.basicTeam.id,
             name: 'redux-test-private',
             display_name: 'Redux Test',
@@ -2017,14 +2003,14 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, {...TestHelper.fakeChannelWithId(TestHelper.basicTeam.id), ...newChannel});
+            reply(201, newChannel);
 
         const {data: channel} = await store.dispatch(Actions.createChannel(newChannel, TestHelper.basicUser.id));
         let channels = store.getState().entities.channels.channels;
         assert.ok(channels[channel.id]);
 
         nock(Client4.getBaseRoute()).
-            delete(`/channels/${TestHelper.basicChannel.id}/members/${TestHelper.basicUser.id}`).
+            delete(`/channels/${channel.id}/members/${TestHelper.basicUser.id}`).
             reply(200, OK_RESPONSE);
 
         await store.dispatch(Actions.leaveChannel(channel.id));
