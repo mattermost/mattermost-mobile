@@ -17,7 +17,7 @@
   "channel_header.addMembers": "Добавить участников",
   "channel_header.directchannel.you": "{displayname} (это вы) ",
   "channel_header.manageMembers": "Управление участниками",
-  "channel_header.pinnedPosts": "Прикреплённые сообщения",
+  "channel_header.pinnedPosts": "Смотрите прикрепленные сообщения",
   "channel_header.viewMembers": "Просмотреть список участников",
   "channel_info.header": "Заголовок:",
   "channel_info.purpose": "Назначение:",

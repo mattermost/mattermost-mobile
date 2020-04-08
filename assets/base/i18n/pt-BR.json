@@ -17,7 +17,7 @@
   "channel_header.addMembers": "Adicionar Membros",
   "channel_header.directchannel.you": "{displayname} (você) ",
   "channel_header.manageMembers": "Gerenciar Membros",
-  "channel_header.pinnedPosts": "Posts Fixados",
+  "channel_header.pinnedPosts": "See pinned posts",
   "channel_header.viewMembers": "Ver Membros",
   "channel_info.header": "Cabeçalho:",
   "channel_info.purpose": "Propósito:",

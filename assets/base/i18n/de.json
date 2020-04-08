@@ -17,7 +17,7 @@
   "channel_header.addMembers": "Mitglieder hinzufügen",
   "channel_header.directchannel.you": "{displayname} (Sie) ",
   "channel_header.manageMembers": "Mitglieder verwalten",
-  "channel_header.pinnedPosts": "Angeheftete Nachrichten",
+  "channel_header.pinnedPosts": "See pinned posts",
   "channel_header.viewMembers": "Zeige Mitglieder",
   "channel_info.header": "Überschrift:",
   "channel_info.purpose": "Zweck:",

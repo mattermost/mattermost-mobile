@@ -17,7 +17,7 @@
   "channel_header.addMembers": "Додати учасників",
   "channel_header.directchannel.you": "{displayname} (ви)",
   "channel_header.manageMembers": "Управління учасниками",
-  "channel_header.pinnedPosts": "Прикріплені повідомлення",
+  "channel_header.pinnedPosts": "See pinned posts",
   "channel_header.viewMembers": "Переглянути список учасників",
   "channel_info.header": "Заголовок:",
   "channel_info.purpose": "Призначення:",
