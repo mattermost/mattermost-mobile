@@ -465,7 +465,10 @@ export default class Login extends PureComponent {
                             disableFullscreenUI={true}
                             editable={!isLoading}
                         />
-                        <ErrorText error={this.state.error}/>
+                        <ErrorText
+                            error={this.state.error}
+                            textStyle={style.errorText}
+                        />
                         {proceed}
                         {forgotPassword}
                     </KeyboardAwareScrollView>
@@ -476,15 +479,8 @@ export default class Login extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    innerContainer: {
-        alignItems: 'center',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 50,
+    errorText: {
+        width: '100%',
     },
     forgotPasswordBtn: {
         borderColor: 'transparent',

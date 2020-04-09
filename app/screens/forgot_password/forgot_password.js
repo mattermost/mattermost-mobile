@@ -224,6 +224,9 @@ const style = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 50,
     },
+    errorText: {
+        width: '100%',
+    },
     forgotPasswordBtn: {
         borderColor: 'transparent',
         marginTop: 15,

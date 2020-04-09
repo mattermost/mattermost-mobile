@@ -497,7 +497,10 @@ export default class SelectServer extends PureComponent {
                                 underlineColorAndroid='transparent'
                                 disableFullscreenUI={true}
                             />
-                            <ErrorText error={error}/>
+                            <ErrorText
+                                error={error}
+                                textStyle={style.errorText}
+                            />
                             <Button
                                 disabled={this.isConnectButtonDisabled()}
                                 onPress={this.handleConnect}
@@ -517,6 +520,9 @@ export default class SelectServer extends PureComponent {
 }
 
 const style = StyleSheet.create({
+    errorText: {
+        width: '100%',
+    },
     connectingIndicator: {
         marginRight: 5,
     },

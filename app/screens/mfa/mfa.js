@@ -132,7 +132,7 @@ export default class Mfa extends PureComponent {
         return (
             <KeyboardAvoidingView
                 behavior='padding'
-                style={style.flex}
+                style={GlobalStyles.container}
                 keyboardVerticalOffset={5}
                 enabled={Platform.OS === 'ios'}
             >
@@ -149,7 +149,10 @@ export default class Mfa extends PureComponent {
                                 defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
                             />
                         </View>
-                        <ErrorText error={this.state.error}/>
+                        <ErrorText
+                            error={this.state.error}
+                            textStyle={style.errorText}
+                        />
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}
                             value={this.state.token}
@@ -173,7 +176,7 @@ export default class Mfa extends PureComponent {
 }
 
 const style = StyleSheet.create({
-    flex: {
-        flex: 1,
+    errorText: {
+        width: '100%',
     },
 });
