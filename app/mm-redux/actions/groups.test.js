@@ -342,11 +342,10 @@ describe('Actions.Groups', () => {
         };
 
         nock(Client4.getBaseRoute()).
-            get(`/teams/${teamID}/groups?paginate=false`).
+            get(`/teams/${teamID}/groups?paginate=false&filter_allow_reference=false`).
             reply(200, response);
 
         await Actions.getAllGroupsAssociatedToTeam(teamID)(store.dispatch, store.getState);
-
         const state = store.getState();
 
         const groupIDs = state.entities.teams.groupsAssociatedToTeam[teamID].ids;
@@ -402,11 +401,10 @@ describe('Actions.Groups', () => {
         };
 
         nock(Client4.getBaseRoute()).
-            get(`/teams/${teamID}/groups?page=100&per_page=60&q=0&include_member_count=true`).
+            get(`/teams/${teamID}/groups?page=100&per_page=60&q=0&include_member_count=true&filterAllowReference=false`).
             reply(200, response);
 
         await Actions.getGroupsAssociatedToTeam(teamID, 0, 100)(store.dispatch, store.getState);
-
         const state = store.getState();
 
         const groupIDs = state.entities.teams.groupsAssociatedToTeam[teamID].ids;
@@ -514,11 +512,11 @@ describe('Actions.Groups', () => {
         };
 
         nock(Client4.getBaseRoute()).
-            get(`/channels/${channelID}/groups?paginate=false`).
+            get(`/channels/${channelID}/groups?paginate=false&filter_allow_reference=false`).
             reply(200, response);
 
-        await Actions.getAllGroupsAssociatedToChannel(channelID)(store.dispatch, store.getState);
-
+        const data = await Actions.getAllGroupsAssociatedToChannel(channelID)(store.dispatch, store.getState);
+        console.error(data);
         const state = store.getState();
 
         const groupIDs = state.entities.channels.groupsAssociatedToChannel[channelID].ids;
@@ -574,11 +572,10 @@ describe('Actions.Groups', () => {
         };
 
         nock(Client4.getBaseRoute()).
-            get(`/channels/${channelID}/groups?page=100&per_page=60&q=0&include_member_count=true`).
+            get(`/channels/${channelID}/groups?page=100&per_page=60&q=0&include_member_count=true&filter_allow_reference=false`).
             reply(200, response);
 
         await Actions.getGroupsAssociatedToChannel(channelID, 0, 100)(store.dispatch, store.getState);
-
         const state = store.getState();
 
         const groupIDs = state.entities.channels.groupsAssociatedToChannel[channelID].ids;

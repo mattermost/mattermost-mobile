@@ -2866,7 +2866,7 @@ export default class Client4 {
         this.trackEvent('api', 'api_groups_get_associated_to_team', {team_id: teamID});
 
         return this.doFetch(
-            `${this.getBaseRoute()}/teams/${teamID}/groups${buildQueryString({page, per_page: perPage, q, include_member_count: true, filterAllowReference})}`,
+            `${this.getBaseRoute()}/teams/${teamID}/groups${buildQueryString({page, per_page: perPage, q, include_member_count: true, filter_allow_reference: filterAllowReference})}`,
             {method: 'get'},
         );
     };

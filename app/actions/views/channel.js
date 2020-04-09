@@ -688,7 +688,6 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 }
             } catch (err) {
                 // What to be done if error?
-                return {err};
             }
 
             if (actions.length) {

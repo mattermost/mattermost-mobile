@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import isEmpty from 'lodash';
+import _ from 'lodash';
 import {GroupTypes} from '@mm-redux/action_types';
 import {General, Groups} from '../constants';
 import {Client4} from '@mm-redux/client';
@@ -173,7 +173,7 @@ export function getGroup(id: string): ActionFunc {
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUP,
@@ -186,7 +186,7 @@ export function getGroup(id: string): ActionFunc {
     };
 }
 
-export function getGroups(filterAllowReference: boolean): ActionFunc {
+export function getGroups(filterAllowReference: boolean = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -197,7 +197,7 @@ export function getGroups(filterAllowReference: boolean): ActionFunc {
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS,
@@ -221,7 +221,7 @@ export function getGroupsNotAssociatedToTeam(teamID: string, q = '', page = 0, p
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS,
@@ -245,7 +245,7 @@ export function getGroupsNotAssociatedToChannel(channelID: string, q = '', page 
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS,
@@ -258,7 +258,7 @@ export function getGroupsNotAssociatedToChannel(channelID: string, q = '', page 
     };
 }
 
-export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReference: boolean): ActionFunc {
+export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReference: boolean = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -270,7 +270,7 @@ export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReferenc
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
@@ -283,7 +283,7 @@ export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReferenc
     };
 }
 
-export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowReference: boolean): ActionFunc {
+export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowReference: boolean = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -295,7 +295,7 @@ export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowRe
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNEL,
@@ -308,7 +308,7 @@ export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowRe
     };
 }
 
-export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAllowReference: boolean): ActionFunc {
+export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAllowReference: boolean = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -319,7 +319,7 @@ export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAll
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
@@ -332,7 +332,7 @@ export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAll
     };
 }
 
-export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference: boolean): ActionFunc {
+export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference: boolean = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -343,7 +343,7 @@ export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perP
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_TEAM,
@@ -356,7 +356,7 @@ export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perP
     };
 }
 
-export function getGroupsAssociatedToChannel(channelID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference: boolean): ActionFunc {
+export function getGroupsAssociatedToChannel(channelID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference: boolean = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -367,11 +367,11 @@ export function getGroupsAssociatedToChannel(channelID: string, q = '', page = 0
             return {error};
         }
 
-        if (!isEmpty(data)) {
+        if (!_.isEmpty(data)) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_CHANNEL,
-                    data: {groups: data.groups, totalGroupCount: data.total_group_count, teamID: channelID},
+                    data: {groups: data.groups, totalGroupCount: data.total_group_count, channelID},
                 },
             ]));
         }
