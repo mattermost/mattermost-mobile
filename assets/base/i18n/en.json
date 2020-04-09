@@ -565,6 +565,7 @@
   "suggestion.mention.all": "Notifies everyone in this channel",
   "suggestion.mention.channel": "Notifies everyone in this channel",
   "suggestion.mention.channels": "My Channels",
+  "suggestion.mention.groups": "Group Mentions",
   "suggestion.mention.here": "Notifies everyone online in this channel",
   "suggestion.mention.members": "Channel Members",
   "suggestion.mention.morechannels": "Other Channels",
