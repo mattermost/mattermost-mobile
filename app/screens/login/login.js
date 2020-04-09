@@ -356,30 +356,17 @@ export default class Login extends PureComponent {
                 />
             );
         } else {
-            const additionalStyle = {};
-            if (this.props.config.EmailLoginButtonColor && !this.isLoginButtonDisabled()) {
-                additionalStyle.backgroundColor = this.props.config.EmailLoginButtonColor;
-            }
-            if (this.props.config.EmailLoginButtonBorderColor && !this.isLoginButtonDisabled()) {
-                additionalStyle.borderColor = this.props.config.EmailLoginButtonBorderColor;
-            }
-
-            const additionalTextStyle = {};
-            if (this.props.config.EmailLoginButtonTextColor && !this.isLoginButtonDisabled()) {
-                additionalTextStyle.color = this.props.config.EmailLoginButtonTextColor;
-            }
-
             const margins = error ? {marginTop: 12} : {};
             proceed = (
                 <Button
                     disabled={this.isLoginButtonDisabled()}
                     onPress={this.preSignIn}
-                    containerStyle={[getButtonStyle(this.isLoginButtonDisabled(), colorStyles, margins), additionalStyle]}
+                    containerStyle={getButtonStyle(this.isLoginButtonDisabled(), colorStyles, margins)}
                 >
                     <FormattedText
                         id='login.signIn'
                         defaultMessage='Log in'
-                        style={[getButtonTextStyle(this.isLoginButtonDisabled(), colorStyles), additionalTextStyle]}
+                        style={getButtonTextStyle(this.isLoginButtonDisabled(), colorStyles)}
                     />
                 </Button>
             );

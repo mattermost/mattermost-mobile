@@ -95,24 +95,16 @@ export default class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideEmailLoginExperimental;
 
         if (!forceHideFromLocal && (config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true')) {
-            const additionalStyle = {
-                backgroundColor: config.EmailLoginButtonColor || colorStyles.authButton.backgroundColor,
-                borderColor: config.EmailLoginButtonBorderColor || 'transparent',
-            };
-            const additionalTextStyle = {
-                color: config.EmailLoginButtonTextColor || colorStyles.authButtonText.color,
-            };
-
             return (
                 <Button
                     key='email'
                     onPress={this.goToLogin}
-                    containerStyle={[GlobalStyles.authButton, additionalStyle]}
+                    containerStyle={[GlobalStyles.authButton, colorStyles.authButton]}
                 >
                     <FormattedText
                         id='signup.email'
                         defaultMessage='Email and Password'
-                        style={[GlobalStyles.authButtonText, additionalTextStyle]}
+                        style={[GlobalStyles.authButtonText, colorStyles.authButtonText]}
                     />
                 </Button>
             );
@@ -127,21 +119,10 @@ export default class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideLDAPLoginExperimental;
 
         if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
-            const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
-            const additionalStyle = {
-                backgroundColor,
-            };
-
-            if (config.LDAPLoginButtonBorderColor) {
-                additionalStyle.borderColor = config.LDAPLoginButtonBorderColor;
-            }
-
-            const textColor = config.LDAPLoginButtonTextColor || colorStyles.authButtonText.color;
-
             let buttonText;
             if (config.LdapLoginFieldName) {
                 buttonText = (
-                    <Text style={[GlobalStyles.authButtonText, {color: textColor}]}>
+                    <Text style={[GlobalStyles.authButtonText, colorStyles.authButtonText]}>
                         {config.LdapLoginFieldName}
                     </Text>
                 );
@@ -150,7 +131,7 @@ export default class LoginOptions extends PureComponent {
                     <FormattedText
                         id='login.ldapUsernameLower'
                         defaultMessage='AD/LDAP username'
-                        style={[GlobalStyles.authButtonText, {color: textColor}]}
+                        style={[GlobalStyles.authButtonText, colorStyles.authButtonText]}
                     />
                 );
             }
@@ -159,7 +140,7 @@ export default class LoginOptions extends PureComponent {
                 <Button
                     key='ldap'
                     onPress={this.goToLogin}
-                    containerStyle={[GlobalStyles.authButton, additionalStyle]}
+                    containerStyle={[GlobalStyles.authButton, {backgroundColor: '#2389d7'}]}
                 >
                     {buttonText}
                 </Button>
@@ -205,27 +186,16 @@ export default class LoginOptions extends PureComponent {
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
 
         if (!forceHideFromLocal && o365Enabled) {
-            const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
-            const additionalStyle = {
-                backgroundColor,
-            };
-
-            if (config.EmailLoginButtonBorderColor) {
-                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
-            }
-
-            const textColor = config.EmailLoginButtonTextColor || colorStyles.authButtonText.color;
-
             return (
                 <Button
                     key='o365'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.OFFICE365))}
-                    containerStyle={[GlobalStyles.authButton, additionalStyle]}
+                    containerStyle={[GlobalStyles.authButton, {backgroundColor: '#2389d7'}]}
                 >
                     <FormattedText
                         id='signup.office365'
                         defaultMessage='Office 365'
-                        style={[GlobalStyles.authButtonText, {color: textColor}]}
+                        style={[GlobalStyles.authButtonText, colorStyles.authButtonText]}
                     />
                 </Button>
             );
@@ -240,26 +210,14 @@ export default class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
 
         if (!forceHideFromLocal && config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true') {
-            const backgroundColor = config.SamlLoginButtonColor || '#34a28b';
-
-            const additionalStyle = {
-                backgroundColor,
-            };
-
-            if (config.SamlLoginButtonBorderColor) {
-                additionalStyle.borderColor = config.SamlLoginButtonBorderColor;
-            }
-
-            const textColor = config.SamlLoginButtonTextColor || colorStyles.authButtonText.color;
-
             return (
                 <Button
                     key='saml'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.SAML))}
-                    containerStyle={[GlobalStyles.authButton, additionalStyle]}
+                    containerStyle={[GlobalStyles.authButton, {backgroundColor: '#34a28b'}]}
                 >
                     <Text
-                        style={[GlobalStyles.authButtonText, {color: textColor}]}
+                        style={[GlobalStyles.authButtonText, colorStyles.authButtonText]}
                     >
                         {config.SamlLoginButtonText}
                     </Text>
