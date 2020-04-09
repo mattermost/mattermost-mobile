@@ -13,19 +13,39 @@
 **Note:** The Channel Moderation Settings feature is supported on mobile app versions v1.30 and later. In earlier versions of the mobile app, users who attempt to post or react to posts without proper permissions will see an error.
  
 ### Improvements
- - Improved Mobile performance related to themes and links.
+ - Significantly improved mobile app performance through:
+   - avoiding overdraws;
+   - tweaks in the post list by adapting the amount of posts that are being rendered per batch (allowing the app to be more responsive);
+   - batching all related data when fetching posts;
+   - enabling virtualization in the post list;
+   - removing unnecessary dimensions and orientations dispatches;
+   - removing listening for ``user is typing`` events for channels that the user is not viewing;
+   - removing gif animations on the center channel (gifs will only animate in the gallery view);
  - Added support for different interactive message button styles on mobile.
  - Enter key on hardware Android keyboard now posts a message.
+ - The statuses of those users that are in the Direct Message list are now fetched when opening the app and on login.
  - Added "Unarchive Channel" option to the channel info screen.
- - Removed mark as unread option from post menus for archived channels.
  
 ### Bug Fixes
- - Fixed an issue on iOS where the modal popped down when attempting to scroll down to see if there are more emoji.
- - Fixed an issue on iOS where Automatic Replies custom message text box was obstructed by the iPhone's notch.
+
+#### All apps
+ - Fixed an issue where the modal popped down when attempting to scroll down to see if there are more emoji.
  - Fixed a few crash issues.
  - Fixed an issue where the navigation bar tucked under status bar when using photo or camera post icons in landscape.
- - Fixed an issue where double dashes in mobile inside a code block got converted to emdash.
- - Fixed an issue on iOS where the "Refreshing message failed" error was shown when starting a Direct Message with a new user without a verified email.
+ - Removed mark as unread option from post menus for archived channels.
+ - Fixed an issue where the "Refreshing message failed" error was shown when starting a Direct Message with a new user without a verified email.
+ - Fixed an issue where Markdown tables was rendering in full in the center channel on larger screen sizes.
+ - Made the name displayed consistent with teammate display name setting.
+ - Fixed some selected emojis in autocomplete from rendering properly when posted.
+
+#### iOS specific
+ - Fixed an issue on iOS where the navigation bar tucked under status bar when using photo or camera post icons in landscape.
+ - Fixed an issue on iOS where Automatic Replies custom message text box was obstructed by the iPhone's notch.
+ - Fixed an issue on iOS where double dashes in mobile inside a code block got converted to emdash.
+
+#### Android specific
+ - Fixed an issue on Android where downloading a file or video was not reporting progress.
+ - Fixed an issue on Android that was preventing to share content through the share extension.
 
 ## 1.29.0 Release
 - Release Date: March 16, 2020
