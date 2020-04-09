@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
-import {EmojiTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
+import {EmojiTypes, PostTypes} from '@mm-redux/action_types';
 import {EmojisState, CustomEmoji} from '@mm-redux/types/emojis';
 import * as types from '@mm-redux/types';
 
@@ -25,7 +25,6 @@ export function customEmoji(state: types.utilities.IDMappedObjects<CustomEmoji> 
         return nextState;
     }
     case EmojiTypes.CLEAR_CUSTOM_EMOJIS:
-    case UserTypes.LOGOUT_SUCCESS:
         return {};
 
     case PostTypes.RECEIVED_NEW_POST:
@@ -94,7 +93,6 @@ function nonExistentEmoji(state: Set<string> = new Set(), action: types.actions.
         return changed ? nextState : state;
     }
     case EmojiTypes.CLEAR_CUSTOM_EMOJIS:
-    case UserTypes.LOGOUT_SUCCESS:
         return new Set();
 
     default:

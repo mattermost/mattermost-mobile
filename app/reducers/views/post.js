@@ -31,8 +31,6 @@ function submittedMenuActions(state = {}, action) {
 
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }

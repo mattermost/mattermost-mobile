@@ -146,13 +146,12 @@ exports[`user_profile should match snapshot 1`] = `
                 "fontWeight": "600",
                 "marginBottom": 10,
                 "marginTop": 25,
+                "textTransform": "uppercase",
               },
               null,
             ]
           }
-        >
-          USERNAME
-        </Text>
+        />
         <Text
           style={
             Array [
@@ -164,7 +163,7 @@ exports[`user_profile should match snapshot 1`] = `
             ]
           }
         >
-          fred
+          test
         </Text>
       </View>
       <View>
@@ -177,13 +176,42 @@ exports[`user_profile should match snapshot 1`] = `
                 "fontWeight": "600",
                 "marginBottom": 10,
                 "marginTop": 25,
+                "textTransform": "uppercase",
+              },
+              null,
+            ]
+          }
+        />
+        <Text
+          style={
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 15,
               },
               null,
             ]
           }
         >
-          NICKNAME
+          fake
         </Text>
+      </View>
+      <View>
+        <Text
+          style={
+            Array [
+              Object {
+                "color": undefined,
+                "fontSize": 13,
+                "fontWeight": "600",
+                "marginBottom": 10,
+                "marginTop": 25,
+                "textTransform": "uppercase",
+              },
+              null,
+            ]
+          }
+        />
         <Text
           style={
             Array [

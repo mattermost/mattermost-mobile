@@ -266,24 +266,6 @@ describe('Reducers.users', () => {
             const newState = reducer(state, action);
             assert.deepEqual(newState.profilesInChannel, expectedState.profilesInChannel);
         });
-
-        it('UserTypes.LOGOUT_SUCCESS, existing profiles', () => {
-            const state = {
-                profilesInChannel: {
-                    id: new Set().add('old_user_id'),
-                    other_id: new Set().add('other_user_id'),
-                },
-            };
-            const action = {
-                type: UserTypes.LOGOUT_SUCCESS,
-            };
-            const expectedState = {
-                profilesInChannel: {},
-            };
-
-            const newState = reducer(state, action);
-            assert.deepEqual(newState.profilesInChannel, expectedState.profilesInChannel);
-        });
     });
 
     describe('profilesNotInChannel', () => {
@@ -540,24 +522,6 @@ describe('Reducers.users', () => {
                     id: new Set(),
                     other_id: new Set().add('other_user_id'),
                 },
-            };
-
-            const newState = reducer(state, action);
-            assert.deepEqual(newState.profilesNotInChannel, expectedState.profilesNotInChannel);
-        });
-
-        it('UserTypes.LOGOUT_SUCCESS, existing profiles', () => {
-            const state = {
-                profilesNotInChannel: {
-                    id: new Set().add('old_user_id'),
-                    other_id: new Set().add('other_user_id'),
-                },
-            };
-            const action = {
-                type: UserTypes.LOGOUT_SUCCESS,
-            };
-            const expectedState = {
-                profilesNotInChannel: {},
             };
 
             const newState = reducer(state, action);

@@ -1,42 +1,38 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {combineReducers} from 'redux';
-import {General} from '../constants';
 import reducerRegistry from './reducer_registry';
-import {enableBatching, Action, Reducer} from '@mm-redux/types/actions';
-export const offlineConfig = {
-    effect: (effect: Function, action: Action) => {
-        if (typeof effect !== 'function') {
-            throw new Error('Offline Action: effect must be a function.');
-        } else if (!('meta' in action && action.meta && action.meta.offline.commit)) {
-            throw new Error('Offline Action: commit action must be present.');
-        }
+import {enableBatching, Reducer} from '@mm-redux/types/actions';
+import AsyncStorage from '@react-native-community/async-storage';
 
-        return effect();
-    },
-    discard: (error: Error, action: Action, retries: number) => {
-        if ('meta' in action && action.meta && action.meta.offline.hasOwnProperty('maxRetry')) {
-            return retries >= action.meta.offline.maxRetry;
-        }
+/* eslint-disable no-console */
 
-        return retries > 10;
-    },
-};
-
-export function createReducer(baseState: any, ...reducers: Reducer[]) {
+export function createReducer(...reducers: Reducer[]) {
     reducerRegistry.setReducers(Object.assign({}, ...reducers));
     const baseReducer = combineReducers(reducerRegistry.getReducers());
 
-    // Root reducer wrapper that listens for reset events.
-    // Returns whatever is passed for the data property
-    // as the new state.
-    function offlineReducer(state = {}, action: Action) {
-        if ('type' in action && 'data' in action && action.type === General.OFFLINE_STORE_RESET) {
-            return baseReducer(action.data || baseState, action);
-        }
+    return enableBatching(baseReducer);
+}
 
-        return baseReducer(state, action as any);
+const KEY_PREFIX = 'reduxPersist:';
+
+export async function getStoredState() {
+    const restoredState: Record<string, any> = {};
+    let storeKeys: Array<string> = [];
+
+    try {
+        const allKeys: Array<string> = await AsyncStorage.getAllKeys();
+        storeKeys = allKeys.filter((key) => key.includes(KEY_PREFIX));
+
+        const values = await AsyncStorage.multiGet(storeKeys);
+
+        values.forEach(([key, data]: [string, string]) => {
+            restoredState[key.slice(KEY_PREFIX.length)] = JSON.parse(data);
+        });
+    } catch (error) {
+        console.log('ERROR GETTING FROM AsyncStorage', error);
     }
 
-    return enableBatching(offlineReducer);
+    return {storeKeys, restoredState};
 }

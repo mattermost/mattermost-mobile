@@ -636,25 +636,22 @@ export function leaveChannel(channelId: string): ActionFunc {
                 team_id: channel.team_id,
                 type: channel.type,
             },
-            meta: {
-                offline: {
-                    effect: () => Client4.removeFromChannel(currentUserId, channelId),
-                    commit: {type: 'do_nothing'}, // redux-offline always needs to dispatch something on commit
-                    rollback: () => {
-                        dispatch(batchActions([
-                            {
-                                type: ChannelTypes.RECEIVED_CHANNEL,
-                                data: channel,
-                            },
-                            {
-                                type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-                                data: member,
-                            },
-                        ]));
-                    },
-                },
-            },
         });
+
+        try {
+            await Client4.removeFromChannel(currentUserId, channelId);
+        } catch (error) {
+            dispatch(batchActions([
+                {
+                    type: ChannelTypes.RECEIVED_CHANNEL,
+                    data: channel,
+                },
+                {
+                    type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
+                    data: member,
+                },
+            ]));
+        }
 
         return {data: true};
     };
@@ -1399,7 +1396,7 @@ export function favoriteChannel(channelId: string): ActionFunc {
 
         Client4.trackEvent('action', 'action_channels_favorite');
 
-        return savePreferences(currentUserId, [preference])(dispatch);
+        return dispatch(savePreferences(currentUserId, [preference]));
     };
 }
 

@@ -236,7 +236,7 @@ export default class MarkdownTable extends React.PureComponent {
         }
 
         let expandButton = null;
-        if (expandButtonOffset > 0 && (moreRight || moreBelow)) {
+        if (expandButtonOffset > 0) {
             expandButton = (
                 <TouchableWithFeedback
                     type={'opacity'}

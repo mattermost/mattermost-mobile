@@ -14,8 +14,6 @@ function config(state: Partial<Config> = {}, action: GenericAction) {
     case GeneralTypes.SET_CONFIG_AND_LICENSE:
         return Object.assign({}, state, action.data.config);
     case GeneralTypes.CLIENT_CONFIG_RESET:
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -40,8 +38,6 @@ function credentials(state: any = {}, action: GenericAction) {
         return {
             url: action.data.url,
         };
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -51,8 +47,6 @@ function dataRetentionPolicy(state: any = {}, action: GenericAction) {
     switch (action.type) {
     case GeneralTypes.RECEIVED_DATA_RETENTION_POLICY:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -74,8 +68,6 @@ function license(state: any = {}, action: GenericAction) {
     case GeneralTypes.SET_CONFIG_AND_LICENSE:
         return Object.assign({}, state, action.data.license);
     case GeneralTypes.CLIENT_LICENSE_RESET:
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -85,8 +77,6 @@ function timezones(state: string[] = [], action: GenericAction) {
     switch (action.type) {
     case GeneralTypes.SUPPORTED_TIMEZONES_RECEIVED:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return [];
     default:
         return state;
     }
@@ -96,8 +86,6 @@ function serverVersion(state = '', action: GenericAction) {
     switch (action.type) {
     case GeneralTypes.RECEIVED_SERVER_VERSION:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return '';
     default:
         return state;
     }

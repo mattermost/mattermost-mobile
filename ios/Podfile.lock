@@ -32,6 +32,7 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
+  - MMKV (1.0.24)
   - Permission-Camera (2.0.10):
     - RNPermissions
   - Permission-PhotoLibrary (2.0.10):
@@ -212,6 +213,9 @@ PODS:
     - React
   - react-native-image-picker (2.3.1):
     - React
+  - react-native-mmkv-storage (0.2.2):
+    - MMKV (= 1.0.24)
+    - React
   - react-native-netinfo (4.4.0):
     - React
   - react-native-notifications (2.0.6):
@@ -338,6 +342,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-mmkv-storage (from `../node_modules/react-native-mmkv-storage`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-passcode-status (from `../node_modules/react-native-passcode-status`)
@@ -378,6 +383,7 @@ SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - boost-for-react-native
     - libwebp
+    - MMKV
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
@@ -434,6 +440,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-mmkv-storage:
+    :path: "../node_modules/react-native-mmkv-storage"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-notifications:
@@ -509,6 +517,7 @@ SPEC CHECKSUMS:
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
   jail-monkey: d7c5048b2336f22ee9c9e0efa145f1f917338ea9
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
+  MMKV: 758b2edee46b08bdd958db4169191afb9a6d4ebd
   Permission-Camera: 8f0e5decca5f28f70f28a8dc31f012c9bad40ad8
   Permission-PhotoLibrary: b209bf23b784c9e1409a57d81c6d11ab1d3079c1
   RCTRequired: b153add4da6e7dbc44aebf93f3cf4fcae392ddf1
@@ -526,6 +535,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 0573c02d742d4bef38a5d16b5f039754cfa69888
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
+  react-native-mmkv-storage: 84162ebe353ecf7476d235c47becade29789ae2c
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a

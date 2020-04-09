@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {IntegrationTypes, UserTypes, ChannelTypes} from '@mm-redux/action_types';
+import {IntegrationTypes, ChannelTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
 import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp} from '@mm-redux/types/integrations';
 import {Dictionary, IDMappedObjects} from '@mm-redux/types/utilities';
@@ -42,8 +42,6 @@ function incomingHooks(state: IDMappedObjects<IncomingWebhook> = {}, action: Gen
 
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;
@@ -85,8 +83,6 @@ function outgoingHooks(state: IDMappedObjects<OutgoingWebhook> = {}, action: Gen
 
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;
@@ -131,8 +127,6 @@ function commands(state: IDMappedObjects<Command> = {}, action: GenericAction) {
         Reflect.deleteProperty(nextState, action.data.id);
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;
@@ -159,8 +153,6 @@ function systemCommands(state: IDMappedObjects<Command> = {}, action: GenericAct
         }
 
         return state;
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;
@@ -186,8 +178,6 @@ function oauthApps(state: IDMappedObjects<OAuthApp> = {}, action: GenericAction)
         Reflect.deleteProperty(nextState, action.data.id);
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     default:
         return state;

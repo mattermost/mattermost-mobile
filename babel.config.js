@@ -17,6 +17,7 @@ module.exports = {
                 '@components': './app/components',
                 '@constants': './app/constants',
                 '@mm-redux': './app/mm-redux',
+                '@i18n': './app/i18n',
                 '@selectors': './app/selectors',
                 '@store': './app/store',
                 '@telemetry': './app/telemetry',
