@@ -140,13 +140,32 @@ export default class UserProfile extends PureComponent {
     };
 
     buildDisplayBlock = (property) => {
+        const {formatMessage} = this.context.intl;
         const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
+        let label;
 
-        if (user.hasOwnProperty(property) && user[property].length > 0) {
+        if (Object.prototype.hasOwnProperty.call(user, property) && user[property].length > 0) {
+            switch (property) {
+            case 'first_name':
+                label = formatMessage({id: 'user.settings.general.firstName', defaultMessage: 'First Name'});
+                break;
+            case 'last_name':
+                label = formatMessage({id: 'user.settings.general.lastName', defaultMessage: 'Last Name'});
+                break;
+            case 'email':
+                label = formatMessage({id: 'user.settings.general.email', defaultMessage: 'Email'});
+                break;
+            case 'nickname':
+                label = formatMessage({id: 'user.settings.general.nickname', defaultMessage: 'Nickname'});
+                break;
+            case 'position':
+                label = formatMessage({id: 'user.settings.general.position', defaultMessage: 'Position'});
+            }
+
             return (
                 <View>
-                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase()}</Text>
+                    <Text style={[style.header, padding(isLandscape)]}>{label}</Text>
                     <Text style={[style.text, padding(isLandscape)]}>{user[property]}</Text>
                 </View>
             );
@@ -284,11 +303,12 @@ export default class UserProfile extends PureComponent {
 
         return (
             <View style={style.content}>
-                {this.props.enableTimezone && this.buildTimezoneBlock()}
-                {this.buildDisplayBlock('username')}
+                {this.buildDisplayBlock('first_name')}
+                {this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}
+                {this.props.enableTimezone && this.buildTimezoneBlock()}
             </View>
         );
     }
@@ -351,6 +371,7 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         header: {
             fontSize: 13,
             fontWeight: '600',
+            textTransform: 'uppercase',
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginTop: 25,
             marginBottom: 10,

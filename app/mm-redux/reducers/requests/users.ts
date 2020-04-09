@@ -20,9 +20,6 @@ function checkMfa(state: RequestStatusType = initialRequestState(), action: Gene
     case UserTypes.CHECK_MFA_FAILURE:
         return {...state, status: RequestStatus.FAILURE, error: action.error};
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {...state, status: RequestStatus.NOT_STARTED, error: null};
-
     default:
         return state;
     }
@@ -38,28 +35,6 @@ function login(state: RequestStatusType = initialRequestState(), action: Generic
 
     case UserTypes.LOGIN_FAILURE:
         return {...state, status: RequestStatus.FAILURE, error: action.error};
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {...state, status: RequestStatus.NOT_STARTED, error: null};
-
-    default:
-        return state;
-    }
-}
-
-function logout(state: RequestStatusType = initialRequestState(), action: GenericAction): RequestStatusType {
-    switch (action.type) {
-    case UserTypes.LOGOUT_REQUEST:
-        return {...state, status: RequestStatus.STARTED};
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {...state, status: RequestStatus.SUCCESS, error: null};
-
-    case UserTypes.LOGOUT_FAILURE:
-        return {...state, status: RequestStatus.FAILURE, error: action.error};
-
-    case UserTypes.RESET_LOGOUT_STATE:
-        return initialRequestState();
 
     default:
         return state;
@@ -89,7 +64,6 @@ function updateMe(state: RequestStatusType = initialRequestState(), action: Gene
 export default (combineReducers({
     checkMfa,
     login,
-    logout,
     autocompleteUsers,
     updateMe,
 }) as (b: UsersRequestsStatuses, a: GenericAction) => UsersRequestsStatuses);

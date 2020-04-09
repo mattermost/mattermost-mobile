@@ -80,13 +80,9 @@ class PushNotificationUtils {
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
             } else if (userInteraction && !notification?.data?.localNotification) {
-                if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
+                waitForHydration(this.store, () => {
                     this.loadFromNotification(notification);
-                } else {
-                    waitForHydration(this.store, () => {
-                        this.loadFromNotification(notification);
-                    });
-                }
+                });
             }
         }
     };

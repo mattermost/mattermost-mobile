@@ -34,6 +34,7 @@
             "@actions/*": ["app/actions/*"],
             "@constants/*": ["app/constants/*"],
             "@constants": ["app/constants/index"],
+            "@i18n": ["app/i18n/index"],
             "@selectors/*": ["app/selectors/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],

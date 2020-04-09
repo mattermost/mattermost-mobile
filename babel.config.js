@@ -15,6 +15,7 @@ module.exports = {
                 assets: './dist/assets',
                 '@actions': './app/actions',
                 '@constants': './app/constants',
+                '@i18n': './app/i18n',
                 '@selectors': './app/selectors',
                 '@telemetry': './app/telemetry',
                 '@utils': './app/utils',

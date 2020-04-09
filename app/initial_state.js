@@ -4,6 +4,10 @@
 import Config from 'assets/config.json';
 
 const state = {
+    app: {
+        version: '',
+        build: '',
+    },
     entities: {
         general: {
             appState: false,
@@ -111,10 +115,6 @@ const state = {
                 status: 'not_started',
                 error: null,
             },
-            logout: {
-                status: 'not_started',
-                error: null,
-            },
             autocompleteUsers: {
                 status: 'not_started',
                 error: null,
@@ -128,7 +128,6 @@ const state = {
     device: {
         connection: true,
     },
-    navigation: '',
     views: {
         channel: {
             drafts: {},
