@@ -71,42 +71,12 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
     @Nullable
     @Override
     public Map<String, Object> getExportedCustomBubblingEventTypeConstants() {
-        return MapBuilder.<String, Object>builder()
-            .put(
-                "topSubmitEditing",
-                MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onSubmitEditing", "captured", "onSubmitEditingCapture")))
-            .put(
-                "topEndEditing",
-                MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onEndEditing", "captured", "onEndEditingCapture")))
-            .put(
-                "topTextInput",
-                MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onTextInput", "captured", "onTextInputCapture")))
-            .put(
-                "topFocus",
-                MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onFocus", "captured", "onFocusCapture")))
-            .put(
-                "topBlur",
-                MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onBlur", "captured", "onBlurCapture")))
-            .put(
-                "topKeyPress",
-                MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onKeyPress", "captured", "onKeyPressCapture")))
-            .put(
+        Map<String, Object> map = super.getExportedCustomBubblingEventTypeConstants();
+        map.put(
                 "onPaste",
                 MapBuilder.of(
                     "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onPaste")))
-            .build();
+                    MapBuilder.of("bubbled", "onPaste")));
+        return map;
     }
 }
