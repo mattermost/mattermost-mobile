@@ -8,9 +8,9 @@
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
  
-**Note:** v5.9.0 as our Extended Support Release (ESR) is coming to the end of its lifecycle. v5.19.0 will continue to be our current existing ESR until October 15, 2020. [Learn more in our forum post](https://forum.mattermost.org/t/upcoming-extended-support-release-updates/8526).
+**Note:** v5.9.0 as our Extended Support Release (ESR) is coming to the end of its lifecycle and upgrading to 5.19.0 ESR or a later version is highly recommended. v5.19.0 will continue to be our current ESR until October 15, 2020. [Learn more in our forum post](https://forum.mattermost.org/t/upcoming-extended-support-release-updates/8526).
 
-**Note:** The Channel Moderation Settings feature is supported on mobile app versions v1.30 and later. In earlier versions of the mobile app, users who attempt to post or react to posts without proper permissions will see an error.
+**Note:** The Channel Moderation Settings feature released in v5.22.0 is supported on mobile app versions v1.30 and later. In earlier versions of the mobile app, users who attempt to post or react to posts without proper permissions will see an error.
  
 ### Improvements
  - Significantly improved mobile app performance through:
@@ -20,7 +20,7 @@
    - enabling virtualization in the post list;
    - removing unnecessary dimensions and orientations dispatches;
    - removing listening for ``user is typing`` events for channels that the user is not viewing;
-   - removing gif animations on the center channel (gifs will only animate in the gallery view);
+   - removing gif animations on the center channel (gifs will only animate in the gallery view)
  - Added support for different interactive message button styles on mobile.
  - Enter key on hardware Android keyboard now posts a message.
  - The statuses of those users that are in the Direct Message list are now fetched when opening the app and on login.
