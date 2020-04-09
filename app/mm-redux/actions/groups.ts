@@ -186,7 +186,7 @@ export function getGroup(id: string): ActionFunc {
     };
 }
 
-export function getGroups(filterAllowReference: boolean = false): ActionFunc {
+export function getGroups(filterAllowReference = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -258,7 +258,7 @@ export function getGroupsNotAssociatedToChannel(channelID: string, q = '', page 
     };
 }
 
-export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReference: boolean = false): ActionFunc {
+export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReference = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -283,7 +283,7 @@ export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReferenc
     };
 }
 
-export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowReference: boolean = false): ActionFunc {
+export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowReference = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -308,7 +308,7 @@ export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowRe
     };
 }
 
-export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAllowReference: boolean = false): ActionFunc {
+export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAllowReference = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -332,7 +332,7 @@ export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAll
     };
 }
 
-export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference: boolean = false): ActionFunc {
+export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
@@ -356,7 +356,7 @@ export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perP
     };
 }
 
-export function getGroupsAssociatedToChannel(channelID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference: boolean = false): ActionFunc {
+export function getGroupsAssociatedToChannel(channelID: string, q = '', page = 0, perPage: number = General.PAGE_SIZE_DEFAULT, filterAllowReference = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let data;
         try {
