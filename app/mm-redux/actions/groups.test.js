@@ -401,7 +401,7 @@ describe('Actions.Groups', () => {
         };
 
         nock(Client4.getBaseRoute()).
-            get(`/teams/${teamID}/groups?page=100&per_page=60&q=0&include_member_count=true&filterAllowReference=false`).
+            get(`/teams/${teamID}/groups?page=100&per_page=60&q=0&include_member_count=true&filter_allow_reference=false`).
             reply(200, response);
 
         await Actions.getGroupsAssociatedToTeam(teamID, 0, 100)(store.dispatch, store.getState);
