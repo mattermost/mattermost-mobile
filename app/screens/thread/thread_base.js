@@ -50,7 +50,7 @@ export default class ThreadBase extends PureComponent {
             title = formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName});
         }
 
-        this.postTextbox = React.createRef();
+        this.postDraft = React.createRef();
 
         const options = {
             topBar: {
@@ -87,8 +87,8 @@ export default class ThreadBase extends PureComponent {
     };
 
     handleAutoComplete = (value) => {
-        if (this.postTextbox?.current) {
-            this.postTextbox.current.handleTextChange(value, true);
+        if (this.postDraft?.current) {
+            this.postDraft.current.handleTextChange(value, true);
         }
     };
 

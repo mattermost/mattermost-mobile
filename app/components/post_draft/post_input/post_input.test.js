@@ -20,6 +20,7 @@ describe('PostInput', () => {
         isLandscape: false,
         maxMessageLength: 4000,
         onPasteFiles: jest.fn(),
+        onSend: jest.fn(),
         readonly: false,
         rootId: '',
         theme: Preferences.THEMES.default,

@@ -49,7 +49,7 @@ export default class ChannelAndroid extends ChannelBase {
                         <ChannelPostList/>
                     </View>
                     <PostDraft
-                        ref={this.postTextbox}
+                        ref={this.postDraft}
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>

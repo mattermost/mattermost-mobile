@@ -38,6 +38,7 @@ export default class PostInput extends PureComponent {
         isLandscape: PropTypes.bool,
         maxMessageLength: PropTypes.number,
         onPasteFiles: PropTypes.func.isRequired,
+        onSend: PropTypes.func.isRequired,
         readonly: PropTypes.bool,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -53,7 +54,6 @@ export default class PostInput extends PureComponent {
         this.value = '';
 
         this.state = {
-            extraInputPadding: 0,
             keyboardType: 'default',
             longMessageAlertShown: false,
         };
@@ -162,9 +162,12 @@ export default class PostInput extends PureComponent {
 
     handleHardwareEnterPress = (keyEvent) => {
         switch (keyEvent.pressedKey) {
-        case 'enter': this.handleSendMessage();
+        case 'enter':
+            this.props.onSend();
             break;
-        case 'shift-enter': this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
+        case 'shift-enter':
+            this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
+            break;
         }
     }
 
@@ -242,16 +245,6 @@ export default class PostInput extends PureComponent {
         }
     };
 
-    handleInputSizeChange = ({nativeEvent: {contentSize}}) => {
-        const {extraInputPadding} = this.state;
-        const numLines = contentSize.height / INPUT_LINE_HEIGHT;
-        if (numLines >= 2 && extraInputPadding !== EXTRA_INPUT_PADDING) {
-            this.setState({extraInputPadding: EXTRA_INPUT_PADDING});
-        } else if (numLines < 2 && extraInputPadding !== 0) {
-            this.setState({extraInputPadding: 0});
-        }
-    }
-
     handleInsertTextToDraft = (text) => {
         const {cursorPosition, value} = this.state;
 
@@ -282,7 +275,6 @@ export default class PostInput extends PureComponent {
     render() {
         const {formatMessage} = this.context.intl;
         const {channelDisplayName, isLandscape, onPasteFiles, readonly, theme} = this.props;
-        const {extraInputPadding} = this.state;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
         let maxHeight = 150;
@@ -291,16 +283,10 @@ export default class PostInput extends PureComponent {
             maxHeight = 88;
         }
 
-        const inputStyle = {};
-        if (extraInputPadding) {
-            inputStyle.paddingBottom = style.input.paddingBottom + extraInputPadding;
-            inputStyle.paddingTop = style.input.paddingTop + extraInputPadding;
-        }
-
         return (
             <PasteableTextInput
                 ref={this.input}
-                style={{...style.input, ...inputStyle, maxHeight}}
+                style={{...style.input, maxHeight}}
                 onChangeText={this.handleTextChange}
                 onSelectionChange={this.handlePostDraftSelectionChanged}
                 placeholder={formatMessage(placeholder, {channelDisplayName})}
@@ -314,7 +300,6 @@ export default class PostInput extends PureComponent {
                 editable={!readonly}
                 onPaste={onPasteFiles}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                onContentSizeChange={Platform.OS === 'android' ? this.handleInputSizeChange : null}
             />
         );
     }

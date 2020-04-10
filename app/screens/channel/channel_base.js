@@ -58,7 +58,7 @@ export default class ChannelBase extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.postTextbox = React.createRef();
+        this.postDraft = React.createRef();
         this.keyboardTracker = React.createRef();
 
         this.state = {
@@ -139,8 +139,8 @@ export default class ChannelBase extends PureComponent {
     }
 
     blurPostDraft = () => {
-        if (this.postTextbox?.current) {
-            this.postTextbox.current.blurTextBox();
+        if (this.postDraft?.current) {
+            this.postDraft.current.blurTextBox();
         }
     };
 
@@ -191,8 +191,8 @@ export default class ChannelBase extends PureComponent {
     });
 
     handleAutoComplete = (value) => {
-        if (this.postTextbox?.current) {
-            this.postTextbox.current.handleTextChange(value, true);
+        if (this.postDraft?.current) {
+            this.postDraft.current.handleTextChange(value, true);
         }
     };
 

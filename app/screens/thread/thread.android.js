@@ -27,28 +27,27 @@ export default class ThreadAndroid extends ThreadBase {
         } = this.props;
 
         let content;
-        let postTextBox;
         if (this.hasRootPost()) {
             content = (
-                <PostList
-                    renderFooter={this.renderFooter()}
-                    indicateNewMessages={false}
-                    postIds={postIds}
-                    currentUserId={myMember && myMember.user_id}
-                    lastViewedAt={this.state.lastViewedAt}
-                    lastPostIndex={-1}
-                    onPostPress={this.hideKeyboard}
-                    location={THREAD}
-                />
-            );
-
-            postTextBox = (
-                <PostDraft
-                    channelId={channelId}
-                    channelIsArchived={channelIsArchived}
-                    rootId={rootId}
-                    screenId={this.props.componentId}
-                />
+                <>
+                    <PostList
+                        renderFooter={this.renderFooter()}
+                        indicateNewMessages={false}
+                        postIds={postIds}
+                        currentUserId={myMember && myMember.user_id}
+                        lastViewedAt={this.state.lastViewedAt}
+                        lastPostIndex={-1}
+                        onPostPress={this.hideKeyboard}
+                        location={THREAD}
+                    />
+                    <PostDraft
+                        ref={this.postDraft}
+                        channelId={channelId}
+                        channelIsArchived={channelIsArchived}
+                        rootId={rootId}
+                        screenId={this.props.componentId}
+                    />
+                </>
             );
         } else {
             content = (
@@ -63,7 +62,6 @@ export default class ThreadAndroid extends ThreadBase {
                 <KeyboardLayout>
                     <View style={style.separator}/>
                     {content}
-                    {postTextBox}
                 </KeyboardLayout>
             </SafeAreaView>
         );

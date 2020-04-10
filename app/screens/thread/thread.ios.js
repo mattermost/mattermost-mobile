@@ -34,10 +34,10 @@ export default class ThreadIOS extends ThreadBase {
         } = this.props;
 
         let content;
-        let postTextBox;
+        let postDraft;
         if (this.hasRootPost()) {
             content = (
-                <React.Fragment>
+                <>
                     <PostList
                         renderFooter={this.renderFooter()}
                         indicateNewMessages={false}
@@ -58,10 +58,10 @@ export default class ThreadIOS extends ThreadBase {
                             rootId={rootId}
                         />
                     </View>
-                </React.Fragment>
+                </>
             );
 
-            postTextBox = (
+            postDraft = (
                 <KeyboardTrackingView
                     scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                     accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
@@ -70,7 +70,7 @@ export default class ThreadIOS extends ThreadBase {
                         channelId={channelId}
                         channelIsArchived={channelIsArchived}
                         cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
-                        ref={this.postTextbox}
+                        ref={this.postDraft}
                         rootId={rootId}
                         screenId={this.props.componentId}
                         valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
@@ -94,7 +94,7 @@ export default class ThreadIOS extends ThreadBase {
                     <StatusBar/>
                     {content}
                 </SafeAreaView>
-                {postTextBox}
+                {postDraft}
             </React.Fragment>
         );
     }

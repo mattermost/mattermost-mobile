@@ -9,7 +9,6 @@ exports[`PostInput should match, full snapshot 1`] = `
   keyboardType="default"
   multiline={true}
   onChangeText={[Function]}
-  onContentSizeChange={null}
   onEndEditing={[Function]}
   onPaste={[MockFunction]}
   onSelectionChange={[Function]}

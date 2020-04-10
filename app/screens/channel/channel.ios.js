@@ -87,7 +87,7 @@ export default class ChannelIOS extends ChannelBase {
                     <PostDraft
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        ref={this.postTextbox}
+                        ref={this.postDraft}
                         screenId={this.props.componentId}
                     />
                 </KeyboardTrackingView>
