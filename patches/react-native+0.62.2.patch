@@ -223,45 +223,6 @@ index 06734d3..6d1d5ed 100644
    [webSocket setDelegateDispatchQueue:[self methodQueue]];
    webSocket.delegate = self;
    webSocket.reactTag = @(socketID);
-diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
-index 8084a91..d5ac000 100644
---- a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
-+++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
-@@ -51,6 +51,7 @@
- @property (nonatomic, assign) BOOL snapToStart;
- @property (nonatomic, assign) BOOL snapToEnd;
- @property (nonatomic, copy) NSString *snapToAlignment;
-+@property (nonatomic, assign) BOOL inverted;
- 
- // NOTE: currently these event props are only declared so we can export the
- // event names to JS - we don't call the blocks directly because scroll events
-diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
-index 4d6c1d5..ed32c41 100644
---- a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
-+++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
-@@ -829,6 +829,10 @@ - (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView
-       return NO;
-     }
-   }
-+  if(self.inverted) {
-+    [self scrollToEnd:YES];
-+    return NO;
-+  }
-   return YES;
- }
- 
-diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m b/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
-index ba0005a..1c89535 100644
---- a/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
-+++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
-@@ -97,6 +97,7 @@ - (UIView *)view
- RCT_EXPORT_VIEW_PROPERTY(onScrollEndDrag, RCTDirectEventBlock)
- RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollBegin, RCTDirectEventBlock)
- RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollEnd, RCTDirectEventBlock)
-+RCT_EXPORT_VIEW_PROPERTY(inverted, BOOL)
- RCT_EXPORT_VIEW_PROPERTY(DEPRECATED_sendUpdatedChildFrames, BOOL)
- #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
- RCT_EXPORT_VIEW_PROPERTY(contentInsetAdjustmentBehavior, UIScrollViewContentInsetAdjustmentBehavior)
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
 index d886a9b..8febb59 100644
 --- a/node_modules/react-native/react.gradle
