@@ -182,7 +182,7 @@ export function isStartOfNewMessages(item: string) {
 }
 
 export function isDateLine(item: string) {
-    return item.startsWith(DATE_LINE);
+    return Boolean(item?.startsWith(DATE_LINE));
 }
 
 export function getDateForDateLine(item: string) {

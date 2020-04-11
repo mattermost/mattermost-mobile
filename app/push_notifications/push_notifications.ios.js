@@ -214,7 +214,6 @@ class PushNotification {
             }
 
             if (ids.length) {
-                badgeCount -= ids.length;
                 NotificationsIOS.removeDeliveredNotifications(ids);
             }
 
