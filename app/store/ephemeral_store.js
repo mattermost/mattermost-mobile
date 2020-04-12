@@ -5,12 +5,14 @@ import {ViewTypes} from 'app/constants';
 
 class EphemeralStore {
     constructor() {
+        this.allNavigationComponentIds = [];
         this.appStarted = false;
         this.appStartedFromPushNotification = false;
         this.deviceToken = null;
-        this.navigationComponentIdStack = [];
-        this.allNavigationComponentIds = [];
         this.currentServerUrl = null;
+        this.navigationComponentIdStack = [];
+        this.reduxStore = null;
+        this.reduxPersistor = null;
         this.safeAreaInsets = {
             [ViewTypes.PORTRAIT]: null,
             [ViewTypes.LANDSCAPE]: null,

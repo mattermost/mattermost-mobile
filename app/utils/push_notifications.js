@@ -32,11 +32,8 @@ class PushNotificationUtils {
         this.replyNotificationData = null;
     }
 
-    configure = (store) => {
-        this.store = store;
-
+    configure = () => {
         PushNotifications.configure({
-            reduxStore: store,
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
@@ -48,7 +45,7 @@ class PushNotificationUtils {
     loadFromNotification = async (notification) => {
         // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
         EphemeralStore.setStartFromNotification(true);
-        await this.store.dispatch(loadFromPushNotification(notification));
+        await EphemeralStore.reduxStore.dispatch(loadFromPushNotification(notification));
 
         // if we have a componentId means that the app is already initialized
         const componentId = EphemeralStore.getNavigationTopComponentId();
@@ -64,7 +61,7 @@ class PushNotificationUtils {
     };
 
     onPushNotification = async (deviceNotification) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = EphemeralStore.reduxStore;
         const {data, foreground, message, userInteraction} = deviceNotification;
         const notification = {
             data,
@@ -80,7 +77,7 @@ class PushNotificationUtils {
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
             } else if (userInteraction && !notification?.data?.localNotification) {
-                waitForHydration(this.store, () => {
+                waitForHydration(EphemeralStore.reduxStore, () => {
                     this.loadFromNotification(notification);
                 });
             }
@@ -88,7 +85,7 @@ class PushNotificationUtils {
     };
 
     onPushNotificationReply = async (data, text, completion) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = EphemeralStore.reduxStore;
         const state = getState();
         const credentials = await getAppCredentials(); // TODO Change to handle multiple servers
         const url = await getCurrentServerUrl(); // TODO Change to handle multiple servers
@@ -149,7 +146,7 @@ class PushNotificationUtils {
     };
 
     onRegisterDevice = (data) => {
-        const {dispatch} = this.store;
+        const {dispatch} = EphemeralStore.reduxStore;
 
         let prefix;
         if (Platform.OS === 'ios') {
@@ -164,7 +161,7 @@ class PushNotificationUtils {
         EphemeralStore.deviceToken = `${prefix}:${data.token}`;
 
         // TODO: Remove when realm is ready
-        waitForHydration(this.store, () => {
+        waitForHydration(EphemeralStore.reduxStore, () => {
             this.configured = true;
             dispatch(setDeviceToken(EphemeralStore.deviceToken));
         });

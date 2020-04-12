@@ -10,8 +10,8 @@ import {PostTypes, UserTypes} from '@mm-redux/action_types';
 import * as PostSelectors from '@mm-redux/selectors/entities/posts';
 import * as ChannelUtils from '@mm-redux/utils/channel_utils';
 
-import {ViewTypes} from 'app/constants';
-import initialState from 'app/initial_state';
+import {ViewTypes} from '@constants';
+import initialState from '@store/initial_state';
 
 import {loadUnreadChannelPosts} from '@actions/views/post';
 

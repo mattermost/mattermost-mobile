@@ -18,7 +18,12 @@ if [ -n "$jsfiles" ]; then
         fi
     done
     echo "Checking TypeScript"
-    npm run tsc
+    e=$(NODE_OPTIONS=--max_old_space_size=12000 npm run tsc)
+    if [[ -n "$e" ]]; then
+        echo "$e"
+        echo "ERROR: Check TSC hints."
+        exit 1 # reject
+    fi
 fi
 
 exit 0

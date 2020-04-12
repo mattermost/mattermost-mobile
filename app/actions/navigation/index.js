@@ -7,13 +7,12 @@ import merge from 'deepmerge';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import store from 'app/store';
-import EphemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from '@store/ephemeral_store';
 
 const CHANNEL_SCREEN = 'Channel';
 
 function getThemeFromState() {
-    const state = store.getState();
+    const state = EphemeralStore.reduxStore?.getState() || {};
 
     return getTheme(state);
 }

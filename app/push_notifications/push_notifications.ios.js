@@ -10,11 +10,11 @@ import NotificationsIOS, {
     DEVICE_NOTIFICATION_OPENED_EVENT,
 } from 'react-native-notifications';
 
-import {getBadgeCount} from 'app/selectors/views';
-import EphemeralStore from 'app/store/ephemeral_store';
-import {getCurrentLocale} from 'app/selectors/i18n';
-import {getLocalizedMessage} from 'app/i18n';
-import {t} from 'app/utils/i18n';
+import {getLocalizedMessage} from '@i18n';
+import {getCurrentLocale} from '@selectors/i18n';
+import {getBadgeCount} from '@selectors/views';
+import EphemeralStore from '@store/ephemeral_store';
+import {t} from '@utils/i18n';
 
 const CATEGORY = 'CAN_REPLY';
 const REPLY_ACTION = 'REPLY_ACTION';
@@ -24,7 +24,6 @@ class PushNotification {
         this.deviceNotification = null;
         this.onRegister = null;
         this.onNotification = null;
-        this.reduxStore = null;
 
         NotificationsIOS.addEventListener(DEVICE_REMOTE_NOTIFICATIONS_REGISTERED_EVENT, this.onRemoteNotificationsRegistered);
         NotificationsIOS.addEventListener(DEVICE_NOTIFICATION_RECEIVED_FOREGROUND_EVENT, this.onNotificationReceivedForeground);
@@ -46,7 +45,6 @@ class PushNotification {
     };
 
     configure(options) {
-        this.reduxStore = options.reduxStore;
         this.onRegister = options.onRegister;
         this.onNotification = options.onNotification;
 
@@ -75,7 +73,7 @@ class PushNotification {
     }
 
     createReplyCategory = () => {
-        const {getState} = this.reduxStore;
+        const {getState} = EphemeralStore.reduxStore;
         const state = getState();
         const locale = getCurrentLocale(state);
 
@@ -198,8 +196,8 @@ class PushNotification {
             const ids = [];
             let badgeCount = notifications.length;
 
-            if (this.reduxStore) {
-                const totalMentions = getBadgeCount(this.reduxStore.getState());
+            if (EphemeralStore.reduxStore) {
+                const totalMentions = getBadgeCount(EphemeralStore.reduxStore.getState());
                 if (totalMentions > -1) {
                     badgeCount = totalMentions;
                 }
