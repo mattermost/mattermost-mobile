@@ -7,7 +7,7 @@ import {General, Posts} from 'mattermost-redux/constants';
 import {getChannel, canManageChannelMembers, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getCurrentUserRoles, getUser} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
@@ -79,10 +79,16 @@ export function makeMapStateToProps() {
 
         const customEmojis = getCustomEmojisByName(state);
         const {isEmojiOnly, shouldRenderJumboEmoji} = memoizeHasEmojisOnly(post.message, customEmojis);
+        const systemMessage = isSystemMessage(post);
+        const postProps = post.props;
+        if (systemMessage && !post.props?.username) {
+            const owner = getUser(state, post.user_id);
+            postProps.username = owner?.username || '';
+        }
 
         return {
             metadata: post.metadata,
-            postProps: post.props || {},
+            postProps,
             postType: post.type || '',
             fileIds: post.file_ids,
             hasBeenDeleted: post.state === Posts.POST_DELETED,
@@ -92,7 +98,7 @@ export function makeMapStateToProps() {
             isPending,
             isPostAddChannelMember,
             isPostEphemeral: isEphemeralPost,
-            isSystemMessage: isSystemMessage(post),
+            isSystemMessage: systemMessage,
             message: post.message,
             isEmojiOnly,
             shouldRenderJumboEmoji,
