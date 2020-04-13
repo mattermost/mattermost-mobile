@@ -171,6 +171,7 @@ module.exports = [
     './node_modules/app/store/middlewares/sentry.js',
     './node_modules/app/store/middlewares/thunk.js',
     './node_modules/app/store/mmkv_adapter.ts',
+    './node_modules/app/store/store.ts',
     './node_modules/app/store/utils.js',
     './node_modules/app/telemetry/index.js',
     './node_modules/app/telemetry/telemetry.android.js',
