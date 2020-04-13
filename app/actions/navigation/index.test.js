@@ -11,6 +11,7 @@ import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 import intitialState from '@store/initial_state';
+import Store from '@store/store';
 
 jest.unmock('@actions/navigation');
 jest.mock('@store/ephemeral_store', () => ({
@@ -20,7 +21,7 @@ jest.mock('@store/ephemeral_store', () => ({
 
 const mockStore = configureMockStore([thunk]);
 const store = mockStore(intitialState);
-EphemeralStore.reduxStore = store;
+Store.redux = store;
 
 describe('@actions/navigation', () => {
     const topComponentId = 'top-component-id';

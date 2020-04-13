@@ -14,9 +14,9 @@ import {GlobalState} from '@mm-redux/types/store';
 import initialState from '@store/initial_state';
 import appReducer from 'app/reducers';
 
-import EphemeralStore from './ephemeral_store';
 import {createReducer, getStoredState} from './helpers';
 import {createMiddlewares} from './middlewares';
+import Store from './store';
 import {transformSet} from './utils';
 
 /**
@@ -235,8 +235,8 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
         }
     });
 
-    EphemeralStore.reduxStore = store;
-    EphemeralStore.reduxPersistor = persistor;
+    Store.redux = store;
+    Store.persistor = persistor;
 
     return {store, persistor};
 }

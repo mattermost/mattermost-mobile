@@ -14,6 +14,7 @@ import {getLocalizedMessage} from '@i18n';
 import {getCurrentLocale} from '@selectors/i18n';
 import {getBadgeCount} from '@selectors/views';
 import EphemeralStore from '@store/ephemeral_store';
+import Store from '@store/store';
 import {t} from '@utils/i18n';
 
 const CATEGORY = 'CAN_REPLY';
@@ -73,7 +74,7 @@ class PushNotification {
     }
 
     createReplyCategory = () => {
-        const {getState} = EphemeralStore.reduxStore;
+        const {getState} = Store.redux;
         const state = getState();
         const locale = getCurrentLocale(state);
 
@@ -196,8 +197,8 @@ class PushNotification {
             const ids = [];
             let badgeCount = notifications.length;
 
-            if (EphemeralStore.reduxStore) {
-                const totalMentions = getBadgeCount(EphemeralStore.reduxStore.getState());
+            if (Store.redux) {
+                const totalMentions = getBadgeCount(Store.redux.getState());
                 if (totalMentions > -1) {
                     badgeCount = totalMentions;
                 }

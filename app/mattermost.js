@@ -21,6 +21,7 @@ import {registerScreens} from '@screens';
 import configureStore from '@store';
 import EphemeralStore from '@store/ephemeral_store';
 import getStorage from '@store/mmkv_adapter';
+import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 import pushNotificationsUtils from '@utils/push_notifications';
 
@@ -54,8 +55,8 @@ const launchApp = (credentials) => {
     ]);
 
     if (credentials) {
-        waitForHydration(EphemeralStore.reduxStore, async () => {
-            EphemeralStore.reduxStore.dispatch(loadMe());
+        waitForHydration(Store.redux, async () => {
+            Store.redux.dispatch(loadMe());
             resetToChannel({skipMetrics: true});
         });
     } else {
@@ -67,7 +68,7 @@ const launchApp = (credentials) => {
 
     Linking.getInitialURL().then((url) => {
         if (url) {
-            EphemeralStore.reduxStore.dispatch(setDeepLinkURL(url));
+            Store.redux.dispatch(setDeepLinkURL(url));
         }
     });
 };

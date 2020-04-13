@@ -8,11 +8,12 @@ import merge from 'deepmerge';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import EphemeralStore from '@store/ephemeral_store';
+import Store from '@store/store';
 
 const CHANNEL_SCREEN = 'Channel';
 
 function getThemeFromState() {
-    const state = EphemeralStore.reduxStore?.getState() || {};
+    const state = Store.redux?.getState() || {};
 
     return getTheme(state);
 }

@@ -6,7 +6,7 @@ import {Alert, Platform} from 'react-native';
 import {setServerUrl} from '@actions/views/select_server';
 import {getTranslations} from '@i18n';
 import {getCurrentLocale} from '@selectors/i18n';
-import EphemeralStore from '@store/ephemeral_store';
+import Store from '@store/store';
 import {t} from '@utils/i18n';
 
 import mattermostBucket from 'app/mattermost_bucket';
@@ -35,7 +35,7 @@ class EMMProvider {
         const isTrusted = mattermostManaged.isTrustedDevice();
 
         if (!isTrusted) {
-            const state = EphemeralStore.reduxStore.getState();
+            const state = Store.redux.getState();
             const locale = getCurrentLocale(state);
             const translations = getTranslations(locale);
             Alert.alert(
@@ -56,7 +56,7 @@ class EMMProvider {
     handleAuthentication = async (prompt = true) => {
         this.performingAuthentication = true;
         const isSecured = await mattermostManaged.isDeviceSecure();
-        const state = EphemeralStore.reduxStore.getState();
+        const state = Store.redux.getState();
         const locale = getCurrentLocale(state);
         const translations = getTranslations(locale);
 
@@ -90,7 +90,7 @@ class EMMProvider {
             return true;
         }
 
-        const {dispatch} = EphemeralStore.reduxStore;
+        const {dispatch} = Store.redux;
 
         if (LocalConfig.AutoSelectServerUrl) {
             dispatch(setServerUrl(LocalConfig.DefaultServerUrl));

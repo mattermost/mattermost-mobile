@@ -10,18 +10,19 @@ if [ -n "$jsfiles" ]; then
     echo "Checking lint for:"
     for js in $jsfiles; do
         echo "$js"
-        e=$(node_modules/.bin/eslint --quiet $js)
+        e=$(node_modules/.bin/eslint --quiet --fix $js)
         if [[ -n "$e" ]]; then
-            echo "$e"
             echo "ERROR: Check eslint hints."
+            echo "$e"
             exit 1 # reject
         fi
     done
-    echo "Checking TypeScript"
-    e=$(NODE_OPTIONS=--max_old_space_size=12000 npm run tsc)
-    if [[ -n "$e" ]]; then
-        echo "$e"
+
+    echo "Checking for TSC"
+    tsc=$(node_modules/.bin/tsc --noEmit)
+    if [[ -n "$tsc" ]]; then
         echo "ERROR: Check TSC hints."
+        echo "$tsc"
         exit 1 # reject
     fi
 fi

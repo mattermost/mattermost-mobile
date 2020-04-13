@@ -29,8 +29,8 @@ import {NavigationTypes, ViewTypes} from '@constants';
 import {getTranslations, resetMomentLocale} from '@i18n';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from '@selectors/i18n';
-import EphemeralStore from '@store/ephemeral_store';
 import initialState from '@store/initial_state';
+import Store from '@store/store';
 import {t} from '@utils/i18n';
 import {deleteFileCache} from '@utils/file';
 import {getDeviceTimezoneAsync} from '@utils/timezone';
@@ -76,7 +76,7 @@ class GlobalEventHandler {
     appInactive = () => {
         this.turnOffInAppNotificationHandling();
 
-        const {dispatch} = EphemeralStore.reduxStore;
+        const {dispatch} = Store.redux;
 
         // When the app is sent to the background we set the time when that happens
         // and perform a data clean up to improve on performance
@@ -107,7 +107,7 @@ class GlobalEventHandler {
         }
 
         this.JavascriptAndNativeErrorHandler = require('app/utils/error_handling').default;
-        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(EphemeralStore.reduxStore);
+        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(Store.redux);
 
         mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
     };
@@ -126,8 +126,8 @@ class GlobalEventHandler {
         const isActive = appState === 'active';
         const isBackground = appState === 'background';
 
-        if (EphemeralStore.reduxStore) {
-            EphemeralStore.reduxStore.dispatch(setAppState(isActive));
+        if (Store.redux) {
+            Store.redux.dispatch(setAppState(isActive));
 
             if (isActive && (!emmProvider.enabled || emmProvider.previousAppState === 'background')) {
                 this.appActive();
@@ -142,7 +142,7 @@ class GlobalEventHandler {
     onDeepLink = (event) => {
         const {url} = event;
         if (url) {
-            EphemeralStore.reduxStore.dispatch(setDeepLinkURL(url));
+            Store.redux.dispatch(setDeepLinkURL(url));
         }
     };
 
@@ -155,8 +155,8 @@ class GlobalEventHandler {
     };
 
     onLogout = async () => {
-        EphemeralStore.reduxStore.dispatch(closeWebSocket(false));
-        EphemeralStore.reduxStore.dispatch(setServerVersion(''));
+        Store.redux.dispatch(closeWebSocket(false));
+        Store.redux.dispatch(setServerVersion(''));
         await this.resetState();
         removeAppCredentials();
         deleteFileCache();
@@ -190,8 +190,8 @@ class GlobalEventHandler {
     };
 
     onOrientationChange = (dimensions) => {
-        if (EphemeralStore.reduxStore) {
-            const {dispatch, getState} = EphemeralStore.reduxStore;
+        if (Store.redux) {
+            const {dispatch, getState} = Store.redux;
             const deviceState = getState().device;
 
             if (DeviceInfo.isTablet()) {
@@ -215,7 +215,7 @@ class GlobalEventHandler {
     };
 
     onRestartApp = async () => {
-        const {dispatch, getState} = EphemeralStore.reduxStore;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const {currentUserId} = state.entities.users;
         const user = getUser(state, currentUserId);
@@ -236,7 +236,7 @@ class GlobalEventHandler {
     };
 
     onServerVersionChanged = async (serverVersion) => {
-        const {dispatch, getState} = EphemeralStore.reduxStore;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
         const version = match && match[0];
@@ -263,17 +263,17 @@ class GlobalEventHandler {
     };
 
     onStatusBarHeightChange = (nextStatusBarHeight) => {
-        EphemeralStore.reduxStore.dispatch(setStatusBarHeight(nextStatusBarHeight));
+        Store.redux.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     onSwitchToDefaultChannel = (teamId) => {
-        EphemeralStore.reduxStore.dispatch(selectDefaultChannel(teamId));
+        Store.redux.dispatch(selectDefaultChannel(teamId));
     };
 
     resetState = async () => {
         try {
             await AsyncStorage.clear();
-            const state = EphemeralStore.reduxStore.getState();
+            const state = Store.redux.getState();
             const newState = {
                 ...initialState,
                 entities: {
@@ -299,7 +299,7 @@ class GlobalEventHandler {
                 },
             };
 
-            return EphemeralStore.reduxStore.dispatch({
+            return Store.redux.dispatch({
                 type: General.OFFLINE_STORE_PURGE,
                 state: newState,
             });
@@ -310,7 +310,7 @@ class GlobalEventHandler {
     }
 
     serverUpgradeNeeded = async () => {
-        const {dispatch} = EphemeralStore.reduxStore;
+        const {dispatch} = Store.redux;
 
         dispatch(setServerVersion(''));
         Client4.serverVersion = '';
@@ -332,7 +332,7 @@ class GlobalEventHandler {
 
     handleInAppNotification = (notification) => {
         const {data} = notification;
-        const {getState} = EphemeralStore.reduxStore;
+        const {getState} = Store.redux;
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
@@ -348,7 +348,7 @@ class GlobalEventHandler {
     };
 
     setUserTimezone = async () => {
-        const {dispatch, getState} = EphemeralStore.reduxStore;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const currentUserId = getCurrentUserId(state);
 

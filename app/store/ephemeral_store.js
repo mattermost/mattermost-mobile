@@ -11,8 +11,6 @@ class EphemeralStore {
         this.deviceToken = null;
         this.currentServerUrl = null;
         this.navigationComponentIdStack = [];
-        this.reduxStore = null;
-        this.reduxPersistor = null;
         this.safeAreaInsets = {
             [ViewTypes.PORTRAIT]: null,
             [ViewTypes.LANDSCAPE]: null,

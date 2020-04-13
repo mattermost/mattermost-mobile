@@ -8,8 +8,8 @@ import {IntlProvider} from 'react-intl';
 import {getTranslations} from '@i18n';
 import {getCurrentLocale} from '@selectors/i18n';
 import configureStore from '@store';
-import EphemeralStore from '@store/ephemeral_store';
 import getStorage from '@store/mmkv_adapter';
+import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 
 import {extensionSelectTeamId} from './actions';
@@ -32,7 +32,7 @@ export default class ShareApp extends PureComponent {
     }
 
     initialize = async () => {
-        if (EphemeralStore.reduxStore) {
+        if (Store.redux) {
             this.hydrate();
             return;
         }
@@ -44,8 +44,8 @@ export default class ShareApp extends PureComponent {
         if (MMKVStorage) {
             configureStore(MMKVStorage);
         }
-        waitForHydration(EphemeralStore.reduxStore, () => {
-            const {dispatch, getState} = EphemeralStore.reduxStore;
+        waitForHydration(Store.redux, () => {
+            const {dispatch, getState} = Store.redux;
             const {currentTeamId} = getState().entities.teams;
             dispatch(extensionSelectTeamId(currentTeamId));
             this.setState({init: true});
@@ -57,10 +57,10 @@ export default class ShareApp extends PureComponent {
             return null;
         }
 
-        const locale = getCurrentLocale(EphemeralStore.reduxStore.getState());
+        const locale = getCurrentLocale(Store.redux.getState());
 
         return (
-            <Provider store={EphemeralStore.reduxStore}>
+            <Provider store={Store.redux}>
                 <IntlProvider
                     locale={locale}
                     messages={getTranslations(locale)}
