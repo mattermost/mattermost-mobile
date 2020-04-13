@@ -13,14 +13,7 @@
 **Note:** The Channel Moderation Settings feature released in v5.22.0 is supported on mobile app versions v1.30 and later. In earlier versions of the mobile app, users who attempt to post or react to posts without proper permissions will see an error.
  
 ### Improvements
- - Significantly improved mobile app performance through:
-   - avoiding overdraws;
-   - tweaks in the post list by adapting the amount of posts that are being rendered per batch (allowing the app to be more responsive);
-   - batching all related data when fetching posts;
-   - enabling virtualization in the post list;
-   - removing unnecessary dimensions and orientations dispatches;
-   - removing listening for ``user is typing`` events for channels that the user is not viewing;
-   - removing gif animations on the center channel (gifs will only animate in the gallery view)
+ - Significantly improved how quickly posts in the center screen are displayed.
  - Added support for different interactive message button styles on mobile.
  - Enter key on hardware Android keyboard now posts a message.
  - The statuses of those users that are in the Direct Message list are now fetched when opening the app and on login.
