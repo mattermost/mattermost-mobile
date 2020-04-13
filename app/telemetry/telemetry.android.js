@@ -114,7 +114,7 @@ class Telemetry {
         });
     }
 
-    save() {
+    async save() {
         if (!this.canSendTelemetry()) {
             return;
         }

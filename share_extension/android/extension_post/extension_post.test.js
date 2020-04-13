@@ -10,7 +10,7 @@ import ExtensionPost from './extension_post';
 jest.spyOn(Alert, 'alert').mockReturnValue(true);
 jest.spyOn(PermissionsAndroid, 'check').mockReturnValue(PermissionsAndroid.RESULTS.GRANTED);
 
-jest.mock('react-navigation-stack/lib/module/views/TouchableItem', () => null);
+jest.mock('@react-navigation/stack/lib/module/views/TouchableItem', () => null);
 
 jest.mock('app/mattermost_managed', () => ({
     getConfig: jest.fn().mockReturnValue(false),
@@ -20,15 +20,16 @@ const MAX_MESSAGE_LENGTH = 4000;
 
 describe('ExtensionPost', () => {
     const baseProps = {
-        actions: {
-            getTeamChannels: jest.fn(),
-        },
         channelId: 'channel-id',
         channels: {},
         currentUserId: 'current-user-id',
+        getTeamChannels: jest.fn(),
         maxFileSize: 1024,
         navigation: {
-            setParams: jest.fn(),
+            setOptions: jest.fn(),
+        },
+        route: {
+            params: {},
         },
         teamId: 'team-id',
     };

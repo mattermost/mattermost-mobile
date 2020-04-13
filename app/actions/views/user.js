@@ -17,7 +17,7 @@ import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities
 
 import {setAppCredentials} from 'app/init/credentials';
 import {setCSRFFromCookie} from '@utils/security';
-import {getDeviceTimezoneAsync} from '@utils/timezone';
+import {getDeviceTimezone} from '@utils/timezone';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -34,7 +34,7 @@ export function completeLogin(user, deviceToken) {
         // Set timezone
         const enableTimezone = isTimezoneEnabled(state);
         if (enableTimezone) {
-            const timezone = await getDeviceTimezoneAsync();
+            const timezone = getDeviceTimezone();
             dispatch(autoUpdateTimezone(timezone));
         }
 

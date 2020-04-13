@@ -13,7 +13,7 @@ import {
     Text,
     View,
 } from 'react-native';
-import OpenFile from 'react-native-doc-viewer';
+import FileViewer from 'react-native-file-viewer';
 import RNFetchBlob from 'rn-fetch-blob';
 import {CircularProgress} from 'react-native-circular-progress';
 import {intlShape} from 'react-intl';
@@ -217,7 +217,7 @@ export default class FileAttachmentDocument extends PureComponent {
 
     onDonePreviewingFile = () => {
         if (this.mounted) {
-            this.setState({preview: false});
+            this.setState({progress: 0, downloading: false, preview: false});
         }
         this.setStatusBarColor();
     };
@@ -229,51 +229,41 @@ export default class FileAttachmentDocument extends PureComponent {
         setTimeout(() => {
             if (!this.state.didCancel && !this.state.preview && this.mounted) {
                 const {data} = file;
-                const prefix = Platform.OS === 'android' ? 'file:/' : '';
                 const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
                 this.setState({preview: true});
                 this.setStatusBarColor('dark-content');
-                OpenFile.openDoc([{
-                    url: `${prefix}${path}`,
-                    fileNameOptional: file.caption,
-                    fileName: encodeURI(data.name.split('.').slice(0, -1).join('.')),
-                    fileType: data.extension,
-                    cache: false,
-                }], (error) => {
-                    if (error) {
-                        const {intl} = this.context;
-                        Alert.alert(
-                            intl.formatMessage({
-                                id: 'mobile.document_preview.failed_title',
-                                defaultMessage: 'Open Document failed',
-                            }),
-                            intl.formatMessage({
-                                id: 'mobile.document_preview.failed_description',
-                                defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n',
-                            }, {
-                                fileType: data.extension.toUpperCase(),
-                            }),
-                            [{
-                                text: intl.formatMessage({
-                                    id: 'mobile.server_upgrade.button',
-                                    defaultMessage: 'OK',
-                                }),
-                            }],
-                        );
-                        this.onDonePreviewingFile();
-                        RNFetchBlob.fs.unlink(path);
-                    }
-
+                FileViewer.open(path, {
+                    displayName: file.caption,
+                    onDismiss: this.onDonePreviewingFile,
+                    showOpenWithDialog: true,
+                    showAppsSuggestions: true,
+                }).then(() => {
                     if (this.mounted) {
                         this.setState({downloading: false, progress: 0});
                     }
+                }).catch(() => {
+                    const {intl} = this.context;
+                    Alert.alert(
+                        intl.formatMessage({
+                            id: 'mobile.document_preview.failed_title',
+                            defaultMessage: 'Open Document failed',
+                        }),
+                        intl.formatMessage({
+                            id: 'mobile.document_preview.failed_description',
+                            defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n',
+                        }, {
+                            fileType: data.extension.toUpperCase(),
+                        }),
+                        [{
+                            text: intl.formatMessage({
+                                id: 'mobile.server_upgrade.button',
+                                defaultMessage: 'OK',
+                            }),
+                        }],
+                    );
+                    this.onDonePreviewingFile();
+                    RNFetchBlob.fs.unlink(path);
                 });
-
-                // Android does not trigger the event for DoneButtonEvent
-                // so we'll wait 4 seconds before enabling the tap for open the preview again
-                if (Platform.OS === 'android') {
-                    setTimeout(this.onDonePreviewingFile, 4000);
-                }
             }
         }, delay);
     };

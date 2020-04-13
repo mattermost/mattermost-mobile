@@ -22,7 +22,7 @@ const MOCK_CHANNEL_MARK_AS_READ = 'MOCK_CHANNEL_MARK_AS_READ';
 const MOCK_CHANNEL_MARK_AS_VIEWED = 'MOCK_CHANNEL_MARK_AS_VIEWED';
 
 jest.mock('@mm-redux/actions/channels', () => {
-    const channelActions = require.requireActual('@mm-redux/actions/channels');
+    const channelActions = jest.requireActual('../../mm-redux/actions/channels');
     return {
         ...channelActions,
         markChannelAsRead: jest.fn().mockReturnValue({type: 'MOCK_CHANNEL_MARK_AS_READ'}),
@@ -31,7 +31,7 @@ jest.mock('@mm-redux/actions/channels', () => {
 });
 
 jest.mock('@mm-redux/selectors/entities/teams', () => {
-    const teamSelectors = require.requireActual('@mm-redux/selectors/entities/teams');
+    const teamSelectors = jest.requireActual('../../mm-redux/selectors/entities/teams');
     return {
         ...teamSelectors,
         getTeamByName: jest.fn(() => ({name: 'current-team-name'})),
