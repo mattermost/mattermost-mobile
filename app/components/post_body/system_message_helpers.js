@@ -7,8 +7,12 @@ import {Posts} from '@mm-redux/constants';
 import Markdown from 'app/components/markdown';
 import {t} from 'app/utils/i18n';
 
-const renderUsername = (value) => {
-    return (value[0] === '@') ? value : `@${value}`;
+const renderUsername = (value = '') => {
+    if (value) {
+        return (value[0] === '@') ? value : `@${value}`;
+    }
+
+    return value;
 };
 
 const renderMessage = (postBodyProps, styles, intl, localeHolder, values, skipMarkdown = false) => {

@@ -82,6 +82,17 @@ describe('renderSystemMessage', () => {
         expect(renderedMessage).toMatchSnapshot();
     });
 
+    test('uses renderer for OLD archived channel without a username', () => {
+        const postBodyProps = {
+            ...basePostBodyProps,
+            postProps: {},
+            postType: Posts.POST_TYPES.CHANNEL_DELETED,
+        };
+
+        const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
+        expect(renderedMessage).toMatchSnapshot();
+    });
+
     test('uses renderer for unarchived channel', () => {
         const postBodyProps = {
             ...basePostBodyProps,
