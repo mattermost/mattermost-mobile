@@ -14,7 +14,7 @@ import {createIdsSelector} from '@mm-redux/utils/helpers';
 
 export {getCurrentChannelId, getMyChannelMemberships, getMyCurrentChannelMembership};
 import {GlobalState} from '@mm-redux/types/store';
-import {Channel, ChannelStats, ChannelMembership, ChannelModeration} from '@mm-redux/types/channels';
+import {Channel, ChannelStats, ChannelMembership, ChannelModeration, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {UsersState, UserProfile} from '@mm-redux/types/users';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
@@ -38,7 +38,7 @@ export function getChannelsInTeam(state: GlobalState): RelationOneToMany<Team, C
 }
 
 export const getDirectChannelsSet: (a: GlobalState) => Set<string> = createSelector(getChannelsInTeam, (channelsInTeam: RelationOneToMany<Team, Channel>): Set<string> => {
-    return channelsInTeam ? new Set(channelsInTeam['']) : new Set();
+    return (channelsInTeam && new Set(channelsInTeam[''])) || new Set();
 });
 export function getChannelMembersInChannels(state: GlobalState): RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>> {
     return state.entities.channels.membersInChannel;
@@ -186,7 +186,7 @@ export function getChannelByName(state: GlobalState, channelName: string): Chann
 }
 
 export const getChannelSetInCurrentTeam: (a: GlobalState) => Array<string> = createSelector(getCurrentTeamId, getChannelsInTeam, (currentTeamId: string, channelsInTeam: RelationOneToMany<Team, Channel>): Array<string> => {
-    return channelsInTeam ? channelsInTeam[currentTeamId] : [];
+    return (channelsInTeam && channelsInTeam[currentTeamId]) || [];
 });
 
 function sortAndInjectChannels(channels: IDMappedObjects<Channel>, channelSet: Array<string>, locale: string): Array<Channel> {
@@ -915,7 +915,7 @@ export const getRedirectChannelNameForTeam = (state: GlobalState, teamId: string
         return General.DEFAULT_CHANNEL;
     }
 
-    return myFirstChannelForTeam ? myFirstChannelForTeam.name : General.DEFAULT_CHANNEL;
+    return (myFirstChannelForTeam && myFirstChannelForTeam.name) || General.DEFAULT_CHANNEL;
 };
 
 // isManually unread looks into state if the provided channelId is marked as unread by the user.
@@ -929,4 +929,8 @@ export function isManuallyUnread(state: GlobalState, channelId?: string): boolea
 
 export function getChannelModerations(state: GlobalState, channelId: string): Array<ChannelModeration> {
     return state.entities.channels.channelModerations[channelId];
+}
+
+export function getChannelMemberCountsByGroup(state: GlobalState, channelId: string): ChannelMemberCountsByGroup {
+    return state.entities.channels.channelMemberCountsByGroup[channelId] || {};
 }
