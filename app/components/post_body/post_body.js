@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable camelcase */
+
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -62,7 +64,7 @@ export default class PostBody extends PureComponent {
         onPermalinkPress: PropTypes.func,
         onPress: PropTypes.func,
         post: PropTypes.object.isRequired,
-        postProps: PropTypes.object,
+        postProps: PropTypes.object.isRequired,
         postType: PropTypes.string,
         replyBarStyle: PropTypes.array,
         showAddReaction: PropTypes.bool,
@@ -79,6 +81,7 @@ export default class PostBody extends PureComponent {
         onPress: emptyFunction,
         replyBarStyle: [],
         message: '',
+        postProps: {},
     };
 
     static contextTypes = {
@@ -193,21 +196,23 @@ export default class PostBody extends PureComponent {
         });
     };
 
-    renderAddChannelMember = (style, messageStyle, textStyles) => {
+    renderAddChannelMember = (messageStyle, textStyles) => {
         const {onPress, postProps} = this.props;
 
         if (!PostAddChannelMember) {
             PostAddChannelMember = require('app/components/post_add_channel_member').default;
         }
 
-        let userIds = postProps.add_channel_member.not_in_channel_user_ids;
-        let usernames = postProps.add_channel_member.not_in_channel_usernames;
+        const postId = postProps.add_channel_member.post_id;
+        const noGroupsUsernames = postProps.add_channel_member?.not_in_groups_usernames;
+        let userIds = postProps.add_channel_member?.not_in_channel_user_ids;
+        let usernames = postProps.add_channel_member?.not_in_channel_usernames;
 
         if (!userIds) {
-            userIds = postProps.add_channel_member.user_ids;
+            userIds = postProps.add_channel_member?.user_ids;
         }
         if (!usernames) {
-            usernames = postProps.add_channel_member.usernames;
+            usernames = postProps.add_channel_member?.usernames;
         }
 
         return (
@@ -215,10 +220,10 @@ export default class PostBody extends PureComponent {
                 baseTextStyle={messageStyle}
                 onPostPress={onPress}
                 textStyles={textStyles}
-                postId={postProps.add_channel_member.post_id}
+                postId={postId}
                 userIds={userIds}
                 usernames={usernames}
-                noGroupsUsernames={postProps.add_channel_member.not_in_groups_usernames}
+                noGroupsUsernames={noGroupsUsernames}
             />
         );
     };
@@ -368,7 +373,7 @@ export default class PostBody extends PureComponent {
                 />
             );
         } else if (isPostAddChannelMember) {
-            messageComponent = this.renderAddChannelMember(style, messageStyle, textStyles);
+            messageComponent = this.renderAddChannelMember(messageStyle, textStyles);
         } else if (postType === Posts.POST_TYPES.COMBINED_USER_ACTIVITY) {
             const {allUserIds, allUsernames, messageData} = postProps.user_activity;
             messageComponent = (
