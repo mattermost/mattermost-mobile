@@ -41,9 +41,14 @@ describe('mapStateToProps', () => {
             },
             channels: {
                 currentChannelId: '',
+                channelMemberCountsByGroup: {},
+                channels: {},
             },
             preferences: {
                 myPreferences: {},
+            },
+            teams: {
+                teams: {},
             },
         },
         views: {
