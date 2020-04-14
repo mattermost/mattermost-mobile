@@ -1,23 +1,20 @@
 diff --git a/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml b/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml
-index ffef75f..feabe20 100644
+index 7053040..2a97b04 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml
 +++ b/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml
-@@ -31,7 +31,10 @@
+@@ -29,6 +29,7 @@
  
          <service
-             android:name=".gcm.FcmInstanceIdRefreshHandlerService"
+             android:name=".fcm.FcmInstanceIdRefreshHandlerService"
 +            android:permission="android.permission.BIND_JOB_SERVICE"
              android:exported="false" />
-+        
-+        <receiver android:name="com.wix.reactnativenotifications.core.notification.PushNotificationPublisher" />
      </application>
  
- </manifest>
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
-index 8fb5f01..d3a1e7a 100644
+index 7b47aed..200cca8 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsModule.java
-@@ -103,12 +103,26 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
+@@ -99,12 +99,26 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
          pushNotification.onPostRequest(notificationId);
      }
  
@@ -42,9 +39,9 @@ index 8fb5f01..d3a1e7a 100644
 +    }
 +
      @ReactMethod
-     public void isRegisteredForRemoteNotifications(Promise promise) {
-         boolean hasPermission = NotificationManagerCompat.from(getReactApplicationContext()).areNotificationsEnabled();
-@@ -119,6 +133,6 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
+     public void cancelDeliveredNotification(String tag, int notificationId) {
+         IPushNotificationsDrawer notificationsDrawer = PushNotificationsDrawer.get(getReactApplicationContext().getApplicationContext());
+@@ -126,6 +140,6 @@ public class RNNotificationsModule extends ReactContextBaseJavaModule implements
          final Context appContext = getReactApplicationContext().getApplicationContext();
          final Intent tokenFetchIntent = new Intent(appContext, FcmInstanceIdRefreshHandlerService.class);
          tokenFetchIntent.putExtra(extraFlag, true);
@@ -175,7 +172,7 @@ index 0d70024..47b962e 100644
      PushNotificationProps asProps();
  }
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
-index 5e4e3d2..ec37f87 100644
+index 524ff07..a9f28e0 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 @@ -1,5 +1,6 @@
@@ -185,7 +182,7 @@ index 5e4e3d2..ec37f87 100644
  import android.app.Notification;
  import android.app.NotificationChannel;
  import android.app.NotificationManager;
-@@ -20,18 +21,20 @@ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
+@@ -20,7 +21,9 @@ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
  import com.wix.reactnativenotifications.core.JsIOHelper;
  import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
  import com.wix.reactnativenotifications.core.ProxyService;
@@ -195,15 +192,12 @@ index 5e4e3d2..ec37f87 100644
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_OPENED_EVENT_NAME;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_FOREGROUND_EVENT_NAME;
- 
- public class PushNotification implements IPushNotification {
- 
-+    protected PushNotificationProps mNotificationProps;
-     final protected Context mContext;
+@@ -31,7 +34,7 @@ public class PushNotification implements IPushNotification {
      final protected AppLifecycleFacade mAppLifecycleFacade;
      final protected AppLaunchHelper mAppLaunchHelper;
      final protected JsIOHelper mJsIOHelper;
 -    final protected PushNotificationProps mNotificationProps;
++    protected PushNotificationProps mNotificationProps;
      final protected AppVisibilityListener mAppVisibilityListener = new AppVisibilityListener() {
          @Override
          public void onAppVisible() {
@@ -249,7 +243,7 @@ index 5e4e3d2..ec37f87 100644
      @Override
      public PushNotificationProps asProps() {
          return mNotificationProps.copy();
-@@ -140,11 +178,12 @@ public class PushNotification implements IPushNotification {
+@@ -140,7 +178,9 @@ public class PushNotification implements IPushNotification {
      }
  
      protected Notification buildNotification(PendingIntent intent) {
@@ -260,13 +254,9 @@ index 5e4e3d2..ec37f87 100644
      }
  
      protected Notification.Builder getNotificationBuilder(PendingIntent intent) {
--
-         String CHANNEL_ID = "channel_01";
-         String CHANNEL_NAME = "Channel Name";
- 
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java
 new file mode 100644
-index 0000000..5b64593
+index 0000000..58ff887
 --- /dev/null
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotificationPublisher.java
 @@ -0,0 +1,27 @@
@@ -297,19 +287,18 @@ index 0000000..5b64593
 +        pushNotification.onPostScheduledRequest(notificationId);
 +    }
 +}
-\ No newline at end of file
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
-index 3be3dc1..7027958 100644
+index e22cd62..48aa1cd 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/IPushNotificationsDrawer.java
-@@ -9,4 +9,5 @@ public interface IPushNotificationsDrawer {
- 
-     void onNotificationOpened();
+@@ -11,4 +11,5 @@ public interface IPushNotificationsDrawer {
      void onNotificationClearRequest(int id);
+     void onNotificationClearRequest(String tag, int id);
+     void onAllNotificationsClearRequest();
 +    void onCancelAllLocalNotifications();
  }
 diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
-index 7b320e1..d95535b 100644
+index dea6958..2c0f1c7 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 +++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 @@ -2,10 +2,16 @@ package com.wix.reactnativenotifications.core.notificationdrawer;
@@ -329,8 +318,8 @@ index 7b320e1..d95535b 100644
  
  public class PushNotificationsDrawer implements IPushNotificationsDrawer {
  
-@@ -60,8 +66,41 @@ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
-         notificationManager.cancel(id);
+@@ -72,8 +78,41 @@ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
+         notificationManager.cancelAll();
      }
  
 +    @Override
@@ -371,12 +360,12 @@ index 7b320e1..d95535b 100644
 +        notificationManager.cancel(Integer.parseInt(notificationId));
 +    }
  }
-diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java
-index 8270ad6..3674814 100644
---- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java
-+++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/gcm/FcmInstanceIdRefreshHandlerService.java
-@@ -1,19 +1,23 @@
- package com.wix.reactnativenotifications.gcm;
+diff --git a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/fcm/FcmInstanceIdRefreshHandlerService.java b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/fcm/FcmInstanceIdRefreshHandlerService.java
+index dd2cc9a..f1ef15a 100644
+--- a/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/fcm/FcmInstanceIdRefreshHandlerService.java
++++ b/node_modules/react-native-notifications/android/app/src/main/java/com/wix/reactnativenotifications/fcm/FcmInstanceIdRefreshHandlerService.java
+@@ -1,19 +1,22 @@
+ package com.wix.reactnativenotifications.fcm;
  
 -import android.app.IntentService;
 +import android.support.annotation.NonNull;
@@ -397,18 +386,17 @@ index 8270ad6..3674814 100644
 +        enqueueWork(context, FcmInstanceIdRefreshHandlerService.class, JOB_ID, work);
      }
  
-+
      @Override
 -    protected void onHandleIntent(Intent intent) {
 +    protected void onHandleWork(@NonNull Intent intent) {
-         IFcmToken gcmToken = FcmToken.get(this);
-         if (gcmToken == null) {
+         IFcmToken fcmToken = FcmToken.get(this);
+         if (fcmToken == null) {
              return;
 diff --git a/node_modules/react-native-notifications/lib/src/index.android.js b/node_modules/react-native-notifications/lib/src/index.android.js
-index 51376bf..a5d9540 100644
+index ac2fe5c..18bee18 100644
 --- a/node_modules/react-native-notifications/lib/src/index.android.js
 +++ b/node_modules/react-native-notifications/lib/src/index.android.js
-@@ -67,9 +67,22 @@ export class NotificationsAndroid {
+@@ -67,10 +67,23 @@ export class NotificationsAndroid {
      return id;
    }
  
@@ -424,10 +412,11 @@ index 51376bf..a5d9540 100644
    static cancelLocalNotification(id) {
      RNNotifications.cancelLocalNotification(id);
    }
-+
+ 
 +  static cancelAllLocalNotifications() {
 +    RNNotifications.cancelAllLocalNotifications();
 +  }
- }
- 
- export class PendingNotifications {
++
+   static cancelDeliveredNotification(tag, id) {
+     RNNotifications.cancelDeliveredNotification(tag, id);
+   }

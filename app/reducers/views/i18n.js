@@ -14,8 +14,6 @@ function locale(state = defaultLocale, action) {
         const data = action.data || action.payload;
         return data.locale;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return defaultLocale;
     }
 
     return state;

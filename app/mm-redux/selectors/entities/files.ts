@@ -33,6 +33,6 @@ export function makeGetFilesForPost() {
             const fileInfos = fileIdsForPost.map((id) => allFiles[id]).filter((id) => Boolean(id));
 
             return sortFileInfos(fileInfos, locale);
-        }
+        },
     );
 }

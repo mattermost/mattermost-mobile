@@ -14,7 +14,7 @@ function createJob(state: RequestStatusType = initialRequestState(), action: Gen
         JobTypes.CREATE_JOB_SUCCESS,
         JobTypes.CREATE_JOB_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -24,7 +24,7 @@ function getJob(state: RequestStatusType = initialRequestState(), action: Generi
         JobTypes.GET_JOB_SUCCESS,
         JobTypes.GET_JOB_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -34,7 +34,7 @@ function getJobs(state: RequestStatusType = initialRequestState(), action: Gener
         JobTypes.GET_JOBS_SUCCESS,
         JobTypes.GET_JOBS_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -44,7 +44,7 @@ function cancelJob(state: RequestStatusType = initialRequestState(), action: Gen
         JobTypes.CANCEL_JOB_SUCCESS,
         JobTypes.CANCEL_JOB_FAILURE,
         state,
-        action
+        action,
     );
 }
 

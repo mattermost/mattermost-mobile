@@ -14,7 +14,7 @@ function myChannels(state: RequestStatusType = initialRequestState(), action: Ge
         ChannelTypes.CHANNELS_SUCCESS,
         ChannelTypes.CHANNELS_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -24,7 +24,7 @@ function createChannel(state: RequestStatusType = initialRequestState(), action:
         ChannelTypes.CREATE_CHANNEL_SUCCESS,
         ChannelTypes.CREATE_CHANNEL_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -34,7 +34,7 @@ function updateChannel(state: RequestStatusType = initialRequestState(), action:
         ChannelTypes.UPDATE_CHANNEL_SUCCESS,
         ChannelTypes.UPDATE_CHANNEL_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -44,7 +44,7 @@ function getChannels(state: RequestStatusType = initialRequestState(), action: G
         ChannelTypes.GET_CHANNELS_SUCCESS,
         ChannelTypes.GET_CHANNELS_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -54,7 +54,7 @@ function getAllChannels(state: RequestStatusType = initialRequestState(), action
         ChannelTypes.GET_ALL_CHANNELS_SUCCESS,
         ChannelTypes.GET_ALL_CHANNELS_FAILURE,
         state,
-        action
+        action,
     );
 }
 

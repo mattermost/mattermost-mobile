@@ -1,8 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelTitle should match snapshot 1`] = `
-<TouchableOpacity
-  activeOpacity={0.2}
+<Component
   style={
     Object {
       "flex": 1,
@@ -48,12 +47,11 @@ exports[`ChannelTitle should match snapshot 1`] = `
       }
     />
   </View>
-</TouchableOpacity>
+</Component>
 `;
 
 exports[`ChannelTitle should match snapshot when is DM and has guests and the teammate is the guest (when can show subtitles) 1`] = `
-<TouchableOpacity
-  activeOpacity={0.2}
+<Component
   style={
     Object {
       "flex": 1,
@@ -124,12 +122,11 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
       }
     />
   </View>
-</TouchableOpacity>
+</Component>
 `;
 
 exports[`ChannelTitle should match snapshot when is DM and has guests but the teammate is not the guest (when can show subtitles) 1`] = `
-<TouchableOpacity
-  activeOpacity={0.2}
+<Component
   style={
     Object {
       "flex": 1,
@@ -175,12 +172,11 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
       }
     />
   </View>
-</TouchableOpacity>
+</Component>
 `;
 
 exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
-<TouchableOpacity
-  activeOpacity={0.2}
+<Component
   style={
     Object {
       "flex": 1,
@@ -234,5 +230,5 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
       }
     />
   </View>
-</TouchableOpacity>
+</Component>
 `;

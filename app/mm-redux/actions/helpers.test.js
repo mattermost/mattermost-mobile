@@ -60,28 +60,6 @@ describe('Actions.Helpers', () => {
             assert.deepEqual(dispatch.actions, []);
         });
 
-        it('should trigger logout when passed a 401 server error', async () => {
-            const store = await configureStore({
-                entities: {
-                    users: {
-                        currentUserId: 'user',
-                    },
-                },
-            });
-            const dispatch = mockDispatch(store.dispatch);
-
-            const error = new ClientError(Client4.getUrl(), {
-                message: 'Failed to do something',
-                status_code: 401,
-                url: '/api/v4/foo/bar',
-            });
-
-            forceLogoutIfNecessary(error, dispatch, store.getState);
-
-            assert.notEqual(Client4.token, token);
-            assert.deepEqual(dispatch.actions, [{type: UserTypes.LOGOUT_SUCCESS, data: {}}]);
-        });
-
         it('should do nothing when failing to log in', async () => {
             const store = await configureStore({
                 entities: {

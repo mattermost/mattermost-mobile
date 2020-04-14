@@ -1,25 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-community/async-storage';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
-import {createTransform, persistStore} from 'redux-persist';
+import {createTransform} from 'redux-persist';
+import reduxReset from 'redux-reset';
 
 import {General} from '@mm-redux/constants';
-import {getConfig} from '@mm-redux/selectors/entities/general';
 import configureStore from '@mm-redux/store';
+import MMKVStorageAdapter from '@mm-redux/store/mmkv_adapter';
 
 import appReducer from 'app/reducers';
-import {getSiteUrl, setSiteUrl} from 'app/utils/image_cache_manager';
 import {createSentryMiddleware} from 'app/utils/sentry/middleware';
 
 import {middlewares} from './middleware';
 import {createThunkMiddleware} from './thunk';
 import {transformSet} from './utils';
-
-function getAppReducer() {
-    return require('../../app/reducers'); // eslint-disable-line global-require
-}
 
 const usersSetTransform = [
     'profilesInChannel',
@@ -56,8 +51,9 @@ const channelViewBlackList = {loading: true, refreshing: true, loadingPosts: tru
 const channelViewBlackListFilter = createTransform(
     (inboundState) => {
         const channel = {};
+        const keys = inboundState.channel ? Object.keys(inboundState.channel) : [];
 
-        for (const channelKey of Object.keys(inboundState.channel)) {
+        for (const channelKey of keys) {
             if (!channelViewBlackList[channelKey]) {
                 channel[channelKey] = inboundState.channel[channelKey];
             }
@@ -76,8 +72,9 @@ const emojiBlackList = {nonExistentEmoji: true};
 const emojiBlackListFilter = createTransform(
     (inboundState) => {
         const emojis = {};
+        const keys = inboundState.emojis ? Object.keys(inboundState.emojis) : [];
 
-        for (const emojiKey of Object.keys(inboundState.emojis)) {
+        for (const emojiKey of keys) {
             if (!emojiBlackList[emojiKey]) {
                 emojis[emojiKey] = inboundState.emojis[emojiKey];
             }
@@ -124,47 +121,16 @@ const setTransformer = createTransform(
 );
 
 const persistConfig = {
-    effect: (effect, action) => {
-        if (typeof effect !== 'function') {
-            throw new Error('Offline Action: effect must be a function.');
-        } else if (!action.meta.offline.commit) {
-            throw new Error('Offline Action: commit action must be present.');
-        }
-
-        return effect();
-    },
-    persist: (store, options) => {
-        const persistor = persistStore(store, {storage: AsyncStorage, ...options}, () => {
-            store.dispatch({
-                type: General.STORE_REHYDRATION_COMPLETE,
-            });
-        });
-
-        store.subscribe(async () => {
-            const state = store.getState();
-            const config = getConfig(state);
-
-            if (getSiteUrl() !== config?.SiteURL) {
-                setSiteUrl(config.SiteURL);
-            }
-        });
-
-        return persistor;
-    },
-    persistOptions: {
-        autoRehydrate: {
-            log: false,
-        },
-        blacklist: ['device', 'navigation', 'offline', 'requests'],
-        debounce: 500,
-        transforms: [
-            setTransformer,
-            viewsBlackListFilter,
-            typingBlackListFilter,
-            channelViewBlackListFilter,
-            emojiBlackListFilter,
-        ],
-    },
+    key: 'root',
+    storage: MMKVStorageAdapter,
+    blacklist: ['device', 'navigation', 'offline', 'requests'],
+    transforms: [
+        setTransformer,
+        viewsBlackListFilter,
+        typingBlackListFilter,
+        channelViewBlackListFilter,
+        emojiBlackListFilter,
+    ],
 };
 
 export default function configureAppStore(initialState) {
@@ -172,10 +138,11 @@ export default function configureAppStore(initialState) {
         additionalMiddleware: [
             createThunkMiddleware(),
             createSentryMiddleware(),
-            ...middlewares(persistConfig),
+            ...middlewares(),
         ],
         enableThunk: false, // We override the default thunk middleware
+        enhancers: [reduxReset(General.OFFLINE_STORE_PURGE)],
     };
 
-    return configureStore(initialState, appReducer, persistConfig, getAppReducer, clientOptions);
+    return configureStore(initialState, appReducer, persistConfig, clientOptions);
 }

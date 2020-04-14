@@ -25,7 +25,7 @@ export const getMyTeamRoles = reselect.createSelector(
             }
         }
         return roles;
-    }
+    },
 );
 
 export const getMyChannelRoles = reselect.createSelector(
@@ -40,7 +40,7 @@ export const getMyChannelRoles = reselect.createSelector(
             }
         }
         return roles;
-    }
+    },
 );
 
 export const getMyRoles = reselect.createSelector(
@@ -53,7 +53,7 @@ export const getMyRoles = reselect.createSelector(
             team: teamRoles,
             channel: channelRoles,
         };
-    }
+    },
 );
 
 export const getRolesById = reselect.createSelector(
@@ -64,7 +64,7 @@ export const getRolesById = reselect.createSelector(
             rolesById[role.id] = role;
         }
         return rolesById;
-    }
+    },
 );
 
 export const getMyCurrentTeamPermissions = reselect.createSelector(
@@ -87,7 +87,7 @@ export const getMyCurrentTeamPermissions = reselect.createSelector(
             permissions.add(permission);
         }
         return permissions;
-    }
+    },
 );
 
 export const getMyCurrentChannelPermissions = reselect.createSelector(
@@ -110,7 +110,7 @@ export const getMyCurrentChannelPermissions = reselect.createSelector(
             permissions.add(permission);
         }
         return permissions;
-    }
+    },
 );
 
 export const getMyTeamPermissions = reselect.createSelector(
@@ -133,7 +133,7 @@ export const getMyTeamPermissions = reselect.createSelector(
             permissions.add(permission);
         }
         return permissions;
-    }
+    },
 );
 
 export const getMyChannelPermissions = reselect.createSelector(
@@ -156,7 +156,7 @@ export const getMyChannelPermissions = reselect.createSelector(
             permissions.add(permission);
         }
         return permissions;
-    }
+    },
 );
 
 export const haveISystemPermission = reselect.createSelector(
@@ -164,7 +164,7 @@ export const haveISystemPermission = reselect.createSelector(
     (state: GlobalState, options: PermissionsOptions) => options.permission,
     (permissions, permission) => {
         return permissions.has(permission);
-    }
+    },
 );
 
 export const haveITeamPermission = reselect.createSelector(
@@ -172,7 +172,7 @@ export const haveITeamPermission = reselect.createSelector(
     (state, options) => options.permission,
     (permissions, permission) => {
         return permissions.has(permission);
-    }
+    },
 );
 
 export const haveIChannelPermission = reselect.createSelector(
@@ -180,7 +180,7 @@ export const haveIChannelPermission = reselect.createSelector(
     (state, options) => options.permission,
     (permissions, permission) => {
         return permissions.has(permission);
-    }
+    },
 );
 
 export const haveICurrentTeamPermission = reselect.createSelector(
@@ -188,7 +188,7 @@ export const haveICurrentTeamPermission = reselect.createSelector(
     (state: GlobalState, options: PermissionsOptions) => options.permission,
     (permissions, permission) => {
         return permissions.has(permission);
-    }
+    },
 );
 
 export const haveICurrentChannelPermission = reselect.createSelector(
@@ -196,5 +196,5 @@ export const haveICurrentChannelPermission = reselect.createSelector(
     (state: GlobalState, options: PermissionsOptions) => options.permission,
     (permissions, permission) => {
         return permissions.has(permission);
-    }
+    },
 );

@@ -18,7 +18,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
+        classpath 'com.android.tools.build:gradle:3.5.2'
         classpath 'com.google.gms:google-services:4.2.0'
          classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 
@@ -61,7 +61,7 @@ allprojects {
             url("$rootDir/../node_modules/v8-android/dist")
         }
         maven {
-            url "https://jitpack.io"
+            url "https://www.jitpack.io"
         }
     }
 }

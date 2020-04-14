@@ -29,6 +29,15 @@ class ShareViewController: SLComposeServiceViewController {
   private var teamsVC: TeamsViewController = TeamsViewController()
   
   private var maxMessageSize: Int = 0
+  
+  required init?(coder aDecoder: NSCoder) {
+      super.init(coder: aDecoder)
+  
+      entities = store.getEntities(true) as [AnyHashable:Any]?
+      sessionToken = store.getToken()
+      serverURL = store.getServerUrl()
+      maxMessageSize = Int(store.getMaxPostSize())
+  }
 
   // MARK: - Lifecycle methods
   override func viewDidLoad() {
@@ -81,17 +90,12 @@ class ShareViewController: SLComposeServiceViewController {
   }
 
   func loadData() {
-    entities = store.getEntities(true) as [AnyHashable:Any]?
-    sessionToken = store.getToken()
-    serverURL = store.getServerUrl()
-    maxMessageSize = Int(store.getMaxPostSize())
-
-    extractDataFromContext()
-    
     if sessionToken == nil || serverURL == nil {
       showErrorMessage(title: "", message: "Authentication required: Please first login using the app.", VC: self)
     } else if store.getCurrentTeamId() == "" {
       showErrorMessage(title: "", message: "You must belong to a team before you can share files.", VC: self)
+    } else {
+      extractDataFromContext()
     }
   }
   

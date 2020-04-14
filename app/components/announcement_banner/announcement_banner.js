@@ -70,6 +70,7 @@ export default class AnnouncementBanner extends PureComponent {
         Animated.timing(this.state.bannerHeight, {
             toValue: value,
             duration: 350,
+            useNativeDriver: false,
         }).start();
     };
 

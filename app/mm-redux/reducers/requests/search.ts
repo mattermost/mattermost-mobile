@@ -18,7 +18,7 @@ function flaggedPosts(state: RequestStatusType = initialRequestState(), action: 
         SearchTypes.SEARCH_FLAGGED_POSTS_SUCCESS,
         SearchTypes.SEARCH_FLAGGED_POSTS_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -32,7 +32,7 @@ function pinnedPosts(state: RequestStatusType = initialRequestState(), action: G
         SearchTypes.SEARCH_PINNED_POSTS_SUCCESS,
         SearchTypes.SEARCH_PINNED_POSTS_FAILURE,
         state,
-        action
+        action,
     );
 }
 

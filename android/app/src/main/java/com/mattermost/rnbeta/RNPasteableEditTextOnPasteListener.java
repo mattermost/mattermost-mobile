@@ -20,6 +20,7 @@ import com.mattermost.share.ShareModule;
 
 import java.io.FileNotFoundException;
 import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
@@ -138,13 +139,14 @@ public class RNPasteableEditTextOnPasteListener implements RNEditTextOnPasteList
         String dest = cacheFolder + fileName;
         File folder = new File(cacheFolder);
 
-
         try {
             if (!folder.exists()) {
                 folder.mkdirs();
             }
 
             Files.move(Paths.get(src), Paths.get(dest));
+        } catch (FileAlreadyExistsException fileError) {
+            // Do nothing and return dest path
         } catch (Exception err) {
             return null;
         }

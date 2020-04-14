@@ -17,7 +17,7 @@ exports[`ChannelLoader should match snapshot 1`] = `
     ]
   }
 >
-  <AnimatedComponent
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -47,8 +47,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -78,8 +78,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -109,8 +109,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -140,8 +140,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -171,8 +171,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -202,8 +202,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -233,8 +233,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -264,8 +264,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -295,8 +295,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -326,8 +326,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -357,8 +357,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -388,8 +388,8 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
-  <AnimatedComponent
+  </ForwardRef(AnimatedComponentWrapper)>
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Array [
         Object {
@@ -419,6 +419,6 @@ exports[`ChannelLoader should match snapshot 1`] = `
       size={32}
       textSize={14}
     />
-  </AnimatedComponent>
+  </ForwardRef(AnimatedComponentWrapper)>
 </View>
 `;

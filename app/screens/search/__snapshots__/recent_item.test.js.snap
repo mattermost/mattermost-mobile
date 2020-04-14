@@ -1,9 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Search RecentItem should match snapshot and respond to events 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<ForwardRef
+  key="test"
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -33,8 +32,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
     >
       test
     </Text>
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <ForwardRef
       onPress={[Function]}
       style={
         Object {
@@ -51,7 +49,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         name="ios-close-circle-outline"
         size={20}
       />
-    </TouchableOpacity>
+    </ForwardRef>
   </View>
-</TouchableHighlight>
+</ForwardRef>
 `;

@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 
 import {CategoryTypes} from '../../constants/channel_categories';
 
-import {ChannelCategoryTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
+import {ChannelCategoryTypes, TeamTypes} from '@mm-redux/action_types';
 
 import {GenericAction} from '@mm-redux/types/actions';
 import {ChannelCategory} from '@mm-redux/types/channel_categories';
@@ -79,8 +79,6 @@ export function byId(state: IDMappedObjects<ChannelCategory> = {}, action: Gener
         return nextState;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -141,8 +139,6 @@ export function orderByTeam(state: RelationOneToOne<Team, $ID<ChannelCategory>[]
         return nextState;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }

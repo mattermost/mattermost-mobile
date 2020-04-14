@@ -18,10 +18,11 @@ import 'app/init/device';
 import 'app/init/fetch';
 import globalEventHandler from 'app/init/global_event_handler';
 import {registerScreens} from 'app/screens';
-import store from 'app/store';
+import store, {persistor} from 'app/store';
 import {waitForHydration} from 'app/store/utils';
 import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
+import {validatePreviousVersion} from 'app/utils/general';
 import pushNotificationsUtils from 'app/utils/push_notifications';
 
 const init = async () => {
@@ -52,8 +53,10 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(store, async () => {
-            store.dispatch(loadMe());
-            resetToChannel({skipMetrics: true});
+            if (validatePreviousVersion(store, EphemeralStore.prevAppVersion)) {
+                store.dispatch(loadMe());
+                resetToChannel({skipMetrics: true});
+            }
         });
     } else {
         resetToSelectServer(emmProvider.allowOtherServers);

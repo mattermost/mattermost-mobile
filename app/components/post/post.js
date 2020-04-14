@@ -290,7 +290,7 @@ export default class Post extends PureComponent {
             postHeader = (
                 <PostHeader
                     post={post}
-                    commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
+                    commentedOnPost={commentedOnPost}
                     createAt={post.create_at}
                     isSearchResult={isSearchResult}
                     shouldRenderReplyButton={shouldRenderReplyButton}
