@@ -682,7 +682,6 @@ describe('Actions.Groups', () => {
     it('getGroupsAssociatedToChannel', async () => {
         const channelID = '5rgoajywb3nfbdtyafbod47ryb';
 
-
         const response = {
             groups: [
                 {
