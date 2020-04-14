@@ -80,8 +80,8 @@ export function makeMapStateToProps() {
         const customEmojis = getCustomEmojisByName(state);
         const {isEmojiOnly, shouldRenderJumboEmoji} = memoizeHasEmojisOnly(post.message, customEmojis);
         const systemMessage = isSystemMessage(post);
-        const postProps = post.props;
-        if (systemMessage && !post.props?.username) {
+        const postProps = post.props || {};
+        if (systemMessage && !postProps.username) {
             const owner = getUser(state, post.user_id);
             postProps.username = owner?.username || '';
         }
