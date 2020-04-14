@@ -4,9 +4,11 @@
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {REHYDRATE} from 'redux-persist';
+import semver from 'semver/preload';
 
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
+import EphemeralStore from 'app/store/ephemeral_store';
 import {throttle} from 'app/utils/general';
 
 import mattermostBucket from 'app/mattermost_bucket';
@@ -98,12 +100,18 @@ async function saveStateToFile(store) {
 function messageRetention(store) {
     return (next) => (action) => {
         if (action.type === REHYDRATE) {
-            // On first run payload is not set (when installed)
             if (!action.payload) {
+                // On first run payload is not set (when installed)
+                const version = DeviceInfo.getVersion();
+                const major = semver.major(version);
+                const minor = semver.minor(version);
+                const patch = semver.patch(version);
+                const prevAppVersion = `${major}.${parseInt(minor, 10) - 1}.${patch}`;
+                EphemeralStore.prevAppVersion = prevAppVersion;
                 action.payload = {
                     app: {
                         build: DeviceInfo.getBuildNumber(),
-                        version: DeviceInfo.getVersion(),
+                        version,
                     },
                     views: {
                         root: {
@@ -115,6 +123,10 @@ function messageRetention(store) {
 
             const {app} = action.payload;
             const {entities, views} = action.payload;
+
+            if (!EphemeralStore.prevAppVersion) {
+                EphemeralStore.prevAppVersion = app?.version;
+            }
 
             if (!entities || !views) {
                 return next(action);
