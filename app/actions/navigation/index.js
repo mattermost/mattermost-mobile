@@ -44,6 +44,7 @@ export function resetToChannel(passProps = {}) {
                         },
                         backButton: {
                             visible: false,
+                            color: theme.sidebarHeaderTextColor,
                         },
                     },
                 },

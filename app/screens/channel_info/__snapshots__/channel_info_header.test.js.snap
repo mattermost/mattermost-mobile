@@ -92,11 +92,8 @@ exports[`channel_info_header should match snapshot 1`] = `
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -129,7 +126,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           Purpose string
         </Text>
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <View
     style={
@@ -141,11 +138,8 @@ exports[`channel_info_header should match snapshot 1`] = `
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -281,7 +275,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           value="Header string"
         />
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <Text
     style={
@@ -437,11 +431,8 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -474,7 +465,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           Purpose string
         </Text>
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <View
     style={
@@ -486,11 +477,8 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -626,7 +614,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           value="Header string"
         />
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <Text
     style={
@@ -754,11 +742,8 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -791,7 +776,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           Purpose string
         </Text>
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <View
     style={
@@ -803,11 +788,8 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -943,7 +925,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           value="Header string"
         />
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <Text
     style={
@@ -1099,11 +1081,8 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -1136,7 +1115,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           Purpose string
         </Text>
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <View
     style={
@@ -1148,11 +1127,8 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -1288,7 +1264,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           value="Header string"
         />
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <Text
     style={
@@ -1416,11 +1392,8 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -1453,7 +1426,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           Purpose string
         </Text>
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <View
     style={
@@ -1465,11 +1438,8 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -1605,7 +1575,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           value="Header string"
         />
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <Text
     style={
@@ -1783,11 +1753,8 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -1820,7 +1787,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           Purpose string
         </Text>
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <View
     style={
@@ -1832,11 +1799,8 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       ]
     }
   >
-    <TouchableHighlight
-      activeOpacity={0.85}
-      delayPressOut={100}
+    <Component
       onLongPress={[Function]}
-      underlayColor="black"
     >
       <View
         style={
@@ -1972,7 +1936,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           value="Header string"
         />
       </View>
-    </TouchableHighlight>
+    </Component>
   </View>
   <Text
     style={

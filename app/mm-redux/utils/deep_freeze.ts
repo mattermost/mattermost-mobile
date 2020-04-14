@@ -58,7 +58,7 @@ function throwOnImmutableMutation(key: string, value: any) {
     throw Error(
         'You attempted to set the key `' + key + '` with the value `' +
         JSON.stringify(value) + '` on an object that is meant to be immutable ' +
-        'and has been frozen.'
+        'and has been frozen.',
     );
 }
 

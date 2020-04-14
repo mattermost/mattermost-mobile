@@ -23,6 +23,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import getStorage from '@store/mmkv_adapter';
 import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
+import {validatePreviousVersion} from '@utils/general';
 import pushNotificationsUtils from '@utils/push_notifications';
 
 const init = async () => {
@@ -56,8 +57,10 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(Store.redux, async () => {
-            Store.redux.dispatch(loadMe());
-            resetToChannel({skipMetrics: true});
+            if (validatePreviousVersion(Store.redux, EphemeralStore.prevAppVersion)) {
+                Store.redux.dispatch(loadMe());
+                resetToChannel({skipMetrics: true});
+            }
         });
     } else {
         resetToSelectServer(emmProvider.allowOtherServers);

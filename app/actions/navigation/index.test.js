@@ -59,6 +59,7 @@ describe('@actions/navigation', () => {
                                     height: 0,
                                     backButton: {
                                         visible: false,
+                                        color: theme.sidebarHeaderTextColor,
                                     },
                                     background: {
                                         color: theme.sidebarHeaderBg,

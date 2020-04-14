@@ -1,16 +1,50 @@
+diff --git a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
+index c14b13e..8ea534f 100644
+--- a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
++++ b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
+@@ -564,7 +564,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
+ });
+ 
+ const AndroidTextInputNativeComponent: HostComponent<NativeProps> = requireNativeComponent<NativeProps>(
+-  'AndroidTextInput',
++  'PasteableTextInputAndroid',
+ );
+ 
+ export default AndroidTextInputNativeComponent;
+diff --git a/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h b/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h
+index bb1c8d2..a0ea89f 100644
+--- a/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h
++++ b/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h
+@@ -2809,6 +2809,7 @@ namespace JS {
+   namespace NativeWebSocketModule {
+     struct SpecConnectOptions {
+       id<NSObject> _Nullable headers() const;
++      NSString *certificate() const;
+ 
+       SpecConnectOptions(NSDictionary *const v) : _v(v) {}
+     private:
+@@ -3870,3 +3871,8 @@ inline id<NSObject> _Nullable JS::NativeWebSocketModule::SpecConnectOptions::hea
+   id const p = _v[@"headers"];
+   return p;
+ }
++inline NSString *JS::NativeWebSocketModule::SpecConnectOptions::certificate() const
++{
++    id const p = _v[@"certificate"];
++    return p;
++}
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-index 7dffc17..548e7bb 100644
+index 5ef712c..d6f9082 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 +++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-@@ -8,6 +8,7 @@
-  * @format
-  */
- 'use strict';
+@@ -20,6 +20,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
+ const StyleSheet = require('../StyleSheet/StyleSheet');
+ const View = require('../Components/View/View');
+ const ViewabilityHelper = require('./ViewabilityHelper');
 +const Platform = require('../Utilities/Platform');
  
- const Batchinator = require('../Interaction/Batchinator');
- const FillRateHelper = require('./FillRateHelper');
-@@ -1965,7 +1966,7 @@ class VirtualizedCellWrapper extends React.Component<{
+ const flattenStyle = require('../StyleSheet/flattenStyle');
+ const infoLog = require('../Utilities/infoLog');
+@@ -2100,7 +2101,7 @@ class VirtualizedCellWrapper extends React.Component<{
  
  const styles = StyleSheet.create({
    verticallyInverted: {
@@ -20,7 +54,7 @@ index 7dffc17..548e7bb 100644
    horizontallyInverted: {
      transform: [{scaleX: -1}],
 diff --git a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
-index 1b17cff..9efa98e 100644
+index 1b17cff..70a59b6 100644
 --- a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
 +++ b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
 @@ -54,13 +54,14 @@ extern NSString *const RCTSRHTTPResponseErrorKey;
@@ -39,20 +73,21 @@ index 1b17cff..9efa98e 100644
  - (instancetype)initWithURLRequest:(NSURLRequest *)request;
  
  // Some helper constructors.
-@@ -88,6 +89,8 @@ extern NSString *const RCTSRHTTPResponseErrorKey;
+@@ -88,6 +89,9 @@ extern NSString *const RCTSRHTTPResponseErrorKey;
  // Send Data (can be nil) in a ping message.
  - (void)sendPing:(NSData *)data;
  
 +// Get the certificate identity from the keyChain by name
 +- (SecIdentityRef) GetIdentityByName:(NSString *)name;
++
  @end
  
  #pragma mark - RCTSRWebSocketDelegate
 diff --git a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
-index a134d2e..e1d9988 100644
+index b967c14..e24e926 100644
 --- a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
 +++ b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
-@@ -231,7 +231,7 @@ @implementation RCTSRWebSocket
+@@ -228,7 +228,7 @@ @implementation RCTSRWebSocket
    RCTSRIOConsumerPool *_consumerPool;
  }
  
@@ -61,7 +96,7 @@ index a134d2e..e1d9988 100644
  {
    RCTAssertParam(request);
  
-@@ -241,6 +241,10 @@ - (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NS
+@@ -238,6 +238,10 @@ - (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NS
  
      _requestedProtocols = [protocols copy];
  
@@ -72,16 +107,16 @@ index a134d2e..e1d9988 100644
      [self _RCTSR_commonInit];
    }
    return self;
-@@ -250,7 +254,7 @@ - (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NS
+@@ -247,7 +251,7 @@ - (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NS
  
- - (instancetype)initWithURLRequest:(NSURLRequest *)request;
+ - (instancetype)initWithURLRequest:(NSURLRequest *)request
  {
 -  return [self initWithURLRequest:request protocols:nil];
 +  return [self initWithURLRequest:request protocols:nil certificate:self.certificate];
  }
  
- - (instancetype)initWithURL:(NSURL *)URL;
-@@ -277,7 +281,7 @@ - (instancetype)initWithURL:(NSURL *)URL protocols:(NSArray<NSString *> *)protoc
+ - (instancetype)initWithURL:(NSURL *)URL
+@@ -274,7 +278,7 @@ - (instancetype)initWithURL:(NSURL *)URL protocols:(NSArray<NSString *> *)protoc
      NSArray<NSHTTPCookie *> *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:components.URL];
      [request setAllHTTPHeaderFields:[NSHTTPCookie requestHeaderFieldsWithCookies:cookies]];
    }
@@ -89,8 +124,8 @@ index a134d2e..e1d9988 100644
 +  return [self initWithURLRequest:request protocols:protocols certificate:self.certificate];
  }
  
- - (void)_RCTSR_commonInit;
-@@ -347,6 +351,36 @@ - (void)setReadyState:(RCTSRReadyState)aReadyState;
+ - (void)_RCTSR_commonInit
+@@ -344,6 +348,37 @@ - (void)setReadyState:(RCTSRReadyState)aReadyState
  
  #endif
  
@@ -124,49 +159,37 @@ index a134d2e..e1d9988 100644
 +  return nil;
 +}
 +
- - (void)open;
++
+ - (void)open
  {
    assert(_url);
-@@ -518,6 +552,24 @@ - (void)_initializeStreams;
+@@ -515,6 +550,24 @@ - (void)_initializeStreams
      RCTLogInfo(@"SocketRocket: In debug mode.  Allowing connection to any root cert");
  #endif
  
 +    if (_certificate) {
-+        SecIdentityRef identity = [self GetIdentityByName:_certificate];
-+        if (identity != nil) {
-+          SecCertificateRef certificate = NULL;
-+          OSStatus status = SecIdentityCopyCertificate(identity, &certificate);
-+          if (!status) {
-+            NSArray *myCerts = [[NSArray alloc] initWithObjects:(__bridge id)identity, (__bridge id)certificate, nil];
++      SecIdentityRef identity = [self GetIdentityByName:_certificate];
++      if (identity != nil) {
++        SecCertificateRef certificate = NULL;
++        OSStatus status = SecIdentityCopyCertificate(identity, &certificate);
++        if (!status) {
++          NSArray *myCerts = [[NSArray alloc] initWithObjects:(__bridge id)identity, (__bridge id)certificate, nil];
 +
-+            [SSLOptions setObject:[NSNumber numberWithBool:NO] forKey:(NSString *)kCFStreamSSLValidatesCertificateChain];
-+            [SSLOptions setObject:[NSString stringWithFormat:@"%@:%d", host, port] forKey:(NSString *)kCFStreamSSLPeerName];
-+            [SSLOptions setObject:(NSString *)kCFStreamSocketSecurityLevelNegotiatedSSL forKey:(NSString*)kCFStreamSSLLevel];
-+            [SSLOptions setObject:(NSString *)kCFStreamSocketSecurityLevelNegotiatedSSL forKey:(NSString*)kCFStreamPropertySocketSecurityLevel];
-+            [SSLOptions setObject:myCerts forKey:(NSString *)kCFStreamSSLCertificates];
-+            [SSLOptions setObject:[NSNumber numberWithBool:NO] forKey:(NSString *)kCFStreamSSLIsServer];
-+          }
++          [SSLOptions setObject:[NSNumber numberWithBool:NO] forKey:(NSString *)kCFStreamSSLValidatesCertificateChain];
++          [SSLOptions setObject:[NSString stringWithFormat:@"%@:%d", host, port] forKey:(NSString *)kCFStreamSSLPeerName];
++          [SSLOptions setObject:(NSString *)kCFStreamSocketSecurityLevelNegotiatedSSL forKey:(NSString*)kCFStreamSSLLevel];
++          [SSLOptions setObject:(NSString *)kCFStreamSocketSecurityLevelNegotiatedSSL forKey:(NSString*)kCFStreamPropertySocketSecurityLevel];
++          [SSLOptions setObject:myCerts forKey:(NSString *)kCFStreamSSLCertificates];
++          [SSLOptions setObject:[NSNumber numberWithBool:NO] forKey:(NSString *)kCFStreamSSLIsServer];
 +        }
++      }
 +    }
 +
      [_outputStream setProperty:SSLOptions
                          forKey:(__bridge id)kCFStreamPropertySSLSettings];
    }
-diff --git a/node_modules/react-native/Libraries/WebSocket/RCTWebSocketModule.m b/node_modules/react-native/Libraries/WebSocket/RCTWebSocketModule.m
-index d9387c4..93481be 100644
---- a/node_modules/react-native/Libraries/WebSocket/RCTWebSocketModule.m
-+++ b/node_modules/react-native/Libraries/WebSocket/RCTWebSocketModule.m
-@@ -81,7 +81,7 @@ - (void)invalidate
-     [request addValue:[RCTConvert NSString:value] forHTTPHeaderField:key];
-   }];
- 
--  RCTSRWebSocket *webSocket = [[RCTSRWebSocket alloc] initWithURLRequest:request protocols:protocols];
-+  RCTSRWebSocket *webSocket = [[RCTSRWebSocket alloc] initWithURLRequest:request protocols:protocols certificate:options[@"certificate"]];
-   [webSocket setDelegateDispatchQueue:_methodQueue];
-   webSocket.delegate = self;
-   webSocket.reactTag = socketID;
 diff --git a/node_modules/react-native/Libraries/WebSocket/WebSocket.js b/node_modules/react-native/Libraries/WebSocket/WebSocket.js
-index 35f0757..a0205fc 100644
+index a1679bd..9445e3e 100644
 --- a/node_modules/react-native/Libraries/WebSocket/WebSocket.js
 +++ b/node_modules/react-native/Libraries/WebSocket/WebSocket.js
 @@ -92,7 +92,7 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): any) {
@@ -187,63 +210,24 @@ index 35f0757..a0205fc 100644
    }
  
    get binaryType(): ?BinaryType {
-diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
-index 55b5e3a..04f45a2 100644
---- a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
-+++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.h
-@@ -51,6 +51,7 @@
- @property (nonatomic, assign) BOOL snapToStart;
- @property (nonatomic, assign) BOOL snapToEnd;
- @property (nonatomic, copy) NSString *snapToAlignment;
-+@property (nonatomic, assign) BOOL inverted;
- 
- // NOTE: currently these event props are only declared so we can export the
- // event names to JS - we don't call the blocks directly because scroll events
-diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
-index b028f02..93812f8 100644
---- a/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
-+++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m
-@@ -953,6 +953,10 @@ - (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView
-       return NO;
-     }
+diff --git a/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm b/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm
+index 06734d3..6d1d5ed 100644
+--- a/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm
++++ b/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm
+@@ -88,7 +88,7 @@ - (void)invalidate
+     }];
    }
-+  if(self.inverted) {
-+    [self scrollToEnd:YES];
-+    return NO;
-+  }
-   return YES;
- }
  
-diff --git a/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m b/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
-index bed6d84..2721fb0 100644
---- a/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
-+++ b/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m
-@@ -97,6 +97,7 @@ - (UIView *)view
- RCT_EXPORT_VIEW_PROPERTY(onScrollEndDrag, RCTDirectEventBlock)
- RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollBegin, RCTDirectEventBlock)
- RCT_EXPORT_VIEW_PROPERTY(onMomentumScrollEnd, RCTDirectEventBlock)
-+RCT_EXPORT_VIEW_PROPERTY(inverted, BOOL)
- RCT_EXPORT_VIEW_PROPERTY(DEPRECATED_sendUpdatedChildFrames, BOOL)
- #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
- RCT_EXPORT_VIEW_PROPERTY(contentInsetAdjustmentBehavior, UIScrollViewContentInsetAdjustmentBehavior)
-diff --git a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
-index ef2ae93..2795802 100644
---- a/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
-+++ b/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/modules/systeminfo/AndroidInfoModule.java
-@@ -92,7 +92,7 @@ public class AndroidInfoModule extends ReactContextBaseJavaModule implements Tur
- 
-   private Boolean isRunningScreenshotTest() {
-     try {
--      Class.forName("android.support.test.rule.ActivityTestRule");
-+      Class.forName("androidx.test.rule.ActivityTestRule");
-       return true;
-     } catch (ClassNotFoundException ignored) {
-       return false;
+-  RCTSRWebSocket *webSocket = [[RCTSRWebSocket alloc] initWithURLRequest:request protocols:protocols];
++    RCTSRWebSocket *webSocket = [[RCTSRWebSocket alloc] initWithURLRequest:request protocols:protocols certificate:options.certificate()];
+   [webSocket setDelegateDispatchQueue:[self methodQueue]];
+   webSocket.delegate = self;
+   webSocket.reactTag = @(socketID);
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index 14f0746..054f652 100644
+index d886a9b..8febb59 100644
 --- a/node_modules/react-native/react.gradle
 +++ b/node_modules/react-native/react.gradle
-@@ -116,7 +116,7 @@ afterEvaluate {
+@@ -143,7 +143,7 @@ afterEvaluate {
  
              // Set up dev mode
              def devEnabled = !(config."devDisabledIn${targetName}"
@@ -252,7 +236,7 @@ index 14f0746..054f652 100644
  
              def extraArgs = extraPackagerArgs;
  
-@@ -141,7 +141,7 @@ afterEvaluate {
+@@ -163,7 +163,7 @@ afterEvaluate {
                      def hermesFlags;
                      def hbcTempFile = file("${jsBundleFile}.hbc")
                      exec {
@@ -261,7 +245,7 @@ index 14f0746..054f652 100644
                              // Can't use ?: since that will also substitute valid empty lists
                              hermesFlags = config.hermesFlagsRelease
                              if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
-@@ -180,7 +180,7 @@ afterEvaluate {
+@@ -207,7 +207,7 @@ afterEvaluate {
                  ? config."bundleIn${targetName}"
                  : config."bundleIn${variant.buildType.name.capitalize()}" != null
                      ? config."bundleIn${variant.buildType.name.capitalize()}"
@@ -270,7 +254,7 @@ index 14f0746..054f652 100644
          }
  
          // Expose a minimal interface on the application variant and the task itself:
-@@ -272,7 +272,7 @@ afterEvaluate {
+@@ -299,7 +299,7 @@ afterEvaluate {
          // This should really be done by packaging all Hermes releated libs into
          // two separate HermesDebug and HermesRelease AARs, but until then we'll
          // kludge it by deleting the .so files out of the /transforms/ directory.
