@@ -12,9 +12,6 @@ exports[`ProgressiveImage should match snapshot 1`] = `
     resizeMode="contain"
     source={
       Object {
-        "headers": Object {
-          "Authorization": "Bearer ",
-        },
         "uri": "https://images.com/image.png",
       }
     }

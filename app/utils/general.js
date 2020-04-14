@@ -8,7 +8,7 @@ import {Posts} from '@mm-redux/constants';
 
 import {logout} from 'app/actions/views/user';
 
-const INVAILD_VERSIONS = ['1.29.0'];
+const INVALID_VERSIONS = ['1.29.0'];
 
 export function fromAutoResponder(post) {
     return Boolean(post.type && (post.type === Posts.SYSTEM_AUTO_RESPONDER));
@@ -88,7 +88,7 @@ export function isPendingPost(postId, userId) {
 }
 
 export function validatePreviousVersion(store, version) {
-    if (INVAILD_VERSIONS.includes(version)) {
+    if (INVALID_VERSIONS.includes(version)) {
         store.dispatch(logout());
         return false;
     }
