@@ -6,6 +6,10 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 import {Posts} from '@mm-redux/constants';
 
+import {logout} from 'app/actions/views/user';
+
+const INVALID_VERSIONS = ['1.29.0'];
+
 export function fromAutoResponder(post) {
     return Boolean(post.type && (post.type === Posts.SYSTEM_AUTO_RESPONDER));
 }
@@ -81,4 +85,13 @@ export function throttle(fn, limit, ...args) {
 
 export function isPendingPost(postId, userId) {
     return postId.startsWith(userId);
+}
+
+export function validatePreviousVersion(store, version) {
+    if (INVALID_VERSIONS.includes(version)) {
+        store.dispatch(logout());
+        return false;
+    }
+
+    return true;
 }
