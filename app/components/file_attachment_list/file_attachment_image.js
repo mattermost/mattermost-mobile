@@ -57,11 +57,10 @@ export default class FileAttachmentImage extends PureComponent {
 
         const {file} = props;
         if (file && file.id) {
-            const headers = {Authorization: `Bearer ${Client4.getToken()}`};
-            const preloadImages = [{uri: Client4.getFileThumbnailUrl(file.id), headers}];
+            const preloadImages = [{uri: Client4.getFileThumbnailUrl(file.id)}];
 
             if (isGif(file)) {
-                preloadImages.push({uri: Client4.getFileUrl(file.id), headers});
+                preloadImages.push({uri: Client4.getFileUrl(file.id)});
             }
 
             FastImage.preload(preloadImages);

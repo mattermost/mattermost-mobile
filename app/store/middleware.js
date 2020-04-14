@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import DeviceInfo from 'react-native-device-info';
+import semver from 'semver/preload';
 
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
+import EphemeralStore from 'app/store/ephemeral_store';
 
 import {
     captureException,
@@ -19,6 +21,15 @@ export function messageRetention(store) {
 
             if (!entities || !views) {
                 return next(action);
+            }
+
+            if (!EphemeralStore.prevAppVersion) {
+                const version = DeviceInfo.getVersion();
+                const major = semver.major(version);
+                const minor = semver.minor(version);
+                const patch = semver.patch(version);
+                const prevAppVersion = `${major}.${parseInt(minor, 10) - 1}.${patch}`;
+                EphemeralStore.prevAppVersion = app?.version || prevAppVersion;
             }
 
             // When a new version of the app has been detected

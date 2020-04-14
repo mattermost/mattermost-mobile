@@ -75,10 +75,9 @@ export default class ProgressiveImage extends PureComponent {
 
     load = () => {
         const {imageUri, thumbnailUri} = this.props;
-        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
 
         if (thumbnailUri && imageUri) {
-            FastImage.preload([{uri: imageUri, headers}]);
+            FastImage.preload([{uri: imageUri}]);
             this.setThumbnail(thumbnailUri);
         } else if (imageUri) {
             this.setImage(imageUri);
@@ -184,11 +183,10 @@ export default class ProgressiveImage extends PureComponent {
         }
 
         let source;
-        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
         if (hasPreview && !isImageReady) {
-            source = {uri: thumb, headers};
+            source = {uri: thumb};
         } else if (isImageReady) {
-            source = {uri, headers};
+            source = {uri};
         }
 
         return (
