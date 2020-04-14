@@ -15,7 +15,7 @@ export function handleRequest(
     SUCCESS: string,
     FAILURE: string,
     state: RequestStatusType,
-    action: GenericAction
+    action: GenericAction,
 ): RequestStatusType {
     switch (action.type) {
     case REQUEST:

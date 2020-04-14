@@ -28,8 +28,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
         }
       }
     >
-      <TouchableOpacity
-        activeOpacity={0.2}
+      <Component
         onPress={[Function]}
         style={
           Object {
@@ -65,7 +64,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
             }
           }
         />
-      </TouchableOpacity>
+      </Component>
     </View>
     <View
       style={
@@ -75,8 +74,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
         }
       }
     >
-      <TouchableOpacity
-        activeOpacity={0.2}
+      <Component
         onPress={[Function]}
         style={
           Object {
@@ -112,10 +110,9 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
             }
           }
         />
-      </TouchableOpacity>
+      </Component>
     </View>
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <Component
       onPress={[Function]}
       style={
         Object {
@@ -138,7 +135,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
           }
         }
       />
-    </TouchableOpacity>
+    </Component>
   </View>
 </View>
 `;
@@ -206,8 +203,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
         ]
       }
     >
-      <TouchableOpacity
-        activeOpacity={0.2}
+      <Component
         onPress={[Function]}
         style={
           Object {
@@ -244,7 +240,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             }
           }
         />
-      </TouchableOpacity>
+      </Component>
     </View>
     <View
       style={
@@ -253,8 +249,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
         ]
       }
     >
-      <TouchableOpacity
-        activeOpacity={0.2}
+      <Component
         onPress={[Function]}
         style={
           Object {
@@ -291,7 +286,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             }
           }
         />
-      </TouchableOpacity>
+      </Component>
     </View>
   </View>
   <View
@@ -305,8 +300,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
       }
     }
   >
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <Component
       onPress={[Function]}
       style={
         Object {
@@ -330,7 +324,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
           }
         }
       />
-    </TouchableOpacity>
+    </Component>
   </View>
 </View>
 `;

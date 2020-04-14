@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Fade should render {opacity: 0} 1`] = `
-<AnimatedComponent
+<ForwardRef(AnimatedComponentWrapper)
   pointerEvents="box-none"
   style={
     Object {
@@ -17,11 +17,11 @@ exports[`Fade should render {opacity: 0} 1`] = `
   <Text>
     text
   </Text>
-</AnimatedComponent>
+</ForwardRef(AnimatedComponentWrapper)>
 `;
 
 exports[`Fade should render {opacity: 1} 1`] = `
-<AnimatedComponent
+<ForwardRef(AnimatedComponentWrapper)
   pointerEvents="box-none"
   style={
     Object {
@@ -37,5 +37,5 @@ exports[`Fade should render {opacity: 1} 1`] = `
   <Text>
     text
   </Text>
-</AnimatedComponent>
+</ForwardRef(AnimatedComponentWrapper)>
 `;

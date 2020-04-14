@@ -18,7 +18,7 @@ function websocket(state: RequestStatusType = initialRequestState(), action: Gen
         GeneralTypes.WEBSOCKET_SUCCESS,
         GeneralTypes.WEBSOCKET_FAILURE,
         state,
-        action
+        action,
     );
 }
 
