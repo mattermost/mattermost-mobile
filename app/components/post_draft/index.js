@@ -85,6 +85,17 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22) && license && license.IsLicensed === 'true') {
+        useGroupMentions = haveIChannelPermission(
+            state,
+            {
+                channel: currentChannel.id,
+                team: currentChannel.team_id,
+                permission: Permissions.USE_GROUP_MENTIONS,
+            },
+        );
+    }
+
     return {
         canPost,
         currentChannel,
