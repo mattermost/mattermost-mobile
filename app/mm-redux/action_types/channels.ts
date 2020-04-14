@@ -77,6 +77,8 @@ export default keyMirror({
 
     RECEIVED_CHANNEL_MODERATIONS: null,
 
+    RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP: null,
+
     RECEIVED_TOTAL_CHANNEL_COUNT: null,
 
     POST_UNREAD_SUCCESS: null,
