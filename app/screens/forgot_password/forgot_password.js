@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Appearance} from 'react-native-appearance';
 import Button from 'react-native-button';
 import {Navigation} from 'react-native-navigation';
 import {intlShape} from 'react-intl';
@@ -15,6 +14,7 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     View,
+    Appearance,
 } from 'react-native';
 
 import {isEmail} from '@mm-redux/utils/helpers';

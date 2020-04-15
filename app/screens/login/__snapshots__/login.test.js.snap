@@ -103,7 +103,7 @@ exports[`Login should show dark background when user has dark color scheme set 1
         editable={true}
         keyboardType="email-address"
         onBlur={[Function]}
-        onChangeText={[MockFunction]}
+        onChangeText={[Function]}
         onFocus={[Function]}
         onSubmitEditing={[Function]}
         placeholder="Email or Username"
@@ -132,7 +132,6 @@ exports[`Login should show dark background when user has dark color scheme set 1
           ]
         }
         underlineColorAndroid="transparent"
-        value=""
       />
       <TextInput
         allowFontScaling={true}
@@ -141,7 +140,7 @@ exports[`Login should show dark background when user has dark color scheme set 1
         disableFullscreenUI={true}
         editable={true}
         onBlur={[Function]}
-        onChangeText={[MockFunction]}
+        onChangeText={[Function]}
         onFocus={[Function]}
         onSubmitEditing={[Function]}
         placeholder="Password"
@@ -171,30 +170,31 @@ exports[`Login should show dark background when user has dark color scheme set 1
           ]
         }
         underlineColorAndroid="transparent"
-        value=""
       />
       <Connect(ErrorText)
         error={null}
+        textStyle={
+          Object {
+            "width": "100%",
+          }
+        }
       />
       <Button
         containerStyle={
           Array [
-            Array [
-              Object {
-                "alignItems": "center",
-                "alignSelf": "stretch",
-                "borderRadius": 3,
-                "marginBottom": 16,
-                "padding": 15,
-              },
-              Object {
-                "backgroundColor": "#399fff",
-              },
-              Object {
-                "backgroundColor": "#2e2e2e",
-              },
-              Object {},
-            ],
+            Object {
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "marginBottom": 16,
+              "padding": 15,
+            },
+            Object {
+              "backgroundColor": "#399fff",
+            },
+            Object {
+              "backgroundColor": "#2e2e2e",
+            },
             Object {},
           ]
         }
@@ -206,20 +206,17 @@ exports[`Login should show dark background when user has dark color scheme set 1
           id="login.signIn"
           style={
             Array [
-              Array [
-                Object {
-                  "fontSize": 17,
-                  "fontWeight": "500",
-                  "textAlign": "center",
-                },
-                Object {
-                  "color": "#171717",
-                },
-                Object {
-                  "color": "#9b9b9b",
-                },
-              ],
-              Object {},
+              Object {
+                "fontSize": 17,
+                "fontWeight": "500",
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#171717",
+              },
+              Object {
+                "color": "#9b9b9b",
+              },
             ]
           }
         />
@@ -353,7 +350,7 @@ exports[`Login should show light background when user has light color scheme set
         editable={true}
         keyboardType="email-address"
         onBlur={[Function]}
-        onChangeText={[MockFunction]}
+        onChangeText={[Function]}
         onFocus={[Function]}
         onSubmitEditing={[Function]}
         placeholder="Email or Username"
@@ -382,7 +379,6 @@ exports[`Login should show light background when user has light color scheme set
           ]
         }
         underlineColorAndroid="transparent"
-        value=""
       />
       <TextInput
         allowFontScaling={true}
@@ -391,7 +387,7 @@ exports[`Login should show light background when user has light color scheme set
         disableFullscreenUI={true}
         editable={true}
         onBlur={[Function]}
-        onChangeText={[MockFunction]}
+        onChangeText={[Function]}
         onFocus={[Function]}
         onSubmitEditing={[Function]}
         placeholder="Password"
@@ -421,30 +417,31 @@ exports[`Login should show light background when user has light color scheme set
           ]
         }
         underlineColorAndroid="transparent"
-        value=""
       />
       <Connect(ErrorText)
         error={null}
+        textStyle={
+          Object {
+            "width": "100%",
+          }
+        }
       />
       <Button
         containerStyle={
           Array [
-            Array [
-              Object {
-                "alignItems": "center",
-                "alignSelf": "stretch",
-                "borderRadius": 3,
-                "marginBottom": 16,
-                "padding": 15,
-              },
-              Object {
-                "backgroundColor": "#1247b1",
-              },
-              Object {
-                "backgroundColor": "#dbdbdb",
-              },
-              Object {},
-            ],
+            Object {
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "borderRadius": 3,
+              "marginBottom": 16,
+              "padding": 15,
+            },
+            Object {
+              "backgroundColor": "#1247b1",
+            },
+            Object {
+              "backgroundColor": "#dbdbdb",
+            },
             Object {},
           ]
         }
@@ -456,20 +453,17 @@ exports[`Login should show light background when user has light color scheme set
           id="login.signIn"
           style={
             Array [
-              Array [
-                Object {
-                  "fontSize": 17,
-                  "fontWeight": "500",
-                  "textAlign": "center",
-                },
-                Object {
-                  "color": "#ffffff",
-                },
-                Object {
-                  "color": "#5c5c5c",
-                },
-              ],
-              Object {},
+              Object {
+                "fontSize": 17,
+                "fontWeight": "500",
+                "textAlign": "center",
+              },
+              Object {
+                "color": "#ffffff",
+              },
+              Object {
+                "color": "#5c5c5c",
+              },
             ]
           }
         />

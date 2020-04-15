@@ -27,6 +27,7 @@ jest.doMock('react-native', () => {
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
+        Appearance: RNAppearance,
     } = ReactNative;
 
     const Alert = {
@@ -37,6 +38,12 @@ jest.doMock('react-native', () => {
     const InteractionManager = {
         ...RNInteractionManager,
         runAfterInteractions: jest.fn((cb) => cb()),
+    };
+
+    const Appearance = {
+        ...RNAppearance,
+        getColorScheme: jest.fn(),
+        addChangeListener: jest.fn(),
     };
 
     const NativeModules = {
@@ -103,18 +110,12 @@ jest.doMock('react-native', () => {
         Alert,
         InteractionManager,
         NativeModules,
+        Appearance,
     }, ReactNative);
 });
 
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
-
-jest.mock('react-native-appearance', () => ({
-    Appearance: {
-        getColorScheme: jest.fn(),
-        addChangeListener: jest.fn(),
-    },
-}));
 
 jest.mock('react-native-device-info', () => {
     return {

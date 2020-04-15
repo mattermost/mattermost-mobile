@@ -9,8 +9,8 @@ import {
     Image,
     ScrollView,
     Text,
+    Appearance,
 } from 'react-native';
-import {Appearance} from 'react-native-appearance';
 import Button from 'react-native-button';
 import {Navigation} from 'react-native-navigation';
 

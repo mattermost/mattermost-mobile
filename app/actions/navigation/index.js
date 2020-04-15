@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, Keyboard} from 'react-native';
-import {Appearance} from 'react-native-appearance';
+import {Platform, Keyboard, Appearance} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import merge from 'deepmerge';
 
@@ -99,7 +98,7 @@ export function resetToSelectServer(allowOtherServers) {
                         },
                         options: {
                             layout: {
-                                backgroundColor: theme.centerChannelBg,
+                                backgroundColor: colorStyles.container.backgroundColor,
                                 componentBackgroundColor: colorStyles.container.backgroundColor,
                             },
                             statusBar: {

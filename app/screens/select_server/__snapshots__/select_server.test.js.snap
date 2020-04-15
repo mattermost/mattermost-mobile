@@ -128,6 +128,11 @@ exports[`SelectServer should show dark background when user has dark color schem
         />
         <Connect(ErrorText)
           error={null}
+          textStyle={
+            Object {
+              "width": "100%",
+            }
+          }
         />
         <Button
           containerStyle={
@@ -310,6 +315,11 @@ exports[`SelectServer should show light background when user has light color sch
         />
         <Connect(ErrorText)
           error={null}
+          textStyle={
+            Object {
+              "width": "100%",
+            }
+          }
         />
         <Button
           containerStyle={

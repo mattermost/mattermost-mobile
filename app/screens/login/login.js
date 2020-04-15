@@ -15,8 +15,8 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     View,
+    Appearance,
 } from 'react-native';
-import {Appearance} from 'react-native-appearance';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
@@ -152,7 +152,7 @@ export default class Login extends PureComponent {
         return true;
     };
 
-    createLoginPlaceholder() {
+    createLoginPlaceholder = () => {
         const {formatMessage} = this.context.intl;
         const license = this.props.license;
         const config = this.props.config;
@@ -186,11 +186,12 @@ export default class Login extends PureComponent {
     }
 
     forgotPassword = () => {
+        const {colorStyles} = this.state;
         const {intl} = this.context;
         const screen = 'ForgotPassword';
         const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, {}, getStyledNavigationOptions(colorStyles));
     }
 
     getLoginErrorMessage = (error) => {
@@ -322,36 +323,27 @@ export default class Login extends PureComponent {
         this.scroll = ref;
     };
 
-    forgotPassword = () => {
-        const {colorStyles} = this.state;
-        const {intl} = this.context;
-        const screen = 'ForgotPassword';
-        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
-
-        goToScreen(screen, title, {}, getStyledNavigationOptions(colorStyles));
-    }
-
     isLoginButtonDisabled = () => {
-        return !(this.props.loginId && this.props.password) || this.state.isLoading;
+        return !(this.loginId && this.password) || this.state.isLoading;
     };
 
     setLoginFocusStyle = () => {
-        this.loginId.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
+        this.loginRef.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
     }
 
     setLoginBlurStyle = () => {
         if (!this.isLoginButtonDisabled()) {
-            this.loginId.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+            this.loginRef.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
         }
     }
 
     setPasswordFocusStyle = () => {
-        this.passwd.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
+        this.passwordRef.setNativeProps({style: [GlobalStyles.inputBoxFocused, this.state.colorStyles.inputBoxFocused]});
     }
 
     setPasswordBlurStyle = () => {
         if (!this.isLoginButtonDisabled()) {
-            this.passwd.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
+            this.passwordRef.setNativeProps({style: [GlobalStyles.inputBoxBlur, this.state.colorStyles.inputBox]});
         }
     }
 
@@ -453,15 +445,12 @@ export default class Login extends PureComponent {
                             placeholderTextColor={colorStyles.inputBoxDisabled.color}
                             autoCorrect={false}
                             autoCapitalize='none'
-                            autoCorrect={false}
                             blurOnSubmit={false}
                             disableFullscreenUI={true}
                             keyboardType='email-address'
                             returnKeyType='next'
                             underlineColorAndroid='transparent'
                             onSubmitEditing={this.passwordFocus}
-                            blurOnSubmit={false}
-                            disableFullscreenUI={true}
                             editable={!isLoading}
                         />
                         <TextInput

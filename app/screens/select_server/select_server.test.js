@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Appearance} from 'react-native-appearance';
+import {Appearance} from 'react-native';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 
