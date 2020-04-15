@@ -15,7 +15,7 @@ Mattermost Mobile App v1.30.0 contains a high level security fix. [Upgrading](ht
 **Note:** [The Channel Moderation Settings feature](https://docs.mattermost.com/deployment/advanced-permissions.html#channel-moderation-beta-e20) released in v5.22.0 is supported on mobile app versions v1.30 and later. In earlier versions of the mobile app, users who attempt to post or react to posts without proper permissions will see an error.
  
 ### Improvements
- - Significantly improved how quickly posts in the center screen are displayed.
+ - Significantly improved Android performance, including how quickly posts in the center screen are displayed.
  - Added support for different interactive message button styles on mobile.
  - Enter key on hardware Android keyboard now posts a message.
  - The statuses of those users that are in the Direct Message list are now fetched when opening the app and on login.
