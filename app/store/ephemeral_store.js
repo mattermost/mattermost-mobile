@@ -19,6 +19,11 @@ class EphemeralStore {
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];
 
+    clearNavigationComponents = () => {
+        this.navigationComponentIdStack = [];
+        this.allNavigationComponentIds = [];
+    };
+
     addNavigationComponentId = (componentId) => {
         this.addToNavigationComponentIdStack(componentId);
         this.addToAllNavigationComponentIds(componentId);

@@ -3,15 +3,15 @@
 
 import {createSelector} from 'reselect';
 
-import {General} from 'mattermost-redux/constants';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getMyChannels, getOtherChannels} from 'mattermost-redux/selectors/entities/channels';
+import {General} from '@mm-redux/constants';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getMyChannels, getOtherChannels} from '@mm-redux/selectors/entities/channels';
 import {
     getCurrentUser, getProfilesInCurrentChannel,
     getProfilesNotInCurrentChannel, getProfilesInCurrentTeam,
-} from 'mattermost-redux/selectors/entities/users';
-import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
-import {sortByUsername} from 'mattermost-redux/utils/user_utils';
+} from '@mm-redux/selectors/entities/users';
+import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
+import {sortByUsername} from '@mm-redux/utils/user_utils';
 
 import * as Autocomplete from 'app/constants/autocomplete';
 import {getCurrentLocale} from 'app/selectors/i18n';
@@ -75,7 +75,8 @@ export const filterMembersInChannel = createSelector(
             profiles = profilesInChannel.filter((p) => {
                 return (p.delete_at === 0 && (
                     p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
-                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm)));
+                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm) ||
+                    p.nickname.toLowerCase().includes(matchTerm)));
             });
         } else {
             profiles = profilesInChannel.filter((p) => p.delete_at === 0);
@@ -101,7 +102,8 @@ export const filterMembersNotInChannel = createSelector(
                     p.username.toLowerCase().includes(matchTerm) ||
                     p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) ||
-                    p.last_name.toLowerCase().includes(matchTerm)
+                    p.last_name.toLowerCase().includes(matchTerm) ||
+                    p.nickname.toLowerCase().includes(matchTerm)
                 ) && p.delete_at === 0;
             });
         } else {
@@ -128,7 +130,8 @@ export const filterMembersInCurrentTeam = createSelector(
         if (matchTerm) {
             profiles = [...profilesInTeam, currentUser].filter((p) => {
                 return (p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
-                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm));
+                    p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm) ||
+                    p.nickname.toLowerCase().includes(matchTerm));
             });
         } else {
             profiles = [...profilesInTeam, currentUser];

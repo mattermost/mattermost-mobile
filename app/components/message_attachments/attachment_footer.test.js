@@ -7,7 +7,7 @@ import {shallow} from 'enzyme';
 import {MAX_ATTACHMENT_FOOTER_LENGTH} from 'app/constants/attachment';
 import AttachmentFooter from './attachment_footer';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 describe('AttachmentFooter', () => {
     const baseProps = {

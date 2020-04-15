@@ -4,7 +4,7 @@
 import {latinise} from './latinise.js';
 import {escapeRegex} from './markdown';
 
-import {Files} from 'mattermost-redux/constants';
+import {Files} from '@mm-redux/constants';
 
 import {DeepLinkTypes} from 'app/constants';
 
@@ -84,7 +84,7 @@ export function getShortenedURL(url = '', getLength = 27) {
 }
 
 export function cleanUpUrlable(input) {
-    var cleaned = latinise(input);
+    let cleaned = latinise(input);
     cleaned = cleaned.trim().replace(/-/g, ' ').replace(/[^\w\s]/gi, '').toLowerCase().replace(/\s/g, '-');
     cleaned = cleaned.replace(/-{2,}/, '-');
     cleaned = cleaned.replace(/^-+/, '');

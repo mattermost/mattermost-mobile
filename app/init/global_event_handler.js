@@ -9,33 +9,33 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {batchActions} from 'redux-batched-actions';
 import semver from 'semver/preload';
 
-import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
-import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
-import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
-import {GeneralTypes} from 'mattermost-redux/action_types';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
+import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
+import {close as closeWebSocket} from '@actions/websocket';
+import {GeneralTypes} from '@mm-redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
-import {selectDefaultChannel} from 'app/actions/views/channel';
-import {showOverlay} from 'app/actions/navigation';
-import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
-import {loadMe, logout} from 'app/actions/views/user';
-import {NavigationTypes, ViewTypes} from 'app/constants';
-import {getTranslations, resetMomentLocale} from 'app/i18n';
+import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from '@actions/device';
+import {selectDefaultChannel} from '@actions/views/channel';
+import {showOverlay} from '@actions/navigation';
+import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
+import {loadMe, logout} from '@actions/views/user';
+import {NavigationTypes, ViewTypes} from '@constants';
+import {getTranslations, resetMomentLocale} from '@i18n';
+import PushNotifications from 'app/push_notifications';
+import {getCurrentLocale} from '@selectors/i18n';
+import {t} from '@utils/i18n';
+import {deleteFileCache} from '@utils/file';
+import {getDeviceTimezoneAsync} from '@utils/timezone';
+
 import initialState from 'app/initial_state';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
-import PushNotifications from 'app/push_notifications';
-import {getCurrentLocale} from 'app/selectors/i18n';
-import {t} from 'app/utils/i18n';
-import {deleteFileCache} from 'app/utils/file';
-import {getDeviceTimezoneAsync} from 'app/utils/timezone';
-
 import LocalConfig from 'assets/config';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
@@ -141,7 +141,9 @@ class GlobalEventHandler {
 
     onDeepLink = (event) => {
         const {url} = event;
-        this.store.dispatch(setDeepLinkURL(url));
+        if (url) {
+            this.store.dispatch(setDeepLinkURL(url));
+        }
     };
 
     onManagedConfigurationChange = () => {
@@ -189,16 +191,26 @@ class GlobalEventHandler {
 
     onOrientationChange = (dimensions) => {
         if (this.store) {
-            const {dispatch} = this.store;
+            const {dispatch, getState} = this.store;
+            const deviceState = getState().device;
+
             if (DeviceInfo.isTablet()) {
                 dispatch(setDeviceAsTablet());
             }
 
             const {height, width} = dimensions.window;
             const orientation = height > width ? 'PORTRAIT' : 'LANDSCAPE';
+            const savedOrientation = deviceState?.orientation;
+            const savedDimension = deviceState?.dimension;
 
-            dispatch(setDeviceOrientation(orientation));
-            dispatch(setDeviceDimensions(height, width));
+            if (orientation !== savedOrientation) {
+                dispatch(setDeviceOrientation(orientation));
+            }
+
+            if (height !== savedDimension?.deviceHeight ||
+                width !== savedDimension?.deviceWidth) {
+                dispatch(setDeviceDimensions(height, width));
+            }
         }
     };
 
@@ -262,23 +274,32 @@ class GlobalEventHandler {
         try {
             await AsyncStorage.clear();
             const state = this.store.getState();
-            this.store.dispatch(batchActions([
-                {
-                    type: General.OFFLINE_STORE_RESET,
-                    data: initialState,
+            const newState = {
+                ...initialState,
+                entities: {
+                    ...initialState.entities,
+                    general: {
+                        ...initialState.entities.general,
+                        deviceToken: state.entities.general.deviceToken,
+                    },
                 },
-                {
-                    type: General.STORE_REHYDRATION_COMPLETE,
+                views: {
+                    i18n: {
+                        locale: DeviceInfo.getDeviceLocale().split('-')[0],
+                    },
+                    root: {
+                        hydrationComplete: true,
+                    },
+                    selectServer: {
+                        serverUrl: state.views.selectServer.serverUrl,
+                    },
                 },
-                {
-                    type: ViewTypes.SERVER_URL_CHANGED,
-                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
-                },
-                {
-                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                    data: state.entities.general.deviceToken,
-                },
-            ]));
+            };
+
+            this.store.dispatch({
+                type: General.OFFLINE_STORE_PURGE,
+                state: newState,
+            });
         } catch (e) {
             // clear error
         }

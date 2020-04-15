@@ -7,15 +7,18 @@ import {Alert, Clipboard, StyleSheet, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
 import {t} from 'app/utils/i18n';
 import {showModal, dismissModal} from 'app/actions/navigation';
 
-import {isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {isSystemMessage} from '@mm-redux/utils/post_utils';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
+import {REACTION_PICKER_HEIGHT} from 'app/constants/reaction_picker';
+import ReactionPicker from 'app/components/reaction_picker';
+
 import PostOption from './post_option';
 
 export default class PostOptions extends PureComponent {
@@ -85,21 +88,6 @@ export default class PostOptions extends PureComponent {
             />
         );
     }
-
-    getAddReactionOption = () => {
-        const {canAddReaction} = this.props;
-
-        if (canAddReaction) {
-            const key = 'reaction';
-            const icon = 'emoji';
-            const message = {id: t('mobile.post_info.add_reaction'), defaultMessage: 'Add Reaction'};
-            const onPress = this.handleAddReaction;
-
-            return this.getOption(key, icon, message, onPress);
-        }
-
-        return null;
-    };
 
     getReplyOption = () => {
         const {canReply} = this.props;
@@ -249,7 +237,6 @@ export default class PostOptions extends PureComponent {
     getPostOptions = () => {
         const actions = [
             this.getReplyOption(),
-            this.getAddReactionOption(),
             this.getMarkAsUnreadOption(),
             this.getCopyPermalink(),
             this.getFlagOption(),
@@ -262,7 +249,7 @@ export default class PostOptions extends PureComponent {
         return actions.filter((a) => a !== null);
     };
 
-    handleAddReaction = () => {
+    handleAddReactionScreen = () => {
         const {theme} = this.props;
         const {formatMessage} = this.context.intl;
 
@@ -286,6 +273,12 @@ export default class PostOptions extends PureComponent {
             EventEmitter.emit('goToThread', post);
         });
     };
+
+    handleAddReaction = (emoji) => {
+        this.closeWithAnimation(() => {
+            this.handleAddReactionToPost(emoji);
+        });
+    }
 
     handleAddReactionToPost = (emoji) => {
         const {actions, post} = this.props;
@@ -402,13 +395,26 @@ export default class PostOptions extends PureComponent {
     };
 
     render() {
-        const {deviceHeight, theme} = this.props;
+        const {deviceHeight, theme, canAddReaction} = this.props;
         const options = this.getPostOptions();
+        let reactionHeight = 0;
+        let reactionPicker;
+
         if (!options || !options.length) {
             return null;
         }
 
-        const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT);
+        if (canAddReaction) {
+            reactionHeight = REACTION_PICKER_HEIGHT;
+            reactionPicker = (
+                <ReactionPicker
+                    addReaction={this.handleAddReaction}
+                    openReactionScreen={this.handleAddReactionScreen}
+                />
+            );
+        }
+
+        const marginFromTop = deviceHeight - BOTTOM_MARGIN - ((options.length + 1) * OPTION_HEIGHT) - reactionHeight;
         const initialPosition = getInitialPosition(deviceHeight, marginFromTop);
 
         return (
@@ -422,6 +428,7 @@ export default class PostOptions extends PureComponent {
                     key={marginFromTop}
                     theme={theme}
                 >
+                    {reactionPicker}
                     {options}
                 </SlideUpPanel>
             </View>

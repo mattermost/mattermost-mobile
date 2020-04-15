@@ -30,6 +30,7 @@ export default class RetryBarIndicator extends PureComponent {
         Animated.timing(this.state.retryMessageHeight, {
             toValue: value,
             duration: 350,
+            useNativeDriver: false,
         }).start();
     };
 

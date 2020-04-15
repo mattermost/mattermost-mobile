@@ -3,17 +3,17 @@
 
 import {connect} from 'react-redux';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 import {
     getCurrentChannelId,
     makeGetChannel,
     getMyChannelMember,
     shouldHideDefaultChannel,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getTheme, getTeammateNameDisplaySetting} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
-import {getUserIdFromChannelName, isChannelMuted} from 'mattermost-redux/utils/channel_utils';
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+} from '@mm-redux/selectors/entities/channels';
+import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import {isLandscape} from 'app/selectors/device';
 import {getDraftForChannel} from 'app/selectors/views';
 import {isGuest as isGuestUser} from 'app/utils/users';
@@ -78,7 +78,7 @@ function makeMapStateToProps() {
             isArchived,
             isChannelMuted: isChannelMuted(member),
             currentUserId,
-            hasDraft: Boolean(channelDraft.draft.trim() || channelDraft.files.length),
+            hasDraft: Boolean(channelDraft.draft.trim() || channelDraft?.files?.length),
             mentions: member ? member.mention_count : 0,
             shouldHideChannel,
             showUnreadForMsgs,

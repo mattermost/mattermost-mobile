@@ -3,6 +3,8 @@
 
 import React from 'react';
 import {Platform} from 'react-native';
+import {ThemeProvider} from 'react-native-elements';
+
 import {Navigation} from 'react-native-navigation';
 import {AppearanceProvider} from 'react-native-appearance';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
@@ -17,9 +19,11 @@ export function registerScreens(store, Provider) {
     const wrapper = (Comp, appearanceEnabled = false) => (props) => {
         const comps = (
             <Provider store={store}>
-                <Root>
-                    <Comp {...props}/>
-                </Root>
+                <ThemeProvider>
+                    <Root>
+                        <Comp {...props}/>
+                    </Root>
+                </ThemeProvider>
             </Provider>
         );
 

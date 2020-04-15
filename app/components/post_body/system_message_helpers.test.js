@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import renderer from 'react-test-renderer';
+import {Posts} from '@mm-redux/constants';
+
 import * as SystemMessageHelpers from './system_message_helpers';
-import {Posts} from 'mattermost-redux/constants';
 
 const basePostBodyProps = {
     postProps: {
@@ -62,7 +64,9 @@ describe('renderSystemMessage', () => {
         };
 
         const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
-        expect(renderedMessage).toMatchSnapshot();
+        const tree = renderer.create(renderedMessage).toJSON();
+        expect(tree).toMatchSnapshot();
+        expect(tree.type).toEqual('Text');
     });
 
     test('uses renderer for archived channel', () => {
@@ -71,6 +75,17 @@ describe('renderSystemMessage', () => {
             postProps: {
                 ...basePostBodyProps.postProps,
             },
+            postType: Posts.POST_TYPES.CHANNEL_DELETED,
+        };
+
+        const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
+        expect(renderedMessage).toMatchSnapshot();
+    });
+
+    test('uses renderer for OLD archived channel without a username', () => {
+        const postBodyProps = {
+            ...basePostBodyProps,
+            postProps: {},
             postType: Posts.POST_TYPES.CHANNEL_DELETED,
         };
 

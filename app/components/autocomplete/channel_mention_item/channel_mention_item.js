@@ -7,7 +7,7 @@ import {
     Text,
 } from 'react-native';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import {BotTag, GuestTag} from 'app/components/tag';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';

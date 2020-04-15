@@ -7,7 +7,7 @@ import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 import {Alert, StatusBar} from 'react-native';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import {VALID_MIME_TYPES} from 'app/screens/edit_profile/edit_profile';
 

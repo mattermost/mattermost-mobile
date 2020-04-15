@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUserId, getUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import AtMentionItem from './at_mention_item';
 
@@ -18,6 +18,7 @@ function mapStateToProps(state, ownProps) {
     return {
         firstName: user.first_name,
         lastName: user.last_name,
+        nickname: user.nickname,
         username: user.username,
         isBot: Boolean(user.is_bot),
         isGuest: isGuest(user),

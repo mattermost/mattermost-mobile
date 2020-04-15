@@ -9,11 +9,11 @@ import {
     View,
 } from 'react-native';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {General} from 'mattermost-redux/constants';
-import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
-import {filterChannelsMatchingTerm} from 'mattermost-redux/utils/channel_utils';
-import {memoizeResult} from 'mattermost-redux/utils/helpers';
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
+import {filterChannelsMatchingTerm} from '@mm-redux/utils/channel_utils';
+import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
 import UserListRow from 'app/components/custom_list/user_list_row';
@@ -300,11 +300,6 @@ export default class SelectorScreen extends PureComponent {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             color: theme.centerChannelColor,
             fontSize: 15,
-            ...Platform.select({
-                android: {
-                    marginBottom: -5,
-                },
-            }),
         };
 
         let rowComponent;
@@ -366,6 +361,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         searchBar: {
             marginVertical: 5,
+            height: 38,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
         },
         loadingContainer: {
             alignItems: 'center',

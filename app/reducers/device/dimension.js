@@ -3,8 +3,7 @@
 
 import {Dimensions} from 'react-native';
 
-import {UserTypes} from 'mattermost-redux/action_types';
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes} from '@constants';
 
 const {height, width} = Dimensions.get('window');
 const initialState = {
@@ -21,8 +20,6 @@ export default function dimension(state = initialState, action) {
         }
         break;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return initialState;
     }
 
     return state;

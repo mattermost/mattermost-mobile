@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {CalendarList, LocaleConfig} from 'react-native-calendars';
 import {intlShape} from 'react-intl';
 
-import {memoizeResult} from 'mattermost-redux/utils/helpers';
+import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
 import {changeOpacity} from 'app/utils/theme';
@@ -45,21 +45,15 @@ export default class DateSuggestion extends PureComponent {
         this.setCalendarLocale();
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {matchTerm} = nextProps;
+    componentDidUpdate(prevProps) {
+        const {locale, matchTerm} = this.props;
 
-        if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
-            // if the term changes but is null or the mention has been completed we render this component as null
-            this.setState({
-                mentionComplete: false,
-                sections: [],
-            });
-
-            this.props.onResultCountChange(0);
+        if ((matchTerm !== prevProps.matchTerm && matchTerm === null) || this.state.mentionComplete) {
+            this.resetComponent();
         }
 
-        if (this.props.locale !== nextProps.locale) {
-            this.setCalendarLocale(nextProps);
+        if (locale !== prevProps.locale) {
+            this.setCalendarLocale();
         }
     }
 
@@ -80,10 +74,20 @@ export default class DateSuggestion extends PureComponent {
         this.setState({mentionComplete: true});
     };
 
-    setCalendarLocale = (props = this.props) => {
+    resetComponent() {
+        this.setState({
+            mentionComplete: false,
+            sections: [],
+        });
+
+        this.props.onResultCountChange(0);
+    }
+
+    setCalendarLocale = () => {
+        const {locale} = this.props;
         const {formatMessage} = this.context.intl;
 
-        LocaleConfig.locales[props.locale] = {
+        LocaleConfig.locales[locale] = {
             monthNames: formatMessage({
                 id: 'mobile.calendar.monthNames',
                 defaultMessage: 'January,February,March,April,May,June,July,August,September,October,November,December',
@@ -102,7 +106,7 @@ export default class DateSuggestion extends PureComponent {
             }).split(','),
         };
 
-        LocaleConfig.defaultLocale = props.locale;
+        LocaleConfig.defaultLocale = locale;
     };
 
     render() {
@@ -122,6 +126,7 @@ export default class DateSuggestion extends PureComponent {
             <CalendarList
                 style={styles.calList}
                 current={currentDate}
+                maxDate={currentDate}
                 pastScrollRange={24}
                 futureScrollRange={0}
                 scrollingEnabled={true}

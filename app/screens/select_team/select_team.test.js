@@ -3,9 +3,9 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
-import {RequestStatus} from 'mattermost-redux/constants';
+import {RequestStatus} from '@mm-redux/constants';
 
 import SelectTeam from './select_team.js';
 

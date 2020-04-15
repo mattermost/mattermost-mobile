@@ -7,7 +7,7 @@ import React from 'react';
 
 const originalGetSizeFn = Image.getSize;
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import AttachmentImage from './index';
 

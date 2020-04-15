@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import RecentItem from './recent_item';
 
@@ -25,11 +25,11 @@ describe('Search RecentItem', () => {
             <RecentItem {...baseProps}/>,
         );
 
-        expect(wrapper.getElement()).toMatchSnapshot();
-        wrapper.find('TouchableHighlight').first().props().onPress();
+        expect(wrapper).toMatchSnapshot();
+        wrapper.find('ForwardRef').first().props().onPress();
         expect(baseProps.setRecentValue).toHaveBeenCalledTimes(1);
         expect(baseProps.setRecentValue).toHaveBeenCalledWith(item);
-        wrapper.find('TouchableOpacity').first().props().onPress();
+        wrapper.find('ForwardRef').at(1).props().onPress();
         expect(baseProps.setRecentValue).toHaveBeenCalledTimes(1);
         expect(baseProps.setRecentValue).toHaveBeenCalledWith(item);
     });

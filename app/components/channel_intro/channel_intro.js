@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-import {getFullName} from 'mattermost-redux/utils/user_utils';
-import {General} from 'mattermost-redux/constants';
+import {displayUsername} from '@mm-redux/utils/user_utils';
+import {General} from '@mm-redux/constants';
 
 import {goToScreen} from 'app/actions/navigation';
 import ProfilePicture from 'app/components/profile_picture';
@@ -30,6 +30,7 @@ class ChannelIntro extends PureComponent {
         intl: intlShape.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        teammateNameDisplay: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
@@ -48,11 +49,12 @@ class ChannelIntro extends PureComponent {
     };
 
     getDisplayName = (member) => {
+        const {teammateNameDisplay} = this.props;
         if (!member) {
             return null;
         }
 
-        const displayName = getFullName(member);
+        const displayName = displayUsername(member, teammateNameDisplay);
 
         if (!displayName) {
             return member.username;

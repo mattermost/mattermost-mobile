@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 import * as NavigationActions from 'app/actions/navigation';
@@ -71,10 +71,10 @@ describe('ChannelBase', () => {
 
         const newThemeOptions = optionsForTheme(Preferences.THEMES.mattermostDark);
         expect(mergeNavigationOptions.mock.calls).toEqual([
+            [baseProps.componentId, newThemeOptions],
             [componentIds[2], newThemeOptions],
             [componentIds[1], newThemeOptions],
             [componentIds[0], newThemeOptions],
-            [baseProps.componentId, newThemeOptions],
         ]);
     });
 });

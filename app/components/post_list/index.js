@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
-import {getConfig, getCurrentUrl} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from 'mattermost-redux/utils/post_list';
+import {selectFocusedPostId} from '@mm-redux/actions/posts';
+import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from '@mm-redux/utils/post_list';
 
 import {handleSelectChannelByName, loadChannelsByTeamName, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {setDeepLinkURL} from 'app/actions/views/root';

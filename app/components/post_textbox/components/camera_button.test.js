@@ -6,7 +6,7 @@ import {Alert, Platform, StatusBar} from 'react-native';
 import {shallow} from 'enzyme';
 import Permissions from 'react-native-permissions';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import CameraButton from './camera_button';
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FileTypes} from 'mattermost-redux/action_types';
+import {FileTypes} from '@mm-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 import {buildFileUploadData, generateId} from 'app/utils/file';

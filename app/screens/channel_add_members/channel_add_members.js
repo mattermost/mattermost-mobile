@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {General} from 'mattermost-redux/constants';
-import {filterProfilesMatchingTerm} from 'mattermost-redux/utils/user_utils';
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Loading from 'app/components/loading';
@@ -306,11 +306,6 @@ export default class ChannelAddMembers extends PureComponent {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             color: theme.centerChannelColor,
             fontSize: 15,
-            ...Platform.select({
-                android: {
-                    marginBottom: -5,
-                },
-            }),
         };
 
         let data;
@@ -385,6 +380,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         searchBar: {
             marginVertical: 5,
+            height: 38,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
         },
         loadingContainer: {
             alignItems: 'center',

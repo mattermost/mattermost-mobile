@@ -5,12 +5,14 @@ import * as ReactNative from 'react-native';
 import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
+
+require('isomorphic-fetch');
+
 configure({adapter: new Adapter()});
 
 const mockImpl = new MockAsyncStorage();
 jest.mock('@react-native-community/async-storage', () => mockImpl);
 global.window = {};
-global.fetch = jest.fn(() => Promise.resolve());
 
 /* eslint-disable no-console */
 
@@ -85,6 +87,10 @@ jest.doMock('react-native', () => {
             pick: jest.fn(),
         },
         RNPermissions: {},
+        RNFastStorage: {
+            setupLibrary: jest.fn(),
+            setStringAsync: jest.fn(),
+        },
     };
 
     return Object.setPrototypeOf({
@@ -172,9 +178,9 @@ jest.mock('app/actions/navigation', () => ({
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
 
-let logs;
-let warns;
-let errors;
+let logs = [];
+let warns = [];
+let errors = [];
 beforeAll(() => {
     console.originalLog = console.log;
     console.log = jest.fn((...params) => {

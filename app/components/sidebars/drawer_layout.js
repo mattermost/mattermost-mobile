@@ -2,7 +2,6 @@
 // Original work:  https://github.com/react-native-community/react-native-drawer-layout .
 // Modified work: Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
-// @flow
 
 import React, { Component } from 'react';
 import {
@@ -17,6 +16,7 @@ import {
     View,
     I18nManager,
 } from 'react-native';
+import PropTypes from 'prop-types';
 
 import telemetry from 'app/telemetry';
 
@@ -31,62 +31,31 @@ const emptyObject = {};
 export const DRAWER_INITIAL_OFFSET = 40;
 export const TABLET_WIDTH = 250;
 
-export type PropType = {
-    children: any,
-    drawerBackgroundColor?: string,
-    drawerLockMode?: 'unlocked' | 'locked-closed' | 'locked-open',
-    drawerPosition: 'left' | 'right',
-    drawerWidth: number,
-    keyboardDismissMode?: 'none' | 'on-drag',
-    onDrawerClose?: Function,
-    onDrawerOpen?: Function,
-    onDrawerSlide?: Function,
-    onDrawerStateChanged?: Function,
-    renderNavigationView: () => any,
-    statusBarBackgroundColor?: string,
-    useNativeAnimations?: boolean,
-    isTablet?: boolean,
-};
-
-export type StateType = {
-    accessibilityViewIsModal: boolean,
-    deviceWidth: number,
-    drawerShown: boolean,
-    openValue: any,
-    threshold: number,
-};
-
-export type EventType = {
-    stopPropagation: Function,
-};
-
-export type PanResponderEventType = {
-    dx: number,
-    dy: number,
-    moveX: number,
-    moveY: number,
-    vx: number,
-    vy: number,
-};
-
-export type DrawerMovementOptionType = {
-    velocity?: number,
-};
 
 export default class DrawerLayout extends Component {
-    props: PropType;
-    state: StateType;
-    _lastOpenValue: number;
-    _panResponder: any;
-    _isClosing: boolean;
-    _closingAnchorValue: number;
-    canClose: boolean;
+    static propTypes = {
+        children: PropTypes.any,
+        drawerBackgroundColor: PropTypes.string,
+        drawerLockMode: PropTypes.oneOf(['unlocked', 'locked-closed', 'locked-open']),
+        drawerPosition: PropTypes.oneOf(['left', 'right']),
+        drawerWidth: PropTypes.number,
+        keyboardDismissMode: PropTypes.oneOf(['none', 'on-drag']),
+        onDrawerClose: PropTypes.func,
+        onDrawerOpen: PropTypes.func,
+        onDrawerSlide: PropTypes.func,
+        onDrawerStateChanged: PropTypes.func,
+        renderNavigationView: PropTypes.func,
+        statusBarBackgroundColor: PropTypes.string,
+        useNativeAnimations: PropTypes.bool,
+        isTablet: PropTypes.bool,
+    }
 
     static defaultProps = {
         drawerWidth: 0,
         drawerPosition: 'left',
         useNativeAnimations: false,
         isTablet: false,
+        renderNavigationView: () => true,
     };
 
     static positions = {
@@ -94,7 +63,7 @@ export default class DrawerLayout extends Component {
         Right: 'right',
     };
 
-    constructor(props: PropType, context: any) {
+    constructor(props, context) {
         super(props, context);
 
         this._panResponder = PanResponder.create({
@@ -316,20 +285,20 @@ export default class DrawerLayout extends Component {
         );
     }
 
-    _onOverlayClick = (e: EventType) => {
+    _onOverlayClick = (e) => {
         e.stopPropagation();
         if (!this._isLockedClosed() && !this._isLockedOpen()) {
             this.closeDrawer();
         }
     };
 
-    _emitStateChanged = (newState: string) => {
+    _emitStateChanged = (newState) => {
         if (this.props.onDrawerStateChanged) {
             this.props.onDrawerStateChanged(newState);
         }
     };
 
-    openDrawer = (options: DrawerMovementOptionType = {}) => {
+    openDrawer = (options = {}) => {
         if (!this.props.isTablet) {
             this._emitStateChanged(SETTLING);
             Animated.timing(this.openValue, {
@@ -351,7 +320,7 @@ export default class DrawerLayout extends Component {
         }
     };
 
-    closeDrawer = (options: DrawerMovementOptionType = {}) => {
+    closeDrawer = (options = {}) => {
         this._emitStateChanged(SETTLING);
         Animated.timing(this.openValue, {
             toValue: 0,
@@ -383,10 +352,7 @@ export default class DrawerLayout extends Component {
         }
     };
 
-    _shouldSetPanResponder = (
-        e: EventType,
-        { moveX, dx, dy }: PanResponderEventType,
-    ) => {
+    _shouldSetPanResponder = (e, { moveX, dx, dy }) => {
         if (!dx || !dy || Math.abs(dx) < MIN_SWIPE_DISTANCE) {
             return false;
         }
@@ -443,7 +409,7 @@ export default class DrawerLayout extends Component {
         this._emitStateChanged(DRAGGING);
     };
 
-    _panResponderMove = (e: EventType, { moveX, dx }: PanResponderEventType) => {
+    _panResponderMove = (e, { moveX, dx }) => {
         const useDx = this.getDrawerPosition() === 'left' && !this._isClosing;
         let openValue = this._getOpenValueForX(useDx ? dx : moveX);
 
@@ -460,10 +426,7 @@ export default class DrawerLayout extends Component {
         this.openValue.setValue(openValue);
     };
 
-    _panResponderRelease = (
-        e: EventType,
-        { moveX, vx }: PanResponderEventType,
-    ) => {
+    _panResponderRelease = (e, { moveX, vx }) => {
         const {threshold} = this.state;
         const previouslyOpen = this._isClosing;
         const isWithinVelocityThreshold = vx < VX_MAX && vx > -VX_MAX;
@@ -521,7 +484,7 @@ export default class DrawerLayout extends Component {
             this.state.drawerShown;
     };
 
-    _getOpenValueForX(x: number): number {
+    _getOpenValueForX(x) {
         const { drawerWidth } = this.props;
         const { deviceWidth } = this.state;
 

@@ -6,11 +6,13 @@ import {Appearance} from 'react-native-appearance';
 import {Navigation} from 'react-native-navigation';
 import merge from 'deepmerge';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import store from 'app/store';
 import EphemeralStore from 'app/store/ephemeral_store';
 import {getColorStyles} from 'app/utils/appearance';
+
+const CHANNEL_SCREEN = 'Channel';
 
 function getThemeFromState() {
     const state = store.getState();
@@ -21,11 +23,13 @@ function getThemeFromState() {
 export function resetToChannel(passProps = {}) {
     const theme = getThemeFromState();
 
+    EphemeralStore.clearNavigationComponents();
+
     const stack = {
         children: [{
             component: {
-                id: 'Channel',
-                name: 'Channel',
+                id: CHANNEL_SCREEN,
+                name: CHANNEL_SCREEN,
                 passProps,
                 options: {
                     layout: {
@@ -42,6 +46,7 @@ export function resetToChannel(passProps = {}) {
                         },
                         backButton: {
                             visible: false,
+                            color: theme.sidebarHeaderTextColor,
                         },
                     },
                 },
@@ -94,6 +99,7 @@ export function resetToSelectServer(allowOtherServers) {
                         },
                         options: {
                             layout: {
+                                backgroundColor: theme.centerChannelBg,
                                 componentBackgroundColor: colorStyles.container.backgroundColor,
                             },
                             statusBar: {
@@ -267,6 +273,7 @@ export function showModalOverCurrentContext(name, passProps = {}, options = {}) 
     const defaultOptions = {
         modalPresentationStyle: 'overCurrentContext',
         layout: {
+            backgroundColor: 'transparent',
             componentBackgroundColor: 'transparent',
         },
         topBar: {
@@ -347,6 +354,10 @@ export function mergeNavigationOptions(componentId, options) {
 
 export function showOverlay(name, passProps, options = {}) {
     const defaultOptions = {
+        layout: {
+            backgroundColor: 'transparent',
+            componentBackgroundColor: 'transparent',
+        },
         overlay: {
             interceptTouchOutside: false,
         },
@@ -390,10 +401,8 @@ export function closeMainSideMenu() {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
     Keyboard.dismiss();
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             left: {visible: false},
         },
@@ -405,9 +414,7 @@ export function enableMainSideMenu(enabled, visible = true) {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             left: {enabled, visible},
         },
@@ -419,10 +426,8 @@ export function openSettingsSideMenu() {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
     Keyboard.dismiss();
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             right: {visible: true},
         },
@@ -434,10 +439,8 @@ export function closeSettingsSideMenu() {
         return;
     }
 
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-
     Keyboard.dismiss();
-    Navigation.mergeOptions(componentId, {
+    Navigation.mergeOptions(CHANNEL_SCREEN, {
         sideMenu: {
             right: {visible: false},
         },

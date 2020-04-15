@@ -4,6 +4,10 @@
 import Config from 'assets/config.json';
 
 const state = {
+    app: {
+        version: '',
+        build: '',
+    },
     entities: {
         general: {
             appState: false,
@@ -111,10 +115,6 @@ const state = {
                 status: 'not_started',
                 error: null,
             },
-            logout: {
-                status: 'not_started',
-                error: null,
-            },
             autocompleteUsers: {
                 status: 'not_started',
                 error: null,
@@ -128,7 +128,6 @@ const state = {
     device: {
         connection: true,
     },
-    navigation: '',
     views: {
         channel: {
             drafts: {},
@@ -136,14 +135,9 @@ const state = {
         i18n: {
             locale: '',
         },
-        login: {
-            loginId: '',
-            password: '',
-        },
         root: {
             deepLinkURL: '',
             hydrationComplete: false,
-            purge: false,
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl,
@@ -154,6 +148,11 @@ const state = {
         thread: {
             drafts: {},
         },
+    },
+    websocket: {
+        connected: false,
+        lastConnectAt: 0,
+        lastDisconnectAt: 0,
     },
 };
 

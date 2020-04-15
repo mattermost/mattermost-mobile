@@ -2,17 +2,30 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Posts} from 'mattermost-redux/constants';
+import {Text} from 'react-native';
+import {Posts} from '@mm-redux/constants';
 import Markdown from 'app/components/markdown';
 import {t} from 'app/utils/i18n';
 
-const renderUsername = (value) => {
-    return (value[0] === '@') ? value : `@${value}`;
+const renderUsername = (value = '') => {
+    if (value) {
+        return (value[0] === '@') ? value : `@${value}`;
+    }
+
+    return value;
 };
 
-const renderMessage = (postBodyProps, styles, intl, localeHolder, values) => {
+const renderMessage = (postBodyProps, styles, intl, localeHolder, values, skipMarkdown = false) => {
     const {onPress} = postBodyProps;
     const {messageStyle, textStyles} = styles;
+
+    if (skipMarkdown) {
+        return (
+            <Text style={messageStyle}>
+                {intl.formatMessage(localeHolder, values)}
+            </Text>
+        );
+    }
 
     return (
         <Markdown
@@ -90,7 +103,7 @@ const renderPurposeChangeMessage = (postBodyProps, styles, intl) => {
             };
 
             values = {username, oldPurpose, newPurpose};
-            return renderMessage(postBodyProps, styles, intl, localeHolder, values);
+            return renderMessage(postBodyProps, styles, intl, localeHolder, values, true);
         }
 
         localeHolder = {
@@ -99,7 +112,7 @@ const renderPurposeChangeMessage = (postBodyProps, styles, intl) => {
         };
 
         values = {username, oldPurpose, newPurpose};
-        return renderMessage(postBodyProps, styles, intl, localeHolder, values);
+        return renderMessage(postBodyProps, styles, intl, localeHolder, values, true);
     } else if (postProps.old_purpose) {
         localeHolder = {
             id: t('mobile.system_message.update_channel_purpose_message.removed'),
@@ -107,7 +120,7 @@ const renderPurposeChangeMessage = (postBodyProps, styles, intl) => {
         };
 
         values = {username, oldPurpose, newPurpose};
-        return renderMessage(postBodyProps, styles, intl, localeHolder, values);
+        return renderMessage(postBodyProps, styles, intl, localeHolder, values, true);
     }
 
     return null;

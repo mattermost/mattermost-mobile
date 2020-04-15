@@ -10,10 +10,12 @@ import {
     cleanUpPostsInChannel,
     cleanUpState,
     getAllFromPostsInChannel,
-    messageRetention,
+    middlewares,
 } from 'app/store/middleware';
 
 describe('messageRetention', () => {
+    const messageRetention = middlewares()[0];
+
     describe('should chain the same incoming action type', () => {
         const actions = [
             {
@@ -100,13 +102,13 @@ describe('cleanUpState', () => {
             },
         };
 
-        const result = cleanUpState({payload: state});
+        const result = cleanUpState(state);
 
-        expect(result.payload.entities.posts.posts.post1).toBeDefined();
-        expect(result.payload.entities.posts.posts.post2).toBeUndefined();
-        expect(result.payload.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1'], recent: true}]);
-        expect(result.payload.entities.search.results).toEqual(['post1', 'post2']);
-        expect(result.payload.entities.search.flagged).toEqual(['post1', 'post2', 'post3']);
+        expect(result.entities.posts.posts.post1).toBeDefined();
+        expect(result.entities.posts.posts.post2).toBeUndefined();
+        expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1'], recent: true}]);
+        expect(result.entities.search.results).toEqual(['post1', 'post2']);
+        expect(result.entities.search.flagged).toEqual(['post1', 'post2', 'post3']);
     });
 
     test('should keep failed pending post', () => {
@@ -143,11 +145,11 @@ describe('cleanUpState', () => {
             },
         };
 
-        const result = cleanUpState({payload: state});
+        const result = cleanUpState(state);
 
-        expect(result.payload.entities.posts.pendingPostIds).toEqual(['pending']);
-        expect(result.payload.entities.posts.posts.pending).toBeDefined();
-        expect(result.payload.entities.posts.postsInChannel.channel1).toEqual([{order: ['pending', 'post1', 'post2'], recent: true}]);
+        expect(result.entities.posts.pendingPostIds).toEqual(['pending']);
+        expect(result.entities.posts.posts.pending).toBeDefined();
+        expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['pending', 'post1', 'post2'], recent: true}]);
     });
 
     test('should remove non-failed pending post', () => {
@@ -184,11 +186,11 @@ describe('cleanUpState', () => {
             },
         };
 
-        const result = cleanUpState({payload: state});
+        const result = cleanUpState(state);
 
-        expect(result.payload.entities.posts.pendingPostIds).toEqual([]);
-        expect(result.payload.entities.posts.posts.pending).toBeUndefined();
-        expect(result.payload.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1', 'post2'], recent: true}]);
+        expect(result.entities.posts.pendingPostIds).toEqual([]);
+        expect(result.entities.posts.posts.pending).toBeUndefined();
+        expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1', 'post2'], recent: true}]);
     });
 
     test('should remove non-existent pending post', () => {
@@ -224,10 +226,10 @@ describe('cleanUpState', () => {
             },
         };
 
-        const result = cleanUpState({payload: state});
+        const result = cleanUpState(state);
 
-        expect(result.payload.entities.posts.pendingPostIds).toEqual([]);
-        expect(result.payload.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1', 'post2'], recent: true}]);
+        expect(result.entities.posts.pendingPostIds).toEqual([]);
+        expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1', 'post2'], recent: true}]);
     });
 });
 

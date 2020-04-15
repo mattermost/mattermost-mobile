@@ -24,11 +24,12 @@ exports[`PostList setting channel deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={7}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
+  listKey="recyclerFor-channel-id"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
@@ -55,7 +56,7 @@ exports[`PostList setting channel deep link 1`] = `
       tintColor="#3d3c40"
     />
   }
-  removeClippedSubviews={true}
+  removeClippedSubviews={false}
   renderItem={[Function]}
   scrollEventThrottle={60}
   style={
@@ -92,11 +93,12 @@ exports[`PostList setting permalink deep link 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={7}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
+  listKey="recyclerFor-channel-id"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
@@ -123,7 +125,7 @@ exports[`PostList setting permalink deep link 1`] = `
       tintColor="#3d3c40"
     />
   }
-  removeClippedSubviews={true}
+  removeClippedSubviews={false}
   renderItem={[Function]}
   scrollEventThrottle={60}
   style={
@@ -160,11 +162,12 @@ exports[`PostList should match snapshot 1`] = `
     ]
   }
   horizontal={false}
-  initialNumToRender={7}
+  initialNumToRender={10}
   inverted={true}
   keyExtractor={[Function]}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
+  listKey="recyclerFor-channel-id"
   maintainVisibleContentPosition={
     Object {
       "autoscrollToTopThreshold": 60,
@@ -191,7 +194,7 @@ exports[`PostList should match snapshot 1`] = `
       tintColor="#3d3c40"
     />
   }
-  removeClippedSubviews={true}
+  removeClippedSubviews={false}
   renderItem={[Function]}
   scrollEventThrottle={60}
   style={

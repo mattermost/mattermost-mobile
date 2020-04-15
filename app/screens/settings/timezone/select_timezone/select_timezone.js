@@ -8,7 +8,7 @@ import {
     FlatList,
     Platform,
 } from 'react-native';
-import {getTimezoneRegion} from 'mattermost-redux/utils/timezone_utils';
+import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
 import {intlShape} from 'react-intl';
 
 import SearchBar from 'app/components/search_bar';
@@ -157,6 +157,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
+            height: 38,
             width: '100%',
             ...Platform.select({
                 android: {
@@ -165,6 +166,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 },
                 ios: {
                     height: 44,
+                    paddingLeft: 8,
                 },
             }),
         },

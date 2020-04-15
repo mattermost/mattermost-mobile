@@ -6,7 +6,7 @@ import {Navigation} from 'react-native-navigation';
 
 import merge from 'deepmerge';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 import * as NavigationActions from 'app/actions/navigation';
@@ -15,6 +15,7 @@ import {getColorStyles} from 'app/utils/appearance';
 jest.unmock('app/actions/navigation');
 jest.mock('app/store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
+    clearNavigationComponents: jest.fn(),
 }));
 
 describe('app/actions/navigation', () => {
@@ -53,6 +54,7 @@ describe('app/actions/navigation', () => {
                                     height: 0,
                                     backButton: {
                                         visible: false,
+                                        color: theme.sidebarHeaderTextColor,
                                     },
                                     background: {
                                         color: theme.sidebarHeaderBg,
@@ -86,6 +88,7 @@ describe('app/actions/navigation', () => {
                             },
                             options: {
                                 layout: {
+                                    backgroundColor: theme.centerChannelBg,
                                     componentBackgroundColor: colorStyles.container.backgroundColor,
                                 },
                                 statusBar: {
@@ -273,6 +276,7 @@ describe('app/actions/navigation', () => {
         const showModalOverCurrentContextOptions = {
             modalPresentationStyle: 'overCurrentContext',
             layout: {
+                backgroundColor: 'transparent',
                 componentBackgroundColor: 'transparent',
             },
             topBar: {
@@ -442,6 +446,10 @@ describe('app/actions/navigation', () => {
         const showOverlay = jest.spyOn(Navigation, 'showOverlay');
 
         const defaultOptions = {
+            layout: {
+                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
+            },
             overlay: {
                 interceptTouchOutside: false,
             },

@@ -3,23 +3,23 @@
 
 import {connect} from 'react-redux';
 
-import {General, Posts} from 'mattermost-redux/constants';
-import {getChannel, canManageChannelMembers, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
-import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
-import {memoizeResult} from 'mattermost-redux/utils/helpers';
+import {General, Posts} from '@mm-redux/constants';
+import {getChannel, canManageChannelMembers, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {getCurrentUserId, getCurrentUserRoles, getUser} from '@mm-redux/selectors/entities/users';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
+import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import {
     isEdited,
     isPostEphemeral,
     isSystemMessage,
     canDeletePost,
-} from 'mattermost-redux/utils/post_utils';
-import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
+} from '@mm-redux/utils/post_utils';
+import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 
 import {getDimensions} from 'app/selectors/device';
 
@@ -79,10 +79,16 @@ export function makeMapStateToProps() {
 
         const customEmojis = getCustomEmojisByName(state);
         const {isEmojiOnly, shouldRenderJumboEmoji} = memoizeHasEmojisOnly(post.message, customEmojis);
+        const systemMessage = isSystemMessage(post);
+        const postProps = post.props || {};
+        if (systemMessage && !postProps.username) {
+            const owner = getUser(state, post.user_id);
+            postProps.username = owner?.username || '';
+        }
 
         return {
             metadata: post.metadata,
-            postProps: post.props || {},
+            postProps,
             postType: post.type || '',
             fileIds: post.file_ids,
             hasBeenDeleted: post.state === Posts.POST_DELETED,
@@ -92,7 +98,7 @@ export function makeMapStateToProps() {
             isPending,
             isPostAddChannelMember,
             isPostEphemeral: isEphemeralPost,
-            isSystemMessage: isSystemMessage(post),
+            isSystemMessage: systemMessage,
             message: post.message,
             isEmojiOnly,
             shouldRenderJumboEmoji,

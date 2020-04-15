@@ -11,7 +11,7 @@ import {
     View,
 } from 'react-native';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
@@ -52,6 +52,7 @@ export default class OptionsModal extends PureComponent {
         Animated.timing(this.state.top, {
             toValue: 0,
             duration: DURATION,
+            useNativeDriver: false,
         }).start();
     }
 
@@ -68,6 +69,7 @@ export default class OptionsModal extends PureComponent {
         Animated.timing(this.state.top, {
             toValue: this.props.deviceHeight,
             duration: DURATION,
+            useNativeDriver: false,
         }).start(() => {
             dismissModal();
         });

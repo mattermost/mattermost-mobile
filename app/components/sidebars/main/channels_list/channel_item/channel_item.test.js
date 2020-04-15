@@ -5,7 +5,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {TouchableHighlight} from 'react-native';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import ChannelItem from './channel_item.js';
 
@@ -31,7 +31,7 @@ describe('ChannelItem', () => {
         isUnread: true,
         hasDraft: false,
         mentions: 0,
-        onSelectChannel: () => {}, // eslint-disable-line no-empty-function
+        onSelectChannel: () => true,
         shouldHideChannel: false,
         showUnreadForMsgs: true,
         theme: Preferences.THEMES.default,

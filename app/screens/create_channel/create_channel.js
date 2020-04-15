@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {General, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {General, RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {popTopScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import EditChannelInfo from 'app/components/edit_channel_info';

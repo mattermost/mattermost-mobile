@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@mm-redux/client';
 
 import {t} from 'app/utils/i18n';
 

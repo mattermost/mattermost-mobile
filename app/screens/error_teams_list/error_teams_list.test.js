@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import FailedNetworkAction from 'app/components/failed_network_action';
 import ErrorTeamsList from './error_teams_list';
@@ -18,10 +18,10 @@ describe('ErrorTeamsList', () => {
 
     const baseProps = {
         actions: {
-            loadMe: () => {}, // eslint-disable-line no-empty-function
-            connection: () => {}, // eslint-disable-line no-empty-function
-            logout: () => {}, // eslint-disable-line no-empty-function
-            selectDefaultTeam: () => {}, // eslint-disable-line no-empty-function
+            loadMe: () => true,
+            connection: () => true,
+            logout: () => true,
+            selectDefaultTeam: () => true,
         },
         componentId: 'component-id',
         theme: Preferences.THEMES.default,

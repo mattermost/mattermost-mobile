@@ -23,8 +23,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
       ]
     }
   >
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <Component
       onPress={[Function]}
     >
       <View
@@ -40,7 +39,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
           userId="user_id"
         />
       </View>
-    </TouchableOpacity>
+    </Component>
   </View>
   <Text
     ellipsizeMode="tail"

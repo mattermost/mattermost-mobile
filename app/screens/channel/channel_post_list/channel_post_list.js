@@ -9,8 +9,8 @@ import {
     View,
 } from 'react-native';
 
-import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {getLastPostIndex} from '@mm-redux/utils/post_list';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import AnnouncementBanner from 'app/components/announcement_banner';
 import PostList from 'app/components/post_list';
@@ -177,7 +177,7 @@ export default class ChannelPostList extends PureComponent {
                 <PostList
                     postIds={postIds}
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
-                    extraData={postIds.length === 0}
+                    extraData={postIds.length !== 0}
                     onLoadMoreUp={this.loadMorePostsTop}
                     onPostPress={this.goToThread}
                     onRefresh={actions.setChannelRefreshing}

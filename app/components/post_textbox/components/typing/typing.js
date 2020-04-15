@@ -43,6 +43,7 @@ export default class Typing extends PureComponent {
         Animated.timing(this.state.typingHeight, {
             toValue: height,
             duration,
+            useNativeDriver: false,
         }).start();
     }
 

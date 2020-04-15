@@ -3,16 +3,20 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {ChannelTypes, GeneralTypes, TeamTypes} from 'mattermost-redux/action_types';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import {fetchMyChannelsAndMembers} from 'mattermost-redux/actions/channels';
-import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from 'mattermost-redux/actions/general';
-import {receivedNewPost} from 'mattermost-redux/actions/posts';
-import {getMyTeams, getMyTeamMembers} from 'mattermost-redux/actions/teams';
+import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
+import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
+import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from '@mm-redux/actions/general';
+import {receivedNewPost} from '@mm-redux/actions/posts';
+import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {ViewTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from '@constants';
+import initialState from 'app/initial_state';
+import {persistor} from 'app/store';
 import EphemeralStore from 'app/store/ephemeral_store';
+import {getStateForReset} from 'app/store/utils';
 import {recordTime} from 'app/utils/segment';
 
 import {markChannelViewedAndRead} from './channel';
@@ -29,24 +33,36 @@ export function startDataCleanup() {
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
         const {currentUserId} = getState().entities.users;
-        const [configData, licenseData] = await Promise.all([
-            getClientConfig()(dispatch, getState),
-            getLicenseConfig()(dispatch, getState),
-        ]);
 
-        const config = configData.data || {};
-        const license = licenseData.data || {};
+        try {
+            const [config, license] = await Promise.all([
+                Client4.getClientConfigOld(),
+                Client4.getClientLicenseOld(),
+            ]);
 
-        if (currentUserId) {
-            if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
-                license.IsLicensed === 'true' && license.DataRetention === 'true') {
-                dispatch(getDataRetentionPolicy());
-            } else {
-                dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+            const actions = [{
+                type: GeneralTypes.CLIENT_CONFIG_RECEIVED,
+                data: config,
+            }, {
+                type: GeneralTypes.CLIENT_LICENSE_RECEIVED,
+                data: license,
+            }];
+
+            if (currentUserId) {
+                if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
+                    license.IsLicensed === 'true' && license.DataRetention === 'true') {
+                    dispatch(getDataRetentionPolicy());
+                } else {
+                    actions.push({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+                }
             }
-        }
 
-        return {config, license};
+            dispatch(batchActions(actions, 'BATCH_LOAD_CONFIG_AND_LICENSE'));
+
+            return {config, license};
+        } catch (error) {
+            return {error};
+        }
     };
 }
 
@@ -116,7 +132,7 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
         }
 
         if (actions.length) {
-            dispatch(batchActions(actions));
+            dispatch(batchActions(actions, 'BATCH_SELECT_TEAM_AND_CHANNEL'));
         }
 
         EphemeralStore.setStartFromNotification(false);
@@ -126,10 +142,21 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
 }
 
 export function purgeOfflineStore() {
-    return {type: General.OFFLINE_STORE_PURGE};
+    return (dispatch, getState) => {
+        const currentState = getState();
+        persistor.purge();
+        dispatch({
+            type: General.OFFLINE_STORE_PURGE,
+            state: getStateForReset(initialState, currentState),
+        });
+        persistor.flush();
+        persistor.persist();
+
+        EventEmitter.emit(NavigationTypes.RESTART_APP);
+    };
 }
 
-// A non-optimistic version of the createPost action in mattermost-redux with the file handling
+// A non-optimistic version of the createPost action in app/mm-redux with the file handling
 // removed since it's not needed.
 export function createPostForNotificationReply(post) {
     return async (dispatch, getState) => {

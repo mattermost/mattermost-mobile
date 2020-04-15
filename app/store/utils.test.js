@@ -52,6 +52,11 @@ describe('getStateForReset', () => {
                 },
             },
         },
+        views: {
+            selectServer: {
+                serverUrl: 'localhost:8065',
+            },
+        },
     };
 
     it('should keep the current user\'s ID and profile', () => {
@@ -73,7 +78,6 @@ describe('getStateForReset', () => {
         const {myPreferences} = resetState.entities.preferences;
         const preferenceKeys = Object.keys(myPreferences);
         const themeKeys = preferenceKeys.filter((key) => key.startsWith('theme--'));
-        expect(themeKeys.length).not.toEqual(0);
-        expect(themeKeys.length).toEqual(preferenceKeys.length);
+        expect(themeKeys.length).toEqual(2);
     });
 });

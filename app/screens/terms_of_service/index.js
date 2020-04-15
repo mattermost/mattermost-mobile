@@ -4,9 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTermsOfService, logout, updateMyTermsOfServiceStatus} from 'mattermost-redux/actions/users';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTermsOfService, updateMyTermsOfServiceStatus} from '@mm-redux/actions/users';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {logout} from 'app/actions/views/user';
 
 import TermsOfService from './terms_of_service.js';
 

@@ -4,7 +4,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {openMainSideMenu, openSettingsSideMenu} from 'app/actions/navigation';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -40,7 +40,6 @@ export default class ChannelAndroid extends ChannelBase {
 
         const drawerContent = (
             <>
-                <NetworkIndicator/>
                 <ChannelNavBar
                     openMainSidebar={this.openMainSidebar}
                     openSettingsSidebar={this.openSettingsSidebar}
@@ -55,6 +54,7 @@ export default class ChannelAndroid extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
+                <NetworkIndicator/>
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>
         );

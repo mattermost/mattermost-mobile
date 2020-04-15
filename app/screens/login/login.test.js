@@ -24,12 +24,8 @@ describe('Login', () => {
         license: {
             IsLicensed: 'false',
         },
-        loginId: '',
-        password: '',
         loginRequest: {},
         actions: {
-            handleLoginIdChanged: jest.fn(),
-            handlePasswordChanged: jest.fn(),
             handleSuccessfulLogin: jest.fn(),
             scheduleExpiredNotification: jest.fn(),
             login: jest.fn(),
@@ -90,13 +86,21 @@ describe('Login', () => {
         };
 
         const wrapper = shallowWithIntl(<Login {...baseProps}/>);
+        const loginId = 'user';
+        const password = 'password';
+        wrapper.instance().loginId = loginId;
+        wrapper.instance().password = password;
         wrapper.instance().checkLoginResponse(mfaError);
 
         expect(goToScreen).
             toHaveBeenCalledWith(
                 'MFA',
                 'Multi-factor Authentication',
-                {onMfaComplete: wrapper.instance().checkLoginResponse},
+                {
+                    onMfaComplete: wrapper.instance().checkLoginResponse,
+                    loginId,
+                    password,
+                },
                 getStyledNavigationOptions(getColorStyles('light')),
             );
     });

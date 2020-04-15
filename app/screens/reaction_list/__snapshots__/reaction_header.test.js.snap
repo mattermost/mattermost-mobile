@@ -2,7 +2,7 @@
 
 exports[`ReactionHeader should match snapshot 1`] = `
 <NativeViewGestureHandler>
-  <AnimatedComponent
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Object {
         "backgroundColor": "#ffffff",
@@ -90,7 +90,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
         }
       />
     </ScrollView>
-  </AnimatedComponent>
+  </ForwardRef(AnimatedComponentWrapper)>
 </NativeViewGestureHandler>
 `;
 

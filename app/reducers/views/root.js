@@ -3,7 +3,7 @@
 
 import {combineReducers} from 'redux';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 
 import {ViewTypes} from 'app/constants';
 
@@ -26,17 +26,7 @@ function hydrationComplete(state = false, action) {
     }
 }
 
-function purge(state = false, action) {
-    switch (action.type) {
-    case General.OFFLINE_STORE_PURGE:
-        return true;
-    default:
-        return state;
-    }
-}
-
 export default combineReducers({
     deepLinkURL,
     hydrationComplete,
-    purge,
 });

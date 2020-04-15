@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 import {shallowWithIntl} from 'test/intl-test-helper';
@@ -11,7 +11,7 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import RecentMentions from './recent_mentions';
 
 jest.mock('rn-placeholder', () => ({
-    ImageContent: () => {},
+    ImageContent: () => null,
 }));
 
 describe('RecentMentions', () => {

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from 'mattermost-redux/constants';
-import {getUserIdFromChannelName} from 'mattermost-redux/utils/channel_utils';
+import {Preferences} from '@mm-redux/constants';
+import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
+import {getLastCreateAt} from '@mm-redux/utils/post_utils';
 
 export function isDirectChannelVisible(userId, myPreferences, channel) {
     const channelId = getUserIdFromChannelName(userId, channel.name);
@@ -18,17 +19,6 @@ export function isGroupChannelVisible(myPreferences, channel) {
 export function isFavoriteChannel(preferences, channelId) {
     const fav = preferences[`${Preferences.CATEGORY_FAVORITE_CHANNEL}--${channelId}`];
     return fav ? fav.value === 'true' : false;
-}
-
-// New to replace the ones above
-export function isDirectMessageVisible(preferences, channelId) {
-    const dm = preferences[`${Preferences.CATEGORY_DIRECT_CHANNEL_SHOW}--${channelId}`];
-    return dm ? dm.value === 'true' : true;
-}
-
-export function isGroupMessageVisible(preferences, channelId) {
-    const gm = preferences[`${Preferences.CATEGORY_GROUP_CHANNEL_SHOW}--${channelId}`];
-    return gm ? gm.value === 'true' : true;
 }
 
 export function isDirectChannelAutoClosed(config, preferences, channelId, channelActivity, channelArchiveTime = 0, currentChannelId = '') {
@@ -66,4 +56,23 @@ export function isDirectChannelAutoClosed(config, preferences, channelId, channe
     }
 
     return false;
+}
+
+export function getChannelSinceValue(state, channelId, postIds) {
+    const lastGetPosts = state.views.channel.lastGetPosts[channelId];
+    const lastConnectAt = state.websocket?.lastConnectAt || 0;
+
+    let since;
+    if (lastGetPosts && lastGetPosts < lastConnectAt) {
+        // Since the websocket disconnected, we may have missed some posts since then
+        since = lastGetPosts;
+    } else {
+        // Trust that we've received all posts since the last time the websocket disconnected
+        // so set `since` to the `create_at` of latest one we've received
+        const {posts} = state.entities.posts;
+        const channelPosts = postIds.map((id) => posts[id]);
+        since = getLastCreateAt(channelPosts);
+    }
+
+    return since;
 }

@@ -97,8 +97,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
               }
             }
           >
-            <TouchableOpacity
-              activeOpacity={0.2}
+            <Component
               disabled={false}
               onPress={[Function]}
               style={
@@ -115,9 +114,8 @@ exports[`PostTextBox should match, full snapshot 1`] = `
                 name="at"
                 size={24}
               />
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.2}
+            </Component>
+            <Component
               disabled={false}
               onPress={[Function]}
               style={
@@ -145,7 +143,7 @@ exports[`PostTextBox should match, full snapshot 1`] = `
                   ]
                 }
               />
-            </TouchableOpacity>
+            </Component>
             <FileUploadButton
               blurTextBox={[Function]}
               browseFileTypes="public.item"

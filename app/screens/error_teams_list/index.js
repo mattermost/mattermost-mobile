@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {logout, loadMe} from 'mattermost-redux/actions/users';
+import {logout, loadMe} from 'app/actions/views/user';
 import {connection} from 'app/actions/device';
 import {selectDefaultTeam} from 'app/actions/views/select_team';
 

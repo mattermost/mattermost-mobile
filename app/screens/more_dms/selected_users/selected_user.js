@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 export default class SelectedUser extends React.PureComponent {
     static propTypes = {
@@ -73,9 +73,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 27,
             borderRadius: 3,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            marginBottom: 2,
+            marginBottom: 4,
             marginRight: 10,
-            marginTop: 10,
             paddingLeft: 10,
         },
         remove: {

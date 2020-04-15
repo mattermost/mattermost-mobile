@@ -1,20 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {GeneralTypes, UserTypes} from 'mattermost-redux/action_types';
-import {getDataRetentionPolicy} from 'mattermost-redux/actions/general';
-import * as HelperActions from 'mattermost-redux/actions/helpers';
-import {loadRolesIfNeeded} from 'mattermost-redux/actions/roles';
-import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {batchActions} from 'redux-batched-actions';
+
+import {NavigationTypes} from 'app/constants';
+import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
+import * as HelperActions from '@mm-redux/actions/helpers';
+import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 
 import {setAppCredentials} from 'app/init/credentials';
-import {setCSRFFromCookie} from 'app/utils/security';
-import {getDeviceTimezoneAsync} from 'app/utils/timezone';
+import {setCSRFFromCookie} from '@utils/security';
+import {getDeviceTimezoneAsync} from '@utils/timezone';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -46,14 +49,42 @@ export function completeLogin(user, deviceToken) {
     };
 }
 
-export function loadMe(user, deviceToken) {
+export function getMe() {
+    return async (dispatch) => {
+        try {
+            const data = {};
+            data.me = await Client4.getMe();
+
+            const actions = [{
+                type: UserTypes.RECEIVED_ME,
+                data: data.me,
+            }];
+
+            const roles = data.me.roles.split(' ');
+            data.roles = await Client4.getRolesByNames(roles);
+            if (data.roles.length) {
+                actions.push({
+                    type: RoleTypes.RECEIVED_ROLES,
+                    data: data.roles,
+                });
+            }
+
+            dispatch(batchActions(actions, 'BATCH_GET_ME'));
+            return {data};
+        } catch (error) {
+            return {error};
+        }
+    };
+}
+
+export function loadMe(user, deviceToken, skipDispatch = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const data = {user};
         const deviceId = state.entities?.general?.deviceToken;
 
         try {
-            if (deviceId && !deviceToken) {
+            if (deviceId && !deviceToken && !skipDispatch) {
                 await Client4.attachDevice(deviceId);
             }
 
@@ -75,6 +106,7 @@ export function loadMe(user, deviceToken) {
             const teamUnreadRequest = Client4.getMyTeamUnreads();
             const preferencesRequest = Client4.getMyPreferences();
             const configRequest = Client4.getClientConfigOld();
+            const actions = [];
 
             const [teams, teamMembers, teamUnreads, preferences, config] = await Promise.all([
                 teamsRequest,
@@ -91,22 +123,33 @@ export function loadMe(user, deviceToken) {
             data.config = config;
             data.url = Client4.getUrl();
 
-            dispatch({
+            actions.push({
                 type: UserTypes.LOGIN,
                 data,
             });
 
-            const roles = new Set();
+            const rolesToLoad = new Set();
             for (const role of data.user.roles.split(' ')) {
-                roles.add(role);
+                rolesToLoad.add(role);
             }
+
             for (const teamMember of teamMembers) {
                 for (const role of teamMember.roles.split(' ')) {
-                    roles.add(role);
+                    rolesToLoad.add(role);
                 }
             }
-            if (roles.size > 0) {
-                dispatch(loadRolesIfNeeded(roles));
+            if (rolesToLoad.size > 0) {
+                data.roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
+                if (data.roles.length) {
+                    actions.push({
+                        type: RoleTypes.RECEIVED_ROLES,
+                        data: data.roles,
+                    });
+                }
+            }
+
+            if (!skipDispatch) {
+                dispatch(batchActions(actions, 'BATCH_LOAD_ME'));
             }
         } catch (error) {
             console.log('login error', error.stack); // eslint-disable-line no-console
@@ -153,7 +196,7 @@ export function ssoLogin(token) {
 }
 
 export function logout(skipServerLogout = false) {
-    return async (dispatch) => {
+    return async () => {
         if (!skipServerLogout) {
             try {
                 Client4.logout();
@@ -162,7 +205,8 @@ export function logout(skipServerLogout = false) {
             }
         }
 
-        dispatch({type: UserTypes.LOGOUT_SUCCESS});
+        EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+        return {data: true};
     };
 }
 
@@ -182,15 +226,19 @@ export function forceLogoutIfNecessary(error) {
 
 export function setCurrentUserStatusOffline() {
     return (dispatch, getState) => {
-        const currentUserId = getCurrentUserId(getState());
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+        const status = getStatusForUserId(state, currentUserId);
 
-        return dispatch({
-            type: UserTypes.RECEIVED_STATUS,
-            data: {
-                user_id: currentUserId,
-                status: General.OFFLINE,
-            },
-        });
+        if (status !== General.OFFLINE) {
+            dispatch({
+                type: UserTypes.RECEIVED_STATUS,
+                data: {
+                    user_id: currentUserId,
+                    status: General.OFFLINE,
+                },
+            });
+        }
     };
 }
 

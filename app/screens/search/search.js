@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-underscore-dangle */
+
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
@@ -14,8 +16,8 @@ import {
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
+import {debounce} from '@mm-redux/actions/helpers';
+import {isDateLine, getDateForDateLine} from '@mm-redux/utils/post_list';
 
 import Autocomplete from 'app/components/autocomplete';
 import KeyboardLayout from 'app/components/layout/keyboard_layout';
@@ -141,7 +143,7 @@ export default class Search extends PureComponent {
 
                 Keyboard.dismiss();
                 if (this.listRef?._wrapperListRef) {
-                    this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+                    this.listRef._wrapperListRef.getListRef().scrollToOffset({
                         animated: true,
                         offset,
                     });
@@ -483,7 +485,7 @@ export default class Search extends PureComponent {
 
     scrollToTop = () => {
         if (this.listRef?._wrapperListRef) {
-            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({
                 animated: false,
                 offset: 0,
             });
@@ -729,10 +731,12 @@ export default class Search extends PureComponent {
                             onCancelButtonPress={this.cancelSearch}
                             onSelectionChange={this.handleSelectionChange}
                             autoCapitalize='none'
+                            showArrow={true}
                             value={value}
                             containerStyle={style.searchBarContainer}
                             backArrowSize={28}
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            containerHeight={33}
                         />
                     </View>
                     <SectionList
@@ -773,6 +777,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 },
                 ios: {
                     height: 44,
+                    paddingLeft: 8,
+                    paddingBottom: 10,
                 },
             }),
         },

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@mm-redux/client';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -75,10 +75,9 @@ export default class ProgressiveImage extends PureComponent {
 
     load = () => {
         const {imageUri, thumbnailUri} = this.props;
-        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
 
         if (thumbnailUri && imageUri) {
-            FastImage.preload([{uri: imageUri, headers}]);
+            FastImage.preload([{uri: imageUri}]);
             this.setThumbnail(thumbnailUri);
         } else if (imageUri) {
             this.setImage(imageUri);
@@ -184,11 +183,10 @@ export default class ProgressiveImage extends PureComponent {
         }
 
         let source;
-        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
         if (hasPreview && !isImageReady) {
-            source = {uri: thumb, headers};
+            source = {uri: thumb};
         } else if (isImageReady) {
-            source = {uri, headers};
+            source = {uri};
         }
 
         return (

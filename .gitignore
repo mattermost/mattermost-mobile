@@ -87,6 +87,7 @@ ios/sentry.properties
 # Testing
 .nyc_output
 coverage
+.tmp
 
 # Bundle artifact
 *.jsbundle

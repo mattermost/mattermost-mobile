@@ -173,7 +173,7 @@ index a8abd71..ad273ce 100644
                  if(rnFetchBlobFileResp != null && !rnFetchBlobFileResp.isDownloadComplete()){
                      callback.invoke("Download interrupted.", null);
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java
-index 2470eef..d46be3f 100644
+index 2470eef..4e92989 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java
 +++ b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java
 @@ -14,6 +14,7 @@ import java.io.File;
@@ -205,17 +205,30 @@ index 2470eef..d46be3f 100644
          this.originalBody = body;
          assert path != null;
          this.mPath = path;
-@@ -94,6 +97,14 @@ public class RNFetchBlobFileResp extends ResponseBody {
+@@ -67,7 +70,18 @@ public class RNFetchBlobFileResp extends ResponseBody {
+ 
+     @Override
+     public long contentLength() {
+-        return originalBody.contentLength();
++        long expectedBytes = originalBody.contentLength();
++        String uncompressHeader = "X-Uncompressed-Content-Length";
++        String uncompressedLength = headers.get(uncompressHeader);
++        if (uncompressedLength == null) {
++            uncompressedLength = headers.get(uncompressHeader.toLowerCase());
++        }
++
++        if (uncompressedLength != null && uncompressedLength.length() > 0) {
++            expectedBytes = Long.parseLong(uncompressedLength);
++        }
++
++        return expectedBytes;
+     }
+ 
+     public boolean isDownloadComplete() {
+@@ -94,6 +108,7 @@ public class RNFetchBlobFileResp extends ResponseBody {
                      // End marker has been received for chunked download
                      isEndMarkerReceived = true;
                  }
-+
-+                long expectedBytes = contentLength();
-+                String uncompressedLength = headers.get("X-Uncompressed-Content-Length");
-+
-+                if (uncompressedLength != null && uncompressedLength.length() > 0) {
-+                    expectedBytes = Long.parseLong(uncompressedLength);
-+                }
 +
                  RNFetchBlobProgressConfig reportConfig = RNFetchBlobReq.getReportProgress(mTaskId);
  

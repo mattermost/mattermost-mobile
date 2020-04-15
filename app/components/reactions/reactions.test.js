@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+import {shallowWithIntl} from 'test/intl-test-helper.js';
 
 import Reactions from './reactions';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 describe('Reactions', () => {
     const baseProps = {
@@ -31,12 +31,12 @@ describe('Reactions', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(<Reactions {...baseProps}/>);
+        const wrapper = shallowWithIntl(<Reactions {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match snapshot with canAddReaction = false', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <Reactions
                 {...baseProps}
                 canAddReaction={false}

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {UserTypes} from 'mattermost-redux/action_types';
+import {UserTypes} from '@mm-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
@@ -31,8 +31,6 @@ function submittedMenuActions(state = {}, action) {
 
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }

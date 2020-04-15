@@ -6,8 +6,8 @@ import {Alert, Image} from 'react-native';
 import assert from 'assert';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
-import Preferences from 'mattermost-redux/constants/preferences';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import Preferences from '@mm-redux/constants/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import SendButton from 'app/components/send_button';
 import PasteableTextInput from 'app/components/pasteable_text_input';

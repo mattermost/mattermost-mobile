@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntegrationTypes} from 'mattermost-redux/action_types';
-import {executeCommand as executeCommandService} from 'mattermost-redux/actions/integrations';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {IntegrationTypes} from '@mm-redux/action_types';
+import {executeCommand as executeCommandService} from '@mm-redux/actions/integrations';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 export function executeCommand(message, channelId, rootId) {
     return async (dispatch, getState) => {

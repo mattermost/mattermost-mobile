@@ -10,13 +10,7 @@ import com.reactnativenavigation.NavigationActivity;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
 public class MainActivity extends NavigationActivity {
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        Intent intent = new Intent("onConfigurationChanged");
-        intent.putExtra("newConfig", newConfig);
-        sendBroadcast(intent);
-    }
+    private boolean HWKeyboardConnected = false;
 
     private boolean isUIModeNight() {
         int uiMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
@@ -29,6 +23,22 @@ public class MainActivity extends NavigationActivity {
         int theme = isUIModeNight() ? R.style.DarkTheme : R.style.LightTheme;
         setTheme(theme);
         setContentView(R.layout.launch_screen);
+        setHWKeyboardConnected();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
+            HWKeyboardConnected = true;
+        } else if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+            HWKeyboardConnected = false;
+        }
+      
+        Intent intent = new Intent("onConfigurationChanged");
+        intent.putExtra("newConfig", newConfig);
+        sendBroadcast(intent);
     }
 
     /*
@@ -38,11 +48,15 @@ public class MainActivity extends NavigationActivity {
     */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
+        if (HWKeyboardConnected && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
             String keyPressed = event.isShiftPressed() ? "shift-enter" : "enter";
             HWKeyboardEventModule.getInstance().keyPressed(keyPressed);
             return true;
         }
         return super.dispatchKeyEvent(event);
     };
+
+    private void setHWKeyboardConnected() {
+        HWKeyboardConnected = getResources().getConfiguration().keyboard == Configuration.KEYBOARD_QWERTY;
+    }
 }

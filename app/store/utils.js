@@ -45,14 +45,14 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 
 export function waitForHydration(store, callback) {
     let executed = false; // this is to prevent a race condition when subcription runs before unsubscribed
-    if (store.getState().views.root.hydrationComplete && !executed) {
+    if (store.getState().views?.root?.hydrationComplete && !executed) {
         if (callback && typeof callback === 'function') {
             executed = true;
             callback();
         }
     } else {
         const subscription = () => {
-            if (store.getState().views.root.hydrationComplete && !executed) {
+            if (store.getState().views?.root?.hydrationComplete && !executed) {
                 unsubscribeFromStore();
                 if (callback && typeof callback === 'function') {
                     executed = true;
@@ -69,15 +69,11 @@ export function getStateForReset(initialState, currentState) {
     const {currentUserId} = currentState.entities.users;
     const currentUserProfile = currentState.entities.users.profiles[currentUserId];
     const {currentTeamId} = currentState.entities.teams;
-    const myPreferences = {...currentState.entities.preferences.myPreferences};
-    Object.keys(myPreferences).forEach((key) => {
-        if (!key.startsWith('theme--')) {
-            Reflect.deleteProperty(myPreferences, key);
-        }
-    });
+    const preferences = currentState.entities.preferences;
 
     const resetState = merge(initialState, {
         entities: {
+            general: currentState.entities.general,
             users: {
                 currentUserId,
                 profiles: {
@@ -87,8 +83,15 @@ export function getStateForReset(initialState, currentState) {
             teams: {
                 currentTeamId,
             },
-            preferences: {
-                myPreferences,
+            preferences,
+        },
+        errors: currentState.errors,
+        views: {
+            selectServer: {
+                serverUrl: currentState.views?.selectServer?.serverUrl,
+            },
+            root: {
+                hydrationComplete: true,
             },
         },
     });
