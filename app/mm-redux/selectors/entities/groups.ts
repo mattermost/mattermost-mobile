@@ -14,6 +14,7 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getUsers} from '@mm-redux/selectors/entities/common';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTeam} from '@mm-redux/selectors/entities/teams';
+import {Permissions} from '@mm-redux/constants';
 
 const emptyList: any[] = [];
 const emptySyncables = {
@@ -63,14 +64,13 @@ export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term
     const profiles = getUsers(state);
     const locale = getUserLocale(currentUserId, profiles);
 
-    // uncomment when USE_GROUP_MENTIONS is checked-in
-    // if (!haveIChannelPermission(state, {
-    //     permission: Permissions.USE_GROUP_MENTIONS,
-    //     channel: channelId,
-    //     team: teamId,
-    // })) {
-    //     return emptyList;
-    // }
+    if (!haveIChannelPermission(state, {
+        permission: Permissions.USE_GROUP_MENTIONS,
+        channel: channelId,
+        team: teamId,
+    })) {
+        return emptyList;
+    }
 
     const groups = getAssociatedGroupsForReference(state, teamId, channelId);
     if (!groups) {
@@ -87,14 +87,13 @@ export function getAssociatedGroupsForReference(state: GlobalState, teamId: stri
     const profiles = getUsers(state);
     const locale = getUserLocale(currentUserId, profiles);
 
-    // uncomment when USE_GROUP_MENTIONS is checked-in
-    // if (!haveIChannelPermission(state, {
-    //     permission: Permissions.USE_GROUP_MENTIONS,
-    //     channel: channelId,
-    //     team: teamId,
-    // })) {
-    //     return emptyList;
-    // }
+    if (!haveIChannelPermission(state, {
+        permission: Permissions.USE_GROUP_MENTIONS,
+        channel: channelId,
+        team: teamId,
+    })) {
+        return emptyList;
+    }
 
     let groupsForReference = [];
     if (team && team.group_constrained && channel && channel.group_constrained) {
