@@ -42,10 +42,5 @@ target 'Mattermost' do
   pod 'XCDYouTubeKit', '2.8.2'
   pod 'Swime', '3.0.6'
 
-  target 'MattermostTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
   use_native_modules!
 end

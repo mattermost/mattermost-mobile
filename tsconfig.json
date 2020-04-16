@@ -34,10 +34,11 @@
             "@constants/*": ["app/constants/*"],
             "@constants": ["app/constants/index"],
             "@i18n": ["app/i18n/index"],
+            "@mm-redux/*": ["app/mm-redux/*"],
             "@selectors/*": ["app/selectors/*"],
+            "@store/*": ["app/store"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
-            "@mm-redux/*": ["app/mm-redux/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"]
         }

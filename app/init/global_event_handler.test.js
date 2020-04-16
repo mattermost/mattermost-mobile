@@ -6,10 +6,11 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import semver from 'semver/preload';
 
-import intitialState from 'app/initial_state';
 import PushNotification from 'app/push_notifications';
 import mattermostBucket from 'app/mattermost_bucket';
-import * as I18n from 'app/i18n';
+import * as I18n from '@i18n';
+import Store from '@store/store';
+import intitialState from '@store/initial_state';
 
 import {MinServerVersion} from 'assets/config';
 
@@ -51,7 +52,7 @@ jest.mock('app/actions/views/root', () => ({
 
 const mockStore = configureMockStore([thunk]);
 const store = mockStore(intitialState);
-GlobalEventHandler.store = store;
+Store.redux = store;
 
 // TODO: Add Android test as part of https://mattermost.atlassian.net/browse/MM-17110
 describe('GlobalEventHandler', () => {
@@ -71,15 +72,16 @@ describe('GlobalEventHandler', () => {
     it('should call onAppStateChange after configuration', () => {
         const onAppStateChange = jest.spyOn(GlobalEventHandler, 'onAppStateChange');
 
-        GlobalEventHandler.configure({store});
-        expect(GlobalEventHandler.store).not.toBeNull();
+        Store.redux = store;
+        GlobalEventHandler.configure({launchApp: jest.fn()});
+        expect(Store.redux).not.toBeNull();
         expect(onAppStateChange).toHaveBeenCalledWith('active');
     });
 
     it('should handle onAppStateChange to active if the store set', () => {
         const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
         const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
-        expect(GlobalEventHandler.store).not.toBeNull();
+        expect(Store.redux).not.toBeNull();
 
         GlobalEventHandler.onAppStateChange('active');
         expect(appActive).toHaveBeenCalled();
@@ -89,7 +91,7 @@ describe('GlobalEventHandler', () => {
     it('should handle onAppStateChange to background if the store set', () => {
         const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
         const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
-        expect(GlobalEventHandler.store).not.toBeNull();
+        expect(Store.redux).not.toBeNull();
 
         GlobalEventHandler.onAppStateChange('background');
         expect(appActive).not.toHaveBeenCalled();
@@ -99,7 +101,7 @@ describe('GlobalEventHandler', () => {
     it('should not handle onAppStateChange if the store is not set', () => {
         const appActive = jest.spyOn(GlobalEventHandler, 'appActive');
         const appInactive = jest.spyOn(GlobalEventHandler, 'appInactive');
-        GlobalEventHandler.store = null;
+        Store.redux = null;
 
         GlobalEventHandler.onAppStateChange('active');
         expect(appActive).not.toHaveBeenCalled();
@@ -114,8 +116,9 @@ describe('GlobalEventHandler', () => {
         const onAppStateChange = jest.spyOn(GlobalEventHandler, 'onAppStateChange');
         const setUserTimezone = jest.spyOn(GlobalEventHandler, 'setUserTimezone');
 
-        GlobalEventHandler.configure({store});
-        expect(GlobalEventHandler.store).not.toBeNull();
+        Store.redux = store;
+        GlobalEventHandler.configure({launchApp: jest.fn()});
+        expect(Store.redux).not.toBeNull();
         expect(onAppStateChange).toHaveBeenCalledWith('active');
         expect(setUserTimezone).toHaveBeenCalledTimes(1);
     });
@@ -127,7 +130,7 @@ describe('GlobalEventHandler', () => {
 
         const minVersion = semver.parse(MinServerVersion);
         const currentUserId = 'current-user-id';
-        GlobalEventHandler.store.getState = jest.fn().mockReturnValue({
+        Store.redux.getState = jest.fn().mockReturnValue({
             entities: {
                 users: {
                     currentUserId,
@@ -137,9 +140,9 @@ describe('GlobalEventHandler', () => {
                 },
             },
         });
-        GlobalEventHandler.store.dispatch = jest.fn().mockReturnValue({});
+        Store.redux.dispatch = jest.fn().mockReturnValue({});
 
-        const dispatch = jest.spyOn(GlobalEventHandler.store, 'dispatch');
+        const dispatch = jest.spyOn(Store.redux, 'dispatch');
         const configureAnalytics = jest.spyOn(GlobalEventHandler, 'configureAnalytics');
         const alert = jest.spyOn(Alert, 'alert');
 

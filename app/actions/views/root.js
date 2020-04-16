@@ -13,11 +13,10 @@ import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {NavigationTypes, ViewTypes} from '@constants';
-import initialState from 'app/initial_state';
-import {persistor} from 'app/store';
-import EphemeralStore from 'app/store/ephemeral_store';
-import {getStateForReset} from 'app/store/utils';
-import {recordTime} from 'app/utils/segment';
+import EphemeralStore from '@store/ephemeral_store';
+import initialState from '@store/initial_state';
+import {getStateForReset} from '@store/utils';
+import {recordTime} from '@utils/segment';
 
 import {markChannelViewedAndRead} from './channel';
 
@@ -144,13 +143,11 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
 export function purgeOfflineStore() {
     return (dispatch, getState) => {
         const currentState = getState();
-        persistor.purge();
+
         dispatch({
             type: General.OFFLINE_STORE_PURGE,
             state: getStateForReset(initialState, currentState),
         });
-        persistor.flush();
-        persistor.persist();
 
         EventEmitter.emit(NavigationTypes.RESTART_APP);
     };

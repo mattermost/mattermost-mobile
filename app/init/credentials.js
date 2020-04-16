@@ -64,7 +64,6 @@ export const removeAppCredentials = async () => {
         KeyChain.resetInternetCredentials(url);
     }
 
-    KeyChain.resetGenericPassword();
     EphemeralStore.currentServerUrl = null;
     AsyncStorage.removeItem(CURRENT_SERVER);
 };
@@ -90,9 +89,7 @@ async function getCredentialsFromGenericKeyChain() {
                     Client4.setToken(token);
                     await setCSRFFromCookie(url);
 
-                    // Migration: remove the generic credentials and add a server specific one
                     setAppCredentials(deviceToken, currentUserId, token, url);
-                    KeyChain.resetGenericPassword();
 
                     return {
                         username: usernameParsed,
