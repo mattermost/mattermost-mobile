@@ -176,7 +176,6 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             channelViewBlackListFilter,
             emojiBlackListFilter,
         ],
-        throttle: 100,
     };
 
     const persistConfig: PersistConfig<GlobalState> = Object.assign({}, defaultConfig, optionalConfig);

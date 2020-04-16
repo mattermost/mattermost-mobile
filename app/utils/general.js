@@ -4,9 +4,9 @@
 import {Alert} from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
+import {logout} from '@actions/views/user';
 import {Posts} from '@mm-redux/constants';
-
-import {logout} from 'app/actions/views/user';
+import EphemeralStore from '@store/ephemeral_store';
 
 const INVALID_VERSIONS = ['1.29.0'];
 
@@ -87,8 +87,10 @@ export function isPendingPost(postId, userId) {
     return postId.startsWith(userId);
 }
 
-export function validatePreviousVersion(store, version) {
-    if (INVALID_VERSIONS.includes(version)) {
+export function validatePreviousVersion(store) {
+    const version = EphemeralStore.prevAppVersion;
+
+    if (!version || INVALID_VERSIONS.includes(version)) {
         store.dispatch(logout());
         return false;
     }

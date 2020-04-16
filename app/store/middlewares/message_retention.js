@@ -3,10 +3,8 @@
 
 import DeviceInfo from 'react-native-device-info';
 import {REHYDRATE} from 'redux-persist';
-import semver from 'semver/preload';
 
 import {ViewTypes} from '@constants';
-import {General} from '@mm-redux/constants';
 import EphemeralStore from '@store/ephemeral_store';
 import {
     captureException,
@@ -21,11 +19,8 @@ export default function messageRetention(store) {
             if (!action.payload) {
                 // On first run payload is not set (when installed)
                 const version = DeviceInfo.getVersion();
-                const major = semver.major(version);
-                const minor = semver.minor(version);
-                const patch = semver.patch(version);
-                const prevAppVersion = `${major}.${parseInt(minor, 10) - 1}.${patch}`;
-                EphemeralStore.prevAppVersion = prevAppVersion;
+
+                EphemeralStore.prevAppVersion = version;
                 action.payload = {
                     app: {
                         build: DeviceInfo.getBuildNumber(),
@@ -39,17 +34,14 @@ export default function messageRetention(store) {
 
             const {app} = action.payload;
             const {entities, views} = action.payload;
-
-            if (!EphemeralStore.prevAppVersion) {
-                EphemeralStore.prevAppVersion = app?.version;
-            }
+            EphemeralStore.prevAppVersion = app?.version;
 
             if (!entities || !views) {
                 return next(action);
             }
 
-            // When a new version of the app has been detected
             if (!app || !app.version || app.version !== DeviceInfo.getVersion() || app.build !== DeviceInfo.getBuildNumber()) {
+                // When a new version of the app has been detected
                 action.payload = resetStateForNewVersion(action.payload);
                 return next(action);
             }

@@ -125,9 +125,6 @@ export function resetStateForNewVersion(payload) {
             thread: {
                 drafts: threadDrafts,
             },
-            root: {
-                hydrationComplete: true,
-            },
             selectServer,
             recentEmojis,
         },

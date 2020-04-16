@@ -57,7 +57,7 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(Store.redux, async () => {
-            if (validatePreviousVersion(Store.redux, EphemeralStore.prevAppVersion)) {
+            if (validatePreviousVersion(Store.redux)) {
                 Store.redux.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
             }

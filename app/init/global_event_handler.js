@@ -6,13 +6,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
-import {batchActions} from 'redux-batched-actions';
 import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
-import {GeneralTypes} from '@mm-redux/action_types';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
@@ -236,28 +234,30 @@ class GlobalEventHandler {
     };
 
     onServerVersionChanged = async (serverVersion) => {
-        const {dispatch, getState} = Store.redux;
-        const state = getState();
-        const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
-        const version = match && match[0];
-        const locale = getCurrentLocale(state);
-        const translations = getTranslations(locale);
+        if (Store.redux?.dispatch) {
+            const {dispatch, getState} = Store.redux;
+            const state = getState();
+            const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
+            const version = match && match[0];
+            const locale = getCurrentLocale(state);
+            const translations = getTranslations(locale);
 
-        if (serverVersion) {
-            if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
-                Alert.alert(
-                    translations[t('mobile.server_upgrade.title')],
-                    translations[t('mobile.server_upgrade.description')],
-                    [{
-                        text: translations[t('mobile.server_upgrade.button')],
-                        onPress: this.serverUpgradeNeeded,
-                    }],
-                    {cancelable: false},
-                );
-            } else if (state.entities.users && state.entities.users.currentUserId) {
-                dispatch(setServerVersion(serverVersion));
-                const data = await dispatch(loadConfigAndLicense());
-                this.configureAnalytics(data.config);
+            if (serverVersion) {
+                if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
+                    Alert.alert(
+                        translations[t('mobile.server_upgrade.title')],
+                        translations[t('mobile.server_upgrade.description')],
+                        [{
+                            text: translations[t('mobile.server_upgrade.button')],
+                            onPress: this.serverUpgradeNeeded,
+                        }],
+                        {cancelable: false},
+                    );
+                } else if (state.entities.users && state.entities.users.currentUserId) {
+                    dispatch(setServerVersion(serverVersion));
+                    const data = await dispatch(loadConfigAndLicense());
+                    this.configureAnalytics(data.config);
+                }
             }
         }
     };
@@ -276,6 +276,10 @@ class GlobalEventHandler {
             const state = Store.redux.getState();
             const newState = {
                 ...initialState,
+                app: {
+                    build: DeviceInfo.getBuildNumber(),
+                    version: DeviceInfo.getVersion(),
+                },
                 entities: {
                     ...initialState.entities,
                     general: {
