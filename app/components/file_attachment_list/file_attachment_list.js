@@ -120,10 +120,8 @@ export default class FileAttachmentList extends PureComponent {
                 let uri;
                 if (file.localPath) {
                     uri = file.localPath;
-                } else if (isGif(file)) {
-                    uri = Client4.getFileUrl(file.id);
                 } else {
-                    uri = Client4.getFilePreviewUrl(file.id);
+                    uri = Client4.getFileUrl(file.id);
                 }
 
                 results.push({

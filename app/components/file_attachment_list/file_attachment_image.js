@@ -13,7 +13,6 @@ import FastImage from 'react-native-fast-image';
 import {Client4} from 'mattermost-redux/client';
 
 import ProgressiveImage from 'app/components/progressive_image';
-import {isGif} from 'app/utils/file';
 import {changeOpacity} from 'app/utils/theme';
 
 import thumb from 'assets/images/thumb.png';
@@ -57,11 +56,16 @@ export default class FileAttachmentImage extends PureComponent {
 
         const {file} = props;
         if (file && file.id) {
-            const preloadImages = [{uri: Client4.getFileThumbnailUrl(file.id)}];
+            const headers = {
+                Authorization: `Bearer ${Client4.getToken()}`,
+                'X-CSRF-Token': Client4.csrf,
+                'X-Requested-With': 'XMLHttpRequest',
+            };
 
-            if (isGif(file)) {
-                preloadImages.push({uri: Client4.getFileUrl(file.id)});
-            }
+            const preloadImages = [
+                {uri: Client4.getFileThumbnailUrl(file.id), headers},
+                {uri: Client4.getFileUrl(file.id), headers},
+            ];
 
             FastImage.preload(preloadImages);
         }
@@ -94,7 +98,7 @@ export default class FileAttachmentImage extends PureComponent {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
-            imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.imageUri = Client4.getFileUrl(file.id);
         }
         return imageProps;
     };
@@ -149,6 +153,8 @@ export default class FileAttachmentImage extends PureComponent {
             return this.renderSmallImage();
         }
 
+        const imageProps = this.imageProps(file);
+
         return (
             <View
                 ref={this.handleCaptureRef}
@@ -162,7 +168,7 @@ export default class FileAttachmentImage extends PureComponent {
                     filename={file.name}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
-                    {...this.imageProps(file)}
+                    {...imageProps}
                 />
             </View>
         );
