@@ -52,8 +52,9 @@ const launchApp = (credentials) => {
     ]);
 
     if (credentials) {
-        waitForHydration(store, async () => {
-            if (validatePreviousVersion(store, EphemeralStore.prevAppVersion)) {
+        waitForHydration(store, () => {
+            const valid = validatePreviousVersion(store);
+            if (valid) {
                 store.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
             }

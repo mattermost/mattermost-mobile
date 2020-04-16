@@ -275,7 +275,13 @@ class GlobalEventHandler {
             this.store.dispatch(batchActions([
                 {
                     type: General.OFFLINE_STORE_RESET,
-                    data: initialState,
+                    data: {
+                        ...initialState,
+                        app: {
+                            build: DeviceInfo.getBuildNumber(),
+                            version: DeviceInfo.getVersion(),
+                        },
+                    },
                 },
                 {
                     type: General.STORE_REHYDRATION_COMPLETE,
