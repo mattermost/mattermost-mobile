@@ -12,16 +12,17 @@ if [ -n "$jsfiles" ]; then
         echo "$js"
         e=$(node_modules/.bin/eslint --quiet --fix $js)
         if [[ -n "$e" ]]; then
-            echo "$e"
             echo "ERROR: Check eslint hints."
+            echo "$e"
             exit 1 # reject
         fi
     done
-    echo "Checking TypeScript"
-    tsce=$(npm run tsc)
-    if [[-n "$tsce"]]; then
-        echo "$tsce"
+
+    echo "Checking for TSC"
+    tsc=$(node_modules/.bin/tsc --noEmit)
+    if [[ -n "$tsc" ]]; then
         echo "ERROR: Check TSC hints."
+        echo "$tsc"
         exit 1 # reject
     fi
 fi

@@ -40,7 +40,7 @@ export const getThreadDraft = createSelector(
 );
 
 export function getProfileImageUri(state) {
-    return state.views.user.profileImageUri;
+    return state.views?.user?.profileImageUri;
 }
 
 export const getBadgeCount = createSelector(

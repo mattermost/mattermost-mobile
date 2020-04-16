@@ -45,14 +45,21 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 
 export function waitForHydration(store, callback) {
     let executed = false; // this is to prevent a race condition when subcription runs before unsubscribed
-    if (store.getState().views?.root?.hydrationComplete && !executed) {
+    let state = store.getState();
+    let root = state.views?.root;
+    let persist = state._persist; //eslint-disable-line no-underscore-dangle
+
+    if (root?.hydrationComplete && !executed) {
         if (callback && typeof callback === 'function') {
             executed = true;
             callback();
         }
     } else {
         const subscription = () => {
-            if (store.getState().views?.root?.hydrationComplete && !executed) {
+            state = store.getState();
+            root = state.views?.root;
+            persist = state._persist; //eslint-disable-line no-underscore-dangle
+            if (root?.hydrationComplete && !executed) {
                 unsubscribeFromStore();
                 if (callback && typeof callback === 'function') {
                     executed = true;
@@ -93,6 +100,9 @@ export function getStateForReset(initialState, currentState) {
             root: {
                 hydrationComplete: true,
             },
+        },
+        _persist: {
+            rehydrated: true,
         },
     });
 

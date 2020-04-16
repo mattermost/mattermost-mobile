@@ -19,6 +19,7 @@ function deepLinkURL(state = '', action) {
 
 function hydrationComplete(state = false, action) {
     switch (action.type) {
+    case General.REHYDRATED:
     case General.STORE_REHYDRATION_COMPLETE:
         return true;
     default:

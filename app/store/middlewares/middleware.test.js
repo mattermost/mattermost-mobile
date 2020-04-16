@@ -5,17 +5,15 @@
 
 import assert from 'assert';
 
-import {ViewTypes} from 'app/constants';
+import {ViewTypes} from '@constants';
 import {
     cleanUpPostsInChannel,
     cleanUpState,
     getAllFromPostsInChannel,
-    middlewares,
-} from 'app/store/middleware';
+} from './helpers';
+import messageRetention from './message_retention';
 
 describe('messageRetention', () => {
-    const messageRetention = middlewares()[0];
-
     describe('should chain the same incoming action type', () => {
         const actions = [
             {
