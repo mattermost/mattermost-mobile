@@ -258,7 +258,6 @@ export default function configureAppStore(initialState) {
                 log: false,
             },
             blacklist: ['device', 'navigation', 'offline', 'requests'],
-            debounce: 500,
             transforms: [
                 setTransformer,
                 viewsBlackListFilter,

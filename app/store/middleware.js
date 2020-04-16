@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import DeviceInfo from 'react-native-device-info';
-import semver from 'semver/preload';
 
 import {ViewTypes} from 'app/constants';
 import initialState from 'app/initial_state';
-import EphemeralStore from 'app/store/ephemeral_store';
+
+import EphemeralStore from './ephemeral_store';
 
 import {
     captureException,
@@ -20,20 +20,21 @@ export function messageRetention(store) {
             const {entities, views} = action.payload;
 
             if (!entities || !views) {
+                const version = DeviceInfo.getVersion();
+                EphemeralStore.prevAppVersion = version;
+                action.payload = {
+                    ...action.payload,
+                    app: {
+                        build: DeviceInfo.getBuildNumber(),
+                        version,
+                    },
+                };
                 return next(action);
             }
 
-            if (!EphemeralStore.prevAppVersion) {
-                const version = DeviceInfo.getVersion();
-                const major = semver.major(version);
-                const minor = semver.minor(version);
-                const patch = semver.patch(version);
-                const prevAppVersion = `${major}.${parseInt(minor, 10) - 1}.${patch}`;
-                EphemeralStore.prevAppVersion = app?.version || prevAppVersion;
-            }
-
-            // When a new version of the app has been detected
-            if (!app || !app.version || app.version !== DeviceInfo.getVersion() || app.build !== DeviceInfo.getBuildNumber()) {
+            EphemeralStore.prevAppVersion = app?.version;
+            if (app?.version !== DeviceInfo.getVersion() || app?.build !== DeviceInfo.getBuildNumber()) {
+                // When a new version of the app has been detected
                 return next(resetStateForNewVersion(action));
             }
 
@@ -176,9 +177,6 @@ function resetStateForNewVersion(action) {
             },
             thread: {
                 drafts: threadDrafts,
-            },
-            root: {
-                hydrationComplete: true,
             },
             selectServer,
             recentEmojis,
