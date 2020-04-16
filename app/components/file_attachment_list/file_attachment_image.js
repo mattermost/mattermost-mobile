@@ -13,7 +13,6 @@ import FastImage from 'react-native-fast-image';
 import {Client4} from 'mattermost-redux/client';
 
 import ProgressiveImage from 'app/components/progressive_image';
-import {isGif} from 'app/utils/file';
 import {changeOpacity} from 'app/utils/theme';
 
 import thumb from 'assets/images/thumb.png';
