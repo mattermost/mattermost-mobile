@@ -3,7 +3,7 @@
 import {AsyncNodeStorage} from 'redux-persist-node-storage';
 import {createTransform} from 'redux-persist';
 
-import configureStore from '@mm-redux/store';
+import configureStore from '@store';
 
 export default async function testConfigureStore(preloadedState) {
     const storageTransform = createTransform(
@@ -15,12 +15,13 @@ export default async function testConfigureStore(preloadedState) {
         key: 'root',
         storage: new AsyncNodeStorage('./.tmp'),
         whitelist: [],
+        serialize: true,
+        deserialize: true,
         transforms: [
             storageTransform,
         ],
     };
-
-    const {store} = configureStore(preloadedState, {}, persistConfig, () => ({}), {enableBuffer: false});
+    const {store} = configureStore(null, preloadedState, persistConfig, {enableBuffer: false});
 
     const wait = () => new Promise((resolve) => setTimeout(resolve), 300); //eslint-disable-line
     await wait();

@@ -1,21 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {combineReducers} from 'redux';
-import reducerRegistry from './reducer_registry';
-import {enableBatching, Reducer} from '@mm-redux/types/actions';
 import AsyncStorage from '@react-native-community/async-storage';
+import {combineReducers} from 'redux';
+
+import {enableBatching, Reducer} from '@mm-redux/types/actions';
+
+const KEY_PREFIX = 'reduxPersist:';
 
 /* eslint-disable no-console */
 
 export function createReducer(...reducers: Reducer[]) {
-    reducerRegistry.setReducers(Object.assign({}, ...reducers));
-    const baseReducer = combineReducers(reducerRegistry.getReducers());
+    const reducerRegistry = Object.assign({}, ...reducers);
+    const baseReducer = combineReducers(reducerRegistry);
 
     return enableBatching(baseReducer);
 }
-
-const KEY_PREFIX = 'reduxPersist:';
 
 export async function getStoredState() {
     const restoredState: Record<string, any> = {};

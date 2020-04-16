@@ -21,10 +21,10 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';
+import initial_state from '@store/initial_state';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
-import initial_state from 'app/initial_state';
 
 global.WebSocket = MockWebSocket;
 
