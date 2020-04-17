@@ -9,7 +9,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {resetToChannel, resetToSelectServer} from '@actions/navigation';
 import {setDeepLinkURL} from '@actions/views/root';
-import {loadMe, logout} from '@actions/views/user';
+import {loadMe} from '@actions/views/user';
 import telemetry from 'app/telemetry';
 import {NavigationTypes} from '@constants';
 import {getAppCredentials} from '@init/credentials';
@@ -29,7 +29,6 @@ import {captureJSException} from '@utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
-    const dt = Date.now();
     const MMKVStorage = await getStorage();
 
     const {store} = configureStore(MMKVStorage);

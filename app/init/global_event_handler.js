@@ -6,13 +6,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
-import {batchActions} from 'redux-batched-actions';
 import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
-import {GeneralTypes} from '@mm-redux/action_types';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';

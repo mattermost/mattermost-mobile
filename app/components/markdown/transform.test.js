@@ -3055,7 +3055,7 @@ function nodeToString(node) {
 }
 
 const ignoredKeys = {_sourcepos: true, _lastLineBlank: true, _open: true, _string_content: true, _info: true, _isFenced: true, _fenceChar: true, _fenceLength: true, _fenceOffset: true, _onEnter: true, _onExit: true};
-function astToJson(node, visited = [], indent = '') { // eslint-disable-line no-unused-vars
+function astToJson(node, visited = [], indent = '') { // eslint-disable-line @typescript-eslint/no-unused-vars
     let out = '{';
 
     const myVisited = [...visited];

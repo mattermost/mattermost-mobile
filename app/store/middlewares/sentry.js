@@ -11,14 +11,10 @@ export default function createSentryMiddleware() {
         Sentry = require('@sentry/react-native');
     }
 
-    return (store) => { // eslint-disable-line no-unused-vars
-        return (next) => {
-            return (action) => {
-                Sentry.addBreadcrumb(makeBreadcrumbFromAction(action));
+    return () => (next) => (action) => {
+        Sentry.addBreadcrumb(makeBreadcrumbFromAction(action));
 
-                return next(action);
-            };
-        };
+        return next(action);
     };
 }
 
