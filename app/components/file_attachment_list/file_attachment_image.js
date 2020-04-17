@@ -14,6 +14,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import ProgressiveImage from 'app/components/progressive_image';
 import {changeOpacity} from 'app/utils/theme';
+import {isGif} from 'app/utils/file';
 
 import thumb from 'assets/images/thumb.png';
 
