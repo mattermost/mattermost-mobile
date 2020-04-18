@@ -12,11 +12,8 @@ import {getDimensions, isLandscape} from 'app/selectors/device';
 import EditPost from './edit_post';
 
 function mapStateToProps(state, ownProps) {
-    const {editPost: editPostRequest} = state.requests.posts;
-
     return {
         ...getDimensions(state),
-        editPostRequest,
         post: ownProps.post,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
