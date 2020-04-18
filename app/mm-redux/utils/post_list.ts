@@ -114,7 +114,7 @@ export function makeFilterPostsAndAddSeparators() {
 
             // Flip it back to newest to oldest
             return out.reverse();
-        }
+        },
     );
 }
 
@@ -182,7 +182,7 @@ export function isStartOfNewMessages(item: string) {
 }
 
 export function isDateLine(item: string) {
-    return item.startsWith(DATE_LINE);
+    return Boolean(item?.startsWith(DATE_LINE));
 }
 
 export function getDateForDateLine(item: string) {
@@ -290,7 +290,7 @@ export function makeGenerateCombinedPost() {
                 user_id: '',
                 metadata: {},
             };
-        }
+        },
     );
 }
 
