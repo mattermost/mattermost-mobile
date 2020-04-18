@@ -141,9 +141,9 @@ export function isAutoClosed(
     channelActivity: number,
     channelArchiveTime: number,
     currentChannelId = '',
-    now = Date.now()
+    now = Date.now(),
 ): boolean {
-    const cutoff = now - 7 * 24 * 60 * 60 * 1000;
+    const cutoff = now - (7 * 24 * 60 * 60 * 1000);
     const viewTimePref = myPreferences[`${Preferences.CATEGORY_CHANNEL_APPROXIMATE_VIEW_TIME}--${channel.id}`];
     const viewTime = viewTimePref ? parseInt(viewTimePref.value!, 10) : 0;
 
@@ -193,7 +193,7 @@ export function isDirectChannelVisible(
     lastPost?: Post | null,
     isUnread?: boolean,
     currentChannelId = '',
-    now?: number
+    now?: number,
 ): boolean {
     const otherUser = typeof otherUserOrOtherUserId === 'object' ? otherUserOrOtherUserId : null;
     const otherUserId = typeof otherUserOrOtherUserId === 'object' ? otherUserOrOtherUserId.id : otherUserOrOtherUserId;
@@ -210,7 +210,7 @@ export function isDirectChannelVisible(
         lastPost ? lastPost.create_at : 0,
         otherUser ? otherUser.delete_at : 0,
         currentChannelId,
-        now
+        now,
     );
 }
 
@@ -226,7 +226,7 @@ export function isGroupChannelVisible(
     channel: Channel,
     lastPost?: Post,
     isUnread?: boolean,
-    now?: number
+    now?: number,
 ): boolean {
     const gm = myPreferences[`${Preferences.CATEGORY_GROUP_CHANNEL_SHOW}--${channel.id}`];
 
@@ -241,7 +241,7 @@ export function isGroupChannelVisible(
         lastPost ? lastPost.create_at : 0,
         0,
         '',
-        now
+        now,
     );
 }
 
@@ -256,7 +256,7 @@ export function isGroupOrDirectChannelVisible(
     users: IDMappedObjects<UserProfile>,
     lastPosts: RelationOneToOne<Channel, Post>,
     currentChannelId?: string,
-    now?: number
+    now?: number,
 ): boolean {
     const lastPost = lastPosts[channel.id];
 
@@ -278,7 +278,7 @@ export function isGroupOrDirectChannelVisible(
         lastPost,
         isUnreadChannel(memberships, channel),
         currentChannelId,
-        now
+        now,
     );
 }
 
@@ -569,6 +569,10 @@ export function isUnreadChannel(members: RelationOneToOne<Channel, ChannelMember
 
 function isNotDeletedChannel(channel: Channel) {
     return channel.delete_at === 0;
+}
+
+export function isArchivedChannel(channel: Channel) {
+    return channel.delete_at !== 0;
 }
 
 export function isOpenChannel(channel: Channel): boolean {
