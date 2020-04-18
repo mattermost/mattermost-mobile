@@ -53,6 +53,28 @@ index 5ef712c..d6f9082 100644
    },
    horizontallyInverted: {
      transform: [{scaleX: -1}],
+diff --git a/node_modules/react-native/Libraries/WebSocket/NativeWebSocketModule.js b/node_modules/react-native/Libraries/WebSocket/NativeWebSocketModule.js
+index c2ce1b5..a89d368 100644
+--- a/node_modules/react-native/Libraries/WebSocket/NativeWebSocketModule.js
++++ b/node_modules/react-native/Libraries/WebSocket/NativeWebSocketModule.js
+@@ -12,6 +12,7 @@
+ 
+ import type {TurboModule} from '../TurboModule/RCTExport';
+ import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
++import Platform from '../Utilities/Platform';
+ 
+ export interface Spec extends TurboModule {
+   +connect: (
+@@ -30,6 +31,8 @@ export interface Spec extends TurboModule {
+   +removeListeners: (count: number) => void;
+ }
+ 
++const webSocketModule = (Platform.OS === 'android') ? 'MattermostWebSocketModule' : 'WebSocketModule';
++
+ export default (TurboModuleRegistry.getEnforcing<Spec>(
+-  'WebSocketModule',
++  webSocketModule,
+ ): Spec);
 diff --git a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
 index 1b17cff..70a59b6 100644
 --- a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.h
@@ -189,15 +211,23 @@ index b967c14..e24e926 100644
                          forKey:(__bridge id)kCFStreamPropertySSLSettings];
    }
 diff --git a/node_modules/react-native/Libraries/WebSocket/WebSocket.js b/node_modules/react-native/Libraries/WebSocket/WebSocket.js
-index a1679bd..9445e3e 100644
+index a1679bd..a21b71b 100644
 --- a/node_modules/react-native/Libraries/WebSocket/WebSocket.js
 +++ b/node_modules/react-native/Libraries/WebSocket/WebSocket.js
-@@ -92,7 +92,7 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): any) {
+@@ -85,14 +85,14 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): any) {
+   constructor(
+     url: string,
+     protocols: ?string | ?Array<string>,
+-    options: ?{headers?: {origin?: string, ...}, ...},
++    options: ?{headers?: {origin?: string}, trustSSL?: boolean},
+   ) {
+     super();
+     if (typeof protocols === 'string') {
        protocols = [protocols];
      }
  
 -    const {headers = {}, ...unrecognized} = options || {};
-+    const {headers = {}, certificate = {}, ...unrecognized} = options || {};
++    const {headers = {}, certificate = {}, trustSSL = false, ...unrecognized} = options || {};
  
      // Preserve deprecated backwards compatibility for the 'origin' option
      /* $FlowFixMe(>=0.68.0 site=react_native_fb) This comment suppresses an
@@ -206,7 +236,7 @@ index a1679bd..9445e3e 100644
      this._socketId = nextWebSocketId++;
      this._registerEvents();
 -    NativeWebSocketModule.connect(url, protocols, {headers}, this._socketId);
-+    NativeWebSocketModule.connect(url, protocols, {headers, certificate}, this._socketId);
++    NativeWebSocketModule.connect(url, protocols, {headers, certificate, trustSSL}, this._socketId);
    }
  
    get binaryType(): ?BinaryType {

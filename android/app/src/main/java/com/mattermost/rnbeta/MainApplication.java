@@ -71,6 +71,7 @@ private final ReactNativeHost mReactNativeHost =
       // packages.add(new MyReactNativePackage());
       packages.add(new RNNotificationsPackage(MainApplication.this));
       packages.add(new RNPasteableTextInputPackage());
+      packages.add(new MattermostWebSocketPackage());
       packages.add(
         new TurboReactPackage() {
               @Override
