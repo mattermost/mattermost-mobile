@@ -193,7 +193,6 @@ NotificationSettingsMentionsKeywords {
             <TextInputWithLocalizedPlaceholder
               autoCapitalize="none"
               autoCorrect={false}
-              autoFocus={true}
               blurOnSubmit={true}
               keyboardAppearance="light"
               multiline={true}
