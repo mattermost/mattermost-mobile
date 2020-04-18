@@ -15,6 +15,8 @@ import {Client4} from '@mm-redux/client';
 import ProgressiveImage from 'app/components/progressive_image';
 import {isGif} from 'app/utils/file';
 import {changeOpacity} from 'app/utils/theme';
+import {isTrustedHost} from 'app/utils/network';
+import EphemeralStore from 'app/store/ephemeral_store';
 
 import thumb from 'assets/images/thumb.png';
 
@@ -55,24 +57,27 @@ export default class FileAttachmentImage extends PureComponent {
     constructor(props) {
         super(props);
 
-        const {file} = props;
-        if (file && file.id && !file.localPath) {
-            const headers = {
-                Authorization: `Bearer ${Client4.getToken()}`,
-                'X-CSRF-Token': Client4.csrf,
-                'X-Requested-With': 'XMLHttpRequest',
-            };
+        // Only preload file attachment images if host has SSL correctly configured
+        if (EphemeralStore.trustedSslHost === null) {
+            const {file} = props;
+            if (file && file.id && !file.localPath) {
+                const headers = {
+                    Authorization: `Bearer ${Client4.getToken()}`,
+                    'X-CSRF-Token': Client4.csrf,
+                    'X-Requested-With': 'XMLHttpRequest',
+                };
 
-            const preloadImages = [
-                {uri: Client4.getFileThumbnailUrl(file.id), headers},
-                {uri: Client4.getFileUrl(file.id), headers},
-            ];
+                const preloadImages = [
+                    {uri: Client4.getFileThumbnailUrl(file.id), headers},
+                    {uri: Client4.getFileUrl(file.id), headers},
+                ];
 
-            if (isGif(file)) {
-                preloadImages.push({uri: Client4.getFilePreviewUrl(file.id), headers});
+                if (isGif(file)) {
+                    preloadImages.push({uri: Client4.getFilePreviewUrl(file.id), headers});
+                }
+
+                FastImage.preload(preloadImages);
             }
-
-            FastImage.preload(preloadImages);
         }
 
         this.state = {
