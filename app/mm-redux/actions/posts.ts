@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@mm-redux/client';
-import {General, Preferences, Posts, WebsocketEvents} from '../constants';
+import {General, Preferences, Posts} from '../constants';
+import {WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
