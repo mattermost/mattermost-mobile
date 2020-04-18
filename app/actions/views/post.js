@@ -467,8 +467,8 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
         if (posts.length) {
             actions.push(receivedPosts({posts}));
             const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-            if (additional.length) {
-                actions.push(...additional);
+            if (additional.data.length) {
+                actions.push(...additional.data);
             }
 
             dispatch(batchActions(actions));
