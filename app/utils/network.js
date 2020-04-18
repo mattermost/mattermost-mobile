@@ -9,6 +9,7 @@ import {Client4} from '@mm-redux/client';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
+import EphemeralStore from 'app/store/ephemeral_store';
 
 let certificate = '';
 let previousState;
@@ -82,4 +83,11 @@ export default function networkConnectionListener(onChange) {
     return {
         removeEventListener,
     };
+}
+
+export function isTrustedHost() {
+    const trustedHost = EphemeralStore.trustedSslHost;
+    const serverUrl = Client4.getUrl();
+
+    return (serverUrl === trustedHost);
 }

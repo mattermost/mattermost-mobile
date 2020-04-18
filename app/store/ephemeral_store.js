@@ -15,6 +15,7 @@ class EphemeralStore {
             [ViewTypes.PORTRAIT]: null,
             [ViewTypes.LANDSCAPE]: null,
         };
+        this.trustedSslHost = null;
     }
 
     getNavigationTopComponentId = () => this.navigationComponentIdStack[0];

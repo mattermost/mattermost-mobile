@@ -3,6 +3,7 @@
 
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import AsyncStorage from '@react-native-community/async-storage';
 import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 
@@ -11,11 +12,14 @@ import {ClientError, HEADER_X_VERSION_ID} from '@mm-redux/client/client4';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {General} from '@mm-redux/constants';
 
+import {Network} from '@constants';
+import EphemeralStore from 'app/store/ephemeral_store';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import LocalConfig from 'assets/config';
 
 import {t} from 'app/utils/i18n';
+import {isTrustedHost} from 'app/utils/network';
 
 /* eslint-disable no-throw-literal */
 
@@ -144,10 +148,14 @@ Client4.doFetchWithResponse = async (url, options) => {
     });
 };
 
-const initFetchConfig = async () => {
+export const initFetchConfig = async () => {
+    EphemeralStore.trustedSslHost = await AsyncStorage.getItem(Network.SSL_TRUSTLIST);
+    const trustSSL = isTrustedHost();
+
     const fetchConfig = {
         auto: true,
         timeout: 5000, // Set the base timeout for every request to 5s
+        trusty: trustSSL,
     };
 
     try {

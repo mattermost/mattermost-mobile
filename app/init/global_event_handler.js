@@ -42,6 +42,8 @@ import LocalConfig from 'assets/config';
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
 
+import {initFetchConfig} from 'app/init/fetch';
+
 const {StatusBarManager} = NativeModules;
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
@@ -137,6 +139,10 @@ class GlobalEventHandler {
         }
 
         emmProvider.previousAppState = appState;
+
+        // Refresh fetch config to ensure that SSL enforcement/relaxation
+        // happens just as during server selection.
+        initFetchConfig();
     };
 
     onDeepLink = (event) => {
