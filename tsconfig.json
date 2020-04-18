@@ -15,6 +15,7 @@
         "importHelpers": true,
         "declaration": true,
         "sourceMap": false,
+        "skipLibCheck": true,
         "rootDir": "./",
         "outDir": "./",
         "noImplicitAny": true,
