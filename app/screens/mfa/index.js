@@ -8,14 +8,6 @@ import {login} from 'app/actions/views/user';
 
 import Mfa from './mfa';
 
-function mapStateToProps(state) {
-    const {loginId, password} = state.views.login;
-    return {
-        loginId,
-        password,
-    };
-}
-
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
@@ -24,4 +16,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Mfa);
+export default connect(null, mapDispatchToProps)(Mfa);

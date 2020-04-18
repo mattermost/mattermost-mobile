@@ -37,9 +37,6 @@ const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
 
-    LOGIN_ID_CHANGED: null,
-    PASSWORD_CHANGED: null,
-
     POST_DRAFT_CHANGED: null,
     COMMENT_DRAFT_CHANGED: null,
     SEARCH_DRAFT_CHANGED: null,
