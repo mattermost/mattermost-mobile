@@ -3,21 +3,21 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 import {Client4} from '@mm-redux/client';
 
-import FileAttachmentImage from 'app/components/file_attachment_list/file_attachment_image';
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import FileUploadRetry from 'app/components/file_upload_preview/file_upload_retry';
-import FileUploadRemove from 'app/components/file_upload_preview/file_upload_remove';
+import FileAttachmentImage from '@components/file_attachment_list/file_attachment_image';
+import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
+import FileUploadRetry from '@components/file_upload_preview/file_upload_retry';
+import FileUploadRemove from '@components/file_upload_preview/file_upload_remove';
+import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
+import {emptyFunction} from '@utils/general';
+import ImageCacheManager from '@utils/image_cache_manager';
+
 import mattermostBucket from 'app/mattermost_bucket';
-import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
-import ImageCacheManager from 'app/utils/image_cache_manager';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
 export default class FileUploadItem extends PureComponent {
     static propTypes = {
@@ -132,10 +132,8 @@ export default class FileUploadItem extends PureComponent {
         const fileData = buildFileUploadData(file);
 
         const headers = {
-            Authorization: `Bearer ${Client4.getToken()}`,
-            'X-Requested-With': 'XMLHttpRequest',
+            ...Client4.getOptions({method: 'post'}).headers,
             'Content-Type': 'multipart/form-data',
-            'X-CSRF-Token': Client4.csrf,
         };
 
         const fileInfo = {
@@ -164,7 +162,6 @@ export default class FileUploadItem extends PureComponent {
     };
 
     renderProgress = (fill) => {
-        const styles = getStyleSheet(this.props.theme);
         const realFill = Number(fill.toFixed(0));
 
         return (
@@ -184,7 +181,6 @@ export default class FileUploadItem extends PureComponent {
             theme,
         } = this.props;
         const {progress} = this.state;
-        const styles = getStyleSheet(theme);
         let filePreviewComponent;
 
         if (this.isImageType()) {
@@ -193,6 +189,7 @@ export default class FileUploadItem extends PureComponent {
                     <FileAttachmentImage
                         file={file}
                         theme={theme}
+                        resizeMode='center'
                     />
                 </View>
             );
@@ -249,7 +246,7 @@ export default class FileUploadItem extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const styles = StyleSheet.create({
     preview: {
         paddingTop: 5,
         marginLeft: 12,
@@ -274,10 +271,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         fontWeight: 'bold',
     },
     filePreview: {
-        borderColor: changeOpacity(theme.centerChannelColor, 0.15),
-        borderRadius: 4,
-        borderWidth: 1,
         width: 56,
         height: 56,
     },
-}));
+});

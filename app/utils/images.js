@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Keyboard} from 'react-native';
+import {Dimensions, Keyboard} from 'react-native';
 
+import {showModalOverCurrentContext} from '@actions/navigation';
+import {DeviceTypes} from '@constants';
 import {
     IMAGE_MAX_HEIGHT,
     IMAGE_MIN_DIMENSION,
-} from 'app/constants/image';
-import {showModalOverCurrentContext} from 'app/actions/navigation';
+    MAX_GIF_SIZE,
+    VIEWPORT_IMAGE_OFFSET,
+    VIEWPORT_IMAGE_REPLY_OFFSET,
+} from '@constants/image';
 
 let previewComponents;
 
@@ -58,6 +62,21 @@ export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHe
     };
 };
 
+export function getViewPortWidth(isReplyPost, permanentSidebar = false) {
+    const {width, height} = Dimensions.get('window');
+    let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
+
+    if (permanentSidebar) {
+        portraitPostWidth -= DeviceTypes.TABLET_WIDTH;
+    }
+
+    if (isReplyPost) {
+        portraitPostWidth -= VIEWPORT_IMAGE_REPLY_OFFSET;
+    }
+
+    return portraitPostWidth;
+}
+
 export function previewImageAtIndex(components, index, files) {
     previewComponents = components;
     const component = components[index];
@@ -93,8 +112,6 @@ function getItemMeasures(index, cb) {
         });
     });
 }
-
-const MAX_GIF_SIZE = 100 * 1024 * 1024;
 
 // isGifTooLarge returns true if we think that the GIF may cause the device to run out of memory when rendered
 // based on the image's dimensions and frame count.

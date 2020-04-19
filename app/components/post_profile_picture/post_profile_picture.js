@@ -3,7 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, Platform, StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import AppIcon from 'app/components/app_icon';
 import ProfilePicture from 'app/components/profile_picture';
@@ -72,7 +73,7 @@ export default class PostProfilePicture extends PureComponent {
                         width: frameSize,
                     }, style.buffer]}
                 >
-                    <Image
+                    <FastImage
                         source={icon}
                         style={{
                             height: pictureSize,

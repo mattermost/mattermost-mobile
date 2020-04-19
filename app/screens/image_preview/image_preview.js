@@ -46,7 +46,7 @@ const {VIDEOS_PATH} = DeviceTypes;
 const {View: AnimatedView} = Animated;
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 const HEADER_HEIGHT = 48;
-const ANIM_CONFIG = {duration: 300};
+const ANIM_CONFIG = {duration: 300, userNativeDriver: true};
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
@@ -375,11 +375,12 @@ export default class ImagePreview extends PureComponent {
             const flattenStyle = StyleSheet.flatten(style);
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
             const imageStyle = {...flattenStyle, ...calculatedDimensions};
+            const src = {...source, cache: FastImage.cacheControl.cacheOnly};
 
             return (
                 <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
                     <FastImage
-                        source={source}
+                        source={src}
                         style={imageStyle}
                     />
                 </View>
@@ -637,7 +638,8 @@ const style = StyleSheet.create({
         textAlign: 'center',
     },
     footerContainer: {
-        height: 64,
+        minHeight: 32,
+        maxHeight: 64,
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'absolute',
@@ -648,10 +650,10 @@ const style = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 64,
+        maxHeight: 64,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
-        paddingBottom: 5,
+        paddingBottom: 0,
     },
     filename: {
         color: 'white',
