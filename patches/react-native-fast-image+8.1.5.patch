@@ -43,14 +43,237 @@ index 0000000..f2306f6
 +    }
 +}
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
-index 2214f04..bfb9895 100644
+index 2214f04..3ea65b7 100644
 --- a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
 +++ b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
-@@ -45,6 +45,7 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
+@@ -31,6 +31,17 @@ import okio.ForwardingSource;
+ import okio.Okio;
+ import okio.Source;
+ 
++import java.security.cert.CertificateException;
++import java.security.cert.X509Certificate;
++
++import javax.net.ssl.HostnameVerifier;
++import javax.net.ssl.SSLContext;
++import javax.net.ssl.SSLSession;
++import javax.net.ssl.SSLSocketFactory;
++import javax.net.ssl.TrustManager;
++import javax.net.ssl.X509TrustManager;
++
++
+ @GlideModule
+ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
+ 
+@@ -45,23 +56,51 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
          OkHttpClient client = OkHttpClientProvider
                  .getOkHttpClient()
                  .newBuilder()
 +                .cookieJar(new FastImageCookieJar())
                  .addInterceptor(createInterceptor(progressListener))
                  .build();
++
          OkHttpUrlLoader.Factory factory = new OkHttpUrlLoader.Factory(client);
+         registry.replace(GlideUrl.class, InputStream.class, factory);
+     }
+ 
+     private static Interceptor createInterceptor(final ResponseProgressListener listener) {
+         return new Interceptor() {
++
++            private Response execute(Chain chain, Request request) throws IOException {
++                Response response = chain.proceed(request);
++                final String key = request.url().toString();
++                return response
++                    .newBuilder()
++                    .body(new OkHttpProgressResponseBody(key, response.body(), listener))
++                    .build();
++            }
++
+             @Override
+             public Response intercept(Chain chain) throws IOException {
+                 Request request = chain.request();
+-                Response response = chain.proceed(request);
++
+                 final String key = request.url().toString();
+-                return response
+-                        .newBuilder()
+-                        .body(new OkHttpProgressResponseBody(key, response.body(), listener))
+-                        .build();
++                final Boolean trustSsl = listener.isTrustSslEnabled(key);
++
++                if (trustSsl != null && trustSsl) {
++                    try {
++                        return execute(chain, request);
++                    } catch(javax.net.ssl.SSLHandshakeException ce) {
++                        OkHttpClient client = getUnsafeOkHttpClientBuilder()
++                            .cookieJar(new FastImageCookieJar())
++                            .addInterceptor(createInterceptor(listener))
++                            .build();
++
++                        Response response = client.newCall(request).execute();
++                        return response
++                                .newBuilder()
++                                .body(new OkHttpProgressResponseBody(key, response.body(), listener))
++                                .build();
++                    }
++                } else {
++                    return execute(chain, request);
++                }
+             }
+         };
+     }
+@@ -76,11 +115,13 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
+ 
+     private interface ResponseProgressListener {
+         void update(String key, long bytesRead, long contentLength);
++        Boolean isTrustSslEnabled(String key);
+     }
+ 
+     private static class DispatchingProgressListener implements ResponseProgressListener {
+         private final Map<String, FastImageProgressListener> LISTENERS = new WeakHashMap<>();
+         private final Map<String, Long> PROGRESSES = new HashMap<>();
++        private final Map<String, Boolean> TRUST_SSL = new HashMap<>();
+ 
+         private final Handler handler;
+ 
+@@ -91,10 +132,18 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
+         void forget(String key) {
+             LISTENERS.remove(key);
+             PROGRESSES.remove(key);
++            TRUST_SSL.remove(key);
+         }
+ 
+         void expect(String key, FastImageProgressListener listener) {
+             LISTENERS.put(key, listener);
++            TRUST_SSL.put(key, listener.getTrustSsl(key));
++        }
++
++        @Override
++        public Boolean isTrustSslEnabled(String key) {
++            // Note: Preloaded images don't go through FastImageProgressListener and aren't subject to custom OkHttpClient creation.
++            return TRUST_SSL.get(key);
+         }
+ 
+         @Override
+@@ -186,4 +235,49 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
+             };
+         }
+     }
++
++    private static OkHttpClient.Builder getUnsafeOkHttpClientBuilder() {
++        try {
++            // Create a trust manager that does not validate certificate chains
++            final X509TrustManager x509TrustManager = getUnsafeTrustManager();
++
++            final TrustManager[] trustAllCerts = new TrustManager[]{ x509TrustManager };
++
++            // Install the all-trusting trust manager
++            final SSLContext sslContext = SSLContext.getInstance("SSL");
++            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
++            // Create an ssl socket factory with our all-trusting manager
++            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
++
++            OkHttpClient.Builder builder = new OkHttpClient.Builder();
++            builder.sslSocketFactory(sslSocketFactory, x509TrustManager);
++            builder.hostnameVerifier(new HostnameVerifier() {
++                @Override
++                public boolean verify(String hostname, SSLSession session) {
++                    return (session.getPeerHost().equalsIgnoreCase(hostname));
++                }
++            });
++
++            return builder;
++        } catch (Exception e) {
++            throw new RuntimeException(e);
++        }
++    }
++
++    private static X509TrustManager getUnsafeTrustManager() {
++        return new X509TrustManager() {
++            @Override
++            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
++            }
++
++            @Override
++            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
++            }
++
++            @Override
++            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
++                return new java.security.cert.X509Certificate[]{};
++            }
++        };
++    }
+ }
+diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageProgressListener.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageProgressListener.java
+index 6cd5eb2..8845b82 100644
+--- a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageProgressListener.java
++++ b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageProgressListener.java
+@@ -11,4 +11,5 @@ public interface FastImageProgressListener {
+      */
+     float getGranularityPercentage();
+ 
++    Boolean getTrustSsl(String key);
+ }
+diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewManager.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewManager.java
+index f97ec71..fe3a751 100644
+--- a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewManager.java
++++ b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewManager.java
+@@ -81,7 +81,6 @@ class FastImageViewManager extends SimpleViewManager<FastImageViewWithUrl> imple
+         }
+ 
+         String key = glideUrl.toStringUrl();
+-        FastImageOkHttpProgressGlideModule.expect(key, this);
+         List<FastImageViewWithUrl> viewsForKey = VIEWS_FOR_URLS.get(key);
+         if (viewsForKey != null && !viewsForKey.contains(view)) {
+             viewsForKey.add(view);
+@@ -89,6 +88,7 @@ class FastImageViewManager extends SimpleViewManager<FastImageViewWithUrl> imple
+             List<FastImageViewWithUrl> newViewsForKeys = new ArrayList<>(Collections.singletonList(view));
+             VIEWS_FOR_URLS.put(key, newViewsForKeys);
+         }
++        FastImageOkHttpProgressGlideModule.expect(key, this);
+ 
+         ThemedReactContext context = (ThemedReactContext) view.getContext();
+         RCTEventEmitter eventEmitter = context.getJSModule(RCTEventEmitter.class);
+@@ -125,6 +125,20 @@ class FastImageViewManager extends SimpleViewManager<FastImageViewWithUrl> imple
+         view.setScaleType(scaleType);
+     }
+ 
++    @ReactProp(name = "trustSSL")
++    public void setTrustSsl(FastImageViewWithUrl view, Boolean trustSsl) {
++        view.setTrustSsl(trustSsl);
++    }
++
++    @Override
++    public Boolean getTrustSsl(String key) {
++        List<FastImageViewWithUrl> viewsForKey = VIEWS_FOR_URLS.get(key);
++        if (viewsForKey == null) {
++            return false;
++        }
++        return viewsForKey.get(0).getTrustSsl();
++    }
++
+     @Override
+     public void onDropViewInstance(FastImageViewWithUrl view) {
+         // This will cancel existing requests.
+diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewWithUrl.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewWithUrl.java
+index 0b74d92..8e0d18a 100644
+--- a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewWithUrl.java
++++ b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageViewWithUrl.java
+@@ -7,8 +7,17 @@ import com.bumptech.glide.load.model.GlideUrl;
+ 
+ class FastImageViewWithUrl extends ImageView {
+     public GlideUrl glideUrl;
++    Boolean trustSsl;
+ 
+     public FastImageViewWithUrl(Context context) {
+         super(context);
+     }
++
++    public void setTrustSsl(Boolean trustSsl) {
++        this.trustSsl = trustSsl;
++    }
++
++    public Boolean getTrustSsl() {
++        return this.trustSsl;
++    }
+ }

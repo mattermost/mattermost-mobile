@@ -3,13 +3,15 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, Platform, View} from 'react-native';
+import {Platform, View} from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import FastImage from 'react-native-fast-image';
 
 import {Client4} from '@mm-redux/client';
 
 import UserStatus from 'app/components/user_status';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {isTrustedHost} from 'app/utils/network';
 
 import placeholder from 'assets/images/profile.jpg';
 
@@ -150,15 +152,16 @@ export default class ProfilePicture extends PureComponent {
             };
 
             image = (
-                <Image
+                <FastImage
                     key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={source}
+                    trustSSL={isTrustedHost()}
                 />
             );
         } else {
             image = (
-                <Image
+                <FastImage
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={placeholder}
                 />

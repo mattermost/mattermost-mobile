@@ -27,6 +27,7 @@ exports[`ProgressiveImage should match snapshot 1`] = `
         undefined,
       ]
     }
+    trustSSL={false}
   />
   <ForwardRef(AnimatedComponentWrapper)
     style={

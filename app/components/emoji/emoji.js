@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import {isTrustedHost} from 'app/utils/network';
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class Emoji extends React.PureComponent {
@@ -101,6 +102,7 @@ export default class Emoji extends React.PureComponent {
                 source={{uri: imageUrl}}
                 onError={this.onError}
                 resizeMode={FastImage.resizeMode.contain}
+                trustSSL={isTrustedHost()}
             />
         );
     }

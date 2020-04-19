@@ -34,6 +34,7 @@ import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
 import {t} from 'app/utils/i18n';
 import BottomSheet from 'app/utils/bottom_sheet';
+import {isTrustedHost} from 'app/utils/network';
 import {
     dismissModal,
     mergeNavigationOptions,
@@ -381,6 +382,7 @@ export default class ImagePreview extends PureComponent {
                     <FastImage
                         source={source}
                         style={imageStyle}
+                        trustSSL={isTrustedHost()}
                     />
                 </View>
             );

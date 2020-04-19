@@ -3,13 +3,15 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'react-native';
+import {Animated, ImageBackground, Platform, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {Client4} from '@mm-redux/client';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {isTrustedHost} from 'app/utils/network';
+import EphemeralStore from 'app/store/ephemeral_store';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 const AnimatedImage = Animated.createAnimatedComponent(FastImage);
@@ -135,7 +137,7 @@ export default class ProgressiveImage extends PureComponent {
             DefaultComponent = ImageBackground;
             ImageComponent = AnimatedImageBackground;
         } else {
-            DefaultComponent = Image;
+            DefaultComponent = FastImage;
             ImageComponent = AnimatedImage;
         }
 
@@ -151,6 +153,7 @@ export default class ProgressiveImage extends PureComponent {
                         resizeMode='center'
                         resizeMethod={resizeMethod}
                         onError={onError}
+                        trustSSL={isTrustedHost()}
                     >
                         {this.props.children}
                     </DefaultComponent>
@@ -164,6 +167,7 @@ export default class ProgressiveImage extends PureComponent {
                     onError={onError}
                     source={defaultSource}
                     style={[StyleSheet.absoluteFill, imageStyle]}
+                    trustSSL={isTrustedHost()}
                 >
                     {this.props.children}
                 </DefaultComponent>
@@ -199,6 +203,7 @@ export default class ProgressiveImage extends PureComponent {
                     style={[StyleSheet.absoluteFill, imageStyle]}
                     blurRadius={isImageReady ? null : 5}
                     onLoadEnd={this.loadFullImage}
+                    trustSSL={isTrustedHost()}
                 >
                     {this.props.children}
                 </ImageComponent>

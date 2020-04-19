@@ -8,10 +8,6 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import ProgressiveImage from './progressive_image';
 
-jest.mock('react-native-fast-image', () => ({
-    preload: jest.fn(),
-}));
-
 jest.useFakeTimers();
 
 describe('ProgressiveImage', () => {

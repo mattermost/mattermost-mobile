@@ -6,6 +6,8 @@ import {StyleSheet, View} from 'react-native';
 import PropTypes from 'prop-types';
 import FastImage from 'react-native-fast-image';
 
+import {isTrustedHost} from 'app/utils/network';
+
 export default class AttachmentThumbnail extends PureComponent {
     static propTypes = {
         url: PropTypes.string,
@@ -25,6 +27,7 @@ export default class AttachmentThumbnail extends PureComponent {
                     resizeMode='contain'
                     resizeMethod='scale'
                     style={style.image}
+                    trustSSL={isTrustedHost()}
                 />
             </View>
         );
