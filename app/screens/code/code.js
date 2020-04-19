@@ -20,11 +20,13 @@ import {
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 import {popTopScreen} from 'app/actions/navigation';
+import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export default class Code extends React.PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
         content: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
     };
 
     componentDidMount() {
@@ -45,6 +47,7 @@ export default class Code extends React.PureComponent {
     };
 
     render() {
+        const {isLandscape} = this.props;
         const style = getStyleSheet(this.props.theme);
 
         const numberOfLines = this.countLines(this.props.content);
@@ -86,7 +89,7 @@ export default class Code extends React.PureComponent {
 
         return (
             <ScrollView
-                style={style.scrollContainer}
+                style={[style.scrollContainer, margin(isLandscape)]}
                 contentContainerStyle={style.container}
             >
                 <View style={lineNumbersStyle}>
