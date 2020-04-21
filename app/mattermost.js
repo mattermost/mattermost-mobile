@@ -24,6 +24,7 @@ import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import {validatePreviousVersion} from 'app/utils/general';
 import pushNotificationsUtils from 'app/utils/push_notifications';
+import {captureJSException} from 'app/utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
@@ -53,12 +54,14 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(store, () => {
-            const state = store.getState();
-            const valid = validatePreviousVersion(state.app.previousVersion);
+            const {previousVersion} = store.getState().app;
+            const valid = validatePreviousVersion(previousVersion);
             if (valid) {
                 store.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
             } else {
+                const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
+                captureJSException(error, false, store);
                 store.dispatch(logout());
             }
         });
