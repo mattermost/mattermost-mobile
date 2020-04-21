@@ -1378,6 +1378,12 @@ export function enableUserAccessToken(tokenId: string): ActionFunc {
     };
 }
 
+export function getKnownUsers(): ActionFunc {
+    return bindClientFunc({
+        clientFunc: Client4.getKnownUsers,
+    });
+}
+
 export function clearUserAccessTokens(): ActionFunc {
     return async (dispatch) => {
         dispatch({type: UserTypes.CLEAR_MY_USER_ACCESS_TOKENS, data: null});

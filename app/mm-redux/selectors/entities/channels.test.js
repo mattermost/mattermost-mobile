@@ -137,56 +137,6 @@ describe('Selectors.Channels.getChannelsInCurrentTeam', () => {
     });
 });
 
-describe('Selectors.Channels.getKnownUsers', () => {
-    const channel1 = TestHelper.fakeChannelWithId('');
-    const channel2 = TestHelper.fakeChannelWithId('');
-
-    const me = TestHelper.fakeUserWithId();
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
-
-    const membersInChannel = {
-        [channel1.id]: {
-            [user.id]: {channel_id: channel1.id, user_id: user.id},
-            [user2.id]: {channel_id: channel1.id, user_id: user2.id},
-        },
-        [channel2.id]: {
-            [user3.id]: {channel_id: channel2.id, user_id: user3.id},
-        },
-    };
-
-    it('should return all members of all my channels', () => {
-        const testState = deepFreezeAndThrowOnMutation({
-            entities: {
-                users: {
-                    currentUserId: me.id,
-                },
-                channels: {
-                    membersInChannel,
-                },
-            },
-        });
-
-        assert.deepEqual(Selectors.getKnownUsers(testState), new Set([me.id, user.id, user2.id, user3.id]));
-    });
-
-    it('should return only me if I have no channels', () => {
-        const testState = deepFreezeAndThrowOnMutation({
-            entities: {
-                users: {
-                    currentUserId: me.id,
-                },
-                channels: {
-                    membersInChannel: {},
-                },
-            },
-        });
-
-        assert.deepEqual(Selectors.getKnownUsers(testState), new Set([me.id]));
-    });
-});
-
 describe('Selectors.Channels.getMyChannels', () => {
     const team1 = TestHelper.fakeTeamWithId();
     const team2 = TestHelper.fakeTeamWithId();

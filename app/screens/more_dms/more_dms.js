@@ -205,6 +205,7 @@ export default class MoreDirectMessages extends PureComponent {
             }
 
             this.page += 1;
+            const {actions, allProfiles, teammateNameDisplay} = this.props;
             this.setState({loading: false, profiles: [...profiles, ...data]});
         }
     };
@@ -363,6 +364,8 @@ export default class MoreDirectMessages extends PureComponent {
         );
     };
 
+    filterUnknownUsers = (u) => Boolean(this.props.allProfiles[u.id])
+
     renderLoading = () => {
         const {theme} = this.props;
         const {loading} = this.state;
@@ -435,7 +438,7 @@ export default class MoreDirectMessages extends PureComponent {
         let listType;
         if (term) {
             const exactMatches = [];
-            const results = filterProfilesMatchingTerm(searchResults, term).filter((p) => {
+            const results = filterProfilesMatchingTerm(searchResults.filter(this.filterUnknownUsers), term).filter((p) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
                     return false;
                 }
@@ -450,7 +453,7 @@ export default class MoreDirectMessages extends PureComponent {
             data = [...exactMatches, ...results];
             listType = FLATLIST;
         } else {
-            data = createProfilesSections(profiles);
+            data = createProfilesSections(profiles.filter(this.filterUnknownUsers));
             listType = SECTIONLIST;
         }
 
