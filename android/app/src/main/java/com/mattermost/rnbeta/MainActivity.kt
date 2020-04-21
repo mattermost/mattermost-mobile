@@ -8,18 +8,16 @@ import android.content.res.Configuration;
 import com.reactnativenavigation.NavigationActivity;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 
-public class MainActivity extends NavigationActivity {
-    private boolean HWKeyboardConnected = false;
+class MainActivity : NavigationActivity() {
+    private var HWKeyboardConnected = false;
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.launch_screen);
-        setHWKeyboardConnected();
+        HWKeyboardConnected = getResources().getConfiguration().keyboard == Configuration.KEYBOARD_QWERTY;
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig);
 
         if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
@@ -34,17 +32,12 @@ public class MainActivity extends NavigationActivity {
     Required by react-native-hw-keyboard-event
     (https://github.com/emilioicai/react-native-hw-keyboard-event)
     */
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (HWKeyboardConnected && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-            String keyPressed = event.isShiftPressed() ? "shift-enter" : "enter";
+            val keyPressed = if (event.isShiftPressed()) "shift-enter" else "enter";
             HWKeyboardEventModule.getInstance().keyPressed(keyPressed);
             return true;
         }
         return super.dispatchKeyEvent(event);
     };
-
-    private void setHWKeyboardConnected() {
-        HWKeyboardConnected = getResources().getConfiguration().keyboard == Configuration.KEYBOARD_QWERTY;
-    }
 }

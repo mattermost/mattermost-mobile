@@ -232,6 +232,12 @@ configurations.all {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
+    // Kotlin support
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+
+    // Kotlin support
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+
     //noinspection GradleDynamicVersio
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
@@ -280,3 +286,5 @@ task copyDownloadableDepsToLibs(type: Copy) {
 
 apply plugin: 'com.google.gms.google-services'
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'

@@ -1,64 +1,21 @@
-package com.mattermost.react_native_interface;
+package com.mattermost.react_native_interface
 
-import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.WritableMap
 
 /**
  * ResolvePromise: Helper class that abstracts boilerplate
  */
-public class ResolvePromise implements Promise {
-    @Override
-    public void resolve(@javax.annotation.Nullable Object value) {
-
-    }
-
-    @Override
-    public void reject(String code, String message) {
-
-    }
-
-    @Override
-    public void reject(String code, WritableMap map) {
-
-    }
-
-    @Override
-    public void reject(String code, Throwable e) {
-
-    }
-
-    @Override
-    public void reject(Throwable e, WritableMap map) {
-
-    }
-
-    @Override
-    public void reject(String code, Throwable e, WritableMap map) {
-
-    }
-
-    @Override
-    public void reject(String code, String message, Throwable e, WritableMap map) {
-
-    }
-
-    @Override
-    public void reject(String code, String message, Throwable e) {
-
-    }
-
-    @Override
-    public void reject(String code, String message, WritableMap map) {
-
-    }
-
-    @Override
-    public void reject(String message) {
-
-    }
-
-    @Override
-    public void reject(Throwable reason) {
-
-    }
+open class ResolvePromise : Promise {
+    override fun resolve(value: Any?) {}
+    override fun reject(code: String, message: String) {}
+    override fun reject(code: String, map: WritableMap) {}
+    override fun reject(code: String, e: Throwable) {}
+    override fun reject(e: Throwable, map: WritableMap) {}
+    override fun reject(code: String, e: Throwable, map: WritableMap) {}
+    override fun reject(code: String, message: String, e: Throwable, map: WritableMap) {}
+    override fun reject(code: String, message: String, e: Throwable) {}
+    override fun reject(code: String, message: String, map: WritableMap) {}
+    override fun reject(message: String) {}
+    override fun reject(reason: Throwable) {}
 }

@@ -1,7 +1,7 @@
-package com.mattermost.rnbeta;
+package com.mattermost.rnbeta
 
-import android.net.Uri;
+import android.net.Uri
 
-public interface RNEditTextOnPasteListener {
-    void onPaste(Uri itemUri);
+interface RNEditTextOnPasteListener {
+    fun onPaste(itemUri: Uri?)
 }

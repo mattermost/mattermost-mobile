@@ -1,20 +1,15 @@
-package com.mattermost.share;
+package com.mattermost.share
 
-import android.os.Bundle;
+import android.os.Bundle
+import com.facebook.react.ReactActivity
+import com.mattermost.rnbeta.MainApplication
 
-import com.facebook.react.ReactActivity;
-import com.mattermost.rnbeta.MainApplication;
+class ShareActivity : ReactActivity() {
+    override fun getMainComponentName(): String? = "MattermostShare"
 
-public class ShareActivity extends ReactActivity {
-    @Override
-    protected String getMainComponentName() {
-        return "MattermostShare";
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        MainApplication app = (MainApplication) this.getApplication();
-        app.sharedExtensionIsOpened = true;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val app: MainApplication = this.application as MainApplication
+        app.sharedExtensionIsOpened = true
     }
 }

@@ -1,42 +1,23 @@
-package com.mattermost.rnbeta;
+package com.mattermost.rnbeta
 
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.uimanager.UIManagerModule;
-import com.facebook.react.uimanager.UIBlock;
-import com.facebook.react.uimanager.NativeViewHierarchyManager;
-import android.content.Context;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.uimanager.UIManagerModule
 
-public class RNTextInputResetModule extends ReactContextBaseJavaModule {
+class RNTextInputResetModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+    override fun getName(): String = "RNTextInputReset"
 
-  private final ReactApplicationContext reactContext;
-
-  public RNTextInputResetModule(ReactApplicationContext reactContext) {
-    super(reactContext);
-    this.reactContext = reactContext;
-  }
-
-  @Override
-  public String getName() {
-    return "RNTextInputReset";
-  }
-
-  // https://github.com/facebook/react-native/pull/12462#issuecomment-298812731
-  @ReactMethod
-  public void resetKeyboardInput(final int reactTagToReset) {
-      UIManagerModule uiManager = getReactApplicationContext().getNativeModule(UIManagerModule.class);
-      uiManager.addUIBlock(new UIBlock() {
-          @Override
-          public void execute(NativeViewHierarchyManager nativeViewHierarchyManager) {
-              InputMethodManager imm = (InputMethodManager) getReactApplicationContext().getBaseContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-              if (imm != null) {
-                  View viewToReset = nativeViewHierarchyManager.resolveView(reactTagToReset);
-                  imm.restartInput(viewToReset);
-              }
-          }
-      });
-  }
+    // https://github.com/facebook/react-native/pull/12462#issuecomment-298812731
+    @ReactMethod
+    fun resetKeyboardInput(reactTagToReset: Int) {
+        val uiManager = reactApplicationContext.getNativeModule(UIManagerModule::class.java)
+        uiManager.addUIBlock { nativeViewHierarchyManager ->
+            val imm = reactApplicationContext.baseContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val viewToReset = nativeViewHierarchyManager.resolveView(reactTagToReset)
+            imm.restartInput(viewToReset)
+        }
+    }
 }

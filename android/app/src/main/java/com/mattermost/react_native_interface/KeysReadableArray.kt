@@ -1,68 +1,30 @@
-package com.mattermost.react_native_interface;
+package com.mattermost.react_native_interface
 
-import com.facebook.react.bridge.Dynamic;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableType;
-
-import java.util.ArrayList;
+import com.facebook.react.bridge.Dynamic
+import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.ReadableType
+import java.util.*
 
 /**
  * KeysReadableArray: Helper class that abstracts boilerplate
  */
-public class KeysReadableArray implements ReadableArray {
-    @Override
-    public int size() {
-        return 0;
-    }
+open class KeysReadableArray : ReadableArray {
+    override fun size(): Int = 0
+    override fun isNull(index: Int): Boolean = false
+    override fun getBoolean(index: Int): Boolean = false
+    override fun getDouble(index: Int): Double = 0.toDouble()
+    override fun getInt(index: Int): Int = 0
+    override fun getString(index: Int): String? = null
+    override fun getArray(index: Int): ReadableArray? = null
+    override fun getMap(index: Int): ReadableMap? = null
 
-    @Override
-    public boolean isNull(int index) {
-        return false;
-    }
+    // TODO: remove this !! and return a valid Dynamic instance
+    override fun getDynamic(index: Int): Dynamic = null!!
 
-    @Override
-    public boolean getBoolean(int index) {
-        return false;
-    }
+    // TODO: remove this !! and return a valid ReadableType instance
+    override fun getType(index: Int): ReadableType = null!!
 
-    @Override
-    public double getDouble(int index) {
-        return 0;
-    }
-
-    @Override
-    public int getInt(int index) {
-        return 0;
-    }
-
-    @Override
-    public String getString(int index) {
-        return null;
-    }
-
-    @Override
-    public ReadableArray getArray(int index) {
-        return null;
-    }
-
-    @Override
-    public ReadableMap getMap(int index) {
-        return null;
-    }
-
-    @Override
-    public Dynamic getDynamic(int index) {
-        return null;
-    }
-
-    @Override
-    public ReadableType getType(int index) {
-        return null;
-    }
-
-    @Override
-    public ArrayList<Object> toArrayList() {
-        return null;
-    }
+    // TODO: remove this !! and return a valid ArrayList<Any> instance
+    override fun toArrayList(): ArrayList<Any> = null!!
 }

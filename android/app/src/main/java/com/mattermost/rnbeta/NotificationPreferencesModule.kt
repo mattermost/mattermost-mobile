@@ -1,136 +1,114 @@
-package com.mattermost.rnbeta;
+package com.mattermost.rnbeta
 
-import android.app.Application;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.database.Cursor;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.os.Bundle;
-import android.net.Uri;
-import android.service.notification.StatusBarNotification;
+import android.app.NotificationManager
+import android.content.Context
+import android.media.RingtoneManager
+import android.net.Uri
+import com.facebook.react.bridge.*
+import com.mattermost.rnbeta.NotificationPreferences.Companion.getInstance
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
-
-public class NotificationPreferencesModule extends ReactContextBaseJavaModule {
-    private static NotificationPreferencesModule instance;
-    private final MainApplication mApplication;
-    private NotificationPreferences mNotificationPreference;
-
-    private NotificationPreferencesModule(MainApplication application, ReactApplicationContext reactContext) {
-        super(reactContext);
-        mApplication = application;
-        Context context = mApplication.getApplicationContext();
-        mNotificationPreference = NotificationPreferences.getInstance(context);
-    }
-
-    public static NotificationPreferencesModule getInstance(MainApplication application, ReactApplicationContext reactContext) {
-        if (instance == null) {
-            instance = new NotificationPreferencesModule(application, reactContext);
-        }
-
-        return instance;
-    }
-
-    public static NotificationPreferencesModule getInstance() {
-        return instance;
-    }
-
-    @Override
-    public String getName() {
-        return "NotificationPreferences";
-    }
+class NotificationPreferencesModule private constructor(application: com.mattermost.rnbeta.MainApplication, reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+    private val mApplication: com.mattermost.rnbeta.MainApplication
+    private val mNotificationPreference: NotificationPreferences?
+    override fun getName(): String = "NotificationPreferences"
 
     @ReactMethod
-    public void getPreferences(final Promise promise) {
+    fun getPreferences(promise: Promise) {
         try {
-            Context context = mApplication.getApplicationContext();
-            RingtoneManager manager = new RingtoneManager(context);
-            manager.setType(RingtoneManager.TYPE_NOTIFICATION);
-            Cursor cursor = manager.getCursor();
-
-            WritableMap result = Arguments.createMap();
-            WritableArray sounds = Arguments.createArray();
+            val context: Context = mApplication.getApplicationContext()
+            val manager = RingtoneManager(context)
+            manager.setType(RingtoneManager.TYPE_NOTIFICATION)
+            val cursor = manager.cursor
+            val result = Arguments.createMap()
+            val sounds = Arguments.createArray()
             while (cursor.moveToNext()) {
-                String notificationTitle = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX);
-                String notificationId = cursor.getString(RingtoneManager.ID_COLUMN_INDEX);
-                String notificationUri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX);
-
-                WritableMap map = Arguments.createMap();
-                map.putString("name", notificationTitle);
-                map.putString("uri", (notificationUri + "/" + notificationId));
-                sounds.pushMap(map);
+                val notificationTitle = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX)
+                val notificationId = cursor.getString(RingtoneManager.ID_COLUMN_INDEX)
+                val notificationUri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX)
+                val map = Arguments.createMap()
+                map.putString("name", notificationTitle)
+                map.putString("uri", "$notificationUri/$notificationId")
+                sounds.pushMap(map)
             }
-
-            Uri defaultUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_NOTIFICATION);
+            val defaultUri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_NOTIFICATION)
             if (defaultUri != null) {
-                result.putString("defaultUri", Uri.decode(defaultUri.toString()));
+                result.putString("defaultUri", Uri.decode(defaultUri.toString()))
             }
-            result.putString("selectedUri", mNotificationPreference.getNotificationSound());
-            result.putBoolean("shouldVibrate", mNotificationPreference.getShouldVibrate());
-            result.putBoolean("shouldBlink", mNotificationPreference.getShouldBlink());
-            result.putArray("sounds", sounds);
-
-            promise.resolve(result);
-        } catch (Exception e) {
-            promise.reject("no notification sounds found", e);
+            result.putString("selectedUri", mNotificationPreference!!.notificationSound)
+            result.putBoolean("shouldVibrate", mNotificationPreference.shouldVibrate)
+            result.putBoolean("shouldBlink", mNotificationPreference.shouldBlink)
+            result.putArray("sounds", sounds)
+            promise.resolve(result)
+        } catch (e: Exception) {
+            promise.reject("no notification sounds found", e)
         }
     }
 
     @ReactMethod
-    public void previewSound(String url) {
-        Context context = mApplication.getApplicationContext();
-        Uri uri = Uri.parse(url);
-        Ringtone r = RingtoneManager.getRingtone(context, uri);
-        r.play();
+    fun previewSound(url: String?) {
+        val context: Context = mApplication.getApplicationContext()
+        val uri = Uri.parse(url)
+        val r = RingtoneManager.getRingtone(context, uri)
+        r.play()
     }
 
     @ReactMethod
-    public void setNotificationSound(String soundUri) {
-        mNotificationPreference.setNotificationSound(soundUri);
+    fun setNotificationSound(soundUri: String?) {
+        mNotificationPreference!!.notificationSound = soundUri
     }
 
     @ReactMethod
-    public void setShouldVibrate(boolean vibrate) {
-        mNotificationPreference.setShouldVibrate(vibrate);
+    fun setShouldVibrate(vibrate: Boolean) {
+        mNotificationPreference!!.shouldVibrate = vibrate
     }
 
     @ReactMethod
-    public void setShouldBlink(boolean blink) {
-        mNotificationPreference.setShouldBlink(blink);
+    fun setShouldBlink(blink: Boolean) {
+        mNotificationPreference!!.shouldBlink = blink
     }
 
     @ReactMethod
-    public void getDeliveredNotifications(final Promise promise) {
-        Context context = mApplication.getApplicationContext();
-        final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        StatusBarNotification[] statusBarNotifications = notificationManager.getActiveNotifications();
-        WritableArray result = Arguments.createArray();
-        for (StatusBarNotification sbn:statusBarNotifications) {
-            WritableMap map = Arguments.createMap();
-            Notification n = sbn.getNotification();
-            Bundle bundle = n.extras;
-            int identifier = sbn.getId();
-            String channelId = bundle.getString("channel_id");
-            map.putInt("identifier", identifier);
-            map.putString("channel_id", channelId);
-            result.pushMap(map);
+    fun getDeliveredNotifications(promise: Promise) {
+        val context: Context = mApplication.getApplicationContext()
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val statusBarNotifications = notificationManager.activeNotifications
+        val result = Arguments.createArray()
+        for (sbn in statusBarNotifications) {
+            val map = Arguments.createMap()
+            val n = sbn.notification
+            val bundle = n.extras
+            val identifier = sbn.id
+            val channelId = bundle.getString("channel_id")
+            map.putInt("identifier", identifier)
+            map.putString("channel_id", channelId)
+            result.pushMap(map)
         }
-        promise.resolve(result);
+        promise.resolve(result)
     }
 
     @ReactMethod
-    public void removeDeliveredNotifications(int identifier, String channelId) {
-        Context context = mApplication.getApplicationContext();
-        CustomPushNotification.clearNotification(context, identifier, channelId);
+    fun removeDeliveredNotifications(identifier: Int, channelId: String?) {
+        val context: Context = mApplication.getApplicationContext()
+        CustomPushNotification.clearNotification(context, identifier, channelId)
+    }
+
+    companion object {
+        var instance: NotificationPreferencesModule? = null
+            private set
+
+        @JvmStatic
+        fun getInstance(application: com.mattermost.rnbeta.MainApplication, reactContext: ReactApplicationContext): NotificationPreferencesModule? {
+            if (instance == null) {
+                instance = NotificationPreferencesModule(application, reactContext)
+            }
+            return instance
+        }
+
+    }
+
+    init {
+        mApplication = application
+        val context: Context = mApplication.getApplicationContext()
+        mNotificationPreference = getInstance(context)
     }
 }

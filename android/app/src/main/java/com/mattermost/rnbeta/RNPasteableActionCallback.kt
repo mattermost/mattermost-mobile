@@ -1,92 +1,58 @@
-package com.mattermost.rnbeta;
+package com.mattermost.rnbeta
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.net.Uri;
-import android.os.Bundle;
-import android.view.ActionMode;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.R
+import android.content.ClipboardManager
+import android.content.Context
+import android.net.Uri
+import android.os.Bundle
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
+import com.facebook.react.bridge.Arguments
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.WritableMap;
-
-public class RNPasteableActionCallback implements ActionMode.Callback {
-
-    private RNPasteableEditText mEditText;
-
-    RNPasteableActionCallback(RNPasteableEditText editText) {
-        mEditText = editText;
-    }
-
-    @Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        Bundle config = MainApplication.instance.getManagedConfig();
-        if (config != null) {
-            WritableMap result = Arguments.fromBundle(config);
-            String copyPasteProtection = result.getString("copyAndPasteProtection");
-            if (copyPasteProtection.equals("true")) {
-                disableMenus(menu);
-            }
+class RNPasteableActionCallback internal constructor(private val mEditText: RNPasteableEditText) : ActionMode.Callback {
+    override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+        val config: Bundle = com.mattermost.rnbeta.MainApplication.instance.getManagedConfig()
+        val result = Arguments.fromBundle(config)
+        val copyPasteProtection = result.getString("copyAndPasteProtection")
+        if (copyPasteProtection == "true") {
+            disableMenus(menu)
         }
-
-        return true;
+        return true
     }
 
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
 
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        Uri uri = this.getUriInClipboard();
-        if (item.getItemId() == android.R.id.paste && uri != null) {
-            mEditText.getOnPasteListener().onPaste(uri);
-            mode.finish();
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        val uri = uriInClipboard
+        if (item.itemId == R.id.paste && uri != null) {
+            mEditText.onPasteListener?.onPaste(uri)
+            mode.finish()
         } else {
-            mEditText.onTextContextMenuItem(item.getItemId());
+            mEditText.onTextContextMenuItem(item.itemId)
         }
-
-        return true;
+        return true
     }
 
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-
-    }
-
-    private void disableMenus(Menu menu) {
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            int id = item.getItemId();
-            boolean shouldDisableMenu = (
-                id == android.R.id.paste
-                || id == android.R.id.copy
-                || id == android.R.id.cut
-            );
-            item.setEnabled(!shouldDisableMenu);
+    override fun onDestroyActionMode(mode: ActionMode) {}
+    private fun disableMenus(menu: Menu) {
+        for (i in 0 until menu.size()) {
+            val item = menu.getItem(i)
+            val id = item.itemId
+            val shouldDisableMenu = id == R.id.paste || id == R.id.copy || id == R.id.cut
+            item.isEnabled = !shouldDisableMenu
         }
     }
 
-    private Uri getUriInClipboard() {
-        ClipboardManager clipboardManager = (ClipboardManager) mEditText.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clipData = clipboardManager.getPrimaryClip();
-        if (clipData == null) {
-            return null;
+    private val uriInClipboard: Uri?
+        get() {
+            val clipboardManager = mEditText.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipData = clipboardManager.primaryClip ?: return null
+            val item = clipData.getItemAt(0) ?: return null
+            val text = item.text.toString()
+            return if (text.length > 0) {
+                null
+            } else item.uri
         }
 
-        ClipData.Item item = clipData.getItemAt(0);
-        if (item == null) {
-            return null;
-        }
-
-        String text = item.getText().toString();
-        if (text.length() > 0) {
-            return null;
-        }
-
-        return item.getUri();
-    }
 }

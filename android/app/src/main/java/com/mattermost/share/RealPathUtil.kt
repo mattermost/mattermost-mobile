@@ -1,233 +1,178 @@
-package com.mattermost.share;
+package com.mattermost.share
 
-import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.provider.OpenableColumns;
-import android.content.ContentUris;
-import android.content.ContentResolver;
-import android.os.Environment;
-import android.webkit.MimeTypeMap;
-import android.util.Log;
-import android.text.TextUtils;
-
-import android.os.ParcelFileDescriptor;
-import java.io.*;
-import java.nio.channels.FileChannel;
+import android.content.Context
+import android.database.Cursor
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.DocumentsContract
+import android.provider.MediaStore
+import android.provider.OpenableColumns
+import android.text.TextUtils
+import android.util.Log
+import android.webkit.MimeTypeMap
+import com.mattermost.share.ShareModule
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 
 // Class based on the steveevers DocumentHelper https://gist.github.com/steveevers/a5af24c226f44bb8fdc3
-
-public class RealPathUtil {
-    public static String getRealPathFromURI(final Context context, final Uri uri) {
-
-        final boolean isKitKatOrNewer = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
+object RealPathUtil {
+    fun getRealPathFromURI(context: Context, uri: Uri): String? {
+        val isKitKatOrNewer = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
         // DocumentProvider
-        if (isKitKatOrNewer && DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
+        if (isKitKatOrNewer && DocumentsContract.isDocumentUri(context, uri)) { // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                val docId = DocumentsContract.getDocumentId(uri)
+                val split = docId.split(":").toTypedArray()
+                val type = split[0]
+                if ("primary".equals(type, ignoreCase = true)) {
+                    return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
                 }
-            } else if (isDownloadsDocument(uri)) {
-                // DownloadsProvider
-
-                final String id = DocumentsContract.getDocumentId(uri);
+            } else if (isDownloadsDocument(uri)) { // DownloadsProvider
+                val id = DocumentsContract.getDocumentId(uri)
                 if (!TextUtils.isEmpty(id)) {
-                    if (id.startsWith("raw:")) {
-                        return id.replaceFirst("raw:", "");
-                    }
-                    try {
-                        return getPathFromSavingTempFile(context, uri);
-                    } catch (NumberFormatException e) {
-                        Log.e("ReactNative", "DownloadsProvider unexpected uri " + uri.toString());
-                        return null;
+                    return if (id.startsWith("raw:")) {
+                        id.replaceFirst("raw:".toRegex(), "")
+                    } else try {
+                        getPathFromSavingTempFile(context, uri)
+                    } catch (e: NumberFormatException) {
+                        Log.e("ReactNative", "DownloadsProvider unexpected uri $uri")
+                        null
                     }
                 }
-            } else if (isMediaDocument(uri)) {
-                // MediaProvider
-
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                Uri contentUri = null;
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            } else if (isMediaDocument(uri)) { // MediaProvider
+                val docId = DocumentsContract.getDocumentId(uri)
+                val split = docId.split(":").toTypedArray()
+                val type = split[0]
+                var contentUri: Uri? = null
+                if ("image" == type) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                } else if ("video" == type) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                } else if ("audio" == type) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
                 }
-
-                final String selection = "_id=?";
-                final String[] selectionArgs = new String[] {
+                val selection = "_id=?"
+                val selectionArgs = arrayOf(
                         split[1]
-                };
-
-                return getDataColumn(context, contentUri, selection, selectionArgs);
+                )
+                return getDataColumn(context, contentUri, selection, selectionArgs)
             }
         }
-
-        if ("content".equalsIgnoreCase(uri.getScheme())) {
-            // MediaStore (and general)
-
-            if (isGooglePhotosUri(uri)) {
-                return uri.getLastPathSegment();
-            }
-
+        if ("content".equals(uri.scheme, ignoreCase = true)) { // MediaStore (and general)
+            return if (isGooglePhotosUri(uri)) {
+                uri.lastPathSegment
+            } else getPathFromSavingTempFile(context, uri)
             // Try save to tmp file, and return tmp file path
-            return getPathFromSavingTempFile(context, uri);
-        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
+        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
+            return uri.path
         }
-
-        return null;
+        return null
     }
 
-    public static String getPathFromSavingTempFile(Context context, final Uri uri) {
-        File tmpFile;
-        String fileName = null;
-
+    fun getPathFromSavingTempFile(context: Context, uri: Uri): String? {
+        val tmpFile: File
+        var fileName: String? = null
         // Try and get the filename from the Uri
         try {
-            Cursor returnCursor =
-                    context.getContentResolver().query(uri, null, null, null, null);
-            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            returnCursor.moveToFirst();
-            fileName = returnCursor.getString(nameIndex);
-        } catch (Exception e) {
-            // just continue to get the filename with the last segment of the path
+            val returnCursor = context.contentResolver.query(uri, null, null, null, null)
+            val nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            returnCursor.moveToFirst()
+            fileName = returnCursor.getString(nameIndex)
+        } catch (e: Exception) { // just continue to get the filename with the last segment of the path
         }
-
         try {
             if (fileName == null) {
-                fileName = uri.getLastPathSegment().toString().trim();
+                fileName = uri.lastPathSegment.toString().trim { it <= ' ' }
             }
-
-
-            File cacheDir = new File(context.getCacheDir(), ShareModule.CACHE_DIR_NAME);
+            val cacheDir = File(context.cacheDir, ShareModule.CACHE_DIR_NAME)
             if (!cacheDir.exists()) {
-                cacheDir.mkdirs();
+                cacheDir.mkdirs()
             }
-
-            String mimeType = getMimeType(uri.getPath());
-            tmpFile = new File(cacheDir, fileName);
-            tmpFile.createNewFile();
-
-            ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
-
-            FileChannel src = new FileInputStream(pfd.getFileDescriptor()).getChannel();
-            FileChannel dst = new FileOutputStream(tmpFile).getChannel();
-            dst.transferFrom(src, 0, src.size());
-            src.close();
-            dst.close();
-        } catch (IOException ex) {
-            return null;
+            tmpFile = File(cacheDir, fileName)
+            tmpFile.createNewFile()
+            val pfd = context.contentResolver.openFileDescriptor(uri, "r")
+            val src = FileInputStream(pfd.fileDescriptor).channel
+            val dst = FileOutputStream(tmpFile).channel
+            dst.transferFrom(src, 0, src.size())
+            src.close()
+            dst.close()
+        } catch (ex: IOException) {
+            return null
         }
-        return tmpFile.getAbsolutePath();
+        return tmpFile.absolutePath
     }
 
-    public static String getDataColumn(Context context, Uri uri, String selection,
-                                       String[] selectionArgs) {
-
-        Cursor cursor = null;
-        final String column = "_data";
-        final String[] projection = {
+    fun getDataColumn(context: Context, uri: Uri?, selection: String?,
+                      selectionArgs: Array<String>?): String? {
+        var cursor: Cursor? = null
+        val column = "_data"
+        val projection = arrayOf(
                 column
-        };
-
+        )
         try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
-                    null);
+            cursor = context.contentResolver.query(uri, projection, selection, selectionArgs,
+                    null)
             if (cursor != null && cursor.moveToFirst()) {
-                final int index = cursor.getColumnIndexOrThrow(column);
-                return cursor.getString(index);
+                val index = cursor.getColumnIndexOrThrow(column)
+                return cursor.getString(index)
             }
         } finally {
-            if (cursor != null)
-                cursor.close();
+            cursor?.close()
         }
-        return null;
+        return null
     }
 
+    fun isExternalStorageDocument(uri: Uri) = "com.android.externalstorage.documents" == uri.authority
+    fun isDownloadsDocument(uri: Uri) = "com.android.providers.downloads.documents" == uri.authority
+    fun isMediaDocument(uri: Uri) = "com.android.providers.media.documents" == uri.authority
+    fun isGooglePhotosUri(uri: Uri) = "com.google.android.apps.photos.content" == uri.authority
 
-    public static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-    public static boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-    public static boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
-
-    public static boolean isGooglePhotosUri(Uri uri) {
-        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
-    }
-
-    public static String getExtension(String uri) {
+    fun getExtension(uri: String?): String? {
         if (uri == null) {
-            return null;
+            return null
         }
-
-        int dot = uri.lastIndexOf(".");
-        if (dot >= 0) {
-            return uri.substring(dot);
-        } else {
-            // No extension.
-            return "";
+        val dot = uri.lastIndexOf(".")
+        return if (dot >= 0) {
+            uri.substring(dot)
+        } else { // No extension.
+            ""
         }
     }
 
-    public static String getMimeType(File file) {
-
-        String extension = getExtension(file.getName());
-
-        if (extension.length() > 0)
-            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.substring(1));
-
-        return "application/octet-stream";
+    fun getMimeType(file: File): String {
+        val extension = getExtension(file.name)
+        return if (extension!!.length > 0) MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.substring(1)) else "application/octet-stream"
     }
 
-    public static String getMimeType(String filePath) {
-        File file = new File(filePath);
-        return getMimeType(file);
+    fun getMimeType(filePath: String?): String {
+        val file = File(filePath)
+        return getMimeType(file)
     }
 
-    public static String getMimeTypeFromUri(final Context context, final Uri uri) {
+    fun getMimeTypeFromUri(context: Context, uri: Uri?): String {
+        return try {
+            val cR = context.contentResolver
+            cR.getType(uri)
+        } catch (e: Exception) {
+            "application/octet-stream"
+        }
+    }
+
+    @JvmStatic
+    fun deleteTempFiles(dir: File) {
         try {
-            ContentResolver cR = context.getContentResolver();
-            return cR.getType(uri);
-        } catch (Exception e) {
-            return "application/octet-stream";
-        }
-    }
-
-    public static void deleteTempFiles(final File dir) {
-        try {
-            if (dir.isDirectory()) {
-                deleteRecursive(dir);
+            if (dir.isDirectory) {
+                deleteRecursive(dir)
             }
-        } catch (Exception e) {
-            // do nothing
+        } catch (e: Exception) { // do nothing
         }
     }
 
-    private static void deleteRecursive(File fileOrDirectory) {
-        if (fileOrDirectory.isDirectory())
-            for (File child : fileOrDirectory.listFiles())
-                deleteRecursive(child);
-
-        fileOrDirectory.delete();
+    private fun deleteRecursive(fileOrDirectory: File) {
+        if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()) deleteRecursive(child)
+        fileOrDirectory.delete()
     }
 }
