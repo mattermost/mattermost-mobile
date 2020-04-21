@@ -76,8 +76,7 @@ export default class ProgressiveImage extends PureComponent {
     load = () => {
         const {imageUri, thumbnailUri} = this.props;
 
-        if (thumbnailUri && imageUri) {
-            FastImage.preload([{uri: imageUri}]);
+        if (thumbnailUri) {
             this.setThumbnail(thumbnailUri);
         } else if (imageUri) {
             this.setImage(imageUri);

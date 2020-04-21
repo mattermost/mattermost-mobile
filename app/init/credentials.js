@@ -54,7 +54,7 @@ export const getAppCredentials = async () => {
 export const removeAppCredentials = async () => {
     const url = await getCurrentServerUrl();
 
-    Client4.setCSRF(null);
+    Client4.setCSRF('');
     Client4.serverVersion = '';
     Client4.setUserId('');
     Client4.setToken('');

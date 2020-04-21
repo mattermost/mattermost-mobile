@@ -56,11 +56,20 @@ export default class FileAttachmentImage extends PureComponent {
         super(props);
 
         const {file} = props;
-        if (file && file.id) {
-            const preloadImages = [{uri: Client4.getFileThumbnailUrl(file.id)}];
+        if (file && file.id && !file.localPath) {
+            const headers = {
+                Authorization: `Bearer ${Client4.getToken()}`,
+                'X-CSRF-Token': Client4.csrf,
+                'X-Requested-With': 'XMLHttpRequest',
+            };
+
+            const preloadImages = [
+                {uri: Client4.getFileThumbnailUrl(file.id), headers},
+                {uri: Client4.getFileUrl(file.id), headers},
+            ];
 
             if (isGif(file)) {
-                preloadImages.push({uri: Client4.getFileUrl(file.id)});
+                preloadImages.push({uri: Client4.getFilePreviewUrl(file.id), headers});
             }
 
             FastImage.preload(preloadImages);
@@ -94,7 +103,7 @@ export default class FileAttachmentImage extends PureComponent {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
-            imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.imageUri = isGif(file) ? Client4.getFilePreviewUrl(file.id) : Client4.getFileUrl(file.id);
         }
         return imageProps;
     };
@@ -149,6 +158,8 @@ export default class FileAttachmentImage extends PureComponent {
             return this.renderSmallImage();
         }
 
+        const imageProps = this.imageProps(file);
+
         return (
             <View
                 ref={this.handleCaptureRef}
@@ -162,7 +173,7 @@ export default class FileAttachmentImage extends PureComponent {
                     filename={file.name}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
-                    {...this.imageProps(file)}
+                    {...imageProps}
                 />
             </View>
         );
