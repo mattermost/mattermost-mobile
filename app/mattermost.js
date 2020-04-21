@@ -7,7 +7,7 @@ import {Provider} from 'react-redux';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {loadMe} from 'app/actions/views/user';
+import {loadMe, logout} from 'app/actions/views/user';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
@@ -53,10 +53,12 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(store, () => {
-            const valid = validatePreviousVersion(store);
+            const valid = validatePreviousVersion(store.app.previousAppVersion);
             if (valid) {
                 store.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
+            } else {
+                store.dispatch(logout());
             }
         });
     } else {
