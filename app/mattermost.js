@@ -53,7 +53,8 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(store, () => {
-            const valid = validatePreviousVersion(store.app.previousAppVersion);
+            const state = store.getState();
+            const valid = validatePreviousVersion(state.app.previousVersion);
             if (valid) {
                 store.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
