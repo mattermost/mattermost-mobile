@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
-index 48fb5c1..5085663 100644
+index 48fb5c1..24ffd42 100644
 --- a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 +++ b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 @@ -49,6 +49,7 @@ import java.io.InputStream;
@@ -58,8 +58,40 @@ index 48fb5c1..5085663 100644
      }
  
      if (cameraIntent.resolveActivity(reactContext.getPackageManager()) == null)
-@@ -444,14 +444,20 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -352,13 +352,17 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+     }
+     else
+     {
+-      requestCode = REQUEST_LAUNCH_IMAGE_LIBRARY;
+-      libraryIntent = new Intent(Intent.ACTION_PICK,
++      requestCode = pickBoth ? REQUEST_LAUNCH_MIXED_CAPTURE : REQUEST_LAUNCH_IMAGE_LIBRARY;
++      libraryIntent = new Intent(Intent.ACTION_GET_CONTENT,
+       MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+ 
+       if (pickBoth) 
+       {
+-        libraryIntent.setType("image/* video/*");
++        String[] mimes = {"image/*", "video/*"};
++        libraryIntent.setType("*/*");
++        libraryIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimes);
++      } else {
++        libraryIntent.setType("image/*");
+       }
+     }
+ 
+@@ -431,6 +435,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+             responseHelper.putString("uri", uri.toString());
+             responseHelper.invokeResponse(callback);
+             callback = null;
++            this.options = null;
+             return;
+           }
+         }
+@@ -442,16 +447,46 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+         responseHelper.putString("path", getRealPathFromURI(data.getData()));
+         responseHelper.invokeResponse(callback);
          callback = null;
++        this.options = null;
          return;
  
 +      case REQUEST_LAUNCH_MIXED_CAPTURE:
@@ -76,17 +108,40 @@ index 48fb5c1..5085663 100644
 +            break;
 +          } else {
 +              final String path = getRealPathFromURI(data.getData());
-+            responseHelper.putString("uri", data.getData().toString());
-+            responseHelper.putString("path", path);
-+            fileScan(reactContext, path);
-+            responseHelper.invokeResponse(callback);
-+            callback = null;
-+            return;
++          final boolean isWebUrl = !TextUtils.isEmpty(path) &&
++                  Patterns.WEB_URL.matcher(path).matches();
++          if (path == null || isWebUrl) {
++            try
++            {
++              File file = createFileFromURI(data.getData());
++              realPath = file.getAbsolutePath();
++              uri = Uri.fromFile(file);
++              imageConfig = imageConfig.withOriginalFile(new File(realPath));
++            }
++            catch (Exception e)
++            {
++              // image not in cache
++              responseHelper.putString("error", "Could not read photo");
++              responseHelper.putString("uri", uri.toString());
++              responseHelper.invokeResponse(callback);
++              callback = null;
++              this.options = null;
++              return;
++            }
++          } else {
++              responseHelper.putString("uri", data.getData().toString());
++              responseHelper.putString("path", path);
++              fileScan(reactContext, path);
++              responseHelper.invokeResponse(callback);
++              callback = null;
++              this.options = null;
++              return;
++            }
 +          }
      }
  
      final ReadExifResult result = readExifInterface(responseHelper, imageConfig);
-@@ -481,6 +487,13 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -481,6 +516,14 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
      else
      {
        imageConfig = getResizedImage(reactContext, this.options, imageConfig, initialWidth, initialHeight, requestCode);
@@ -94,13 +149,14 @@ index 48fb5c1..5085663 100644
 +      {
 +        responseHelper.invokeError(callback, "Could not read image");
 +        callback = null;
++        this.options = null;
 +        return;
 +      }
 +
        if (imageConfig.resized == null)
        {
          removeUselessFiles(requestCode, imageConfig);
-@@ -551,7 +564,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -551,7 +594,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
    {
      return callback == null || (cameraCaptureURI == null && requestCode == REQUEST_LAUNCH_IMAGE_CAPTURE)
              || (requestCode != REQUEST_LAUNCH_IMAGE_CAPTURE && requestCode != REQUEST_LAUNCH_IMAGE_LIBRARY
@@ -110,7 +166,7 @@ index 48fb5c1..5085663 100644
    }
  
    private void updatedResultResponse(@Nullable final Uri uri,
-@@ -571,22 +585,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -571,22 +615,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
                                     @NonNull final Callback callback,
                                     @NonNull final int requestCode)
    {
@@ -143,7 +199,7 @@ index 48fb5c1..5085663 100644
      if (!permissionsGranted)
      {
        final Boolean dontAskAgain = ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) && ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA);
-@@ -787,4 +802,22 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -787,4 +832,22 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
        videoDurationLimit = options.getInt("durationLimit");
      }
    }
