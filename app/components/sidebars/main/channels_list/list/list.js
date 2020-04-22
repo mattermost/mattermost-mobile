@@ -232,7 +232,13 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        showModal(screen, title, passProps);
+        const options = Platform.select({
+            ios: {
+                modalPresentationStyle: 'pageSheet',
+            },
+        });
+
+        showModal(screen, title, passProps, options);
     });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
@@ -244,7 +250,13 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        showModal(screen, title, passProps);
+        const options = Platform.select({
+            ios: {
+                modalPresentationStyle: 'pageSheet',
+            },
+        });
+
+        showModal(screen, title, passProps, options);
     });
 
     goToDirectMessages = preventDoubleTap(() => {
@@ -259,6 +271,11 @@ export default class List extends PureComponent {
                     icon: this.closeButton,
                 }],
             },
+            ...Platform.select({
+                ios: {
+                    modalPresentationStyle: 'pageSheet',
+                },
+            }),
         };
 
         showModal(screen, title, passProps, options);
@@ -272,7 +289,13 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        showModal(screen, title, passProps);
+        const options = Platform.select({
+            ios: {
+                modalPresentationStyle: 'pageSheet',
+            },
+        });
+
+        showModal(screen, title, passProps, options);
     });
 
     keyExtractor = (item) => item.id || item;

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, View, Platform} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from '@mm-redux/constants';
@@ -29,7 +29,6 @@ export default class SettingsSidebarBase extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        locale: PropTypes.string,
     };
 
     static defaultProps = {
@@ -114,6 +113,11 @@ export default class SettingsSidebarBase extends PureComponent {
             'UserProfile',
             intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             {userId, fromSettings: true},
+            Platform.select({
+                ios: {
+                    modalPresentationStyle: 'pageSheet',
+                },
+            }),
         );
     };
 
@@ -121,6 +125,12 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'Settings',
             intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
+            {},
+            Platform.select({
+                ios: {
+                    modalPresentationStyle: 'pageSheet',
+                },
+            }),
         );
     };
 
@@ -130,7 +140,7 @@ export default class SettingsSidebarBase extends PureComponent {
         logout();
     });
 
-    openModal = async (screen, title, passProps) => {
+    openModal = async (screen, title, passProps, passOptions) => {
         this.closeSettingsSidebar();
 
         if (!this.closeButton) {
@@ -138,6 +148,7 @@ export default class SettingsSidebarBase extends PureComponent {
         }
 
         const options = {
+            ...passOptions,
             topBar: {
                 leftButtons: [{
                     id: 'close-settings',
