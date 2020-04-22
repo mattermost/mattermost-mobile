@@ -30,7 +30,7 @@ import PostTextbox from './post_textbox';
 
 const MAX_MESSAGE_LENGTH = 4000;
 
-function mapStateToProps(state, ownProps) {
+export function mapStateToProps(state, ownProps) {
     const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
     const config = getConfig(state);
 
@@ -50,17 +50,19 @@ function mapStateToProps(state, ownProps) {
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
     const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
-    const canPost = haveIChannelPermission(
-        state,
-        {
-            channel: currentChannel.id,
-            team: currentChannel.team_id,
-            permission: Permissions.CREATE_POST,
-        },
-    );
 
+    let canPost = true;
     let useChannelMentions = true;
     if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+        canPost = haveIChannelPermission(
+            state,
+            {
+                channel: currentChannel.id,
+                team: currentChannel.team_id,
+                permission: Permissions.CREATE_POST,
+            },
+        );
+
         useChannelMentions = haveIChannelPermission(
             state,
             {
