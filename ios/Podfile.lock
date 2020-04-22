@@ -212,6 +212,8 @@ PODS:
     - React
   - react-native-image-picker (2.3.1):
     - React
+  - react-native-local-auth (1.6.0):
+    - React
   - react-native-netinfo (4.4.0):
     - React
   - react-native-notifications (2.0.6):
@@ -338,6 +340,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-local-auth (from `../node_modules/react-native-local-auth`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-passcode-status (from `../node_modules/react-native-passcode-status`)
@@ -434,6 +437,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-local-auth:
+    :path: "../node_modules/react-native-local-auth"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-notifications:
@@ -526,6 +531,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 0573c02d742d4bef38a5d16b5f039754cfa69888
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
+  react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
