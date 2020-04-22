@@ -101,8 +101,7 @@ export function resetStateForNewVersion(payload) {
             rehydrated: true,
         },
         app: {
-            build: DeviceInfo.getBuildNumber(),
-            version: DeviceInfo.getVersion(),
+            ...payload.app,
         },
         entities: {
             channels,
