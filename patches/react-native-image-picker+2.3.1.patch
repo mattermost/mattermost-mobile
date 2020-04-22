@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
-index 48fb5c1..e6c62bb 100644
+index 48fb5c1..3def244 100644
 --- a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 +++ b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 @@ -3,6 +3,7 @@ package com.imagepicker;
@@ -233,7 +233,7 @@ index 48fb5c1..e6c62bb 100644
        if (imageConfig.resized == null)
        {
          removeUselessFiles(requestCode, imageConfig);
-@@ -523,6 +508,59 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -523,6 +508,63 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
      this.options = null;
    }
  
@@ -280,11 +280,15 @@ index 48fb5c1..e6c62bb 100644
 +
 +      case REQUEST_LAUNCH_MIXED_CAPTURE:
 +      case REQUEST_LAUNCH_VIDEO_CAPTURE:
-+        Uri selectedMediaUri = data.getData();
-+        if (selectedMediaUri.toString().contains("image")) {
-+          extractImageFromResult(activity, selectedMediaUri, requestCode);
++        if (data == null || data.getData() == null) {
++          extractImageFromResult(activity, cameraCaptureURI, requestCode);
 +        } else {
-+          extractVideoFromResult(selectedMediaUri);
++          Uri selectedMediaUri = data.getData();
++          if (selectedMediaUri.toString().contains("image")) {
++            extractImageFromResult(activity, selectedMediaUri, requestCode);
++          } else {
++            extractVideoFromResult(selectedMediaUri);
++          }
 +        }
 +        break;
 +    }
@@ -293,7 +297,7 @@ index 48fb5c1..e6c62bb 100644
    public void invokeCustomButton(@NonNull final String action)
    {
      responseHelper.invokeCustomButton(this.callback, action);
-@@ -551,7 +589,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -551,7 +593,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
    {
      return callback == null || (cameraCaptureURI == null && requestCode == REQUEST_LAUNCH_IMAGE_CAPTURE)
              || (requestCode != REQUEST_LAUNCH_IMAGE_CAPTURE && requestCode != REQUEST_LAUNCH_IMAGE_LIBRARY
@@ -303,7 +307,7 @@ index 48fb5c1..e6c62bb 100644
    }
  
    private void updatedResultResponse(@Nullable final Uri uri,
-@@ -571,22 +610,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -571,22 +614,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
                                     @NonNull final Callback callback,
                                     @NonNull final int requestCode)
    {
@@ -336,7 +340,7 @@ index 48fb5c1..e6c62bb 100644
      if (!permissionsGranted)
      {
        final Boolean dontAskAgain = ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) && ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA);
-@@ -787,4 +827,22 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -787,4 +831,22 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
        videoDurationLimit = options.getInt("durationLimit");
      }
    }
