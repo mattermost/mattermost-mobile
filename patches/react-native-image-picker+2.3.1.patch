@@ -1,8 +1,16 @@
 diff --git a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
-index 48fb5c1..24ffd42 100644
+index 48fb5c1..e6c62bb 100644
 --- a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
 +++ b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerModule.java
-@@ -49,6 +49,7 @@ import java.io.InputStream;
+@@ -3,6 +3,7 @@ package com.imagepicker;
+ import android.Manifest;
+ import android.app.Activity;
+ import android.content.ActivityNotFoundException;
++import android.content.ContentResolver;
+ import android.content.Context;
+ import android.content.DialogInterface;
+ import android.content.Intent;
+@@ -49,6 +50,7 @@ import java.io.InputStream;
  import java.io.OutputStream;
  import java.lang.ref.WeakReference;
  import java.util.List;
@@ -10,7 +18,7 @@ index 48fb5c1..24ffd42 100644
  
  import com.facebook.react.modules.core.PermissionListener;
  import com.facebook.react.modules.core.PermissionAwareActivity;
-@@ -69,6 +70,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -69,6 +71,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
    public static final int REQUEST_LAUNCH_IMAGE_LIBRARY    = 13002;
    public static final int REQUEST_LAUNCH_VIDEO_LIBRARY    = 13003;
    public static final int REQUEST_LAUNCH_VIDEO_CAPTURE    = 13004;
@@ -18,7 +26,7 @@ index 48fb5c1..24ffd42 100644
    public static final int REQUEST_PERMISSIONS_FOR_CAMERA  = 14001;
    public static final int REQUEST_PERMISSIONS_FOR_LIBRARY = 14002;
  
-@@ -266,26 +268,24 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -266,26 +269,24 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
          cameraIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, videoDurationLimit);
        }
      }
@@ -58,90 +66,159 @@ index 48fb5c1..24ffd42 100644
      }
  
      if (cameraIntent.resolveActivity(reactContext.getPackageManager()) == null)
-@@ -352,13 +352,17 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -350,16 +351,19 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+       libraryIntent = new Intent(Intent.ACTION_PICK);
+       libraryIntent.setType("video/*");
      }
++    else if (pickBoth) {
++      libraryIntent = new Intent(Intent.ACTION_GET_CONTENT);
++      libraryIntent.addCategory(Intent.CATEGORY_OPENABLE);
++      libraryIntent.setType("image/*");
++      libraryIntent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"image/*", "video/*"});
++      requestCode = REQUEST_LAUNCH_MIXED_CAPTURE;
++    }
      else
      {
--      requestCode = REQUEST_LAUNCH_IMAGE_LIBRARY;
--      libraryIntent = new Intent(Intent.ACTION_PICK,
-+      requestCode = pickBoth ? REQUEST_LAUNCH_MIXED_CAPTURE : REQUEST_LAUNCH_IMAGE_LIBRARY;
-+      libraryIntent = new Intent(Intent.ACTION_GET_CONTENT,
+       requestCode = REQUEST_LAUNCH_IMAGE_LIBRARY;
+       libraryIntent = new Intent(Intent.ACTION_PICK,
        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
- 
-       if (pickBoth) 
-       {
+-
+-      if (pickBoth) 
+-      {
 -        libraryIntent.setType("image/* video/*");
-+        String[] mimes = {"image/*", "video/*"};
-+        libraryIntent.setType("*/*");
-+        libraryIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimes);
-+      } else {
-+        libraryIntent.setType("image/*");
-       }
+-      }
++      libraryIntent.setType("image/*");
      }
  
-@@ -431,6 +435,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
-             responseHelper.putString("uri", uri.toString());
-             responseHelper.invokeResponse(callback);
-             callback = null;
-+            this.options = null;
-             return;
-           }
-         }
-@@ -442,16 +447,46 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
-         responseHelper.putString("path", getRealPathFromURI(data.getData()));
-         responseHelper.invokeResponse(callback);
-         callback = null;
-+        this.options = null;
-         return;
+     if (libraryIntent.resolveActivity(reactContext.getPackageManager()) == null)
+@@ -385,75 +389,47 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+     }
+   }
  
-+      case REQUEST_LAUNCH_MIXED_CAPTURE:
-       case REQUEST_LAUNCH_VIDEO_CAPTURE:
+-  @Override
+-  public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+-    //robustness code
+-    if (passResult(requestCode))
+-    {
+-      return;
+-    }
+-
+-    responseHelper.cleanResponse();
+-
+-    // user cancel
+-    if (resultCode != Activity.RESULT_OK)
+-    {
+-      removeUselessFiles(requestCode, imageConfig);
+-      responseHelper.invokeCancel(callback);
+-      callback = null;
+-      return;
+-    }
++  protected String getMimeType(Activity activity, Uri uri) {
++    String mimeType = null;
++    if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
++      ContentResolver cr = activity.getApplicationContext().getContentResolver();
++      mimeType = cr.getType(uri);
++    } else {
++      String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri
++              .toString());
++      mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
++              fileExtension.toLowerCase());
++    }
++    return mimeType;
++  }
+ 
+-    Uri uri = null;
+-    switch (requestCode)
++  protected void extractImageFromResult(Activity activity, Uri uri, int requestCode) {
++    String realPath = getRealPathFromURI(uri);
++    String mime = getMimeType(activity, uri);
++    final boolean isUrl = !TextUtils.isEmpty(realPath) &&
++            Patterns.WEB_URL.matcher(realPath).matches();
++    if (realPath == null || isUrl)
+     {
+-      case REQUEST_LAUNCH_IMAGE_CAPTURE:
+-        uri = cameraCaptureURI;
+-        break;
+-
+-      case REQUEST_LAUNCH_IMAGE_LIBRARY:
+-        uri = data.getData();
+-        String realPath = getRealPathFromURI(uri);
+-        final boolean isUrl = !TextUtils.isEmpty(realPath) &&
+-                Patterns.WEB_URL.matcher(realPath).matches();
+-        if (realPath == null || isUrl)
+-        {
+-          try
+-          {
+-            File file = createFileFromURI(uri);
+-            realPath = file.getAbsolutePath();
+-            uri = Uri.fromFile(file);
+-          }
+-          catch (Exception e)
+-          {
+-            // image not in cache
+-            responseHelper.putString("error", "Could not read photo");
+-            responseHelper.putString("uri", uri.toString());
+-            responseHelper.invokeResponse(callback);
+-            callback = null;
+-            return;
+-          }
+-        }
+-        imageConfig = imageConfig.withOriginalFile(new File(realPath));
+-        break;
+-
+-      case REQUEST_LAUNCH_VIDEO_LIBRARY:
+-        responseHelper.putString("uri", data.getData().toString());
+-        responseHelper.putString("path", getRealPathFromURI(data.getData()));
+-        responseHelper.invokeResponse(callback);
+-        callback = null;
+-        return;
+-
+-      case REQUEST_LAUNCH_VIDEO_CAPTURE:
 -        final String path = getRealPathFromURI(data.getData());
 -        responseHelper.putString("uri", data.getData().toString());
 -        responseHelper.putString("path", path);
 -        fileScan(reactContext, path);
--        responseHelper.invokeResponse(callback);
--        callback = null;
--        return;
-+        if (data == null || data.getData() == null) {
-+            uri = cameraCaptureURI;
-+            break;
-+          } else {
-+              final String path = getRealPathFromURI(data.getData());
-+          final boolean isWebUrl = !TextUtils.isEmpty(path) &&
-+                  Patterns.WEB_URL.matcher(path).matches();
-+          if (path == null || isWebUrl) {
-+            try
-+            {
-+              File file = createFileFromURI(data.getData());
-+              realPath = file.getAbsolutePath();
-+              uri = Uri.fromFile(file);
-+              imageConfig = imageConfig.withOriginalFile(new File(realPath));
-+            }
-+            catch (Exception e)
-+            {
-+              // image not in cache
-+              responseHelper.putString("error", "Could not read photo");
-+              responseHelper.putString("uri", uri.toString());
-+              responseHelper.invokeResponse(callback);
-+              callback = null;
-+              this.options = null;
-+              return;
-+            }
-+          } else {
-+              responseHelper.putString("uri", data.getData().toString());
-+              responseHelper.putString("path", path);
-+              fileScan(reactContext, path);
-+              responseHelper.invokeResponse(callback);
-+              callback = null;
-+              this.options = null;
-+              return;
-+            }
-+          }
++      try
++      {
++        File file = createFileFromURI(uri);
++        realPath = file.getAbsolutePath();
++        uri = Uri.fromFile(file);
++      }
++      catch (Exception e)
++      {
++        // image not in cache
++        responseHelper.putString("error", "Could not read photo");
++        responseHelper.putString("uri", uri.toString());
+         responseHelper.invokeResponse(callback);
+         callback = null;
++        this.options = null;
+         return;
++      }
      }
  
++    imageConfig = imageConfig.withOriginalFile(new File(realPath));
++
      final ReadExifResult result = readExifInterface(responseHelper, imageConfig);
-@@ -481,6 +516,14 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+ 
+     if (result.error != null)
+@@ -461,6 +437,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+       removeUselessFiles(requestCode, imageConfig);
+       responseHelper.invokeError(callback, result.error.getMessage());
+       callback = null;
++      this.options = null;
+       return;
+     }
+ 
+@@ -472,7 +449,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+     updatedResultResponse(uri, imageConfig.original.getAbsolutePath());
+ 
+     // don't create a new file if contraint are respected
+-    if (imageConfig.useOriginal(initialWidth, initialHeight, result.currentRotation))
++    if (imageConfig.useOriginal(initialWidth, initialHeight, result.currentRotation) || mime.equals("image/gif"))
+     {
+       responseHelper.putInt("width", initialWidth);
+       responseHelper.putInt("height", initialHeight);
+@@ -481,6 +458,14 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
      else
      {
        imageConfig = getResizedImage(reactContext, this.options, imageConfig, initialWidth, initialHeight, requestCode);
@@ -156,7 +233,67 @@ index 48fb5c1..24ffd42 100644
        if (imageConfig.resized == null)
        {
          removeUselessFiles(requestCode, imageConfig);
-@@ -551,7 +594,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -523,6 +508,59 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+     this.options = null;
+   }
+ 
++  protected void extractVideoFromResult(Uri uri) {
++    responseHelper.putString("uri", uri.toString());
++    responseHelper.putString("path", getRealPathFromURI(uri));
++    responseHelper.invokeResponse(callback);
++    callback = null;
++    this.options = null;
++  }
++
++  @Override
++  public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
++    //robustness code
++    if (passResult(requestCode))
++    {
++      return;
++    }
++
++    responseHelper.cleanResponse();
++
++    // user cancel
++    if (resultCode != Activity.RESULT_OK)
++    {
++      removeUselessFiles(requestCode, imageConfig);
++      responseHelper.invokeCancel(callback);
++      callback = null;
++      return;
++    }
++
++    switch (requestCode)
++    {
++      case REQUEST_LAUNCH_IMAGE_CAPTURE:
++        extractImageFromResult(activity, cameraCaptureURI, requestCode);
++        break;
++
++      case REQUEST_LAUNCH_IMAGE_LIBRARY:
++        extractImageFromResult(activity, data.getData(), requestCode);
++        break;
++
++      case REQUEST_LAUNCH_VIDEO_LIBRARY:
++        extractVideoFromResult(data.getData());
++        break;
++
++      case REQUEST_LAUNCH_MIXED_CAPTURE:
++      case REQUEST_LAUNCH_VIDEO_CAPTURE:
++        Uri selectedMediaUri = data.getData();
++        if (selectedMediaUri.toString().contains("image")) {
++          extractImageFromResult(activity, selectedMediaUri, requestCode);
++        } else {
++          extractVideoFromResult(selectedMediaUri);
++        }
++        break;
++    }
++  }
++
+   public void invokeCustomButton(@NonNull final String action)
+   {
+     responseHelper.invokeCustomButton(this.callback, action);
+@@ -551,7 +589,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
    {
      return callback == null || (cameraCaptureURI == null && requestCode == REQUEST_LAUNCH_IMAGE_CAPTURE)
              || (requestCode != REQUEST_LAUNCH_IMAGE_CAPTURE && requestCode != REQUEST_LAUNCH_IMAGE_LIBRARY
@@ -166,7 +303,7 @@ index 48fb5c1..24ffd42 100644
    }
  
    private void updatedResultResponse(@Nullable final Uri uri,
-@@ -571,22 +615,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -571,22 +610,23 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
                                     @NonNull final Callback callback,
                                     @NonNull final int requestCode)
    {
@@ -199,7 +336,7 @@ index 48fb5c1..24ffd42 100644
      if (!permissionsGranted)
      {
        final Boolean dontAskAgain = ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) && ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA);
-@@ -787,4 +832,22 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
+@@ -787,4 +827,22 @@ public class ImagePickerModule extends ReactContextBaseJavaModule
        videoDurationLimit = options.getInt("durationLimit");
      }
    }
