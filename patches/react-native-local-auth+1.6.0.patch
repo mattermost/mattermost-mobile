@@ -1,3 +1,175 @@
+diff --git a/node_modules/react-native-local-auth/LocalAuth.android.js b/node_modules/react-native-local-auth/LocalAuth.android.js
+index 49242b4..8deada5 100644
+--- a/node_modules/react-native-local-auth/LocalAuth.android.js
++++ b/node_modules/react-native-local-auth/LocalAuth.android.js
+@@ -3,28 +3,63 @@
+  * @providesModule LocalAuth
+  * @flow
+  */
+-'use strict'
++'use strict';
+ 
+-import { createError } from './error'
+-import Errors from './data/errors'
+-import { NativeModules } from 'react-native'
++import { createError } from './error';
++import { NativeModules } from 'react-native';
+ 
+-const { RNLocalAuth } = NativeModules
++const { RNLocalAuth } = NativeModules;
+ 
+-module.exports = {
+-  hasTouchID() {
+-    return Promise.reject(createError('RCTTouchIDNotSupported'))
+-  },
+-
+-  isDeviceSecure() {
+-    return RNLocalAuth.isDeviceSecure()
+-  },
+-
+-  authenticate(opts) {
+-    return RNLocalAuth.authenticate(opts)
+-      .catch(err => {
+-        err.name = err.code
+-        throw err
+-      })
+-  }
++function performAuth(opts) {
++    return new Promise(async (resolve, reject) => {
++        try {
++            if (await RNLocalAuth.isInitialized()) {
++                RNLocalAuth.authenticate(opts).
++                then(() => resolve()).
++                catch((e) => {
++                  e.name = e.code;
++                  reject(e);
++                });
++            } else {
++                setTimeout(() => {
++                    resolve(performAuth(opts));
++                }, 1000);
++            }
++        } catch (err) {
++            reject(err);
++        }
++    });
++}
++
++function performAuthSkipInit(opts) {
++    return new Promise(async (resolve, reject) => {
++        try {
++            RNLocalAuth.authenticate(opts).
++            then(() => resolve()).
++            catch((e) => {
++                e.name = e.code;
++                reject(e);
++            });
++        } catch (err) {
++            reject(err);
++        }
++    });
+ }
++
++module.exports = {
++    hasTouchID() {
++        return Promise.reject(createError('RCTTouchIDNotSupported'))
++    },
++
++    isDeviceSecure() {
++        return RNLocalAuth.isDeviceSecure()
++    },
++
++    authenticate(opts) {
++        return performAuth(opts)
++    },
++
++    auth(opts) {
++        return performAuthSkipInit(opts);
++    }
++};
+\ No newline at end of file
+diff --git a/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java b/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
+index 38b78f1..a47afea 100644
+--- a/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
++++ b/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
+@@ -6,6 +6,7 @@ import android.app.KeyguardManager;
+ import android.content.Intent;
+ import android.content.Context;
+ 
++import android.os.Bundle;
+ import com.facebook.react.bridge.ReactApplicationContext;
+ import com.facebook.react.bridge.ReactContextBaseJavaModule;
+ import com.facebook.react.bridge.ReactMethod;
+@@ -14,6 +15,8 @@ import com.facebook.react.bridge.ActivityEventListener;
+ import com.facebook.react.bridge.BaseActivityEventListener;
+ import com.facebook.react.bridge.ReadableMap;
+ 
++import java.util.Set;
++//import java.util.concurrent.CountDownLatch;
+ // source for main part from:
+ // https://github.com/googlesamples/android-ConfirmCredential/blob/master/Application/src/main/java/com/example/android/confirmcredential/MainActivity.java
+ 
+@@ -28,8 +31,24 @@ public class LocalAuthModule extends ReactContextBaseJavaModule {
+   private final ReactApplicationContext reactContext;
+   private KeyguardManager mKeyguardManager;
+   private Promise authPromise;
++  private boolean initialized = false;
+ 
+   private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
++    @Override
++    public void onNewIntent(Intent intent) {
++      if (!initialized) {
++        Bundle bundle = intent.getExtras();
++        if (bundle != null) {
++          Set<String> keys = bundle.keySet();
++
++          StringBuilder stringBuilder = new StringBuilder();
++          for (String key : keys) {
++            stringBuilder.append(key).append("=").append(bundle.get(key)).append("\n\r");
++            initialized = stringBuilder.toString().contains("screen=Root");
++          }
++        }
++      }
++    }
+     @Override
+     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+       if (requestCode != AUTH_REQUEST || authPromise == null) return;
+@@ -61,19 +80,21 @@ public class LocalAuthModule extends ReactContextBaseJavaModule {
+     promise.resolve(mKeyguardManager.isDeviceSecure());
+   }
+ 
++  @ReactMethod
++  public void isInitialized(final Promise promise) { promise.resolve(initialized);}
++
+   @ReactMethod
+   public void authenticate(ReadableMap map, final Promise promise) {
+     // Create the Confirm Credentials screen. You can customize the title and description. Or
+     // we will provide a generic one for you if you leave it null
+-    Activity currentActivity = getCurrentActivity();
+ 
+-    if (authPromise != null) {
+-      promise.reject(E_ONE_REQ_AT_A_TIME, "Activity doesn't exist");
++    if (getCurrentActivity() == null) {
++      promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "One auth request at a time");
+       return;
+     }
+ 
+-    if (currentActivity == null) {
+-      promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "One auth request at a time");
++    if (authPromise != null) {
++      promise.reject(E_ONE_REQ_AT_A_TIME, "Activity doesn't exist");
+       return;
+     }
+ 
+@@ -84,7 +105,7 @@ public class LocalAuthModule extends ReactContextBaseJavaModule {
+     String description = map.hasKey("description") ? map.getString("description") : null;
+     try {
+       final Intent authIntent = mKeyguardManager.createConfirmDeviceCredentialIntent(reason, description);
+-      currentActivity.startActivityForResult(authIntent, AUTH_REQUEST);
++      getCurrentActivity().startActivityForResult(authIntent, AUTH_REQUEST);
+     } catch (Exception e) {
+       authPromise.reject(E_FAILED_TO_SHOW_AUTH, e);
+       authPromise = null;
 diff --git a/node_modules/react-native-local-auth/react-native-local-auth.podspec b/node_modules/react-native-local-auth/react-native-local-auth.podspec
 new file mode 100644
 index 0000000..5f9a6b4
