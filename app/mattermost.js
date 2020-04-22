@@ -7,7 +7,7 @@ import {Provider} from 'react-redux';
 
 import EventEmitter from 'mattermost-redux/utils/event_emitter';
 
-import {loadMe} from 'app/actions/views/user';
+import {loadMe, logout} from 'app/actions/views/user';
 
 import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
 import {setDeepLinkURL} from 'app/actions/views/root';
@@ -24,6 +24,7 @@ import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
 import {validatePreviousVersion} from 'app/utils/general';
 import pushNotificationsUtils from 'app/utils/push_notifications';
+import {captureJSException} from 'app/utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
@@ -53,10 +54,15 @@ const launchApp = (credentials) => {
 
     if (credentials) {
         waitForHydration(store, () => {
-            const valid = validatePreviousVersion(store);
+            const {previousVersion} = store.getState().app;
+            const valid = validatePreviousVersion(previousVersion);
             if (valid) {
                 store.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
+            } else {
+                const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
+                captureJSException(error, false, store);
+                store.dispatch(logout());
             }
         });
     } else {
