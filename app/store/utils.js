@@ -67,6 +67,7 @@ export function waitForHydration(store, callback) {
 }
 
 export function getStateForReset(initialState, currentState) {
+    const {app} = currentState;
     const {currentUserId} = currentState.entities.users;
     const currentUserProfile = currentState.entities.users.profiles[currentUserId];
     const {currentTeamId} = currentState.entities.teams;
@@ -78,10 +79,7 @@ export function getStateForReset(initialState, currentState) {
     });
 
     const resetState = merge(initialState, {
-        app: {
-            build: DeviceInfo.getBuildNumber(),
-            version: DeviceInfo.getVersion(),
-        },
+        app,
         entities: {
             users: {
                 currentUserId,
