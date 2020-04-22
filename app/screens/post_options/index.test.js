@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 import {makeMapStateToProps} from './index';
 
+import {Permissions} from 'mattermost-redux/constants';
 import * as channelSelectors from 'mattermost-redux/selectors/entities/channels';
 import * as generalSelectors from 'mattermost-redux/selectors/entities/general';
 import * as userSelectors from 'mattermost-redux/selectors/entities/users';
 import * as commonSelectors from 'mattermost-redux/selectors/entities/common';
 import * as teamSelectors from 'mattermost-redux/selectors/entities/teams';
+import * as roleSelectors from 'mattermost-redux/selectors/entities/roles';
 import * as deviceSelectors from 'app/selectors/device';
 import * as preferencesSelectors from 'mattermost-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
@@ -26,6 +28,7 @@ teamSelectors.getCurrentTeamUrl = jest.fn();
 deviceSelectors.getDimensions = jest.fn();
 deviceSelectors.isLandscape = jest.fn();
 preferencesSelectors.getTheme = jest.fn();
+roleSelectors.haveIChannelPermission = jest.fn();
 
 describe('makeMapStateToProps', () => {
     const baseState = {
@@ -134,5 +137,45 @@ describe('makeMapStateToProps', () => {
         const props = mapStateToProps(state, baseOwnProps);
         expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 18)).toBe(false);
         expect(props.canMarkAsUnread).toBe(false);
+    });
+
+    test('haveIChannelPermission for canPost is not called when isMinimumServerVersion is not 5.22v', () => {
+        const state = {
+            entities: {
+                ...baseState.entities,
+                general: {
+                    serverVersion: '5.21',
+                },
+            },
+        };
+
+        const mapStateToProps = makeMapStateToProps();
+        mapStateToProps(state, baseOwnProps);
+        expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)).toBe(false);
+        expect(roleSelectors.haveIChannelPermission).not.toHaveBeenCalledWith(state, {
+            channel: undefined,
+            team: undefined,
+            permission: Permissions.CREATE_POST,
+        });
+    });
+
+    test('haveIChannelPermission for canPost is called when isMinimumServerVersion is 5.22v', () => {
+        const state = {
+            entities: {
+                ...baseState.entities,
+                general: {
+                    serverVersion: '5.22',
+                },
+            },
+        };
+
+        const mapStateToProps = makeMapStateToProps();
+        mapStateToProps(state, baseOwnProps);
+        expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)).toBe(true);
+        expect(roleSelectors.haveIChannelPermission).toHaveBeenCalledWith(state, {
+            channel: undefined,
+            team: undefined,
+            permission: Permissions.CREATE_POST,
+        });
     });
 });

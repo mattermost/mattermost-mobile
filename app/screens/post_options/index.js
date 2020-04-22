@@ -56,14 +56,18 @@ export function makeMapStateToProps() {
         let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
-        const canPost = haveIChannelPermission(
-            state,
-            {
-                channel: post.channel_id,
-                team: channel.team_id,
-                permission: Permissions.CREATE_POST,
-            },
-        );
+
+        let canPost = true;
+        if (isMinimumServerVersion(serverVersion, 5, 22)) {
+            canPost = haveIChannelPermission(
+                state,
+                {
+                    channel: post.channel_id,
+                    team: channel.team_id,
+                    permission: Permissions.CREATE_POST,
+                },
+            );
+        }
 
         if (hasNewPermissions(state)) {
             canAddReaction = haveIChannelPermission(state, {
