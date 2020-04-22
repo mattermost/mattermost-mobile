@@ -215,6 +215,8 @@ PODS:
     - React
   - react-native-image-picker (2.3.1):
     - React
+  - react-native-local-auth (1.6.0):
+    - React
   - react-native-mmkv-storage (0.3.1):
     - MMKV (= 1.1.0)
     - React
@@ -344,6 +346,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-local-auth (from `../node_modules/react-native-local-auth`)
   - react-native-mmkv-storage (from `../node_modules/react-native-mmkv-storage`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
@@ -443,6 +446,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-local-auth:
+    :path: "../node_modules/react-native-local-auth"
   react-native-mmkv-storage:
     :path: "../node_modules/react-native-mmkv-storage"
   react-native-netinfo:
@@ -539,6 +544,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 0573c02d742d4bef38a5d16b5f039754cfa69888
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
+  react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
   react-native-mmkv-storage: d413e1e00b1f410a744e1d547a912a1f87e67260
   react-native-netinfo: 892a5130be97ff8bb69c523739c424a2ffc296d1
   react-native-notifications: d5cb54ef8bf3004dcb56c887650dea08ecbddee7
