@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import merge from 'deepmerge';
-import DeviceInfo from 'react-native-device-info';
 
 function transformFromSet(incoming) {
     const state = {...incoming};
