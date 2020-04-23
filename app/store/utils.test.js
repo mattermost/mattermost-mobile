@@ -20,6 +20,11 @@ describe('getStateForReset', () => {
     const otherUserId = 'other-user-id';
     const currentTeamId = 'current-team-id';
     const currentState = {
+        app: {
+            build: 'build',
+            version: 'version',
+            previousVersion: 'previousVersion',
+        },
         entities: {
             users: {
                 currentUserId,
@@ -75,5 +80,11 @@ describe('getStateForReset', () => {
         const themeKeys = preferenceKeys.filter((key) => key.startsWith('theme--'));
         expect(themeKeys.length).not.toEqual(0);
         expect(themeKeys.length).toEqual(preferenceKeys.length);
+    });
+
+    it('should keep app', () => {
+        const resetState = getStateForReset(initialState, currentState);
+        const {app} = resetState;
+        expect(app).toStrictEqual(currentState.app);
     });
 });
