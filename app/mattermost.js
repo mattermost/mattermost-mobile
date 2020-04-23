@@ -9,7 +9,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {resetToChannel, resetToSelectServer} from '@actions/navigation';
 import {setDeepLinkURL} from '@actions/views/root';
-import {loadMe} from '@actions/views/user';
+import {loadMe, logout} from '@actions/views/user';
 import telemetry from 'app/telemetry';
 import {NavigationTypes} from '@constants';
 import {getAppCredentials} from '@init/credentials';
