@@ -1,5 +1,28 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.30.1 Release
+- Release Date: April , 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue with repeated forced logouts.
+ - Fixed an issue where channels appeared as read-only.
+ - Fixed an issue with a login issue with Google Authenticator MFA when "ExperimentalStrictCSRFEnforcement" setting was enabled.
+ - Fixed an issue where a "No internet connection" error occurred when deleting documents and data.
+
+#### iOS specific
+ - Fixed an issue where Mattermost app crashed when Enterprise mobility management (EMM) was enabled.
+
+#### Android specific
+ - Fixed an issue where using backspace out of a channel caused a forced logout.
+ - Fixed an issue where a video upload attempt caused a "Critical Error Occurred" error.
+
 ## 1.30.0 Release
 - Release Date: April 16, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
