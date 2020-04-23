@@ -168,10 +168,7 @@ export function logout(skipServerLogout = false) {
 }
 
 export function forceLogoutIfNecessary(error) {
-    return async (dispatch, getState) => {
-        const state = getState();
-        const currentUserId = getCurrentUserId(state);
-
+    return async (dispatch) => {
         if (error.status_code === HTTP_UNAUTHORIZED && error.url && !error.url.includes('/login')) {
             dispatch(logout(true));
             return true;
