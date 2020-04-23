@@ -137,7 +137,13 @@ export function cleanUpState(payload, keepCurrent = false) {
     }
 
     nextState.views.root = {
-        hydrationComplete: true,
+        // eslint-disable-next-line no-underscore-dangle
+        hydrationComplete: !nextState._persist,
+    };
+
+    // eslint-disable-next-line no-underscore-dangle
+    nextState._persist = {
+        rehydrated: true,
     };
 
     nextState.entities = {
