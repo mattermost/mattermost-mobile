@@ -12,16 +12,16 @@
 
 #### All apps
  - Fixed an issue with repeated forced logouts.
- - Fixed an issue where channels appeared as read-only.
- - Fixed an issue with a login issue with Google Authenticator MFA when "ExperimentalStrictCSRFEnforcement" setting was enabled.
+ - Fixed an issue where channels appeared as read-only when opening the app.
+ - Fixed an issue where users were unable to log in with Google Authenticator MFA when ``ExperimentalStrictCSRFEnforcement`` setting was enabled.
  - Fixed an issue where a "No internet connection" error occurred when deleting documents and data.
 
 #### iOS specific
  - Fixed an issue where Mattermost app crashed when Enterprise mobility management (EMM) was enabled.
 
 #### Android specific
- - Fixed an issue where using backspace out of a channel caused a forced logout.
- - Fixed an issue where a video upload attempt caused a "Critical Error Occurred" error.
+ - Fixed an issue where using backspace out of a conversation thread or a channel caused a forced logout.
+ - Fixed an issue where a video upload attempt failed with an error.
 
 ## 1.30.0 Release
 - Release Date: April 16, 2020
