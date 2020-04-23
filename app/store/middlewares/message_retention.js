@@ -3,11 +3,8 @@
 
 import DeviceInfo from 'react-native-device-info';
 import {REHYDRATE} from 'redux-persist';
-import semver from 'semver/preload';
 
 import {ViewTypes} from '@constants';
-import {General} from '@mm-redux/constants';
-import EphemeralStore from '@store/ephemeral_store';
 import {
     captureException,
     LOGGER_JAVASCRIPT_WARNING,
@@ -20,17 +17,7 @@ export default function messageRetention(store) {
         if (action.type === REHYDRATE) {
             if (!action.payload) {
                 // On first run payload is not set (when installed)
-                const version = DeviceInfo.getVersion();
-                const major = semver.major(version);
-                const minor = semver.minor(version);
-                const patch = semver.patch(version);
-                const prevAppVersion = `${major}.${parseInt(minor, 10) - 1}.${patch}`;
-                EphemeralStore.prevAppVersion = prevAppVersion;
                 action.payload = {
-                    app: {
-                        build: DeviceInfo.getBuildNumber(),
-                        version,
-                    },
                     _persist: {
                         rehydrated: true,
                     },
@@ -40,16 +27,26 @@ export default function messageRetention(store) {
             const {app} = action.payload;
             const {entities, views} = action.payload;
 
-            if (!EphemeralStore.prevAppVersion) {
-                EphemeralStore.prevAppVersion = app?.version;
-            }
+            const build = DeviceInfo.getBuildNumber();
+            const version = DeviceInfo.getVersion();
+            const previousVersion = app?.version;
+            const previousBuild = app?.build;
+
+            action.payload = {
+                ...action.payload,
+                app: {
+                    build,
+                    version,
+                    previousVersion,
+                },
+            };
 
             if (!entities || !views) {
                 return next(action);
             }
 
             // When a new version of the app has been detected
-            if (!app || !app.version || app.version !== DeviceInfo.getVersion() || app.build !== DeviceInfo.getBuildNumber()) {
+            if (previousVersion !== version || previousBuild !== build) {
                 action.payload = resetStateForNewVersion(action.payload);
                 return next(action);
             }

@@ -25,6 +25,7 @@ import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 import {validatePreviousVersion} from '@utils/general';
 import pushNotificationsUtils from '@utils/push_notifications';
+import {captureJSException} from '@utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
@@ -55,11 +56,18 @@ const launchApp = (credentials) => {
         'start:channel_screen',
     ]);
 
+    const store = Store.redux;
     if (credentials) {
-        waitForHydration(Store.redux, async () => {
-            if (validatePreviousVersion(Store.redux, EphemeralStore.prevAppVersion)) {
-                Store.redux.dispatch(loadMe());
+        waitForHydration(store, async () => {
+            const {previousVersion} = store.getState().app;
+            const valid = validatePreviousVersion(previousVersion);
+            if (valid) {
+                store.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
+            } else {
+                const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
+                captureJSException(error, false, store);
+                store.dispatch(logout());
             }
         });
     } else {
@@ -71,7 +79,7 @@ const launchApp = (credentials) => {
 
     Linking.getInitialURL().then((url) => {
         if (url) {
-            Store.redux.dispatch(setDeepLinkURL(url));
+            store.dispatch(setDeepLinkURL(url));
         }
     });
 };
