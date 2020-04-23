@@ -69,13 +69,11 @@ export default class FileAttachmentList extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.files !== this.props.files) {
+        if (prevProps.files.length !== this.props.files.length) {
             this.filesForGallery = this.getFilesForGallery(this.props);
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
-        }
-        if (this.props.files !== prevProps.files && this.props.files.length === 0) {
             this.loadFilesForPost();
         }
     }
