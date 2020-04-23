@@ -26,7 +26,6 @@ export function completeLogin(user, deviceToken) {
         const token = Client4.getToken();
         const url = Client4.getUrl();
 
-        setCSRFFromCookie(url);
         setAppCredentials(deviceToken, user.id, token, url);
 
         // Set timezone
@@ -125,6 +124,7 @@ export function login(loginId, password, mfaToken, ldapOnly = false) {
 
         try {
             user = await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly);
+            await setCSRFFromCookie(Client4.getUrl());
         } catch (error) {
             return {error};
         }
@@ -142,6 +142,7 @@ export function login(loginId, password, mfaToken, ldapOnly = false) {
 export function ssoLogin(token) {
     return async (dispatch) => {
         Client4.setToken(token);
+        await setCSRFFromCookie(Client4.getUrl());
         const result = await dispatch(loadMe());
 
         if (!result.error) {
@@ -167,11 +168,8 @@ export function logout(skipServerLogout = false) {
 }
 
 export function forceLogoutIfNecessary(error) {
-    return async (dispatch, getState) => {
-        const state = getState();
-        const currentUserId = getCurrentUserId(state);
-
-        if (currentUserId && error.status_code === HTTP_UNAUTHORIZED && error.url && !error.url.includes('/login')) {
+    return async (dispatch) => {
+        if (error.status_code === HTTP_UNAUTHORIZED && error.url && !error.url.includes('/login')) {
             dispatch(logout(true));
             return true;
         }
