@@ -36,11 +36,12 @@ export default {
             listeners.splice(index, 1);
         }
     },
-    authenticate: () => {
+    authenticate: (opts) => {
         if (!LocalAuth) {
             LocalAuth = require('react-native-local-auth');
         }
-        return LocalAuth.auth;
+
+        return LocalAuth.auth(opts);
     },
     blurAppScreen: emptyFunction,
     appGroupIdentifier: null,
