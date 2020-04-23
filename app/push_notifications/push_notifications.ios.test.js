@@ -3,7 +3,8 @@
 
 import NotificationsIOS from 'react-native-notifications';
 
-import * as ViewSelectors from 'app/selectors/views';
+import * as ViewSelectors from '@selectors/views';
+import Store from '@store/store';
 
 import PushNotification from './push_notifications.ios';
 
@@ -95,7 +96,7 @@ describe('PushNotification', () => {
     });
 
     it('clearChannelNotifications should set app badge number from to delivered notification count when redux store is not set', () => {
-        PushNotification.reduxStore = null;
+        Store.redux = null;
         const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
         const deliveredNotifications = [{identifier: 1}, {identifier: 2}];
         NotificationsIOS.setDeliveredNotifications(deliveredNotifications);
@@ -105,7 +106,7 @@ describe('PushNotification', () => {
     });
 
     it('clearChannelNotifications should set app badge number from redux store when set', () => {
-        PushNotification.reduxStore = {
+        Store.redux = {
             getState: jest.fn(),
         };
         const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');

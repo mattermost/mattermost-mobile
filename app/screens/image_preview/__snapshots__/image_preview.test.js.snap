@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ImagePreview should match snapshot 1`] = `
-<AnimatedComponent
+<ForwardRef(AnimatedComponentWrapper)
   style={
     Array [
       Object {
@@ -14,7 +14,7 @@ exports[`ImagePreview should match snapshot 1`] = `
     ]
   }
 >
-  <AnimatedComponent
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Object {
         "backgroundColor": "#000",
@@ -57,7 +57,7 @@ exports[`ImagePreview should match snapshot 1`] = `
         }
       }
     />
-    <AnimatedComponent
+    <ForwardRef(AnimatedComponentWrapper)
       style={
         Array [
           Object {
@@ -94,8 +94,7 @@ exports[`ImagePreview should match snapshot 1`] = `
             }
           }
         >
-          <TouchableOpacity
-            activeOpacity={0.2}
+          <Component
             onPress={[Function]}
             style={
               Object {
@@ -112,7 +111,7 @@ exports[`ImagePreview should match snapshot 1`] = `
               name="md-close"
               size={26}
             />
-          </TouchableOpacity>
+          </Component>
           <Text
             style={
               Object {
@@ -126,8 +125,7 @@ exports[`ImagePreview should match snapshot 1`] = `
           >
             1/2
           </Text>
-          <TouchableOpacity
-            activeOpacity={0.2}
+          <Component
             onPress={[Function]}
             style={
               Object {
@@ -144,11 +142,11 @@ exports[`ImagePreview should match snapshot 1`] = `
               name="ios-download"
               size={26}
             />
-          </TouchableOpacity>
+          </Component>
         </View>
       </View>
-    </AnimatedComponent>
-    <AnimatedComponent
+    </ForwardRef(AnimatedComponentWrapper)>
+    <ForwardRef(AnimatedComponentWrapper)
       style={
         Array [
           Object {
@@ -210,8 +208,8 @@ exports[`ImagePreview should match snapshot 1`] = `
           Caption 1
         </Text>
       </LinearGradient>
-    </AnimatedComponent>
-  </AnimatedComponent>
+    </ForwardRef(AnimatedComponentWrapper)>
+  </ForwardRef(AnimatedComponentWrapper)>
   <Downloader
     deviceHeight={400}
     deviceWidth={300}
@@ -231,14 +229,13 @@ exports[`ImagePreview should match snapshot 1`] = `
     saveToCameraRoll={true}
     show={false}
   />
-</AnimatedComponent>
+</ForwardRef(AnimatedComponentWrapper)>
 `;
 
 exports[`ImagePreview should match snapshot and not renderDownloadButton for local files 1`] = `null`;
 
 exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
-<TouchableOpacity
-  activeOpacity={0.2}
+<Component
   onPress={[Function]}
   style={
     Object {
@@ -255,5 +252,5 @@ exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
     name="ios-download"
     size={26}
   />
-</TouchableOpacity>
+</Component>
 `;

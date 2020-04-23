@@ -271,8 +271,7 @@ LongPost {
                 }
               }
             >
-              <TouchableOpacity
-                activeOpacity={0.2}
+              <Component
                 onPress={[Function]}
                 style={
                   Object {
@@ -289,7 +288,7 @@ LongPost {
                   name="close"
                   size={20}
                 />
-              </TouchableOpacity>
+              </Component>
               <View
                 style={
                   Object {

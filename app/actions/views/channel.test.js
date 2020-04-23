@@ -4,19 +4,19 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import initialState from 'app/initial_state';
-import {ChannelTypes} from '@mm-redux/action_types';
 import testHelper from 'test/test_helper';
 
-import {ViewTypes} from 'app/constants';
-import * as ChannelActions from 'app/actions/views/channel';
+import * as ChannelActions from '@actions/views/channel';
+import {ViewTypes} from '@constants';
+import {ChannelTypes} from '@mm-redux/action_types';
+import postReducer from '@mm-redux/reducers/entities/posts';
+import initialState from '@store/initial_state';
+
 const {
     handleSelectChannel,
     handleSelectChannelByName,
     loadPostsIfNecessaryWithRetry,
 } = ChannelActions;
-
-import postReducer from '@mm-redux/reducers/entities/posts';
 
 const MOCK_CHANNEL_MARK_AS_READ = 'MOCK_CHANNEL_MARK_AS_READ';
 const MOCK_CHANNEL_MARK_AS_VIEWED = 'MOCK_CHANNEL_MARK_AS_VIEWED';

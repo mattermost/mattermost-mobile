@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import initialState from 'app/initial_state';
-import {getStateForReset} from 'app/store/utils';
+import initialState from '@store/initial_state';
+import {getStateForReset} from '@store/utils';
 
 /*
 const {currentUserId} = currentState.entities.users;
@@ -20,6 +20,11 @@ describe('getStateForReset', () => {
     const otherUserId = 'other-user-id';
     const currentTeamId = 'current-team-id';
     const currentState = {
+        app: {
+            build: 'build',
+            version: 'version',
+            previousVersion: 'previousVersion',
+        },
         entities: {
             users: {
                 currentUserId,
@@ -79,5 +84,11 @@ describe('getStateForReset', () => {
         const preferenceKeys = Object.keys(myPreferences);
         const themeKeys = preferenceKeys.filter((key) => key.startsWith('theme--'));
         expect(themeKeys.length).toEqual(2);
+    });
+
+    it('should keep app', () => {
+        const resetState = getStateForReset(initialState, currentState);
+        const {app} = resetState;
+        expect(app).toStrictEqual(currentState.app);
     });
 });

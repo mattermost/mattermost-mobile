@@ -69,13 +69,11 @@ export default class FileAttachmentList extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.files !== this.props.files) {
+        if (prevProps.files.length !== this.props.files.length) {
             this.filesForGallery = this.getFilesForGallery(this.props);
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
-        }
-        if (this.props.files !== prevProps.files && this.props.files.length === 0) {
             this.loadFilesForPost();
         }
     }
@@ -120,10 +118,8 @@ export default class FileAttachmentList extends PureComponent {
                 let uri;
                 if (file.localPath) {
                     uri = file.localPath;
-                } else if (isGif(file)) {
-                    uri = Client4.getFileUrl(file.id);
                 } else {
-                    uri = Client4.getFilePreviewUrl(file.id);
+                    uri = Client4.getFileUrl(file.id);
                 }
 
                 results.push({

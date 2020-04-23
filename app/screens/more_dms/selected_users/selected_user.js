@@ -73,9 +73,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 27,
             borderRadius: 3,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            marginBottom: 2,
+            marginBottom: 4,
             marginRight: 10,
-            marginTop: 10,
             paddingLeft: 10,
         },
         remove: {

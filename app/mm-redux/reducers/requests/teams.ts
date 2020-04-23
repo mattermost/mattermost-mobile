@@ -14,7 +14,7 @@ function getMyTeams(state: RequestStatusType = initialRequestState(), action: Ge
         TeamTypes.MY_TEAMS_SUCCESS,
         TeamTypes.MY_TEAMS_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -24,7 +24,7 @@ function getTeams(state: RequestStatusType = initialRequestState(), action: Gene
         TeamTypes.GET_TEAMS_SUCCESS,
         TeamTypes.GET_TEAMS_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -34,7 +34,7 @@ function joinTeam(state: RequestStatusType = initialRequestState(), action: Gene
         TeamTypes.JOIN_TEAM_SUCCESS,
         TeamTypes.JOIN_TEAM_FAILURE,
         state,
-        action
+        action,
     );
 }
 

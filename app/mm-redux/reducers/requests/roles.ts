@@ -14,7 +14,7 @@ function getRolesByNames(state: RequestStatusType = initialRequestState(), actio
         RoleTypes.ROLES_BY_NAMES_SUCCESS,
         RoleTypes.ROLES_BY_NAMES_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -24,7 +24,7 @@ function getRoleByName(state: RequestStatusType = initialRequestState(), action:
         RoleTypes.ROLE_BY_NAME_SUCCESS,
         RoleTypes.ROLE_BY_NAME_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -34,7 +34,7 @@ function getRole(state: RequestStatusType = initialRequestState(), action: Gener
         RoleTypes.ROLE_BY_ID_SUCCESS,
         RoleTypes.ROLE_BY_ID_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -44,7 +44,7 @@ function editRole(state: RequestStatusType = initialRequestState(), action: Gene
         RoleTypes.EDIT_ROLE_SUCCESS,
         RoleTypes.EDIT_ROLE_FAILURE,
         state,
-        action
+        action,
     );
 }
 

@@ -6,7 +6,7 @@ import {BATCH} from 'redux-batched-actions';
 export const BREADCRUMB_REDUX_ACTION = 'redux-action';
 
 let Sentry;
-export function createSentryMiddleware() {
+export default function createSentryMiddleware() {
     if (!Sentry) {
         Sentry = require('@sentry/react-native');
     }

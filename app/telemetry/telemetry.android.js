@@ -3,7 +3,7 @@
 
 import LocalConfig from 'assets/config'; // eslint-disable-line
 
-import store from 'app/store';
+import Store from '@store/store';
 
 import {
     saveToTelemetryServer,
@@ -32,7 +32,7 @@ class Telemetry {
     }
 
     canSendTelemetry() {
-        const {config} = store.getState().entities.general;
+        const {config} = Store.redux.getState().entities.general;
         return Boolean(!__DEV__ && config.EnableDiagnostics === 'true' && LocalConfig.TelemetryEnabled);
     }
 
@@ -144,7 +144,7 @@ class Telemetry {
             });
         });
 
-        const {config} = store.getState().entities.general;
+        const {config} = Store.redux.getState().entities.general;
         const deviceInfo = getDeviceInfo();
         deviceInfo.server_version = config.Version;
 

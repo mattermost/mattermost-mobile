@@ -15,7 +15,7 @@ export function handleUploadFilesRequest(
     FAILURE: string,
     CANCEL: string,
     state: RequestStatusType,
-    action: GenericAction
+    action: GenericAction,
 ): RequestStatusType {
     switch (action.type) {
     case REQUEST:
@@ -60,7 +60,7 @@ function uploadFiles(state: RequestStatusType = initialRequestState(), action: G
         FileTypes.UPLOAD_FILES_FAILURE,
         FileTypes.UPLOAD_FILES_CANCEL,
         state,
-        action
+        action,
     );
 }
 

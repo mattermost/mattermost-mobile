@@ -15,7 +15,7 @@ import configureStore from 'test/test_store';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import initialState from '@mm-redux/store/initial_state';
+import initialState from '@store/initial_state';
 
 const OK_RESPONSE = {status: 'OK'};
 const UNAUTHORIZED = {status_code: 401};

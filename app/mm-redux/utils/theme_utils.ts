@@ -77,22 +77,22 @@ export function blendColors(background: string, foreground: string, opacity: num
     const red = Math.floor(blendComponent(
         backgroundComponents.red,
         foregroundComponents.red,
-        opacity
+        opacity,
     ));
     const green = Math.floor(blendComponent(
         backgroundComponents.green,
         foregroundComponents.green,
-        opacity
+        opacity,
     ));
     const blue = Math.floor(blendComponent(
         backgroundComponents.blue,
         foregroundComponents.blue,
-        opacity
+        opacity,
     ));
     const alpha = blendComponent(
         backgroundComponents.alpha,
         foregroundComponents.alpha,
-        opacity
+        opacity,
     );
 
     return `rgba(${red},${green},${blue},${alpha})`;
