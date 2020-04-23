@@ -12,7 +12,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
