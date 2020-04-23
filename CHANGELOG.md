@@ -13,7 +13,7 @@
 #### All apps
  - Fixed an issue with repeated forced logouts.
  - Fixed an issue where channels appeared as read-only when opening the app.
- - Fixed an issue where users were unable to log in when ``ExperimentalStrictCSRFEnforcement`` setting was enabled.
+ - Fixed an issue where users were unable to log in if ``ExperimentalStrictCSRFEnforcement`` setting was enabled.
  - Fixed an issue where a "No internet connection" error occurred when deleting documents and data.
 
 #### iOS specific
