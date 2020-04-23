@@ -3,139 +3,6 @@
 
 import DeviceInfo from 'react-native-device-info';
 
-import initialState from '@store/initial_state';
-
-export function resetStateForNewVersion(payload) {
-    const lastChannelForTeam = getLastChannelForTeam(payload);
-
-    let general = initialState.entities.general;
-    if (payload.entities.general) {
-        general = payload.entities.general;
-    }
-
-    let teams = initialState.entities.teams;
-    if (payload.entities.teams) {
-        teams = {
-            currentTeamId: payload.entities.teams.currentTeamId,
-            teams: payload.entities.teams.teams,
-            myMembers: payload.entities.teams.myMembers,
-        };
-    }
-
-    let users = initialState.entities.users;
-    if (payload.entities.users) {
-        const currentUserId = payload.entities.users.currentUserId;
-        if (currentUserId) {
-            users = {
-                currentUserId,
-                profiles: {
-                    [currentUserId]: payload.entities.users.profiles[currentUserId],
-                },
-            };
-        }
-    }
-
-    let preferences = initialState.entities.preferences;
-    if (payload.entities.preferences) {
-        preferences = payload.entities.preferences;
-    }
-
-    let roles = initialState.entities.roles;
-    if (payload.entities.roles) {
-        roles = payload.entities.roles;
-    }
-
-    let search = initialState.entities.search;
-    if (payload.entities.search && payload.entities.search.recent) {
-        search = {
-            recent: payload.entities.search.recent,
-        };
-    }
-
-    let channelDrafts = initialState.views.channel.drafts;
-    if (payload.views.channel && payload.views.channel.drafts) {
-        channelDrafts = payload.views.channel.drafts;
-    }
-
-    let i18n = initialState.views.i18n;
-    if (payload.views.i18n) {
-        i18n = payload.views.i18n;
-    }
-
-    let lastTeamId = initialState.views.team.lastTeamId;
-    if (payload.views.team && payload.views.team.lastTeamId) {
-        lastTeamId = payload.views.team.lastTeamId;
-    }
-
-    const currentChannelId = lastChannelForTeam[lastTeamId] && lastChannelForTeam[lastTeamId].length ? lastChannelForTeam[lastTeamId][0] : '';
-    let channels = initialState.entities.channels;
-    if (payload.entities.channels && currentChannelId) {
-        channels = {
-            currentChannelId,
-            channels: {
-                [currentChannelId]: payload.entities.channels.channels[currentChannelId],
-            },
-            myMembers: {
-                [currentChannelId]: payload.entities.channels.myMembers[currentChannelId],
-            },
-        };
-    }
-
-    let threadDrafts = initialState.views.thread.drafts;
-    if (payload.views.thread && payload.views.thread.drafts) {
-        threadDrafts = payload.views.thread.drafts;
-    }
-
-    let selectServer = initialState.views.selectServer;
-    if (payload.views.selectServer) {
-        selectServer = payload.views.selectServer;
-    }
-
-    let recentEmojis = initialState.views.recentEmojis;
-    if (payload.views.recentEmojis) {
-        recentEmojis = payload.views.recentEmojis;
-    }
-
-    const nextState = {
-        _persist: {
-            rehydrated: true,
-        },
-        app: {
-            ...payload.app,
-        },
-        entities: {
-            channels,
-            general,
-            teams,
-            users,
-            preferences,
-            search,
-            roles,
-        },
-        views: {
-            channel: {
-                drafts: channelDrafts,
-            },
-            i18n,
-            team: {
-                lastTeamId,
-                lastChannelForTeam,
-            },
-            thread: {
-                drafts: threadDrafts,
-            },
-            selectServer,
-            recentEmojis,
-        },
-        websocket: {
-            lastConnectAt: payload.websocket?.lastConnectAt,
-            lastDisconnectAt: payload.websocket?.lastDisconnectAt,
-        },
-    };
-
-    return nextState;
-}
-
 export function getLastChannelForTeam(payload) {
     if (payload?.views?.team?.lastChannelForTeam) {
         const lastChannelForTeam = {...payload.views.team.lastChannelForTeam};
@@ -154,10 +21,12 @@ export function getLastChannelForTeam(payload) {
 }
 
 export function cleanUpState(payload, keepCurrent = false) {
-    const resetPayload = resetStateForNewVersion(payload);
-    const {currentChannelId} = payload.entities.channels;
+    const nextState = Object.assign({}, payload);
 
-    const {lastChannelForTeam} = resetPayload.views.team;
+    const lastTeamId = payload.views?.team?.lastTeamId;
+    const lastChannelForTeam = getLastChannelForTeam(payload);
+    const currentChannelId = lastChannelForTeam[lastTeamId] && lastChannelForTeam[lastTeamId].length ? lastChannelForTeam[lastTeamId][0] : '';
+
     const nextEntities = {
         posts: {
             posts: {},
@@ -175,9 +44,9 @@ export function cleanUpState(payload, keepCurrent = false) {
     };
 
     let retentionPeriod = 0;
-    if (resetPayload.entities.general && resetPayload.entities.general.dataRetentionPolicy &&
-        resetPayload.entities.general.dataRetentionPolicy.message_deletion_enabled) {
-        retentionPeriod = resetPayload.entities.general.dataRetentionPolicy.message_retention_cutoff;
+    if (payload.entities.general && payload.entities.general.dataRetentionPolicy &&
+        payload.entities.general.dataRetentionPolicy.message_deletion_enabled) {
+        retentionPeriod = payload.entities.general.dataRetentionPolicy.message_retention_cutoff;
     }
 
     const postIdsToKeep = [];
@@ -202,6 +71,12 @@ export function cleanUpState(payload, keepCurrent = false) {
             postIdsToKeep.push(...flagged);
         }
     }
+
+    const nextSearch = {
+        ...payload.entities.search,
+        results: searchResults,
+        flagged: flaggedPosts,
+    };
 
     postIdsToKeep.forEach((postId) => {
         const post = payload.entities.posts.posts[postId];
@@ -261,38 +136,21 @@ export function cleanUpState(payload, keepCurrent = false) {
         nextEntities.posts.pendingPostIds = nextPendingPostIds;
     }
 
-    const nextState = {
-        app: resetPayload.app,
-        entities: {
-            ...nextEntities,
-            channels: payload.entities.channels,
-            emojis: payload.entities.emojis,
-            general: resetPayload.entities.general,
-            preferences: resetPayload.entities.preferences,
-            search: {
-                ...resetPayload.entities.search,
-                results: searchResults,
-                flagged: flaggedPosts,
-            },
-            teams: resetPayload.entities.teams,
-            users: payload.entities.users,
-            roles: resetPayload.entities.roles,
-        },
-        views: {
-            announcement: payload.views.announcement,
-            ...resetPayload.views,
-            channel: {
-                ...resetPayload.views.channel,
-                ...payload.views.channel,
-            },
-        },
-        websocket: {
-            lastConnectAt: payload.websocket?.lastConnectAt,
-            lastDisconnectAt: payload.websocket?.lastDisconnectAt,
-        },
+    nextState.views.root = {
+        // eslint-disable-next-line no-underscore-dangle
+        hydrationComplete: !nextState._persist,
     };
 
-    nextState.errors = payload.errors;
+    // eslint-disable-next-line no-underscore-dangle
+    nextState._persist = {
+        rehydrated: true,
+    };
+
+    nextState.entities = {
+        ...nextState.entities,
+        ...nextEntities,
+        search: nextSearch,
+    };
 
     return nextState;
 }
