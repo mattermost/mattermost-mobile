@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes, NavigationTypes} from 'app/constants';
 
-import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
+import {TeamTypes, ChannelTypes, RoleTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
@@ -266,6 +266,12 @@ export function handleSelectChannel(channelId) {
 
         if (channel && currentChannelId !== channelId) {
             const actions = markAsViewedAndReadBatch(state, channelId, currentChannelId);
+            if (channel.team_id !== currentTeamId) {
+                actions.push({
+                    type: TeamTypes.SELECT_TEAM,
+                    data: channel.team_id,
+                });
+            }
             actions.push({
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
