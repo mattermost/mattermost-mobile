@@ -704,6 +704,17 @@ export default class Search extends PureComponent {
             fontSize: 15,
         };
 
+        const paddingRes = padding(isLandscape);
+        if (paddingRes) {
+            // Without this the default paddingLeft in style.header
+            // overrides the paddingHorizontal value gotten from padding(isLandscape)
+            paddingRes.paddingLeft = null;
+
+            if (isLandscape) {
+                paddingRes.paddingTop = 10;
+            }
+        }
+
         return (
             <SafeAreaView
                 excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_WITH_INSETS}
@@ -711,7 +722,7 @@ export default class Search extends PureComponent {
             >
                 <KeyboardLayout>
                     <StatusBar/>
-                    <View style={[style.header, padding(isLandscape)]}>
+                    <View style={[style.header, paddingRes]}>
                         <SearchBar
                             ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
