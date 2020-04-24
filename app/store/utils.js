@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import merge from 'deepmerge';
+import DeviceInfo from 'react-native-device-info';
 
 function transformFromSet(incoming) {
     const state = {...incoming};
@@ -80,7 +81,10 @@ export function getStateForReset(initialState, currentState) {
     const preferences = currentState.entities.preferences;
 
     const resetState = merge(initialState, {
-        app,
+        app: {
+            ...app,
+            previousVersion: DeviceInfo.getVersion(),
+        },
         entities: {
             general: currentState.entities.general,
             users: {
