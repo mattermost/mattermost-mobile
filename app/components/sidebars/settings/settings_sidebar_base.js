@@ -89,6 +89,11 @@ export default class SettingsSidebarBase extends PureComponent {
             'EditProfile',
             intl.formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
             {currentUser, commandType},
+            Platform.select({
+                ios: {
+                    modalPresentationStyle: 'pageSheet',
+                },
+            }),
         );
     };
 
@@ -96,6 +101,12 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'FlaggedPosts',
             intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Flagged Posts'}),
+            {},
+            Platform.select({
+                ios: {
+                    modalPresentationStyle: 'pageSheet',
+                },
+            }),
         );
     };
 
@@ -103,6 +114,12 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'RecentMentions',
             intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
+            {},
+            Platform.select({
+                ios: {
+                    modalPresentationStyle: 'pageSheet',
+                },
+            }),
         );
     };
 

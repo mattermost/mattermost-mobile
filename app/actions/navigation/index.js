@@ -312,6 +312,11 @@ export function showSearchModal(initialValue = '') {
             visible: false,
             height: 0,
         },
+        ...Platform.select({
+            ios: {
+                modalPresentationStyle: 'pageSheet',
+            },
+        }),
     };
 
     showModal(name, title, passProps, options);
