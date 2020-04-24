@@ -86,7 +86,10 @@ export function getStateForReset(initialState, currentState) {
     });
 
     const resetState = merge(initialState, {
-        app,
+        app: {
+            ...app,
+            previousVersion: DeviceInfo.getVersion(),
+        },
         entities: {
             general: currentState.entities.general,
             users: {
