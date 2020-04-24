@@ -16,13 +16,14 @@ import {
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomePro from 'react-native-vector-icons/Ionicons';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {General} from '@mm-redux/constants';
 import {debounce} from '@mm-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
-import {DeviceTypes, ListTypes} from 'app/constants';
+import {DeviceTypes, ListTypes, NavigationTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
 import BottomSheet from 'app/utils/bottom_sheet';
@@ -238,6 +239,7 @@ export default class List extends PureComponent {
             },
         });
 
+        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
         showModal(screen, title, passProps, options);
     });
 
@@ -256,6 +258,7 @@ export default class List extends PureComponent {
             },
         });
 
+        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
         showModal(screen, title, passProps, options);
     });
 
@@ -278,6 +281,7 @@ export default class List extends PureComponent {
             }),
         };
 
+        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
         showModal(screen, title, passProps, options);
     });
 
@@ -295,6 +299,7 @@ export default class List extends PureComponent {
             },
         });
 
+        EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
         showModal(screen, title, passProps, options);
     });
 
