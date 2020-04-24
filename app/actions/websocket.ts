@@ -641,17 +641,28 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
             const currentChannelId = getCurrentChannelId(state);
             const currentTeamId = getCurrentTeamId(state);
             const currentUser = getCurrentUser(state);
-            const actions: Array<GenericAction> = [{
-                type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
-                data: {
-                    channel_id: msg.broadcast.channel_id,
-                    user_id: msg.data.user_id,
-                },
-            }];
+            const actions: Array<GenericAction> = [];
+            if (msg.data.user_id) {
+                actions.push({
+                    type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
+                    data: {
+                        channel_id: msg.broadcast.channel_id,
+                        user_id: msg.data.user_id,
+                    },
+                });
+            } else if (msg.broadcast.user_id) {
+                actions.push({
+                    type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
+                    data: {
+                        channel_id: msg.data.channel_id,
+                        user_id: msg.broadcast.user_id,
+                    },
+                });
+            }
 
             const channel = channels[currentChannelId];
 
-            if (msg.data.user_id !== currentUser.id) {
+            if (msg.data.user_id && msg.data.user_id !== currentUser.id) {
                 const members = getChannelMembersInChannels(state);
                 const isMember = Object.values(members).some((member) => member[msg.data.user_id]);
                 if (channel && isGuest(currentUser.roles) && !isMember) {
@@ -665,6 +676,7 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
                 }
             }
 
+            let redirectToDefaultChannel = false;
             if (msg.broadcast.user_id === currentUser.id && currentTeamId) {
                 const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true));
 
@@ -689,7 +701,7 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
 
                 if (msg.data.channel_id === currentChannelId) {
                     // emit the event so the client can change his own state
-                    EventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
+                    redirectToDefaultChannel = true;
                 }
                 if (isGuest(currentUser.roles)) {
                     const notVisible = notVisibleUsersActions(state);
@@ -706,6 +718,9 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
             }
 
             dispatch(batchActions(actions, 'BATCH_WS_USER_REMOVED'));
+            if (redirectToDefaultChannel) {
+                EventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
+            }
         } catch {
             // do nothing
         }

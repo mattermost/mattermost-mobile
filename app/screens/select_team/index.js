@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTeams, addUserToTeam, joinTeam} from '@mm-redux/actions/teams';
+import {getTeams, getMyTeams, addUserToTeam, joinTeam} from '@mm-redux/actions/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getJoinableTeams} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
@@ -35,6 +35,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getTeams,
+            getMyTeams,
             handleTeamChange,
             joinTeam,
             addUserToTeam,

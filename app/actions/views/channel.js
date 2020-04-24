@@ -3,7 +3,7 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {ViewTypes} from 'app/constants';
+import {ViewTypes, NavigationTypes} from 'app/constants';
 
 import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
 import {
@@ -21,6 +21,8 @@ import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
+    getDefaultChannelForTeams,
+    getMyFirstChannelForTeams,
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -200,18 +202,54 @@ export function selectDefaultChannel(teamId) {
         const channel = selectChannelByName(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
         let channelId;
         if (channel) {
-            channelId = channel.id;
-        } else {
-            // Handle case when the default channel cannot be found
-            // so we need to get the first available channel of the team
-            const channels = Object.values(channelsInTeam);
-            const firstChannel = channels.length ? channels[0].id : '';
-            channelId = firstChannel;
+            dispatch(handleSelectChannel(channel.id));
+            return;
+        }
+
+        // Handle case when the default channel cannot be found
+        // so we need to get the first available channel of the team
+        const channels = Object.values(channelsInTeam);
+        const firstChannel = channels.length ? channels[0].id : '';
+        channelId = firstChannel;
+
+        if (channelId) {
+            dispatch(handleSelectChannel(channelId));
+            return;
+        }
+
+        // Handle case when no channel found in the current team
+        // so we need to get the first available default channel of all teams
+        const teamsDefaultChannels = getDefaultChannelForTeams(state);
+        for (const ch in Object.values(teamsDefaultChannels)) {
+            if (ch) {
+                channelId = ch.id;
+                break;
+            }
         }
 
         if (channelId) {
             dispatch(handleSelectChannel(channelId));
+            return;
         }
+
+        // Handle case when no default channel found in any team
+        // so we need to get the first available channel of all teams
+        const teamsMyFirstChannels = getMyFirstChannelForTeams(state);
+        for (const ch in Object.values(teamsMyFirstChannels)) {
+            if (ch) {
+                channelId = ch.id;
+                break;
+            }
+        }
+
+        if (channelId) {
+            dispatch(handleSelectChannel(channelId));
+            return;
+        }
+
+        // If there is no possible channel to redirect, redirect to no teams
+        // page.
+        EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
     };
 }
 
