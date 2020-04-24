@@ -4,7 +4,7 @@
 import {preventDoubleTap} from './tap';
 
 describe('Prevent double tap', () => {
-    it('should prevent double taps', (done) => {
+    it('should prevent double taps within the 300ms default', (done) => {
         const testFunction = jest.fn();
         const test = preventDoubleTap(testFunction);
 
@@ -13,14 +13,28 @@ describe('Prevent double tap', () => {
         expect(testFunction).toHaveBeenCalledTimes(1);
         setTimeout(() => {
             test();
-            expect(testFunction).toHaveBeenCalledTimes(2);
+            expect(testFunction).toHaveBeenCalledTimes(1);
             done();
-        }, 1000);
+        }, 100);
     });
 
-    it('should prevent double taps before 300ms', (done) => {
+    it('should prevent double taps within 1 second', (done) => {
         const testFunction = jest.fn();
-        const test = preventDoubleTap(testFunction, 300);
+        const test = preventDoubleTap(testFunction, 1000);
+
+        test();
+        test();
+        expect(testFunction).toHaveBeenCalledTimes(1);
+        setTimeout(() => {
+            test();
+            expect(testFunction).toHaveBeenCalledTimes(1);
+            done();
+        }, 900);
+    });
+
+    it('should register multiple taps when done > 300ms apart', (done) => {
+        const testFunction = jest.fn();
+        const test = preventDoubleTap(testFunction);
 
         test();
         test();
