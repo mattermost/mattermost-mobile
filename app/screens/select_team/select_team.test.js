@@ -23,9 +23,16 @@ const getTeams = async () => {
     };
 };
 
+const getMyTeams = async () => {
+    return {
+        error: {},
+    };
+};
+
 describe('SelectTeam', () => {
     const actions = {
         getTeams,
+        getMyTeams,
         handleTeamChange: jest.fn(),
         addUserToTeam: jest.fn(),
         joinTeam: jest.fn(),
@@ -100,7 +107,7 @@ describe('SelectTeam', () => {
         const wrapper = shallow(
             <SelectTeam {...props}/>,
         );
-        await getTeams();
+        await getMyTeams();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 

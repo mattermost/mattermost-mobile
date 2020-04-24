@@ -96,6 +96,7 @@ export default class SelectTeam extends PureComponent {
         if (this.props.currentUserIsGuest) {
             return;
         }
+        this.setState({loading: true});
         this.props.actions.getTeams(this.state.page, TEAMS_PER_PAGE).then(() => {
             this.setState((state) => ({
                 loading: false,
