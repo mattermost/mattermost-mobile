@@ -366,7 +366,7 @@ describe('@actions/navigation', () => {
             },
         };
         const defaultOptions = {
-            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+            modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },
