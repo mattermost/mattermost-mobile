@@ -16,7 +16,7 @@ function createPost(state: RequestStatusType = initialRequestState(), action: Ge
         PostTypes.CREATE_POST_SUCCESS,
         PostTypes.CREATE_POST_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -26,7 +26,7 @@ function editPost(state: RequestStatusType = initialRequestState(), action: Gene
         PostTypes.EDIT_POST_SUCCESS,
         PostTypes.EDIT_POST_FAILURE,
         state,
-        action
+        action,
     );
 }
 
@@ -36,7 +36,7 @@ function getPostThread(state: RequestStatusType = initialRequestState(), action:
         PostTypes.GET_POST_THREAD_SUCCESS,
         PostTypes.GET_POST_THREAD_FAILURE,
         state,
-        action
+        action,
     );
 }
 

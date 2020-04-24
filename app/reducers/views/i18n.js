@@ -12,10 +12,10 @@ function locale(state = defaultLocale, action) {
     switch (action.type) {
     case UserTypes.RECEIVED_ME: {
         const data = action.data || action.payload;
-        return data.locale;
+        if (data?.locale) {
+            return data.locale;
+        }
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return defaultLocale;
     }
 
     return state;

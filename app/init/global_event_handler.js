@@ -15,27 +15,28 @@ import {close as closeWebSocket} from '@actions/websocket';
 import {GeneralTypes} from '@mm-redux/action_types';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
-import {selectDefaultChannel} from 'app/actions/views/channel';
-import {showOverlay} from 'app/actions/navigation';
-import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
-import {loadMe, logout} from 'app/actions/views/user';
-import {NavigationTypes, ViewTypes} from 'app/constants';
-import {getTranslations, resetMomentLocale} from 'app/i18n';
-import initialState from 'app/initial_state';
+import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from '@actions/device';
+import {selectDefaultChannel} from '@actions/views/channel';
+import {showOverlay} from '@actions/navigation';
+import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
+import {loadMe, logout} from '@actions/views/user';
+import {NavigationTypes, ViewTypes} from '@constants';
+import {getTranslations, resetMomentLocale} from '@i18n';
+import PushNotifications from 'app/push_notifications';
+import {getCurrentLocale} from '@selectors/i18n';
+import initialState from '@store/initial_state';
+import Store from '@store/store';
+import {t} from '@utils/i18n';
+import {deleteFileCache} from '@utils/file';
+import {getDeviceTimezoneAsync} from '@utils/timezone';
+
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
-import PushNotifications from 'app/push_notifications';
-import {getCurrentLocale} from 'app/selectors/i18n';
-import {t} from 'app/utils/i18n';
-import {deleteFileCache} from 'app/utils/file';
-import {getDeviceTimezoneAsync} from 'app/utils/timezone';
-
 import LocalConfig from 'assets/config';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
@@ -66,7 +67,7 @@ class GlobalEventHandler {
 
             // Once the app becomes active we check if the device needs to have a passcode set
             const prompt = emmProvider.inBackgroundSince && authExpired; // if more than 5 minutes have passed prompt for passcode
-            await emmProvider.handleAuthentication(this.store, prompt);
+            await emmProvider.handleAuthentication(prompt);
         }
 
         emmProvider.inBackgroundSince = null; /* eslint-disable-line require-atomic-updates */
@@ -75,7 +76,7 @@ class GlobalEventHandler {
     appInactive = () => {
         this.turnOffInAppNotificationHandling();
 
-        const {dispatch} = this.store;
+        const {dispatch} = Store.redux;
 
         // When the app is sent to the background we set the time when that happens
         // and perform a data clean up to improve on performance
@@ -85,7 +86,6 @@ class GlobalEventHandler {
     };
 
     configure = (opts) => {
-        this.store = opts.store;
         this.launchApp = opts.launchApp;
 
         // onAppStateChange may be called by the AppState listener before we
@@ -107,7 +107,7 @@ class GlobalEventHandler {
         }
 
         this.JavascriptAndNativeErrorHandler = require('app/utils/error_handling').default;
-        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(this.store);
+        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(Store.redux);
 
         mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
     };
@@ -126,8 +126,8 @@ class GlobalEventHandler {
         const isActive = appState === 'active';
         const isBackground = appState === 'background';
 
-        if (this.store) {
-            this.store.dispatch(setAppState(isActive));
+        if (Store.redux) {
+            Store.redux.dispatch(setAppState(isActive));
 
             if (isActive && (!emmProvider.enabled || emmProvider.previousAppState === 'background')) {
                 this.appActive();
@@ -142,12 +142,12 @@ class GlobalEventHandler {
     onDeepLink = (event) => {
         const {url} = event;
         if (url) {
-            this.store.dispatch(setDeepLinkURL(url));
+            Store.redux.dispatch(setDeepLinkURL(url));
         }
     };
 
     onManagedConfigurationChange = () => {
-        emmProvider.handleManagedConfig(this.store, true);
+        emmProvider.handleManagedConfig(true);
     };
 
     onServerConfigChanged = (config) => {
@@ -155,9 +155,9 @@ class GlobalEventHandler {
     };
 
     onLogout = async () => {
-        this.store.dispatch(closeWebSocket(false));
-        this.store.dispatch(setServerVersion(''));
-        this.resetState();
+        Store.redux.dispatch(closeWebSocket(false));
+        Store.redux.dispatch(setServerVersion(''));
+        await this.resetState();
         removeAppCredentials();
         deleteFileCache();
         resetMomentLocale();
@@ -190,8 +190,8 @@ class GlobalEventHandler {
     };
 
     onOrientationChange = (dimensions) => {
-        if (this.store) {
-            const {dispatch, getState} = this.store;
+        if (Store.redux) {
+            const {dispatch, getState} = Store.redux;
             const deviceState = getState().device;
 
             if (DeviceInfo.isTablet()) {
@@ -215,7 +215,7 @@ class GlobalEventHandler {
     };
 
     onRestartApp = async () => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const {currentUserId} = state.entities.users;
         const user = getUser(state, currentUserId);
@@ -236,7 +236,7 @@ class GlobalEventHandler {
     };
 
     onServerVersionChanged = async (serverVersion) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
         const version = match && match[0];
@@ -263,41 +263,59 @@ class GlobalEventHandler {
     };
 
     onStatusBarHeightChange = (nextStatusBarHeight) => {
-        this.store.dispatch(setStatusBarHeight(nextStatusBarHeight));
+        Store.redux.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     onSwitchToDefaultChannel = (teamId) => {
-        this.store.dispatch(selectDefaultChannel(teamId));
+        Store.redux.dispatch(selectDefaultChannel(teamId));
     };
 
     resetState = async () => {
         try {
             await AsyncStorage.clear();
-            const state = this.store.getState();
-            this.store.dispatch(batchActions([
-                {
-                    type: General.OFFLINE_STORE_RESET,
-                    data: initialState,
+            const state = Store.redux.getState();
+            const newState = {
+                ...initialState,
+                app: {
+                    build: DeviceInfo.getBuildNumber(),
+                    version: DeviceInfo.getVersion(),
+                    previousVersion: state.app?.previousVersion || DeviceInfo.getVersion(),
                 },
-                {
-                    type: General.STORE_REHYDRATION_COMPLETE,
+                entities: {
+                    ...initialState.entities,
+                    general: {
+                        ...initialState.entities.general,
+                        deviceToken: state.entities.general.deviceToken,
+                    },
                 },
-                {
-                    type: ViewTypes.SERVER_URL_CHANGED,
-                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
+                views: {
+                    i18n: {
+                        locale: DeviceInfo.getDeviceLocale().split('-')[0],
+                    },
+                    root: {
+                        hydrationComplete: true,
+                    },
+                    selectServer: {
+                        serverUrl: state.views.selectServer.serverUrl,
+                    },
                 },
-                {
-                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                    data: state.entities.general.deviceToken,
+                _persist: {
+                    rehydrated: true,
                 },
-            ], 'BATCH_RESET_STATE'));
+            };
+
+            return Store.redux.dispatch({
+                type: General.OFFLINE_STORE_PURGE,
+                state: newState,
+            });
         } catch (e) {
             // clear error
+            return e;
         }
     }
 
     serverUpgradeNeeded = async () => {
-        const {dispatch} = this.store;
+        const {dispatch} = Store.redux;
 
         dispatch(setServerVersion(''));
         Client4.serverVersion = '';
@@ -319,7 +337,7 @@ class GlobalEventHandler {
 
     handleInAppNotification = (notification) => {
         const {data} = notification;
-        const {getState} = this.store;
+        const {getState} = Store.redux;
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
@@ -335,7 +353,7 @@ class GlobalEventHandler {
     };
 
     setUserTimezone = async () => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const currentUserId = getCurrentUserId(state);
 

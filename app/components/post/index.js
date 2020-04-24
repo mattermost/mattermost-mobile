@@ -10,7 +10,7 @@ import {isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from '@mm-redux/selectors/entities/posts';
 import {getUser, getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isStartOfNewMessages} from '@mm-redux/utils/post_list';
+import {isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
@@ -41,7 +41,7 @@ function makeMapStateToProps() {
     const isPostCommentMention = makeIsPostCommentMention();
     return function mapStateToProps(state, ownProps) {
         const post = ownProps.post || getPost(state, ownProps.postId);
-        const previousPostId = isStartOfNewMessages(ownProps.previousPostId) ? ownProps.beforePrevPostId : ownProps.previousPostId;
+        const previousPostId = (isStartOfNewMessages(ownProps.previousPostId) || isDateLine(ownProps.previousPostId)) ? ownProps.beforePrevPostId : ownProps.previousPostId;
         const previousPost = getPost(state, previousPostId);
         const beforePrevPost = getPost(state, ownProps.beforePrevPostId);
 

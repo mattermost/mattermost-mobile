@@ -3,12 +3,14 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {NavigationTypes} from 'app/constants';
 import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
@@ -27,7 +29,6 @@ export function completeLogin(user, deviceToken) {
         const token = Client4.getToken();
         const url = Client4.getUrl();
 
-        setCSRFFromCookie(url);
         setAppCredentials(deviceToken, user.id, token, url);
 
         // Set timezone
@@ -166,6 +167,7 @@ export function login(loginId, password, mfaToken, ldapOnly = false) {
 
         try {
             user = await Client4.login(loginId, password, mfaToken, deviceToken, ldapOnly);
+            await setCSRFFromCookie(Client4.getUrl());
         } catch (error) {
             return {error};
         }
@@ -183,6 +185,7 @@ export function login(loginId, password, mfaToken, ldapOnly = false) {
 export function ssoLogin(token) {
     return async (dispatch) => {
         Client4.setToken(token);
+        await setCSRFFromCookie(Client4.getUrl());
         const result = await dispatch(loadMe());
 
         if (!result.error) {
@@ -194,7 +197,7 @@ export function ssoLogin(token) {
 }
 
 export function logout(skipServerLogout = false) {
-    return async (dispatch) => {
+    return async () => {
         if (!skipServerLogout) {
             try {
                 Client4.logout();
@@ -203,7 +206,8 @@ export function logout(skipServerLogout = false) {
             }
         }
 
-        dispatch({type: UserTypes.LOGOUT_SUCCESS});
+        EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
+        return {data: true};
     };
 }
 
@@ -212,7 +216,7 @@ export function forceLogoutIfNecessary(error) {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
 
-        if (currentUserId && error.status_code === HTTP_UNAUTHORIZED && error.url && !error.url.includes('/login')) {
+        if (error.status_code === HTTP_UNAUTHORIZED && error.url && !error.url.includes('/login')) {
             dispatch(logout(true));
             return true;
         }

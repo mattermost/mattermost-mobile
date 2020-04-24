@@ -620,7 +620,7 @@ export default class ExtensionPost extends PureComponent {
             return this.renderErrorMessage(error);
         }
 
-        if (!teamId) {
+        if (!teamId && this.token) {
             const teamRequired = formatMessage({
                 id: 'mobile.extension.team_required',
                 defaultMessage: 'You must belong to a team before you can share files.',

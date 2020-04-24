@@ -21,7 +21,14 @@ describe('Actions.Preferences', () => {
     });
 
     beforeEach(async () => {
-        store = await configureStore();
+        const initialState = {
+            entities: {
+                users: {
+                    currentUserId: TestHelper.basicUser.id,
+                },
+            },
+        };
+        store = await configureStore(initialState);
     });
 
     afterAll(async () => {
@@ -241,7 +248,7 @@ describe('Actions.Preferences', () => {
         nock(Client4.getUsersRoute()).
             get('/me/preferences').
             reply(200, existingPreferences);
-        await Actions.getMyPreferences()(store.dispatch, store.getState);
+        await store.dispatch(Actions.getMyPreferences());
 
         const newTheme = {
             type: 'Mattermost Dark',
@@ -249,7 +256,7 @@ describe('Actions.Preferences', () => {
         nock(Client4.getUsersRoute()).
             put(`/${TestHelper.basicUser.id}/preferences`).
             reply(200, OK_RESPONSE);
-        await Actions.saveTheme(team.id, newTheme)(store.dispatch, store.getState);
+        await store.dispatch(Actions.saveTheme(team.id, newTheme));
 
         const state = store.getState();
         const {myPreferences} = state.entities.preferences;

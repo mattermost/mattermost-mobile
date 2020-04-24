@@ -45,14 +45,21 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 
 export function waitForHydration(store, callback) {
     let executed = false; // this is to prevent a race condition when subcription runs before unsubscribed
-    if (store.getState().views.root.hydrationComplete && !executed) {
+    let state = store.getState();
+    let root = state.views?.root;
+    let persist = state._persist; //eslint-disable-line no-underscore-dangle
+
+    if (root?.hydrationComplete && !executed) {
         if (callback && typeof callback === 'function') {
             executed = true;
             callback();
         }
     } else {
         const subscription = () => {
-            if (store.getState().views.root.hydrationComplete && !executed) {
+            state = store.getState();
+            root = state.views?.root;
+            persist = state._persist; //eslint-disable-line no-underscore-dangle
+            if (root?.hydrationComplete && !executed) {
                 unsubscribeFromStore();
                 if (callback && typeof callback === 'function') {
                     executed = true;
@@ -66,13 +73,16 @@ export function waitForHydration(store, callback) {
 }
 
 export function getStateForReset(initialState, currentState) {
+    const {app} = currentState;
     const {currentUserId} = currentState.entities.users;
     const currentUserProfile = currentState.entities.users.profiles[currentUserId];
     const {currentTeamId} = currentState.entities.teams;
     const preferences = currentState.entities.preferences;
 
     const resetState = merge(initialState, {
+        app,
         entities: {
+            general: currentState.entities.general,
             users: {
                 currentUserId,
                 profiles: {
@@ -83,6 +93,18 @@ export function getStateForReset(initialState, currentState) {
                 currentTeamId,
             },
             preferences,
+        },
+        errors: currentState.errors,
+        views: {
+            selectServer: {
+                serverUrl: currentState.views?.selectServer?.serverUrl,
+            },
+            root: {
+                hydrationComplete: true,
+            },
+        },
+        _persist: {
+            rehydrated: true,
         },
     });
 

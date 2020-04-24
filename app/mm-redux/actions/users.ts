@@ -242,22 +242,6 @@ export function loadMe(): ActionFunc {
     };
 }
 
-export function logout(): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        dispatch({type: UserTypes.LOGOUT_REQUEST, data: null});
-
-        try {
-            await Client4.logout();
-        } catch (error) {
-            // nothing to do here
-        }
-
-        dispatch({type: UserTypes.LOGOUT_SUCCESS, data: null});
-
-        return {data: true};
-    };
-}
-
 export function getTotalUsersStats(): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.getTotalUsersStats,
@@ -1421,7 +1405,6 @@ export default {
     checkMfa,
     generateMfaSecret,
     login,
-    logout,
     getProfiles,
     getProfilesByIds,
     getProfilesInTeam,

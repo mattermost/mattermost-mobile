@@ -1,194 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {batchActions} from 'redux-batched-actions';
-import AsyncStorage from '@react-native-community/async-storage';
-import {purgeStoredState} from 'redux-persist';
 
-import {NavigationTypes, ViewTypes} from 'app/constants';
-import initialState from 'app/initial_state';
-import {throttle} from 'app/utils/general';
+import initialState from '@store/initial_state';
 
-import {General} from '@mm-redux/constants';
-import {ErrorTypes, GeneralTypes} from '@mm-redux/action_types';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import mattermostBucket from 'app/mattermost_bucket';
-
-import {getStateForReset} from './utils';
-
-import {
-    captureException,
-    LOGGER_JAVASCRIPT_WARNING,
-} from 'app/utils/sentry';
-
-const SAVE_STATE_ACTIONS = [
-    'CONNECTION_CHANGED',
-    'DATA_CLEANUP',
-    'LOGIN',
-    'Offline/STATUS_CHANGED',
-    'persist/REHYDRATE',
-    'RECEIVED_APP_STATE',
-    'WEBSOCKET_CLOSED',
-    'WEBSOCKET_SUCCESS',
-];
-
-// This middleware stores key parts of state entities into a file (in the App Group container) on certain actions.
-// iOS only. Allows the share extension to work, without having access available to the redux store object.
-// Remove this middleware if/when state is moved to a persisted solution.
-const saveShareExtensionState = (store) => {
-    return (next) => (action) => {
-        if (SAVE_STATE_ACTIONS.includes(action.type)) {
-            throttle(saveStateToFile(store));
-        }
-        return next(action);
-    };
-};
-
-const saveStateToFile = async (store) => {
-    if (Platform.OS === 'ios') {
-        const state = store.getState();
-
-        if (state.entities) {
-            const channelsInTeam = {...state.entities.channels.channelsInTeam};
-            Object.keys(channelsInTeam).forEach((teamId) => {
-                channelsInTeam[teamId] = Array.from(channelsInTeam[teamId]);
-            });
-
-            const profilesInChannel = {...state.entities.users.profilesInChannel};
-            Object.keys(profilesInChannel).forEach((channelId) => {
-                profilesInChannel[channelId] = Array.from(profilesInChannel[channelId]);
-            });
-
-            let url;
-            if (state.entities.users.currentUserId) {
-                url = state.entities.general.credentials.url || state.views.selectServer.serverUrl;
-            }
-
-            const entities = {
-                ...state.entities,
-                general: {
-                    ...state.entities.general,
-                    credentials: {
-                        url,
-                    },
-                },
-                channels: {
-                    ...state.entities.channels,
-                    channelsInTeam,
-                },
-                users: {
-                    ...state.entities.users,
-                    profilesInChannel,
-                    profilesNotInTeam: [],
-                    profilesWithoutTeam: [],
-                    profilesNotInChannel: [],
-                },
-            };
-
-            mattermostBucket.writeToFile('entities', JSON.stringify(entities));
-        }
-    }
-};
-
-const purgeAppCacheWrapper = (persistConfig) => (store) => {
-    return (next) => (action) => {
-        if (action.type === General.OFFLINE_STORE_PURGE) {
-            purgeStoredState({...persistConfig, storage: AsyncStorage});
-
-            const state = store.getState();
-            const resetState = getStateForReset(initialState, state);
-
-            store.dispatch(batchActions([
-                {
-                    type: General.OFFLINE_STORE_RESET,
-                    data: resetState,
-                },
-                {
-                    type: ErrorTypes.RESTORE_ERRORS,
-                    data: [...state.errors],
-                },
-                {
-                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                    data: state.entities.general.deviceToken,
-                },
-                {
-                    type: GeneralTypes.RECEIVED_APP_CREDENTIALS,
-                    data: {
-                        url: state.entities.general.credentials.url,
-                    },
-                },
-                {
-                    type: ViewTypes.SERVER_URL_CHANGED,
-                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
-                },
-                {
-                    type: GeneralTypes.RECEIVED_SERVER_VERSION,
-                    data: state.entities.general.serverVersion,
-                },
-                {
-                    type: General.STORE_REHYDRATION_COMPLETE,
-                },
-            ], 'BATCH_FOR_RESTART'));
-
-            setTimeout(() => {
-                EventEmitter.emit(NavigationTypes.RESTART_APP);
-            }, 500);
-        }
-        return next(action);
-    };
-};
-
-const messageRetention = (store) => {
-    return (next) => (action) => {
-        if (action.type === 'persist/REHYDRATE') {
-            const {app} = action.payload;
-            const {entities, views} = action.payload;
-
-            if (!entities || !views) {
-                return next(action);
-            }
-
-            // When a new version of the app has been detected
-            if (!app || !app.version || app.version !== DeviceInfo.getVersion() || app.build !== DeviceInfo.getBuildNumber()) {
-                return next(resetStateForNewVersion(action));
-            }
-
-            // Keep only the last 60 messages for the last 5 viewed channels in each team
-            // and apply data retention on those posts if applies
-            let nextAction;
-            try {
-                nextAction = cleanUpState(action);
-            } catch (e) {
-                // Sometimes, the payload is incomplete so log the error to Sentry and skip the cleanup
-                console.warn(e); // eslint-disable-line no-console
-                captureException(e, LOGGER_JAVASCRIPT_WARNING, store);
-                nextAction = action;
-            }
-
-            return next(nextAction);
-        } else if (action.type === ViewTypes.DATA_CLEANUP) {
-            const nextAction = cleanUpState(action, true);
-            return next(nextAction);
-        }
-
-        /* Uncomment the following lines to log the actions being dispatched */
-        // if (action.type === 'BATCHING_REDUCER.BATCH') {
-        //     action.payload.forEach((p) => {
-        //         console.log('BATCHED ACTIONS', p.type);
-        //     });
-        // } else {
-        //     console.log('ACTION', action.type);
-        // }
-
-        return next(action);
-    };
-};
-
-function resetStateForNewVersion(action) {
-    const {payload} = action;
+export function resetStateForNewVersion(payload) {
     const lastChannelForTeam = getLastChannelForTeam(payload);
 
     let general = initialState.entities.general;
@@ -280,9 +97,11 @@ function resetStateForNewVersion(action) {
     }
 
     const nextState = {
+        _persist: {
+            rehydrated: true,
+        },
         app: {
-            build: DeviceInfo.getBuildNumber(),
-            version: DeviceInfo.getVersion(),
+            ...payload.app,
         },
         entities: {
             channels,
@@ -317,29 +136,28 @@ function resetStateForNewVersion(action) {
         },
     };
 
-    return {
-        type: action.type,
-        payload: nextState,
-        error: action.error,
-    };
+    return nextState;
 }
 
-function getLastChannelForTeam(payload) {
-    const lastChannelForTeam = {...payload.views.team.lastChannelForTeam};
-    const convertLastChannelForTeam = Object.values(lastChannelForTeam).some((value) => !Array.isArray(value));
+export function getLastChannelForTeam(payload) {
+    if (payload?.views?.team?.lastChannelForTeam) {
+        const lastChannelForTeam = {...payload.views.team.lastChannelForTeam};
+        const convertLastChannelForTeam = Object.values(lastChannelForTeam).some((value) => !Array.isArray(value));
 
-    if (convertLastChannelForTeam) {
-        Object.keys(lastChannelForTeam).forEach((id) => {
-            lastChannelForTeam[id] = [lastChannelForTeam[id]];
-        });
+        if (convertLastChannelForTeam) {
+            Object.keys(lastChannelForTeam).forEach((id) => {
+                lastChannelForTeam[id] = [lastChannelForTeam[id]];
+            });
+        }
+
+        return lastChannelForTeam;
     }
 
-    return lastChannelForTeam;
+    return {};
 }
 
-export function cleanUpState(action, keepCurrent = false) {
-    const {payload: resetPayload} = resetStateForNewVersion(action);
-    const {payload} = action;
+export function cleanUpState(payload, keepCurrent = false) {
+    const resetPayload = resetStateForNewVersion(payload);
     const {currentChannelId} = payload.entities.channels;
 
     const {lastChannelForTeam} = resetPayload.views.team;
@@ -479,11 +297,7 @@ export function cleanUpState(action, keepCurrent = false) {
 
     nextState.errors = payload.errors;
 
-    return {
-        type: action.type,
-        payload: nextState,
-        error: action.error,
-    };
+    return nextState;
 }
 
 // cleanUpPostsInChannel returns a copy of postsInChannel where only the most recent posts in each channel are kept
@@ -564,17 +378,3 @@ function removePendingPost(pendingPostIds, id) {
         pendingPostIds.splice(pendingIndex, 1);
     }
 }
-
-export const middlewares = (persistConfig) => {
-    const middlewareFunctions = [
-        messageRetention,
-        purgeAppCacheWrapper(persistConfig),
-    ];
-
-    if (Platform.OS === 'ios') {
-        middlewareFunctions.push(saveShareExtensionState);
-    }
-
-    return middlewareFunctions;
-};
-

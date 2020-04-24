@@ -27,7 +27,7 @@ describe('Search RecentItem', () => {
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
-        wrapper.find('TouchableHighlight').first().props().onPress();
+        wrapper.find('ForwardRef').first().props().onPress();
         expect(baseProps.setModifierValue).toHaveBeenCalledTimes(1);
         expect(baseProps.setModifierValue).toHaveBeenCalledWith(item.value);
     });

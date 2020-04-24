@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client4} from '@mm-redux/client';
-import {UserTypes} from '@mm-redux/action_types';
+
+import {logout} from '@actions/views/user';
 
 import {Client4Error} from '@mm-redux/types/client4';
 import {batchActions, Action, ActionFunc, GenericAction, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
@@ -13,8 +13,7 @@ export function forceLogoutIfNecessary(err: Client4Error, dispatch: DispatchFunc
     const {currentUserId} = getState().entities.users;
 
     if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err.url && err.url.indexOf('/login') === -1 && currentUserId) {
-        Client4.setToken('');
-        dispatch({type: UserTypes.LOGOUT_SUCCESS, data: {}});
+        dispatch(logout(false));
     }
 }
 

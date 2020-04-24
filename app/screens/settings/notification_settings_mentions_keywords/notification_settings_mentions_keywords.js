@@ -36,6 +36,16 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
+    componentDidAppear() {
+        if (this.keywordsInput) {
+            this.keywordsInput.focus();
+        }
+    }
+
+    componentDidDisappear() {
+        this.props.onBack(this.state.keywords);
+    }
+
     handleSubmit = () => {
         popTopScreen();
     };
@@ -47,10 +57,6 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
     onKeywordsChangeText = (keywords) => {
         return this.setState({keywords});
     };
-
-    componentDidDisappear() {
-        this.props.onBack(this.state.keywords);
-    }
 
     render() {
         const {theme, isLandscape} = this.props;
@@ -66,7 +72,6 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                 >
                     <View style={style.inputContainer}>
                         <TextInputWithLocalizedPlaceholder
-                            autoFocus={true}
                             ref={this.keywordsRef}
                             value={keywords}
                             blurOnSubmit={true}

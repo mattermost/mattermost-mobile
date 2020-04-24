@@ -29,18 +29,6 @@ index 260ed81..52b53d8 100644
              }
          });
      }
-diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
-index f60119e..4c46e8c 100644
---- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
-+++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/modal/ModalStack.java
-@@ -84,6 +84,7 @@ public class ModalStack {
- 
-     public void dismissAllModals(ViewController root, Options mergeOptions, CommandListener listener) {
-         if (modals.isEmpty()) {
-+            listener.onSuccess("");
-             return;
-         }
-         String topModalId = peek().getId();
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
 index ae8be52..8a8dec5 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m

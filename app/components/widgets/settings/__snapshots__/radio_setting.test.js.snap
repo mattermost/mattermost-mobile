@@ -47,8 +47,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       ]
     }
   >
-    <TouchableOpacity
-      activeOpacity={0.2}
+    <Component
       onPress={[Function]}
     >
       <View
@@ -88,9 +87,8 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
           }
         }
       />
-    </TouchableOpacity>
-    <TouchableOpacity
-      activeOpacity={0.2}
+    </Component>
+    <Component
       onPress={[Function]}
     >
       <View
@@ -130,9 +128,8 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
           }
         }
       />
-    </TouchableOpacity>
-    <TouchableOpacity
-      activeOpacity={0.2}
+    </Component>
+    <Component
       onPress={[Function]}
     >
       <View
@@ -167,7 +164,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
           width={12}
         />
       </View>
-    </TouchableOpacity>
+    </Component>
   </View>
   <View
     style={null}

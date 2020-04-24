@@ -71,8 +71,12 @@ public class RNPasteableTextInputManager extends ReactTextInputManager {
     @Nullable
     @Override
     public Map<String, Object> getExportedCustomBubblingEventTypeConstants() {
-        Map map = super.getExportedViewConstants();
-        map.put("onPaste", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onPaste")));
+        Map<String, Object> map = super.getExportedCustomBubblingEventTypeConstants();
+        map.put(
+                "onPaste",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onPaste")));
         return map;
     }
 }

@@ -3,7 +3,7 @@
 exports[`PasteableTextInput should render pasteable text input 1`] = `
 <TextInput
   allowFontScaling={true}
-  onPaste={[MockFunction]}
+  onPaste={[Function]}
   rejectResponderTermination={true}
   underlineColorAndroid="transparent"
 >

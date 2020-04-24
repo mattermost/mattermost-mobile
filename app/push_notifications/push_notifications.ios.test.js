@@ -2,11 +2,15 @@
 // See LICENSE.txt for license information.
 
 import NotificationsIOS from 'react-native-notifications';
+
+import * as ViewSelectors from '@selectors/views';
+import Store from '@store/store';
+
 import PushNotification from './push_notifications.ios';
 
 jest.mock('react-native-notifications', () => {
     let badgesCount = 0;
-    let deliveredNotifications = {};
+    let deliveredNotifications = [];
 
     return {
         getBadgesCount: jest.fn((callback) => callback(badgesCount)),
@@ -89,5 +93,30 @@ describe('PushNotification', () => {
         expect(NotificationsIOS.setBadgesCount).toHaveBeenCalledWith(0);
         expect(cancelAllLocalNotifications).toHaveBeenCalled();
         expect(NotificationsIOS.cancelAllLocalNotifications).toHaveBeenCalled();
+    });
+
+    it('clearChannelNotifications should set app badge number from to delivered notification count when redux store is not set', () => {
+        Store.redux = null;
+        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
+        const deliveredNotifications = [{identifier: 1}, {identifier: 2}];
+        NotificationsIOS.setDeliveredNotifications(deliveredNotifications);
+
+        PushNotification.clearChannelNotifications();
+        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(deliveredNotifications.length);
+    });
+
+    it('clearChannelNotifications should set app badge number from redux store when set', () => {
+        Store.redux = {
+            getState: jest.fn(),
+        };
+        const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
+        const deliveredNotifications = [{identifier: 1}, {identifier: 2}];
+        NotificationsIOS.setDeliveredNotifications(deliveredNotifications);
+
+        const stateBadgeCount = 2 * deliveredNotifications.length;
+        ViewSelectors.getBadgeCount = jest.fn().mockReturnValue(stateBadgeCount);
+
+        PushNotification.clearChannelNotifications();
+        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(stateBadgeCount);
     });
 });
