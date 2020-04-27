@@ -52,7 +52,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MFA', () => wrapper(require('app/screens/mfa').default), () => require('app/screens/mfa').default);
     Navigation.registerComponent('MoreChannels', () => wrapper(require('app/screens/more_channels').default), () => require('app/screens/more_channels').default);
     Navigation.registerComponent('MoreDirectMessages', () => wrapper(require('app/screens/more_dms').default), () => require('app/screens/more_dms').default);
-    Navigation.registerComponent('Notification', () => wrapper(require('app/screens/notification').default), () => require('app/screens/notification').default);
+    Navigation.registerComponent('Notification', () => gestureHandlerRootHOC(wrapper(require('app/screens/notification').default)), () => require('app/screens/notification').default);
     Navigation.registerComponent('NotificationSettings', () => wrapper(require('app/screens/settings/notification_settings').default), () => require('app/screens/settings/notification_settings').default);
     Navigation.registerComponent('NotificationSettingsAutoResponder', () => wrapper(require('app/screens/settings/notification_settings_auto_responder').default), () => require('app/screens/settings/notification_settings_auto_responder').default);
     Navigation.registerComponent('NotificationSettingsEmail', () => wrapper(require('app/screens/settings/notification_settings_email').default), () => require('app/screens/settings/notification_settings_email').default);
