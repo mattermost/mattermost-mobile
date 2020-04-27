@@ -276,6 +276,11 @@ class GlobalEventHandler {
             const state = Store.redux.getState();
             const newState = {
                 ...initialState,
+                app: {
+                    build: DeviceInfo.getBuildNumber(),
+                    version: DeviceInfo.getVersion(),
+                    previousVersion: DeviceInfo.getVersion(),
+                },
                 entities: {
                     ...initialState.entities,
                     general: {
