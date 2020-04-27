@@ -526,7 +526,7 @@ SPEC CHECKSUMS:
   jail-monkey: d7c5048b2336f22ee9c9e0efa145f1f917338ea9
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
   MMKV: 7bb6c30f9ff2ea45bc2398c86e66dd1cb63cfe20
-  MMKVCore: f455d4bf01bb5257511c1062fdbc3d7ebdec216b
+  MMKVCore: f1e0aad4fc330e7cbfbdff16720017bf0973db5a
   Permission-Camera: 8f0e5decca5f28f70f28a8dc31f012c9bad40ad8
   Permission-PhotoLibrary: b209bf23b784c9e1409a57d81c6d11ab1d3079c1
   RCTRequired: b153add4da6e7dbc44aebf93f3cf4fcae392ddf1
