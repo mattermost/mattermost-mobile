@@ -130,7 +130,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 287
+        versionCode 288
         versionName "1.30.1"
         multiDexEnabled = true
         ndk {
