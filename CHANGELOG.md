@@ -13,10 +13,21 @@
 ### Bug Fixes
 
 #### All apps
+ - Fixed an issue where using `Share...` option to post highlighted text to Mattermost app threw an error.
+ - Fixed an issue where slash commands with long descriptions had their description text truncated in the slash command autocomplete.
+ - Fixed an issue where the username that created the webhook was shown instead of the name of the bot.
+ - Fixed an issue where posts on the same thread appeared to be from different threads since the "...commented on [Thread Title] was shown all posts.
+ - Fixed an issue where the system message for "Edit Channel Purpose" rendered markdown.
+ - Fixed an issue where "Someone" username appeared in prefetched channels.
+ - Fixed an issue where pre-fetching of unread channels included archived channels.
 
 #### iOS specific
+ - Fixed an issue where code block numbering was obstructed by the iPhone's notch.
+ - Fixed an issue where the "back" button color was incorrect in transition from Thread screen to Channel screen.
+ - Fixed an issue where the keyboard flashed a darker color when opening Keywords from **Settings > Notifications > Mentions and replies**.
 
 #### Android specific
+ - Fixed an issue where the keyboard did not close after editing a message.
 
 
 ## 1.30.0 Release
