@@ -70,7 +70,7 @@ export default class ReactionPicker extends PureComponent {
             );
         });
 
-        let paddingRes = padding(isLandscape);
+        let paddingRes = padding(isLandscape, 12);
         if (!paddingRes) {
             paddingRes = {
                 paddingLeft: 12,
