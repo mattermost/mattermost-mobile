@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {RequestStatus, General} from '@mm-redux/constants';
+import {RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
@@ -34,7 +34,6 @@ export default class SelectTeam extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
-            getMyTeams: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinTeam: PropTypes.func.isRequired,
             addUserToTeam: PropTypes.func.isRequired,
@@ -122,15 +121,6 @@ export default class SelectTeam extends PureComponent {
         dismissModal();
     };
 
-    goToDefaultChannel = async () => {
-        this.setState({loading: true});
-        const {data} = await this.props.actions.getMyTeams();
-        if (data && data.length > 0) {
-            await this.onSelectTeam(data[0]);
-        }
-        this.setState({loading: false});
-    }
-
     goToChannelView = () => {
         const passProps = {
             disableTermsModal: true,
@@ -149,14 +139,12 @@ export default class SelectTeam extends PureComponent {
         } = this.props.actions;
 
         let error;
-        if (!this.props.currentUserIsGuest) {
-            if (isMinimumServerVersion(serverVersion, 5, 18)) {
-                const result = await addUserToTeam(team.id, currentUserId);
-                error = result.error;
-            } else {
-                const result = await joinTeam(team.invite_id, team.id);
-                error = result.error;
-            }
+        if (isMinimumServerVersion(serverVersion, 5, 18)) {
+            const result = await addUserToTeam(team.id, currentUserId);
+            error = result.error;
+        } else {
+            const result = await joinTeam(team.invite_id, team.id);
+            error = result.error;
         }
         if (error) {
             Alert.alert(error.message);
@@ -254,18 +242,6 @@ export default class SelectTeam extends PureComponent {
                             style={style.heading}
                         />
                     </View>
-                    <TouchableOpacity
-                        style={[style.headingContainer, style.link]}
-                        onPress={this.goToDefaultChannel}
-                    >
-                        <View>
-                            <FormattedText
-                                id='mobile.select_team.guest_cant_join_team_try_again'
-                                defaultMessage='Try again'
-                                style={style.heading}
-                            />
-                        </View>
-                    </TouchableOpacity>
                 </View>
             );
         }
@@ -340,9 +316,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             width: '100%',
             height: 1,
-        },
-        link: {
-            color: theme.linkColor,
         },
         footer: {
             marginVertical: 10,
