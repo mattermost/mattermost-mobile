@@ -180,34 +180,5 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
       }
     />
   </View>
-  <Component
-    onPress={[Function]}
-    style={
-      Array [
-        Object {
-          "alignItems": "center",
-          "flexDirection": "row",
-          "marginHorizontal": 16,
-          "marginTop": 20,
-        },
-        Object {
-          "color": "#2389d7",
-        },
-      ]
-    }
-  >
-    <View>
-      <FormattedText
-        defaultMessage="Try again"
-        id="mobile.select_team.guest_cant_join_team_try_again"
-        style={
-          Object {
-            "color": undefined,
-            "fontSize": 13,
-          }
-        }
-      />
-    </View>
-  </Component>
 </View>
 `;
