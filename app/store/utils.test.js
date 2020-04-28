@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DeviceInfo from 'react-native-device-info';
+
 import initialState from '@store/initial_state';
 import {getStateForReset} from '@store/utils';
 
@@ -21,8 +23,8 @@ describe('getStateForReset', () => {
     const currentTeamId = 'current-team-id';
     const currentState = {
         app: {
-            build: 'build',
-            version: 'version',
+            build: DeviceInfo.getBuildNumber(),
+            version: DeviceInfo.getVersion(),
             previousVersion: 'previousVersion',
         },
         entities: {
@@ -86,9 +88,9 @@ describe('getStateForReset', () => {
         expect(themeKeys.length).toEqual(2);
     });
 
-    it('should keep app', () => {
+    it('should set previous version as current', () => {
         const resetState = getStateForReset(initialState, currentState);
         const {app} = resetState;
-        expect(app).toStrictEqual(currentState.app);
+        expect(app.previousVersion).toStrictEqual(currentState.app.version);
     });
 });

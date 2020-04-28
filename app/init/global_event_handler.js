@@ -277,7 +277,7 @@ class GlobalEventHandler {
                 app: {
                     build: DeviceInfo.getBuildNumber(),
                     version: DeviceInfo.getVersion(),
-                    previousVersion: state.app?.previousVersion || DeviceInfo.getVersion(),
+                    previousVersion: DeviceInfo.getVersion(),
                 },
                 entities: {
                     ...initialState.entities,
