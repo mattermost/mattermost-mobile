@@ -651,6 +651,8 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
 
         const actions = [];
         const serverVersion = state.entities.general.serverVersion;
+        const license = getLicense(state);
+        const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
 
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
