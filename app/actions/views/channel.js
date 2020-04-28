@@ -13,6 +13,7 @@ import {
 } from '@mm-redux/actions/channels';
 import {getFilesForPost} from '@mm-redux/actions/files';
 import {savePreferences} from '@mm-redux/actions/preferences';
+import {getLicense} from '@mm-redux/selectors/entities/general';
 import {selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
@@ -604,6 +605,8 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
         const data = {sync: true, teamId};
         const actions = [];
         const serverVersion = state.entities.general.serverVersion;
+        const license = getLicense(state);
+        const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
 
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
@@ -658,36 +661,38 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
 
-            try {
-                if (data.team && isMinimumServerVersion(serverVersion, 5, 22)) {
-                    let result = await Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true);
-                    if (result.groups) {
-                        actions.push({
-                            type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
-                            data: {groupsByChannelId: result.groups},
-                        });
-                    }
+            if (hasLicense && data.team && isMinimumServerVersion(serverVersion, 5, 22)) {
+                for (let i = 0; i <= MAX_RETRIES; i++) {
+                    try {
+                        let result = await Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true); //eslint-disable-line no-await-in-loop
+                        if (result.groups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                data: {groupsByChannelId: result.groups},
+                            });
+                        }
 
-                    if (data.team.group_constrained) {
-                        result = await Client4.getAllGroupsAssociatedToTeam(teamId, true);
-                        if (result) {
-                            actions.push({
-                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
-                                data: result,
-                            });
+                        if (data.team.group_constrained) {
+                            result = await Client4.getAllGroupsAssociatedToTeam(teamId, true); //eslint-disable-line no-await-in-loop
+                            if (result) {
+                                actions.push({
+                                    type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
+                                    data: result,
+                                });
+                            }
+                        } else {
+                            result = await Client4.getGroups(true); //eslint-disable-line no-await-in-loop
+                            if (result) {
+                                actions.push({
+                                    type: GroupTypes.RECEIVED_GROUPS,
+                                    data: result,
+                                });
+                            }
                         }
-                    } else {
-                        result = await Client4.getGroups(true);
-                        if (result) {
-                            actions.push({
-                                type: GroupTypes.RECEIVED_GROUPS,
-                                data: result,
-                            });
-                        }
+                    } catch (err) {
+                        // What to be done if error?
                     }
                 }
-            } catch (err) {
-                // What to be done if error?
             }
 
             if (actions.length) {
