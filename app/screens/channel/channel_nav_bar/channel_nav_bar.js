@@ -100,7 +100,7 @@ export default class ChannelNavBar extends PureComponent {
         }
 
         let drawerButtonVisible = false;
-        if (!DeviceTypes.IS_TABLET || this.state.isSplitView || !this.state.permanentSidebar) {
+        if (!this.state.permanentSidebar || !this.state.isSplitView) {
             drawerButtonVisible = true;
         }
 
