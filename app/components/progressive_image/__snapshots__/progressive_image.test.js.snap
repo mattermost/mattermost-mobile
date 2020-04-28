@@ -4,14 +4,11 @@ exports[`ProgressiveImage should match snapshot for BackgroundImage 1`] = `
 <View
   style={
     Array [
-      Object {},
       Object {
         "alignItems": "center",
-        "borderColor": "rgba(61,60,64,0.15)",
-        "borderRadius": 5,
-        "borderWidth": 1,
         "justifyContent": "center",
       },
+      Object {},
     ]
   }
 >
@@ -42,14 +39,11 @@ exports[`ProgressiveImage should match snapshot for Default Image 1`] = `
 <View
   style={
     Array [
-      Object {},
       Object {
         "alignItems": "center",
-        "borderColor": "rgba(61,60,64,0.15)",
-        "borderRadius": 5,
-        "borderWidth": 1,
         "justifyContent": "center",
       },
+      Object {},
     ]
   }
 >
@@ -79,14 +73,11 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
 <ForwardRef(AnimatedComponentWrapper)
   style={
     Array [
-      Object {},
       Object {
         "alignItems": "center",
-        "borderColor": "rgba(61,60,64,0.15)",
-        "borderRadius": 5,
-        "borderWidth": 1,
         "justifyContent": "center",
       },
+      Object {},
       Object {
         "backgroundColor": "rgba(61,60,64,NaN)",
       },
