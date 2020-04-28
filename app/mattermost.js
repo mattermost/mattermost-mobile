@@ -29,7 +29,6 @@ import {captureJSException} from '@utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
-    const dt = Date.now();
     const MMKVStorage = await getStorage();
 
     const {store} = configureStore(MMKVStorage);

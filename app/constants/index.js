@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CustomPropTypes from './custom_prop_types';
 import DeepLinkTypes from './deep_linking';
 import DeviceTypes from './device';
 import ListTypes from './list';
@@ -10,6 +11,7 @@ import ViewTypes, {UpgradeTypes} from './view';
 import WebsocketEvents from './websocket';
 
 export {
+    CustomPropTypes,
     DeepLinkTypes,
     DeviceTypes,
     ListTypes,

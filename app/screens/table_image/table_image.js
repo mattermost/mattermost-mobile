@@ -5,11 +5,11 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {
     ActivityIndicator,
-    Image,
     ScrollView,
     StyleSheet,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 export default class TableImage extends React.PureComponent {
     static propTypes = {
@@ -81,7 +81,7 @@ export default class TableImage extends React.PureComponent {
                 style={style.scrollContainer}
                 contentContainerStyle={style.container}
             >
-                <Image
+                <FastImage
                     style={[style.image, {width, height}]}
                     source={{uri: this.props.imageSource}}
                 />

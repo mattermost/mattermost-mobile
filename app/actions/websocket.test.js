@@ -11,9 +11,7 @@ import configureMockStore from 'redux-mock-store';
 import {ChannelTypes, GeneralTypes, RoleTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
 import * as ChannelActions from '@mm-redux/actions/channels';
 import * as PostActions from '@mm-redux/actions/posts';
-import * as PreferenceActions from '@mm-redux/actions/preferences';
 import * as TeamActions from '@mm-redux/actions/teams';
-import * as UserActions from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
 import {General, Posts, RequestStatus} from '@mm-redux/constants';
 import * as PostSelectors from '@mm-redux/selectors/entities/posts';
@@ -901,7 +899,7 @@ describe('Actions.Websocket doReconnect', () => {
 });
 
 describe('Actions.Websocket notVisibleUsersActions', () => {
-    const mockStore = configureMockStore([thunk]);
+    configureMockStore([thunk]);
 
     const channel1 = TestHelper.fakeChannelWithId('');
     const channel2 = TestHelper.fakeChannelWithId('');

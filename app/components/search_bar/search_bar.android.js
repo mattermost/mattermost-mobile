@@ -160,7 +160,7 @@ export default class SearchBarAndroid extends PureComponent {
         const {isFocused} = this.state;
 
         const {
-            backgroundColor: bgColor, //eslint-disable-line no-unused-vars
+            backgroundColor: bgColor, //eslint-disable-line @typescript-eslint/no-unused-vars
             ...otherStyles
         } = inputStyle;
 

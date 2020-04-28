@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DeviceInfo from 'react-native-device-info';
-
 export function getLastChannelForTeam(payload) {
     if (payload?.views?.team?.lastChannelForTeam) {
         const lastChannelForTeam = {...payload.views.team.lastChannelForTeam};

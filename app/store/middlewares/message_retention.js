@@ -30,7 +30,6 @@ export default function messageRetention(store) {
             const build = DeviceInfo.getBuildNumber();
             const version = DeviceInfo.getVersion();
             const previousVersion = app?.version;
-            const previousBuild = app?.build;
 
             action.payload = {
                 ...action.payload,
