@@ -48,12 +48,12 @@ export default class Root extends PureComponent {
         this.providerRef = ref;
     }
 
-    handleNoTeams = () => {
+    handleNoTeams = (isGuest) => {
         if (!this.providerRef) {
             setTimeout(this.handleNoTeams, 200);
             return;
         }
-        this.navigateToTeamsPage('SelectTeam');
+        this.navigateToTeamsPage('SelectTeam', isGuest);
     };
 
     errorTeamsList = () => {
@@ -64,7 +64,7 @@ export default class Root extends PureComponent {
         this.navigateToTeamsPage('ErrorTeamsList');
     }
 
-    navigateToTeamsPage = (screen) => {
+    navigateToTeamsPage = (screen, isGuest) => {
         const {currentUrl, theme} = this.props;
         const {intl} = this.providerRef.getChildContext();
 
@@ -85,14 +85,18 @@ export default class Root extends PureComponent {
             }];
         }
 
+        let title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
+
         if (screen === 'SelectTeam') {
             passProps = {
                 currentUrl,
                 userWithoutTeams: true,
             };
-        }
 
-        const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
+            if (isGuest) {
+                title = '';
+            }
+        }
 
         resetToTeams(screen, title, passProps, options);
     }

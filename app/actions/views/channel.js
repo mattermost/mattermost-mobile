@@ -25,7 +25,7 @@ import {
     getMyFirstChannelForTeams,
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getCurrentUser, getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getTeamByName} from '@mm-redux/selectors/entities/teams';
 
 import {getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_utils';
@@ -38,6 +38,7 @@ import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
+import {isGuest} from '@utils/users';
 
 const MAX_RETRIES = 3;
 
@@ -249,7 +250,8 @@ export function selectDefaultChannel(teamId) {
 
         // If there is no possible channel to redirect, redirect to no teams
         // page.
-        EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
+        const currentUser = getCurrentUser(state);
+        EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS, isGuest(currentUser));
     };
 }
 

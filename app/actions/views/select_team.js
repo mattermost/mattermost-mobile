@@ -7,10 +7,12 @@ import {ChannelTypes, TeamTypes} from '@mm-redux/action_types';
 import {getMyTeams} from '@mm-redux/actions/teams';
 import {RequestStatus} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
 import {selectFirstAvailableTeam} from 'app/utils/teams';
+import {isGuest} from 'app/utils/users';
 
 export function handleTeamChange(teamId) {
     return async (dispatch, getState) => {
@@ -57,7 +59,8 @@ export function selectDefaultTeam() {
             if (defaultTeam) {
                 dispatch(handleTeamChange(defaultTeam.id));
             } else {
-                EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS);
+                const currentUser = getCurrentUser(state);
+                EventEmitter.emit(NavigationTypes.NAVIGATION_NO_TEAMS, isGuest(currentUser));
             }
         }
     };
