@@ -104,7 +104,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             }
 
             if (isImage) {
-                this.renderImage(link);
+                return this.renderImage(link);
             }
         }
 

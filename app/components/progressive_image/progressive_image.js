@@ -78,7 +78,7 @@ export default class ProgressiveImage extends PureComponent {
 
         if (isBackgroundImage) {
             return (
-                <View style={[style, styles.defaultImageContainer]}>
+                <View style={[styles.defaultImageContainer, style]}>
                     <DefaultComponent
                         source={{uri: imageUri}}
                         resizeMode={'cover'}
@@ -92,7 +92,7 @@ export default class ProgressiveImage extends PureComponent {
 
         if (defaultSource) {
             return (
-                <View style={[style, styles.defaultImageContainer]}>
+                <View style={[styles.defaultImageContainer, style]}>
                     <DefaultComponent
                         source={defaultSource}
                         style={[StyleSheet.absoluteFill, imageStyle, tintDefaultSource ? styles.defaultImageTint : null]}
@@ -120,7 +120,7 @@ export default class ProgressiveImage extends PureComponent {
         };
 
         return (
-            <Animated.View style={[style, styles.defaultImageContainer, containerStyle]}>
+            <Animated.View style={[styles.defaultImageContainer, style, containerStyle]}>
                 <DefaultComponent
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
@@ -146,9 +146,6 @@ export default class ProgressiveImage extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         defaultImageContainer: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.15),
-            borderWidth: 1,
-            borderRadius: 5,
             alignItems: 'center',
             justifyContent: 'center',
         },

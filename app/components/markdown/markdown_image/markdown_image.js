@@ -215,13 +215,13 @@ export default class MarkdownImage extends ImageViewPort {
                     <TouchableWithFeedback
                         onLongPress={this.handleLinkLongPress}
                         onPress={this.handlePreviewImage}
-                        style={{width: 320, height}}
+                        style={{width, height}}
                     >
                         <ProgressiveImage
                             ref={this.setImageRef}
                             defaultSource={source}
                             resizeMode='contain'
-                            style={{width: 323, height}}
+                            style={{width, height}}
                         />
                     </TouchableWithFeedback>
                 );
