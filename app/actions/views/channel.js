@@ -266,7 +266,7 @@ export function handleSelectChannel(channelId) {
 
         if (channel && currentChannelId !== channelId) {
             const actions = markAsViewedAndReadBatch(state, channelId, currentChannelId);
-            if (channel.team_id !== currentTeamId) {
+            if (channel.team_id && channel.team_id !== currentTeamId) {
                 actions.push({
                     type: TeamTypes.SELECT_TEAM,
                     data: channel.team_id,
