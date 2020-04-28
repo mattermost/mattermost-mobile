@@ -10,12 +10,12 @@ import {
     ActivityIndicator,
     Animated,
     AppState,
-    Image,
     TouchableOpacity,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import Slider from 'react-native-slider';
 
 import fullscreenImage from 'assets/images/video_player/fullscreen.png';
@@ -150,8 +150,7 @@ export default class VideoControls extends PureComponent {
     renderControls() {
         return (
             <View style={styles.container}>
-                <View style={styles.controlsRow}/>
-                <View style={[styles.controlsRow]}>
+                <View style={[styles.controlsRow, StyleSheet.absoluteFill]}>
                     {
                         this.props.isLoading ? this.setLoadingView() : this.setPlayerControls(this.props.playerState)
                     }
@@ -182,7 +181,10 @@ export default class VideoControls extends PureComponent {
                         style={styles.fullScreenContainer}
                         onPress={this.props.onFullScreen}
                     >
-                        <Image source={fullscreenImage}/>
+                        <FastImage
+                            source={fullscreenImage}
+                            style={{width: 20, height: 20}}
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -221,7 +223,7 @@ export default class VideoControls extends PureComponent {
                 style={[styles.playButton, {backgroundColor: this.props.mainColor}]}
                 onPress={pressAction}
             >
-                <Image
+                <FastImage
                     source={icon}
                     style={styles.playIcon}
                 />
@@ -279,7 +281,6 @@ const styles = StyleSheet.create({
         right: 0,
     },
     controlsRow: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'stretch',
@@ -307,9 +308,11 @@ const styles = StyleSheet.create({
         resizeMode: 'stretch',
     },
     progressContainer: {
+        position: 'absolute',
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        marginBottom: -25,
+        bottom: 25,
+        marginLeft: 16,
     },
     progressColumnContainer: {
         flex: 1,
@@ -318,7 +321,8 @@ const styles = StyleSheet.create({
         alignSelf: 'stretch',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingLeft: 20,
+        paddingLeft: 10,
+        paddingTop: 8,
     },
     progressSlider: {
         alignSelf: 'stretch',

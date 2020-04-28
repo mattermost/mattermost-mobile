@@ -20,19 +20,6 @@ describe('user utils', () => {
             first_name: 'test',
             last_name: 'user',
         };
-        const testUser1 = {
-            id: 'test_user_id',
-            username: 'username',
-            first_name: 'First',
-            last_name: 'Last',
-        };
-        const testUser2 = {
-            id: 'test_user_id_2',
-            username: 'username2',
-            first_name: 'First2',
-            last_name: 'Last2',
-            nickname: 'nick2',
-        };
         it('should return username', () => {
             assert.equal(displayUsername(userObj, 'UNKNOWN_PREFERENCE'), 'testUser');
         });

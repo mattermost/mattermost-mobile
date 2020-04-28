@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Image, Text, View, Platform} from 'react-native';
+import {Text, View, Platform} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import PropTypes from 'prop-types';
 import truncate from 'lodash/truncate';
 
@@ -15,6 +16,14 @@ export default class AttachmentFooter extends PureComponent {
         icon: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
+
+    constructor(props) {
+        super(props);
+
+        if (props.icon) {
+            FastImage.preload([{uri: props.icon}]);
+        }
+    }
 
     render() {
         const {
@@ -32,7 +41,7 @@ export default class AttachmentFooter extends PureComponent {
         return (
             <View style={style.container}>
                 {Boolean(icon) &&
-                <Image
+                <FastImage
                     source={{uri: icon}}
                     key='footer_icon'
                     style={style.icon}
