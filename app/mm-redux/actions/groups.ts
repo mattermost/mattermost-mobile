@@ -173,7 +173,7 @@ export function getGroup(id: string): ActionFunc {
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUP,
@@ -197,7 +197,7 @@ export function getGroups(filterAllowReference = false): ActionFunc {
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS,
@@ -221,7 +221,7 @@ export function getGroupsNotAssociatedToTeam(teamID: string, q = '', page = 0, p
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS,
@@ -245,7 +245,7 @@ export function getGroupsNotAssociatedToChannel(channelID: string, q = '', page 
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS,
@@ -270,7 +270,7 @@ export function getAllGroupsAssociatedToTeam(teamID: string, filterAllowReferenc
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
@@ -295,7 +295,7 @@ export function getAllGroupsAssociatedToChannel(channelID: string, filterAllowRe
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNEL,
@@ -319,7 +319,7 @@ export function getAllGroupsAssociatedToChannelsInTeam(teamID: string, filterAll
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
@@ -343,7 +343,7 @@ export function getGroupsAssociatedToTeam(teamID: string, q = '', page = 0, perP
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_TEAM,
@@ -367,7 +367,7 @@ export function getGroupsAssociatedToChannel(channelID: string, q = '', page = 0
             return {error};
         }
 
-        if (!_.isEmpty(data)) {
+        if (data) {
             dispatch(batchActions([
                 {
                     type: GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_CHANNEL,

@@ -664,33 +664,47 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
             if (hasLicense && data.team && isMinimumServerVersion(serverVersion, 5, 22)) {
                 for (let i = 0; i <= MAX_RETRIES; i++) {
                     try {
-                        let result = await Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true); //eslint-disable-line no-await-in-loop
-                        if (result.groups) {
-                            actions.push({
-                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
-                                data: {groupsByChannelId: result.groups},
-                            });
-                        }
-
                         if (data.team.group_constrained) {
-                            result = await Client4.getAllGroupsAssociatedToTeam(teamId, true); //eslint-disable-line no-await-in-loop
-                            if (result) {
+                            const [getAllGroupsAssociatedToChannelsInTeam, getAllGroupsAssociatedToTeam] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                                Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true),
+                                Client4.getAllGroupsAssociatedToTeam(teamId, true),
+                            ]);
+
+                            if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                                actions.push({
+                                    type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                    data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                                });
+                            }
+
+                            if (getAllGroupsAssociatedToTeam) {
                                 actions.push({
                                     type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
-                                    data: result,
+                                    data: getAllGroupsAssociatedToTeam,
                                 });
                             }
                         } else {
-                            result = await Client4.getGroups(true); //eslint-disable-line no-await-in-loop
-                            if (result) {
+                            const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                                Client4.getAllGroupsAssociatedToChannelsInTeam(teamId, true),
+                                Client4.getGroups(true),
+                            ]);
+
+                            if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                                actions.push({
+                                    type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                    data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                                });
+                            }
+
+                            if (getGroups) {
                                 actions.push({
                                     type: GroupTypes.RECEIVED_GROUPS,
-                                    data: result,
+                                    data: getGroups,
                                 });
                             }
                         }
                     } catch (err) {
-                        // What to be done if error?
+                        return {error: err};
                     }
                 }
             }
