@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import _ from 'lodash';
 import {GroupTypes} from '@mm-redux/action_types';
 import {General, Groups} from '../constants';
 import {Client4} from '@mm-redux/client';
