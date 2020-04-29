@@ -557,7 +557,7 @@ describe('Actions.Groups', () => {
             get(`/channels/${channelID}/groups?paginate=false&filter_allow_reference=false`).
             reply(200, response);
 
-        const data = await Actions.getAllGroupsAssociatedToChannel(channelID)(store.dispatch, store.getState);
+        await Actions.getAllGroupsAssociatedToChannel(channelID)(store.dispatch, store.getState);
         const state = store.getState();
 
         const groupIDs = state.entities.channels.groupsAssociatedToChannel[channelID].ids;
@@ -570,7 +570,6 @@ describe('Actions.Groups', () => {
     it('getAllGroupsAssociatedToChannelsInTeam', async () => {
         const teamID = 'ge63nq31sbfy3duzq5f7yqn1kh';
         const channelID1 = '5rgoajywb3nfbdtyafbod47ryb';
-        const channelID2 = 'o3tdawqxot8kikzq8bk54zggbc';
 
         const response1 = {
             groups: {
