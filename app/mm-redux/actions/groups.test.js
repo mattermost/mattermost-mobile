@@ -558,7 +558,6 @@ describe('Actions.Groups', () => {
             reply(200, response);
 
         const data = await Actions.getAllGroupsAssociatedToChannel(channelID)(store.dispatch, store.getState);
-        console.error(data);
         const state = store.getState();
 
         const groupIDs = state.entities.channels.groupsAssociatedToChannel[channelID].ids;
