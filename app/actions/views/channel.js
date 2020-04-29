@@ -30,7 +30,7 @@ import {getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_u
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
-import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';
+import {getPosts, getPostsBefore, getPostsSince, getPostThread} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_textbox';
 import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
@@ -654,7 +654,8 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 // Fetch needed profiles from channel creators and direct channels
                 dispatch(loadSidebar(data));
 
-                dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
+                // Uncomment once we want to enable this feature
+                // dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
         }
 
