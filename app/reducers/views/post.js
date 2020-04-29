@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {UserTypes} from '@mm-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 

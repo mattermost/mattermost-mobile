@@ -5,7 +5,6 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import {Client4} from '@mm-redux/client';
-import * as GeneralActions from '@mm-redux/actions/general';
 
 import {handleSuccessfulLogin} from 'app/actions/views/login';
 

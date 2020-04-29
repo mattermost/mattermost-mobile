@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     InteractionManager,
     Platform,
     StyleSheet,
@@ -12,6 +11,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import {Navigation} from 'react-native-navigation';
 import * as Animatable from 'react-native-animatable';
 import {PanGestureHandler} from 'react-native-gesture-handler';
@@ -41,10 +41,8 @@ export default class Notification extends PureComponent {
         componentId: PropTypes.string.isRequired,
         channel: PropTypes.object,
         config: PropTypes.object,
-        deviceWidth: PropTypes.number.isRequired,
         notification: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
-        theme: PropTypes.object.isRequired,
         user: PropTypes.object,
     };
 
@@ -158,7 +156,7 @@ export default class Notification extends PureComponent {
         const {data} = notification;
 
         let icon = (
-            <Image
+            <FastImage
                 source={logo}
                 style={style.icon}
             />
@@ -168,7 +166,7 @@ export default class Notification extends PureComponent {
             const overrideIconURL = Client4.getAbsoluteUrl(data.override_icon_url); // eslint-disable-line camelcase
             const wsIcon = data.override_icon_url ? {uri: overrideIconURL} : webhookIcon;
             icon = (
-                <Image
+                <FastImage
                     source={wsIcon}
                     style={style.icon}
                 />

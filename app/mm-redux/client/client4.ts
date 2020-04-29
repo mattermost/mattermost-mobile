@@ -21,7 +21,6 @@ import {IncomingWebhook, OutgoingWebhook, Command, OAuthApp, DialogSubmission} f
 import {CustomEmoji} from '@mm-redux/types/emojis';
 import {Config} from '@mm-redux/types/config';
 import {Bot, BotPatch} from '@mm-redux/types/bots';
-import {Dictionary} from '@mm-redux/types/utilities';
 import {SyncablePatch} from '@mm-redux/types/groups';
 
 const FormData = require('form-data');

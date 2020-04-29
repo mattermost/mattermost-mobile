@@ -109,6 +109,15 @@ jest.doMock('react-native', () => {
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
+jest.mock('react-native-cookies', () => ({
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(),
+    getInitialURL: jest.fn(),
+    clearAll: jest.fn(),
+}));
+
 jest.mock('react-native-device-info', () => {
     return {
         getVersion: () => '0.0.0',
@@ -120,13 +129,37 @@ jest.mock('react-native-device-info', () => {
     };
 });
 
-jest.mock('react-native-cookies', () => ({
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    openURL: jest.fn(),
-    canOpenURL: jest.fn(),
-    getInitialURL: jest.fn(),
-    clearAll: jest.fn(),
+jest.mock('react-native-fast-image', () => {
+    const FastImage = require.requireActual('react-native-fast-image').default;
+    FastImage.preload = jest.fn();
+
+    return FastImage;
+});
+
+jest.mock('rn-fetch-blob', () => ({
+    fs: {
+        dirs: {
+            DocumentDir: () => jest.fn(),
+            CacheDir: '/data/com.mattermost.beta/cache',
+        },
+        exists: jest.fn(),
+        existsWithDiffExt: jest.fn(),
+        unlink: jest.fn(),
+        mv: jest.fn(),
+    },
+    fetch: jest.fn(),
+    config: jest.fn(),
+}));
+
+jest.mock('rn-fetch-blob/fs', () => ({
+    dirs: {
+        DocumentDir: () => jest.fn(),
+        CacheDir: '/data/com.mattermost.beta/cache',
+    },
+    exists: jest.fn(),
+    existsWithDiffExt: jest.fn(),
+    unlink: jest.fn(),
+    mv: jest.fn(),
 }));
 
 jest.mock('react-native-navigation', () => {
@@ -199,32 +232,6 @@ beforeEach(() => {
     warns = [];
     errors = [];
 });
-
-jest.mock('rn-fetch-blob', () => ({
-    fs: {
-        dirs: {
-            DocumentDir: () => jest.fn(),
-            CacheDir: '/data/com.mattermost.beta/cache',
-        },
-        exists: jest.fn(),
-        existsWithDiffExt: jest.fn(),
-        unlink: jest.fn(),
-        mv: jest.fn(),
-    },
-    fetch: jest.fn(),
-    config: jest.fn(),
-}));
-
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: '/data/com.mattermost.beta/cache',
-    },
-    exists: jest.fn(),
-    existsWithDiffExt: jest.fn(),
-    unlink: jest.fn(),
-    mv: jest.fn(),
-}));
 
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);

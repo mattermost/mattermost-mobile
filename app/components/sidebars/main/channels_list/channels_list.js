@@ -12,7 +12,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -228,6 +228,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         searchContainer: {
             flex: 1,
             flexDirection: 'row',
+            overflow: 'hidden',
             ...Platform.select({
                 android: {
                     marginBottom: 1,

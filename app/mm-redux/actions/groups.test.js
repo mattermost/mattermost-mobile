@@ -7,7 +7,7 @@ import nock from 'nock';
 import * as Actions from '@mm-redux/actions/groups';
 import {Client4} from '@mm-redux/client';
 
-import {RequestStatus, Groups} from '../constants';
+import {Groups} from '../constants';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 
