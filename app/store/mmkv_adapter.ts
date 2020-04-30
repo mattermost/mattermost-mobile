@@ -41,7 +41,7 @@ export default async function getStorage(identifier = 'default') {
                 error: Error | null | undefined,
                 result: object | null,
             ) => void | null | undefined,
-        ): Promise<object | null> => {
+        ): Promise<string | null> => {
             return new Promise((resolve, reject) => {
                 checkValidInput(key);
                 MMKV.getStringAsync(key).then((result: string) => {
