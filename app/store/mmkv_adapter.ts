@@ -44,7 +44,7 @@ export default async function getStorage(identifier = 'default') {
         ): Promise<object | null> => {
             return new Promise((resolve, reject) => {
                 checkValidInput(key);
-                MMKV.getStringAsync(key).then((result: object) => {
+                MMKV.getStringAsync(key).then((result: string) => {
                     if (callback) {
                         callback(null, result);
                     }
