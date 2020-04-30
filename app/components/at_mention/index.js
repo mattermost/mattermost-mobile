@@ -3,18 +3,23 @@
 
 import {connect} from 'react-redux';
 
-import {getUsersByUsername, getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
+import {getUsersByUsername} from '@mm-redux/selectors/entities/users';
+
+import {getAllUserMentionKeys} from '@mm-redux/selectors/entities/search';
 
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 
+import {getGroupsByName} from '@mm-redux/selectors/entities/groups';
+
 import AtMention from './at_mention';
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
     return {
         theme: getTheme(state),
         usersByUsername: getUsersByUsername(state),
-        mentionKeys: getCurrentUserMentionKeys(state),
+        mentionKeys: ownProps.mentionKeys || getAllUserMentionKeys(state),
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
+        groupsByName: getGroupsByName(state),
     };
 }
 
