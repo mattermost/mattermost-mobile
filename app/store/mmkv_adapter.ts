@@ -44,11 +44,11 @@ export default async function getStorage(identifier = 'default') {
         ): Promise<object | null> => {
             return new Promise((resolve, reject) => {
                 checkValidInput(key);
-                MMKV.getMapAsync(key).then((result: object) => {
+                MMKV.getStringAsync(key).then((result: object) => {
                     if (callback) {
                         callback(null, result);
                     }
-                    resolve(result);
+                    resolve(JSON.parse(result));
                 }).catch((error: Error) => {
                     if (callback) {
                         callback(null, error);
@@ -67,7 +67,7 @@ export default async function getStorage(identifier = 'default') {
         ): Promise<null> => {
             return new Promise((resolve, reject) => {
                 checkValidInput(key, value);
-                MMKV.setMapAsync(key, value).then(() => {
+                MMKV.setStringAsync(key, JSON.stringify(value)).then(() => {
                     if (callback) {
                         callback(null);
                     }
