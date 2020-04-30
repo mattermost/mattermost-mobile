@@ -49,7 +49,7 @@ exports[`Markdown should match with disableAtChannelMentionHighlight 1`] = `
   first={true}
   last={true}
   literal={null}
-  nodeKey="6"
+  nodeKey="8"
 >
   <Unknown
     context={
@@ -64,21 +64,23 @@ exports[`Markdown should match with disableAtChannelMentionHighlight 1`] = `
     context={
       Array [
         "paragraph",
+        "mention_highlight",
       ]
     }
     literal={null}
     mentionName="all"
-    nodeKey="5"
+    nodeKey="6"
   >
     <Unknown
       context={
         Array [
           "paragraph",
+          "mention_highlight",
           "at_mention",
         ]
       }
       literal="@all"
-      nodeKey="4"
+      nodeKey="5"
     />
   </Unknown>
 </Unknown>

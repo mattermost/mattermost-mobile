@@ -12,6 +12,7 @@ import {Post, PostWithFormatData, MessageHistory, PostOrderBlock} from '@mm-redu
 import {Reaction} from '@mm-redux/types/reactions';
 import {UserProfile} from '@mm-redux/types/users';
 import {Channel} from '@mm-redux/types/channels';
+
 import {$ID, IDMappedObjects, RelationOneToOne, RelationOneToMany, Dictionary} from '@mm-redux/types/utilities';
 export function getAllPosts(state: GlobalState) {
     return state.entities.posts.posts;

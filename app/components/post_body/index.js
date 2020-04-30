@@ -12,6 +12,7 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {memoizeResult} from '@mm-redux/utils/helpers';
+import {makeGetMentionKeysForPost} from '@mm-redux/selectors/entities/search';
 
 import {
     isEdited,
@@ -32,6 +33,7 @@ const POST_TIMEOUT = 20000;
 export function makeMapStateToProps() {
     const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
     const getReactionsForPost = makeGetReactionsForPost();
+    const getMentionKeysForPost = makeGetMentionKeysForPost();
 
     return (state, ownProps) => {
         const post = ownProps.post;
@@ -103,6 +105,7 @@ export function makeMapStateToProps() {
             isEmojiOnly,
             shouldRenderJumboEmoji,
             theme: getTheme(state),
+            mentionKeys: getMentionKeysForPost(state, postProps),
             canDelete,
             ...getDimensions(state),
         };

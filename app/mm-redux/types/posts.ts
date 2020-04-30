@@ -109,3 +109,8 @@ export type PostsState = {
     messagesHistory: MessageHistory;
     expandedURLs: Dictionary<string>;
 };
+
+export type PostProps = {
+    disable_group_highlight?: boolean;
+    mentionHighlightDisabled: boolean;
+}
