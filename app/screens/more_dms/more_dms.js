@@ -53,7 +53,7 @@ export default class MoreDirectMessages extends PureComponent {
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        currentUser: PropTypes.string.isRequired,
+        currentUser: PropTypes.object.isRequired,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
