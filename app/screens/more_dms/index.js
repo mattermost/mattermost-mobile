@@ -12,7 +12,7 @@ import {General} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
+import {getCurrentUserId, getUsers, getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import MoreDirectMessages from './more_dms';
 
@@ -27,6 +27,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
         currentUserId: getCurrentUserId(state),
+        currentUser: getCurrentUser(state),
         currentTeamId: getCurrentTeamId(state),
         isLandscape: isLandscape(state),
     };

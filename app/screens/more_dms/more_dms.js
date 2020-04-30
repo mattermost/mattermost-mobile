@@ -23,6 +23,7 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {NavigationTypes} from 'app/constants';
 import {alertErrorWithFallback} from 'app/utils/general';
+import {isGuest} from 'app/utils/users';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {
     changeOpacity,
@@ -52,6 +53,7 @@ export default class MoreDirectMessages extends PureComponent {
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        currentUser: PropTypes.string.isRequired,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -205,7 +207,6 @@ export default class MoreDirectMessages extends PureComponent {
             }
 
             this.page += 1;
-            const {actions, allProfiles, teammateNameDisplay} = this.props;
             this.setState({loading: false, profiles: [...profiles, ...data]});
         }
     };
@@ -407,7 +408,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, theme, isLandscape} = this.props;
+        const {currentUser, currentUserId, theme, isLandscape} = this.props;
         const {
             loading,
             profiles,
@@ -438,7 +439,7 @@ export default class MoreDirectMessages extends PureComponent {
         let listType;
         if (term) {
             const exactMatches = [];
-            const results = filterProfilesMatchingTerm(searchResults.filter(this.filterUnknownUsers), term).filter((p) => {
+            const filterByTerm = (p) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
                     return false;
                 }
@@ -449,11 +450,23 @@ export default class MoreDirectMessages extends PureComponent {
                 }
 
                 return true;
-            });
+            };
+
+            let results;
+            if (currentUser && isGuest(currentUser)) {
+                results = filterProfilesMatchingTerm(searchResults.filter(this.filterUnknownUsers), term).filter(filterByTerm);
+            } else {
+                results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            }
             data = [...exactMatches, ...results];
+
             listType = FLATLIST;
         } else {
-            data = createProfilesSections(profiles.filter(this.filterUnknownUsers));
+            if (currentUser && isGuest(currentUser)) {
+                data = createProfilesSections(profiles.filter(this.filterUnknownUsers));
+            } else {
+                data = createProfilesSections(profiles);
+            }
             listType = SECTIONLIST;
         }
 

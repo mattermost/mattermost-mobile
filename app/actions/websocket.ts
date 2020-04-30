@@ -31,7 +31,7 @@ import {DispatchFunc, GenericAction, GetStateFunc, batchActions} from '@mm-redux
 
 import {getCustomEmojiForReaction, getUnreadPostData, postDeleted, receivedNewPost, receivedPost} from '@mm-redux/actions/posts';
 import {markChannelAsRead} from '@mm-redux/actions/channels';
-import {getProfilesByIds, getStatusesByIds, getKnownUsers} from '@mm-redux/actions/users';
+import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {TeamMembership} from '@mm-redux/types/teams';
@@ -1141,6 +1141,9 @@ function handleOpenDialogEvent(msg: WebSocketMessage) {
 
 // Helpers
 export async function notVisibleUsersActions(state: GlobalState): Promise<Array<GenericAction>> {
+    if (isMinimumServerVersion(Client4.getServerVersion(), 5, 23)) {
+        return [];
+    }
     let knownUsers: Set<string>;
     try {
         const fetchResult = await Client4.getKnownUsers();

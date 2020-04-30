@@ -23,7 +23,7 @@ import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
 import {Dictionary} from '@mm-redux/types/utilities';
 export function checkMfa(loginId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({type: UserTypes.CHECK_MFA_REQUEST, data: null});
         try {
             const data = await Client4.checkUserMfa(loginId);
@@ -985,7 +985,7 @@ export function stopPeriodicStatusUpdates(): ActionFunc {
 }
 
 export function updateMe(user: UserProfile): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({type: UserTypes.UPDATE_ME_REQUEST, data: null});
 
         let data;
@@ -1376,12 +1376,6 @@ export function enableUserAccessToken(tokenId: string): ActionFunc {
 
         return {data: true};
     };
-}
-
-export function getKnownUsers(): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.getKnownUsers,
-    });
 }
 
 export function clearUserAccessTokens(): ActionFunc {
