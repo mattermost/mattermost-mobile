@@ -907,9 +907,6 @@ describe('Actions.Websocket doReconnect', () => {
 describe('Actions.Websocket notVisibleUsersActions', () => {
     configureMockStore([thunk]);
 
-    const channel1 = TestHelper.fakeChannelWithId('');
-    const channel2 = TestHelper.fakeChannelWithId('');
-
     const me = TestHelper.fakeUserWithId();
     const user = TestHelper.fakeUserWithId();
     const user2 = TestHelper.fakeUserWithId();
