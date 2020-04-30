@@ -23,7 +23,6 @@ import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
 import {NavigationTypes} from 'app/constants';
 import {alertErrorWithFallback} from 'app/utils/general';
-import {isGuest} from 'app/utils/users';
 import {createProfilesSections, loadingText} from 'app/utils/member_list';
 import {
     changeOpacity,
@@ -53,7 +52,7 @@ export default class MoreDirectMessages extends PureComponent {
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        currentUser: PropTypes.object.isRequired,
+        isGuest: PropTypes.object.isRequired,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -408,7 +407,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUser, currentUserId, theme, isLandscape} = this.props;
+        const {isGuest, currentUserId, theme, isLandscape} = this.props;
         const {
             loading,
             profiles,
@@ -453,7 +452,7 @@ export default class MoreDirectMessages extends PureComponent {
             };
 
             let results;
-            if (currentUser && isGuest(currentUser)) {
+            if (isGuest) {
                 results = filterProfilesMatchingTerm(searchResults.filter(this.filterUnknownUsers), term).filter(filterByTerm);
             } else {
                 results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
@@ -462,7 +461,7 @@ export default class MoreDirectMessages extends PureComponent {
 
             listType = FLATLIST;
         } else {
-            if (currentUser && isGuest(currentUser)) {
+            if (isGuest) {
                 data = createProfilesSections(profiles.filter(this.filterUnknownUsers));
             } else {
                 data = createProfilesSections(profiles);
