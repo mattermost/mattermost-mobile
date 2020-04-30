@@ -2861,6 +2861,13 @@ export default class Client4 {
         );
     };
 
+    getGroupsByUserId = async (userID: string) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/${userID}/groups`,
+            {method: 'get'},
+        );
+    }
+
     getGroupsNotAssociatedToTeam = async (teamID: string, q = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
         this.trackEvent('api', 'api_groups_get_not_associated_to_team', {team_id: teamID});
         return this.doFetch(

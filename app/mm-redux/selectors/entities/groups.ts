@@ -2,10 +2,12 @@
 // See LICENSE.txt for license information.
 import * as reselect from 'reselect';
 import {GlobalState} from '@mm-redux/types/store';
+import {Dictionary} from '@mm-redux/types/utilities';
 import {Group} from '@mm-redux/types/groups';
 import {filterGroupsMatchingTerm} from '@mm-redux/utils/group_utils';
 import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
+import {UserMentionKey} from '@mm-redux/selectors/entities/users';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTeam} from '@mm-redux/selectors/entities/teams';
 import {Permissions} from '@mm-redux/constants';
@@ -18,6 +20,10 @@ const emptySyncables = {
 
 export function getAllGroups(state: GlobalState) {
     return state.entities.groups?.groups || [];
+}
+
+export function getMyGroups(state: GlobalState) {
+    return state.entities.groups.myGroups;
 }
 
 export function getGroup(state: GlobalState, id: string) {
@@ -164,5 +170,34 @@ export const getAllAssociatedGroupsForReference = reselect.createSelector(
     getAllGroups,
     (allGroups) => {
         return Object.values(allGroups).filter((group) => group.allow_reference && group.delete_at === 0);
+    },
+);
+
+export const getMyAllowReferencedGroups = reselect.createSelector(
+    getMyGroups,
+    (myGroups) => {
+        return Object.values(myGroups).filter((group) => group.allow_reference && group.delete_at === 0);
+    },
+);
+
+export const getCurrentUserGroupMentionKeys = reselect.createSelector(
+    getMyAllowReferencedGroups,
+    (groups: Array<Group>) => {
+        const keys: UserMentionKey[] = [];
+        groups.forEach((group) => keys.push({key: `@${group.name}`}));
+        return keys;
+    },
+);
+
+export const getGroupsByName = reselect.createSelector(
+    getAllGroups,
+    (groups) => {
+        const groupsByName: Dictionary<Group> = {};
+
+        Object.values(groups).forEach((group) => {
+            groupsByName[group.name] = group;
+        });
+
+        return groupsByName;
     },
 );
