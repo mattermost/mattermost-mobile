@@ -1,14 +1,15 @@
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java
 new file mode 100644
-index 0000000..f2306f6
+index 0000000..a302394
 --- /dev/null
 +++ b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageCookieJar.java
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,45 @@
 +package com.dylanvann.fastimage;
 +
 +import android.webkit.CookieManager;
 +
 +import java.util.Collections;
++import java.util.LinkedList;
 +import java.util.List;
 +
 +import okhttp3.Cookie;
@@ -39,7 +40,13 @@ index 0000000..f2306f6
 +            return Collections.emptyList();
 +        }
 +
-+        return Collections.singletonList(Cookie.parse(url, cookie));
++        String[] pairs = cookie.split(";");
++        List<Cookie> cookies = new LinkedList<Cookie>();
++        for (String pair : pairs) {
++            cookies.add(Cookie.parse(url, pair));
++        }
++
++        return cookies;
 +    }
 +}
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java

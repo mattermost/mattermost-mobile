@@ -20,6 +20,8 @@ import CameraButton from './components/camera_button';
 
 import PostTextbox from './post_textbox.ios';
 
+jest.runAllTimers();
+
 jest.mock('react-native-image-picker', () => ({
     launchCamera: jest.fn(),
 }));

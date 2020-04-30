@@ -1644,7 +1644,7 @@ describe('Actions.Channels', () => {
             post('/channels/search').
             reply(200, [TestHelper.basicChannel, userChannel]);
 
-        const {data} = await store.dispatch(Actions.searchAllChannels('test', 0));
+        await store.dispatch(Actions.searchAllChannels('test', 0));
 
         const moreRequest = store.getState().requests.channels.getAllChannels;
         if (moreRequest.status === RequestStatus.FAILURE) {
