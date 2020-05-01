@@ -7,8 +7,10 @@ import DeviceInfo from 'react-native-device-info';
 
 import assert from 'assert';
 import {REHYDRATE} from 'redux-persist';
+import merge from 'deepmerge';
 
 import {ViewTypes} from '@constants';
+import initialState from '@store/initial_state';
 import {
     cleanUpPostsInChannel,
     cleanUpState,
@@ -347,6 +349,26 @@ describe('cleanUpState', () => {
 
         expect(result.entities.posts.pendingPostIds).toEqual([]);
         expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1', 'post2'], recent: true}]);
+    });
+
+    test('should set rehydration values to true', () => {
+        const state = merge(initialState, {
+            // eslint-disable-next-line no-underscore-dangle
+            _persist: {
+                rehydrated: false,
+            },
+            views: {
+                root: {
+                    hydrationComplete: false,
+                },
+            },
+        });
+
+        const result = cleanUpState(state);
+
+        
+        expect(result._persist.rehydrated).toBe(true); // eslint-disable-line no-underscore-dangle
+        expect(result.views.root.hydrationComplete).toBe(true);
     });
 });
 
