@@ -4,6 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 import {TouchableOpacity} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 // import RNFetchBlob from 'rn-fetch-blob';
 
@@ -115,6 +116,49 @@ describe('ImagePreview', () => {
                 },
             },
         );
+    });
+
+    test('renderImageComponent uses cache only for http URI', () => {
+        const wrapper = shallow(
+            <ImagePreview
+                {...baseProps}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+
+        const imageProps = {
+            style: {},
+            source: {uri: 'http://uri'},
+        };
+        const imageDimensions = {height: 100, widht: 100};
+        const component = instance.renderImageComponent(imageProps, imageDimensions);
+        
+        const fastImageProps = component.props.children.props;
+        expect(fastImageProps.source).toStrictEqual({
+            ...imageProps.source,
+            cache: FastImage.cacheControl.cacheOnly,
+        });
+    });
+
+    test('renderImageComponent does not use cache for non http URI', () => {
+        const wrapper = shallow(
+            <ImagePreview
+                {...baseProps}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+
+        const imageProps = {
+            style: {},
+            source: {uri: 'file:///uri'},
+        };
+        const imageDimensions = {height: 100, widht: 100};
+        const component = instance.renderImageComponent(imageProps, imageDimensions);
+        
+        const fastImageProps = component.props.children.props;
+        expect(fastImageProps.source).toStrictEqual(imageProps.source);
     });
 
     //     test('should show bottom sheet when showDownloadOptionsIOS is called for existing video', async () => {
