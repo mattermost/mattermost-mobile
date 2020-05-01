@@ -376,7 +376,7 @@ export default class ImagePreview extends PureComponent {
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
             const imageStyle = {...flattenStyle, ...calculatedDimensions};
 
-            let src = {...source};
+            const src = {...source};
             if (src.uri.startsWith('http')) {
                 src.cache = FastImage.cacheControl.cacheOnly;
             }
