@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import _ from 'underscore';
 import {
     FlatList,
     Platform,
@@ -46,7 +47,9 @@ export default class EmojiSuggestion extends PureComponent {
 
     state = {
         active: false,
+        doesMatch: true,
         dataSource: [],
+        prevProps: {},
     };
 
     constructor(props) {
@@ -55,21 +58,18 @@ export default class EmojiSuggestion extends PureComponent {
         this.matchTerm = '';
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.isSearch) {
+    componentDidUpdate(prevProps) {
+        if (this.props.isSearch) {
             return;
         }
 
         const regex = EMOJI_REGEX;
-        const match = nextProps.value.substring(0, nextProps.cursorPosition).match(regex);
+        const match = this.props.value.substring(0, this.props.cursorPosition).match(regex);
 
         if (!match || this.state.emojiComplete) {
-            this.setState({
-                active: false,
-                emojiComplete: false,
-            });
+            this.resetComponent();
 
-            this.props.onResultCountChange(0);
+            prevProps.onResultCountChange(0);
 
             return;
         }
@@ -78,15 +78,22 @@ export default class EmojiSuggestion extends PureComponent {
         this.matchTerm = match[3] || '';
 
         if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
-            this.props.actions.autocompleteCustomEmojis(this.matchTerm);
+            prevProps.actions.autocompleteCustomEmojis(this.matchTerm);
             return;
         }
 
         if (this.matchTerm.length) {
-            this.handleFuzzySearch(this.matchTerm, nextProps);
+            this.handleFuzzySearch(this.matchTerm, this.props);
         } else {
-            this.setEmojiData(nextProps.emojis);
+            this.setEmojiData(this.props.emojis);
         }
+    }
+
+    resetComponent() {
+        this.setState({
+            active: false,
+            emojiComplete: false,
+        });
     }
 
     handleFuzzySearch = async (matchTerm, props) => {
@@ -102,12 +109,12 @@ export default class EmojiSuggestion extends PureComponent {
         if (matchTerm) {
             sorter = (a, b) => compareEmojis(a, b, matchTerm);
         }
-
-        this.setState({
-            active: data.length > 0,
-            dataSource: data.sort(sorter),
-        });
-
+        if (!_.isEqual(data.sort(sorter), this.state.dataSource)) {
+            this.setState({
+                active: data.length > 0,
+                dataSource: data.sort(sorter),
+            });
+        }
         this.props.onResultCountChange(data.length);
     };
 
@@ -182,7 +189,7 @@ export default class EmojiSuggestion extends PureComponent {
         );
     };
 
-    getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index})
+    getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index});
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;

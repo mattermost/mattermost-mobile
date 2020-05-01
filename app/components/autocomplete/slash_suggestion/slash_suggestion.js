@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import _ from 'underscore';
 import {
     FlatList,
     Platform,
@@ -45,8 +46,8 @@ export default class SlashSuggestion extends PureComponent {
         lastCommandRequest: 0,
     };
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.isSearch) {
+    componentDidUpdate(prevProps) {
+        if (this.props.isSearch) {
             return;
         }
 
@@ -55,45 +56,63 @@ export default class SlashSuggestion extends PureComponent {
             commands: nextCommands,
             currentTeamId: nextTeamId,
             value: nextValue,
-        } = nextProps;
+        } = this.props;
 
         if (currentTeamId !== nextTeamId) {
-            this.setState({
-                lastCommandRequest: 0,
-            });
+            this.resetLastCommandRequest();
         }
 
         const match = nextValue.match(SLASH_REGEX);
 
         if (!match || this.state.suggestionComplete) {
-            this.setState({
-                active: false,
-                matchTerm: null,
-                suggestionComplete: false,
-            });
-            this.props.onResultCountChange(0);
+            this.resetComponent();
+            prevProps.onResultCountChange(0);
             return;
         }
 
         const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
 
         if ((!nextCommands.length || dataIsStale)) {
-            this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
-            this.setState({
-                lastCommandRequest: Date.now(),
-            });
+            prevProps.actions.getAutocompleteCommands(this.props.currentTeamId);
+            this.setLastCommandRequest();
         }
 
         const matchTerm = match[2];
 
         const data = this.filterSlashSuggestions(matchTerm, nextCommands);
 
+        if (!_.isEqual(this.state.dataSource, data)) {
+            this.setActive(data);
+        }
+
+        prevProps.onResultCountChange(data.length);
+    }
+
+    resetComponent() {
+        this.setState({
+            active: false,
+            matchTerm: null,
+            suggestionComplete: false,
+        });
+    }
+
+    setLastCommandRequest() {
+        this.setState({
+            lastCommandRequest: Date.now(),
+        });
+    }
+
+    setActive(data) {
         this.setState({
             active: data.length,
             dataSource: data,
         });
+    }
 
-        this.props.onResultCountChange(data.length);
+    resetLastCommandRequest() {
+        this.setState({
+            lastCommandRequest: 0,
+        });
     }
 
     filterSlashSuggestions = (matchTerm, commands) => {
@@ -106,7 +125,7 @@ export default class SlashSuggestion extends PureComponent {
 
             return command.display_name.startsWith(matchTerm) || command.trigger.startsWith(matchTerm);
         });
-    }
+    };
 
     completeSuggestion = (command) => {
         const {onChangeText} = this.props;
@@ -145,7 +164,7 @@ export default class SlashSuggestion extends PureComponent {
             trigger={item.trigger}
             isLandscape={this.props.isLandscape}
         />
-    )
+    );
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
