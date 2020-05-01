@@ -366,7 +366,6 @@ describe('cleanUpState', () => {
 
         const result = cleanUpState(state);
 
-        
         expect(result._persist.rehydrated).toBe(true); // eslint-disable-line no-underscore-dangle
         expect(result.views.root.hydrationComplete).toBe(true);
     });
