@@ -375,7 +375,11 @@ export default class ImagePreview extends PureComponent {
             const flattenStyle = StyleSheet.flatten(style);
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
             const imageStyle = {...flattenStyle, ...calculatedDimensions};
-            const src = {...source, cache: FastImage.cacheControl.cacheOnly};
+
+            let src = {...source};
+            if (src.uri.startsWith('http')) {
+                src.cache = FastImage.cacheControl.cacheOnly;
+            }
 
             return (
                 <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
