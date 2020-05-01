@@ -133,7 +133,7 @@ describe('ImagePreview', () => {
         };
         const imageDimensions = {height: 100, widht: 100};
         const component = instance.renderImageComponent(imageProps, imageDimensions);
-        
+
         const fastImageProps = component.props.children.props;
         expect(fastImageProps.source).toStrictEqual({
             ...imageProps.source,
@@ -156,7 +156,7 @@ describe('ImagePreview', () => {
         };
         const imageDimensions = {height: 100, widht: 100};
         const component = instance.renderImageComponent(imageProps, imageDimensions);
-        
+
         const fastImageProps = component.props.children.props;
         expect(fastImageProps.source).toStrictEqual(imageProps.source);
     });
