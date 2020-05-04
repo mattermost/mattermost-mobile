@@ -921,6 +921,7 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
             [user2.id]: user2,
             [user3.id]: user3,
         };
+        Client4.serverVersion = '5.23.0';
 
         const state = {
             entities: {
@@ -942,6 +943,7 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
             [me.id]: me,
             [user3.id]: user3,
         };
+        Client4.serverVersion = '5.23.0';
 
         const state = {
             entities: {
@@ -967,6 +969,7 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
             [user4.id]: user4,
             [user5.id]: user5,
         };
+        Client4.serverVersion = '5.23.0';
 
         const state = {
             entities: {
@@ -987,6 +990,32 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
         const actions = await Actions.notVisibleUsersActions(state);
         expect(actions.length).toEqual(3);
         expect(actions).toEqual(expectedAction);
+    });
+
+    it('should do nothing if the server version is less than 5.23', async () => {
+        const profiles = {
+            [me.id]: me,
+            [user.id]: user,
+            [user2.id]: user2,
+            [user3.id]: user3,
+            [user4.id]: user4,
+            [user5.id]: user5,
+        };
+        Client4.serverVersion = '5.22.0';
+
+        const state = {
+            entities: {
+                users: {
+                    currentUserId: me.id,
+                    profiles,
+                },
+            },
+        };
+
+        mockGetKnownUsersRequest([user.id, user3.id]);
+
+        const actions = await Actions.notVisibleUsersActions(state);
+        expect(actions.length).toEqual(0);
     });
 });
 
