@@ -14,7 +14,7 @@ import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entit
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getUsers, getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import {isGuest} from 'app/utils/users';
+import {isGuest} from '@utils/users';
 
 import MoreDirectMessages from './more_dms';
 
