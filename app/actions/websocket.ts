@@ -1141,7 +1141,7 @@ function handleOpenDialogEvent(msg: WebSocketMessage) {
 
 // Helpers
 export async function notVisibleUsersActions(state: GlobalState): Promise<Array<GenericAction>> {
-    if (isMinimumServerVersion(Client4.getServerVersion(), 5, 23)) {
+    if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 23)) {
         return [];
     }
     let knownUsers: Set<string>;
