@@ -22,6 +22,7 @@ import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
 import {Dictionary} from '@mm-redux/types/utilities';
+
 export function checkMfa(loginId: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         dispatch({type: UserTypes.CHECK_MFA_REQUEST, data: null});
@@ -443,6 +444,34 @@ export function getProfilesWithoutTeam(page: number, perPage: number = General.P
         ]));
 
         return {data: profiles};
+    };
+}
+
+export function receivedProfileInChannel(channelId: string, userId: string): Action {
+    return {
+        type: UserTypes.RECEIVED_PROFILE_IN_CHANNEL,
+        data: {
+            id: channelId,
+            user_id: userId
+        },
+    };
+}
+
+export function receivedProfileNotInChannel(channelId: string, userId: string): Action {
+    return {
+        type: UserTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL,
+        data: {
+            id: channelId,
+            user_id: userId
+        },
+    };
+}
+
+export function receivedProfilesListInChannel(channelId: string, profiles: any[]): Action {
+    return {
+        type: UserTypes.RECEIVED_PROFILES_LIST_IN_CHANNEL,
+        id: channelId,
+        data: profiles,
     };
 }
 

@@ -215,6 +215,7 @@
   "mobile.create_channel.public": "New Public Channel",
   "mobile.create_post.read_only": "This channel is read-only",
   "mobile.custom_list.no_results": "No Results",
+  "mobile.default_channel.error": "A default channel for this team was not found.",
   "mobile.display_settings.sidebar": "Sidebar",
   "mobile.display_settings.theme": "Theme",
   "mobile.document_preview.failed_description": "An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n",

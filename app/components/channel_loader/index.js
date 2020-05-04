@@ -6,7 +6,8 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {handleSelectChannel, setChannelLoading} from 'app/actions/views/channel';
+import {handleSelectChannel} from '@actions/channels';
+import {setChannelLoading} from '@actions/views/channels';
 
 import ChannelLoader from './channel_loader';
 

@@ -40,6 +40,7 @@ export function getChannelsInTeam(state: GlobalState): RelationOneToMany<Team, C
 export const getDirectChannelsSet: (a: GlobalState) => Set<string> = createSelector(getChannelsInTeam, (channelsInTeam: RelationOneToMany<Team, Channel>): Set<string> => {
     return channelsInTeam && new Set(channelsInTeam['']) || new Set();
 });
+
 export function getChannelMembersInChannels(state: GlobalState): RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>> {
     return state.entities.channels.membersInChannel;
 }
@@ -182,11 +183,11 @@ export function isChannelReadOnlyById(state: GlobalState, channelId: string): bo
 }
 
 export function isChannelReadOnly(state: GlobalState, channel: Channel): boolean {
-    return channel && channel.name === General.DEFAULT_CHANNEL && !isCurrentUserSystemAdmin(state) && getConfig(state).ExperimentalTownSquareIsReadOnly === 'true';
+    return channel && channel.name === General.DEFAULT_CHANNEL_NAME && !isCurrentUserSystemAdmin(state) && getConfig(state).ExperimentalTownSquareIsReadOnly === 'true';
 }
 
 export function shouldHideDefaultChannel(state: GlobalState, channel: Channel): boolean {
-    return channel && channel.name === General.DEFAULT_CHANNEL && !isCurrentUserSystemAdmin(state) && getConfig(state).ExperimentalHideTownSquareinLHS === 'true';
+    return channel && channel.name === General.DEFAULT_CHANNEL_NAME && !isCurrentUserSystemAdmin(state) && getConfig(state).ExperimentalHideTownSquareinLHS === 'true';
 }
 export const countCurrentChannelUnreadMessages: (a: GlobalState) => number = createSelector(getCurrentChannel, getMyCurrentChannelMembership, (channel: Channel, membership?: ChannelMembership | null): number => {
     if (!membership) {
@@ -327,7 +328,7 @@ export const getChannelsWithUnreadSection: (a: GlobalState) => {
 );
 
 export const getDefaultChannel: (a: GlobalState) => Channel | undefined | null = createSelector(getAllChannels, getCurrentTeamId, (channels: IDMappedObjects<Channel>, teamId: string): Channel | undefined | null => {
-    return Object.keys(channels).map((key) => channels[key]).find((c) => c && c.team_id === teamId && c.name === General.DEFAULT_CHANNEL);
+    return Object.keys(channels).map((key) => channels[key]).find((c) => c && c.team_id === teamId && c.name === General.DEFAULT_CHANNEL_NAME);
 });
 
 export const getMembersInCurrentChannel: (a: GlobalState) => UserIDMappedObjects<ChannelMembership> = createSelector(getCurrentChannelId, getChannelMembersInChannels, (currentChannelId: string, members: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>): UserIDMappedObjects<ChannelMembership> => {
@@ -465,7 +466,7 @@ export const canManageChannelMembers: (a: GlobalState) => boolean = createSelect
         return false;
     }
 
-    if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL || channel.name === General.DEFAULT_CHANNEL) {
+    if (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL || channel.name === General.DEFAULT_CHANNEL_NAME) {
         return false;
     }
 
@@ -890,7 +891,7 @@ export const getDefaultChannelForTeams: (a: GlobalState) => RelationOneToOne<Tea
     const result: RelationOneToOne<Team, Channel> = {};
 
     for (const channel of Object.keys(channels).map((key) => channels[key])) {
-        if (channel && channel.name === General.DEFAULT_CHANNEL) {
+        if (channel && channel.name === General.DEFAULT_CHANNEL_NAME) {
             result[channel.team_id] = channel;
         }
     }
@@ -903,7 +904,7 @@ export const getMyFirstChannelForTeams: (a: GlobalState) => RelationOneToOne<Tea
     const result: RelationOneToOne<Team, Channel> = {};
 
     for (const team of myTeams) {
-    // Get a sorted array of all channels in the team that the current user is a member of
+        // Get a sorted array of all channels in the team that the current user is a member of
         const teamChannels = Object.values(allChannels).filter((channel: Channel) => channel && channel.team_id === team.id && Boolean(myChannelMemberships[channel.id])).sort(sortChannelsByDisplayName.bind(null, locale));
 
         if (teamChannels.length === 0) {
@@ -915,21 +916,33 @@ export const getMyFirstChannelForTeams: (a: GlobalState) => RelationOneToOne<Tea
 
     return result;
 });
-export const getRedirectChannelNameForTeam = (state: GlobalState, teamId: string): string => {
-    const defaultChannelForTeam = getDefaultChannelForTeams(state)[teamId];
-    const myFirstChannelForTeam = getMyFirstChannelForTeams(state)[teamId];
-    const canIJoinPublicChannelsInTeam = !hasNewPermissions(state) || haveITeamPermission(state, {
-        team: teamId,
-        permission: Permissions.JOIN_PUBLIC_CHANNELS,
-    });
-    const myChannelMemberships = getMyChannelMemberships(state);
-    const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannelForTeam && myChannelMemberships[defaultChannelForTeam.id]);
 
-    if (iAmMemberOfTheTeamDefaultChannel || canIJoinPublicChannelsInTeam) {
-        return General.DEFAULT_CHANNEL;
+export const getRedirectChannelForTeam = (state: GlobalState, teamId: string): Channel | null => {
+    const defaultChannelForTeams = getDefaultChannelForTeams(state);
+    if (defaultChannelForTeams.hasOwnProperty(teamId)) {
+        const defaultChannelForTeam = defaultChannelForTeams[teamId];
+        const myChannelMemberships = getMyChannelMemberships(state);
+
+        const isDefaultChannelMember = Boolean(defaultChannelForTeam && myChannelMemberships[defaultChannelForTeam.id]);
+        if (isDefaultChannelMember) {
+            return defaultChannelForTeam;
+        }
+
+        const canJoinTeamPublicChannels = !hasNewPermissions(state) || haveITeamPermission(state, {
+            team: teamId,
+            permission: Permissions.JOIN_PUBLIC_CHANNELS,
+        });
+        if (canJoinTeamPublicChannels) {
+            return defaultChannelForTeam
+        }
     }
 
-    return myFirstChannelForTeam && myFirstChannelForTeam.name || General.DEFAULT_CHANNEL;
+    const firstChannelsForTeam = getMyFirstChannelForTeams(state);
+    if (firstChannelsForTeam.hasOwnProperty(teamId)) {
+        return firstChannelsForTeam[teamId];
+    }
+
+    return null;
 };
 
 // isManually unread looks into state if the provided channelId is marked as unread by the user.
@@ -939,8 +952,4 @@ export function isManuallyUnread(state: GlobalState, channelId?: string): boolea
     }
 
     return Boolean(state.entities.channels.manuallyUnread[channelId]);
-}
-
-export function getChannelModerations(state: GlobalState, channelId: string): Array<ChannelModeration> {
-    return state.entities.channels.channelModerations[channelId];
 }

@@ -9,7 +9,7 @@ import TestHelper from 'test/test_helper';
 import {
     areChannelMentionsIgnored,
     canManageMembersOldPermissions,
-    compareNotifyProps,
+    notifyPropsChanged,
     isAutoClosed,
     isChannelMuted,
     filterChannelsMatchingTerm,
@@ -27,7 +27,7 @@ describe('ChannelUtils', () => {
         const teamAdminsCanManageMembers = {RestrictPrivateChannelManageMembers: General.PERMISSIONS_TEAM_ADMIN};
         const systemAdminsCanManageMembers = {RestrictPrivateChannelManageMembers: General.PERMISSIONS_SYSTEM_ADMIN};
 
-        const townSquareChannel = {name: General.DEFAULT_CHANNEL, type: General.OPEN_CHANNEL};
+        const townSquareChannel = {name: General.DEFAULT_CHANNEL_NAME, type: General.OPEN_CHANNEL};
         const publicChannel = {type: General.PUBLIC_CHANNEL};
         const privateChannel = {type: General.PRIVATE_CHANNEL};
         const gmChannel = {type: General.GM_CHANNEL};
@@ -276,7 +276,7 @@ describe('ChannelUtils', () => {
         assert.equal(false, isChannelMuted(unmutedChannelMember));
     });
 
-    it('compareNotifyProps', () => {
+    it('notifyPropsChanged', () => {
         const baseProps = {
             desktop: 'default',
             email: 'all',
@@ -285,10 +285,11 @@ describe('ChannelUtils', () => {
             ignore_channel_mentions: 'on',
         };
 
-        assert.equal(true, compareNotifyProps(baseProps, {...baseProps}));
-        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, desktop: 'all'}));
-        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, email: 'mention'}));
-        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, push: 'none'}));
-        assert.equal(false, compareNotifyProps(baseProps, {...baseProps, ignore_channel_mentions: 'off'}));
+        assert.equal(false, notifyPropsChanged(baseProps, {...baseProps}));
+        assert.equal(false, notifyPropsChanged(baseProps, {...baseProps, ignoredProperty: 'ingoredProperty'}));
+        assert.equal(true, notifyPropsChanged(baseProps, {...baseProps, desktop: `not-${baseProps.desktop}`}));
+        assert.equal(true, notifyPropsChanged(baseProps, {...baseProps, email: `not-${baseProps.email}`}));
+        assert.equal(true, notifyPropsChanged(baseProps, {...baseProps, push: `not-${baseProps.push}`}));
+        assert.equal(true, notifyPropsChanged(baseProps, {...baseProps, ignore_channel_mentions: `not-${baseProps.ignore_channel_mentions.desktop}`}));
     });
 });

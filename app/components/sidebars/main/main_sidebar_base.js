@@ -29,7 +29,7 @@ export default class MainSidebarBase extends Component {
         actions: PropTypes.shape({
             getTeams: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func,
-            joinChannel: PropTypes.func.isRequired,
+            joinChannelById: PropTypes.func.isRequired,
             logChannelSwitch: PropTypes.func.isRequired,
             makeDirectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
@@ -110,12 +110,11 @@ export default class MainSidebarBase extends Component {
         const intl = this.getIntl();
         const {
             actions,
-            currentTeamId,
             currentUserId,
         } = this.props;
 
         const {
-            joinChannel,
+            joinChannelById,
             makeDirectChannel,
         } = actions;
 
@@ -136,7 +135,7 @@ export default class MainSidebarBase extends Component {
                 utils.alertErrorWithFallback(intl, result.error, dmFailedMessage, displayValue);
             }
         } else {
-            result = await joinChannel(currentUserId, currentTeamId, channel.id);
+            result = await joinChannelById(channel.id, currentUserId);
 
             if (result.error || !result.data || !result.data.channel) {
                 const joinFailedMessage = {

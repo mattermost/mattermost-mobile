@@ -47,12 +47,12 @@ describe('Actions.Files', () => {
             uploadFile(imageFormData, formBoundary);
         const fileId = fileUploadResp.file_infos[0].id;
 
-        const fakePostForFile = TestHelper.fakePost(basicChannel.id);
+        const fakePostForFile = TestHelper.fakePostWithChannelId(basicChannel.id);
         fakePostForFile.file_ids = [fileId];
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, {...TestHelper.fakePostWithId(), ...fakePostForFile});
+            reply(201, {...TestHelper.fakePost(), ...fakePostForFile});
         const postForFile = await basicClient4.createPost(fakePostForFile);
 
         nock(Client4.getBaseRoute()).

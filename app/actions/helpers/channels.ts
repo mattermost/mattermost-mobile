@@ -1,39 +1,50 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
-import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannelId, getChannel, getMyChannelMember, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUsers, getUserIdsInChannels} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isAutoClosed} from '@mm-redux/utils/channel_utils';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
-import {ActionResult, GenericAction} from '@mm-redux/types/actions';
+import {ActionResult, GenericAction, Action} from '@mm-redux/types/actions';
 import {Channel, ChannelMembership} from '@mm-redux/types/channels';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {GlobalState} from '@mm-redux/types/store';
 import {UserProfile} from '@mm-redux/types/users';
 import {RelationOneToMany} from '@mm-redux/types/utilities';
 
+import {
+    receivedChannel,
+    receivedMyChannelMember,
+    removeManuallyUnread,
+    incrementTotalMessageCount,
+    incrementUnreadMessageCount,
+    incrementUnreadMentionCount,
+    decrementUnreadMessageCount,
+    decrementUnreadMentionCount,
+} from '@actions/channels';
+
 import {isDirectChannelVisible, isGroupChannelVisible} from '@utils/channels';
 import {buildPreference} from '@utils/preferences';
 
-export async function loadSidebarDirectMessagesProfiles(state: GlobalState, channels: Array<Channel>, channelMembers: Array<ChannelMembership>) {
+export async function loadDirectMessagesActions(state: GlobalState, channels: Channel[], channelMembers: ChannelMembership[]) {
     const currentUserId = getCurrentUserId(state);
     const usersInChannel: RelationOneToMany<Channel, UserProfile> = getUserIdsInChannels(state);
     const directChannels = Object.values(channels).filter((c) => c.type === General.DM_CHANNEL || c.type === General.GM_CHANNEL);
-    const prefs: Array<PreferenceType> = [];
-    const promises: Array<Promise<ActionResult>> = []; //only fetch profiles that we don't have and the Direct channel should be visible
+    const prefs: PreferenceType[] = [];
+    const promises: Promise<ActionResult>[] = []; //only fetch profiles that we don't have and the Direct channel should be visible
     const actions = [];
-    const userIds: Array<string> = [];
+    const userIds: string[] = [];
 
     // Prepare preferences and start fetching profiles to batch them
     directChannels.forEach((c) => {
         const profileIds = Array.from(usersInChannel[c.id] || []);
-        const profilesInChannel: Array<string> = profileIds.filter((u: string) => u !== currentUserId);
+        const profilesInChannel: string[] = profileIds.filter((u: string) => u !== currentUserId);
         userIds.push(...profilesInChannel);
 
         switch (c.type) {
@@ -100,62 +111,72 @@ export async function loadSidebarDirectMessagesProfiles(state: GlobalState, chan
     return actions;
 }
 
-export async function fetchMyChannel(channelId: string) {
-    try {
-        const data = await Client4.getChannel(channelId);
+export function markChannelAsViewedAndReadActions(state: GlobalState, channelId: string, prevChannelId: string = '', markOnServer: boolean = true): Action[] {
+    const actions = [];
+    const {channels, myMembers} = state.entities.channels;
+    const channel = channels[channelId];
+    const member = myMembers[channelId];
+    const prevMember = myMembers[prevChannelId];
+    const prevChanManuallyUnread = isManuallyUnread(state, prevChannelId);
+    const prevChannel = (!prevChanManuallyUnread && prevChannelId) ? channels[prevChannelId] : null; // May be null since prevChannelId is optional
 
-        return {data};
-    } catch (error) {
-        return {error};
+    if (markOnServer) {
+        Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId);
     }
-}
 
-export async function fetchMyChannelMember(channelId: string) {
-    try {
-        const data = await Client4.getMyChannelMember(channelId);
+    if (member) {
+        member.last_viewed_at = Date.now();
+        actions.push(receivedMyChannelMember(member));
 
-        return {data};
-    } catch (error) {
-        return {error};
+        if (isManuallyUnread(state, channelId)) {
+            actions.push(removeManuallyUnread(channelId));
+        }
+
+        if (channel) {
+            actions.push(
+                decrementUnreadMessageCount(channel, channel.total_msg_count - member.msg_count),
+                decrementUnreadMentionCount(channel, member.mention_count),
+            );
+        }
     }
-}
 
-export function markChannelAsUnread(state: GlobalState, teamId: string, channelId: string, mentions: Array<string>): Array<GenericAction> {
-    const {myMembers} = state.entities.channels;
-    const {currentUserId} = state.entities.users;
+    if (prevMember) {
+        if (!prevChanManuallyUnread) {
+            prevMember.last_viewed_at = Date.now();
+            actions.push(receivedMyChannelMember(prevMember));
+        }
 
-    const actions: GenericAction[] = [{
-        type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
-        data: {
-            channelId,
-            amount: 1,
-        },
-    }, {
-        type: ChannelTypes.INCREMENT_UNREAD_MSG_COUNT,
-        data: {
-            teamId,
-            channelId,
-            amount: 1,
-            onlyMentions: myMembers[channelId] && myMembers[channelId].notify_props &&
-                myMembers[channelId].notify_props.mark_unread === General.MENTION,
-        },
-    }];
-
-    if (mentions && mentions.indexOf(currentUserId) !== -1) {
-        actions.push({
-            type: ChannelTypes.INCREMENT_UNREAD_MENTION_COUNT,
-            data: {
-                teamId,
-                channelId,
-                amount: 1,
-            },
-        });
+        if (prevChannel) {
+            actions.push(
+                decrementUnreadMessageCount(prevChannel, prevChannel.total_msg_count - prevMember.msg_count),
+                decrementUnreadMentionCount(prevChannel, prevMember.mention_count),
+            );
+        }
     }
 
     return actions;
 }
 
-export function makeDirectChannelVisibleIfNecessary(state: GlobalState, otherUserId: string): GenericAction|null {
+export function markChannelAsUnreadActions(state: GlobalState, channelId: string, mentions: string[]): Action[] {
+    const currentUserId = getCurrentUserId(state);
+    const channel = getChannel(state, channelId);
+    const member = getMyChannelMember(state, channelId);
+
+    const onlyMentions = member?.notify_props?.mark_unread === General.MENTION;
+
+    const actions: Action[] = [
+        incrementTotalMessageCount(channel.id, 1),
+        incrementUnreadMessageCount(channel, 1, onlyMentions),
+    ];
+
+    if (mentions && mentions.indexOf(currentUserId) !== -1) {
+        actions.push(incrementUnreadMentionCount(channel, 1));
+    }
+
+    return actions;
+}
+
+export function makeDirectChannelVisibleIfNecessaryAction(state: GlobalState, otherUserId: string): GenericAction|null {
     const myPreferences = getMyPreferences(state);
     const currentUserId = getCurrentUserId(state);
 
@@ -178,7 +199,7 @@ export function makeDirectChannelVisibleIfNecessary(state: GlobalState, otherUse
     return null;
 }
 
-export async function makeGroupMessageVisibleIfNecessary(state: GlobalState, channelId: string) {
+export async function makeGroupMessageVisibleIfNecessaryActions(state: GlobalState, channelId: string): Promise<Action[]> {
     try {
         const myPreferences = getMyPreferences(state);
         const currentUserId = getCurrentUserId(state);
@@ -203,15 +224,15 @@ export async function makeGroupMessageVisibleIfNecessary(state: GlobalState, cha
                 data: [preference],
             }];
         }
-
-        return null;
     } catch {
-        return null;
+        // Do nothing
     }
+
+    return [];
 }
 
-export async function fetchChannelAndMyMember(channelId: string): Promise<Array<GenericAction>> {
-    const actions: Array<GenericAction> = [];
+export async function fetchChannelAndMyMember(channelId: string): Promise<Action[]> {
+    const actions: Action[] = [];
 
     try {
         const [channel, member] = await Promise.all([
@@ -219,14 +240,10 @@ export async function fetchChannelAndMyMember(channelId: string): Promise<Array<
             Client4.getMyChannelMember(channelId),
         ]);
 
-        actions.push({
-            type: ChannelTypes.RECEIVED_CHANNEL,
-            data: channel,
-        },
-        {
-            type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER,
-            data: member,
-        });
+        actions.push(
+            receivedChannel(channel),
+            receivedMyChannelMember(member),
+        );
 
         const roles = await Client4.getRolesByNames(member.roles.split(' '));
         if (roles.length) {
@@ -242,9 +259,25 @@ export async function fetchChannelAndMyMember(channelId: string): Promise<Array<
     return actions;
 }
 
-export async function getAddedDmUsersIfNecessary(state: GlobalState, preferences: PreferenceType[]): Promise<Array<GenericAction>> {
+export function createMemberForNewChannel(channel: Channel, userId: string, roles: string[]): ChannelMembership {
+    return {
+        channel_id: channel.id,
+        user_id: userId,
+        roles: roles.join(' '),
+        last_viewed_at: 0,
+        mention_count: 0,
+        msg_count: 0,
+        last_update_at: channel.create_at,
+        notify_props: {
+            desktop: 'default',
+            mark_unread: 'all',
+        },
+    };
+}
+
+export async function getAddedDmUsersIfNecessaryActions(state: GlobalState, preferences: PreferenceType[]): Promise<GenericAction[]> {
     const userIds: string[] = [];
-    const actions: Array<GenericAction> = [];
+    const actions: GenericAction[] = [];
 
     for (const preference of preferences) {
         if (preference.category === Preferences.CATEGORY_DIRECT_CHANNEL_SHOW && preference.value === 'true') {
@@ -278,7 +311,7 @@ export async function getAddedDmUsersIfNecessary(state: GlobalState, preferences
     return actions;
 }
 
-function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel, channelMembers: Array<ChannelMembership>, profilesInChannel: Array<string>) {
+function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel, channelMembers: ChannelMembership[], profilesInChannel: string[]) {
     const currentUserId = getCurrentUserId(state);
     const myPreferences = getMyPreferences(state);
     const users = getUsers(state);
@@ -309,7 +342,7 @@ function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel,
     return {preferences};
 }
 
-function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel, channelMembers: Array<ChannelMembership>, profilesInChannel: Array<string>) {
+function fetchGroupMessageProfilesIfNeeded(state: GlobalState, channel: Channel, channelMembers: ChannelMembership[], profilesInChannel: string[]) {
     const currentUserId = getCurrentUserId(state);
     const myPreferences = getMyPreferences(state);
     const config = getConfig(state);
@@ -362,7 +395,7 @@ async function fetchUsersInChannel(state: GlobalState, channelId: string): Promi
     }
 }
 
-async function getProfilesFromPromises(promises: Array<Promise<ActionResult>>): Promise<GenericAction | null> {
+async function getProfilesFromPromises(promises: Promise<ActionResult>[]): Promise<GenericAction | null> {
     // Get the profiles returned by the promises
     if (!promises.length) {
         return null;

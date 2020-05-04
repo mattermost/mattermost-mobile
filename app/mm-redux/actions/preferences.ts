@@ -7,13 +7,22 @@ import {getMyPreferences as getMyPreferencesSelector, makeGetCategory} from '@mm
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
-import {GetStateFunc, DispatchFunc, ActionFunc} from '@mm-redux/types/actions';
+import {GetStateFunc, DispatchFunc, ActionFunc, Action} from '@mm-redux/types/actions';
 
 import {PreferenceType} from '@mm-redux/types/preferences';
 
+import {getChannelAndMyMember, getMyChannelMember} from '@actions/channels';
+import {buildPreference} from '@utils/preferences';
+
 import {bindClientFunc} from './helpers';
 import {getProfilesByIds, getProfilesInChannel} from './users';
-import {getChannelAndMyMember, getMyChannelMember} from './channels';
+
+export function receivedPreferences(preferences: Array<PreferenceType>): Action {
+    return {
+        type: PreferenceTypes.RECEIVED_PREFERENCES,
+        data: preferences,
+    };
+}
 
 export function deletePreferences(userId: string, preferences: Array<PreferenceType>): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -95,6 +104,53 @@ export function makeGroupMessageVisibleIfNecessary(channelId: string): ActionFun
             getProfilesInChannel(channelId, 0)(dispatch, getState);
             savePreferences(currentUserId, [preference])(dispatch);
         }
+
+        return {data: true};
+    };
+}
+
+export function markGroupChannelOpen(channelId: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+
+        const openTime = new Date().getTime();
+        const preferences = [
+            buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, channelId, 'true'),
+            buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channelId, openTime.toString()),
+        ];
+
+        return dispatch(savePreferences(currentUserId, preferences));
+    };
+}
+
+export function toggleDMChannel(channelId: string, otherUserId: string, visible: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+
+        const preferences = [
+            buildPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, currentUserId, otherUserId, visible),
+        ];
+        if (visible === 'true') {
+            preferences.push(
+                buildPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, currentUserId, channelId, Date.now().toString())
+            );
+        }
+
+        dispatch(savePreferences(currentUserId, preferences));
+
+        return {data: true};
+    };
+}
+
+export function toggleGMChannel(channelId: string, visible: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+        const preference = buildPreference(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, currentUserId, channelId, visible);
+
+        dispatch(savePreferences(currentUserId, [preference]));
 
         return {data: true};
     };

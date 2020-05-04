@@ -40,7 +40,7 @@ export default class SelectorScreen extends PureComponent {
             getProfiles: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
-            searchChannels: PropTypes.func.isRequired,
+            getChannelsForSearch: PropTypes.func.isRequired,
         }),
         currentTeamId: PropTypes.string.isRequired,
         data: PropTypes.arrayOf(PropTypes.object),
@@ -119,7 +119,7 @@ export default class SelectorScreen extends PureComponent {
         }
     }, 100);
 
-    getDataResults = () => {
+    getSuccessResults = () => {
         const {dataSource} = this.props;
         const {data, searchResults, term} = this.state;
 
@@ -195,7 +195,7 @@ export default class SelectorScreen extends PureComponent {
                 if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
                     this.searchProfiles(text);
                 } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-                    this.searchChannels(text);
+                    this.getChannelsForSearch(text);
                 }
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
@@ -203,10 +203,10 @@ export default class SelectorScreen extends PureComponent {
         }
     };
 
-    searchChannels = (term) => {
+    getChannelsForSearch = (term) => {
         const {actions, currentTeamId} = this.props;
 
-        actions.searchChannels(currentTeamId, term.toLowerCase()).then(({data}) => {
+        actions.getChannelsForSearch(currentTeamId, term.toLowerCase()).then(({data}) => {
             this.setState({searchResults: data, loading: false});
         });
     };
@@ -311,7 +311,7 @@ export default class SelectorScreen extends PureComponent {
             rowComponent = this.renderOptionItem;
         }
 
-        const {data, listType} = this.getDataResults();
+        const {data, listType} = this.getSuccessResults();
 
         return (
             <View style={style.container}>

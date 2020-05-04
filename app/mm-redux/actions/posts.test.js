@@ -6,12 +6,12 @@ import assert from 'assert';
 import nock from 'nock';
 
 import * as Actions from '@mm-redux/actions/posts';
-import {getChannelStats} from '@mm-redux/actions/channels';
+import {getChannelStats, postUnreadSuccess} from '@actions/channels';
 import {login} from '@mm-redux/actions/users';
 import {setSystemEmojis, createCustomEmoji} from '@mm-redux/actions/emojis';
 import {Client4} from '@mm-redux/client';
 import {Preferences, Posts, RequestStatus} from '../constants';
-import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
+import {PostTypes} from '@mm-redux/action_types';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
@@ -34,7 +34,17 @@ describe('Actions.Posts', () => {
 
     it('createPost', async () => {
         const channelId = TestHelper.basicChannel.id;
-        const post = TestHelper.fakePost(channelId);
+        const post = TestHelper.fakePostWithChannelId(channelId);
+
+        store = await configureStore({
+            entities: {
+                channels: {
+                    channels: {
+                        [channelId]: {id: channelId},
+                    },
+                },
+            },
+        });
 
         nock(Client4.getBaseRoute()).
             post('/posts').
@@ -67,7 +77,7 @@ describe('Actions.Posts', () => {
 
     it('resetCreatePostRequest', async () => {
         const channelId = TestHelper.basicChannel.id;
-        const post = TestHelper.fakePost(channelId);
+        const post = TestHelper.fakePostWithChannelId(channelId);
         const createPostError = {
             message: 'Invalid RootId parameter',
             server_error_id: 'api.post.create_post.root_id.app_error',
@@ -107,7 +117,7 @@ describe('Actions.Posts', () => {
 
     // it('retry failed post', async () => {
     //     const channelId = TestHelper.basicChannel.id;
-    //     const post = TestHelper.fakePost(channelId);
+    //     const post = TestHelper.fakePostWithChannelId(channelId);
 
     //     nock(Client4.getBaseRoute()).
     //         post('/posts').
@@ -163,10 +173,10 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(channelId));
+            reply(201, TestHelper.fakePostWithChannelId(channelId));
 
         const post = await Client4.createPost(
-            TestHelper.fakePost(channelId),
+            TestHelper.fakePostWithChannelId(channelId),
         );
         const message = post.message;
 
@@ -202,8 +212,8 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(channelId));
-        await Actions.createPost(TestHelper.fakePost(channelId))(store.dispatch, store.getState);
+            reply(201, TestHelper.fakePostWithChannelId(channelId));
+        await Actions.createPost(TestHelper.fakePostWithChannelId(channelId))(store.dispatch, store.getState);
         const initialPosts = store.getState().entities.posts;
         const postId = Object.keys(initialPosts.posts)[0];
 
@@ -229,10 +239,10 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
 
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(TestHelper.basicChannel.id),
+            TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
         );
 
         const emojiName = '+1';
@@ -319,9 +329,9 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(TestHelper.basicChannel.id),
+            TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
         );
 
         const emojiName = '+1';
@@ -346,7 +356,7 @@ describe('Actions.Posts', () => {
     it('getPostsUnread', async () => {
         const {dispatch, getState} = store;
         const channelId = TestHelper.basicChannel.id;
-        const post = TestHelper.fakePostWithId(channelId);
+        const post = TestHelper.fakePostWithChannelId(channelId);
         const userId = getState().entities.users.currentUserId;
         const response = {
             posts: {
@@ -1040,10 +1050,10 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
 
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(channelId),
+            TestHelper.fakePostWithChannelId(channelId),
         );
 
         nock(Client4.getUsersRoute()).
@@ -1070,9 +1080,9 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(channelId),
+            TestHelper.fakePostWithChannelId(channelId),
         );
 
         nock(Client4.getUsersRoute()).
@@ -1155,9 +1165,9 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(TestHelper.basicChannel.id),
+            TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
         );
 
         const postList = {order: [post1.id], posts: {}};
@@ -1194,9 +1204,9 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(TestHelper.basicChannel.id),
+            TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
         );
 
         const postList = {order: [post1.id], posts: {}};
@@ -1235,9 +1245,9 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(TestHelper.basicChannel.id),
+            TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
         );
 
         const emojiName = '+1';
@@ -1261,9 +1271,9 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(TestHelper.basicChannel.id),
+            TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
         );
 
         const emojiName = '+1';
@@ -1292,9 +1302,9 @@ describe('Actions.Posts', () => {
 
         nock(Client4.getBaseRoute()).
             post('/posts').
-            reply(201, TestHelper.fakePostWithId(TestHelper.basicChannel.id));
+            reply(201, TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id));
         const post1 = await Client4.createPost(
-            TestHelper.fakePost(TestHelper.basicChannel.id),
+            TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
         );
 
         const emojiName = '+1';
@@ -1757,6 +1767,9 @@ describe('Actions.Posts', () => {
                 entities: {
                     channels: {
                         currentChannelId: channelId,
+                        channels: {
+                            [channelId]: {id: channelId},
+                        },
                         myMembers: {
                             [channelId]: {channel_id: channelId, last_viewed_at: 0, roles: ''},
                         },
@@ -1781,6 +1794,10 @@ describe('Actions.Posts', () => {
                 entities: {
                     channels: {
                         currentChannelId: otherChannelId,
+                        channels: {
+                            [channelId]: {id: channelId},
+                            [otherChannelId]: {id: otherChannelId},
+                        },
                         myMembers: {
                             [channelId]: {channel_id: channelId, last_viewed_at: 500, roles: ''},
                             [otherChannelId]: {channel_id: otherChannelId, last_viewed_at: 500, roles: ''},
@@ -1807,6 +1824,10 @@ describe('Actions.Posts', () => {
                 entities: {
                     channels: {
                         currentChannelId: otherChannelId,
+                        channels: {
+                            [channelId]: {id: channelId},
+                            [otherChannelId]: {id: otherChannelId},
+                        },
                         myMembers: {
                             [channelId]: {channel_id: channelId, last_viewed_at: 500, roles: ''},
                             [otherChannelId]: {channel_id: otherChannelId, last_viewed_at: 500, roles: ''},
@@ -1836,6 +1857,10 @@ describe('Actions.Posts', () => {
                 entities: {
                     channels: {
                         currentChannelId: otherChannelId,
+                        channels: {
+                            [channelId]: {id: channelId},
+                            [otherChannelId]: {id: otherChannelId},
+                        },
                         myMembers: {
                             [channelId]: {channel_id: channelId, last_viewed_at: 500, roles: ''},
                             [otherChannelId]: {channel_id: otherChannelId, last_viewed_at: 500, roles: ''},
@@ -1863,6 +1888,9 @@ describe('Actions.Posts', () => {
                 entities: {
                     channels: {
                         currentChannelId: channelId,
+                        channels: {
+                            [channelId]: {id: channelId},
+                        },
                         myMembers: {
                             [channelId]: {channel_id: channelId, last_viewed_at: 500, roles: ''},
                         },
@@ -1876,13 +1904,11 @@ describe('Actions.Posts', () => {
             const post1 = {id: 'post1', channel_id: channelId, create_at: 1000};
             await store.dispatch(Actions.receivedPost(post1));
 
-            await store.dispatch({
-                type: ChannelTypes.POST_UNREAD_SUCCESS,
-                data: {
-                    channelId,
-                    lastViewedAt: post1.create_at - 1,
-                },
-            });
+            const unreadPostData = {
+                channelId,
+                lastViewedAt: post1.create_at - 1,
+            };
+            await store.dispatch(postUnreadSuccess(unreadPostData));
 
             const post2 = {channel_id: channelId, create_at: 2000};
             await store.dispatch(Actions.lastPostActions(post2, {}));

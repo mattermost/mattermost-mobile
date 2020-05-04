@@ -399,7 +399,7 @@ export function showDeleteOption(state: GlobalState, config: any, license: any, 
 export function canManageMembersOldPermissions(channel: Channel, user: UserProfile, teamMember: TeamMembership, channelMember: ChannelMembership, config: any, license: any): boolean {
     if (channel.type === General.DM_CHANNEL ||
         channel.type === General.GM_CHANNEL ||
-        channel.name === General.DEFAULT_CHANNEL) {
+        channel.name === General.DEFAULT_CHANNEL_NAME) {
         return false;
     }
 
@@ -462,7 +462,7 @@ export function isFavoriteChannel(myPreferences: {
 }
 
 export function isDefault(channel: Channel): boolean {
-    return channel.name === General.DEFAULT_CHANNEL;
+    return channel.name === General.DEFAULT_CHANNEL_NAME;
 }
 
 //====================================================
@@ -648,16 +648,14 @@ export function isChannelMuted(member: ChannelMembership): boolean {
     return member && member.notify_props ? (member.notify_props.mark_unread === 'mention') : false;
 }
 
-export function compareNotifyProps(propsA: Partial<ChannelNotifyProps>, propsB: Partial<ChannelNotifyProps>): boolean {
-    if (propsA.desktop !== propsB.desktop ||
+export function notifyPropsChanged(propsA: Partial<ChannelNotifyProps>, propsB: Partial<ChannelNotifyProps>): boolean {    
+    return (
+        propsA.desktop !== propsB.desktop ||
         propsA.email !== propsB.email ||
         propsA.mark_unread !== propsB.mark_unread ||
         propsA.push !== propsB.push ||
-        propsA.ignore_channel_mentions !== propsB.ignore_channel_mentions) {
-        return false;
-    }
-
-    return true;
+        propsA.ignore_channel_mentions !== propsB.ignore_channel_mentions
+    );
 }
 
 export function areChannelMentionsIgnored(channelMemberNotifyProps: ChannelNotifyProps, currentUserNotifyProps: UserNotifyProps) {

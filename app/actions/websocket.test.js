@@ -9,7 +9,7 @@ import thunk from 'redux-thunk';
 import configureMockStore from 'redux-mock-store';
 
 import {ChannelTypes, GeneralTypes, RoleTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
-import * as ChannelActions from '@mm-redux/actions/channels';
+import * as ChannelActions from '@actions/channels';
 import * as PostActions from '@mm-redux/actions/posts';
 import * as PreferenceActions from '@mm-redux/actions/preferences';
 import * as TeamActions from '@mm-redux/actions/teams';
@@ -17,6 +17,7 @@ import * as UserActions from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
 import {General, Posts, RequestStatus} from '@mm-redux/constants';
 import * as PostSelectors from '@mm-redux/selectors/entities/posts';
+import * as ChannelSelectors from '@mm-redux/selectors/entities/channels';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import * as Actions from '@actions/websocket';
@@ -77,9 +78,12 @@ describe('Actions.Websocket', () => {
     });
 
     it('Websocket Handle New Post if post does not exist', async () => {
-        PostSelectors.getPost = jest.fn();
         const channelId = TestHelper.basicChannel.id;
-        const message = JSON.stringify({event: WebsocketEvents.POSTED, data: {channel_display_name: TestHelper.basicChannel.display_name, channel_name: TestHelper.basicChannel.name, channel_type: 'O', post: `{"id": "71k8gz5ompbpfkrzaxzodffj8w", "create_at": 1508245311774, "update_at": 1508245311774, "edit_at": 0, "delete_at": 0, "is_pinned": false, "user_id": "${TestHelper.basicUser.id}", "channel_id": "${channelId}", "root_id": "", "parent_id": "", "original_id": "", "message": "Unit Test", "type": "", "props": {}, "hashtags": "", "pending_post_id": "t36kso9nwtdhbm8dbkd6g4eeby: 1508245311749"}`, sender_name: TestHelper.basicUser.username, team_id: TestHelper.basicTeam.id}, broadcast: {omit_users: null, user_id: '', channel_id: channelId, team_id: ''}, seq: 2});
+        const messageText = 'Unit Test';
+        const message = JSON.stringify({event: WebsocketEvents.POSTED, data: {channel_display_name: TestHelper.basicChannel.display_name, channel_name: TestHelper.basicChannel.name, channel_type: 'O', post: `{"id": "71k8gz5ompbpfkrzaxzodffj8w", "create_at": 1508245311774, "update_at": 1508245311774, "edit_at": 0, "delete_at": 0, "is_pinned": false, "user_id": "${TestHelper.basicUser.id}", "channel_id": "${channelId}", "root_id": "", "parent_id": "", "original_id": "", "message": "${messageText}", "type": "", "props": {}, "hashtags": "", "pending_post_id": "t36kso9nwtdhbm8dbkd6g4eeby: 1508245311749"}`, sender_name: TestHelper.basicUser.username, team_id: TestHelper.basicTeam.id}, broadcast: {omit_users: null, user_id: '', channel_id: channelId, team_id: ''}, seq: 2});
+
+        PostSelectors.getPost = jest.fn();
+        ChannelSelectors.getChannel = jest.fn().mockReturnValue({id: channelId});
 
         nock(Client4.getBaseRoute()).
             post('/users/ids').
@@ -103,7 +107,7 @@ describe('Actions.Websocket', () => {
         entities = store.getState().entities;
         posts = entities.posts.posts;
         const postId = Object.keys(posts)[0];
-        assert.ok(posts[postId].message.indexOf('Unit Test') > -1);
+        assert.ok(posts[postId].message.indexOf(messageText) > -1);
         entities = store.getState().entities;
     });
 
@@ -375,7 +379,7 @@ describe('Actions.Websocket', () => {
     });
 
     it('Websocket Handle User Removed when Current is Guest', async () => {
-        const basicGuestUser = TestHelper.fakeUserWithId();
+        const basicGuestUser = TestHelper.fakeUser();
         basicGuestUser.roles = 'system_guest';
 
         const user = {...TestHelper.fakeUser(), id: TestHelper.generateId()};
@@ -472,7 +476,7 @@ describe('Actions.Websocket', () => {
         await store.dispatch(TeamActions.selectTeam(TestHelper.basicTeam));
         await store.dispatch(ChannelActions.selectChannel(TestHelper.basicChannel.id));
 
-        store.dispatch({type: ChannelTypes.RECEIVED_CHANNEL, data: {id: TestHelper.generateId(), name: General.DEFAULT_CHANNEL, team_id: TestHelper.basicTeam.id, display_name: General.DEFAULT_CHANNEL}});
+        store.dispatch({type: ChannelTypes.RECEIVED_CHANNEL, data: {id: TestHelper.generateId(), name: General.DEFAULT_CHANNEL_NAME, team_id: TestHelper.basicTeam.id, display_name: General.DEFAULT_CHANNEL_NAME}});
         store.dispatch({type: ChannelTypes.RECEIVED_CHANNEL, data: TestHelper.basicChannel});
 
         nock(Client4.getUserRoute('me')).
@@ -500,14 +504,14 @@ describe('Actions.Websocket', () => {
         const entities = state.entities;
         const {channels, currentChannelId} = entities.channels;
 
-        assert.ok(channels[currentChannelId].name === General.DEFAULT_CHANNEL);
+        assert.ok(channels[currentChannelId].name === General.DEFAULT_CHANNEL_NAME);
     });
 
     it('Websocket Handle Channel Unarchive', async () => {
         await store.dispatch(TeamActions.selectTeam(TestHelper.basicTeam));
         await store.dispatch(ChannelActions.selectChannel(TestHelper.basicChannel.id));
 
-        store.dispatch({type: ChannelTypes.RECEIVED_CHANNEL, data: {id: TestHelper.generateId(), name: General.DEFAULT_CHANNEL, team_id: TestHelper.basicTeam.id, display_name: General.DEFAULT_CHANNEL}});
+        store.dispatch({type: ChannelTypes.RECEIVED_CHANNEL, data: {id: TestHelper.generateId(), name: General.DEFAULT_CHANNEL_NAME, team_id: TestHelper.basicTeam.id, display_name: General.DEFAULT_CHANNEL_NAME}});
         store.dispatch({type: ChannelTypes.RECEIVED_CHANNEL, data: TestHelper.basicChannel});
 
         nock(Client4.getUserRoute('me')).
@@ -619,11 +623,11 @@ describe('Actions.Websocket', () => {
 
 describe('Actions.Websocket doReconnect', () => {
     const mockStore = configureMockStore([thunk]);
-    const me = TestHelper.fakeUserWithId();
-    const team = TestHelper.fakeTeamWithId();
+    const me = TestHelper.fakeUser();
+    const team = TestHelper.fakeTeam();
     const teamMember = TestHelper.fakeTeamMember(me.id, team.id);
-    const channel1 = TestHelper.fakeChannelWithId(team.id);
-    const channel2 = TestHelper.fakeChannelWithId(team.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team.id);
     const cMember1 = TestHelper.fakeChannelMember(me.id, channel1.id);
     const cMember2 = TestHelper.fakeChannelMember(me.id, channel2.id);
 
@@ -903,15 +907,15 @@ describe('Actions.Websocket doReconnect', () => {
 describe('Actions.Websocket notVisibleUsersActions', () => {
     const mockStore = configureMockStore([thunk]);
 
-    const channel1 = TestHelper.fakeChannelWithId('');
-    const channel2 = TestHelper.fakeChannelWithId('');
+    const channel1 = TestHelper.fakeChannelWithTeamId('');
+    const channel2 = TestHelper.fakeChannelWithTeamId('');
 
-    const me = TestHelper.fakeUserWithId();
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
-    const user4 = TestHelper.fakeUserWithId();
-    const user5 = TestHelper.fakeUserWithId();
+    const me = TestHelper.fakeUser();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
+    const user4 = TestHelper.fakeUser();
+    const user5 = TestHelper.fakeUser();
 
     it('should do nothing if the known users and the profiles list are the same', () => {
         const membersInChannel = {

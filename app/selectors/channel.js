@@ -4,8 +4,6 @@
 import {createSelector} from 'reselect';
 
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
-import {getChannelByName} from '@mm-redux/selectors/entities/channels';
-import {getTeamByName} from '@mm-redux/selectors/entities/teams';
 
 const getOtherUserIdForDm = createSelector(
     (state, channel) => channel,
@@ -38,13 +36,4 @@ export const getChannelNameForSearchAutocomplete = createSelector(
         }
         return '';
     },
-);
-
-const getTeam = (state, channelName, teamName) => getTeamByName(state, teamName);
-const getChannel = (state, channelName) => getChannelByName(state, channelName);
-
-export const getChannelReachable = createSelector(
-    getTeam,
-    getChannel,
-    (team, channel) => team && channel,
 );

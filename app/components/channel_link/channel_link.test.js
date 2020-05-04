@@ -35,7 +35,7 @@ describe('ChannelLink', () => {
         channelsByName,
         actions: {
             handleSelectChannel: jest.fn(),
-            joinChannel: jest.fn(),
+            joinChannelByName: jest.fn(),
         },
     };
 
@@ -86,14 +86,14 @@ describe('ChannelLink', () => {
         expect(baseProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
         expect(baseProps.onChannelLinkPress).toBeCalledWith(channel);
 
-        expect(baseProps.actions.joinChannel).not.toBeCalled();
+        expect(baseProps.actions.joinChannelByName).not.toBeCalled();
     });
 
-    test('should call props.actions.joinChannel on handlePress when user is not member of such channel', async () => {
+    test('should call props.actions.joinChannelByName on handlePress when user is not member of such channel', async () => {
         const newChannelName = 'thirdChannel';
         const thirdChannel = {id: 'channel_id_3', name: 'thirdChannel', display_name: 'thirdChannel', team_id: 'current_team_id'};
         const error = {message: 'Failed to join a channel'};
-        const joinChannel = jest.fn().
+        const joinChannelByName = jest.fn().
             mockReturnValueOnce({data: {channel: thirdChannel}}).
             mockReturnValueOnce({}).
             mockReturnValueOnce({data: {}}).
@@ -104,7 +104,7 @@ describe('ChannelLink', () => {
             ...baseProps,
             channelsByName: newChannelsByName,
             channelName: newChannelName,
-            actions: {...baseProps.actions, joinChannel},
+            actions: {...baseProps.actions, joinChannelByName},
         };
         const intl = {formatMessage};
         const joinFailedMessage = {
@@ -117,8 +117,8 @@ describe('ChannelLink', () => {
         );
 
         await wrapper.instance().handlePress();
-        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(1);
-        expect(newProps.actions.joinChannel).toBeCalledWith('current_user_id', 'current_team_id', null, newChannelName);
+        expect(newProps.actions.joinChannelByName).toHaveBeenCalledTimes(1);
+        expect(newProps.actions.joinChannelByName).toBeCalledWith(newChannelName, 'current_team_id', 'current_user_id', );
         expect(alertErrorWithFallback).not.toBeCalled();
         expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
         expect(newProps.actions.handleSelectChannel).toHaveBeenLastCalledWith(thirdChannel.id);
@@ -127,21 +127,21 @@ describe('ChannelLink', () => {
 
         // should have called alertErrorWithFallback on error when joining a channel
         await wrapper.instance().handlePress();
-        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(2);
+        expect(newProps.actions.joinChannelByName).toHaveBeenCalledTimes(2);
         expect(alertErrorWithFallback).toHaveBeenCalledTimes(1);
         expect(alertErrorWithFallback).toHaveBeenLastCalledWith(intl, {}, joinFailedMessage, thirdChannel.display_name);
         expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
         expect(newProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
 
         await wrapper.instance().handlePress();
-        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(3);
+        expect(newProps.actions.joinChannelByName).toHaveBeenCalledTimes(3);
         expect(alertErrorWithFallback).toHaveBeenCalledTimes(2);
         expect(alertErrorWithFallback).toHaveBeenLastCalledWith(intl, {}, joinFailedMessage, thirdChannel.display_name);
         expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);
         expect(newProps.onChannelLinkPress).toHaveBeenCalledTimes(1);
 
         await wrapper.instance().handlePress();
-        expect(newProps.actions.joinChannel).toHaveBeenCalledTimes(4);
+        expect(newProps.actions.joinChannelByName).toHaveBeenCalledTimes(4);
         expect(alertErrorWithFallback).toHaveBeenCalledTimes(3);
         expect(alertErrorWithFallback).toHaveBeenLastCalledWith(intl, error, joinFailedMessage, thirdChannel.display_name);
         expect(newProps.actions.handleSelectChannel).toHaveBeenCalledTimes(1);

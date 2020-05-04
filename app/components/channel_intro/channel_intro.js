@@ -298,7 +298,7 @@ class ChannelIntro extends PureComponent {
             return this.buildGMContent();
 
         case General.OPEN_CHANNEL: {
-            if (currentChannel.name === General.DEFAULT_CHANNEL) {
+            if (currentChannel.name === General.DEFAULT_CHANNEL_NAME) {
                 return this.buildTownSquareContent();
             }
 

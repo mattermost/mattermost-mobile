@@ -2,9 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {getDirectChannelName} from '@mm-redux/utils/channel_utils';
-import {createDirectChannel, createGroupChannel} from '@mm-redux/actions/channels';
+
 import {getProfilesByIds, getStatusesByIds} from '@mm-redux/actions/users';
-import {handleSelectChannel, toggleDMChannel, toggleGMChannel} from 'app/actions/views/channel';
+import {toggleDMChannel, toggleGMChannel} from '@mm-redux/actions/preferences';
+import {
+    createDirectChannel,
+    createGroupChannel,
+    handleSelectChannel,
+    toggleDMChannel,
+    toggleGMChannel,
+} from '@actions/channels';
 
 export function makeDirectChannel(otherUserId, switchToChannel = true) {
     return async (dispatch, getState) => {
@@ -21,7 +28,7 @@ export function makeDirectChannel(otherUserId, switchToChannel = true) {
         if (channel && myMembers[channel.id]) {
             result = {data: channel};
 
-            dispatch(toggleDMChannel(otherUserId, 'true', channel.id));
+            dispatch(toggleDMChannel(channel.id, otherUserId, 'true'));
         } else {
             result = await dispatch(createDirectChannel(currentUserId, otherUserId));
             channel = result.data;

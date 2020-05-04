@@ -10,46 +10,46 @@ import {General} from '../../constants';
 import {getMySystemPermissions, getMySystemRoles, getRoles} from '@mm-redux/selectors/entities/roles_helpers';
 
 describe('Selectors.Roles', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
-    const team3 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
+    const team3 = TestHelper.fakeTeam();
     const myTeamMembers = {};
     myTeamMembers[team1.id] = {roles: 'test_team1_role1 test_team1_role2'};
     myTeamMembers[team2.id] = {roles: 'test_team2_role1 test_team2_role2'};
     myTeamMembers[team3.id] = {};
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
     channel1.display_name = 'Channel Name';
 
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
     channel2.total_msg_count = 2;
     channel2.display_name = 'DEF';
 
-    const channel3 = TestHelper.fakeChannelWithId(team2.id);
+    const channel3 = TestHelper.fakeChannelWithTeamId(team2.id);
     channel3.total_msg_count = 2;
 
-    const channel4 = TestHelper.fakeChannelWithId('');
+    const channel4 = TestHelper.fakeChannelWithTeamId('');
     channel4.display_name = 'Channel 4';
 
-    const channel5 = TestHelper.fakeChannelWithId(team1.id);
+    const channel5 = TestHelper.fakeChannelWithTeamId(team1.id);
     channel5.type = General.PRIVATE_CHANNEL;
     channel5.display_name = 'Channel 5';
 
-    const channel6 = TestHelper.fakeChannelWithId(team1.id);
-    const channel7 = TestHelper.fakeChannelWithId('');
+    const channel6 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel7 = TestHelper.fakeChannelWithTeamId('');
     channel7.display_name = '';
     channel7.type = General.GM_CHANNEL;
     channel7.total_msg_count = 1;
 
-    const channel8 = TestHelper.fakeChannelWithId(team1.id);
+    const channel8 = TestHelper.fakeChannelWithTeamId(team1.id);
     channel8.display_name = 'ABC';
     channel8.total_msg_count = 1;
 
-    const channel9 = TestHelper.fakeChannelWithId(team1.id);
-    const channel10 = TestHelper.fakeChannelWithId(team1.id);
-    const channel11 = TestHelper.fakeChannelWithId(team1.id);
+    const channel9 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel10 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel11 = TestHelper.fakeChannelWithTeamId(team1.id);
     channel11.type = General.PRIVATE_CHANNEL;
-    const channel12 = TestHelper.fakeChannelWithId(team1.id);
+    const channel12 = TestHelper.fakeChannelWithTeamId(team1.id);
 
     const channels = {};
     channels[channel1.id] = channel1;
@@ -70,7 +70,7 @@ describe('Selectors.Roles', () => {
     channelsInTeam[team2.id] = [channel3.id];
     channelsInTeam[''] = [channel4.id, channel7.id, channel9.id];
 
-    const user = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
     const profiles = {};
     profiles[user.id] = user;
     profiles[user.id].roles = 'test_user_role test_user_role2';

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import * as bots from './bots';
-import * as channels from './channels';
 import * as errors from './errors';
 import * as emojis from './emojis';
 import * as files from './files';
@@ -23,7 +22,6 @@ import * as users from './users';
 
 export {
     bots,
-    channels,
     errors,
     emojis,
     files,

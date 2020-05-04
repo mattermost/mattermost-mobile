@@ -13,11 +13,11 @@ import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {canUploadFilesOnMobile, getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
-import {getChannelTimezones} from '@mm-redux/actions/channels';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {handlePostDraftChanged, selectPenultimateChannel} from 'app/actions/views/channel';
+import {handlePostDraftChanged} from '@actions/views/channels';
+import {getChannelTimezones, selectPenultimateViewedChannelForTeam} from '@actions/channels';
 import {handleClearFiles, handleClearFailedFiles, handleRemoveLastFile, initUploadFiles} from 'app/actions/views/file_upload';
 import {handleCommentDraftChanged, handleCommentDraftSelectionChanged} from 'app/actions/views/thread';
 import {userTyping} from 'app/actions/views/typing';
@@ -111,7 +111,7 @@ function mapDispatchToProps(dispatch) {
             userTyping,
             handleCommentDraftSelectionChanged,
             setStatus,
-            selectPenultimateChannel,
+            selectPenultimateViewedChannelForTeam,
             getChannelTimezones,
         }, dispatch),
     };

@@ -28,7 +28,7 @@ class FilteredList extends Component {
         actions: PropTypes.shape({
             getProfilesInTeam: PropTypes.func.isRequired,
             makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
-            searchChannels: PropTypes.func.isRequired,
+            getChannelsForSearch: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
         channels: PropTypes.object.isRequired,
@@ -85,7 +85,7 @@ class FilteredList extends Component {
         if (this.props.term !== nextProps.term) {
             const {actions, currentTeam} = this.props;
             const {term} = nextProps;
-            const {searchChannels, searchProfiles} = actions;
+            const {getChannelsForSearch, searchProfiles} = actions;
             const dataSource = this.buildData(this.props, term);
 
             this.setState({dataSource, term});
@@ -98,7 +98,7 @@ class FilteredList extends Component {
                 }
 
                 searchProfiles(term, {allow_inactive: true});
-                searchChannels(currentTeam.id, term);
+                getChannelsForSearch(currentTeam.id, term);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         }
     }

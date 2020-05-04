@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {setChannelDisplayName} from 'app/actions/views/channel';
+import {setChannelDisplayName} from '@actions/channels';
 import {makeDirectChannel, makeGroupChannel} from 'app/actions/views/more_dms';
 import {isLandscape} from 'app/selectors/device';
 import {getProfiles, getProfilesInTeam, searchProfiles} from '@mm-redux/actions/users';

@@ -4,19 +4,18 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectPost} from '@mm-redux/actions/posts';
+import {selectPost, loadThreadIfNecessary} from '@mm-redux/actions/posts';
 import {getPostIdsInCurrentChannel} from '@mm-redux/selectors/entities/posts';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {
-    loadPostsIfNecessaryWithRetry,
-    loadThreadIfNecessary,
     increasePostVisibility,
     refreshChannelWithRetry,
-} from 'app/actions/views/channel';
-import {recordLoadTime} from 'app/actions/views/root';
+} from '@actions/channels';
+import {loadPostsIfNecessaryWithRetry} from '@actions/views/post';
+import {recordLoadTime} from '@actions/views/root';
 import {Types} from 'app/constants';
 import {isLandscape} from 'app/selectors/device';
 

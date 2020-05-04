@@ -62,7 +62,7 @@ export default class Permalink extends PureComponent {
             getChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
-            joinChannel: PropTypes.func.isRequired,
+            joinChannelById: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
@@ -302,7 +302,7 @@ export default class Permalink extends PureComponent {
                 if (focusChannelId) {
                     const {data: channel} = await actions.getChannel(focusChannelId);
                     if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
-                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                        await actions.joinChannelById(channel.id, currentUserId);
                     }
                 }
             }

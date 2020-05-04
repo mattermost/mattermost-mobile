@@ -4,12 +4,12 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import * as Actions from '@mm-redux/actions/channels';
+import * as Actions from '@actions/channels';
 import {addUserToTeam} from '@mm-redux/actions/teams';
 import {getProfilesByIds, login} from '@mm-redux/actions/users';
 import {createIncomingHook, createOutgoingHook} from '@mm-redux/actions/integrations';
 import {Client4} from '@mm-redux/client';
-import {General, RequestStatus, Preferences, Permissions} from '../constants';
+import {General, RequestStatus, Preferences, Permissions} from '@mm-redux/constants';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
@@ -48,11 +48,13 @@ describe('Actions.Channels', () => {
     });
 
     it('createChannel', async () => {
+        const channel = TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id);
+
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, channel);
 
-        await store.dispatch(Actions.createChannel(TestHelper.fakeChannel(TestHelper.basicTeam.id), TestHelper.basicUser.id));
+        await store.dispatch(Actions.createChannel(channel, TestHelper.basicUser.id));
 
         const createRequest = store.getState().requests.channels.createChannel;
 
@@ -77,7 +79,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -94,7 +96,7 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels/direct').
-            reply(201, {...TestHelper.fakeChannelWithId(), type: 'D'});
+            reply(201, {...TestHelper.fakeChannel(), type: 'D'});
 
         const {data: created} = await store.dispatch(Actions.createDirectChannel(TestHelper.basicUser.id, user.id));
 
@@ -133,7 +135,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -145,7 +147,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user2 = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -165,7 +167,7 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels/group').
-            reply(201, {...TestHelper.fakeChannelWithId(), type: 'G'});
+            reply(201, {...TestHelper.fakeChannel(), type: 'G'});
 
         const result = await store.dispatch(Actions.createGroupChannel([TestHelper.basicUser.id, user.id, user2.id]));
         const created = result.data;
@@ -327,11 +329,13 @@ describe('Actions.Channels', () => {
         assert.ok(myMembers[TestHelper.basicChannel.id]);
     });
 
-    it('fetchMyChannelsAndMembers', async () => {
+    test.skip('fetchMyChannelsAndMembers', async () => {
+        // calls to fetchMyChannelsAndMembers were replaced with calls to getMyChannelsAndMembersForTeam to remove
+        // code duplication
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -342,7 +346,7 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels/direct').
-            reply(201, {...TestHelper.fakeChannelWithId(), team_id: '', type: 'D'});
+            reply(201, {...TestHelper.fakeChannel(), team_id: '', type: 'D'});
 
         const {data: directChannel} = await store.dispatch(Actions.createDirectChannel(TestHelper.basicUser.id, user.id));
 
@@ -355,7 +359,7 @@ describe('Actions.Channels', () => {
             get(`/users/me/teams/${TestHelper.basicTeam.id}/channels/members`).
             reply(200, [{user_id: TestHelper.basicUser.id, roles: 'channel_user', channel_id: directChannel.id}, TestHelper.basicChannelMember]);
 
-        await store.dispatch(Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id));
+        await store.dispatch(Actions.getMyChannelsAndMembersForTeam(TestHelper.basicTeam.id));
 
         const {channels, channelsInTeam, myMembers} = store.getState().entities.channels;
         assert.ok(channels);
@@ -380,8 +384,12 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             get(`/users/me/teams/${TestHelper.basicTeam.id}/channels/members`).
             reply(200, [TestHelper.basicChannelMember]);
+        
+        nock(Client4.getBaseRoute()).
+            post('/roles/names').
+            reply(201, {roles: []});
 
-        await store.dispatch(Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id));
+        await store.dispatch(Actions.getMyChannelsAndMembersForTeam(TestHelper.basicTeam.id));
 
         nock(Client4.getBaseRoute()).
             put(`/channels/${TestHelper.basicChannel.id}/members/${TestHelper.basicUser.id}/notify_props`).
@@ -405,7 +413,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -421,18 +429,17 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
         const secondChannel = await secondClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id));
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         nock(Client4.getBaseRoute()).
             post(`/channels/${secondChannel.id}/members`).
             reply(201, {user_id: TestHelper.basicUser.id, roles: 'channel_user', channel_id: secondChannel.id});
 
-        await store.dispatch(Actions.joinChannel(
-            TestHelper.basicUser.id,
-            TestHelper.basicTeam.id,
+        await store.dispatch(Actions.joinChannelById(
             secondChannel.id,
+            TestHelper.basicUser.id,
         ));
 
         nock(Client4.getBaseRoute()).
@@ -443,8 +450,12 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             get(`/users/me/teams/${TestHelper.basicTeam.id}/channels/members`).
             reply(200, [{user_id: TestHelper.basicUser.id, roles: 'channel_user', channel_id: secondChannel.id}, TestHelper.basicChannelMember]);
+        
+        nock(Client4.getBaseRoute()).
+            post('/roles/names').
+            reply(201, {roles: []});
 
-        await store.dispatch(Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id));
+        await store.dispatch(Actions.getMyChannelsAndMembersForTeam(TestHelper.basicTeam.id));
 
         nock(Client4.getBaseRoute()).
             post('/hooks/incoming').
@@ -505,7 +516,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -521,18 +532,17 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
         const secondChannel = await secondClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id));
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         nock(Client4.getBaseRoute()).
             post(`/channels/${secondChannel.id}/members`).
             reply(201, {user_id: TestHelper.basicUser.id, roles: 'channel_user', channel_id: secondChannel.id});
 
-        await store.dispatch(Actions.joinChannel(
-            TestHelper.basicUser.id,
-            TestHelper.basicTeam.id,
+        await store.dispatch(Actions.joinChannelById(
             secondChannel.id,
+            TestHelper.basicUser.id,
         ));
 
         nock(Client4.getBaseRoute()).
@@ -543,8 +553,12 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             get(`/users/me/teams/${TestHelper.basicTeam.id}/channels/members`).
             reply(200, [{user_id: TestHelper.basicUser.id, roles: 'channel_user', channel_id: secondChannel.id}, TestHelper.basicChannelMember]);
+        
+        nock(Client4.getBaseRoute()).
+            post('/roles/names').
+            reply(201, {roles: []});
 
-        await store.dispatch(Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id));
+        await store.dispatch(Actions.getMyChannelsAndMembersForTeam(TestHelper.basicTeam.id));
 
         nock(Client4.getBaseRoute()).
             post('/hooks/incoming').
@@ -600,7 +614,8 @@ describe('Actions.Channels', () => {
     });
 
     describe('viewChannel', () => {
-        test('should contact server and update last_viewed_at of both channels', async () => {
+        // viewChannel was removed as it's not used by the mobile app
+        test.skip('should contact server and update last_viewed_at of both channels', async () => {
             const channelId = TestHelper.generateId();
             const prevChannelId = TestHelper.generateId();
 
@@ -642,7 +657,7 @@ describe('Actions.Channels', () => {
             expect(state.entities.channels.myMembers[prevChannelId].last_viewed_at).toBeGreaterThan(now);
         });
 
-        test('should clear manually unread state from current channel', async () => {
+        test.skip('should clear manually unread state from current channel', async () => {
             const channelId = TestHelper.generateId();
 
             const currentUserId = TestHelper.generateId();
@@ -678,7 +693,7 @@ describe('Actions.Channels', () => {
             expect(state.entities.channels.manuallyUnread[channelId]).not.toBe(true);
         });
 
-        test('should not update last_viewed_at of previous channel if it is manually marked as unread', async () => {
+        test.skip('should not update last_viewed_at of previous channel if it is manually marked as unread', async () => {
             const channelId = TestHelper.generateId();
             const prevChannelId = TestHelper.generateId();
 
@@ -727,10 +742,10 @@ describe('Actions.Channels', () => {
     it('markChannelAsViewed', async () => {
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userChannel = await Client4.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id),
         );
 
         nock(Client4.getBaseRoute()).
@@ -741,8 +756,12 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             get(`/users/me/teams/${TestHelper.basicTeam.id}/channels/members`).
             reply(200, [{user_id: TestHelper.basicUser.id, roles: 'channel_user', channel_id: userChannel.id}, TestHelper.basicChannelMember]);
+        
+        nock(Client4.getBaseRoute()).
+            post('/roles/names').
+            reply(201, {roles: []});
 
-        await store.dispatch(Actions.fetchMyChannelsAndMembers(TestHelper.basicTeam.id));
+        await store.dispatch(Actions.getMyChannelsAndMembersForTeam(TestHelper.basicTeam.id));
 
         const timestamp = Date.now();
         let members = store.getState().entities.channels.myMembers;
@@ -770,7 +789,7 @@ describe('Actions.Channels', () => {
                 entities: {
                     channels: {
                         channels: {
-                            [channelId]: {team_id: teamId, total_msg_count: 10},
+                            [channelId]: {id: channelId, team_id: teamId, total_msg_count: 10},
                         },
                         myMembers: {
                             [channelId]: {msg_count: 10, mention_count: 0},
@@ -787,7 +806,7 @@ describe('Actions.Channels', () => {
                 },
             });
 
-            store.dispatch(Actions.markChannelAsUnread(teamId, channelId, [TestHelper.generateId()]));
+            store.dispatch(Actions.markChannelAsUnread(channelId, [TestHelper.generateId()]));
 
             const state = store.getState();
             assert.equal(state.entities.channels.channels[channelId].total_msg_count, 11);
@@ -806,7 +825,7 @@ describe('Actions.Channels', () => {
                 entities: {
                     channels: {
                         channels: {
-                            [channelId]: {team_id: teamId, total_msg_count: 10},
+                            [channelId]: {id: channelId, team_id: teamId, total_msg_count: 10},
                         },
                         myMembers: {
                             [channelId]: {msg_count: 10, mention_count: 0},
@@ -823,7 +842,7 @@ describe('Actions.Channels', () => {
                 },
             });
 
-            store.dispatch(Actions.markChannelAsUnread(teamId, channelId, [userId]));
+            store.dispatch(Actions.markChannelAsUnread(channelId, [userId]));
 
             const state = store.getState();
             assert.equal(state.entities.channels.channels[channelId].total_msg_count, 11);
@@ -842,7 +861,7 @@ describe('Actions.Channels', () => {
                 entities: {
                     channels: {
                         channels: {
-                            [channelId]: {team_id: teamId, total_msg_count: 10},
+                            [channelId]: {id: channelId, team_id: teamId, total_msg_count: 10},
                         },
                         myMembers: {
                             [channelId]: {msg_count: 10, mention_count: 0, notify_props: {mark_unread: General.MENTION}},
@@ -859,7 +878,7 @@ describe('Actions.Channels', () => {
                 },
             });
 
-            store.dispatch(Actions.markChannelAsUnread(teamId, channelId, [TestHelper.generateId()]));
+            store.dispatch(Actions.markChannelAsUnread(channelId, [TestHelper.generateId()]));
 
             const state = store.getState();
             assert.equal(state.entities.channels.channels[channelId].total_msg_count, 11);
@@ -878,7 +897,7 @@ describe('Actions.Channels', () => {
                 entities: {
                     channels: {
                         channels: {
-                            [channelId]: {team_id: teamId, total_msg_count: 10},
+                            [channelId]: {id: channelId, team_id: teamId, total_msg_count: 10},
                         },
                         myMembers: {
                             [channelId]: {msg_count: 10, mention_count: 0, notify_props: {mark_unread: General.MENTION}},
@@ -895,7 +914,7 @@ describe('Actions.Channels', () => {
                 },
             });
 
-            store.dispatch(Actions.markChannelAsUnread(teamId, channelId, [userId]));
+            store.dispatch(Actions.markChannelAsUnread(channelId, [userId]));
 
             const state = store.getState();
             assert.equal(state.entities.channels.channels[channelId].total_msg_count, 11);
@@ -1421,7 +1440,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1438,10 +1457,10 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userChannel = await userClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id),
         );
 
         nock(Client4.getTeamsRoute()).
@@ -1472,7 +1491,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1489,10 +1508,10 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userChannel = await userClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id),
         );
 
         nock(Client4.getTeamsRoute()).
@@ -1523,7 +1542,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1540,10 +1559,10 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userChannel = await userClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id),
         );
 
         nock(Client4.getBaseRoute()).
@@ -1567,7 +1586,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1584,10 +1603,10 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userChannel = await userClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id),
         );
 
         const mockTotalCount = 84;
@@ -1611,13 +1630,13 @@ describe('Actions.Channels', () => {
         assert.ok(store.getState().entities.channels.totalCount === mockTotalCount);
     });
 
-    it('searchAllChannels', async () => {
+    it('getAllChannelsForSearch', async () => {
         const userClient = TestHelper.createClient();
 
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1634,17 +1653,17 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userChannel = await userClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id),
         );
 
         nock(Client4.getBaseRoute()).
             post('/channels/search').
             reply(200, [TestHelper.basicChannel, userChannel]);
 
-        const {data} = await store.dispatch(Actions.searchAllChannels('test', 0));
+        const {data} = await store.dispatch(Actions.getAllChannelsForSearch('test', 0));
 
         const moreRequest = store.getState().requests.channels.getAllChannels;
         if (moreRequest.status === RequestStatus.FAILURE) {
@@ -1655,7 +1674,7 @@ describe('Actions.Channels', () => {
             post('/channels/search').
             reply(200, {channels: [TestHelper.basicChannel, userChannel], total_count: 2});
 
-        const response = await store.dispatch(Actions.searchAllChannels('test', '', false, 0, 100));
+        const response = await store.dispatch(Actions.getAllChannelsForSearch('test', '', false, 0, 100));
 
         const paginatedRequest = store.getState().requests.channels.getAllChannels;
         if (paginatedRequest.status === RequestStatus.FAILURE) {
@@ -1671,7 +1690,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1688,17 +1707,17 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userChannel = await userClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id),
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id),
         );
 
         nock(Client4.getTeamsRoute()).
             post(`/${TestHelper.basicTeam.id}/channels/search_archived`).
             reply(200, [TestHelper.basicChannel, userChannel]);
 
-        const {data} = await store.dispatch(Actions.searchChannels(TestHelper.basicTeam.id, 'test', true));
+        const {data} = await store.dispatch(Actions.getChannelsForSearch(TestHelper.basicTeam.id, 'test', true));
 
         const moreRequest = store.getState().requests.channels.getChannels;
         if (moreRequest.status === RequestStatus.FAILURE) {
@@ -1723,7 +1742,8 @@ describe('Actions.Channels', () => {
         assert.ok(membersInChannel[TestHelper.basicChannel.id][TestHelper.basicUser.id]);
     });
 
-    it('getChannelMember', async () => {
+    test.skip('getChannelMember', async () => {
+        // getChannelMember was removed as it's not used by the mobile app
         nock(Client4.getBaseRoute()).
             get(`/channels/${TestHelper.basicChannel.id}/members/${TestHelper.basicUser.id}`).
             reply(200, TestHelper.basicChannelMember);
@@ -1750,7 +1770,8 @@ describe('Actions.Channels', () => {
         assert.ok(myMembers[TestHelper.basicChannel.id]);
     });
 
-    it('getChannelMembersByIds', async () => {
+    test.skip('getChannelMembersByIds', async () => {
+        // getChannelMembersByIds was removed as it's not used by the mobile app
         nock(Client4.getBaseRoute()).
             post(`/channels/${TestHelper.basicChannel.id}/members/ids`).
             reply(200, [TestHelper.basicChannelMember]);
@@ -1783,7 +1804,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1796,7 +1817,7 @@ describe('Actions.Channels', () => {
             post(`/channels/${TestHelper.basicChannel.id}/members`).
             reply(201, {channel_id: TestHelper.basicChannel.id, roles: 'channel_user', user_id: TestHelper.basicUser.id});
 
-        await store.dispatch(Actions.joinChannel(TestHelper.basicUser.id, TestHelper.basicTeam.id, channelId));
+        await store.dispatch(Actions.joinChannelById(channelId, TestHelper.basicUser.id));
 
         nock(Client4.getBaseRoute()).
             get(`/channels/${TestHelper.basicChannel.id}/stats`).
@@ -1840,7 +1861,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -1853,7 +1874,7 @@ describe('Actions.Channels', () => {
             post(`/channels/${TestHelper.basicChannel.id}/members`).
             reply(201, {channel_id: TestHelper.basicChannel.id, roles: 'channel_user', user_id: TestHelper.basicUser.id});
 
-        await store.dispatch(Actions.joinChannel(TestHelper.basicUser.id, TestHelper.basicTeam.id, channelId));
+        await store.dispatch(Actions.joinChannelById(channelId, TestHelper.basicUser.id));
 
         nock(Client4.getBaseRoute()).
             get(`/channels/${TestHelper.basicChannel.id}/stats`).
@@ -1897,10 +1918,11 @@ describe('Actions.Channels', () => {
         assert.ok(stats[channelId].member_count >= 1, 'incorrect member count for channel');
     });
 
-    it('updateChannelMemberRoles', async () => {
+    it.skip('updateChannelMemberRoles', async () => {
+        // updateChannelMemberRoles was removed as it's not used by the mobile app
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
 
@@ -1929,7 +1951,8 @@ describe('Actions.Channels', () => {
         assert.ok(members[TestHelper.basicChannel.id][user.id].roles === roles);
     });
 
-    it('updateChannelHeader', async () => {
+    test.skip('updateChannelHeader', async () => {
+        // updateChannelHeader was removed as it's not used by the mobile app
         nock(Client4.getBaseRoute()).
             get(`/channels/${TestHelper.basicChannel.id}`).
             reply(200, TestHelper.basicChannel);
@@ -1946,7 +1969,8 @@ describe('Actions.Channels', () => {
         assert.deepEqual(channel.header, header);
     });
 
-    it('updateChannelPurpose', async () => {
+    test.skip('updateChannelPurpose', async () => {
+        // updateChannelPurpose was removed as it's not used by the mobile app
         nock(Client4.getBaseRoute()).
             get(`/channels/${TestHelper.basicChannel.id}`).
             reply(200, TestHelper.basicChannel);
@@ -1972,7 +1996,7 @@ describe('Actions.Channels', () => {
             post(`/channels/${TestHelper.basicChannel.id}/members`).
             reply(201, {channel_id: TestHelper.basicChannel.id, roles: 'channel_user', user_id: TestHelper.basicUser.id});
 
-        await store.dispatch(Actions.joinChannel(TestHelper.basicUser.id, TestHelper.basicTeam.id, TestHelper.basicChannel.id));
+        await store.dispatch(Actions.joinChannelById(TestHelper.basicChannel.id, TestHelper.basicUser.id));
 
         let channelsState = store.getState().entities.channels;
         assert.ok(channelsState.channels[TestHelper.basicChannel.id]);
@@ -1982,17 +2006,16 @@ describe('Actions.Channels', () => {
             delete(`/channels/${TestHelper.basicChannel.id}/members/${TestHelper.basicUser.id}`).
             reply(200, OK_RESPONSE);
 
-        await store.dispatch(Actions.leaveChannel(TestHelper.basicChannel.id));
+        await store.dispatch(Actions.removeMeFromChannel(TestHelper.basicChannel));
 
         channelsState = store.getState().entities.channels;
-
         assert.ok(channelsState.channels[TestHelper.basicChannel.id]);
         assert.ifError(channelsState.myMembers[TestHelper.basicChannel.id]);
     });
 
     it('leave private channel', async () => {
         const newChannel = {
-            ...TestHelper.fakeChannelWithId(TestHelper.basicChannel.id),
+            ...TestHelper.fakeChannelWithTeamId(TestHelper.basicChannel.id),
             team_id: TestHelper.basicTeam.id,
             name: 'redux-test-private',
             display_name: 'Redux Test',
@@ -2013,7 +2036,7 @@ describe('Actions.Channels', () => {
             delete(`/channels/${channel.id}/members/${TestHelper.basicUser.id}`).
             reply(200, OK_RESPONSE);
 
-        await store.dispatch(Actions.leaveChannel(channel.id));
+        await store.dispatch(Actions.removeMeFromChannel(channel));
         channels = store.getState().entities.channels.channels;
         const myMembers = store.getState().entities.channels.myMembers;
         assert.ok(!channels[channel.id]);
@@ -2029,7 +2052,7 @@ describe('Actions.Channels', () => {
             post(`/channels/${TestHelper.basicChannel.id}/members`).
             reply(201, {channel_id: TestHelper.basicChannel.id, roles: 'channel_user', user_id: TestHelper.basicUser.id});
 
-        await store.dispatch(Actions.joinChannel(TestHelper.basicUser.id, TestHelper.basicTeam.id, TestHelper.basicChannel.id));
+        await store.dispatch(Actions.joinChannelById(TestHelper.basicChannel.id, TestHelper.basicUser.id));
 
         const {channels, myMembers} = store.getState().entities.channels;
         assert.ok(channels[TestHelper.basicChannel.id]);
@@ -2042,7 +2065,7 @@ describe('Actions.Channels', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -2059,10 +2082,10 @@ describe('Actions.Channels', () => {
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const secondChannel = await secondClient.createChannel(
-            TestHelper.fakeChannel(TestHelper.basicTeam.id));
+            TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         nock(Client4.getTeamsRoute()).
             get(`/${TestHelper.basicTeam.id}/channels/name/${secondChannel.name}?include_deleted=true`).
@@ -2072,11 +2095,10 @@ describe('Actions.Channels', () => {
             post(`/channels/${secondChannel.id}/members`).
             reply(201, {channel_id: secondChannel.id, roles: 'channel_user', user_id: TestHelper.basicUser.id});
 
-        await store.dispatch(Actions.joinChannel(
-            TestHelper.basicUser.id,
-            TestHelper.basicTeam.id,
-            null,
+        await store.dispatch(Actions.joinChannelByName(
             secondChannel.name,
+            TestHelper.basicTeam.id,
+            TestHelper.basicUser.id,
         ));
 
         const {channels, myMembers} = store.getState().entities.channels;
@@ -2122,7 +2144,8 @@ describe('Actions.Channels', () => {
         assert.ok(!preference);
     });
 
-    it('autocompleteChannels', async () => {
+    test.skip('autocompleteChannels', async () => {
+        // autocompleteChannels was removed as it's not used by the mobile app
         const prefix = TestHelper.basicChannel.name.slice(0, 5);
 
         nock(Client4.getTeamRoute(TestHelper.basicChannel.team_id)).
@@ -2138,7 +2161,7 @@ describe('Actions.Channels', () => {
         assert.deepEqual(result, {data: [TestHelper.basicChannel]});
     });
 
-    it('autocompleteChannelsForSearch', async () => {
+    it('getChannelsForAutocompleteSearch', async () => {
         const prefix = TestHelper.basicChannel.name.slice(0, 5);
 
         nock(Client4.getTeamRoute(TestHelper.basicChannel.team_id)).
@@ -2146,7 +2169,7 @@ describe('Actions.Channels', () => {
             query({name: prefix}).
             reply(200, [TestHelper.basicChannel]);
 
-        const result = await store.dispatch(Actions.autocompleteChannelsForSearch(
+        const result = await store.dispatch(Actions.getChannelsForAutocompleteSearch(
             TestHelper.basicChannel.team_id,
             prefix,
         ));
@@ -2154,15 +2177,16 @@ describe('Actions.Channels', () => {
         assert.deepEqual(result, {data: [TestHelper.basicChannel]});
     });
 
-    it('updateChannelScheme', async () => {
+    test.skip('updateChannelScheme', async () => {
+        // updateChannelScheme was removed as it's not used by the mobile app
         TestHelper.mockLogin();
         await store.dispatch(login(TestHelper.basicChannelMember.email, 'password1'));
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
-        await store.dispatch(Actions.createChannel(TestHelper.fakeChannel(TestHelper.basicTeam.id), TestHelper.basicUser.id));
+        await store.dispatch(Actions.createChannel(TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id), TestHelper.basicUser.id));
 
         const createRequest = store.getState().requests.channels.createChannel;
 
@@ -2184,17 +2208,18 @@ describe('Actions.Channels', () => {
         assert.equal(updated.scheme_id, schemeId);
     });
 
-    it('updateChannelMemberSchemeRoles', async () => {
+    test.skip('updateChannelMemberSchemeRoles', async () => {
+        // updateChannelMemberSchemeRoles was removed as it's not used by the mobile app
         TestHelper.mockLogin();
         await store.dispatch(login(TestHelper.basicChannelMember.email, 'password1'));
 
         nock(Client4.getBaseRoute()).
             post('/channels').
-            reply(201, TestHelper.fakeChannelWithId(TestHelper.basicTeam.id));
+            reply(201, TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id));
 
         const userId = TestHelper.basicChannelMember.id;
 
-        await store.dispatch(Actions.createChannel(TestHelper.fakeChannel(TestHelper.basicTeam.id), userId));
+        await store.dispatch(Actions.createChannel(TestHelper.fakeChannelWithTeamId(TestHelper.basicTeam.id), userId));
 
         const {channels} = store.getState().entities.channels;
         const channelId = channels[Object.keys(channels)[0]].id;
@@ -2221,7 +2246,8 @@ describe('Actions.Channels', () => {
         assert.equal(update2.scheme_user, false);
     });
 
-    it('markGroupChannelOpen', async () => {
+    test.skip('markGroupChannelOpen', async () => {
+        // markGroupChannelOpen has been moved to mm-redux/actions/preferences
         const channelId = TestHelper.generateId();
         const now = new Date().getTime();
 
@@ -2262,7 +2288,8 @@ describe('Actions.Channels', () => {
         assert.deepEqual(response, data);
     });
 
-    it('membersMinusGroupMembers', async () => {
+    test.skip('membersMinusGroupMembers', async () => {
+        // getChannelModerations was removed as it's not used by the mobile app
         const channelID = 'cid10000000000000000000000';
         const groupIDs = ['gid10000000000000000000000', 'gid20000000000000000000000'];
         const page = 7;
@@ -2277,7 +2304,8 @@ describe('Actions.Channels', () => {
         assert.equal(error, null);
     });
 
-    it('getChannelModerations', async () => {
+    test.skip('getChannelModerations', async () => {
+        // getChannelModerations was removed as it's not used by the mobile app
         const channelID = 'cid10000000000000000000000';
 
         nock(Client4.getBaseRoute()).get(
@@ -2299,7 +2327,8 @@ describe('Actions.Channels', () => {
         assert.equal(moderations[0].roles.guests, false);
     });
 
-    it('patchChannelModerations', async () => {
+    test.skip('patchChannelModerations', async () => {
+        // patchChannelModerations was removed as it's not used by the mobile app
         const channelID = 'cid10000000000000000000000';
 
         nock(Client4.getBaseRoute()).put(

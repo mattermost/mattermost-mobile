@@ -28,12 +28,12 @@ describe('Actions.Search', () => {
         const {dispatch, getState} = store;
 
         let post1 = {
-            ...TestHelper.fakePost(TestHelper.basicChannel.id),
+            ...TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
             message: 'try searching for this using the first and last word',
         };
 
         let post2 = {
-            ...TestHelper.fakePost(TestHelper.basicChannel.id),
+            ...TestHelper.fakePostWithChannelId(TestHelper.basicChannel.id),
             message: 'return this message in second attempt',
         };
 

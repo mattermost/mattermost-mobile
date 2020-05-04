@@ -272,7 +272,7 @@ function loadingPosts(state = {}, action) {
 
 function lastGetPosts(state = {}, action) {
     switch (action.type) {
-    case ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME:
+    case ViewTypes.SET_LAST_GET_POSTS:
         return {
             ...state,
             [action.channelId]: action.time,

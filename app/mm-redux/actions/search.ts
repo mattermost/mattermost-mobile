@@ -5,7 +5,7 @@ import {SearchTypes} from '@mm-redux/action_types';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
 
-import {getChannelAndMyMember, getChannelMembers} from './channels';
+import {getChannelAndMyMember, getChannelMembers} from '@actions/channels';
 import {forceLogoutIfNecessary} from './helpers';
 import {logError} from './errors';
 import {getProfilesAndStatusesForPosts, receivedPosts} from './posts';

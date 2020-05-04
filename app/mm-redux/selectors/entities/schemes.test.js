@@ -9,29 +9,29 @@ import * as Selectors from '@mm-redux/selectors/entities/schemes';
 import {ScopeTypes} from '@mm-redux/constants/schemes';
 
 describe('Selectors.Schemes', () => {
-    const scheme1 = TestHelper.mockSchemeWithId();
+    const scheme1 = TestHelper.mockScheme();
     scheme1.scope = ScopeTypes.CHANNEL;
 
-    const scheme2 = TestHelper.mockSchemeWithId();
+    const scheme2 = TestHelper.mockScheme();
     scheme2.scope = ScopeTypes.TEAM;
 
     const schemes = {};
     schemes[scheme1.id] = scheme1;
     schemes[scheme2.id] = scheme2;
 
-    const channel1 = TestHelper.fakeChannelWithId();
+    const channel1 = TestHelper.fakeChannel();
     channel1.scheme_id = scheme1.id;
 
-    const channel2 = TestHelper.fakeChannelWithId();
+    const channel2 = TestHelper.fakeChannel();
 
     const channels = {};
     channels[channel1.id] = channel1;
     channels[channel2.id] = channel2;
 
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
     team1.scheme_id = scheme2.id;
 
-    const team2 = TestHelper.fakeTeamWithId();
+    const team2 = TestHelper.fakeTeam();
 
     const teams = {};
     teams[team1.id] = team1;

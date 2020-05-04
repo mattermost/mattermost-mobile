@@ -1,9 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Preferences} from '@mm-redux/constants';
+import {General, Preferences} from '@mm-redux/constants';
+
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {getLastCreateAt} from '@mm-redux/utils/post_utils';
+
+export function isArchivedChannel(channel) {
+    return channel.delete_at !== 0;
+}
+
+export function isDirectChannel(channel) {
+    return channel.type === General.DM_CHANNEL;
+}
+
+export function isGroupChannel(channel) {
+    return channel.type === General.GM_CHANNEL;
+}
 
 export function isDirectChannelVisible(userId, myPreferences, channel) {
     const channelId = getUserIdFromChannelName(userId, channel.name);

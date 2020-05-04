@@ -37,7 +37,7 @@ export default class ChannelAddMembers extends PureComponent {
         actions: PropTypes.shape({
             getTeamStats: PropTypes.func.isRequired,
             getProfilesNotInChannel: PropTypes.func.isRequired,
-            handleAddChannelMembers: PropTypes.func.isRequired,
+            addMultipleChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
@@ -167,7 +167,7 @@ export default class ChannelAddMembers extends PureComponent {
         if (!adding) {
             this.enableAddOption(false);
             this.setState({adding: true}, async () => {
-                const result = await actions.handleAddChannelMembers(currentChannelId, membersToAdd);
+                const result = await actions.addMultipleChannelMembers(currentChannelId, membersToAdd);
 
                 if (result.error) {
                     alertErrorIfInvalidPermissions(result);

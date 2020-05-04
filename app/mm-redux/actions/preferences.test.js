@@ -7,6 +7,7 @@ import nock from 'nock';
 import * as Actions from '@mm-redux/actions/preferences';
 import {login} from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {Preferences, RequestStatus} from '../constants';
 
 import TestHelper from 'test/test_helper';
@@ -178,7 +179,7 @@ describe('Actions.Preferences', () => {
 
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user2 = await TestHelper.createClient().createUser(TestHelper.fakeUser());
 
         TestHelper.mockLogin();
@@ -319,5 +320,27 @@ describe('Actions.Preferences', () => {
         assert.equal(Object.entries(myPreferences).length, 1);
         assert.ok(myPreferences['theme--'], 'theme preference doesn\'t exist');
         assert.equal(myPreferences['theme--'].value, JSON.stringify(theme));
+    });
+
+    it('markGroupChannelOpen', async () => {
+        const channelId = TestHelper.generateId();
+        const now = new Date().getTime();
+
+        nock(Client4.getBaseRoute()).
+            put(`/users/${TestHelper.basicUser.id}/preferences`).
+            reply(200, OK_RESPONSE);
+
+        await Actions.markGroupChannelOpen(channelId)(store.dispatch, store.getState);
+
+        const state = store.getState();
+        let prefKey = getPreferenceKey(Preferences.CATEGORY_GROUP_CHANNEL_SHOW, channelId);
+        let preference = state.entities.preferences.myPreferences[prefKey];
+        assert.ok(preference);
+        assert.ok(preference.value === 'true');
+
+        prefKey = getPreferenceKey(Preferences.CATEGORY_CHANNEL_OPEN_TIME, channelId);
+        preference = state.entities.preferences.myPreferences[prefKey];
+        assert.ok(preference);
+        assert.ok(parseInt(preference.value, 10) >= now);
     });
 });

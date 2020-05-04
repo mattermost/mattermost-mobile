@@ -3,12 +3,13 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {ChannelTypes, TeamTypes} from '@mm-redux/action_types';
+import {TeamTypes} from '@mm-redux/action_types';
 import {getMyTeams} from '@mm-redux/actions/teams';
 import {RequestStatus} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
+import {selectChannel} from '@actions/channels';
 import {NavigationTypes} from 'app/constants';
 import {selectFirstAvailableTeam} from 'app/utils/teams';
 
@@ -22,7 +23,7 @@ export function handleTeamChange(teamId) {
 
         dispatch(batchActions([
             {type: TeamTypes.SELECT_TEAM, data: teamId},
-            {type: ChannelTypes.SELECT_CHANNEL, data: '', extra: {}},
+            selectChannel(''),
         ], 'BATCH_SWITCH_TEAM'));
     };
 }

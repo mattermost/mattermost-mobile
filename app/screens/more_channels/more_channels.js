@@ -36,8 +36,8 @@ export default class MoreChannels extends PureComponent {
             getArchivedChannels: PropTypes.func.isRequired,
             getChannels: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
-            joinChannel: PropTypes.func.isRequired,
-            searchChannels: PropTypes.func.isRequired,
+            joinChannelById: PropTypes.func.isRequired,
+            getChannelsForSearch: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
@@ -243,7 +243,7 @@ export default class MoreChannels extends PureComponent {
         this.setState({adding: true});
 
         const channel = channels.find((c) => c.id === id);
-        const result = await actions.joinChannel(currentUserId, currentTeamId, id);
+        const result = await actions.joinChannelById(id, currentUserId);
 
         if (result.error) {
             alertErrorWithFallback(
@@ -348,7 +348,7 @@ export default class MoreChannels extends PureComponent {
         );
     }
 
-    searchChannels = (text) => {
+    getChannelsForSearch = (text) => {
         const {actions, channels, archivedChannels, currentTeamId, canShowArchivedChannels} = this.props;
         const {typeOfChannels} = this.state;
 
@@ -369,7 +369,7 @@ export default class MoreChannels extends PureComponent {
                 clearTimeout(this.searchTimeoutId);
             }
             this.searchTimeoutId = setTimeout(() => {
-                actions.searchChannels(currentTeamId, text.toLowerCase(), typeOfChannels === 'archived');
+                actions.getChannelsForSearch(currentTeamId, text.toLowerCase(), typeOfChannels === 'archived');
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             this.cancelSearch();
@@ -464,8 +464,8 @@ export default class MoreChannels extends PureComponent {
                             tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
                             tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
                             titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.searchChannels}
-                            onSearchButtonPress={this.searchChannels}
+                            onChangeText={this.getChannelsForSearch}
+                            onSearchButtonPress={this.getChannelsForSearch}
                             onCancelButtonPress={this.cancelSearch}
                             autoCapitalize='none'
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}

@@ -25,7 +25,7 @@ export default class ChannelLink extends React.PureComponent {
         channelsByName: PropTypes.object.isRequired,
         actions: PropTypes.shape({
             handleSelectChannel: PropTypes.func.isRequired,
-            joinChannel: PropTypes.func.isRequired,
+            joinChannelByName: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -61,7 +61,7 @@ export default class ChannelLink extends React.PureComponent {
                 currentUserId,
             } = this.props;
 
-            const result = await actions.joinChannel(currentUserId, currentTeamId, null, channelName);
+            const result = await actions.joinChannelByName(channelName, currentTeamId, currentUserId);
             if (result.error || !result.data || !result.data.channel) {
                 const joinFailedMessage = {
                     id: t('mobile.join_channel.error'),

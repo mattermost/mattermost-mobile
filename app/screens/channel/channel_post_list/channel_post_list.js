@@ -108,7 +108,7 @@ export default class ChannelPostList extends PureComponent {
             actions.increasePostVisibility(
                 channelId,
                 postIds[postIds.length - 1],
-            ).then((hasMore) => {
+            ).then(({data: hasMore}) => {
                 this.isLoadingMoreTop = !hasMore;
             });
         }

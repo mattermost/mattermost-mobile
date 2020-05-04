@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {setChannelDisplayName} from 'app/actions/views/channel';
+import {setChannelDisplayName} from '@actions/channels';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import {isLandscape} from 'app/selectors/device';
 import {getConfig} from '@mm-redux/selectors/entities/general';

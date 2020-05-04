@@ -4,8 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getChannel as getChannelAction, joinChannel} from '@mm-redux/actions/channels';
-import {selectPost} from '@mm-redux/actions/posts';
+import {selectPost, loadThreadIfNecessary} from '@mm-redux/actions/posts';
 import {makeGetChannel, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {makeGetPostIdsAroundPost, getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -13,9 +12,10 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 import {
+    getChannel as getChannelAction,
+    joinChannelById,
     handleSelectChannel,
-    loadThreadIfNecessary,
-} from 'app/actions/views/channel';
+} from '@actions/channels';
 import {getPostsAround, getPostThread} from 'app/actions/views/post';
 import {handleTeamChange} from 'app/actions/views/select_team';
 import {isLandscape} from 'app/selectors/device';
@@ -65,7 +65,7 @@ function mapDispatchToProps(dispatch) {
             getChannel: getChannelAction,
             handleSelectChannel,
             handleTeamChange,
-            joinChannel,
+            joinChannelById,
             loadThreadIfNecessary,
             selectPost,
         }, dispatch),

@@ -3,9 +3,9 @@
 
 import {batchActions} from 'redux-batched-actions';
 
-import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
-import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
-import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from '@mm-redux/actions/general';
+import {GeneralTypes, TeamTypes} from '@mm-redux/action_types';
+import {selectChannel, getMyChannelsAndMembersForTeam, markChannelViewedAndRead} from '@actions/channels';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
@@ -18,8 +18,6 @@ import {persistor} from 'app/store';
 import EphemeralStore from 'app/store/ephemeral_store';
 import {getStateForReset} from 'app/store/utils';
 import {recordTime} from 'app/utils/segment';
-
-import {markChannelViewedAndRead} from './channel';
 
 export function startDataCleanup() {
     return async (dispatch, getState) => {
@@ -91,7 +89,7 @@ export function loadFromPushNotification(notification) {
         }
 
         if (channelId && !channels[channelId]) {
-            loading.push(dispatch(fetchMyChannelsAndMembers(teamId)));
+            loading.push(dispatch(getMyChannelsAndMembersForTeam(teamId)));
         }
 
         if (loading.length > 0) {
@@ -118,15 +116,12 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
         }
 
         if (channel && currentChannelId !== channelId) {
-            actions.push({
-                type: ChannelTypes.SELECT_CHANNEL,
-                data: channelId,
-                extra: {
-                    channel,
-                    member,
-                    teamId: channel.team_id || currentTeamId,
-                },
-            });
+            const extra = {
+                channel,
+                member,
+                teamId: channel.team_id || currentTeamId,
+            };
+            actions.push(selectChannel(channelId, extra));
 
             dispatch(markChannelViewedAndRead(channelId));
         }

@@ -10,11 +10,11 @@ import {General} from '../../constants';
 
 describe('Selectors.Teams', () => {
     TestHelper.initMockEntities();
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
-    const team3 = TestHelper.fakeTeamWithId();
-    const team4 = TestHelper.fakeTeamWithId();
-    const team5 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
+    const team3 = TestHelper.fakeTeam();
+    const team4 = TestHelper.fakeTeam();
+    const team5 = TestHelper.fakeTeam();
 
     const teams = {};
     teams[team1.id] = team1;
@@ -32,9 +32,9 @@ describe('Selectors.Teams', () => {
     team5.delete_at = 10;
     team5.allow_open_invite = true;
 
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
     const profiles = {};
     profiles[user.id] = user;
     profiles[user2.id] = user2;

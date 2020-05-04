@@ -3,6 +3,15 @@
 import {GlobalState} from './store';
 
 export type GetStateFunc = () => GlobalState;
+
+export type SuccessResult = {
+    data: any;
+};
+export type ErrorResult = {
+    error: any;
+};
+export type ActionResult = SuccessResult | ErrorResult;
+
 export type GenericAction = {
     type: string;
     data?: any;
@@ -10,13 +19,16 @@ export type GenericAction = {
     error?: any;
     index?: number;
     displayable?: boolean;
+    // channelId?: string,
     postId?: string;
     sessionId?: string;
     currentUserId?: string;
     remove?: Function|string[];
     timestamp?: number;
+    // extra?: any;
     [extraProps: string]: any;
 };
+
 export type Thunk = (b: DispatchFunc, a: GetStateFunc) => Promise<ActionResult> | ActionResult;
 
 type BatchAction = {
@@ -26,16 +38,12 @@ type BatchAction = {
         batch: true;
     };
 };
+
+export type ActionFunc = (dispatch: DispatchFunc, getState: GetStateFunc) => Promise<ActionResult|ActionResult[]> | ActionResult;
+
 export type Action = GenericAction | Thunk | BatchAction | ActionFunc;
 
-export type ActionResult = {
-    data: any;
-} | {
-    error: any;
-};
-
 export type DispatchFunc = (action: Action, getState?: GetStateFunc | null) => Promise<ActionResult>;
-export type ActionFunc = (dispatch: DispatchFunc, getState: GetStateFunc) => Promise<ActionResult|ActionResult[]> | ActionResult;
 export type PlatformType = 'web' | 'ios' | 'android';
 
 export const BATCH = 'BATCHING_REDUCER.BATCH';

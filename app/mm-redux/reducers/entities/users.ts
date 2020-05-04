@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {UserTypes, ChannelTypes} from '@mm-redux/action_types';
+import {UserTypes} from '@mm-redux/action_types';
 import {profileListToMap} from '@mm-redux/utils/user_utils';
 import {GenericAction} from '@mm-redux/types/actions';
 import {UserProfile, UserStatus} from '@mm-redux/types/users';
@@ -314,14 +314,6 @@ function profilesInChannel(state: RelationOneToMany<Channel, UserProfile> = {}, 
     case UserTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL:
         return removeProfileFromSet(state, action);
 
-    case ChannelTypes.CHANNEL_MEMBER_REMOVED:
-        return removeProfileFromSet(state, {
-            type: '',
-            data: {
-                id: action.data.channel_id,
-                user_id: action.data.user_id,
-            }});
-
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
         return removeProfileFromTeams(state, action);
 
@@ -364,14 +356,6 @@ function profilesNotInChannel(state: RelationOneToMany<Channel, UserProfile> = {
 
     case UserTypes.RECEIVED_PROFILE_IN_CHANNEL:
         return removeProfileFromSet(state, action);
-
-    case ChannelTypes.CHANNEL_MEMBER_ADDED:
-        return removeProfileFromSet(state, {
-            type: '',
-            data: {
-                id: action.data.channel_id,
-                user_id: action.data.user_id,
-            }});
 
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
         return removeProfileFromTeams(state, action);

@@ -51,7 +51,7 @@ const getChannels = async () => {
     };
 };
 
-const searchChannels = async () => {
+const getChannelsForSearch = async () => {
     return {
         data: [channel2],
         error: {},
@@ -66,7 +66,7 @@ describe('SelectorScreen', () => {
         getProfiles,
         getChannels,
         searchProfiles,
-        searchChannels,
+        getChannelsForSearch,
     };
 
     const baseProps = {

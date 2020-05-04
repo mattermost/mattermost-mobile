@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {createPost, removePost} from '@mm-redux/actions/posts';
+import {createPost, removePost, insertToDraft} from '@mm-redux/actions/posts';
 import {Posts} from '@mm-redux/constants';
 import {isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
 import {getPost, makeGetCommentCountForPost, makeIsPostCommentMention} from '@mm-redux/selectors/entities/posts';
@@ -13,7 +13,6 @@ import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferenc
 import {isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 
-import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
 
 import Post from './post';
@@ -98,7 +97,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             createPost,
             removePost,
-            setPostTooltipVisible,
             insertToDraft,
         }, dispatch),
     };

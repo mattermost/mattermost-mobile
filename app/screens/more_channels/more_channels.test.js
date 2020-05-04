@@ -15,10 +15,10 @@ jest.mock('react-intl');
 describe('MoreChannels', () => {
     const actions = {
         handleSelectChannel: jest.fn(),
-        joinChannel: jest.fn(),
+        joinChannelById: jest.fn(),
         getArchivedChannels: jest.fn().mockResolvedValue({data: [{id: 'id2', name: 'name2', display_name: 'display_name2', delete_at: 123}]}),
         getChannels: jest.fn().mockResolvedValue({data: [{id: 'id', name: 'name', display_name: 'display_name'}]}),
-        searchChannels: jest.fn(),
+        getChannelsForSearch: jest.fn(),
         setChannelDisplayName: jest.fn(),
     };
 
@@ -103,11 +103,11 @@ describe('MoreChannels', () => {
         const instance = wrapper.instance();
 
         wrapper.setState({typeOfChannels: 'public'});
-        instance.searchChannels('display_name');
+        instance.getChannelsForSearch('display_name');
         expect(wrapper.state('channels')).toEqual(baseProps.channels);
 
         wrapper.setState({typeOfChannels: 'archived'});
-        instance.searchChannels('archived channel');
+        instance.getChannelsForSearch('archived channel');
         expect(wrapper.state('archivedChannels')).toEqual(baseProps.archivedChannels);
     });
 

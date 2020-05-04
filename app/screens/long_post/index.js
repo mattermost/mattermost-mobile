@@ -4,12 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectPost} from '@mm-redux/actions/posts';
+import {selectPost, loadThreadIfNecessary} from '@mm-redux/actions/posts';
 import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {loadThreadIfNecessary} from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
 import LongPost from './long_post';
 

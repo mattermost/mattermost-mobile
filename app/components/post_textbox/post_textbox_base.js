@@ -70,7 +70,7 @@ export default class PostTextBoxBase extends PureComponent {
             userTyping: PropTypes.func.isRequired,
             handleCommentDraftSelectionChanged: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
-            selectPenultimateChannel: PropTypes.func.isRequired,
+            selectPenultimateViewedChannelForTeam: PropTypes.func.isRequired,
             getChannelTimezones: PropTypes.func.isRequired,
         }).isRequired,
         canUploadFiles: PropTypes.bool.isRequired,
@@ -793,7 +793,7 @@ export default class PostTextBoxBase extends PureComponent {
 
     onCloseChannelPress = () => {
         const {onCloseChannel, channelTeamId} = this.props;
-        this.props.actions.selectPenultimateChannel(channelTeamId);
+        this.props.actions.selectPenultimateViewedChannelForTeam(channelTeamId);
         if (onCloseChannel) {
             onCloseChannel();
         }

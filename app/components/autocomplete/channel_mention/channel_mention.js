@@ -18,8 +18,8 @@ import {t} from 'app/utils/i18n';
 export default class ChannelMention extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            searchChannels: PropTypes.func.isRequired,
-            autocompleteChannelsForSearch: PropTypes.func.isRequired,
+            getChannelsForSearch: PropTypes.func.isRequired,
+            getChannelsForAutocompleteSearch: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         cursorPosition: PropTypes.number.isRequired,
@@ -62,10 +62,10 @@ export default class ChannelMention extends PureComponent {
 
     runSearch = debounce((currentTeamId, matchTerm) => {
         if (isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-            this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
+            this.props.actions.getChannelsForAutocompleteSearch(currentTeamId, matchTerm);
             return;
         }
-        this.props.actions.searchChannels(currentTeamId, matchTerm);
+        this.props.actions.getChannelsForSearch(currentTeamId, matchTerm);
     }, 200);
 
     componentWillReceiveProps(nextProps) {

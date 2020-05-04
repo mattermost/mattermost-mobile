@@ -67,21 +67,22 @@ describe('channel_info', () => {
         isLandscape: false,
         actions: {
             clearPinnedPosts: jest.fn(),
-            closeDMChannel: jest.fn(),
-            closeGMChannel: jest.fn(),
+            toggleDMChannel: jest.fn(),
+            toggleGMChannel: jest.fn(),
             convertChannelToPrivate: jest.fn(),
             deleteChannel: jest.fn(),
             unarchiveChannel: jest.fn(),
             getChannelStats: jest.fn(),
             getChannel: jest.fn(),
-            leaveChannel: jest.fn(),
-            loadChannelsByTeamName: jest.fn(),
+            removeMeFromChannel: jest.fn(),
+            getChannelsByTeamName: jest.fn(),
             favoriteChannel: jest.fn(),
             unfavoriteChannel: jest.fn(),
             getCustomEmojisInText: jest.fn(),
             selectFocusedPostId: jest.fn(),
             updateChannelNotifyProps: jest.fn(),
-            selectPenultimateChannel: jest.fn(),
+            selectLastViewedChannelForTeam: jest.fn(),
+            selectPenultimateViewedChannelForTeam: jest.fn(),
             setChannelDisplayName: jest.fn(),
             handleSelectChannel: jest.fn(),
         },
@@ -141,7 +142,7 @@ describe('channel_info', () => {
 
     test('should not render convert to private button when currentChannel is a default channel', async () => {
         const props = Object.assign({}, baseProps);
-        props.currentChannel.name = General.DEFAULT_CHANNEL;
+        props.currentChannel.name = General.DEFAULT_CHANNEL_NAME;
         const wrapper = shallow(
             <ChannelInfo
                 {...props}

@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getProfiles, searchProfiles} from '@mm-redux/actions/users';
-import {getChannels, searchChannels} from '@mm-redux/actions/channels';
+import {getChannels, getChannelsForSearch} from '@actions/channels';
 import {isLandscape} from 'app/selectors/device';
 import SelectorScreen from './selector_screen';
 
@@ -32,7 +32,7 @@ function mapDispatchToProps(dispatch) {
             getProfiles,
             getChannels,
             searchProfiles,
-            searchChannels,
+            getChannelsForSearch,
         }, dispatch),
     };
 }

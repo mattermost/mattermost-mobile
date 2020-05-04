@@ -18,7 +18,7 @@ describe('FlaggedPosts', () => {
     const baseProps = {
         actions: {
             clearSearch: jest.fn(),
-            loadChannelsByTeamName: jest.fn(),
+            getChannelsByTeamName: jest.fn(),
             loadThreadIfNecessary: jest.fn(),
             getFlaggedPosts: jest.fn(),
             selectFocusedPostId: jest.fn(),

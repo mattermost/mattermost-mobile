@@ -18,8 +18,8 @@ describe('PostList', () => {
 
     const baseProps = {
         actions: {
-            handleSelectChannelByName: jest.fn(),
-            loadChannelsByTeamName: jest.fn(),
+            selectChannelFromDeepLinkMatch: jest.fn(),
+            getChannelsByTeamName: jest.fn(),
             refreshChannelWithRetry: jest.fn(),
             selectFocusedPostId: jest.fn(),
             setDeepLinkURL: jest.fn(),
@@ -47,13 +47,92 @@ describe('PostList', () => {
     });
 
     test('setting permalink deep link', () => {
+        const wrapper = shallow(
+            <PostList {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+        const handlePermalinkPress = jest.spyOn(instance, 'handlePermalinkPress')
+
+        wrapper.setProps({deepLinkURL: deepLinks.permalink});
+        expect(baseProps.actions.setDeepLinkURL).toHaveBeenCalled();
+        expect(handlePermalinkPress).toHaveBeenCalled();
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('handlePermalinkPress calls props.onPermalinkPress set', async () => {
+        const props = {
+            ...baseProps,
+            onPermalinkPress: jest.fn(),
+        };
+        const wrapper = shallow(
+            <PostList {...props}/>,
+        );
+        const instance = wrapper.instance();
+
+        await instance.handlePermalinkPress();
+        expect(props.onPermalinkPress).toHaveBeenCalled();
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('handlePermalinkPress calls permalinkBadTeam when props.onPermalinkPress is not set and getChannelsByTeamName fails', async () => {
+        const props = {
+            ...baseProps,
+            onPermalinkPress: null,
+        };
+        props.actions.getChannelsByTeamName.mockResolvedValue({error: true});
+
+        const wrapper = shallow(
+            <PostList {...props}/>,
+        );
+        const instance = wrapper.instance();
+        instance.permalinkBadTeam = jest.fn();
+
+        await instance.handlePermalinkPress();
+        expect(instance.permalinkBadTeam).toHaveBeenCalled();
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('handlePermalinkPress calls showPermalinkView when props.onPermalinkPress is not set and getChannelsByTeamName succeeds', async () => {
+        const props = {
+            ...baseProps,
+            onPermalinkPress: null,
+        };
+        props.actions.getChannelsByTeamName.mockResolvedValue({data: true});
+
+        const wrapper = shallow(
+            <PostList {...props}/>,
+        );
+        const instance = wrapper.instance();
+        instance.showPermalinkView = jest.fn();
+
+        await instance.handlePermalinkPress();
+        expect(instance.showPermalinkView).toHaveBeenCalled();
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('showPermalinkView calls actions.selectFocuesPostId but doesn\'t open modal if permalink already showing', () => {
         const showModalOverCurrentContext = jest.spyOn(NavigationActions, 'showModalOverCurrentContext');
         const wrapper = shallow(
             <PostList {...baseProps}/>,
         );
+        const instance = wrapper.instance();
+        instance.showingPermalink = true;
 
-        wrapper.setProps({deepLinkURL: deepLinks.permalink});
-        expect(baseProps.actions.setDeepLinkURL).toHaveBeenCalled();
+        instance.showPermalinkView();
+        expect(baseProps.actions.selectFocusedPostId).toHaveBeenCalled();
+        expect(showModalOverCurrentContext).not.toHaveBeenCalled();
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('showPermalinkView calls actions.selectFocuesPostId and opens modal if permalink is not showing', () => {
+        const showModalOverCurrentContext = jest.spyOn(NavigationActions, 'showModalOverCurrentContext');
+        const wrapper = shallow(
+            <PostList {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+        instance.showingPermalink = false;
+
+        instance.showPermalinkView();
         expect(baseProps.actions.selectFocusedPostId).toHaveBeenCalled();
         expect(showModalOverCurrentContext).toHaveBeenCalled();
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -66,7 +145,7 @@ describe('PostList', () => {
 
         wrapper.setProps({deepLinkURL: deepLinks.channel});
         expect(baseProps.actions.setDeepLinkURL).toHaveBeenCalled();
-        expect(baseProps.actions.handleSelectChannelByName).toHaveBeenCalled();
+        expect(baseProps.actions.selectChannelFromDeepLinkMatch).toHaveBeenCalled();
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 

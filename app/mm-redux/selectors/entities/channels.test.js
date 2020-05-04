@@ -7,27 +7,25 @@ import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import TestHelper from 'test/test_helper';
 import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
 import * as Selectors from '@mm-redux/selectors/entities/channels';
-import * as TeamSelectors from '@mm-redux/selectors/entities/teams';
-import * as PreferencesSelectors from '@mm-redux/selectors/entities/preferences';
 import {General, Preferences, Permissions} from '../../constants';
 
 const sortUsernames = (a, b) => a.localeCompare(b, General.DEFAULT_LOCALE, {numeric: true});
 
 describe('Selectors.Channels.getChannelsInCurrentTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
     it('should return channels in current team', () => {
-        const user = TestHelper.fakeUserWithId();
+        const user = TestHelper.fakeUser();
 
         const profiles = {
             [user.id]: user,
         };
 
-        const channel1 = TestHelper.fakeChannelWithId(team1.id);
-        const channel2 = TestHelper.fakeChannelWithId(team2.id);
-        const channel3 = TestHelper.fakeChannelWithId(team1.id);
-        const channel4 = TestHelper.fakeChannelWithId('');
+        const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+        const channel2 = TestHelper.fakeChannelWithTeamId(team2.id);
+        const channel3 = TestHelper.fakeChannelWithTeamId(team1.id);
+        const channel4 = TestHelper.fakeChannelWithTeamId('');
 
         const channels = {
             [channel1.id]: channel1,
@@ -64,11 +62,11 @@ describe('Selectors.Channels.getChannelsInCurrentTeam', () => {
 
     it('should order by user locale', () => {
         const userDe = {
-            ...TestHelper.fakeUserWithId(),
+            ...TestHelper.fakeUser(),
             locale: 'de',
         };
         const userSv = {
-            ...TestHelper.fakeUserWithId(),
+            ...TestHelper.fakeUser(),
             locale: 'sv',
         };
 
@@ -80,11 +78,11 @@ describe('Selectors.Channels.getChannelsInCurrentTeam', () => {
         };
 
         const channel1 = {
-            ...TestHelper.fakeChannelWithId(team1.id),
+            ...TestHelper.fakeChannelWithTeamId(team1.id),
             display_name: 'z',
         };
         const channel2 = {
-            ...TestHelper.fakeChannelWithId(team1.id),
+            ...TestHelper.fakeChannelWithTeamId(team1.id),
             display_name: 'ä',
         };
 
@@ -138,13 +136,13 @@ describe('Selectors.Channels.getChannelsInCurrentTeam', () => {
 });
 
 describe('Selectors.Channels.getKnownUsers', () => {
-    const channel1 = TestHelper.fakeChannelWithId('');
-    const channel2 = TestHelper.fakeChannelWithId('');
+    const channel1 = TestHelper.fakeChannelWithTeamId('');
+    const channel2 = TestHelper.fakeChannelWithTeamId('');
 
-    const me = TestHelper.fakeUserWithId();
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const me = TestHelper.fakeUser();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const membersInChannel = {
         [channel1.id]: {
@@ -188,12 +186,12 @@ describe('Selectors.Channels.getKnownUsers', () => {
 });
 
 describe('Selectors.Channels.getMyChannels', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const profiles = {
         [user.id]: user,
@@ -202,25 +200,25 @@ describe('Selectors.Channels.getMyChannels', () => {
     };
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         display_name: 'Channel Name',
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         display_name: 'Channel Name',
         type: General.DM_CHANNEL,
         name: getDirectChannelName(user.id, user2.id),
     };
     const channel5 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: [user.username, user2.username, user3.username].join(', '),
         type: General.GM_CHANNEL,
         name: '',
@@ -286,11 +284,11 @@ describe('Selectors.Channels.getMyChannels', () => {
 });
 
 describe('Selectors.Channels.getMembersInCurrentChannel', () => {
-    const channel1 = TestHelper.fakeChannelWithId('');
+    const channel1 = TestHelper.fakeChannelWithTeamId('');
 
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const membersInChannel = {
         [channel1.id]: {
@@ -315,43 +313,43 @@ describe('Selectors.Channels.getMembersInCurrentChannel', () => {
 });
 
 describe('Selectors.Channels.getOtherChannels', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const user = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
 
     const profiles = {
         [user.id]: user,
     };
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
         type: General.PRIVATE_CHANNEL,
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         display_name: 'Channel Name',
         type: General.DM_CHANNEL,
     };
     const channel5 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
         delete_at: 444,
     };
     const channel6 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
     };
@@ -403,44 +401,44 @@ describe('Selectors.Channels.getOtherChannels', () => {
 });
 
 describe('Selectors.Channels.getArchivedChannels', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const user = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
 
     const profiles = {
         [user.id]: user,
     };
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
         delete_at: 222,
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
         type: General.PRIVATE_CHANNEL,
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         display_name: 'Channel Name',
         type: General.DM_CHANNEL,
     };
     const channel5 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
         delete_at: 555,
     };
     const channel6 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'Channel Name',
         type: General.OPEN_CHANNEL,
     };
@@ -489,12 +487,12 @@ describe('Selectors.Channels.getArchivedChannels', () => {
 });
 
 describe('Selectors.Channels.getChannel', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const profiles = {
         [user.id]: user,
@@ -503,16 +501,16 @@ describe('Selectors.Channels.getChannel', () => {
     };
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         type: General.DM_CHANNEL,
         name: getDirectChannelName(user.id, user2.id),
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         type: General.GM_CHANNEL,
         display_name: [user.username, user2.username, user3.username].join(', '),
     };
@@ -558,19 +556,19 @@ describe('Selectors.Channels.getChannel', () => {
 });
 
 describe('Selectors.Channels.getChannelByName', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         name: 'ch1',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         name: 'ch2',
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         name: 'ch3',
     };
 
@@ -597,23 +595,23 @@ describe('Selectors.Channels.getChannelByName', () => {
 });
 
 describe('Selectors.Channels.getChannelsNameMapInCurrentTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         name: 'Ch1',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         name: 'Ch2',
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         name: 'Ch3',
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         name: 'Ch4',
     };
 
@@ -651,23 +649,23 @@ describe('Selectors.Channels.getChannelsNameMapInCurrentTeam', () => {
 });
 
 describe('Selectors.Channels.getChannelsNameMapInTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         name: 'Ch1',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         name: 'Ch2',
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         name: 'Ch3',
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         name: 'Ch4',
     };
 
@@ -704,12 +702,12 @@ describe('Selectors.Channels.getChannelsNameMapInTeam', () => {
 });
 
 describe('Selectors.Channels.getChannelsWithUnreadSection', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const profiles = {
         [user.id]: user,
@@ -718,40 +716,40 @@ describe('Selectors.Channels.getChannelsWithUnreadSection', () => {
     };
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         display_name: 'Channel Name',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team2.id),
+        ...TestHelper.fakeChannelWithTeamId(team2.id),
         type: General.PRIVATE_CHANNEL,
         display_name: 'Channel Name',
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         display_name: 'Channel Name',
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         type: General.DM_CHANNEL,
         display_name: 'Channel Name',
         name: getDirectChannelName(user.id, user2.id),
     };
     const channel5 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         type: General.GM_CHANNEL,
         display_name: [user.username, user2.username, user3.username].join(', '),
         name: '',
         total_msg_count: 2,
     };
     const channel6 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         display_name: 'Channel Name',
     };
     const channel7 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.PRIVATE_CHANNEL,
         display_name: 'Channel Name',
     };
@@ -848,11 +846,11 @@ describe('Selectors.Channels.getChannelsWithUnreadSection', () => {
 });
 
 describe('Selectors.Channels.getGroupChannels', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const profiles = {
         [user.id]: user,
@@ -861,29 +859,29 @@ describe('Selectors.Channels.getGroupChannels', () => {
     };
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         display_name: 'Channel Name',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.PRIVATE_CHANNEL,
         display_name: 'Channel Name',
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         type: General.GM_CHANNEL,
         display_name: [user.username, user3.username].join(', '),
         name: '',
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         type: General.DM_CHANNEL,
         display_name: 'Channel Name',
         name: getDirectChannelName(user.id, user2.id),
     };
     const channel5 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         type: General.GM_CHANNEL,
         display_name: [user.username, user2.username, user3.username].join(', '),
         name: '',
@@ -936,14 +934,14 @@ describe('Selectors.Channels.getGroupChannels', () => {
 });
 
 describe('Selectors.Channels.getChannelIdsInCurrentTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
-    const channel3 = TestHelper.fakeChannelWithId(team2.id);
-    const channel4 = TestHelper.fakeChannelWithId(team2.id);
-    const channel5 = TestHelper.fakeChannelWithId('');
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel3 = TestHelper.fakeChannelWithTeamId(team2.id);
+    const channel4 = TestHelper.fakeChannelWithTeamId(team2.id);
+    const channel5 = TestHelper.fakeChannelWithTeamId('');
 
     const channelsInTeam = {
         [team1.id]: [channel1.id, channel2.id],
@@ -964,7 +962,7 @@ describe('Selectors.Channels.getChannelIdsInCurrentTeam', () => {
     });
 
     it('get channel ids in current team strict equal', () => {
-        const newChannel = TestHelper.fakeChannelWithId(team2.id);
+        const newChannel = TestHelper.fakeChannelWithTeamId(team2.id);
         const modifiedState = {
             ...testState,
             entities: {
@@ -993,14 +991,14 @@ describe('Selectors.Channels.getChannelIdsInCurrentTeam', () => {
 });
 
 describe('Selectors.Channels.getChannelIdsForCurrentTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
-    const channel3 = TestHelper.fakeChannelWithId(team2.id);
-    const channel4 = TestHelper.fakeChannelWithId(team2.id);
-    const channel5 = TestHelper.fakeChannelWithId('');
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel3 = TestHelper.fakeChannelWithTeamId(team2.id);
+    const channel4 = TestHelper.fakeChannelWithTeamId(team2.id);
+    const channel5 = TestHelper.fakeChannelWithTeamId('');
 
     const channelsInTeam = {
         [team1.id]: [channel1.id, channel2.id],
@@ -1021,7 +1019,7 @@ describe('Selectors.Channels.getChannelIdsForCurrentTeam', () => {
     });
 
     it('get channel ids for current team strict equal', () => {
-        const anotherChannel = TestHelper.fakeChannelWithId(team2.id);
+        const anotherChannel = TestHelper.fakeChannelWithTeamId(team2.id);
         const modifiedState = {
             ...testState,
             entities: {
@@ -1050,10 +1048,10 @@ describe('Selectors.Channels.getChannelIdsForCurrentTeam', () => {
 });
 
 describe('Selectors.Channels.isCurrentChannelFavorite', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
 
     const myPreferences = {
         [`${Preferences.CATEGORY_FAVORITE_CHANNEL}--${channel1.id}`]: {
@@ -1092,10 +1090,10 @@ describe('Selectors.Channels.isCurrentChannelFavorite', () => {
 });
 
 describe('Selectors.Channels.isCurrentChannelMuted', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
 
     const myMembers = {
         [channel1.id]: {channel_id: channel1.id},
@@ -1127,11 +1125,11 @@ describe('Selectors.Channels.isCurrentChannelMuted', () => {
 });
 
 describe('Selectors.Channels.isCurrentChannelArchived', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         delete_at: 1,
     };
 
@@ -1173,12 +1171,12 @@ describe('Selectors.Channels.isCurrentChannelArchived', () => {
 });
 
 describe('Selectors.Channels.isCurrentChannelDefault', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
-        name: General.DEFAULT_CHANNEL,
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
+        name: General.DEFAULT_CHANNEL_NAME,
     };
 
     const channels = {
@@ -1219,10 +1217,10 @@ describe('Selectors.Channels.isCurrentChannelDefault', () => {
 });
 
 describe('Selectors.Channels.getSortedFavoriteChannelWithUnreadsIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
 
     const channels = {
         [channel1.id]: channel1,
@@ -1240,7 +1238,7 @@ describe('Selectors.Channels.getSortedFavoriteChannelWithUnreadsIds', () => {
         [channel2.id]: {channel_id: channel2.id},
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -1335,11 +1333,11 @@ describe('Selectors.Channels.getSortedFavoriteChannelWithUnreadsIds', () => {
 });
 
 describe('Selectors.Channels.getChannelsWithUserProfiles', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         type: General.GM_CHANNEL,
     };
 
@@ -1354,9 +1352,9 @@ describe('Selectors.Channels.getChannelsWithUserProfiles', () => {
         ['']: [channel2.id],
     };
 
-    const user1 = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -1396,9 +1394,9 @@ describe('Selectors.Channels.getChannelsWithUserProfiles', () => {
     });
 });
 
-describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+describe('Selectors.Channels.getRedirectChannelForTeam', () => {
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
     const teams = {
         [team1.id]: team1,
@@ -1410,17 +1408,31 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
         [team2.id]: {},
     };
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
-    const channel3 = TestHelper.fakeChannelWithId(team1.id);
+    const defaultChannel = {
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
+        name: General.DEFAULT_CHANNEL_NAME,
+    };
+    const channel1 = {
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
+        name: 'channel1',
+    };
+    const channel2 = {
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
+        name: 'channel2',
+    };
+    const channel3 = {
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
+        name: 'channel3',
+    };
 
     const channels = {
+        [defaultChannel.id]: defaultChannel,
         [channel1.id]: channel1,
         [channel2.id]: channel2,
         [channel3.id]: channel3,
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -1429,7 +1441,6 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
     const myChannelMembers = {
         [channel1.id]: {channel_id: channel1.id},
         [channel2.id]: {channel_id: channel2.id},
-        [channel3.id]: {channel_id: channel3.id},
     };
 
     const testState = deepFreezeAndThrowOnMutation({
@@ -1450,7 +1461,29 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
         },
     });
 
-    it('getRedirectChannelNameForTeam without advanced permissions', () => {
+    it('returns default channel if member', () => {
+        const modifiedState = {
+            ...testState,
+            entities: {
+                ...testState.entities,
+                channels: {
+                    ...testState.entities.channels,
+                    myMembers: {
+                        ...testState.entities.channels.myChannelMembers,
+                        [defaultChannel.id]: {channel_id: defaultChannel.id},
+                    },
+                },
+            },
+        };
+
+        const memberChannelIds = Object.keys(modifiedState.entities.channels.myMembers);
+        expect(memberChannelIds).toEqual(expect.arrayContaining([defaultChannel.id]));
+
+        const redirectChannel = Selectors.getRedirectChannelForTeam(modifiedState, team1.id);
+        assert.strictEqual(redirectChannel, defaultChannel);
+    });
+
+    it('returns default channel if not member but does not have advanced permissions', () => {
         const modifiedState = {
             ...testState,
             entities: {
@@ -1461,47 +1494,15 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
                 },
             },
         };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
+
+        const memberChannelIds = Object.keys(modifiedState.entities.channels.myMembers);
+        expect(memberChannelIds).toEqual(expect.not.arrayContaining([defaultChannel.id]));
+
+        const redirectChannel = Selectors.getRedirectChannelForTeam(modifiedState, team1.id);
+        assert.strictEqual(redirectChannel, defaultChannel);
     });
 
-    it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                channels: {
-                    ...testState.entities.channels,
-                    channels: {
-                        ...testState.entities.channels.channels,
-                        'new-not-member-channel': {
-                            id: 'new-not-member-channel',
-                            display_name: '111111',
-                            name: 'new-not-member-channel',
-                            team_id: team1.id,
-                        },
-                        [channel1.id]: {
-                            id: channel1.id,
-                            display_name: 'aaaaaa',
-                            name: 'test-channel',
-                            team_id: team1.id,
-                        },
-                    },
-                },
-                roles: {
-                    roles: {
-                        system_user: {permissions: []},
-                    },
-                },
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '5.12.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), 'test-channel');
-    });
-
-    it('getRedirectChannelNameForTeam with advanced permissions and with JOIN_PUBLIC_CHANNELS permission', () => {
+    it('returns default channel if not member but with JOIN_PUBLIC_CHANNELS permission', () => {
         const modifiedState = {
             ...testState,
             entities: {
@@ -1517,31 +1518,46 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
                 },
             },
         };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
+
+        const memberChannelIds = Object.keys(modifiedState.entities.channels.myMembers);
+        expect(memberChannelIds).toEqual(expect.not.arrayContaining([defaultChannel.id]));
+
+        const redirectChannel = Selectors.getRedirectChannelForTeam(modifiedState, team1.id);
+        assert.strictEqual(redirectChannel, defaultChannel);
     });
 
-    it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission but being member of town-square', () => {
+    it('returns team\'s first member channel if not member of default channel and without JOIN_PUBLIC_CHANNELS permission', () => {
+        const modifiedState = {
+            ...testState,
+            entities: {
+                ...testState.entities,
+                roles: {
+                    roles: {
+                        system_user: {permissions: []},
+                    },
+                },
+                general: {
+                    ...testState.entities.general,
+                    serverVersion: '5.12.0',
+                },
+            },
+        };
+
+        const memberChannelIds = Object.keys(modifiedState.entities.channels.myMembers);
+        expect(memberChannelIds).toEqual(expect.not.arrayContaining([defaultChannel.id]));
+
+        const redirectChannel = Selectors.getRedirectChannelForTeam(modifiedState, team1.id);
+        expect([channel1.id, channel2.id]).toEqual(expect.arrayContaining([redirectChannel.id]));
+    });
+
+    it('returns null if not a member of any team channel without JOIN_PUBLIC_CHANNELS permission', () => {
         const modifiedState = {
             ...testState,
             entities: {
                 ...testState.entities,
                 channels: {
                     ...testState.entities.channels,
-                    channels: {
-                        ...testState.entities.channels.channels,
-                        'new-not-member-channel': {
-                            id: 'new-not-member-channel',
-                            display_name: '111111',
-                            name: 'new-not-member-channel',
-                            team_id: team1.id,
-                        },
-                        [channel1.id]: {
-                            id: channel1.id,
-                            display_name: 'Town Square',
-                            name: 'town-square',
-                            team_id: team1.id,
-                        },
-                    },
+                    myMembers: {},
                 },
                 roles: {
                     roles: {
@@ -1554,50 +1570,22 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
                 },
             },
         };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team1.id), General.DEFAULT_CHANNEL);
+
+        const memberChannelIds = Object.keys(modifiedState.entities.channels.myMembers);
+        expect(memberChannelIds).toStrictEqual([]);
+
+        const redirectChannel = Selectors.getRedirectChannelForTeam(modifiedState, team1.id);
+        assert.equal(redirectChannel, null);
     });
 
-    it('getRedirectChannelNameForTeam without advanced permissions in not current team', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '4.8.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team2.id), General.DEFAULT_CHANNEL);
-    });
-
-    it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission in not current team', () => {
+    it('returns null if no default team channel and no first member channel for team', () => {
         const modifiedState = {
             ...testState,
             entities: {
                 ...testState.entities,
                 channels: {
-                    ...testState.entities.channels,
-                    channels: {
-                        ...testState.entities.channels.channels,
-                        'new-not-member-channel': {
-                            id: 'new-not-member-channel',
-                            display_name: '111111',
-                            name: 'new-not-member-channel',
-                            team_id: team2.id,
-                        },
-                        [channel3.id]: {
-                            id: channel3.id,
-                            display_name: 'aaaaaa',
-                            name: 'test-channel',
-                            team_id: team2.id,
-                        },
-                    },
-                },
-                roles: {
-                    roles: {
-                        system_user: {permissions: []},
-                    },
+                    channels: {},
+                    myMembers: {},
                 },
                 general: {
                     ...testState.entities.general,
@@ -1605,83 +1593,32 @@ describe('Selectors.Channels.getRedirectChannelNameForTeam', () => {
                 },
             },
         };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team2.id), 'test-channel');
-    });
 
-    it('getRedirectChannelNameForTeam with advanced permissions and with JOIN_PUBLIC_CHANNELS permission in not current team', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                roles: {
-                    roles: {
-                        system_user: {permissions: ['join_public_channels']},
-                    },
-                },
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '5.12.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team2.id), General.DEFAULT_CHANNEL);
-    });
+        const memberChannelIds = Object.keys(modifiedState.entities.channels.myMembers);
+        expect(memberChannelIds).toStrictEqual([]);
 
-    it('getRedirectChannelNameForTeam with advanced permissions but without JOIN_PUBLIC_CHANNELS permission but being member of town-square in not current team', () => {
-        const modifiedState = {
-            ...testState,
-            entities: {
-                ...testState.entities,
-                channels: {
-                    ...testState.entities.channels,
-                    channels: {
-                        ...testState.entities.channels.channels,
-                        'new-not-member-channel': {
-                            id: 'new-not-member-channel',
-                            display_name: '111111',
-                            name: 'new-not-member-channel',
-                            team_id: team2.id,
-                        },
-                        [channel3.id]: {
-                            id: channel3.id,
-                            display_name: 'Town Square',
-                            name: 'town-square',
-                            team_id: team2.id,
-                        },
-                    },
-                },
-                roles: {
-                    roles: {
-                        system_user: {permissions: []},
-                    },
-                },
-                general: {
-                    ...testState.entities.general,
-                    serverVersion: '5.12.0',
-                },
-            },
-        };
-        assert.equal(Selectors.getRedirectChannelNameForTeam(modifiedState, team2.id), General.DEFAULT_CHANNEL);
+        const redirectChannel = Selectors.getRedirectChannelForTeam(modifiedState, team1.id);
+        assert.equal(redirectChannel, null);
     });
 });
 
 describe('Selectors.Channels.getDirectAndGroupChannels', () => {
-    const user1 = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
+    const user2 = TestHelper.fakeUser();
+    const user3 = TestHelper.fakeUser();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         display_name: [user1.username, user2.username, user3.username].join(', '),
         type: General.GM_CHANNEL,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         name: getDirectChannelName(user1.id, user2.id),
         type: General.DM_CHANNEL,
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         name: getDirectChannelName(user1.id, user3.id),
         type: General.DM_CHANNEL,
     };
@@ -1783,30 +1720,30 @@ describe('Selectors.Channels.getDirectAndGroupChannels', () => {
 });
 
 describe('Selectors.Channels.getOrderedChannelIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         last_post_at: 0,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         last_post_at: 0,
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         last_post_at: 0,
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         last_post_at: 0,
     };
     const channel5 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
         last_post_at: 0,
     };
@@ -1823,7 +1760,7 @@ describe('Selectors.Channels.getOrderedChannelIds', () => {
         [team1.id]: [channel1.id, channel2.id, channel3.id, channel4.id, channel5.id],
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -2071,14 +2008,14 @@ describe('Selectors.Channels.getOrderedChannelIds', () => {
 });
 
 describe('Selectors.Channels.canManageAnyChannelMembersInCurrentTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.OPEN_CHANNEL,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.PRIVATE_CHANNEL,
     };
 
@@ -2087,7 +2024,7 @@ describe('Selectors.Channels.canManageAnyChannelMembersInCurrentTeam', () => {
         [channel2.id]: channel2,
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -2304,17 +2241,17 @@ describe('Selectors.Channels.canManageAnyChannelMembersInCurrentTeam', () => {
 });
 
 describe('Selectors.Channels.filterPostIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
 
     const channels = {
         [channel1.id]: channel1,
         [channel2.id]: channel2,
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const testState = deepFreezeAndThrowOnMutation({
         entities: {
@@ -2360,15 +2297,15 @@ describe('Selectors.Channels.filterPostIds', () => {
 });
 
 describe('Selectors.Channels.getSortedPrivateChannelIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.PRIVATE_CHANNEL,
         display_name: 'DEF',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         type: General.PRIVATE_CHANNEL,
         display_name: 'GHI',
     };
@@ -2387,7 +2324,7 @@ describe('Selectors.Channels.getSortedPrivateChannelIds', () => {
         [channel2.id]: {},
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -2465,14 +2402,14 @@ describe('Selectors.Channels.getSortedPrivateChannelIds', () => {
 });
 
 describe('Selectors.Channels.getSortedPublicChannelIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'DEF',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'GHI',
     };
 
@@ -2490,7 +2427,7 @@ describe('Selectors.Channels.getSortedPublicChannelIds', () => {
         [channel2.id]: {},
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -2568,14 +2505,14 @@ describe('Selectors.Channels.getSortedPublicChannelIds', () => {
 });
 
 describe('Selectors.Channels.getSortedFavoriteChannelIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'DEF',
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'GHI',
     };
 
@@ -2593,7 +2530,7 @@ describe('Selectors.Channels.getSortedFavoriteChannelIds', () => {
         [channel2.id]: {notify_props: {}},
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -2685,15 +2622,15 @@ describe('Selectors.Channels.getSortedFavoriteChannelIds', () => {
 });
 
 describe('Selectors.Channels.getSortedUnreadChannelIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'DEF',
     };
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'ABC',
     };
 
@@ -2713,7 +2650,7 @@ describe('Selectors.Channels.getSortedUnreadChannelIds', () => {
         [channel3.id]: {mention_count: 0, msg_count: 0, notify_props: {}},
     };
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
@@ -2825,11 +2762,11 @@ describe('Selectors.Channels.getSortedUnreadChannelIds', () => {
 });
 
 describe('Selectors.Channels.getUnreadChannelIds', () => {
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
     user1.username = 'user';
-    const user2 = TestHelper.fakeUserWithId();
+    const user2 = TestHelper.fakeUser();
     user2.username = 'user2';
-    const user3 = TestHelper.fakeUserWithId();
+    const user3 = TestHelper.fakeUser();
     user3.username = 'user3';
     const fakeUser = TestHelper.fakeUserWithId('fakeUserId');
     fakeUser.username = 'fakeUser';
@@ -2840,23 +2777,23 @@ describe('Selectors.Channels.getUnreadChannelIds', () => {
         [user3.id]: user3,
     };
 
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'ABC',
         total_msg_count: 2,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'DEF',
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         display_name: 'GHI',
         total_msg_count: 2,
     };
     const channel4 = {
-        ...TestHelper.fakeChannelWithId(''),
+        ...TestHelper.fakeChannelWithTeamId(''),
         display_name: [user1.username, user2.username, user3.username].join(', '),
         type: General.GM_CHANNEL,
         total_msg_count: 3,
@@ -3004,10 +2941,10 @@ describe('Selectors.Channels.getUnreadChannelIds', () => {
 });
 
 describe('Selectors.Channels.getUnreadChannelIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
 
     const channels = {
         [channel1.id]: channel1,
@@ -3086,16 +3023,16 @@ describe('Selectors.Channels.getUnreadChannelIds', () => {
 });
 
 describe('Selectors.Channels.getDirectChannelIds', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
 
     const profiles = {
         [user1.id]: user1,
     };
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
 
     const channels = {
         [channel1.id]: channel1,
@@ -3163,8 +3100,8 @@ describe('Selectors.Channels.getDirectChannelIds', () => {
     });
 
     it('get direct channel ids for channels with non-null values', () => {
-        const user2 = TestHelper.fakeUserWithId();
-        const user3 = TestHelper.fakeUserWithId();
+        const user2 = TestHelper.fakeUser();
+        const user3 = TestHelper.fakeUser();
         const dmChannel1 = TestHelper.fakeDmChannel(user1.id, user2.id);
         const dmChannel2 = TestHelper.fakeDmChannel(user1.id, user3.id);
 
@@ -3213,18 +3150,18 @@ describe('Selectors.Channels.getDirectChannelIds', () => {
 });
 
 describe('Selectors.Channels.getUnreadsInCurrentTeam', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         total_msg_count: 2,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         total_msg_count: 8,
     };
     const channel3 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         total_msg_count: 5,
     };
 
@@ -3363,8 +3300,8 @@ describe('Selectors.Channels.getUnreadsInCurrentTeam', () => {
 });
 
 describe('Selectors.Channels.getUnreads', () => {
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
     const teams = {
         [team1.id]: team1,
@@ -3377,11 +3314,11 @@ describe('Selectors.Channels.getUnreads', () => {
     };
 
     const channel1 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         total_msg_count: 2,
     };
     const channel2 = {
-        ...TestHelper.fakeChannelWithId(team1.id),
+        ...TestHelper.fakeChannelWithTeamId(team1.id),
         total_msg_count: 8,
     };
 
@@ -3839,27 +3776,4 @@ test('Selectors.Channels.isManuallyUnread', () => {
     assert.equal(Selectors.isManuallyUnread(state, undefined), false);
     assert.equal(Selectors.isManuallyUnread(state, 'channel2'), false);
     assert.equal(Selectors.isManuallyUnread(state, 'channel3'), false);
-});
-
-test('Selectors.Channels.getChannelModerations', () => {
-    const moderations = [{
-        name: Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_POST,
-        roles: {
-            members: true,
-        },
-    }];
-
-    const state = {
-        entities: {
-            channels: {
-                channelModerations: {
-                    channel1: moderations,
-                },
-            },
-        },
-    };
-
-    assert.equal(Selectors.getChannelModerations(state, 'channel1'), moderations);
-    assert.equal(Selectors.getChannelModerations(state, undefined), undefined);
-    assert.equal(Selectors.getChannelModerations(state, 'undefined'), undefined);
 });

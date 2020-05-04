@@ -6,10 +6,10 @@ import {connect} from 'react-redux';
 
 import {stopPeriodicStatusUpdates, startPeriodicStatusUpdates} from '@mm-redux/actions/users';
 import {init as initWebSocket, close as closeWebSocket} from '@actions/websocket';
-import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannelId, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
 
 import {connection} from 'app/actions/device';
-import {markChannelViewedAndReadOnReconnect, setChannelRetryFailed} from 'app/actions/views/channel';
+import {markChannelViewedAndRead, setChannelRetryFailed} from '@actions/channels';
 import {setCurrentUserStatusOffline, logout} from 'app/actions/views/user';
 import {getConnection, isLandscape} from 'app/selectors/device';
 
@@ -21,6 +21,7 @@ function mapStateToProps(state) {
 
     return {
         currentChannelId: getCurrentChannelId(state),
+        isManuallyUnread: isManuallyUnread(state, currentChannelId),
         isLandscape: isLandscape(state),
         isOnline: getConnection(state),
         websocketErrorCount: websocket.error,
@@ -35,7 +36,7 @@ function mapDispatchToProps(dispatch) {
             connection,
             initWebSocket,
             logout,
-            markChannelViewedAndReadOnReconnect,
+            markChannelViewedAndRead,
             setChannelRetryFailed,
             setCurrentUserStatusOffline,
             startPeriodicStatusUpdates,

@@ -20,7 +20,6 @@ export default keyMirror({
     UPDATE_CHANNEL_FAILURE: null,
 
     DELETE_CHANNEL_SUCCESS: null,
-    UNARCHIVED_CHANNEL_SUCCESS: null,
 
     GET_CHANNELS_REQUEST: null,
     GET_CHANNELS_SUCCESS: null,
@@ -45,7 +44,6 @@ export default keyMirror({
 
     SELECT_CHANNEL: null,
     LEAVE_CHANNEL: null,
-    REMOVE_MEMBER_FROM_CHANNEL: null,
     RECEIVED_CHANNEL: null,
     RECEIVED_CHANNELS: null,
     RECEIVED_ALL_CHANNELS: null,
@@ -61,8 +59,6 @@ export default keyMirror({
     RECEIVED_LAST_VIEWED_AT: null,
     UPDATE_CHANNEL_HEADER: null,
     UPDATE_CHANNEL_PURPOSE: null,
-    CHANNEL_MEMBER_ADDED: null,
-    CHANNEL_MEMBER_REMOVED: null,
 
     INCREMENT_TOTAL_MSG_COUNT: null,
     INCREMENT_UNREAD_MSG_COUNT: null,
@@ -71,11 +67,6 @@ export default keyMirror({
     DECREMENT_UNREAD_MENTION_COUNT: null,
 
     UPDATED_CHANNEL_SCHEME: null,
-    UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: null,
-
-    RECEIVED_CHANNEL_MEMBERS_MINUS_GROUP_MEMBERS: null,
-
-    RECEIVED_CHANNEL_MODERATIONS: null,
 
     RECEIVED_TOTAL_CHANNEL_COUNT: null,
 

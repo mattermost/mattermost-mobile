@@ -35,7 +35,7 @@ export default class RecentMentions extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
+            getChannelsByTeamName: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             getRecentMentions: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
@@ -111,7 +111,7 @@ export default class RecentMentions extends PureComponent {
     };
 
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
+        this.props.actions.getChannelsByTeamName(teamName);
         this.showPermalinkView(postId, true);
     };
 

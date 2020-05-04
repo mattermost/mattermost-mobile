@@ -53,7 +53,7 @@ function makeMapStateToProps() {
 
         let shouldHideChannel = false;
         if (
-            channel.name === General.DEFAULT_CHANNEL &&
+            channel.name === General.DEFAULT_CHANNEL_NAME &&
             !isActive &&
             !ownProps.isFavorite &&
             !ownProps.isSearchResult &&

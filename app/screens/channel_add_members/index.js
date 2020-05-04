@@ -11,7 +11,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesNotInCurrentChannel} from '@mm-redux/selectors/entities/users';
 
-import {handleAddChannelMembers} from 'app/actions/views/channel_add_members';
+import {addMultipleChannelMembers} from '@actions/channels';
 import {isLandscape} from 'app/selectors/device';
 import ChannelAddMembers from './channel_add_members';
 
@@ -34,7 +34,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getTeamStats,
             getProfilesNotInChannel,
-            handleAddChannelMembers,
+            addMultipleChannelMembers,
             searchProfiles,
         }, dispatch),
     };

@@ -36,7 +36,7 @@ export default class ChannelMembers extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getProfilesInChannel: PropTypes.func.isRequired,
-            handleRemoveChannelMembers: PropTypes.func.isRequired,
+            removeMultipleChannelMembers: PropTypes.func.isRequired,
             searchProfiles: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string,
@@ -221,7 +221,7 @@ export default class ChannelMembers extends PureComponent {
         const {actions, currentChannelId} = this.props;
         this.enableRemoveOption(false);
         this.setState({adding: true}, async () => {
-            const result = await actions.handleRemoveChannelMembers(currentChannelId, membersToRemove);
+            const result = await actions.removeMultipleChannelMembers(currentChannelId, membersToRemove);
 
             if (result.error) {
                 alertErrorIfInvalidPermissions(result);

@@ -48,7 +48,6 @@ const state: GlobalState = {
             groupsAssociatedToChannel: {},
             totalCount: 0,
             manuallyUnread: {},
-            channelModerations: {},
         },
         posts: {
             expandedURLs: {},

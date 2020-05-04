@@ -4,13 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {joinChannel} from '@mm-redux/actions/channels';
 import {getTeams} from '@mm-redux/actions/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId, getMyTeamsCount} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import {setChannelDisplayName, handleSelectChannel} from 'app/actions/views/channel';
+import {joinChannelById, setChannelDisplayName, handleSelectChannel} from '@actions/channels';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 import telemetry from 'app/telemetry';
 
@@ -50,7 +49,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getTeams,
-            joinChannel,
+            joinChannelById,
             logChannelSwitch,
             makeDirectChannel,
             setChannelDisplayName,

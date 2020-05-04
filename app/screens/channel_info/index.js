@@ -13,7 +13,14 @@ import {
     unarchiveChannel,
     unfavoriteChannel,
     updateChannelNotifyProps,
-} from '@mm-redux/actions/channels';
+    handleSelectChannel,
+    removeMeFromChannel,
+    getChannelsByTeamName,
+    selectLastViewedChannelForTeam,
+    selectPenultimateViewedChannelForTeam,
+    setChannelDisplayName,
+} from '@actions/channels';
+import {toggleDMChannel, toggleGMChannel} from '@mm-redux/actions/preferences';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
 import {clearPinnedPosts} from '@mm-redux/actions/search';
@@ -38,15 +45,6 @@ import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import {
-    closeDMChannel,
-    closeGMChannel,
-    handleSelectChannel,
-    leaveChannel,
-    loadChannelsByTeamName,
-    selectPenultimateChannel,
-    setChannelDisplayName,
-} from 'app/actions/views/channel';
 import {isLandscape} from 'app/selectors/device';
 import {isGuest} from 'app/utils/users';
 
@@ -145,21 +143,22 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearPinnedPosts,
-            closeDMChannel,
-            closeGMChannel,
+            toggleDMChannel,
+            toggleGMChannel,
             convertChannelToPrivate,
             deleteChannel,
             unarchiveChannel,
             getChannelStats,
             getChannel,
-            leaveChannel,
-            loadChannelsByTeamName,
+            removeMeFromChannel,
+            getChannelsByTeamName,
             favoriteChannel,
             unfavoriteChannel,
             getCustomEmojisInText,
             selectFocusedPostId,
             updateChannelNotifyProps,
-            selectPenultimateChannel,
+            selectLastViewedChannelForTeam,
+            selectPenultimateViewedChannelForTeam,
             setChannelDisplayName,
             handleSelectChannel,
         }, dispatch),

@@ -4,10 +4,11 @@ import {Client4} from '@mm-redux/client';
 import {FileTypes} from '@mm-redux/action_types';
 
 import {Action, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
+import {FileUploadResponse, FileInfo} from '@mm-redux/types/files';
+import {getFilesIdsForPost} from '@mm-redux/selectors/entities/files';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-import {FileUploadResponse} from '@mm-redux/types/files';
 
 export function getFilesForPost(postId: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -27,7 +28,7 @@ export function getFilesForPost(postId: string): ActionFunc {
             postId,
         });
 
-        return {data: true};
+        return {data: files};
     };
 }
 
@@ -39,4 +40,20 @@ export function getFilePublicLink(fileId: string): ActionFunc {
             fileId,
         ],
     });
+}
+
+export function loadFilesForPostIfNecessary(postId: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        let fileIds = getFilesIdsForPost(state, postId);
+
+        if (!fileIds.length) {
+            const {data: files} = await dispatch(getFilesForPost(postId));
+            if (files) {
+                fileIds = files.map((file: FileInfo) => file.id);
+            }
+        }
+
+        return {data: fileIds};
+    };
 }

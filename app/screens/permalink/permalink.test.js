@@ -17,7 +17,7 @@ describe('Permalink', () => {
         getChannel: jest.fn(),
         handleSelectChannel: jest.fn(),
         handleTeamChange: jest.fn(),
-        joinChannel: jest.fn(),
+        joinChannelById: jest.fn(),
         loadThreadIfNecessary: jest.fn(),
         selectPost: jest.fn(),
     };

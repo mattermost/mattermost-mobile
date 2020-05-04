@@ -1,26 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@mm-redux/client';
+import {Client4} from '@mm-redux/client';
 import {General, Preferences, Posts} from '@mm-redux/constants';
 import {WebsocketEvents} from '@constants';
-import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_textbox';
+import {PostTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
 import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import * as Selectors from '@mm-redux/selectors/entities/posts';
 import {getCurrentUserId, getUsersByUsername} from '@mm-redux/selectors/entities/users';
+import {getChannel} from '@mm-redux/selectors/entities/channels';
 
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
+import {
+    getMyChannelMember,
+    markChannelAsUnread,
+    markChannelAsRead,
+    markChannelAsViewed,
+    postUnreadSuccess,
+    incrementPinnedPostCount,
+    decrementPinnedPostCount,
+    addManuallyUnread,
+    removeManuallyUnread,
+} from '@actions/channels';
 import {systemEmojis, getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
-import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
+import {forceLogoutIfNecessary} from './helpers';
 
 import {
     deletePreferences,
@@ -29,7 +42,7 @@ import {
     savePreferences,
 } from './preferences';
 import {getProfilesByIds, getProfilesByUsernames, getStatusesByIds} from './users';
-import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericAction} from '@mm-redux/types/actions';
+import {Action, ActionFunc, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericAction} from '@mm-redux/types/actions';
 import {ChannelUnread} from '@mm-redux/types/channels';
 import {GlobalState} from '@mm-redux/types/store';
 import {Post} from '@mm-redux/types/posts';
@@ -37,6 +50,10 @@ import {Reaction} from '@mm-redux/types/reactions';
 import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {CustomEmoji} from '@mm-redux/types/emojis';
+import {
+    incrementTotalMessageCount,
+    decrementUnreadMentionCount,
+} from '@actions/channels';
 
 // receivedPost should be dispatched after a single post from the server. This typically happens when an existing post
 // is updated.
@@ -168,6 +185,7 @@ export function createPost(post: Post, files: any[] = []) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;
+        const channel = getChannel(state, post.channel_id);
         const timestamp = Date.now();
         const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
         let actions: Array<Action> = [];
@@ -221,20 +239,8 @@ export function createPost(post: Post, files: any[] = []) {
                 {
                     type: PostTypes.CREATE_POST_SUCCESS,
                 },
-                {
-                    type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
-                    data: {
-                        channelId: newPost.channel_id,
-                        amount: 1,
-                    },
-                },
-                {
-                    type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
-                    data: {
-                        channelId: newPost.channel_id,
-                        amount: 1,
-                    },
-                },
+                incrementTotalMessageCount(channel.id, 1),
+                decrementUnreadMentionCount(channel, 1),
             ];
 
             if (files) {
@@ -277,6 +283,7 @@ export function createPostImmediately(post: Post, files: any[] = []) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;
+        const channel = getChannel(state, post.channel_id);
 
         const timestamp = Date.now();
         const pendingPostId = `${currentUserId}:${timestamp}`;
@@ -326,20 +333,8 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             {
                 type: PostTypes.CREATE_POST_SUCCESS,
             },
-            {
-                type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
-                data: {
-                    channelId: newPost.channel_id,
-                    amount: 1,
-                },
-            },
-            {
-                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
-                data: {
-                    channelId: newPost.channel_id,
-                    amount: 1,
-                },
-            },
+            incrementTotalMessageCount(channel.id, 1),
+            decrementUnreadMentionCount(channel, 1),
         ];
 
         if (files) {
@@ -431,30 +426,19 @@ export function setUnreadPost(userId: string, postId: string) {
                 return {};
             }
             unreadChan = await Client4.markPostAsUnread(userId, postId);
-            dispatch({
-                type: ChannelTypes.ADD_MANUALLY_UNREAD,
-                data: {
-                    channelId: post.channel_id,
-                },
-            });
+            dispatch(addManuallyUnread(post.channel_id));
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(logError(error));
-            dispatch({
-                type: ChannelTypes.REMOVE_MANUALLY_UNREAD,
-                data: {
-                    channelId: post.channel_id,
-                },
-            });
+            dispatch(removeManuallyUnread(post.channel_id));
+
             return {error};
         }
 
         state = getState();
         const data = getUnreadPostData(unreadChan, state);
-        dispatch({
-            type: ChannelTypes.POST_UNREAD_SUCCESS,
-            data,
-        });
+        dispatch(postUnreadSuccess(data));
+
         return {data};
     };
 }
@@ -481,18 +465,17 @@ export function pinPost(postId: string) {
             },
         ];
 
-        const post = Selectors.getPost(getState(), postId);
+        let post = Selectors.getPost(getState(), postId);
         if (post) {
+            post = {
+                ...post,
+                is_pinned: true,
+                update_at: Date.now(),
+            };
+
             actions.push(
-                receivedPost({
-                    ...post,
-                    is_pinned: true,
-                    update_at: Date.now(),
-                }),
-                {
-                    type: ChannelTypes.INCREMENT_PINNED_POST_COUNT,
-                    id: post.channel_id,
-                },
+                receivedPost(post),
+                incrementPinnedPostCount(post.channel_id),
             );
         }
 
@@ -524,18 +507,16 @@ export function unpinPost(postId: string) {
             },
         ];
 
-        const post = Selectors.getPost(getState(), postId);
+        let post = Selectors.getPost(getState(), postId);
         if (post) {
+            post = {
+                ...post,
+                is_pinned: false,
+                update_at: Date.now(),
+            };
             actions.push(
-                receivedPost({
-                    ...post,
-                    is_pinned: false,
-                    update_at: Date.now(),
-                }),
-                {
-                    type: ChannelTypes.DECREMENT_PINNED_POST_COUNT,
-                    id: post.channel_id,
-                },
+                receivedPost(post),
+                decrementPinnedPostCount(post.channel_id),
             );
         }
 
@@ -703,6 +684,20 @@ export function getPostThread(rootId: string) {
         ]));
 
         return {data: posts};
+    };
+}
+
+export function loadThreadIfNecessary(rootId: string): ActionFunc {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const {posts, postsInThread} = state.entities.posts;
+        const hasPostThread = Boolean(posts[rootId] || postsInThread[rootId]);
+
+        if (!hasPostThread) {
+            dispatch(getPostThread(rootId));
+        }
+
+        return {data: true};
     };
 }
 
@@ -1085,12 +1080,7 @@ export function removePost(post: ExtendedPost) {
         } else {
             dispatch(postRemoved(post));
             if (post.is_pinned) {
-                dispatch(
-                    {
-                        type: ChannelTypes.DECREMENT_PINNED_POST_COUNT,
-                        id: post.channel_id,
-                    },
-                );
+                dispatch(decrementPinnedPostCount(post.channel_id));
             }
         }
     };
@@ -1301,7 +1291,20 @@ export function lastPostActions(post: Post, websocketMessageProps: any) {
             await dispatch(markChannelAsRead(post.channel_id, undefined, markAsReadOnServer));
             await dispatch(markChannelAsViewed(post.channel_id));
         } else {
-            await dispatch(markChannelAsUnread(websocketMessageProps.team_id, post.channel_id, websocketMessageProps.mentions));
+            await dispatch(markChannelAsUnread(post.channel_id, websocketMessageProps.mentions));
         }
+    };
+}
+
+export function insertToDraft(value: string) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const threadId = state.entities.posts.selectedPostId;
+
+        const insertEvent = threadId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
+
+        EventEmitter.emit(insertEvent, value);
+
+        return {data: true};
     };
 }

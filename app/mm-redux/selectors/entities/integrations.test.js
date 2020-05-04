@@ -10,12 +10,12 @@ import {getAllCommands, getAutocompleteCommandsList, getOutgoingHooksInCurrentTe
 describe('Selectors.Integrations', () => {
     TestHelper.initBasic();
 
-    const team1 = TestHelper.fakeTeamWithId();
-    const team2 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
+    const team2 = TestHelper.fakeTeam();
 
-    const hook1 = TestHelper.fakeOutgoingHookWithId(team1.id);
-    const hook2 = TestHelper.fakeOutgoingHookWithId(team1.id);
-    const hook3 = TestHelper.fakeOutgoingHookWithId(team2.id);
+    const hook1 = TestHelper.fakeOutgoingHookWithTeamId(team1.id);
+    const hook2 = TestHelper.fakeOutgoingHookWithTeamId(team1.id);
+    const hook3 = TestHelper.fakeOutgoingHookWithTeamId(team2.id);
 
     const hooks = {[hook1.id]: hook1, [hook2.id]: hook2, [hook3.id]: hook3};
 

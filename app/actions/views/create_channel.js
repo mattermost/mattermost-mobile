@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleSelectChannel, setChannelDisplayName} from './channel';
-import {createChannel} from '@mm-redux/actions/channels';
+import {createChannel, handleSelectChannel} from '@actions/channels';
+import {setChannelDisplayName} from '@actions/views/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {cleanUpUrlable} from '@mm-redux/utils/channel_utils';

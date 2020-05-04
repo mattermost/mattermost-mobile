@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectFocusedPostId, selectPost} from '@mm-redux/actions/posts';
+import {selectFocusedPostId, selectPost, loadThreadIfNecessary} from '@mm-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPostsWithParams, getMorePostsForSearch} from '@mm-redux/actions/search';
 import {getCurrentChannelId, filterPostIds} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -15,7 +15,7 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
-import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
+import {getChannelsByTeamName} from '@actions/channels';
 import {handleSearchDraftChanged} from 'app/actions/views/search';
 import {isLandscape} from 'app/selectors/device';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
@@ -75,7 +75,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             clearSearch,
             handleSearchDraftChanged,
-            loadChannelsByTeamName,
+            getChannelsByTeamName,
             loadThreadIfNecessary,
             removeSearchTerms,
             selectFocusedPostId,

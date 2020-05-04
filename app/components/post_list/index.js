@@ -9,7 +9,11 @@ import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from '@mm-redux/utils/post_list';
 
-import {handleSelectChannelByName, loadChannelsByTeamName, refreshChannelWithRetry} from 'app/actions/views/channel';
+import {
+    selectChannelFromDeepLinkMatch,
+    getChannelsByTeamName,
+    refreshChannelWithRetry,
+} from '@actions/channels';
 import {setDeepLinkURL} from 'app/actions/views/root';
 
 import PostList from './post_list';
@@ -37,8 +41,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleSelectChannelByName,
-            loadChannelsByTeamName,
+            selectChannelFromDeepLinkMatch,
+            getChannelsByTeamName,
             refreshChannelWithRetry,
             selectFocusedPostId,
             setDeepLinkURL,

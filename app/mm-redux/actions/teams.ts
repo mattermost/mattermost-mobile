@@ -1,21 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {Client4} from '@mm-redux/client';
 import {General} from '../constants';
-import {ChannelTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
+import {TeamTypes, UserTypes} from '@mm-redux/action_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {isCompatibleWithJoinViewTeamPermissions} from '@mm-redux/selectors/entities/general';
-
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult, batchActions, Action} from '@mm-redux/types/actions';
 
 import {Team, TeamMembership, TeamMemberWithError} from '@mm-redux/types/teams';
 
-import {selectChannel} from './channels';
+import {selectChannel} from '@actions/channels';
+
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {getProfilesByIds, getStatusesByIds} from './users';
@@ -228,7 +226,7 @@ export function deleteTeam(teamId: string): ActionFunc {
         const actions: Action[] = [];
         if (teamId === currentTeamId) {
             EventEmitter.emit('leave_team');
-            actions.push({type: ChannelTypes.SELECT_CHANNEL, data: ''});
+            actions.push(selectChannel(''));
         }
 
         actions.push(
@@ -489,60 +487,6 @@ export function addUsersToTeamGracefully(teamId: string, userIds: Array<string>)
         ]));
 
         return {data: result};
-    };
-}
-
-export function removeUserFromTeam(teamId: string, userId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        try {
-            await Client4.removeFromTeam(teamId, userId);
-        } catch (error) {
-            forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(logError(error));
-            return {error};
-        }
-
-        const member = {
-            team_id: teamId,
-            user_id: userId,
-        };
-
-        const actions: Action[] = [
-            {
-                type: UserTypes.RECEIVED_PROFILE_NOT_IN_TEAM,
-                data: {id: teamId, user_id: userId},
-            },
-            {
-                type: TeamTypes.REMOVE_MEMBER_FROM_TEAM,
-                data: member,
-            },
-        ];
-
-        const state = getState();
-        const currentUserId = getCurrentUserId(state);
-
-        if (userId === currentUserId) {
-            const {channels, myMembers} = state.entities.channels;
-
-            for (const channelMember of Object.values(myMembers)) {
-                const channel = channels[channelMember.channel_id];
-
-                if (channel && channel.team_id === teamId) {
-                    actions.push({
-                        type: ChannelTypes.LEAVE_CHANNEL,
-                        data: channel,
-                    });
-                }
-            }
-
-            if (teamId === getCurrentTeamId(state)) {
-                actions.push(selectChannel(''));
-            }
-        }
-
-        dispatch(batchActions(actions));
-
-        return {data: true};
     };
 }
 

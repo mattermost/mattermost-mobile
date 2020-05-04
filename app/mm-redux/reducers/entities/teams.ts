@@ -125,7 +125,8 @@ function myMembers(state: RelationOneToOne<Team, TeamMembership> = {}, action: G
         return nextState;
     }
     case ChannelTypes.INCREMENT_UNREAD_MSG_COUNT: {
-        const {teamId, amount, onlyMentions} = action.data;
+        const {channel, amount, onlyMentions} = action.data;
+        const teamId = channel.team_id;
         const member = state[teamId];
 
         if (!member) {
@@ -147,7 +148,8 @@ function myMembers(state: RelationOneToOne<Team, TeamMembership> = {}, action: G
         };
     }
     case ChannelTypes.DECREMENT_UNREAD_MSG_COUNT: {
-        const {teamId, amount} = action.data;
+        const {channel, amount} = action.data;
+        const teamId = channel.team_id;
         const member = state[teamId];
 
         if (!member) {
@@ -164,7 +166,8 @@ function myMembers(state: RelationOneToOne<Team, TeamMembership> = {}, action: G
         };
     }
     case ChannelTypes.INCREMENT_UNREAD_MENTION_COUNT: {
-        const {teamId, amount} = action.data;
+        const {channel, amount} = action.data;
+        const teamId = channel.team_id;
         const member = state[teamId];
 
         if (!member) {
@@ -181,7 +184,8 @@ function myMembers(state: RelationOneToOne<Team, TeamMembership> = {}, action: G
         };
     }
     case ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT: {
-        const {teamId, amount} = action.data;
+        const {channel, amount} = action.data;
+        const teamId = channel.team_id;
         const member = state[teamId];
 
         if (!member) {

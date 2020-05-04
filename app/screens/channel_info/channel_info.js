@@ -29,21 +29,22 @@ export default class ChannelInfo extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearPinnedPosts: PropTypes.func.isRequired,
-            closeDMChannel: PropTypes.func.isRequired,
-            closeGMChannel: PropTypes.func.isRequired,
+            toggleDMChannel: PropTypes.func.isRequired,
+            toggleGMChannel: PropTypes.func.isRequired,
             convertChannelToPrivate: PropTypes.func.isRequired,
             deleteChannel: PropTypes.func.isRequired,
             unarchiveChannel: PropTypes.func.isRequired,
             getChannelStats: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
-            leaveChannel: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
+            removeMeFromChannel: PropTypes.func.isRequired,
+            getChannelsByTeamName: PropTypes.func.isRequired,
             favoriteChannel: PropTypes.func.isRequired,
             unfavoriteChannel: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             updateChannelNotifyProps: PropTypes.func.isRequired,
-            selectPenultimateChannel: PropTypes.func.isRequired,
+            selectLastViewedChannelForTeam: PropTypes.func.isRequired,
+            selectPenultimateViewedChannelForTeam: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
         }),
@@ -229,7 +230,7 @@ export default class ChannelInfo extends PureComponent {
             defaultMessage: 'Are you sure you want to leave the {term} {name}?',
         };
         const onPressAction = () => {
-            this.props.actions.leaveChannel(this.props.currentChannel, true).then(() => {
+            this.props.actions.removeMeFromChannel(this.props.currentChannel, true).then(() => {
                 this.close();
             });
         };
@@ -264,7 +265,7 @@ export default class ChannelInfo extends PureComponent {
                 this.props.actions.handleSelectChannel(channel.id);
                 this.close(false);
             } else {
-                this.props.actions.selectPenultimateChannel(channel.team_id);
+                this.props.actions.selectPenultimateViewedChannelForTeam(channel.team_id);
                 this.close(false);
             }
         };
@@ -330,16 +331,24 @@ export default class ChannelInfo extends PureComponent {
     handleClose = preventDoubleTap(() => {
         const {currentChannel, isCurrent, isFavorite} = this.props;
         const channel = Object.assign({}, currentChannel, {isCurrent}, {isFavorite});
-        const {closeDMChannel, closeGMChannel} = this.props.actions;
+        const {toggleDMChannel, toggleGMChannel, selectLastViewedChannelForTeam} = this.props.actions;
 
         switch (channel.type) {
         case General.DM_CHANNEL:
-            closeDMChannel(channel).then(() => {
+            toggleDMChannel(channel.id, channel.teammate_id, 'false').then(() => {
+                if (isCurrent) {
+                    selectLastViewedChannelForTeam(channel.team_id);
+                }
+
                 this.close();
             });
             break;
         case General.GM_CHANNEL:
-            closeGMChannel(channel).then(() => {
+            toggleGMChannel(channel.id, 'false').then(() => {
+                if (isCurrent) {
+                    selectLastViewedChannelForTeam(channel.team_id);
+                }
+
                 this.close();
             });
             break;
@@ -361,7 +370,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
+        this.props.actions.getChannelsByTeamName(teamName);
         this.showPermalinkView(postId);
     };
 
@@ -417,7 +426,7 @@ export default class ChannelInfo extends PureComponent {
     renderLeaveOrDeleteChannelRow = () => {
         const channel = this.props.currentChannel;
         const isGuest = this.props.currentUserIsGuest;
-        const isDefaultChannel = channel.name === General.DEFAULT_CHANNEL;
+        const isDefaultChannel = channel.name === General.DEFAULT_CHANNEL_NAME;
         const isDirectMessage = channel.type === General.DM_CHANNEL;
         const isGroupMessage = channel.type === General.GM_CHANNEL;
 
@@ -447,7 +456,7 @@ export default class ChannelInfo extends PureComponent {
 
     renderConvertToPrivateRow = () => {
         const {currentChannel, canConvertChannel} = this.props;
-        const isDefaultChannel = currentChannel.name === General.DEFAULT_CHANNEL;
+        const isDefaultChannel = currentChannel.name === General.DEFAULT_CHANNEL_NAME;
         const isPublicChannel = currentChannel.type === General.OPEN_CHANNEL;
         return !isDefaultChannel && isPublicChannel && canConvertChannel;
     }

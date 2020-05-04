@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
-import {handleSelectChannelByName} from 'app/actions/views/channel';
+import {selectChannelFromDeepLinkMatch} from '@actions/channels';
 
 import MarkdownLink from './markdown_link';
 
@@ -19,7 +19,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            handleSelectChannelByName,
+            selectChannelFromDeepLinkMatch,
         }, dispatch),
     };
 }

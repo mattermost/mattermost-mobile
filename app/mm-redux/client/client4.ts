@@ -1493,13 +1493,6 @@ export default class Client4 {
         );
     };
 
-    getChannelMembersByIds = async (channelId: string, userIds: string[]) => {
-        return this.doFetch(
-            `${this.getChannelMembersRoute(channelId)}/ids`,
-            {method: 'post', body: JSON.stringify(userIds)}
-        );
-    };
-
     addToChannel = async (userId: string, channelId: string, postRootId = '') => {
         this.trackEvent('api', 'api_channels_add_member', {channel_id: channelId});
 
@@ -1533,32 +1526,11 @@ export default class Client4 {
         );
     };
 
-    getChannelModerations = async (channelId: string) => {
-        return this.doFetch(
-            `${this.getChannelRoute(channelId)}/moderations`,
-            {method: 'get'}
-        );
-    };
-
-    patchChannelModerations = async (channelId: string, channelModerationsPatch: Array<ChannelModerationPatch>) => {
-        return this.doFetch(
-            `${this.getChannelRoute(channelId)}/moderations/patch`,
-            {method: 'put', body: JSON.stringify(channelModerationsPatch)}
-        );
-    };
-
     viewMyChannel = async (channelId: string, prevChannelId?: string) => {
         const data = {channel_id: channelId, prev_channel_id: prevChannelId};
         return this.doFetch(
             `${this.getChannelsRoute()}/members/me/view`,
             {method: 'post', body: JSON.stringify(data)}
-        );
-    };
-
-    autocompleteChannels = async (teamId: string, name: string) => {
-        return this.doFetch(
-            `${this.getTeamRoute(teamId)}/channels/autocomplete${buildQueryString({name})}`,
-            {method: 'get'}
         );
     };
 
@@ -1601,14 +1573,6 @@ export default class Client4 {
         return this.doFetch(
             `${this.getChannelsRoute()}/group/search`,
             {method: 'post', body: JSON.stringify({term})}
-        );
-    };
-
-    updateChannelMemberSchemeRoles = async (channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) => {
-        const body = {scheme_user: isSchemeUser, scheme_admin: isSchemeAdmin};
-        return this.doFetch(
-            `${this.getChannelRoute(channelId)}/members/${userId}/schemeRoles`,
-            {method: 'put', body: JSON.stringify(body)}
         );
     };
 
@@ -2974,14 +2938,6 @@ export default class Client4 {
         const query = `group_ids=${groupIDs.join(',')}&page=${page}&per_page=${perPage}`;
         return this.doFetch(
             `${this.getTeamRoute(teamID)}/members_minus_group_members?${query}`,
-            {method: 'get'},
-        );
-    }
-
-    channelMembersMinusGroupMembers = async (channelID: string, groupIDs: string[], page: number, perPage: number) => {
-        const query = `group_ids=${groupIDs.join(',')}&page=${page}&per_page=${perPage}`;
-        return this.doFetch(
-            `${this.getChannelRoute(channelID)}/members_minus_group_members?${query}`,
             {method: 'get'},
         );
     }

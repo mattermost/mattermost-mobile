@@ -9,12 +9,12 @@ import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
-import {getChannelStats} from '@mm-redux/actions/channels';
 
 import {
-    loadChannelsForTeam,
+    getChannelStats,
+    getMyChannelsAndMembersForTeam,
     selectInitialChannel,
-} from 'app/actions/views/channel';
+} from '@actions/channels';
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
 import {logout} from 'app/actions/views/user';
@@ -38,7 +38,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getChannelStats,
             connection,
-            loadChannelsForTeam,
+            getMyChannelsAndMembersForTeam,
             logout,
             selectDefaultTeam,
             selectInitialChannel,

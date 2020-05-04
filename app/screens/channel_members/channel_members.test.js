@@ -17,7 +17,7 @@ describe('ChannelMembers', () => {
         canManageUsers: false,
         actions: {
             getProfilesInChannel: jest.fn().mockImplementation(() => Promise.resolve()),
-            handleRemoveChannelMembers: jest.fn(),
+            removeMultipleChannelMembers: jest.fn(),
             searchProfiles: jest.fn(),
         },
         componentId: 'component-id',

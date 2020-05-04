@@ -22,7 +22,7 @@ import Config from 'assets/config';
 export default class MarkdownLink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleSelectChannelByName: PropTypes.func.isRequired,
+            selectChannelFromDeepLinkMatch: PropTypes.func.isRequired,
         }).isRequired,
         children: CustomPropTypes.Children.isRequired,
         href: PropTypes.string.isRequired,
@@ -58,7 +58,10 @@ export default class MarkdownLink extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
+                const {error} = await this.props.actions.selectChannelFromDeepLinkMatch(match.channelName, match.teamName);
+                if (error) {
+                    this.linkError(error);
+                }
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 onPermalinkPress(match.postId, match.teamName);
             }
@@ -83,14 +86,10 @@ export default class MarkdownLink extends PureComponent {
         }
     });
 
-    errorBadChannel = () => {
+    linkError = (error) => {
         const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_channel.error'),
-            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
-        };
 
-        alertErrorWithFallback(intl, {}, message);
+        alertErrorWithFallback(intl, error);
     };
 
     parseLinkLiteral = (literal) => {

@@ -10,22 +10,22 @@ import TestHelper from 'test/test_helper';
 import * as Selectors from '@mm-redux/selectors/entities/users';
 
 describe('Selectors.Users', () => {
-    const team1 = TestHelper.fakeTeamWithId();
+    const team1 = TestHelper.fakeTeam();
 
-    const channel1 = TestHelper.fakeChannelWithId(team1.id);
-    const channel2 = TestHelper.fakeChannelWithId(team1.id);
+    const channel1 = TestHelper.fakeChannelWithTeamId(team1.id);
+    const channel2 = TestHelper.fakeChannelWithTeamId(team1.id);
 
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
     user1.notify_props = {mention_keys: 'testkey1,testkey2'};
     user1.roles = 'system_admin system_user';
-    const user2 = TestHelper.fakeUserWithId();
+    const user2 = TestHelper.fakeUser();
     user2.delete_at = 1;
-    const user3 = TestHelper.fakeUserWithId();
-    const user4 = TestHelper.fakeUserWithId();
-    const user5 = TestHelper.fakeUserWithId();
-    const user6 = TestHelper.fakeUserWithId();
+    const user3 = TestHelper.fakeUser();
+    const user4 = TestHelper.fakeUser();
+    const user5 = TestHelper.fakeUser();
+    const user6 = TestHelper.fakeUser();
     user6.roles = 'system_admin system_user';
-    const user7 = TestHelper.fakeUserWithId();
+    const user7 = TestHelper.fakeUser();
     user7.delete_at = 1;
     user7.roles = 'system_admin system_user';
     const profiles = {};

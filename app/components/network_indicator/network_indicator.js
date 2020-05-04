@@ -43,7 +43,7 @@ export default class NetworkIndicator extends PureComponent {
             closeWebSocket: PropTypes.func.isRequired,
             connection: PropTypes.func.isRequired,
             initWebSocket: PropTypes.func.isRequired,
-            markChannelViewedAndReadOnReconnect: PropTypes.func.isRequired,
+            markChannelViewedAndRead: PropTypes.func.isRequired,
             logout: PropTypes.func.isRequired,
             setChannelRetryFailed: PropTypes.func.isRequired,
             setCurrentUserStatusOffline: PropTypes.func.isRequired,
@@ -51,6 +51,7 @@ export default class NetworkIndicator extends PureComponent {
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string,
+        isManuallyUnread: PropTypes.bool,
         isLandscape: PropTypes.bool,
         isOnline: PropTypes.bool,
         websocketErrorCount: PropTypes.number,
@@ -233,7 +234,7 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     handleAppStateChange = async (appState) => {
-        const {actions, currentChannelId} = this.props;
+        const {actions, currentChannelId, isManuallyUnread} = this.props;
         const active = appState === 'active';
         if (active) {
             this.connect(true);
@@ -244,7 +245,9 @@ export default class NetworkIndicator extends PureComponent {
                 // foreground by tapping a notification from another channel
                 this.clearNotificationTimeout = setTimeout(() => {
                     PushNotifications.clearChannelNotifications(currentChannelId);
-                    actions.markChannelViewedAndReadOnReconnect(currentChannelId);
+                    if (!isManuallyUnread) {
+                        actions.markChannelViewedAndRead(currentChannelId);
+                    }
                 }, 1000);
             }
         } else {

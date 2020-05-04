@@ -4,11 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectFocusedPostId, selectPost} from '@mm-redux/actions/posts';
+import {selectFocusedPostId, selectPost, loadThreadIfNecessary} from '@mm-redux/actions/posts';
 import {clearSearch, getFlaggedPosts} from '@mm-redux/actions/search';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
+import {getChannelsByTeamName} from '@actions/channels';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
 
 import FlaggedPosts from './flagged_posts';
@@ -29,7 +29,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             clearSearch,
-            loadChannelsByTeamName,
+            getChannelsByTeamName,
             loadThreadIfNecessary,
             getFlaggedPosts,
             selectFocusedPostId,

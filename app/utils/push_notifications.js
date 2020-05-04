@@ -9,7 +9,7 @@ import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {markChannelViewedAndRead, fetchPostActionWithRetry} from '@actions/views/channel';
+import {markChannelViewedAndRead, fetchPostActionWithRetry} from '@actions/channels';
 import {dismissAllModals, popToRoot} from '@actions/navigation';
 import {getPosts} from '@actions/views/post';
 import {

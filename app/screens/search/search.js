@@ -55,7 +55,7 @@ export default class Search extends PureComponent {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
+            getChannelsByTeamName: PropTypes.func.isRequired,
             loadThreadIfNecessary: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPostsWithParams: PropTypes.func.isRequired,
@@ -242,7 +242,7 @@ export default class Search extends PureComponent {
     };
 
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
+        this.props.actions.getChannelsByTeamName(teamName);
         this.showPermalinkView(postId, true);
     };
 

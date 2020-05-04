@@ -322,7 +322,7 @@ describe('Actions.Integrations', () => {
 
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),
@@ -361,7 +361,7 @@ describe('Actions.Integrations', () => {
 
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),
@@ -396,7 +396,7 @@ describe('Actions.Integrations', () => {
     it('getCustomTeamCommands', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),
@@ -444,7 +444,7 @@ describe('Actions.Integrations', () => {
     it('executeCommand', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),
@@ -465,7 +465,7 @@ describe('Actions.Integrations', () => {
     it('addCommand', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),
@@ -503,7 +503,7 @@ describe('Actions.Integrations', () => {
     it('regenCommandToken', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),
@@ -553,7 +553,7 @@ describe('Actions.Integrations', () => {
     it('editCommand', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),
@@ -595,7 +595,7 @@ describe('Actions.Integrations', () => {
     it('deleteCommand', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const {data: team} = await TeamsActions.createTeam(
             TestHelper.fakeTeam(),

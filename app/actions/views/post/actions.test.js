@@ -83,14 +83,14 @@ describe('Actions.Views.Post', () => {
         const actionTypes = store.getActions()[0].payload.map((action) => action.type);
 
         // Actions dispatched:
-        // RECEIVED_POSTS_IN_CHANNEL and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
+        // RECEIVED_POSTS_IN_CHANNEL and SET_LAST_GET_POSTS for each channel.
         // RECEIVED_POSTS once, with all channel posts combined.
         expect(actionTypes.length).toBe((2 * channels.length) + 1);
 
         const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_IN_CHANNEL);
         expect(receivedPostsInChannelActions.length).toBe(channels.length);
 
-        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
+        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.SET_LAST_GET_POSTS);
         expect(receivedPostsForChannelAtTimeActions.length).toBe(channels.length);
 
         const receivedPosts = actionTypes.filter((type) => type === 'RECEIVED_POSTS');
@@ -122,14 +122,14 @@ describe('Actions.Views.Post', () => {
         const actionTypes = store.getActions()[0].payload.map((action) => action.type);
 
         // Actions dispatched:
-        // RECEIVED_POSTS_SINCE and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
+        // RECEIVED_POSTS_SINCE and SET_LAST_GET_POSTS for each channel.
         // RECEIVED_POSTS once, with all channel posts combined.
         expect(actionTypes.length).toBe((2 * channels.length) + 1);
 
         const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_SINCE);
         expect(receivedPostsInChannelActions.length).toBe(channels.length);
 
-        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
+        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.SET_LAST_GET_POSTS);
         expect(receivedPostsForChannelAtTimeActions.length).toBe(channels.length);
 
         const receivedPosts = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS);
@@ -168,7 +168,7 @@ describe('Actions.Views.Post', () => {
         const actionTypes = store.getActions()[0].payload.map((action) => action.type);
 
         // Actions dispatched:
-        // RECEIVED_POSTS_SINCE and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
+        // RECEIVED_POSTS_SINCE and SET_LAST_GET_POSTS for each channel.
         // RECEIVED_POSTS once, with all channel posts combined.
         // RECEIVED_PROFILES_LIST twice, once for getProfilesByIds and once for getProfilesByUsernames
         // RECEIVED_STATUSES for getStatusesByIds
@@ -177,7 +177,7 @@ describe('Actions.Views.Post', () => {
         const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_SINCE);
         expect(receivedPostsInChannelActions.length).toBe(channels.length);
 
-        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
+        const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.SET_LAST_GET_POSTS);
         expect(receivedPostsForChannelAtTimeActions.length).toBe(channels.length);
 
         const receivedPosts = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS);

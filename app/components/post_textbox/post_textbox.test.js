@@ -39,7 +39,7 @@ describe('PostTextBox', () => {
             userTyping: jest.fn(),
             handleCommentDraftSelectionChanged: jest.fn(),
             setStatus: jest.fn(),
-            selectPenultimateChannel: jest.fn(),
+            selectPenultimateViewedChannelForTeam: jest.fn(),
             getChannelTimezones: jest.fn(),
         },
         canUploadFiles: true,

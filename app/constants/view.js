@@ -74,7 +74,7 @@ const ViewTypes = keyMirror({
     LOADING_POSTS: null,
     SET_LOAD_MORE_POSTS_VISIBLE: null,
 
-    RECEIVED_POSTS_FOR_CHANNEL_AT_TIME: null,
+    SET_LAST_GET_POSTS: null,
 
     SET_LAST_UPGRADE_CHECK: null,
 

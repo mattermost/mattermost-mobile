@@ -28,7 +28,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -65,7 +64,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -100,7 +98,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -136,7 +133,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -170,7 +166,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -208,7 +203,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -243,7 +237,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -281,7 +274,6 @@ describe('channels', () => {
                         id: 'channel2',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -296,104 +288,6 @@ describe('channels', () => {
         });
     });
 
-    describe('REMOVE_MEMBER_FROM_CHANNEL', () => {
-        test('should remove the channel member', () => {
-            const state = deepFreeze({
-                channels: {},
-                channelsInTeam: {},
-                currentChannelId: '',
-                groupsAssociatedToChannel: {},
-                myMembers: {},
-                stats: {},
-                totalCount: 0,
-                manuallyUnread: {},
-                membersInChannel: {
-                    channel1: {
-                        memberId1: 'member-data-1',
-                    },
-                    channel2: {
-                        memberId2: 'member-data-2',
-                    },
-                },
-                channelModerations: {},
-            });
-
-            const nextState = channelsReducer(state, {
-                type: ChannelTypes.REMOVE_MEMBER_FROM_CHANNEL,
-                data: {
-                    id: 'channel2',
-                    user_id: 'memberId2',
-                },
-            });
-
-            expect(nextState.membersInChannel.channel2).toEqual({});
-            expect(nextState.membersInChannel.channel1).toEqual(state.membersInChannel.channel1);
-        });
-
-        test('should work when channel member doesn\'t exist', () => {
-            const state = deepFreeze({
-                channels: {},
-                channelsInTeam: {},
-                currentChannelId: '',
-                groupsAssociatedToChannel: {},
-                myMembers: {},
-                stats: {},
-                totalCount: 0,
-                manuallyUnread: {},
-                membersInChannel: {
-                    channel1: {
-                        memberId1: 'member-data-1',
-                    },
-                    channel2: {
-                        memberId2: 'member-data-2',
-                    },
-                },
-                channelModerations: {},
-            });
-
-            const nextState = channelsReducer(state, {
-                type: ChannelTypes.REMOVE_MEMBER_FROM_CHANNEL,
-                data: {
-                    id: 'channel2',
-                    user_id: 'test',
-                },
-            });
-
-            expect(nextState).toEqual(state);
-        });
-
-        test('should work when channel doesn\'t exist', () => {
-            const state = deepFreeze({
-                channels: {},
-                channelsInTeam: {},
-                currentChannelId: '',
-                groupsAssociatedToChannel: {},
-                myMembers: {},
-                stats: {},
-                totalCount: 0,
-                manuallyUnread: {},
-                membersInChannel: {
-                    channel1: {
-                        memberId1: 'member-data-1',
-                    },
-                    channel2: {
-                        memberId2: 'member-data-2',
-                    },
-                },
-                channelModerations: {},
-            });
-
-            const nextState = channelsReducer(state, {
-                type: ChannelTypes.REMOVE_MEMBER_FROM_CHANNEL,
-                data: {
-                    id: 'channel3',
-                    user_id: 'memberId2',
-                },
-            });
-
-            expect(nextState).toEqual(state);
-        });
-    });
     describe('MANUALLY_UNREAD', () => {
         test('should mark channel as manually unread', () => {
             const state = deepFreeze({
@@ -458,7 +352,6 @@ describe('channels', () => {
                         team_id: 'team',
                     },
                 },
-                channelModerations: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -484,96 +377,6 @@ describe('channels', () => {
                 id: 'channel3',
                 team_id: 'team',
             });
-        });
-    });
-
-    describe('RECEIVED_CHANNEL_MODERATIONS', () => {
-        test('Should add new channel moderations', () => {
-            const state = deepFreeze({
-                channelsInTeam: {},
-                currentChannelId: '',
-                groupsAssociatedToChannel: {},
-                myMembers: {},
-                stats: {},
-                totalCount: 0,
-                membersInChannel: {},
-                channels: {
-                    channel1: {
-                        id: 'channel1',
-                        team_id: 'team',
-                    },
-                },
-                channelModerations: {},
-            });
-
-            const nextState = channelsReducer(state, {
-                type: ChannelTypes.RECEIVED_CHANNEL_MODERATIONS,
-                sync: true,
-                currentChannelId: 'channel1',
-                teamId: 'team',
-                data: {
-                    channelId: 'channel1',
-                    moderations: [
-                        {
-                            name: Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_POST,
-                            roles: {
-                                members: true,
-                            },
-                        },
-                    ],
-                },
-            });
-
-            expect(nextState.channelModerations.channel1[0].name).toEqual(Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_POST);
-            expect(nextState.channelModerations.channel1[0].roles.members).toEqual(true);
-        });
-        test('Should replace existing channel moderations', () => {
-            const state = deepFreeze({
-                channelsInTeam: {},
-                currentChannelId: '',
-                groupsAssociatedToChannel: {},
-                myMembers: {},
-                stats: {},
-                totalCount: 0,
-                membersInChannel: {},
-                channels: {
-                    channel1: {
-                        id: 'channel1',
-                        team_id: 'team',
-                    },
-                },
-                channelModerations: {
-                    channel1: [{
-                        name: Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_POST,
-                        roles: {
-                            members: true,
-                        },
-                    }],
-                },
-            });
-
-            const nextState = channelsReducer(state, {
-                type: ChannelTypes.RECEIVED_CHANNEL_MODERATIONS,
-                sync: true,
-                currentChannelId: 'channel1',
-                teamId: 'team',
-                data: {
-                    channelId: 'channel1',
-                    moderations: [
-                        {
-                            name: Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_REACTIONS,
-                            roles: {
-                                members: true,
-                                guests: false,
-                            },
-                        },
-                    ],
-                },
-            });
-
-            expect(nextState.channelModerations.channel1[0].name).toEqual(Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_REACTIONS);
-            expect(nextState.channelModerations.channel1[0].roles.members).toEqual(true);
-            expect(nextState.channelModerations.channel1[0].roles.guests).toEqual(false);
         });
     });
 });

@@ -128,7 +128,7 @@ describe('Actions.Teams', () => {
     it('getTeam', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
         const team = await Client4.createTeam(TestHelper.fakeTeam());
 
         nock(Client4.getBaseRoute()).
@@ -146,7 +146,7 @@ describe('Actions.Teams', () => {
     it('getTeamByName', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
         const team = await Client4.createTeam(TestHelper.fakeTeam());
 
         nock(Client4.getBaseRoute()).
@@ -164,7 +164,7 @@ describe('Actions.Teams', () => {
     it('createTeam', async () => {
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
         await Actions.createTeam(
             TestHelper.fakeTeam(),
         )(store.dispatch, store.getState);
@@ -183,7 +183,7 @@ describe('Actions.Teams', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -199,7 +199,7 @@ describe('Actions.Teams', () => {
 
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
         const secondTeam = await secondClient.createTeam(
             TestHelper.fakeTeam());
 
@@ -266,7 +266,7 @@ describe('Actions.Teams', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user = await client.createUser(
             TestHelper.fakeUser(),
             null,
@@ -281,7 +281,7 @@ describe('Actions.Teams', () => {
 
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, {...TestHelper.fakeTeamWithId(), allow_open_invite: true});
+            reply(201, {...TestHelper.fakeTeam(), allow_open_invite: true});
         const team = await client.createTeam({...TestHelper.fakeTeam(), allow_open_invite: true});
 
         store.dispatch({type: GeneralTypes.RECEIVED_SERVER_VERSION, data: '4.0.0'});
@@ -353,7 +353,7 @@ describe('Actions.Teams', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
             null,
@@ -375,12 +375,12 @@ describe('Actions.Teams', () => {
     it('getTeamMembers', async () => {
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user1 = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
 
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user2 = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
 
         nock(Client4.getTeamRoute(TestHelper.basicTeam.id)).
@@ -410,7 +410,7 @@ describe('Actions.Teams', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user1 = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
             null,
@@ -421,7 +421,7 @@ describe('Actions.Teams', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user2 = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
             null,
@@ -462,7 +462,7 @@ describe('Actions.Teams', () => {
     it('addUserToTeam', async () => {
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
 
         nock(Client4.getTeamRoute(TestHelper.basicTeam.id)).
@@ -478,12 +478,12 @@ describe('Actions.Teams', () => {
     it('addUsersToTeam', async () => {
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
 
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user2 = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
 
         nock(Client4.getTeamRoute(TestHelper.basicTeam.id)).
@@ -502,106 +502,10 @@ describe('Actions.Teams', () => {
         assert.ok(profilesInTeam[TestHelper.basicTeam.id].has(user2.id));
     });
 
-    describe('removeUserFromTeam', () => {
-        const team = {id: 'team'};
-        const user = {id: 'user'};
-
-        test('should remove the user from the team', async () => {
-            store = await configureStore({
-                entities: {
-                    teams: {
-                        membersInTeam: {
-                            [team.id]: {
-                                [user.id]: {},
-                            },
-                        },
-                    },
-                    users: {
-                        currentUserId: '',
-                        profilesInTeam: {
-                            [team.id]: [user.id],
-                        },
-                        profilesNotInTeam: {
-                            [team.id]: [],
-                        },
-                    },
-                },
-            });
-
-            nock(Client4.getBaseRoute()).
-                delete(`/teams/${team.id}/members/${user.id}`).
-                reply(200, OK_RESPONSE);
-            await store.dispatch(Actions.removeUserFromTeam(team.id, user.id));
-
-            const state = store.getState();
-            expect(state.entities.teams.membersInTeam[team.id]).toEqual({});
-            expect(state.entities.users.profilesInTeam[team.id]).toEqual(new Set());
-            expect(state.entities.users.profilesNotInTeam[team.id]).toEqual(new Set([user.id]));
-        });
-
-        test('should leave all channels when leaving a team', async () => {
-            const channel1 = {id: 'channel1', team_id: team.id};
-            const channel2 = {id: 'channel2', team_id: 'team2'};
-
-            store = await configureStore({
-                entities: {
-                    channels: {
-                        channels: {
-                            [channel1.id]: channel1,
-                            [channel2.id]: channel2,
-                        },
-                        myMembers: {
-                            [channel1.id]: {user_id: user.id, channel_id: channel1.id},
-                            [channel2.id]: {user_id: user.id, channel_id: channel2.id},
-                        },
-                    },
-                    users: {
-                        currentUserId: user.id,
-                    },
-                },
-            });
-
-            nock(Client4.getBaseRoute()).
-                delete(`/teams/${team.id}/members/${user.id}`).
-                reply(200, OK_RESPONSE);
-            await store.dispatch(Actions.removeUserFromTeam(team.id, user.id));
-
-            const state = store.getState();
-            expect(state.entities.channels.myMembers[channel1.id]).toBeFalsy();
-            expect(state.entities.channels.myMembers[channel2.id]).toBeTruthy();
-        });
-
-        test('should clear the current channel when leaving a team', async () => {
-            const channel = {id: 'channel'};
-
-            store = await configureStore({
-                entities: {
-                    channels: {
-                        channels: {
-                            [channel.id]: channel,
-                        },
-                        myMembers: {},
-                    },
-                    users: {
-                        currentUserId: user.id,
-                    },
-                },
-            });
-
-            nock(Client4.getBaseRoute()).
-                delete(`/teams/${team.id}/members/${user.id}`).
-                reply(200, OK_RESPONSE);
-            await store.dispatch(Actions.removeUserFromTeam(team.id, user.id));
-
-            const state = store.getState();
-            expect(state.entities.channels.currentChannelId).toBe('');
-        });
-    });
-
     it('updateTeamMemberRoles', async () => {
         nock(Client4.getBaseRoute()).
             post('/users').
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
         const user = await TestHelper.basicClient4.createUser(TestHelper.fakeUser());
 
         nock(Client4.getTeamRoute(TestHelper.basicTeam.id)).
@@ -720,7 +624,7 @@ describe('Actions.Teams', () => {
         nock(Client4.getBaseRoute()).
             post('/users').
             query(true).
-            reply(201, TestHelper.fakeUserWithId());
+            reply(201, TestHelper.fakeUser());
 
         const user = await TestHelper.basicClient4.createUser(
             TestHelper.fakeUser(),
@@ -737,7 +641,7 @@ describe('Actions.Teams', () => {
 
         nock(Client4.getBaseRoute()).
             post('/teams').
-            reply(201, TestHelper.fakeTeamWithId());
+            reply(201, TestHelper.fakeTeam());
 
         const userTeam = await userClient.createTeam(
             TestHelper.fakeTeam(),

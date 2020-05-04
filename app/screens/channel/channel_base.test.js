@@ -22,7 +22,7 @@ describe('ChannelBase', () => {
     const baseProps = {
         actions: {
             getChannelStats: jest.fn(),
-            loadChannelsForTeam: jest.fn(),
+            getMyChannelsAndMembersForTeam: jest.fn(),
             markChannelViewedAndRead: jest.fn(),
             recordLoadTime: jest.fn(),
             selectDefaultTeam: jest.fn(),

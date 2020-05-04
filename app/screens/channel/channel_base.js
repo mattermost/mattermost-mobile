@@ -31,7 +31,7 @@ export let ClientUpgradeListener;
 export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            loadChannelsForTeam: PropTypes.func.isRequired,
+            getMyChannelsAndMembersForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
@@ -201,9 +201,9 @@ export default class ChannelBase extends PureComponent {
     };
 
     loadChannels = (teamId) => {
-        const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
+        const {getMyChannelsAndMembersForTeam, selectInitialChannel} = this.props.actions;
         if (!EphemeralStore.getStartFromNotification()) {
-            loadChannelsForTeam(teamId).then((result) => {
+            getMyChannelsAndMembersForTeam(teamId).then((result) => {
                 if (result?.error) {
                     this.setState({channelsRequestFailed: true});
                     return;

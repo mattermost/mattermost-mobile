@@ -3,7 +3,11 @@
 
 import {createSelector} from 'reselect';
 
-import {getCurrentChannelId, getUnreads} from '@mm-redux/selectors/entities/channels';
+import {
+    getAllChannels,
+    getCurrentChannelId,
+    getUnreads,
+} from '@mm-redux/selectors/entities/channels';
 
 const emptyDraft = {
     draft: '',
@@ -54,5 +58,39 @@ export const getBadgeCount = createSelector(
         }
 
         return badgeCount;
+    },
+);
+
+export function getLoadingPostsForChannel(state, channelId) {
+    return state.views.channel.loadingPosts[channelId];
+}
+
+function getLastChannelIdsForTeam(state, teamId) {
+    return state.views.team.lastChannelForTeam[teamId];
+}
+
+export const getLastViewedChannelForTeam = createSelector(
+    getLastChannelIdsForTeam,
+    getAllChannels,
+    (lastChannelIds, allChannels) => {
+        const channelId = lastChannelIds?.length ? lastChannelIds[0] : '';
+        if (allChannels.hasOwnProperty(channelId)) {
+            return allChannels[channelId];
+        }
+
+        return null;
+    },
+);
+
+export const getPenultimateViewedChannelForTeam = createSelector(
+    getLastChannelIdsForTeam,
+    getAllChannels,
+    (lastChannelIds, allChannels) => {
+        const channelId = lastChannelIds?.length >= 2 ? lastChannelIds[1] : '';
+        if (allChannels.hasOwnProperty(channelId)) {
+            return allChannels[channelId];
+        }
+
+        return null;
     },
 );

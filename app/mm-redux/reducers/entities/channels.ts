@@ -8,10 +8,19 @@ import {Channel, ChannelMembership, ChannelStats} from '@mm-redux/types/channels
 import {RelationOneToMany, RelationOneToOne, IDMappedObjects, UserIDMappedObjects} from '@mm-redux/types/utilities';
 import {Team} from '@mm-redux/types/teams';
 
-function removeMemberFromChannels(state: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>, action: GenericAction) {
+function removeMemberFromChannel(state: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>, channelId: string, userId: string) {
+    const members = state[channelId] || {};
+    Reflect.deleteProperty(members, userId);
+    return {
+        ...state,
+        [channelId]: members,
+    };
+}
+
+function removeMemberFromChannels(state: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>, userId: string) {
     const nextState = {...state};
     Object.keys(state).forEach((channel) => {
-        delete nextState[channel][action.data.user_id];
+        delete nextState[channel][userId];
     });
     return nextState;
 }
@@ -28,13 +37,12 @@ function channelListToSet(state: any, action: GenericAction) {
     return nextState;
 }
 
-function removeChannelFromSet(state: any, action: GenericAction) {
-    const id = action.data.team_id;
-    const nextSet = new Set(state[id]);
-    nextSet.delete(action.data.id);
+function removeChannelFromSet(state: any, channelId: string, teamId: string) {
+    const nextSet = new Set(state[teamId]);
+    nextSet.delete(channelId);
     return {
         ...state,
-        [id]: nextSet,
+        [teamId]: nextSet,
     };
 }
 
@@ -131,9 +139,10 @@ function channels(state: IDMappedObjects<Channel> = {}, action: GenericAction) {
         };
     }
     case ChannelTypes.LEAVE_CHANNEL: {
-        if (action.data && action.data.type === General.PRIVATE_CHANNEL) {
+        const {id, type} = action.data;
+        if (type === General.PRIVATE_CHANNEL) {
             const nextState = {...state};
-            Reflect.deleteProperty(nextState, action.data.id);
+            Reflect.deleteProperty(nextState, id);
             return nextState;
         }
         return state;
@@ -199,8 +208,9 @@ function channelsInTeam(state: RelationOneToMany<Team, Channel> = {}, action: Ge
         return channelListToSet(state, action);
     }
     case ChannelTypes.LEAVE_CHANNEL: {
-        if (action.data && action.data.type === General.PRIVATE_CHANNEL) {
-            return removeChannelFromSet(state, action);
+        const {id, type, team_id} = action.data;
+        if (type === General.PRIVATE_CHANNEL) {
+            return removeChannelFromSet(state, id, team_id);
         }
         return state;
     }
@@ -229,10 +239,11 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
     }
     case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS: {
         const nextState: any = {...state};
-        const remove = action.remove as string[];
-        if (remove) {
-            remove.forEach((id: string) => {
-                Reflect.deleteProperty(nextState, id);
+
+        const removeChannelIds = action.removeChannelIds as string[];
+        if (removeChannelIds) {
+            removeChannelIds.forEach((channelId: string) => {
+                Reflect.deleteProperty(nextState, channelId);
             });
         }
 
@@ -252,8 +263,8 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
         };
     }
     case ChannelTypes.INCREMENT_UNREAD_MSG_COUNT: {
-        const {channelId, amount, onlyMentions} = action.data;
-        const member = state[channelId];
+        const {channel, amount, onlyMentions} = action.data;
+        const member = state[channel.id];
 
         if (!member) {
             // Don't keep track of unread posts until we've loaded the actual channel member
@@ -267,16 +278,16 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
 
         return {
             ...state,
-            [channelId]: {
+            [channel.id]: {
                 ...member,
                 msg_count: member.msg_count + amount,
             },
         };
     }
     case ChannelTypes.DECREMENT_UNREAD_MSG_COUNT: {
-        const {channelId, amount} = action.data;
+        const {channel, amount} = action.data;
 
-        const member = state[channelId];
+        const member = state[channel.id];
 
         if (!member) {
             // Don't keep track of unread posts until we've loaded the actual channel member
@@ -285,15 +296,15 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
 
         return {
             ...state,
-            [channelId]: {
+            [channel.id]: {
                 ...member,
                 msg_count: member.msg_count + amount,
             },
         };
     }
     case ChannelTypes.INCREMENT_UNREAD_MENTION_COUNT: {
-        const {channelId, amount} = action.data;
-        const member = state[channelId];
+        const {channel, amount} = action.data;
+        const member = state[channel.id];
 
         if (!member) {
             // Don't keep track of unread posts until we've loaded the actual channel member
@@ -302,15 +313,15 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
 
         return {
             ...state,
-            [channelId]: {
+            [channel.id]: {
                 ...member,
                 mention_count: member.mention_count + amount,
             },
         };
     }
     case ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT: {
-        const {channelId, amount} = action.data;
-        const member = state[channelId];
+        const {channel, amount} = action.data;
+        const member = state[channel.id];
 
         if (!member) {
             // Don't keep track of unread posts until we've loaded the actual channel member
@@ -319,7 +330,7 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
 
         return {
             ...state,
-            [channelId]: {
+            [channel.id]: {
                 ...member,
                 mention_count: Math.max(member.mention_count - amount, 0),
             },
@@ -341,15 +352,13 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
     }
     case ChannelTypes.LEAVE_CHANNEL: {
         const nextState = {...state};
-        if (action.data) {
-            Reflect.deleteProperty(nextState, action.data.id);
+        const {id} = action.data;
+        if (id) {
+            Reflect.deleteProperty(nextState, id);
             return nextState;
         }
 
         return state;
-    }
-    case ChannelTypes.UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: {
-        return updateChannelMemberSchemeRoles(state, action);
     }
     case ChannelTypes.POST_UNREAD_SUCCESS: {
         const data = action.data;
@@ -410,12 +419,13 @@ function membersInChannel(state: RelationOneToOne<Channel, UserIDMappedObjects<C
     case ChannelTypes.RECEIVED_MY_CHANNEL_MEMBERS:
     case ChannelTypes.RECEIVED_CHANNEL_MEMBERS: {
         const nextState = {...state};
-        const remove = action.remove as string[];
+
+        const removeChannelIds = action.removeChannelIds as string[];
         const currentUserId = action.currentUserId;
-        if (remove && currentUserId) {
-            remove.forEach((id) => {
-                if (nextState[id]) {
-                    Reflect.deleteProperty(nextState[id], currentUserId);
+        if (removeChannelIds && currentUserId) {
+            removeChannelIds.forEach((channelId) => {
+                if (nextState[channelId]) {
+                    Reflect.deleteProperty(nextState[channelId], currentUserId);
                 }
             });
         }
@@ -432,27 +442,16 @@ function membersInChannel(state: RelationOneToOne<Channel, UserIDMappedObjects<C
     }
 
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
-        return removeMemberFromChannels(state, action);
+        const {user_id: userId} = action.data;
+        return removeMemberFromChannels(state, userId);
 
-    case ChannelTypes.LEAVE_CHANNEL:
-    case ChannelTypes.REMOVE_MEMBER_FROM_CHANNEL:
-    case UserTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL: {
-        if (action.data) {
-            const data = action.data;
-            const members = {...(state[data.id] || {})};
-            if (state[data.id]) {
-                Reflect.deleteProperty(members, data.user_id);
-                return {
-                    ...state,
-                    [data.id]: members,
-                };
-            }
-        }
-
-        return state;
+    case ChannelTypes.LEAVE_CHANNEL: {
+        const {id, user_id} = action.data;
+        return removeMemberFromChannel(state, id, user_id);
     }
-    case ChannelTypes.UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: {
-        return updateChannelMemberSchemeRoles(state, action);
+    case UserTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL: {
+        const {id: channelId, user_id: userId} = action.data;
+        return removeMemberFromChannel(state, channelId, userId);
     }
     default:
         return state;
@@ -579,28 +578,6 @@ function groupsAssociatedToChannel(state: any = {}, action: GenericAction) {
     }
 }
 
-function updateChannelMemberSchemeRoles(state: any, action: GenericAction) {
-    const {channelId, userId, isSchemeUser, isSchemeAdmin} = action.data;
-    const channel = state[channelId];
-    if (channel) {
-        const member = channel[userId];
-        if (member) {
-            return {
-                ...state,
-                [channelId]: {
-                    ...state[channelId],
-                    [userId]: {
-                        ...state[channelId][userId],
-                        scheme_user: isSchemeUser,
-                        scheme_admin: isSchemeAdmin,
-                    },
-                },
-            };
-        }
-    }
-    return state;
-}
-
 function totalCount(state = 0, action: GenericAction) {
     switch (action.type) {
     case ChannelTypes.RECEIVED_TOTAL_CHANNEL_COUNT: {
@@ -624,20 +601,6 @@ export function manuallyUnread(state: RelationOneToOne<Channel, boolean> = {}, a
     case ChannelTypes.ADD_MANUALLY_UNREAD:
     case ChannelTypes.POST_UNREAD_SUCCESS: {
         return {...state, [action.data.channelId]: true};
-    }
-    default:
-        return state;
-    }
-}
-
-export function channelModerations(state: any = {}, action: GenericAction) {
-    switch (action.type) {
-    case ChannelTypes.RECEIVED_CHANNEL_MODERATIONS: {
-        const {channelId, moderations} = action.data;
-        return {
-            ...state,
-            [channelId]: moderations,
-        };
     }
     default:
         return state;
@@ -670,7 +633,4 @@ export default combineReducers({
 
     // object where every key is the channel id, if present means a user requested to mark that channel as unread.
     manuallyUnread,
-
-    // object where every key is the channel id and has an object with the channel moderations
-    channelModerations,
 });

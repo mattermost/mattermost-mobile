@@ -21,11 +21,12 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from '@actions/device';
-import {selectDefaultChannel} from '@actions/views/channel';
+import {selectRedirectChannelForTeam} from '@actions/channels';
 import {showOverlay} from '@actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import {NavigationTypes, ViewTypes} from '@constants';
+import {DEFAULT_CHANNEL_NOT_FOUND} from '@constants/channel';
 import {getTranslations, resetMomentLocale} from '@i18n';
 import PushNotifications from 'app/push_notifications';
 import {getCurrentLocale} from '@selectors/i18n';
@@ -51,6 +52,7 @@ class GlobalEventHandler {
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         EventEmitter.on(General.CONFIG_CHANGED, this.onServerConfigChanged);
         EventEmitter.on(General.SWITCH_TO_DEFAULT_CHANNEL, this.onSwitchToDefaultChannel);
+        EventEmitter.on(DEFAULT_CHANNEL_NOT_FOUND, this.onDefaultChannelNotFound);
         Dimensions.addEventListener('change', this.onOrientationChange);
         AppState.addEventListener('change', this.onAppStateChange);
         Linking.addEventListener('url', this.onDeepLink);
@@ -267,8 +269,12 @@ class GlobalEventHandler {
     };
 
     onSwitchToDefaultChannel = (teamId) => {
-        this.store.dispatch(selectDefaultChannel(teamId));
+        this.store.dispatch(selectRedirectChannelForTeam(teamId));
     };
+
+    onDefaultChannelNotFound = (error) => {
+        Alert.alert('', error.message);
+    }
 
     resetState = async () => {
         try {

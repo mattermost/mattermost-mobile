@@ -5,7 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
-import {searchChannels} from '@mm-redux/actions/channels';
+import {getChannelsForSearch} from '@actions/channels';
 import {getProfilesInTeam, searchProfiles} from '@mm-redux/actions/users';
 import {makeGroupMessageVisibleIfNecessary} from '@mm-redux/actions/preferences';
 import {General} from '@mm-redux/constants';
@@ -136,7 +136,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getProfilesInTeam,
             makeGroupMessageVisibleIfNecessary,
-            searchChannels,
+            getChannelsForSearch,
             searchProfiles,
         }, dispatch),
     };

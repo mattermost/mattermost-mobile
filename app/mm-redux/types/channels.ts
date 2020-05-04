@@ -51,8 +51,6 @@ export type ChannelMembership = {
     mention_count: number;
     notify_props: Partial<ChannelNotifyProps>;
     last_update_at: number;
-    scheme_user: boolean;
-    scheme_admin: boolean;
     post_root_id?: string;
 };
 export type ChannelUnread = {
@@ -74,7 +72,6 @@ export type ChannelsState = {
     groupsAssociatedToChannel: any;
     totalCount: number;
     manuallyUnread: RelationOneToOne<Channel, boolean>;
-    channelModerations: RelationOneToOne<Channel, Array<ChannelModeration>>;
 };
 
 export type ChannelModeration = {

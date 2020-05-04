@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {searchChannels, autocompleteChannelsForSearch} from '@mm-redux/actions/channels';
+import {getChannelsForSearch, getChannelsForAutocompleteSearch} from '@actions/channels';
 import {getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isLandscape} from 'app/selectors/device';
@@ -60,8 +60,8 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            searchChannels,
-            autocompleteChannelsForSearch,
+            getChannelsForSearch,
+            getChannelsForAutocompleteSearch,
         }, dispatch),
     };
 }

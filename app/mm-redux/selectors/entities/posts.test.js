@@ -13,7 +13,7 @@ import TestHelper from 'test/test_helper';
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 
 describe('Selectors.Posts', () => {
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
     user1.notify_props = {};
     const profiles = {};
     profiles[user1.id] = user1;
@@ -234,7 +234,7 @@ describe('Selectors.Posts', () => {
     });
 
     it('get posts in channel with notify comments as any', () => {
-        const userAny = TestHelper.fakeUserWithId();
+        const userAny = TestHelper.fakeUser();
         userAny.notify_props = {comments: 'any'};
         const profilesAny = {};
         profilesAny[userAny.id] = userAny;
@@ -347,7 +347,7 @@ describe('Selectors.Posts', () => {
     });
 
     it('get posts in channel with notify comments as root', () => {
-        const userRoot = TestHelper.fakeUserWithId();
+        const userRoot = TestHelper.fakeUser();
         userRoot.notify_props = {comments: 'root'};
         const profilesRoot = {};
         profilesRoot[userRoot.id] = userRoot;
@@ -460,7 +460,7 @@ describe('Selectors.Posts', () => {
     });
 
     it('get posts in channel with notify comments as never', () => {
-        const userNever = TestHelper.fakeUserWithId();
+        const userNever = TestHelper.fakeUser();
         userNever.notify_props = {comments: 'never'};
         const profilesNever = {};
         profilesNever[userNever.id] = userNever;
@@ -573,7 +573,7 @@ describe('Selectors.Posts', () => {
     });
 
     it('gets posts around post in channel not adding ephemeral post to replyCount', () => {
-        const userAny = TestHelper.fakeUserWithId();
+        const userAny = TestHelper.fakeUser();
         userAny.notify_props = {comments: 'any'};
         const profilesAny = {};
         profilesAny[userAny.id] = userAny;
@@ -650,7 +650,7 @@ describe('Selectors.Posts', () => {
     });
 
     it('gets posts in channel not adding ephemeral post to replyCount', () => {
-        const userAny = TestHelper.fakeUserWithId();
+        const userAny = TestHelper.fakeUser();
         userAny.notify_props = {comments: 'any'};
         const profilesAny = {};
         profilesAny[userAny.id] = userAny;
@@ -2186,7 +2186,7 @@ describe('getPostsInCurrentChannel', () => {
 });
 
 describe('getCurrentUsersLatestPost', () => {
-    const user1 = TestHelper.fakeUserWithId();
+    const user1 = TestHelper.fakeUser();
     user1.notify_props = {};
     const profiles = {};
     profiles[user1.id] = user1;

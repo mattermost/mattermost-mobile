@@ -6,10 +6,9 @@ import {connect} from 'react-redux';
 
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
-import {patchChannel, getChannel} from '@mm-redux/actions/channels';
+import {patchChannel, getChannel, setChannelDisplayName} from '@actions/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {setChannelDisplayName} from 'app/actions/views/channel';
 import {getDimensions} from 'app/selectors/device';
 
 import EditChannel from './edit_channel';

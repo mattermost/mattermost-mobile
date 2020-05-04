@@ -9,6 +9,14 @@ import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 import {Role} from '@mm-redux/types/roles';
 
 import {bindClientFunc} from './helpers';
+
+export function receivedRoles(roles: Array<string>) {
+    return {
+        type: RoleTypes.RECEIVED_ROLES,
+        data: roles,
+    };
+}
+
 export function getRolesByNames(rolesNames: Array<string>) {
     return bindClientFunc({
         clientFunc: Client4.getRolesByNames,

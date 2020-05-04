@@ -9,7 +9,7 @@ import {getCurrentChannel, canManageChannelMembers} from '@mm-redux/selectors/en
 import {makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 import {getProfilesInChannel, searchProfiles} from '@mm-redux/actions/users';
 
-import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
+import {removeMultipleChannelMembers} from '@actions/channels';
 import {isLandscape} from 'app/selectors/device';
 import ChannelMembers from './channel_members';
 
@@ -40,7 +40,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getProfilesInChannel,
-            handleRemoveChannelMembers,
+            removeMultipleChannelMembers,
             searchProfiles,
         }, dispatch),
     };

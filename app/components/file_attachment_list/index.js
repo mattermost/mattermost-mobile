@@ -8,7 +8,7 @@ import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
 import {makeGetFilesForPost} from '@mm-redux/selectors/entities/files';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {loadFilesForPostIfNecessary} from 'app/actions/views/channel';
+import {loadFilesForPostIfNecessary} from '@mm-redux/actions/files';
 
 import FileAttachmentList from './file_attachment_list';
 
