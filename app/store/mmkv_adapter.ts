@@ -38,20 +38,20 @@ export default async function getStorage(identifier = 'default') {
         getItem: (
             key: string,
             callback?: (
-                error: Error | null | undefined,
-                result: object | null,
+                error: Error | null,
+                result: string | null,
             ) => void | null | undefined,
-        ): Promise<object | null> => {
+        ): Promise<string | Error> => {
             return new Promise((resolve, reject) => {
                 checkValidInput(key);
-                MMKV.getMapAsync(key).then((result: object) => {
+                MMKV.getStringAsync(key).then((result: string) => {
                     if (callback) {
                         callback(null, result);
                     }
-                    resolve(result);
+                    resolve(JSON.parse(result));
                 }).catch((error: Error) => {
                     if (callback) {
-                        callback(null, error);
+                        callback(error, null);
                     }
                     reject(error);
                 });
@@ -62,12 +62,12 @@ export default async function getStorage(identifier = 'default') {
             key: string,
             value: object,
             callback?: (
-                error: Error | null | undefined
+                error: Error | null
             ) => void | null | undefined,
-        ): Promise<null> => {
+        ): Promise<null | Error> => {
             return new Promise((resolve, reject) => {
                 checkValidInput(key, value);
-                MMKV.setMapAsync(key, value).then(() => {
+                MMKV.setStringAsync(key, JSON.stringify(value)).then(() => {
                     if (callback) {
                         callback(null);
                     }
@@ -84,7 +84,7 @@ export default async function getStorage(identifier = 'default') {
         removeItem: (
             key: string,
             callback?: (
-                error: Error | null | undefined
+                error: null
             ) => void | null | undefined,
         ): Promise<boolean> => {
             checkValidInput(key);
