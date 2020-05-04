@@ -700,7 +700,6 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
                 }
 
                 if (msg.data.channel_id === currentChannelId) {
-                    // emit the event so the client can change his own state
                     redirectToDefaultChannel = true;
                 }
                 if (isGuest(currentUser.roles)) {
