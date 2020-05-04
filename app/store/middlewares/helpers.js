@@ -136,7 +136,7 @@ export function cleanUpState(payload, keepCurrent = false) {
 
     nextState.views.root = {
         // eslint-disable-next-line no-underscore-dangle
-        hydrationComplete: true,
+        hydrationComplete: payload?.views?.root?.hydrationComplete || !nextState._persist,
     };
 
     // eslint-disable-next-line no-underscore-dangle
