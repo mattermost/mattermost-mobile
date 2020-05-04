@@ -134,9 +134,13 @@ export function cleanUpState(payload, keepCurrent = false) {
         nextEntities.posts.pendingPostIds = nextPendingPostIds;
     }
 
-    nextState.views.root = {
-        // eslint-disable-next-line no-underscore-dangle
-        hydrationComplete: payload?.views?.root?.hydrationComplete || !nextState._persist,
+    nextState.views = {
+        ...nextState.views,
+        root: {
+            ...nextState.views?.root,
+            // eslint-disable-next-line no-underscore-dangle
+            hydrationComplete: nextState.views?.root?.hydrationComplete || !nextState._persist,
+        },
     };
 
     // eslint-disable-next-line no-underscore-dangle
