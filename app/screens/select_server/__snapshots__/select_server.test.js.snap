@@ -90,7 +90,7 @@ exports[`SelectServer should show dark background when user has dark color schem
           autoCapitalize="none"
           autoCorrect={false}
           disableFullscreenUI={true}
-          editable={false}
+          editable={true}
           keyboardType="url"
           onBlur={[Function]}
           onChangeText={[Function]}
@@ -114,11 +114,7 @@ exports[`SelectServer should show dark background when user has dark color schem
                 "color": "#dbdbdb",
               },
               Object {
-                "borderWidth": 0,
-              },
-              Object {
-                "backgroundColor": "#2e2e2e",
-                "color": "#9b9b9b",
+                "borderWidth": 1,
               },
               Object {},
             ]
@@ -277,7 +273,7 @@ exports[`SelectServer should show light background when user has light color sch
           autoCapitalize="none"
           autoCorrect={false}
           disableFullscreenUI={true}
-          editable={false}
+          editable={true}
           keyboardType="url"
           onBlur={[Function]}
           onChangeText={[Function]}
@@ -301,11 +297,7 @@ exports[`SelectServer should show light background when user has light color sch
                 "color": "#171717",
               },
               Object {
-                "borderWidth": 0,
-              },
-              Object {
-                "backgroundColor": "#dbdbdb",
-                "color": "#5c5c5c",
+                "borderWidth": 1,
               },
               Object {},
             ]
