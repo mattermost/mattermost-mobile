@@ -71,11 +71,11 @@ export default class ChannelNavBar extends PureComponent {
     };
 
     drawerButtonVisible = () => {
-        if (DeviceTypes.IS_TABLET && Platform.OS === 'ios') {
-            return false;
+        if (Platform.OS === 'android') {
+            return true;
         }
 
-        return (!this.state.permanentSidebar || !this.state.isSplitView);
+        return (!DeviceTypes.IS_TABLET || this.state.isSplitView || !this.state.permanentSidebar);
     };
 
     render() {

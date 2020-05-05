@@ -2,15 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Platform} from 'react-native';
 import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import {DeviceTypes} from 'app/constants';
+import {DeviceTypes} from '@constants';
 
 import ChannelNavBar from './channel_nav_bar';
 
 jest.mock('react-intl');
+jest.mock('app/mattermost_managed', () => ({
+    isRunningInSplitView: jest.fn().mockResolvedValue(false),
+}));
 
 describe('ChannelNavBar', () => {
     const baseProps = {
@@ -48,5 +52,75 @@ describe('ChannelNavBar', () => {
         await wrapper.instance().handlePermanentSidebar();
 
         expect(wrapper.state('permanentSidebar')).toBeDefined();
+    });
+
+    test('drawerButtonVisible appears for android tablets', () => {
+        const wrapper = shallow(
+            <ChannelNavBar {...baseProps}/>,
+        );
+
+        DeviceTypes.IS_TABLET = true;
+        Platform.OS = 'android';
+
+        expect(wrapper.instance().drawerButtonVisible()).toBe(true);
+    });
+
+    test('drawerButtonVisible appears for android phones', () => {
+        const wrapper = shallow(
+            <ChannelNavBar {...baseProps}/>,
+        );
+
+        DeviceTypes.IS_TABLET = false;
+        Platform.OS = 'android';
+
+        expect(wrapper.instance().drawerButtonVisible()).toBe(true);
+    });
+
+    test('drawerButtonVisible appears for iOS phones', () => {
+        const wrapper = shallow(
+            <ChannelNavBar {...baseProps}/>,
+        );
+
+        DeviceTypes.IS_TABLET = false;
+        Platform.OS = 'ios';
+
+        expect(wrapper.instance().drawerButtonVisible()).toBe(true);
+    });
+
+    test('drawerButtonVisible appears for iOS tablets', () => {
+        const wrapper = shallow(
+            <ChannelNavBar {...baseProps}/>,
+        );
+
+        DeviceTypes.IS_TABLET = true;
+        Platform.OS = 'ios';
+
+        expect(wrapper.instance().drawerButtonVisible()).toBe(true);
+    });
+
+    test('drawerButtonVisible does not appear for iOS tablets with permanentSidebar enabled', () => {
+        const wrapper = shallow(
+            <ChannelNavBar {...baseProps}/>,
+        );
+
+        wrapper.setState({permanentSidebar: true});
+
+        DeviceTypes.IS_TABLET = true;
+        Platform.OS = 'ios';
+
+        expect(wrapper.instance().drawerButtonVisible()).toBe(false);
+    });
+
+    test('drawerButtonVisible appears for iOS tablets with splitview enabled', () => {
+        const wrapper = shallow(
+            <ChannelNavBar {...baseProps}/>,
+        );
+
+        wrapper.setState({isSplitView: true});
+
+        DeviceTypes.IS_TABLET = true;
+        Platform.OS = 'ios';
+
+        expect(wrapper.instance().drawerButtonVisible()).toBe(true);
     });
 });
