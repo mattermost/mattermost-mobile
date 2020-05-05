@@ -1,0 +1,14 @@
+diff --git a/node_modules/redux-persist/types/types.d.ts b/node_modules/redux-persist/types/types.d.ts
+index b3733bc..882f4de 100644
+--- a/node_modules/redux-persist/types/types.d.ts
++++ b/node_modules/redux-persist/types/types.d.ts
+@@ -42,7 +42,8 @@ declare module "redux-persist/es/types" {
+      */
+     getStoredState?: (config: PersistConfig<S, RS, HSS, ESS>) => Promise<PersistedState>;
+     debug?: boolean;
+-    serialize?: boolean;
++    serialize?: boolean | Function;
++    deserialize?: boolean | Function;
+     timeout?: number;
+     writeFailHandler?: (err: Error) => void;
+   }

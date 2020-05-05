@@ -3,22 +3,31 @@
 
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-
+import configureMockStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
 import merge from 'deepmerge';
 
+import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
+import EphemeralStore from '@store/ephemeral_store';
+import intitialState from '@store/initial_state';
+import Store from '@store/store';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 import * as NavigationActions from 'app/actions/navigation';
 import {getColorStyles} from 'app/utils/appearance';
 
-jest.unmock('app/actions/navigation');
-jest.mock('app/store/ephemeral_store', () => ({
+jest.unmock('@actions/navigation');
+jest.mock('@store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
     clearNavigationComponents: jest.fn(),
 }));
 
-describe('app/actions/navigation', () => {
+const mockStore = configureMockStore([thunk]);
+const store = mockStore(intitialState);
+Store.redux = store;
+
+describe('@actions/navigation', () => {
     const topComponentId = 'top-component-id';
     const name = 'name';
     const title = 'title';

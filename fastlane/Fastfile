@@ -436,6 +436,12 @@ platform :ios do
         new_string: app_group_id
     )
 
+    find_replace_string(
+        path_to_file: './node_modules/react-native-mmkv-storage/ios/MMKVStorage.m',
+        old_string: 'group.com.mattermost.rnbeta',
+        new_string: app_group_id
+    )
+
     update_app_group_identifiers(
         entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
         app_group_identifiers: [app_group_id]

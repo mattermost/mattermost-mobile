@@ -3,19 +3,20 @@
 
 /* eslint-disable max-nested-callbacks */
 
-import assert from 'assert';
+import DeviceInfo from 'react-native-device-info';
 
-import {ViewTypes} from 'app/constants';
+import assert from 'assert';
+import {REHYDRATE} from 'redux-persist';
+
+import {ViewTypes} from '@constants';
 import {
     cleanUpPostsInChannel,
     cleanUpState,
     getAllFromPostsInChannel,
-    middlewares,
-} from 'app/store/middleware';
+} from './helpers';
+import messageRetention from './message_retention';
 
 describe('messageRetention', () => {
-    const messageRetention = middlewares()[0];
-
     describe('should chain the same incoming action type', () => {
         const actions = [
             {
@@ -54,6 +55,122 @@ describe('messageRetention', () => {
 
                 const nextAction = messageRetention(store)(next)(action);
                 assert.equal(action.type, nextAction.type);
+            });
+        });
+    });
+
+    describe('should add build, version, and previousVersion to payload.app on persist/REHYDRATE', () => {
+        const next = (a) => a;
+        const store = {};
+        const build = 'build';
+        const version = 'version';
+        const previousBuild = 'previous-build';
+        const previousVersion = 'previous-version';
+        DeviceInfo.getBuildNumber = jest.fn().mockReturnValue('build');
+        DeviceInfo.getVersion = jest.fn().mockReturnValue('version');
+        const rehydrateAction = {
+            type: REHYDRATE,
+            payload: {
+                app: {
+                    build: previousBuild,
+                    version: previousVersion,
+                },
+            },
+        };
+        const expectedPayloadApp = {
+            build,
+            version,
+            previousVersion,
+        };
+        const entities = {
+            channels: {},
+            posts: {},
+        };
+        const views = {
+            team: {
+                lastChannelForTeam: {},
+            },
+        };
+
+        test('when entities is missing', () => {
+            const action = {...rehydrateAction};
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual(expectedPayloadApp);
+        });
+
+        test('when views is missing', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    entities,
+                },
+            };
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual(expectedPayloadApp);
+        });
+
+        test('when previousVersion !== version', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    entities,
+                    views,
+                },
+            };
+            expect(action.payload.app.version).not.toEqual(DeviceInfo.getVersion());
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual(expectedPayloadApp);
+        });
+
+        test('when previousBuild !== build', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    app: {
+                        ...rehydrateAction.payload.app,
+                        version: DeviceInfo.getVersion(),
+                    },
+                    entities,
+                    views,
+                },
+            };
+            expect(action.payload.app.version).toEqual(DeviceInfo.getVersion());
+            expect(action.payload.app.build).not.toEqual(DeviceInfo.getBuildNumber());
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual({
+                ...expectedPayloadApp,
+                previousVersion: DeviceInfo.getVersion(),
+            });
+        });
+
+        test('when cleanUpState', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    app: {
+                        ...rehydrateAction.payload.app,
+                        version: DeviceInfo.getVersion(),
+                        build: DeviceInfo.getBuildNumber(),
+                    },
+                    entities,
+                    views,
+                },
+            };
+            expect(action.payload.app.version).toEqual(DeviceInfo.getVersion());
+            expect(action.payload.app.build).toEqual(DeviceInfo.getBuildNumber());
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual({
+                ...expectedPayloadApp,
+                previousVersion: DeviceInfo.getVersion(),
             });
         });
     });

@@ -21,7 +21,6 @@ import {IncomingWebhook, OutgoingWebhook, Command, OAuthApp, DialogSubmission} f
 import {CustomEmoji} from '@mm-redux/types/emojis';
 import {Config} from '@mm-redux/types/config';
 import {Bot, BotPatch} from '@mm-redux/types/bots';
-import {Dictionary} from '@mm-redux/types/utilities';
 import {SyncablePatch} from '@mm-redux/types/groups';
 
 const FormData = require('form-data');
@@ -1393,7 +1392,7 @@ export default class Client4 {
     };
 
     updateChannelNotifyProps = async (props: any) => {
-        this.trackEvent('api', 'api_users_update_channel_notifcations', {channel_id: props.channel_id});
+        this.trackEvent('api', 'api_users_update_channel_notifications', {channel_id: props.channel_id});
 
         return this.doFetch(
             `${this.getChannelMemberRoute(props.channel_id, props.user_id)}/notify_props`,

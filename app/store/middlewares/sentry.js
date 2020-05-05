@@ -6,19 +6,15 @@ import {BATCH} from 'redux-batched-actions';
 export const BREADCRUMB_REDUX_ACTION = 'redux-action';
 
 let Sentry;
-export function createSentryMiddleware() {
+export default function createSentryMiddleware() {
     if (!Sentry) {
         Sentry = require('@sentry/react-native');
     }
 
-    return (store) => { // eslint-disable-line no-unused-vars
-        return (next) => {
-            return (action) => {
-                Sentry.addBreadcrumb(makeBreadcrumbFromAction(action));
+    return () => (next) => (action) => {
+        Sentry.addBreadcrumb(makeBreadcrumbFromAction(action));
 
-                return next(action);
-            };
-        };
+        return next(action);
     };
 }
 

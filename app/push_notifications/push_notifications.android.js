@@ -4,7 +4,7 @@
 import {AppState, NativeModules} from 'react-native';
 import {NotificationsAndroid, PendingNotifications} from 'react-native-notifications';
 
-import ephemeralStore from 'app/store/ephemeral_store';
+import EphemeralStore from '@store/ephemeral_store';
 
 const {NotificationPreferences} = NativeModules;
 
@@ -65,7 +65,7 @@ class PushNotification {
                     if (notification) {
                         const data = notification.getData();
                         if (data) {
-                            ephemeralStore.appStartedFromPushNotification = true;
+                            EphemeralStore.appStartedFromPushNotification = true;
                             this.handleNotification(data, true);
                         }
                     }

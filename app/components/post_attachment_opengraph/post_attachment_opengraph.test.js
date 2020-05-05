@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import {Image} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import Preferences from '@mm-redux/constants/preferences';
@@ -81,7 +81,7 @@ describe('PostAttachmentOpenGraph', () => {
         // should return null
         expect(wrapper.instance().renderImage()).toMatchSnapshot();
         expect(wrapper.state('hasImage')).toEqual(false);
-        expect(wrapper.find(Image).exists()).toEqual(false);
+        expect(wrapper.find(FastImage).exists()).toEqual(false);
         expect(wrapper.find(TouchableWithFeedback).exists()).toEqual(false);
 
         const images = [{height: 440, width: 1200, url: 'https://mattermost.com/logo.png'}];
@@ -90,7 +90,7 @@ describe('PostAttachmentOpenGraph', () => {
 
         expect(wrapper.instance().renderImage()).toMatchSnapshot();
         expect(wrapper.state('hasImage')).toEqual(true);
-        expect(wrapper.find(Image).exists()).toEqual(true);
+        expect(wrapper.find(FastImage).exists()).toEqual(true);
         expect(wrapper.find(TouchableWithFeedback).exists()).toEqual(true);
     });
 

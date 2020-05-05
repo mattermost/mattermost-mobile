@@ -7,34 +7,38 @@ import {Provider} from 'react-redux';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {loadMe} from 'app/actions/views/user';
-
-import {resetToChannel, resetToSelectServer} from 'app/actions/navigation';
-import {setDeepLinkURL} from 'app/actions/views/root';
-import {NavigationTypes} from 'app/constants';
-import {getAppCredentials} from 'app/init/credentials';
-import emmProvider from 'app/init/emm_provider';
-import 'app/init/device';
-import 'app/init/fetch';
-import globalEventHandler from 'app/init/global_event_handler';
-import {registerScreens} from 'app/screens';
-import store, {persistor} from 'app/store';
-import {waitForHydration} from 'app/store/utils';
-import EphemeralStore from 'app/store/ephemeral_store';
+import {resetToChannel, resetToSelectServer} from '@actions/navigation';
+import {setDeepLinkURL} from '@actions/views/root';
+import {loadMe, logout} from '@actions/views/user';
 import telemetry from 'app/telemetry';
-import {validatePreviousVersion} from 'app/utils/general';
-import pushNotificationsUtils from 'app/utils/push_notifications';
+import {NavigationTypes} from '@constants';
+import {getAppCredentials} from '@init/credentials';
+import emmProvider from '@init/emm_provider';
+import '@init/device';
+import '@init/fetch';
+import globalEventHandler from '@init/global_event_handler';
+import {registerScreens} from '@screens';
+import configureStore from '@store';
+import EphemeralStore from '@store/ephemeral_store';
+import getStorage from '@store/mmkv_adapter';
+import Store from '@store/store';
+import {waitForHydration} from '@store/utils';
+import {validatePreviousVersion} from '@utils/general';
+import pushNotificationsUtils from '@utils/push_notifications';
+import {captureJSException} from '@utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
+    const MMKVStorage = await getStorage();
+
+    const {store} = configureStore(MMKVStorage);
     if (EphemeralStore.appStarted) {
         launchApp(credentials);
         return;
     }
 
-    pushNotificationsUtils.configure(store);
+    pushNotificationsUtils.configure();
     globalEventHandler.configure({
-        store,
         launchApp,
     });
 
@@ -65,11 +69,18 @@ const launchApp = (credentials) => {
         },
     });
 
+    const store = Store.redux;
     if (credentials) {
         waitForHydration(store, async () => {
-            if (validatePreviousVersion(store, EphemeralStore.prevAppVersion)) {
+            const {previousVersion} = store.getState().app;
+            const valid = validatePreviousVersion(previousVersion);
+            if (valid) {
                 store.dispatch(loadMe());
                 resetToChannel({skipMetrics: true});
+            } else {
+                const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
+                captureJSException(error, false, store);
+                store.dispatch(logout());
             }
         });
     } else {
@@ -87,7 +98,7 @@ const launchApp = (credentials) => {
 };
 
 const launchAppAndAuthenticateIfNeeded = async (credentials) => {
-    await emmProvider.handleManagedConfig(store);
+    await emmProvider.handleManagedConfig();
     await launchApp(credentials);
 
     if (emmProvider.enabled) {
@@ -96,7 +107,7 @@ const launchAppAndAuthenticateIfNeeded = async (credentials) => {
         }
 
         if (emmProvider.inAppPinCode) {
-            await emmProvider.handleAuthentication(store);
+            await emmProvider.handleAuthentication();
         }
     }
 };

@@ -5,10 +5,9 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {loadFromPushNotification} from 'app/actions/views/root';
-import {getDimensions} from 'app/selectors/device';
 
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
 import {getUser} from '@mm-redux/selectors/entities/users';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 
@@ -16,7 +15,6 @@ import Notification from './notification';
 
 function mapStateToProps(state, ownProps) {
     const {data} = ownProps.notification;
-    const {deviceWidth} = getDimensions(state);
 
     let user;
     if (data.sender_id) {
@@ -31,10 +29,8 @@ function mapStateToProps(state, ownProps) {
     return {
         config,
         channel,
-        deviceWidth,
         user,
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        theme: getTheme(state),
     };
 }
 
