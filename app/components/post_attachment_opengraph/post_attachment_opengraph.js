@@ -31,10 +31,30 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static getDerivedStateFromProps(props, state) {
+        if (props.link !== state.prevLink) {
+            return {
+                hasImage: false,
+                prevLink: props.link,
+            };
+        }
+        if (props.openGraphData !== state.prevOpenGraphData) {
+            return {
+                ...(getBestImageUrl(props.openGraphData, props.imagesMetadata, props.deviceHeight, props.deviceWidth, props.isReplyPost)),
+                prevOpenGraphData: props.openGraphData,
+            };
+        }
+        return null;
+    }
+
     constructor(props) {
         super(props);
 
-        this.state = this.getBestImageUrl(props.openGraphData);
+        this.state = {
+            ...(getBestImageUrl(props.openGraphData, props.imagesMetadata, props.deviceHeight, props.deviceWidth, props.isReplyPost)),
+            prevOpenGraphData: props.openGraphData,
+            prevLink: props.link,
+        };
     }
 
     componentDidMount() {
@@ -47,16 +67,13 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.link !== this.props.link) {
-            this.setState({hasImage: false});
-            this.fetchData(nextProps.link, nextProps.openGraphData);
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.link !== this.props.link) {
+            this.fetchData(this.props.link, this.props.openGraphData);
         }
 
-        if (this.props.openGraphData !== nextProps.openGraphData) {
-            this.setState(this.getBestImageUrl(nextProps.openGraphData), () => {
-                this.getImageSize(this.state.openGraphImageUrl);
-            });
+        if (prevState.openGraphImageUrl !== this.state.openGraphImageUrl) {
+            this.getImageSize(this.state.openGraphImageUrl);
         }
     }
 
@@ -66,57 +83,12 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     setItemRef = (ref) => {
         this.itemRef = ref;
-    }
+    };
 
     fetchData = (url, openGraphData) => {
         if (!openGraphData) {
             this.props.actions.getOpenGraphMetadata(url);
         }
-    };
-
-    getBestImageUrl = (data) => {
-        if (!data || !data.images) {
-            return {
-                hasImage: false,
-            };
-        }
-
-        const {imagesMetadata} = this.props;
-        const bestDimensions = {
-            width: this.getViewPostWidth(),
-            height: MAX_IMAGE_HEIGHT,
-        };
-
-        const bestImage = getNearestPoint(bestDimensions, data.images, 'width', 'height');
-        const imageUrl = bestImage.secure_url || bestImage.url;
-
-        let ogImage;
-        if (imagesMetadata && imagesMetadata[imageUrl]) {
-            ogImage = imagesMetadata[imageUrl];
-        }
-
-        if (!ogImage) {
-            ogImage = data.images.find((i) => i.url === imageUrl || i.secure_url === imageUrl);
-        }
-
-        // Fallback when the ogImage does not have dimensions but there is a metaImage defined
-        const metaImages = imagesMetadata ? Object.values(imagesMetadata) : null;
-        if ((!ogImage?.width || !ogImage?.height) && metaImages?.length) {
-            ogImage = metaImages[0];
-        }
-
-        let dimensions = bestDimensions;
-        if (ogImage?.width && ogImage?.height) {
-            dimensions = calculateDimensions(ogImage.height, ogImage.width, this.getViewPostWidth());
-        }
-
-        FastImage.preload([{uri: imageUrl}]);
-
-        return {
-            hasImage: true,
-            ...dimensions,
-            openGraphImageUrl: imageUrl,
-        };
     };
 
     getFilename = (link) => {
@@ -162,7 +134,8 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     setImageSize = (imageUrl, originalWidth, originalHeight) => {
         if (this.mounted) {
-            const dimensions = calculateDimensions(originalHeight, originalWidth, this.getViewPostWidth());
+            const dimensions = calculateDimensions(originalHeight, originalWidth,
+                getViewPostWidth(this.props.deviceHeight, this.props.deviceWidth, this.props.isReplyPost));
 
             this.setState({
                 imageUrl,
@@ -171,15 +144,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                 ...dimensions,
             });
         }
-    };
-
-    getViewPostWidth = () => {
-        const {deviceHeight, deviceWidth, isReplyPost} = this.props;
-        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
-        const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
-        const tabletOffset = DeviceTypes.IS_TABLET ? TABLET_WIDTH : 0;
-
-        return viewPortWidth - tabletOffset;
     };
 
     goToLink = () => {
@@ -372,3 +336,55 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const getBestImageUrl = (data, imagesMetadata, deviceHeight, deviceWidth, isReplyPost) => {
+    if (!data || !data.images) {
+        return {
+            hasImage: false,
+        };
+    }
+
+    const bestDimensions = {
+        width: getViewPostWidth(deviceHeight, deviceWidth, isReplyPost),
+        height: MAX_IMAGE_HEIGHT,
+    };
+
+    const bestImage = getNearestPoint(bestDimensions, data.images, 'width', 'height');
+    const imageUrl = bestImage.secure_url || bestImage.url;
+
+    let ogImage;
+    if (imagesMetadata && imagesMetadata[imageUrl]) {
+        ogImage = imagesMetadata[imageUrl];
+    }
+
+    if (!ogImage) {
+        ogImage = data.images.find((i) => i.url === imageUrl || i.secure_url === imageUrl);
+    }
+
+    // Fallback when the ogImage does not have dimensions but there is a metaImage defined
+    const metaImages = imagesMetadata ? Object.values(imagesMetadata) : null;
+    if ((!ogImage?.width || !ogImage?.height) && metaImages?.length) {
+        ogImage = metaImages[0];
+    }
+
+    let dimensions = bestDimensions;
+    if (ogImage?.width && ogImage?.height) {
+        dimensions = calculateDimensions(ogImage.height, ogImage.width, getViewPostWidth(deviceHeight, deviceWidth, isReplyPost));
+    }
+
+    FastImage.preload([{uri: imageUrl}]);
+
+    return {
+        hasImage: true,
+        ...dimensions,
+        openGraphImageUrl: imageUrl,
+    };
+};
+
+const getViewPostWidth = (deviceHeight, deviceWidth, isReplyPost) => {
+    const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
+    const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
+    const tabletOffset = DeviceTypes.IS_TABLET ? TABLET_WIDTH : 0;
+
+    return viewPortWidth - tabletOffset;
+};
