@@ -13,8 +13,6 @@ import EphemeralStore from '@store/ephemeral_store';
 import intitialState from '@store/initial_state';
 import Store from '@store/store';
 
-import EphemeralStore from 'app/store/ephemeral_store';
-import * as NavigationActions from 'app/actions/navigation';
 import {getColorStyles} from 'app/utils/appearance';
 
 jest.unmock('@actions/navigation');
