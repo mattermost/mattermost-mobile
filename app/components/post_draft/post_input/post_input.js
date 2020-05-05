@@ -16,7 +16,6 @@ import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} 
 
 const {RNTextInputReset} = NativeModules;
 const INPUT_LINE_HEIGHT = 20;
-const EXTRA_INPUT_PADDING = 3;
 const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 
 export default class PostInput extends PureComponent {

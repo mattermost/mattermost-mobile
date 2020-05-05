@@ -10,7 +10,7 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
     }
   }
 >
-  <Image
+  <FastImage
     key="footer_icon"
     source={
       Object {
@@ -78,7 +78,7 @@ exports[`AttachmentFooter it matches snapshot when the footer is longer than the
     }
   }
 >
-  <Image
+  <FastImage
     key="footer_icon"
     source={
       Object {

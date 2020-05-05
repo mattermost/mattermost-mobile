@@ -10,7 +10,7 @@ import {
     LOGGER_JAVASCRIPT_WARNING,
 } from '@utils/sentry';
 
-import {cleanUpState, resetStateForNewVersion} from './helpers';
+import {cleanUpState} from './helpers';
 
 export default function messageRetention(store) {
     return (next) => (action) => {
@@ -30,7 +30,6 @@ export default function messageRetention(store) {
             const build = DeviceInfo.getBuildNumber();
             const version = DeviceInfo.getVersion();
             const previousVersion = app?.version;
-            const previousBuild = app?.build;
 
             action.payload = {
                 ...action.payload,
@@ -42,12 +41,6 @@ export default function messageRetention(store) {
             };
 
             if (!entities || !views) {
-                return next(action);
-            }
-
-            // When a new version of the app has been detected
-            if (previousVersion !== version || previousBuild !== build) {
-                action.payload = resetStateForNewVersion(action.payload);
                 return next(action);
             }
 

@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     BackHandler,
-    InteractionManager,
     ScrollView,
     Text,
     View,

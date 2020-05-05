@@ -188,7 +188,7 @@ export default class ChannelBase extends PureComponent {
 
             showModal(screen, title, null, options);
         });
-    });
+    }, 1000);
 
     handleAutoComplete = (value) => {
         if (this.postDraft?.current) {

@@ -5,7 +5,6 @@ import assert from 'assert';
 import nock from 'nock';
 
 import * as BotActions from '@mm-redux/actions/bots';
-import * as UserActions from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
 
 import TestHelper from 'test/test_helper';

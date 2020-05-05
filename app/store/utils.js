@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import merge from 'deepmerge';
+import DeviceInfo from 'react-native-device-info';
 
 function transformFromSet(incoming) {
     const state = {...incoming};
@@ -47,7 +48,6 @@ export function waitForHydration(store, callback) {
     let executed = false; // this is to prevent a race condition when subcription runs before unsubscribed
     let state = store.getState();
     let root = state.views?.root;
-    let persist = state._persist; //eslint-disable-line no-underscore-dangle
 
     if (root?.hydrationComplete && !executed) {
         if (callback && typeof callback === 'function') {
@@ -58,7 +58,6 @@ export function waitForHydration(store, callback) {
         const subscription = () => {
             state = store.getState();
             root = state.views?.root;
-            persist = state._persist; //eslint-disable-line no-underscore-dangle
             if (root?.hydrationComplete && !executed) {
                 unsubscribeFromStore();
                 if (callback && typeof callback === 'function') {
@@ -80,7 +79,10 @@ export function getStateForReset(initialState, currentState) {
     const preferences = currentState.entities.preferences;
 
     const resetState = merge(initialState, {
-        app,
+        app: {
+            ...app,
+            previousVersion: DeviceInfo.getVersion(),
+        },
         entities: {
             general: currentState.entities.general,
             users: {

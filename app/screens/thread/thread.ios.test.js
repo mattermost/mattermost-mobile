@@ -8,7 +8,6 @@ import Preferences from '@mm-redux/constants/preferences';
 import {General, RequestStatus} from '@mm-redux/constants';
 
 import PostList from 'app/components/post_list';
-import * as NavigationActions from 'app/actions/navigation';
 
 import ThreadIOS from './thread.ios';
 

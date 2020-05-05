@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
 import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
-import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from '@mm-redux/actions/general';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';

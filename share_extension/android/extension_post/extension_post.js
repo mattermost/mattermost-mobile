@@ -9,7 +9,6 @@ import {intlShape} from 'react-intl';
 
 import {
     Alert,
-    Image,
     NativeModules,
     PermissionsAndroid,
     ScrollView,
@@ -17,6 +16,7 @@ import {
     TextInput,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
@@ -505,7 +505,7 @@ export default class ExtensionPost extends PureComponent {
                         key={`item-${index}`}
                         style={styles.imageContainer}
                     >
-                        <Image
+                        <FastImage
                             source={{uri: file.fullPath, isStatic: true}}
                             resizeMode='cover'
                             style={styles.image}

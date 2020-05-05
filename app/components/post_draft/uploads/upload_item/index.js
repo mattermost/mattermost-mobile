@@ -3,8 +3,6 @@
 
 import {connect} from 'react-redux';
 
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
 import {handleRemoveFile, retryFileUpload, uploadComplete, uploadFailed} from 'app/actions/views/file_upload';
 
 import UploadItem from './upload_item';

@@ -10,7 +10,7 @@ import {General, RequestStatus} from '@mm-redux/constants';
 
 import Loading from 'app/components/loading';
 import DeletedPost from 'app/components/deleted_post';
-import {resetToChannel, popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
+import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {

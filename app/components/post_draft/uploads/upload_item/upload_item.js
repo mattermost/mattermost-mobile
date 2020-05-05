@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
@@ -15,7 +15,6 @@ import FileAttachmentIcon from '@components/file_attachment_list/file_attachment
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import ImageCacheManager from '@utils/image_cache_manager';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
@@ -131,10 +130,8 @@ export default class UploadItem extends PureComponent {
         const fileData = buildFileUploadData(file);
 
         const headers = {
-            Authorization: `Bearer ${Client4.getToken()}`,
-            'X-Requested-With': 'XMLHttpRequest',
+            ...Client4.getOptions({method: 'post'}).headers,
             'Content-Type': 'multipart/form-data',
-            'X-CSRF-Token': Client4.csrf,
         };
 
         const fileInfo = {
@@ -163,7 +160,6 @@ export default class UploadItem extends PureComponent {
     };
 
     renderProgress = (fill) => {
-        const styles = getStyleSheet(this.props.theme);
         const realFill = Number(fill.toFixed(0));
 
         return (
@@ -183,7 +179,6 @@ export default class UploadItem extends PureComponent {
             theme,
         } = this.props;
         const {progress} = this.state;
-        const styles = getStyleSheet(theme);
         let filePreviewComponent;
 
         if (this.isImageType()) {
@@ -192,6 +187,7 @@ export default class UploadItem extends PureComponent {
                     <FileAttachmentImage
                         file={file}
                         theme={theme}
+                        resizeMode='center'
                     />
                 </View>
             );
@@ -248,7 +244,7 @@ export default class UploadItem extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+const styles = StyleSheet.create({
     preview: {
         paddingTop: 5,
         marginLeft: 12,
@@ -273,10 +269,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         fontWeight: 'bold',
     },
     filePreview: {
-        borderColor: changeOpacity(theme.centerChannelColor, 0.15),
-        borderRadius: 4,
-        borderWidth: 1,
         width: 56,
         height: 56,
     },
-}));
+});
