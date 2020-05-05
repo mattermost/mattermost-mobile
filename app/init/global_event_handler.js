@@ -45,6 +45,8 @@ const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
 class GlobalEventHandler {
     constructor() {
+        this.pushNotificationListener = false;
+
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.onLogout);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.onRestartApp);
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
@@ -326,10 +328,14 @@ class GlobalEventHandler {
     };
 
     turnOnInAppNotificationHandling = () => {
-        EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        if (!this.pushNotificationListener) {
+            this.pushNotificationListener = true;
+            EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        }
     }
 
     turnOffInAppNotificationHandling = () => {
+        this.pushNotificationListener = false;
         EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
     }
 
