@@ -190,12 +190,6 @@ export default class ChannelBase extends PureComponent {
         });
     }, 1000);
 
-    handleAutoComplete = (value) => {
-        if (this.postDraft?.current) {
-            this.postDraft.current.handleTextChange(value, true);
-        }
-    };
-
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
     };

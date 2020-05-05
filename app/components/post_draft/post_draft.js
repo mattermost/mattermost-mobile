@@ -561,6 +561,7 @@ export default class PostDraft extends PureComponent {
                             isLandscape={isLandscape}
                             maxMessageLength={maxMessageLength}
                             onPasteFiles={this.handlePasteFiles}
+                            onSend={this.handleSendMessage}
                             readonly={readonly}
                             ref={this.input}
                             rootId={rootId}

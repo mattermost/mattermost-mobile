@@ -23,6 +23,12 @@ const THREAD_POST_TEXTBOX_VALUE_CHANGE = 'onThreadTextBoxValueChange';
 const SCROLLVIEW_NATIVE_ID = 'threadPostList';
 
 export default class ThreadIOS extends ThreadBase {
+    handleAutoComplete = (value) => {
+        if (this.postDraft?.current) {
+            this.postDraft.current.handleInputQuickAction(value);
+        }
+    };
+
     render() {
         const {
             channelId,

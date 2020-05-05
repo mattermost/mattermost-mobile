@@ -23,6 +23,12 @@ import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
 export default class ChannelIOS extends ChannelBase {
+    handleAutoComplete = (value) => {
+        if (this.postDraft?.current) {
+            this.postDraft.current.handleInputQuickAction(value);
+        }
+    };
+
     mainSidebarRef = (ref) => {
         if (ref) {
             this.mainSidebar = ref;

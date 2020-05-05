@@ -86,12 +86,6 @@ export default class ThreadBase extends PureComponent {
         popTopScreen(componentId);
     };
 
-    handleAutoComplete = (value) => {
-        if (this.postDraft?.current) {
-            this.postDraft.current.handleTextChange(value, true);
-        }
-    };
-
     hasRootPost = () => {
         return this.props.postIds.includes(this.props.rootId);
     };
