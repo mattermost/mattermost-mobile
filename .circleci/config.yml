@@ -232,21 +232,16 @@ jobs:
       cve_data_directory:
         type: string
         default: "~/.owasp/dependency-check-data"
-    working_directory: ~/mattermost/mattermost-mobile
+    working_directory: ~/mattermost-mobile
     executor: owasp/default
     environment:
       version_url: "https://jeremylong.github.io/DependencyCheck/current.txt"
       executable_url: "https://dl.bintray.com/jeremy-long/owasp/dependency-check-VERSION-release.zip"
     steps:
       - checkout
-      - run:
-          name: Link dependency cache
-          command: sudo ln -s ~/mattermost/mattermost-mobile /root/mattermost-mobile; sudo chmod 777 /root
-      - npm-dependencies
-      - run:
-          name: Adjust permissions
-          command: |
-            sudo chown -R `id -nu`:`id -ng` node_modules
+      - restore_cache:
+          name: Restore npm cache
+          key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Checkout config
           command: cd .. && git clone https://github.com/mattermost/security-automation-config
