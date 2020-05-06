@@ -87,10 +87,12 @@ describe('ChannelNavBar', () => {
         expect(wrapper.instance().drawerButtonVisible()).toBe(true);
     });
 
-    test('drawerButtonVisible appears for iOS tablets', () => {
+    test('drawerButtonVisible appears for iOS tablets with PermanentSidebar at default false, and not in splitview', () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );
+
+        wrapper.setState({permanentSidebar: false, isSplitView: false});
 
         DeviceTypes.IS_TABLET = true;
         Platform.OS = 'ios';
