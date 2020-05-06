@@ -108,10 +108,10 @@ Navigation.events().registerAppLaunchedListener(() => {
         switch (componentId) {
         case 'MainSidebar':
             EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
-            EventEmitter.emit(Navigation.BLUR_POST_TEXTBOX);
+            EventEmitter.emit(Navigation.BLUR_POST_DRAFT);
             break;
         case 'SettingsSidebar':
-            EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+            EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
             break;
         }
     });

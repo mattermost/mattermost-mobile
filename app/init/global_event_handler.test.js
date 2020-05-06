@@ -9,6 +9,7 @@ import semver from 'semver/preload';
 import PushNotification from 'app/push_notifications';
 import mattermostBucket from 'app/mattermost_bucket';
 import * as I18n from '@i18n';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import Store from '@store/store';
 import intitialState from '@store/initial_state';
 
@@ -22,7 +23,7 @@ jest.mock('app/init/credentials', () => ({
     removeAppCredentials: jest.fn(),
 }));
 
-jest.mock('app/utils/error_handling', () => ({
+jest.mock('@utils/error_handling', () => ({
     default: {
         initializeErrorHandling: jest.fn(),
     },
@@ -45,7 +46,7 @@ jest.mock('@mm-redux/actions/general', () => ({
     setServerVersion: jest.fn().mockReturnValue('setServerVersion'),
 }));
 
-jest.mock('app/actions/views/root', () => ({
+jest.mock('@actions/views/root', () => ({
     startDataCleanup: jest.fn(),
     loadConfigAndLicense: jest.fn().mockReturnValue('loadConfigAndLicense'),
 }));
@@ -121,6 +122,34 @@ describe('GlobalEventHandler', () => {
         expect(Store.redux).not.toBeNull();
         expect(onAppStateChange).toHaveBeenCalledWith('active');
         expect(setUserTimezone).toHaveBeenCalledTimes(1);
+    });
+
+    it('should register NOTIFICATION_IN_APP once', () => {
+        const on = jest.spyOn(EventEmitter, 'on');
+
+        // Reset the listener
+        GlobalEventHandler.pushNotificationListener = false;
+
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+
+        // call it a second time
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+
+        expect(on).toBeCalledTimes(1);
+        expect(on).toBeCalledWith('NOTIFICATION_IN_APP', GlobalEventHandler.handleInAppNotification);
+    });
+
+    it('should register NOTIFICATION_IN_APP once after unregister', () => {
+        const on = jest.spyOn(EventEmitter, 'on');
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+        GlobalEventHandler.turnOffInAppNotificationHandling();
+
+        // call it a second time
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+
+        expect(on).toBeCalledTimes(1);
+        expect(on).toBeCalledWith('NOTIFICATION_IN_APP', GlobalEventHandler.handleInAppNotification);
     });
 
     describe('onServerVersionChanged', () => {
