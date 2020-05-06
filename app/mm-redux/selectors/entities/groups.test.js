@@ -51,7 +51,7 @@ describe('Selectors.Groups', () => {
                         allow_reference: false,
                     },
                     [expectedAssociatedGroupID4]: {
-                        id: [expectedAssociatedGroupID4],
+                        id: expectedAssociatedGroupID4,
                         name: 'nobctj4brfgtpj3a1peiyq47tc',
                         display_name: 'engineering',
                         description: '',
