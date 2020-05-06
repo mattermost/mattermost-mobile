@@ -17,7 +17,7 @@
  - Fixed an issue where slash commands with long descriptions had their description text truncated in the slash command autocomplete.
  - Fixed an issue where users could not swipe up to dismiss in-app push notifications.
  - Fixed an issue where the username that created the webhook was shown on webhook posts instead of the name of the bot.
- - Fixed an issue where posts on the same thread appeared to be from different threads since the "...commented on [Thread Title]" was shown on all posts.
+ - Fixed an issue where posts on the same thread appeared to be from different threads since the "...commented on [Thread Title]" was shown on all posts in the thread.
  - Fixed an issue where the system message for "Edit Channel Purpose" rendered markdown.
  - Fixed an issue where "Someone" username appeared in prefetched channels.
  - Fixed an issue where pre-fetching of unread channels included archived channels.
