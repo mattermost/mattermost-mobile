@@ -8,12 +8,12 @@ export function filterGroupsMatchingTerm(groups: Array<Group>, term: string): Ar
     const lowercasedTerm = term.toLowerCase();
     let trimmedTerm = lowercasedTerm;
 
-    if (!trimmedTerm) {
-        return groups;
-    }
-
     if (trimmedTerm.startsWith('@')) {
         trimmedTerm = trimmedTerm.substr(1);
+    }
+
+    if (!trimmedTerm) {
+        return groups;
     }
 
     return groups.filter((group: Group) => {
