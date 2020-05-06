@@ -7,6 +7,11 @@ import {getSuggestionsSplitByMultiple} from './user_utils';
 export function filterGroupsMatchingTerm(groups: Array<Group>, term: string): Array<Group> {
     const lowercasedTerm = term.toLowerCase();
     let trimmedTerm = lowercasedTerm;
+
+    if (!trimmedTerm) {
+        return groups;
+    }
+
     if (trimmedTerm.startsWith('@')) {
         trimmedTerm = trimmedTerm.substr(1);
     }
@@ -25,7 +30,6 @@ export function filterGroupsMatchingTerm(groups: Array<Group>, term: string): Ar
         groupSuggestions.push(displayname);
 
         return groupSuggestions.
-            filter((suggestion) => suggestion !== '').
             some((suggestion) => suggestion.startsWith(trimmedTerm));
     });
-} 
+}
