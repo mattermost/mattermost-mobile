@@ -645,10 +645,6 @@ const style = StyleSheet.create({
         width: '100%',
     },
     footer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
         maxHeight: 64,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
