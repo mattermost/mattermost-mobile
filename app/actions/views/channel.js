@@ -650,9 +650,74 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
         };
 
         const actions = [];
+        const team = getCurrentTeam(state);
+        const teamID = team.id;
         const serverVersion = state.entities.general.serverVersion;
         const license = getLicense(state);
         const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
+
+        if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 22)) {
+            for (let i = 0; i <= MAX_RETRIES; i++) {
+                try {
+                    if (team.group_constrained) {
+                        const [getAllGroupsAssociatedToChannelsInTeam, getAllGroupsAssociatedToTeam] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(teamID, true),
+                            Client4.getAllGroupsAssociatedToTeam(teamID, true),
+                        ]);
+
+                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                            });
+                        }
+
+                        if (getAllGroupsAssociatedToTeam) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
+                                data: getAllGroupsAssociatedToTeam,
+                            });
+                        }
+                    } else {
+                        const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(teamID, true),
+                            Client4.getGroups(true),
+                        ]);
+
+                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                            });
+                        }
+
+                        if (getGroups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_GROUPS,
+                                data: getGroups,
+                            });
+                        }
+                    }
+                } catch (err) {
+                    return {error: err};
+                }
+            }
+        }
+
+        if (actions.length) {
+            dispatch(batchActions(actions, 'BATCH_LOAD_CHANNELS_FOR_TEAM'));
+        }
+
+        return {data: true};
+    };
+}
+
+export function loadChannelsForTeam(teamId, skipDispatch = false) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
+        const data = {sync: true, teamId};
+        const actions = [];
 
         if (currentUserId) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
@@ -665,7 +730,6 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
 
                     data.channels = channels;
                     data.channelMembers = channelMembers;
-                    data.team = getCurrentTeam(state);
                     break;
                 } catch (err) {
                     if (i === MAX_RETRIES) {

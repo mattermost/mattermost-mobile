@@ -1,9 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {NameMappedObjects} from '@mm-redux/types/utilities';
-
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
 import * as reselect from 'reselect';
 import {GlobalState} from '@mm-redux/types/store';
 import {Group} from '@mm-redux/types/groups';
@@ -65,7 +61,7 @@ export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term
         return emptyList;
     }
     const filteredGroups = filterGroupsMatchingTerm(groups, term);
-    return filteredGroups.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
+    return filteredGroups;
 }
 
 export function getAssociatedGroupsForReference(state: GlobalState, teamId: string, channelId: string): Array<Group> {
