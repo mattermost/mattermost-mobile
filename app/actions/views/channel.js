@@ -705,7 +705,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
         }
 
         if (actions.length) {
-            dispatch(batchActions(actions, 'BATCH_LOAD_CHANNELS_FOR_TEAM'));
+            dispatch(batchActions(actions, 'BATCH_GROUP_DATA'));
         }
 
         return {data: true};
