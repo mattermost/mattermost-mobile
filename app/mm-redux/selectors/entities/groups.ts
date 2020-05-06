@@ -118,7 +118,15 @@ export const getGroupsNotAssociatedToTeam = reselect.createSelector(
     getAllGroups,
     (state: GlobalState, teamID: string) => getTeamGroupIDSet(state, teamID),
     (allGroups, teamGroupIDSet) => {
-        return Object.values(allGroups).filter((group) => !teamGroupIDSet.has(group.id));
+        const results: Array<Group> = [];
+        Object.entries(allGroups).forEach((entry) => {
+            const teamID = entry[0];
+            const group = entry[1];
+            if (!teamGroupIDSet.has(teamID)) {
+                results.push(group);
+            }
+        });
+        return results;
     },
 );
 
@@ -126,7 +134,15 @@ export const getGroupsAssociatedToTeam = reselect.createSelector(
     getAllGroups,
     (state: GlobalState, teamID: string) => getTeamGroupIDSet(state, teamID),
     (allGroups, teamGroupIDSet) => {
-        return Object.values(allGroups).filter((group) => teamGroupIDSet.has(group.id));
+        const results: Array<Group> = [];
+        Object.entries(allGroups).forEach((entry) => {
+            const teamID = entry[0];
+            const group = entry[1];
+            if (teamGroupIDSet.has(teamID)) {
+                results.push(group);
+            }
+        });
+        return results;
     },
 );
 
@@ -134,7 +150,15 @@ export const getGroupsNotAssociatedToChannel = reselect.createSelector(
     getAllGroups,
     (state: GlobalState, channelID: string) => getChannelGroupIDSet(state, channelID),
     (allGroups, channelGroupIDSet) => {
-        return Object.values(allGroups).filter((group) => !channelGroupIDSet.has(group.id));
+        const results: Array<Group> = [];
+        Object.entries(allGroups).forEach((entry) => {
+            const channelID = entry[0];
+            const group = entry[1];
+            if (!channelGroupIDSet.has(channelID)) {
+                results.push(group);
+            }
+        });
+        return results;
     },
 );
 
@@ -142,7 +166,15 @@ export const getGroupsAssociatedToChannel = reselect.createSelector(
     getAllGroups,
     (state: GlobalState, channelID: string) => getChannelGroupIDSet(state, channelID),
     (allGroups, channelGroupIDSet) => {
-        return Object.values(allGroups).filter((group) => channelGroupIDSet.has(group.id));
+        const results: Array<Group> = [];
+        Object.entries(allGroups).forEach((entry) => {
+            const channelID = entry[0];
+            const group = entry[1];
+            if (channelGroupIDSet.has(channelID)) {
+                results.push(group);
+            }
+        });
+        return results;
     },
 );
 
@@ -150,7 +182,15 @@ export const getGroupsAssociatedToTeamForReference = reselect.createSelector(
     getAllGroups,
     (state: GlobalState, teamID: string) => getTeamGroupIDSet(state, teamID),
     (allGroups, teamGroupIDSet) => {
-        return Object.values(allGroups).filter((group) => teamGroupIDSet.has(group.id) && group.allow_reference && group.delete_at === 0);
+        const results: Array<Group> = [];
+        Object.entries(allGroups).forEach((entry) => {
+            const teamID = entry[0];
+            const group = entry[1];
+            if (teamGroupIDSet.has(teamID) && group.allow_reference && group.delete_at === 0) {
+                results.push(group);
+            }
+        });
+        return results;
     },
 );
 
@@ -158,13 +198,28 @@ export const getGroupsAssociatedToChannelForReference = reselect.createSelector(
     getAllGroups,
     (state: GlobalState, channelID: string) => getChannelGroupIDSet(state, channelID),
     (allGroups, channelGroupIDSet) => {
-        return Object.values(allGroups).filter((group) => channelGroupIDSet.has(group.id) && group.allow_reference && group.delete_at === 0);
+        const results: Array<Group> = [];
+        Object.entries(allGroups).forEach((entry) => {
+            const channelID = entry[0];
+            const group = entry[1];
+            if (channelGroupIDSet.has(channelID) && group.allow_reference && group.delete_at === 0) {
+                results.push(group);
+            }
+        });
+        return results;
     },
 );
 
 export const getAllAssociatedGroupsForReference = reselect.createSelector(
     getAllGroups,
     (allGroups) => {
-        return Object.values(allGroups).filter((group) => group.allow_reference && group.delete_at === 0);
+        const results: Array<Group> = [];
+        Object.entries(allGroups).forEach((entry) => {
+            const group = entry[1];
+            if (group.allow_reference && group.delete_at === 0) {
+                results.push(group);
+            }
+        });
+        return results;
     },
 );
