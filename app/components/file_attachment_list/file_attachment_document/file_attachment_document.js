@@ -5,8 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    NativeModules,
-    NativeEventEmitter,
     Platform,
     StatusBar,
     StyleSheet,
@@ -71,13 +69,10 @@ export default class FileAttachmentDocument extends PureComponent {
 
     componentDidMount() {
         this.mounted = true;
-        this.eventEmitter = new NativeEventEmitter(NativeModules.RNDocViewer);
-        this.eventEmitter.addListener('DoneButtonEvent', this.onDonePreviewingFile);
     }
 
     componentWillUnmount() {
         this.mounted = false;
-        this.eventEmitter.removeListener();
     }
 
     cancelDownload = () => {
