@@ -24,7 +24,7 @@
     "deepmerge": "4.2.2",
     "emoji-regex": "9.0.0",
     "form-data": "3.0.0",
-    "fuse.js": "5.2.3",
+    "fuse.js": "3.6.1",
     "intl": "1.2.5",
     "jail-monkey": "2.3.2",
     "mime-db": "1.44.0",
