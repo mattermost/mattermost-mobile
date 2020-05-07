@@ -51,7 +51,6 @@ export default class ChannelAndroid extends ChannelBase {
                     <PostDraft
                         ref={this.postDraft}
                         screenId={this.props.componentId}
-                        key={this.props.currentChannelId}
                     />
                 </KeyboardLayout>
                 <NetworkIndicator/>
