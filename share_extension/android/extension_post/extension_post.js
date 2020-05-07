@@ -9,7 +9,6 @@ import {intlShape} from 'react-intl';
 
 import {
     Alert,
-    Image,
     NativeModules,
     PermissionsAndroid,
     ScrollView,
@@ -17,6 +16,7 @@ import {
     TextInput,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
@@ -27,8 +27,8 @@ import {Preferences} from '@mm-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
 
 import Loading from 'app/components/loading';
-import PaperPlane from 'app/components/paper_plane';
-import {MAX_FILE_COUNT} from 'app/constants/post_textbox';
+import PaperPlane from 'app/components/post_draft/quick_actions/send_action/paper_plane';
+import {MAX_FILE_COUNT} from 'app/constants/post_draft';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import mattermostManaged from 'app/mattermost_managed';
 import {getExtensionFromMime} from 'app/utils/file';
@@ -505,7 +505,7 @@ export default class ExtensionPost extends PureComponent {
                         key={`item-${index}`}
                         style={styles.imageContainer}
                     >
-                        <Image
+                        <FastImage
                             source={{uri: file.fullPath, isStatic: true}}
                             resizeMode='cover'
                             style={styles.image}

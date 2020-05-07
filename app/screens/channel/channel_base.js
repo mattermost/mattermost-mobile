@@ -58,7 +58,7 @@ export default class ChannelBase extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.postTextbox = React.createRef();
+        this.postDraft = React.createRef();
         this.keyboardTracker = React.createRef();
 
         this.state = {
@@ -71,7 +71,7 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentDidMount() {
-        EventEmitter.on(NavigationTypes.BLUR_POST_TEXTBOX, this.blurPostTextBox);
+        EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
         if (this.props.currentTeamId) {
@@ -134,13 +134,13 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off(NavigationTypes.BLUR_POST_TEXTBOX, this.blurPostTextBox);
+        EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
     }
 
-    blurPostTextBox = () => {
-        if (this.postTextbox?.current) {
-            this.postTextbox.current.blur();
+    blurPostDraft = () => {
+        if (this.postDraft?.current) {
+            this.postDraft.current.blurTextBox();
         }
     };
 
@@ -188,13 +188,7 @@ export default class ChannelBase extends PureComponent {
 
             showModal(screen, title, null, options);
         });
-    });
-
-    handleAutoComplete = (value) => {
-        if (this.postTextbox?.current) {
-            this.postTextbox.current.handleTextChange(value, true);
-        }
-    };
+    }, 1000);
 
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();

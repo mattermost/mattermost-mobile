@@ -46,7 +46,7 @@ const {VIDEOS_PATH} = DeviceTypes;
 const {View: AnimatedView} = Animated;
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 const HEADER_HEIGHT = 48;
-const ANIM_CONFIG = {duration: 300};
+const ANIM_CONFIG = {duration: 300, userNativeDriver: true};
 
 export default class ImagePreview extends PureComponent {
     static propTypes = {
@@ -313,7 +313,11 @@ export default class ImagePreview extends PureComponent {
                     colors={['transparent', '#000000']}
                     pointerEvents='none'
                 >
-                    <Text style={style.filename}>
+                    <Text
+                        style={style.filename}
+                        numberOfLines={2}
+                        ellipsizeMode='tail'
+                    >
                         {(files[index] && files[index].caption) || ''}
                     </Text>
                 </LinearGradient>
@@ -637,21 +641,18 @@ const style = StyleSheet.create({
         textAlign: 'center',
     },
     footerContainer: {
-        height: 64,
+        minHeight: 32,
+        maxHeight: 64,
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'absolute',
         width: '100%',
     },
     footer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 64,
+        maxHeight: 64,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
-        paddingBottom: 5,
+        paddingBottom: 0,
     },
     filename: {
         color: 'white',

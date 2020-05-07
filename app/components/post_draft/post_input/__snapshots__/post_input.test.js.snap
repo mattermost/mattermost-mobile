@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostInput should match, full snapshot 1`] = `
+<ForwardRef(WrappedPasteableTextInput)
+  blurOnSubmit={false}
+  disableFullscreenUI={true}
+  editable={true}
+  keyboardAppearance="light"
+  keyboardType="default"
+  multiline={true}
+  onChangeText={[Function]}
+  onEndEditing={[Function]}
+  onPaste={[MockFunction]}
+  onSelectionChange={[Function]}
+  placeholder="Write to Test Channel"
+  placeholderTextColor="rgba(61,60,64,0.5)"
+  style={
+    Object {
+      "color": "#3d3c40",
+      "fontSize": 15,
+      "lineHeight": 20,
+      "maxHeight": 150,
+      "minHeight": 30,
+      "paddingBottom": 6,
+      "paddingHorizontal": 12,
+      "paddingTop": 6,
+    }
+  }
+  underlineColorAndroid="transparent"
+/>
+`;

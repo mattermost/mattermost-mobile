@@ -6,13 +6,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
-import {batchActions} from 'redux-batched-actions';
 import semver from 'semver/preload';
 
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
-import {GeneralTypes} from '@mm-redux/action_types';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
@@ -47,6 +45,8 @@ const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
 class GlobalEventHandler {
     constructor() {
+        this.pushNotificationListener = false;
+
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.onLogout);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.onRestartApp);
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
@@ -276,6 +276,11 @@ class GlobalEventHandler {
             const state = Store.redux.getState();
             const newState = {
                 ...initialState,
+                app: {
+                    build: DeviceInfo.getBuildNumber(),
+                    version: DeviceInfo.getVersion(),
+                    previousVersion: DeviceInfo.getVersion(),
+                },
                 entities: {
                     ...initialState.entities,
                     general: {
@@ -323,10 +328,14 @@ class GlobalEventHandler {
     };
 
     turnOnInAppNotificationHandling = () => {
-        EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        if (!this.pushNotificationListener) {
+            this.pushNotificationListener = true;
+            EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        }
     }
 
     turnOffInAppNotificationHandling = () => {
+        this.pushNotificationListener = false;
         EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
     }
 

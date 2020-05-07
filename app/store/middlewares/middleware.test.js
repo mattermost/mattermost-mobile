@@ -3,9 +3,14 @@
 
 /* eslint-disable max-nested-callbacks */
 
+import DeviceInfo from 'react-native-device-info';
+
 import assert from 'assert';
+import {REHYDRATE} from 'redux-persist';
+import merge from 'deepmerge';
 
 import {ViewTypes} from '@constants';
+import initialState from '@store/initial_state';
 import {
     cleanUpPostsInChannel,
     cleanUpState,
@@ -52,6 +57,122 @@ describe('messageRetention', () => {
 
                 const nextAction = messageRetention(store)(next)(action);
                 assert.equal(action.type, nextAction.type);
+            });
+        });
+    });
+
+    describe('should add build, version, and previousVersion to payload.app on persist/REHYDRATE', () => {
+        const next = (a) => a;
+        const store = {};
+        const build = 'build';
+        const version = 'version';
+        const previousBuild = 'previous-build';
+        const previousVersion = 'previous-version';
+        DeviceInfo.getBuildNumber = jest.fn().mockReturnValue('build');
+        DeviceInfo.getVersion = jest.fn().mockReturnValue('version');
+        const rehydrateAction = {
+            type: REHYDRATE,
+            payload: {
+                app: {
+                    build: previousBuild,
+                    version: previousVersion,
+                },
+            },
+        };
+        const expectedPayloadApp = {
+            build,
+            version,
+            previousVersion,
+        };
+        const entities = {
+            channels: {},
+            posts: {},
+        };
+        const views = {
+            team: {
+                lastChannelForTeam: {},
+            },
+        };
+
+        test('when entities is missing', () => {
+            const action = {...rehydrateAction};
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual(expectedPayloadApp);
+        });
+
+        test('when views is missing', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    entities,
+                },
+            };
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual(expectedPayloadApp);
+        });
+
+        test('when previousVersion !== version', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    entities,
+                    views,
+                },
+            };
+            expect(action.payload.app.version).not.toEqual(DeviceInfo.getVersion());
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual(expectedPayloadApp);
+        });
+
+        test('when previousBuild !== build', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    app: {
+                        ...rehydrateAction.payload.app,
+                        version: DeviceInfo.getVersion(),
+                    },
+                    entities,
+                    views,
+                },
+            };
+            expect(action.payload.app.version).toEqual(DeviceInfo.getVersion());
+            expect(action.payload.app.build).not.toEqual(DeviceInfo.getBuildNumber());
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual({
+                ...expectedPayloadApp,
+                previousVersion: DeviceInfo.getVersion(),
+            });
+        });
+
+        test('when cleanUpState', () => {
+            const action = {
+                ...rehydrateAction,
+                payload: {
+                    ...rehydrateAction.payload,
+                    app: {
+                        ...rehydrateAction.payload.app,
+                        version: DeviceInfo.getVersion(),
+                        build: DeviceInfo.getBuildNumber(),
+                    },
+                    entities,
+                    views,
+                },
+            };
+            expect(action.payload.app.version).toEqual(DeviceInfo.getVersion());
+            expect(action.payload.app.build).toEqual(DeviceInfo.getBuildNumber());
+
+            const nextAction = messageRetention(store)(next)(action);
+            expect(nextAction.payload.app).toStrictEqual({
+                ...expectedPayloadApp,
+                previousVersion: DeviceInfo.getVersion(),
             });
         });
     });
@@ -228,6 +349,62 @@ describe('cleanUpState', () => {
 
         expect(result.entities.posts.pendingPostIds).toEqual([]);
         expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1', 'post2'], recent: true}]);
+    });
+
+    test('should always set _persist.rehydrated to true', () => {
+        const persistValues = [
+            null,
+            {},
+            {rehydrated: false},
+            {rehydrated: true},
+        ];
+
+        for (let i = 0; i < persistValues.length; i++) {
+            const _persist = persistValues[i]; // eslint-disable-line no-underscore-dangle
+            const state = merge(initialState, {
+                // eslint-disable-next-line no-underscore-dangle
+                _persist,
+            });
+
+            const result = cleanUpState(state);
+            expect(result._persist.rehydrated).toBe(true); // eslint-disable-line no-underscore-dangle
+        }
+    });
+
+    test('should set views.root.hydrationComplete to true when previous views.root.hydrationComplete is true', () => {
+        const state = merge(initialState, {
+            views: {
+                root: {
+                    hydrationComplete: true,
+                },
+            },
+        });
+
+        const result = cleanUpState(state);
+        expect(result.views.root.hydrationComplete).toBe(true);
+    });
+
+    test('should set views.root.hydrationComplete to !_persist when previous views.root.hydrationComplete is falsy', () => {
+        const persistValues = [true, false];
+        const viewsValues = [
+            {},
+            {root: {}},
+            {root: {hydrationComplete: false}},
+        ];
+
+        for (let i = 0; i < persistValues.length; i++) {
+            const _persist = persistValues[i]; // eslint-disable-line no-underscore-dangle
+            for (let j = 0; j < viewsValues.length; j++) {
+                const views = viewsValues[j];
+                const state = merge(initialState, {
+                    _persist,
+                    views,
+                });
+
+                const result = cleanUpState(state);
+                expect(result.views.root.hydrationComplete).toBe(!_persist); // eslint-disable-line no-underscore-dangle
+            }
+        }
     });
 });
 
