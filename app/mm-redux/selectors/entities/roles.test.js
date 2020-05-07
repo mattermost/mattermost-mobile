@@ -180,14 +180,14 @@ describe('Selectors.Roles', () => {
     });
 
     it('should return my team permissions on getMyTeamPermissions', () => {
-        const {permissions, roleFound} = Selectors.getMyTeamPermissions(testState, {team: team1.id})
+        const {permissions, roleFound} = Selectors.getMyTeamPermissions(testState, {team: team1.id});
         const expectedPermissions = new Set(['user_role2', 'team1_role1']);
         assert.deepEqual(permissions, expectedPermissions);
         assert.equal(roleFound, true);
     });
 
     it('should return system permissions on getMyTeamPermissions when team not found', () => {
-        const {permissions, roleFound} = Selectors.getMyTeamPermissions(testState, {team: team4.id})
+        const {permissions, roleFound} = Selectors.getMyTeamPermissions(testState, {team: team4.id});
         const expectedPermissions = new Set(['user_role2']);
         assert.deepEqual(permissions, expectedPermissions);
         assert.equal(roleFound, false);
@@ -198,6 +198,12 @@ describe('Selectors.Roles', () => {
         assert.equal(Selectors.haveITeamPermission(testState, {team: team1.id, permission: 'team1_role1'}), true);
         assert.equal(Selectors.haveITeamPermission(testState, {team: team1.id, permission: 'team2_role2'}), false);
         assert.equal(Selectors.haveITeamPermission(testState, {team: team1.id, permission: 'invalid_permission'}), false);
+    });
+
+    it('should return default if role not found in state on haveITeamPermission for team scoped permission', () => {
+        assert.equal(Selectors.haveITeamPermission(testState, {team: team4.id, permission: 'any_permission', default: true}), true);
+        assert.equal(Selectors.haveITeamPermission(testState, {team: team4.id, permission: 'any_permission', default: false}), false);
+        assert.equal(Selectors.haveITeamPermission(testState, {team: team1.id, permission: 'user_role2'}), true);
     });
 
     it('should return my team permission on getMyCurrentTeamPermissions', () => {
@@ -241,6 +247,13 @@ describe('Selectors.Roles', () => {
         assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel1.id, permission: 'team2_role2'}), false);
         assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel1.id, permission: 'channel_a_role1'}), true);
         assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel1.id, permission: 'channel_b_role1'}), false);
+    });
+
+    it('should return default if role not found in state on haveIChannelPermission for channel scoped permission', () => {
+        assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel13.id, permission: 'any_permission', default: true}), true);
+        assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel13.id, permission: 'any_permission', default: false}), false);
+        assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel13.id, permission: 'user_role2'}), true);
+        assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel13.id, permission: 'team1_role1'}), true);
     });
 
     it('should return if i have a channel permission on haveICurrentChannelPermission', () => {

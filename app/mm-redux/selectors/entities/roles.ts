@@ -79,7 +79,7 @@ export const getMyCurrentTeamPermissions = reselect.createSelector(
                     for (const permission of roles[roleName].permissions) {
                         permissions.add(permission);
                     }
-                    roleFound = true
+                    roleFound = true;
                 }
             }
         }
