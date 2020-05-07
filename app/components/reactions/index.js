@@ -43,6 +43,7 @@ function makeMapStateToProps() {
                 team: teamId,
                 channel: channelId,
                 permission: Permissions.ADD_REACTION,
+                default: true,
             });
 
             if (reactions) {
@@ -54,6 +55,7 @@ function makeMapStateToProps() {
                 team: teamId,
                 channel: channelId,
                 permission: Permissions.REMOVE_REACTION,
+                default: true,
             });
         }
 

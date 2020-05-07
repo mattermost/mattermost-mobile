@@ -179,7 +179,7 @@ export const haveITeamPermission = reselect.createSelector(
     ({permissions, roleFound}, options) => {
         const hasPermission = permissions.has(options.permission);
         if (roleFound) {
-            return permissions.has(options.permission);
+            return hasPermission;
         }
         return options.default === true || hasPermission;
     },
@@ -191,7 +191,7 @@ export const haveIChannelPermission = reselect.createSelector(
     ({permissions, roleFound}, options) => {
         const hasPermission = permissions.has(options.permission);
         if (roleFound) {
-            return permissions.has(options.permission);
+            return hasPermission;
         }
         return options.default === true || hasPermission;
     },
@@ -203,7 +203,7 @@ export const haveICurrentTeamPermission = reselect.createSelector(
     ({permissions, roleFound}, options) => {
         const hasPermission = permissions.has(options.permission);
         if (roleFound) {
-            return permissions.has(options.permission);
+            return hasPermission;
         }
         return options.default === true || hasPermission;
     },
@@ -215,7 +215,7 @@ export const haveICurrentChannelPermission = reselect.createSelector(
     ({permissions, roleFound}, options) => {
         const hasPermission = permissions.has(options.permission);
         if (roleFound) {
-            return permissions.has(options.permission);
+            return hasPermission;
         }
         return options.default === true || hasPermission;
     },
