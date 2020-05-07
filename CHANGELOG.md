@@ -13,18 +13,17 @@
 ### Bug Fixes
 
 #### All apps
- - Fixed an issue where using `Share...` option to post highlighted text to the app threw an error.
  - Fixed an issue where slash commands with long descriptions had their description text truncated in the slash command autocomplete.
  - Fixed an issue where users could not swipe up to dismiss in-app push notifications.
  - Fixed an issue where the username that created the webhook was shown on webhook posts instead of the name of the bot.
  - Fixed an issue where posts on the same thread appeared to be from different threads since the "...commented on [Thread Title]" was shown on all posts in the thread.
  - Fixed an issue where the system message for "Edit Channel Purpose" rendered markdown.
- - Fixed an issue where "Someone" username appeared in prefetched channels.
  - Fixed an issue where pre-fetching of unread channels included archived channels.
 
 #### iOS specific
  - Fixed an issue where code block numbering was obstructed by the iPhone's notch.
  - Fixed an issue where the search text box was partially obstructed in landscape mode.
+ - Fixed an issue where using `Share...` option to post highlighted text to the app threw an error.
  - Fixed an issue where the "back" button color was incorrect when transitioning from Thread screen to Channel screen.
  - Fixed an issue where the keyboard flashed a darker color when opening Keywords from **Settings > Notifications > Mentions and replies**.
 
