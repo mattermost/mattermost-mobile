@@ -196,6 +196,8 @@ exports[`ImagePreview should match snapshot 1`] = `
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={2}
           style={
             Object {
               "color": "white",

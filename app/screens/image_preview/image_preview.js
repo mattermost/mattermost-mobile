@@ -313,7 +313,11 @@ export default class ImagePreview extends PureComponent {
                     colors={['transparent', '#000000']}
                     pointerEvents='none'
                 >
-                    <Text style={style.filename}>
+                    <Text
+                        style={style.filename}
+                        numberOfLines={2}
+                        ellipsizeMode='tail'
+                    >
                         {(files[index] && files[index].caption) || ''}
                     </Text>
                 </LinearGradient>
