@@ -652,7 +652,7 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
                 userId = msg.broadcast.user_id;
             }
 
-            if (userId && channelId) {
+            if (userId) {
                 actions.push({
                     type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
                     data: {
