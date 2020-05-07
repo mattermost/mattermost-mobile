@@ -13,10 +13,12 @@ describe('Selectors.Roles', () => {
     const team1 = TestHelper.fakeTeamWithId();
     const team2 = TestHelper.fakeTeamWithId();
     const team3 = TestHelper.fakeTeamWithId();
+    const team4 = TestHelper.fakeTeamWithId();
     const myTeamMembers = {};
     myTeamMembers[team1.id] = {roles: 'test_team1_role1 test_team1_role2'};
     myTeamMembers[team2.id] = {roles: 'test_team2_role1 test_team2_role2'};
     myTeamMembers[team3.id] = {};
+    myTeamMembers[team4.id] = {roles: 'test_team4_role_not_found'};
 
     const channel1 = TestHelper.fakeChannelWithId(team1.id);
     channel1.display_name = 'Channel Name';
@@ -50,6 +52,7 @@ describe('Selectors.Roles', () => {
     const channel11 = TestHelper.fakeChannelWithId(team1.id);
     channel11.type = General.PRIVATE_CHANNEL;
     const channel12 = TestHelper.fakeChannelWithId(team1.id);
+    const channel13 = TestHelper.fakeChannelWithId(team1.id);
 
     const channels = {};
     channels[channel1.id] = channel1;
@@ -64,6 +67,7 @@ describe('Selectors.Roles', () => {
     channels[channel10.id] = channel10;
     channels[channel11.id] = channel11;
     channels[channel12.id] = channel12;
+    channels[channel13.id] = channel13;
 
     const channelsInTeam = {};
     channelsInTeam[team1.id] = [channel1.id, channel2.id, channel5.id, channel6.id, channel8.id, channel10.id, channel11.id];
@@ -87,6 +91,7 @@ describe('Selectors.Roles', () => {
     myChannelMembers[channel10.id] = {roles: 'test_channel_c_role1 test_channel_c_role2'};
     myChannelMembers[channel11.id] = {roles: 'test_channel_c_role1 test_channel_c_role2'};
     myChannelMembers[channel12.id] = {};
+    myChannelMembers[channel13.id] = {roles: 'test_channel_not_found_role'};
     const roles = {
         test_team1_role1: {permissions: ['team1_role1']},
         test_team2_role1: {permissions: ['team2_role1']},
@@ -124,6 +129,7 @@ describe('Selectors.Roles', () => {
         const teamsRoles = {};
         teamsRoles[team1.id] = new Set(['test_team1_role1', 'test_team1_role2']);
         teamsRoles[team2.id] = new Set(['test_team2_role1', 'test_team2_role2']);
+        teamsRoles[team4.id] = new Set(['test_team4_role_not_found']);
         const channelsRoles = {};
         channelsRoles[channel1.id] = new Set(['test_channel_a_role1', 'test_channel_a_role2']);
         channelsRoles[channel2.id] = new Set(['test_channel_a_role1', 'test_channel_a_role2']);
@@ -135,6 +141,7 @@ describe('Selectors.Roles', () => {
         channelsRoles[channel9.id] = new Set(['test_channel_b_role1', 'test_channel_b_role2']);
         channelsRoles[channel10.id] = new Set(['test_channel_c_role1', 'test_channel_c_role2']);
         channelsRoles[channel11.id] = new Set(['test_channel_c_role1', 'test_channel_c_role2']);
+        channelsRoles[channel13.id] = new Set(['test_channel_not_found_role']);
         const myRoles = {
             system: new Set(['test_user_role', 'test_user_role2']),
             team: teamsRoles,
@@ -172,10 +179,18 @@ describe('Selectors.Roles', () => {
         assert.equal(Selectors.haveISystemPermission(testState, {permission: 'invalid_permission'}), false);
     });
 
-    it('should return my team permission on getMyTeamPermissions', () => {
-        assert.deepEqual(Selectors.getMyTeamPermissions(testState, {team: team1.id}), new Set([
-            'user_role2', 'team1_role1',
-        ]));
+    it('should return my team permissions on getMyTeamPermissions', () => {
+        const {permissions, roleFound} = Selectors.getMyTeamPermissions(testState, {team: team1.id})
+        const expectedPermissions = new Set(['user_role2', 'team1_role1']);
+        assert.deepEqual(permissions, expectedPermissions);
+        assert.equal(roleFound, true);
+    });
+
+    it('should return system permissions on getMyTeamPermissions when team not found', () => {
+        const {permissions, roleFound} = Selectors.getMyTeamPermissions(testState, {team: team4.id})
+        const expectedPermissions = new Set(['user_role2']);
+        assert.deepEqual(permissions, expectedPermissions);
+        assert.equal(roleFound, false);
     });
 
     it('should return if i have a team permission on haveITeamPermission', () => {
@@ -186,9 +201,10 @@ describe('Selectors.Roles', () => {
     });
 
     it('should return my team permission on getMyCurrentTeamPermissions', () => {
-        assert.deepEqual(Selectors.getMyCurrentTeamPermissions(testState), new Set([
-            'user_role2', 'team1_role1',
-        ]));
+        const {permissions, roleFound} = Selectors.getMyCurrentTeamPermissions(testState);
+        const expectedPermissions = new Set(['user_role2', 'team1_role1']);
+        assert.deepEqual(permissions, expectedPermissions);
+        assert.equal(roleFound, true);
     });
 
     it('should return if i have a team permission on haveICurrentTeamPermission', () => {
@@ -199,9 +215,24 @@ describe('Selectors.Roles', () => {
     });
 
     it('should return my channel permission on getMyChannelPermissions', () => {
-        assert.deepEqual(Selectors.getMyChannelPermissions(testState, {team: team1.id, channel: channel1.id}), new Set([
-            'user_role2', 'team1_role1', 'channel_a_role1', 'channel_a_role2',
-        ]));
+        const {permissions, roleFound} = Selectors.getMyChannelPermissions(testState, {team: team1.id, channel: channel1.id});
+        const expectedPermissions = new Set(['user_role2', 'team1_role1', 'channel_a_role1', 'channel_a_role2']);
+        assert.deepEqual(permissions, expectedPermissions);
+        assert.equal(roleFound, true);
+    });
+
+    it('should only return my team permissions on getMyChannelPermissions when role not found', () => {
+        const {permissions, roleFound} = Selectors.getMyChannelPermissions(testState, {team: team1.id, channel: channel13.id});
+        const expectedPermissions = new Set(['user_role2', 'team1_role1']);
+        assert.deepEqual(permissions, expectedPermissions);
+        assert.equal(roleFound, false);
+    });
+
+    it('should return my channel permission on getMyChannelPermissions when channel roles not found', () => {
+        const {permissions, roleFound} = Selectors.getMyChannelPermissions(testState, {team: team1.id, channel: channel1.id});
+        const expectedPermissions = new Set(['user_role2', 'team1_role1', 'channel_a_role1', 'channel_a_role2']);
+        assert.deepEqual(permissions, expectedPermissions);
+        assert.equal(roleFound, true);
     });
 
     it('should return if i have a channel permission on haveIChannelPermission', () => {
@@ -210,12 +241,6 @@ describe('Selectors.Roles', () => {
         assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel1.id, permission: 'team2_role2'}), false);
         assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel1.id, permission: 'channel_a_role1'}), true);
         assert.equal(Selectors.haveIChannelPermission(testState, {team: team1.id, channel: channel1.id, permission: 'channel_b_role1'}), false);
-    });
-
-    it('should return my current channel permission on getMyCurrentChannelPermissions', () => {
-        assert.deepEqual(Selectors.getMyCurrentChannelPermissions(testState), new Set([
-            'user_role2', 'team1_role1', 'channel_a_role1', 'channel_a_role2',
-        ]));
     });
 
     it('should return if i have a channel permission on haveICurrentChannelPermission', () => {
