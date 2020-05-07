@@ -30,7 +30,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
         currentUserId: getCurrentUserId(state),
-        isGuest: currentUser && isGuest(currentUser),
+        isGuest: isGuest(currentUser),
         currentTeamId: getCurrentTeamId(state),
         isLandscape: isLandscape(state),
     };

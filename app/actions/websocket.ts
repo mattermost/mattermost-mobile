@@ -641,27 +641,30 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
             const currentTeamId = getCurrentTeamId(state);
             const currentUser = getCurrentUser(state);
             const actions: Array<GenericAction> = [];
+            let channelId;
+            let userId;
+
             if (msg.data.user_id) {
-                actions.push({
-                    type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
-                    data: {
-                        channel_id: msg.broadcast.channel_id,
-                        user_id: msg.data.user_id,
-                    },
-                });
+                userId = msg.data.user_id;
+                channelId = msg.broadcast.channel_id;
             } else if (msg.broadcast.user_id) {
+                channelId = msg.data.channel_id;
+                userId = msg.broadcast.user_id;
+            }
+
+            if (userId && channelId) {
                 actions.push({
                     type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
                     data: {
-                        channel_id: msg.data.channel_id,
-                        user_id: msg.broadcast.user_id,
+                        channel_id: channelId,
+                        user_id: userId,
                     },
                 });
             }
 
             const channel = channels[currentChannelId];
 
-            if (msg.data.user_id && msg.data.user_id !== currentUser.id) {
+            if (msg.data?.user_id !== currentUser.id) {
                 const members = getChannelMembersInChannels(state);
                 const isMember = Object.values(members).some((member) => member[msg.data.user_id]);
                 if (channel && isGuest(currentUser.roles) && !isMember) {

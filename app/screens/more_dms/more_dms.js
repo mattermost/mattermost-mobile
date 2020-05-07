@@ -453,7 +453,7 @@ export default class MoreDirectMessages extends PureComponent {
 
             let results;
             if (isGuest) {
-                results = filterProfilesMatchingTerm(searchResults.filter(this.filterUnknownUsers), term).filter(filterByTerm);
+                results = filterProfilesMatchingTerm(searchResults, term).filter((u) => filterByTerm(u) && this.filterUnknownUsers(u));
             } else {
                 results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
             }
