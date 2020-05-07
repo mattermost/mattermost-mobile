@@ -188,18 +188,16 @@ exports[`ImagePreview should match snapshot 1`] = `
         }
         style={
           Object {
-            "bottom": 0,
             "justifyContent": "flex-end",
-            "left": 0,
             "maxHeight": 64,
             "paddingBottom": 0,
             "paddingHorizontal": 24,
-            "position": "absolute",
-            "right": 0,
           }
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={2}
           style={
             Object {
               "color": "white",
