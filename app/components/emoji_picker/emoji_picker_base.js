@@ -53,7 +53,6 @@ export default class EmojiPicker extends PureComponent {
         actions: PropTypes.shape({
             getCustomEmojis: PropTypes.func.isRequired,
             incrementEmojiPickerPage: PropTypes.func.isRequired,
-            searchCustomEmojis: PropTypes.func.isRequired,
         }).isRequired,
     };
 
@@ -187,7 +186,7 @@ export default class EmojiPicker extends PureComponent {
 
         clearTimeout(this.searchTermTimeout);
         const timeout = searchTerm ? 100 : 0;
-        this.searchTermTimeout = setTimeout(async () => {
+        this.searchTermTimeout = setTimeout(() => {
             const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
                 filteredEmojis,

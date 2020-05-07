@@ -8,15 +8,12 @@ import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selec
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 
 import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult} from '@mm-redux/types/actions';
+import {BuiltInEmojis} from 'app/utils/emojis';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-import {SystemEmoji, CustomEmoji} from '@mm-redux/types/emojis';
+import {CustomEmoji} from '@mm-redux/types/emojis';
 import {Dictionary} from '@mm-redux/types/utilities';
-export let systemEmojis: Map<string, SystemEmoji> = new Map();
-export function setSystemEmojis(emojis: Map<string, SystemEmoji>) {
-    systemEmojis = emojis;
-}
 
 export function createCustomEmoji(emoji: any, image: any): ActionFunc {
     return bindClientFunc({
@@ -90,7 +87,7 @@ export function getCustomEmojisInText(text: string): ActionFunc {
         const nonExistentEmoji = state.entities.emojis.nonExistentEmoji;
         const customEmojisByName = selectCustomEmojisByName(state);
 
-        const emojisToLoad = parseNeededCustomEmojisFromText(text, systemEmojis, customEmojisByName, nonExistentEmoji);
+        const emojisToLoad = parseNeededCustomEmojisFromText(text, BuiltInEmojis, customEmojisByName, nonExistentEmoji);
 
         return getCustomEmojisByName(Array.from(emojisToLoad))(dispatch, getState);
     };

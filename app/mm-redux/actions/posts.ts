@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@mm-redux/client';
+import {Client4} from '@mm-redux/client';
 import {General, Preferences, Posts} from '@mm-redux/constants';
 import {WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
@@ -16,11 +16,12 @@ import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
+import {BuiltInEmojis} from 'app/utils/emojis';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
-import {systemEmojis, getCustomEmojiByName, getCustomEmojisByName} from './emojis';
+import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
-import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
+import {forceLogoutIfNecessary} from './helpers';
 
 import {
     deletePreferences,
@@ -593,7 +594,7 @@ export function getCustomEmojiForReaction(name: string) {
         const nonExistentEmoji = getState().entities.emojis.nonExistentEmoji;
         const customEmojisByName = selectCustomEmojisByName(getState());
 
-        if (systemEmojis.has(name)) {
+        if (BuiltInEmojis.includes(name)) {
             return {data: true};
         }
 
@@ -628,7 +629,7 @@ export function getReactionsForPost(postId: string) {
             reactions.forEach((r: Reaction) => {
                 const name = r.emoji_name;
 
-                if (systemEmojis.has(name)) {
+                if (BuiltInEmojis.includes(name)) {
                     // It's a system emoji, go the next match
                     return;
                 }
@@ -1041,7 +1042,7 @@ export function getNeededCustomEmojis(state: GlobalState, posts: Array<Post>): S
                 customEmojisByName = selectCustomEmojisByName(state);
             }
 
-            const emojisFromPost = parseNeededCustomEmojisFromText(post.message, systemEmojis, customEmojisByName, nonExistentEmoji);
+            const emojisFromPost = parseNeededCustomEmojisFromText(post.message, BuiltInEmojis, customEmojisByName, nonExistentEmoji);
 
             if (emojisFromPost.size > 0) {
                 customEmojisToLoad = new Set([...customEmojisToLoad, ...emojisFromPost]);
@@ -1057,7 +1058,7 @@ export function getNeededCustomEmojis(state: GlobalState, posts: Array<Post>): S
             const attachmentText = buildPostAttachmentText(props.attachments);
 
             if (attachmentText) {
-                const emojisFromAttachment = parseNeededCustomEmojisFromText(attachmentText, systemEmojis, customEmojisByName, nonExistentEmoji);
+                const emojisFromAttachment = parseNeededCustomEmojisFromText(attachmentText, BuiltInEmojis, customEmojisByName, nonExistentEmoji);
 
                 if (emojisFromAttachment.size > 0) {
                     customEmojisToLoad = new Set([...customEmojisToLoad, ...emojisFromAttachment]);
@@ -1097,7 +1098,7 @@ export function removePost(post: ExtendedPost) {
 }
 
 export function selectPost(postId: string) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.RECEIVED_POST_SELECTED,
             data: postId,
@@ -1179,7 +1180,7 @@ export function doPostActionWithCookie(postId: string, actionId: string, actionC
 }
 
 export function addMessageIntoHistory(message: string) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.ADD_MESSAGE_INTO_HISTORY,
             data: message,
@@ -1190,7 +1191,7 @@ export function addMessageIntoHistory(message: string) {
 }
 
 export function resetHistoryIndex(index: number) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.RESET_HISTORY_INDEX,
             data: index,
@@ -1201,7 +1202,7 @@ export function resetHistoryIndex(index: number) {
 }
 
 export function moveHistoryIndexBack(index: number) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.MOVE_HISTORY_INDEX_BACK,
             data: index,
@@ -1212,7 +1213,7 @@ export function moveHistoryIndexBack(index: number) {
 }
 
 export function moveHistoryIndexForward(index: number) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.MOVE_HISTORY_INDEX_FORWARD,
             data: index,
