@@ -4,8 +4,6 @@ import {combineReducers} from 'redux';
 import {GroupTypes} from '@mm-redux/action_types';
 import {GroupChannel, GroupSyncables, GroupTeam, Group} from '@mm-redux/types/groups';
 import {GenericAction} from '@mm-redux/types/actions';
-import {Team, TeamMembership} from '@mm-redux/types/teams';
-import {ChannelMembership} from '@mm-redux/types/channels';
 import {Dictionary} from '@mm-redux/types/utilities';
 
 function syncables(state: Dictionary<GroupSyncables> = {}, action: GenericAction) {
@@ -200,11 +198,9 @@ function groups(state: Dictionary<Group> = {}, action: GenericAction) {
         const nextState = {...state};
         const {groupsByChannelId} = action.data;
 
-        for (const channelID of Object.keys(groupsByChannelId)) {
-            if (groupsByChannelId[channelID]) {
-                for (const group of groupsByChannelId[channelID]) {
-                    nextState[group.id] = group;
-                }
+        for (const group of Object.values(groupsByChannelId) as Group[]) {
+            if (group) {
+                nextState[group.id] = group;
             }
         }
         return nextState;

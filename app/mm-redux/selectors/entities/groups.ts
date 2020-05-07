@@ -57,7 +57,7 @@ export function getGroupMembers(state: GlobalState, id: string) {
 
 export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term: string, teamId: string, channelId: string): Array<Group> {
     const groups = getAssociatedGroupsForReference(state, teamId, channelId);
-    if (!groups || groups.length <= 0) {
+    if (!groups || groups.length === 0) {
         return emptyList;
     }
     const filteredGroups = filterGroupsMatchingTerm(groups, term);
