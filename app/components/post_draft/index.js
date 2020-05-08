@@ -55,6 +55,7 @@ export function mapStateToProps(state, ownProps) {
                 channel: currentChannel.id,
                 team: currentChannel.team_id,
                 permission: Permissions.CREATE_POST,
+                default: true,
             },
         );
 
@@ -63,6 +64,7 @@ export function mapStateToProps(state, ownProps) {
             {
                 channel: currentChannel.id,
                 permission: Permissions.USE_CHANNEL_MENTIONS,
+                default: true,
             },
         );
     }

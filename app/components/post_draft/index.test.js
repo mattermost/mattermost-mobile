@@ -71,11 +71,13 @@ describe('mapStateToProps', () => {
             channel: undefined,
             team: undefined,
             permission: Permissions.CREATE_POST,
+            default: true,
         });
 
         expect(roleSelectors.haveIChannelPermission).not.toHaveBeenCalledWith(state, {
             channel: undefined,
             permission: Permissions.USE_CHANNEL_MENTIONS,
+            default: true,
         });
     });
 
@@ -90,11 +92,13 @@ describe('mapStateToProps', () => {
             channel: undefined,
             team: undefined,
             permission: Permissions.CREATE_POST,
+            default: true,
         });
 
         expect(roleSelectors.haveIChannelPermission).toHaveBeenCalledWith(state, {
             channel: undefined,
             permission: Permissions.USE_CHANNEL_MENTIONS,
+            default: true,
         });
     });
 });
