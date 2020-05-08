@@ -450,7 +450,7 @@
   "mobile.server_link.unreachable_channel.error": "This link belongs to a deleted channel or to a channel to which you do not have access.",
   "mobile.server_link.unreachable_team.error": "This link belongs to a deleted team or to a team to which you do not have access.",
   "mobile.server_ssl.error.text": "The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.",
-  "mobile.server_ssl.error.title": "Server SSL Issue",
+  "mobile.server_ssl.error.title": "Untrusted Certificate",
   "mobile.server_upgrade.button": "OK",
   "mobile.server_upgrade.description": "\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n",
   "mobile.server_upgrade.title": "Server upgrade required",

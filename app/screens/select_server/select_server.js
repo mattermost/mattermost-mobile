@@ -384,7 +384,7 @@ export default class SelectServer extends PureComponent {
         Alert.alert(
             formatMessage({
                 id: 'mobile.server_ssl.error.title',
-                defaultMessage: 'Server SSL Issue',
+                defaultMessage: 'Untrusted Certificate',
             }),
 
             formatMessage({
