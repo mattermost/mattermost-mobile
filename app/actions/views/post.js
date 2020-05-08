@@ -465,7 +465,10 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
 
         console.log(`Fetched ${posts.length} posts from ${promises.length} unread channels`); //eslint-disable-line no-console
         if (posts.length) {
-            actions.push(receivedPosts({posts}));
+            // receivedPosts should be the first action dispatched as
+            // receivedPostsSince and receivedPostsInChannel reducers are
+            // dependent on it.
+            actions.unshift(receivedPosts({posts}));
             const additional = await dispatch(getPostsAdditionalDataBatch(posts));
             if (additional.data.length) {
                 actions.push(...additional.data);
