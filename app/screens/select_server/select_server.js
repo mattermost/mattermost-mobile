@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
+    Alert,
     DeviceEventEmitter,
     Image,
     Keyboard,
@@ -103,6 +104,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
+        this.sslProblemListener = DeviceEventEmitter.addListener('RNFetchBlobSslProblem', this.handleSslProblem);
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
@@ -131,6 +133,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener.remove();
+        this.sslProblemListener.remove();
 
         this.navigationEventListener.remove();
     }
@@ -365,6 +368,38 @@ export default class SelectServer extends PureComponent {
         const {actions} = this.props;
 
         actions.scheduleExpiredNotification(intl);
+    };
+
+    handleSslProblem = () => {
+        if (!this.state.connecting && !this.state.connected) {
+            return null;
+        }
+
+        this.cancelPing();
+
+        const urlParse = require('url-parse');
+        const host = urlParse(this.state.url, true).host || this.state.url;
+
+        const {formatMessage} = this.context.intl;
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.server_ssl.error.title',
+                defaultMessage: 'Server SSL Issue',
+            }),
+
+            formatMessage({
+                id: 'mobile.server_ssl.error.text',
+                defaultMessage: 'The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.',
+            },
+            {
+                host,
+            }),
+            [
+                {text: 'OK'},
+            ],
+            {cancelable: false},
+        );
+        return null;
     };
 
     selectCertificate = () => {
