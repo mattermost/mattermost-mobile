@@ -84,7 +84,7 @@ export default class Search extends PureComponent {
         searchBarRightMargin: 0,
         returnKeyType: 'search',
         keyboardType: 'default',
-        containerHeight: 40,
+        containerHeight: 50,
     };
 
     constructor(props) {
@@ -175,7 +175,7 @@ export default class Search extends PureComponent {
                 Animated.timing(
                     this.leftComponentAnimated,
                     {
-                        toValue: 100,
+                        toValue: 112,
                         duration: 200,
                     },
                 ),
