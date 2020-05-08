@@ -9,6 +9,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Improvements
+ - Improved network reliability and channel switching time for unread channels by fetching new posts as soon as the app reconnects.
  
 ### Bug Fixes
 
@@ -18,7 +19,6 @@
  - Fixed an issue where the username that created the webhook was shown on webhook posts instead of the name of the bot.
  - Fixed an issue where posts on the same thread appeared to be from different threads since the "...commented on [Thread Title]" was shown on all posts in the thread.
  - Fixed an issue where the system message for "Edit Channel Purpose" rendered markdown.
- - Fixed an issue where pre-fetching of unread channels included archived channels.
 
 #### iOS specific
  - Fixed an issue where code block numbering was obstructed by the iPhone's notch.
