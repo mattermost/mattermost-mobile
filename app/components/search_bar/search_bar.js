@@ -273,6 +273,7 @@ export default class Search extends PureComponent {
                 size: 25,
                 color: searchBarStyle.clearIconColorAndroid,
                 name: 'arrow-back',
+                underlayColor: 'transparent',
             };
 
             clearIcon = {
