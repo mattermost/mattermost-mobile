@@ -84,7 +84,7 @@ export default class Search extends PureComponent {
         searchBarRightMargin: 0,
         returnKeyType: 'search',
         keyboardType: 'default',
-        containerHeight: 50,
+        containerHeight: 40,
     };
 
     constructor(props) {
