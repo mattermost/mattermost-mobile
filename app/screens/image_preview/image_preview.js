@@ -313,7 +313,11 @@ export default class ImagePreview extends PureComponent {
                     colors={['transparent', '#000000']}
                     pointerEvents='none'
                 >
-                    <Text style={style.filename}>
+                    <Text
+                        style={style.filename}
+                        numberOfLines={2}
+                        ellipsizeMode='tail'
+                    >
                         {(files[index] && files[index].caption) || ''}
                     </Text>
                 </LinearGradient>
@@ -375,12 +379,11 @@ export default class ImagePreview extends PureComponent {
             const flattenStyle = StyleSheet.flatten(style);
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
             const imageStyle = {...flattenStyle, ...calculatedDimensions};
-            const src = {...source, cache: FastImage.cacheControl.cacheOnly};
 
             return (
                 <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
                     <FastImage
-                        source={src}
+                        source={source}
                         style={imageStyle}
                     />
                 </View>
@@ -646,10 +649,6 @@ const style = StyleSheet.create({
         width: '100%',
     },
     footer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
         maxHeight: 64,
         justifyContent: 'flex-end',
         paddingHorizontal: 24,
