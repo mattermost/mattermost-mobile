@@ -175,7 +175,7 @@ export default class Search extends PureComponent {
                 Animated.timing(
                     this.leftComponentAnimated,
                     {
-                        toValue: 112,
+                        toValue: 115,
                         duration: 200,
                     },
                 ),
