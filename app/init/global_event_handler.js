@@ -24,6 +24,7 @@ import {selectDefaultChannel} from '@actions/views/channel';
 import {showOverlay} from '@actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
+import LocalConfig from '@assets/config';
 import {NavigationTypes, ViewTypes} from '@constants';
 import {getTranslations, resetMomentLocale} from '@i18n';
 import PushNotifications from 'app/push_notifications';
@@ -36,7 +37,6 @@ import {getDeviceTimezoneAsync} from '@utils/timezone';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
-import LocalConfig from 'assets/config';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';

@@ -9,13 +9,11 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from '@mm-redux/client';
-
+import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ProgressiveImage from '@components/progressive_image';
+import {Client4} from '@mm-redux/client';
 import {isGif} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
-
-import brokenImageIcon from 'assets/images/icons/brokenimage.png';
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
 const SMALL_IMAGE_MAX_WIDTH = 48;

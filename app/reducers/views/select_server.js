@@ -3,7 +3,7 @@
 
 import {combineReducers} from 'redux';
 
-import Config from 'assets/config.json';
+import Config from '@assets/config.json';
 
 import {ViewTypes} from 'app/constants';
 

@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {setLocalizeFunction, localizeMessage} from '@mm-redux/utils/i18n_utils';
-const en = require('assets/i18n/en.json');
+const en = require('@assets/i18n/en.json');
 const [testKey, testValue] = Object.entries(en)[0];
 
 describe('i18n utils', () => {

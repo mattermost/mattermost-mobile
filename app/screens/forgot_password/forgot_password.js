@@ -15,15 +15,13 @@ import {
     View,
 } from 'react-native';
 
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
 import {isEmail} from '@mm-redux/utils/helpers';
+import {changeOpacity} from '@utils/theme';
 
 import {GlobalStyles} from 'app/styles';
-
-import ErrorText from 'app/components/error_text';
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-
-import {changeOpacity} from 'app/utils/theme';
 
 export default class ForgotPassword extends PureComponent {
     static propTypes = {
@@ -156,7 +154,7 @@ export default class ForgotPassword extends PureComponent {
                 >
                     <View style={style.innerContainer}>
                         <Image
-                            source={require('assets/images/logo.png')}
+                            source={require('@assets/images/logo.png')}
                         />
                         {displayError}
                         {passwordFormView}

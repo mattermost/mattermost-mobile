@@ -25,6 +25,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import merge from 'deepmerge';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
+import LocalConfig from '@assets/config';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
@@ -40,8 +41,6 @@ import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
 import telemetry from 'app/telemetry';
-
-import LocalConfig from 'assets/config';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
@@ -442,7 +441,7 @@ export default class SelectServer extends PureComponent {
                     >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                             <Image
-                                source={require('assets/images/logo.png')}
+                                source={require('@assets/images/logo.png')}
                             />
 
                             <View>
