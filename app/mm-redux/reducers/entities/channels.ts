@@ -372,7 +372,7 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
         if (sync) {
             current.forEach((member: ChannelMembership) => {
                 const id = member.channel_id;
-                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id === id)) {
+                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id !== id)) {
                     delete nextState[id];
                     hasNewValues = true;
                 }
