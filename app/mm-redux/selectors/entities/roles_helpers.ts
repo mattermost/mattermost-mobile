@@ -9,6 +9,7 @@ export type PermissionsOptions = {
     channel?: string;
     team?: string;
     permission: string;
+    default?: boolean;
 };
 
 export function getRoles(state: GlobalState) {
