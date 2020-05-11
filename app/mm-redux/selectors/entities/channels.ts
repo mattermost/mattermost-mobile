@@ -44,20 +44,6 @@ export function getChannelMembersInChannels(state: GlobalState): RelationOneToOn
     return state.entities.channels.membersInChannel;
 }
 
-export const getKnownUsers: (a: GlobalState) => Set<string> = createSelector(
-    getChannelMembersInChannels,
-    getCurrentUserId,
-    (channelsMemberships: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>, currentUserId: string): Set<string> => {
-        const knownUsers: Set<string> = new Set([currentUserId]);
-        for (const membersInChannel of Object.values(channelsMemberships)) {
-            for (const member of Object.values(membersInChannel)) {
-                knownUsers.add(member.user_id);
-            }
-        }
-        return knownUsers;
-    }
-);
-
 function sortChannelsByRecencyOrAlpha(locale: string, lastPosts: RelationOneToOne<Channel, Post>, sorting: SortingType, a: Channel, b: Channel) {
     if (sorting === 'recent') {
         return sortChannelsByRecency(lastPosts, a, b);

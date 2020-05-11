@@ -52,6 +52,7 @@ export default class MoreDirectMessages extends PureComponent {
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        isGuest: PropTypes.object.isRequired,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -358,6 +359,8 @@ export default class MoreDirectMessages extends PureComponent {
         );
     };
 
+    filterUnknownUsers = (u) => Boolean(this.props.allProfiles[u.id])
+
     renderLoading = () => {
         const {theme} = this.props;
         const {loading} = this.state;
@@ -399,7 +402,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, theme, isLandscape} = this.props;
+        const {isGuest, currentUserId, theme, isLandscape} = this.props;
         const {
             loading,
             profiles,
@@ -435,7 +438,7 @@ export default class MoreDirectMessages extends PureComponent {
         let listType;
         if (term) {
             const exactMatches = [];
-            const results = filterProfilesMatchingTerm(searchResults, term).filter((p) => {
+            const filterByTerm = (p) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
                     return false;
                 }
@@ -446,11 +449,23 @@ export default class MoreDirectMessages extends PureComponent {
                 }
 
                 return true;
-            });
+            };
+
+            let results;
+            if (isGuest) {
+                results = filterProfilesMatchingTerm(searchResults, term).filter((u) => filterByTerm(u) && this.filterUnknownUsers(u));
+            } else {
+                results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            }
             data = [...exactMatches, ...results];
+
             listType = FLATLIST;
         } else {
-            data = createProfilesSections(profiles);
+            if (isGuest) {
+                data = createProfilesSections(profiles.filter(this.filterUnknownUsers));
+            } else {
+                data = createProfilesSections(profiles);
+            }
             listType = SECTIONLIST;
         }
 
