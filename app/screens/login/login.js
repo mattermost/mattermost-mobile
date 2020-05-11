@@ -39,7 +39,6 @@ export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', '
 export default class Login extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
@@ -81,7 +80,6 @@ export default class Login extends PureComponent {
         telemetry.remove(['start:overall']);
 
         tracker.initialLoad = Date.now();
-
         this.scheduleSessionExpiredNotification();
 
         resetToChannel();
@@ -94,7 +92,7 @@ export default class Login extends PureComponent {
         const loginId = this.loginId;
         const password = this.password;
 
-        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, loginId, password});
+        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, goToChannel: this.goToChannel, loginId, password});
     };
 
     blur = () => {
@@ -125,7 +123,6 @@ export default class Login extends PureComponent {
         }
 
         this.setState({isLoading: false});
-        resetToChannel();
         return true;
     };
 
@@ -309,12 +306,14 @@ export default class Login extends PureComponent {
         }
     }
 
-    signIn = () => {
+    signIn = async () => {
         const {actions} = this.props;
         const {isLoading} = this.state;
         if (isLoading) {
-            actions.login(this.loginId.toLowerCase(), this.password).
-                then(this.checkLoginResponse);
+            const result = await actions.login(this.loginId.toLowerCase(), this.password);
+            if (this.checkLoginResponse(result)) {
+                this.goToChannel();
+            }
         }
     };
 

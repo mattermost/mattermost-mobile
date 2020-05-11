@@ -49,7 +49,6 @@ export default class SelectServer extends PureComponent {
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
             handleServerUrlChanged: PropTypes.func.isRequired,
-            handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
@@ -294,7 +293,6 @@ export default class SelectServer extends PureComponent {
         tracker.initialLoad = Date.now();
 
         await this.props.actions.login('credential', 'password');
-        await this.props.actions.handleSuccessfulLogin();
         this.scheduleSessionExpiredNotification();
 
         resetToChannel();
