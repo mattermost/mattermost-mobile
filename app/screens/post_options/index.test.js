@@ -159,6 +159,7 @@ describe('makeMapStateToProps', () => {
             channel: undefined,
             team: undefined,
             permission: Permissions.CREATE_POST,
+            default: true,
         });
     });
 
@@ -179,6 +180,7 @@ describe('makeMapStateToProps', () => {
             channel: undefined,
             team: undefined,
             permission: Permissions.CREATE_POST,
+            default: true,
         });
     });
 });

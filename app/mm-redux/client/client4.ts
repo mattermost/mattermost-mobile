@@ -447,6 +447,15 @@ export default class Client4 {
         );
     }
 
+    getKnownUsers = async () => {
+        this.trackEvent('api', 'api_get_known_users');
+
+        return this.doFetch(
+            `${this.getUsersRoute()}/known`,
+            {method: 'get'},
+        );
+    }
+
     sendPasswordResetEmail = async (email: string) => {
         this.trackEvent('api', 'api_users_send_password_reset');
 
