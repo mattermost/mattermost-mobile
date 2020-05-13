@@ -358,7 +358,7 @@ export function showOverlay(name, passProps, options = {}) {
             componentBackgroundColor: 'transparent',
         },
         overlay: {
-            interceptTouchOutside: false,
+            interceptTouchOutside: true,
         },
     };
 
