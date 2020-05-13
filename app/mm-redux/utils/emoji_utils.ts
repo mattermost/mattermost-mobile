@@ -21,7 +21,7 @@ export function getEmojiImageUrl(emoji: Emoji): string {
     return Client4.getSystemEmojiImageUrl(filename);
 }
 
-export function parseNeededCustomEmojisFromText(text: string, systemEmojis: Array<string>, customEmojisByName: Map<string, CustomEmoji>, nonExistentEmoji: Set<string>): Set<string> {
+export function parseNeededCustomEmojisFromText(text: string, systemEmojis: Set<string>, customEmojisByName: Map<string, CustomEmoji>, nonExistentEmoji: Set<string>): Set<string> {
     if (!text.includes(':')) {
         return new Set();
     }
@@ -34,7 +34,7 @@ export function parseNeededCustomEmojisFromText(text: string, systemEmojis: Arra
             continue;
         }
 
-        if (systemEmojis.includes(match[1])) {
+        if (systemEmojis.has(match[1])) {
             // It's a system emoji, go the next match
             continue;
         }
