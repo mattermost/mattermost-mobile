@@ -5,11 +5,9 @@ import 'react-native/Libraries/Core/InitializeCore';
 import {DeviceEventEmitter, Platform, Text} from 'react-native';
 import 'react-native-gesture-handler';
 
-import LocalConfig from 'assets/config';
-
-import telemetry from 'app/telemetry';
-
+import LocalConfig from '@assets/config';
 import 'app/mattermost';
+import telemetry from 'app/telemetry';
 
 if (Platform.OS === 'android') {
     require('harmony-reflect');

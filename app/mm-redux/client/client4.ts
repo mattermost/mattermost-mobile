@@ -1,13 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {analytics, context} from '@init/analytics.ts';
 import {buildQueryString, isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {cleanUrlForLogging} from '@mm-redux/utils/sentry';
-import {General} from '../constants';
-
 import {isSystemAdmin} from '@mm-redux/utils/user_utils';
-
-import fetch from './fetch_etag';
 import {UserProfile, UserStatus} from '@mm-redux/types/users';
 import {Team} from '@mm-redux/types/teams';
 import {Channel, ChannelModerationPatch} from '@mm-redux/types/channels';
@@ -22,6 +19,9 @@ import {CustomEmoji} from '@mm-redux/types/emojis';
 import {Config} from '@mm-redux/types/config';
 import {Bot, BotPatch} from '@mm-redux/types/bots';
 import {SyncablePatch} from '@mm-redux/types/groups';
+
+import fetch from './fetch_etag';
+import {General} from '../constants';
 
 const FormData = require('form-data');
 const HEADER_AUTH = 'Authorization';
@@ -3078,6 +3078,10 @@ export default class Client4 {
     };
 
     trackEvent(category: string, event: string, props?: any) {
+        if (!analytics) {
+            return;
+        }
+
         // Temporary change to allow only certain events to reduce data rate - see MM-13062
         // All events in 'admin' category are allowed, since they are low-volume
         if (category !== 'admin' && ![
@@ -3116,31 +3120,11 @@ export default class Client4 {
             user_actual_id: this.userId,
         }, props);
         const options = {
-            context: {
-                ip: '0.0.0.0',
-            },
-            page: {
-                path: '',
-                referrer: '',
-                search: '',
-                title: '',
-                url: '',
-            },
+            context,
             anonymousId: '00000000000000000000000000',
         };
-        const globalAny: any = global;
-        if (globalAny && globalAny.window && globalAny.window.analytics && globalAny.window.analytics.initialized) {
-            globalAny.window.analytics.track('event', properties, options);
-        } else if (globalAny && globalAny.analytics) {
-            if (globalAny.analytics_context) {
-                options.context = globalAny.analytics_context;
-            }
 
-            globalAny.analytics.track(Object.assign({
-                event: 'event',
-                userId: this.diagnosticId,
-            }, {properties}, options));
-        }
+        analytics.track(event, properties, options);
     }
 }
 

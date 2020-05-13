@@ -12,18 +12,17 @@ import {
     View,
 } from 'react-native';
 
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import copy from 'assets/images/post_menu/copy.png';
-import edit from 'assets/images/post_menu/edit.png';
-import emoji from 'assets/images/post_menu/emoji.png';
-import flag from 'assets/images/post_menu/flag.png';
-import link from 'assets/images/post_menu/link.png';
-import pin from 'assets/images/post_menu/pin.png';
-import trash from 'assets/images/post_menu/trash.png';
-import reply from 'assets/images/post_menu/reply.png';
-import bookmark from 'assets/images/post_menu/bookmark.png';
+import copy from '@assets/images/post_menu/copy.png';
+import edit from '@assets/images/post_menu/edit.png';
+import emoji from '@assets/images/post_menu/emoji.png';
+import flag from '@assets/images/post_menu/flag.png';
+import link from '@assets/images/post_menu/link.png';
+import pin from '@assets/images/post_menu/pin.png';
+import trash from '@assets/images/post_menu/trash.png';
+import reply from '@assets/images/post_menu/reply.png';
+import bookmark from '@assets/images/post_menu/bookmark.png';
+import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const icons = {
     copy,

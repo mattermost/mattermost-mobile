@@ -11,20 +11,19 @@ import {
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {showModal, showModalOverCurrentContext} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import SafeAreaView from '@components/safe_area_view';
+import EmptyToolbar from '@components/start/empty_toolbar';
+import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import EphemeralStore from '@store/ephemeral_store';
+import {preventDoubleTap} from '@utils/tap';
+import {setNavigatorStyles} from '@utils/theme';
+import tracker from '@utils/time_tracker';
 
-import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
-import SafeAreaView from 'app/components/safe_area_view';
-import EmptyToolbar from 'app/components/start/empty_toolbar';
-import {NavigationTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
-import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
-import {preventDoubleTap} from 'app/utils/tap';
-import {setNavigatorStyles} from 'app/utils/theme';
-import tracker from 'app/utils/time_tracker';
-
-import LocalConfig from 'assets/config';
 
 export let ClientUpgradeListener;
 
