@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-import-assign */
+
 import {Permissions} from '@mm-redux/constants';
 import * as channelSelectors from '@mm-redux/selectors/entities/channels';
 import * as userSelectors from '@mm-redux/selectors/entities/users';

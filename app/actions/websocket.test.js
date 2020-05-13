@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-import-assign */
+
 import assert from 'assert';
 import nock from 'nock';
 import {Server, WebSocket as MockWebSocket} from 'mock-socket';

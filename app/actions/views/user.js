@@ -240,4 +240,5 @@ export function setCurrentUserStatusOffline() {
     };
 }
 
+/* eslint-disable no-import-assign */
 HelperActions.forceLogoutIfNecessary = forceLogoutIfNecessary;

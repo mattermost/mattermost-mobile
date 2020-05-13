@@ -205,11 +205,11 @@ PODS:
     - React-cxxreact (= 0.62.2)
     - React-jsi (= 0.62.2)
   - React-jsinspector (0.62.2)
-  - react-native-cameraroll (1.6.0):
+  - react-native-cameraroll (1.6.2):
     - React
   - react-native-cookies (2.0.9):
     - React
-  - react-native-document-picker (3.3.3):
+  - react-native-document-picker (3.4.0):
     - React
   - react-native-hw-keyboard-event (0.0.4):
     - React
@@ -220,7 +220,7 @@ PODS:
   - react-native-mmkv-storage (0.3.2):
     - MMKV (= 1.1.1)
     - React
-  - react-native-netinfo (5.8.0):
+  - react-native-netinfo (5.8.1):
     - React
   - react-native-notifications (2.1.7):
     - React
@@ -228,7 +228,7 @@ PODS:
     - React
   - react-native-safe-area (0.5.1):
     - React
-  - react-native-safe-area-context (0.7.3):
+  - react-native-safe-area-context (1.0.0):
     - React
   - react-native-video (5.0.2):
     - React
@@ -300,7 +300,7 @@ PODS:
     - React
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (6.5.0):
+  - ReactNativeNavigation (6.6.0):
     - React
     - React-RCTImage
     - React-RCTText
@@ -316,7 +316,7 @@ PODS:
     - React
     - SDWebImage (~> 5.0)
     - SDWebImageWebPCoder (~> 0.4.1)
-  - RNFileViewer (2.0.2):
+  - RNFileViewer (2.0.3):
     - React
   - RNGestureHandler (1.6.1):
     - React
@@ -326,11 +326,11 @@ PODS:
     - React
   - RNPermissions (2.1.4):
     - React
-  - RNReactNativeHapticFeedback (1.9.0):
+  - RNReactNativeHapticFeedback (1.10.0):
     - React
   - RNScreens (2.7.0):
     - React
-  - RNSentry (1.3.7):
+  - RNSentry (1.3.8):
     - React
     - Sentry (~> 4.4.0)
   - RNSVG (12.1.0):
@@ -583,18 +583,18 @@ SPEC CHECKSUMS:
   React-jsi: b6dc94a6a12ff98e8877287a0b7620d365201161
   React-jsiexecutor: 1540d1c01bb493ae3124ed83351b1b6a155db7da
   React-jsinspector: 512e560d0e985d0e8c479a54a4e5c147a9c83493
-  react-native-cameraroll: bc36a94ba2c4c46cca03e9c93d6c3be598a91b45
+  react-native-cameraroll: 94bec91c68b94ac946c61b497b594bb38692c41b
   react-native-cookies: bc1f91a504ee091f1998a1b6c7ff4b7a9ed5b80e
-  react-native-document-picker: dd96ce05bf1453b110d7a3912097bf6d298d2cb6
+  react-native-document-picker: d694111879537cec2c258a1dcd2243d9df746824
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
   react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
   react-native-mmkv-storage: 49389227471de5258b4e5bae7857bfe0ad02c8f7
-  react-native-netinfo: 6458a467af4b3b7b0b87a179776ba6ba469e4f22
+  react-native-netinfo: ae21a6ab293d6c75af0c17c562ef37a931218886
   react-native-notifications: 24706907104a0f00c35c4bde7e0ca76a50f730e1
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
-  react-native-safe-area-context: 8260e5157617df4b72865f44006797f895b2ada7
+  react-native-safe-area-context: 5f3e081f937ab7c44c179d551f332fa494cfcf8f
   react-native-video: 961749da457e73bf0b5565edfbaffc25abfb8974
   react-native-webview: 0e2881d2e3e72ad52a82445c1a116c43205fd471
   React-RCTActionSheet: f41ea8a811aac770e0cc6e0ad6b270c644ea8b7c
@@ -609,20 +609,20 @@ SPEC CHECKSUMS:
   ReactCommon: ed4e11d27609d571e7eee8b65548efc191116eb3
   ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: 591e44266ee7047948ac18e47a8f283e657be5a8
+  ReactNativeNavigation: e0d1a123d25212f0b2a10a5248e30bb3c94692d4
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: b34d2399d3e25db01d5b881949b503bd3c224d57
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
   RNDeviceInfo: 498ccbf8b1361fe858581e3c1193ecee1a031e62
   RNFastImage: 35ae972d6727c84ee3f5c6897e07f84d0a3445e9
-  RNFileViewer: b815b353fdc08552766c6325e5b66ff52bb6b7af
+  RNFileViewer: 98a887f39323fad493575c57bc76d1f0760824d2
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
   RNKeychain: bf2d7e9a0ae7a073c07770dd2aa6d11c67581733
   RNLocalize: fc27ee5878ce5a3af73873fb2d8e866e0d1e6d84
   RNPermissions: 8ca17fd6c822eea589fe84709d9426e05cc39c39
-  RNReactNativeHapticFeedback: 2566b468cc8d0e7bb2f84b23adc0f4614594d071
+  RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
   RNScreens: cf198f915f8a2bf163de94ca9f5bfc8d326c3706
-  RNSentry: 370623102247ebea20191b5fb549ecc7a275b324
+  RNSentry: 05cc998036c027785e466c896211b5c75b3e0ffd
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   SDWebImage: 7edb9c3ea661e77a66661f7f044de8c1b55d1120

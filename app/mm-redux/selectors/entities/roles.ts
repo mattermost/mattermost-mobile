@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import * as reselect from 'reselect';
-import {getCurrentUser, getCurrentChannelId} from '@mm-redux/selectors/entities/common';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/common';
 import {getTeamMemberships, getCurrentTeamId} from './teams';
 import * as types from '@mm-redux/types';
 import {getMySystemPermissions, getMySystemRoles, getRoles, PermissionsOptions} from '@mm-redux/selectors/entities/roles_helpers';
 import {GlobalState} from '@mm-redux/types/store';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {Role} from '@mm-redux/types/roles';
-import {Channel} from '@mm-redux/types/channels';
-import {Team} from '@mm-redux/types/teams';
 
 export {getMySystemPermissions, getMySystemRoles, getRoles};
 
