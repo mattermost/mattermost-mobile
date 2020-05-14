@@ -11,8 +11,6 @@ import {
 import {Navigation} from 'react-native-navigation';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
-import {RequestStatus} from '@mm-redux/constants';
-
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';

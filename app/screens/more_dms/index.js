@@ -12,13 +12,16 @@ import {General} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
+import {getCurrentUserId, getUsers, getCurrentUser} from '@mm-redux/selectors/entities/users';
+
+import {isGuest} from '@utils/users';
 
 import MoreDirectMessages from './more_dms';
 
 function mapStateToProps(state) {
     const config = getConfig(state);
     const restrictDirectMessage = config.RestrictDirectMessage === General.RESTRICT_DIRECT_MESSAGE_ANY;
+    const currentUser = getCurrentUser(state);
 
     return {
         restrictDirectMessage,
@@ -27,6 +30,7 @@ function mapStateToProps(state) {
         theme: getTheme(state),
         currentDisplayName: state.views.channel.displayName,
         currentUserId: getCurrentUserId(state),
+        isGuest: isGuest(currentUser),
         currentTeamId: getCurrentTeamId(state),
         isLandscape: isLandscape(state),
     };

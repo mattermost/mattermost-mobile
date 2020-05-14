@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     InteractionManager,
     Platform,
     StyleSheet,
@@ -12,23 +11,22 @@ import {
     Text,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import {Navigation} from 'react-native-navigation';
 import * as Animatable from 'react-native-animatable';
 import {PanGestureHandler} from 'react-native-gesture-handler';
 
+import {popToRoot, dismissAllModals, dismissOverlay} from '@actions/navigation';
+import logo from '@assets/images/icon.png';
+import webhookIcon from '@assets/images/icons/webhook.jpg';
+import FormattedText from '@components/formatted_text';
+import ProfilePicture from '@components/profile_picture';
+import {NavigationTypes} from '@constants';
 import {Client4} from '@mm-redux/client';
 import {isDirectChannel} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {displayUsername} from '@mm-redux/utils/user_utils';
-
-import {popToRoot, dismissAllModals, dismissOverlay} from 'app/actions/navigation';
-import FormattedText from 'app/components/formatted_text';
-import ProfilePicture from 'app/components/profile_picture';
-import {NavigationTypes} from 'app/constants';
-import {changeOpacity} from 'app/utils/theme';
-
-import logo from 'assets/images/icon.png';
-import webhookIcon from 'assets/images/icons/webhook.jpg';
+import {changeOpacity} from '@utils/theme';
 
 const IMAGE_SIZE = 33;
 const AUTO_DISMISS_TIME_MILLIS = 5000;
@@ -41,10 +39,8 @@ export default class Notification extends PureComponent {
         componentId: PropTypes.string.isRequired,
         channel: PropTypes.object,
         config: PropTypes.object,
-        deviceWidth: PropTypes.number.isRequired,
         notification: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
-        theme: PropTypes.object.isRequired,
         user: PropTypes.object,
     };
 
@@ -158,7 +154,7 @@ export default class Notification extends PureComponent {
         const {data} = notification;
 
         let icon = (
-            <Image
+            <FastImage
                 source={logo}
                 style={style.icon}
             />
@@ -168,7 +164,7 @@ export default class Notification extends PureComponent {
             const overrideIconURL = Client4.getAbsoluteUrl(data.override_icon_url); // eslint-disable-line camelcase
             const wsIcon = data.override_icon_url ? {uri: overrideIconURL} : webhookIcon;
             icon = (
-                <Image
+                <FastImage
                     source={wsIcon}
                     style={style.icon}
                 />

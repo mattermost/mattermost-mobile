@@ -3,7 +3,6 @@
 
 import assert from 'assert';
 
-import {UserTypes} from '@mm-redux/action_types';
 import {forceLogoutIfNecessary} from '@mm-redux/actions/helpers';
 import {Client4} from '@mm-redux/client';
 import {ClientError} from '@mm-redux/client/client4';

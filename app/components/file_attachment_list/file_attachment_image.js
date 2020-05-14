@@ -4,19 +4,16 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Animated,
     View,
     StyleSheet,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import brokenImageIcon from '@assets/images/icons/brokenimage.png';
+import ProgressiveImage from '@components/progressive_image';
 import {Client4} from '@mm-redux/client';
-
-import ProgressiveImage from 'app/components/progressive_image';
-import {isGif} from 'app/utils/file';
-import {changeOpacity} from 'app/utils/theme';
-
-import thumb from 'assets/images/thumb.png';
+import {isGif} from '@utils/file';
+import {changeOpacity} from '@utils/theme';
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
 const SMALL_IMAGE_MAX_WIDTH = 48;
@@ -57,11 +54,7 @@ export default class FileAttachmentImage extends PureComponent {
 
         const {file} = props;
         if (file && file.id && !file.localPath) {
-            const headers = {
-                Authorization: `Bearer ${Client4.getToken()}`,
-                'X-CSRF-Token': Client4.csrf,
-                'X-Requested-With': 'XMLHttpRequest',
-            };
+            const headers = Client4.getOptions({}).headers;
 
             const preloadImages = [
                 {uri: Client4.getFileThumbnailUrl(file.id), headers},
@@ -76,9 +69,7 @@ export default class FileAttachmentImage extends PureComponent {
         }
 
         this.state = {
-            opacity: new Animated.Value(0),
-            requesting: true,
-            retry: 0,
+            failed: false,
         };
     }
 
@@ -97,9 +88,17 @@ export default class FileAttachmentImage extends PureComponent {
         }
     };
 
+    handleError = () => {
+        this.setState({failed: true});
+    }
+
     imageProps = (file) => {
         const imageProps = {};
-        if (file.localPath) {
+        const {failed} = this.state;
+
+        if (failed) {
+            imageProps.defaultSource = brokenImageIcon;
+        } else if (file.localPath) {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
@@ -134,9 +133,9 @@ export default class FileAttachmentImage extends PureComponent {
                 <View style={style.smallImageOverlay}>
                     <ProgressiveImage
                         style={{height: file.height, width: file.width}}
-                        defaultSource={thumb}
-                        tintDefaultSource={!file.localPath}
+                        tintDefaultSource={!file.localPath && !this.state.failed}
                         filename={file.name}
+                        onError={this.handleError}
                         resizeMode={'contain'}
                         resizeMethod={resizeMethod}
                         {...this.imageProps(file)}
@@ -168,9 +167,9 @@ export default class FileAttachmentImage extends PureComponent {
                 {this.boxPlaceholder()}
                 <ProgressiveImage
                     style={[this.props.isSingleImage ? null : style.imagePreview, imageDimensions]}
-                    defaultSource={thumb}
-                    tintDefaultSource={!file.localPath}
+                    tintDefaultSource={!file.localPath && !this.state.failed}
                     filename={file.name}
+                    onError={this.handleError}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
                     {...imageProps}

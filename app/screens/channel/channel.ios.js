@@ -5,27 +5,29 @@ import React from 'react';
 import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
-import InteractiveDialogController from 'app/components/interactive_dialog_controller';
-import MainSidebar from 'app/components/sidebars/main';
-import NetworkIndicator from 'app/components/network_indicator';
-import PostTextbox from 'app/components/post_textbox';
-import SafeAreaView from 'app/components/safe_area_view';
-import SettingsSidebar from 'app/components/sidebars/settings';
-import StatusBar from 'app/components/status_bar';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import LocalConfig from 'assets/config';
+import LocalConfig from '@assets/config';
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
+import InteractiveDialogController from '@components/interactive_dialog_controller';
+import NetworkIndicator from '@components/network_indicator';
+import PostDraft from '@components/post_draft';
+import SafeAreaView from '@components/safe_area_view';
+import MainSidebar from '@components/sidebars/main';
+import SettingsSidebar from '@components/sidebars/settings';
+import StatusBar from '@components/status_bar';
+import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelBase, {ClientUpgradeListener} from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
 
-const ACCESSORIES_CONTAINER_NATIVE_ID = 'channelAccessoriesContainer';
-const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
-const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
-
 export default class ChannelIOS extends ChannelBase {
+    handleAutoComplete = (value) => {
+        if (this.postDraft?.current) {
+            this.postDraft.current.handleInputQuickAction(value);
+        }
+    };
+
     mainSidebarRef = (ref) => {
         if (ref) {
             this.mainSidebar = ref;
@@ -87,10 +89,10 @@ export default class ChannelIOS extends ChannelBase {
                     scrollViewNativeID={currentChannelId}
                     accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                 >
-                    <PostTextbox
+                    <PostDraft
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        ref={this.postTextbox}
+                        ref={this.postDraft}
                         screenId={this.props.componentId}
                     />
                 </KeyboardTrackingView>

@@ -97,7 +97,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
     };
 
     open = () => {
-        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
 
         if (this.drawerRef?.current) {
             this.drawerRef.current.openDrawer();

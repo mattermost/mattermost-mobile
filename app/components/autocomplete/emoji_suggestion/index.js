@@ -6,6 +6,7 @@ import {createSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
 
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {autocompleteCustomEmojis} from '@mm-redux/actions/emojis';
 
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
@@ -42,8 +43,9 @@ function mapStateToProps(state) {
     const fuse = new Fuse(list, options);
 
     return {
-        fuse,
         emojis,
+        customEmojisEnabled: getConfig(state).EnableCustomEmoji === 'true',
+        fuse,
         theme: getTheme(state),
     };
 }

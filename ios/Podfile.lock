@@ -34,7 +34,7 @@ PODS:
   - libwebp/webp (1.1.0)
   - MMKV (1.1.0):
     - MMKVCore (~> 1.1.0)
-  - MMKVCore (1.1.0)
+  - MMKVCore (1.1.1)
   - Permission-Camera (2.0.10):
     - RNPermissions
   - Permission-PhotoLibrary (2.0.10):
@@ -322,6 +322,9 @@ PODS:
     - React
   - RNReactNativeHapticFeedback (1.9.0):
     - React
+  - RNRudderSdk (1.0.0):
+    - React
+    - Rudder (= 1.0.3-beta-4)
   - RNSentry (1.3.6):
     - React
     - Sentry (~> 4.4.0)
@@ -329,9 +332,10 @@ PODS:
     - React
   - RNVectorIcons (6.6.0):
     - React
-  - SDWebImage (5.6.1):
-    - SDWebImage/Core (= 5.6.1)
-  - SDWebImage/Core (5.6.1)
+  - Rudder (1.0.3-beta.4)
+  - SDWebImage (5.8.0):
+    - SDWebImage/Core (= 5.8.0)
+  - SDWebImage/Core (5.8.0)
   - SDWebImageWebPCoder (0.4.1):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.5)
@@ -401,6 +405,7 @@ DEPENDENCIES:
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeDocViewer (from `../node_modules/react-native-doc-viewer`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
+  - "RNRudderSdk (from `../node_modules/@rudderstack/rudder-sdk-react-native/ios`)"
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
@@ -414,6 +419,7 @@ SPEC REPOS:
     - libwebp
     - MMKV
     - MMKVCore
+    - Rudder
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
@@ -530,6 +536,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-doc-viewer"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
+  RNRudderSdk:
+    :path: "../node_modules/@rudderstack/rudder-sdk-react-native/ios"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
   RNSVG:
@@ -550,7 +558,7 @@ SPEC CHECKSUMS:
   jail-monkey: d7c5048b2336f22ee9c9e0efa145f1f917338ea9
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
   MMKV: 7bb6c30f9ff2ea45bc2398c86e66dd1cb63cfe20
-  MMKVCore: f1e0aad4fc330e7cbfbdff16720017bf0973db5a
+  MMKVCore: 2748bf702287a814a6c514d054033e41e07f5c0f
   Permission-Camera: 8f0e5decca5f28f70f28a8dc31f012c9bad40ad8
   Permission-PhotoLibrary: b209bf23b784c9e1409a57d81c6d11ab1d3079c1
   RCTRequired: cec6a34b3ac8a9915c37e7e4ad3aa74726ce4035
@@ -598,10 +606,12 @@ SPEC CHECKSUMS:
   RNPermissions: 8afd37dbc1be65748363c6a90caffd1806567651
   RNReactNativeDocViewer: 571c6ac38483531b8fb521d02a6ba54652ed10a7
   RNReactNativeHapticFeedback: 2566b468cc8d0e7bb2f84b23adc0f4614594d071
+  RNRudderSdk: 3abdcc4b145b3db6571827b0fc7af4e75a96af13
   RNSentry: d892cbdee165cc6159d71e2a7954efdb8a361918
   RNSVG: 7e16ddfc6e00d5aa69c9eb83e699bcce5dcb85d4
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
-  SDWebImage: 7edb9c3ea661e77a66661f7f044de8c1b55d1120
+  Rudder: 358a71278045a608ae4b081b37a465ffb65c129d
+  SDWebImage: 84000f962cbfa70c07f19d2234cbfcf5d779b5dc
   SDWebImageWebPCoder: 36f8f47bd9879a8aea6044765c1351120fd8e3a8
   Sentry: 14bdd673870e8cf64932b149fad5bbbf39a9b390
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b

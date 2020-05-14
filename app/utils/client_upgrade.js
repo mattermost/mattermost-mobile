@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 import semver from 'semver';
 
-import {UpgradeTypes} from 'app/constants';
-
-import LocalConfig from 'assets/config';
+import LocalConfig from '@assets/config';
+import {UpgradeTypes} from '@constants';
 
 export function checkUpgradeType(currentVersion, minVersion, latestVersion, logError) {
     let upgradeType = UpgradeTypes.NO_UPGRADE;

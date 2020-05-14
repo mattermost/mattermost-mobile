@@ -3,20 +3,19 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {NavigationTypes, ViewTypes} from '@constants';
+import {recordTime} from '@init/analytics.ts';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
 import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
-import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from '@mm-redux/actions/general';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {NavigationTypes, ViewTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import initialState from '@store/initial_state';
 import {getStateForReset} from '@store/utils';
-import {recordTime} from '@utils/segment';
 
 import {markChannelViewedAndRead} from './channel';
 

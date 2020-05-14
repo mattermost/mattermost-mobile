@@ -63,7 +63,7 @@ class PushNotificationUtils {
     };
 
     onPushNotification = async (deviceNotification) => {
-        const {dispatch, getState} = Store.redux;
+        const {dispatch} = Store.redux;
         const {data, foreground, message, userInteraction} = deviceNotification;
         const notification = {
             data,

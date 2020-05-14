@@ -5,11 +5,9 @@ import 'react-native/Libraries/Core/InitializeCore';
 import {DeviceEventEmitter, Platform, Text} from 'react-native';
 import 'react-native-gesture-handler';
 
-import LocalConfig from 'assets/config';
-
-import telemetry from 'app/telemetry';
-
+import LocalConfig from '@assets/config';
 import 'app/mattermost';
+import telemetry from 'app/telemetry';
 
 if (Platform.OS === 'android') {
     require('harmony-reflect');
@@ -21,6 +19,7 @@ if (__DEV__) {
         'Warning: componentWillReceiveProps',
         'Warning: StatusBarIOS',
         '`-[RCTRootView cancelTouches]`',
+        'Animated',
 
         // Hide warnings caused by React Native (https://github.com/facebook/react-native/issues/20841)
         'Require cycle: node_modules/react-native/Libraries/Network/fetch.js',

@@ -12,13 +12,13 @@ import {
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import AppIcon from 'app/components/app_icon';
-import Config from 'assets/config';
-import AboutLinks from 'app/constants/about_links';
+import Config from '@assets/config';
+import AppIcon from '@components/app_icon';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import StatusBar from '@components/status_bar';
+import AboutLinks from '@constants/about_links';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 

@@ -5,12 +5,11 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, View} from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
-import {t} from 'app/utils/i18n';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import flagIcon from 'assets/images/post_header/flag.png';
-import pinIcon from 'assets/images/post_header/pin.png';
+import flagIcon from '@assets/images/post_header/flag.png';
+import pinIcon from '@assets/images/post_header/pin.png';
+import FormattedText from '@components/formatted_text';
+import {t} from '@utils/i18n';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class PostPreHeader extends PureComponent {
     static propTypes = {

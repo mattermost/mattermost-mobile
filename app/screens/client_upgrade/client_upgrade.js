@@ -14,13 +14,13 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import {UpgradeTypes} from 'app/constants';
-import logo from 'assets/images/logo.png';
-import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {popTopScreen, dismissModal} from 'app/actions/navigation';
+import {popTopScreen, dismissModal} from '@actions/navigation';
+import logo from '@assets/images/logo.png';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import {UpgradeTypes} from '@constants';
+import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ClientUpgrade extends PureComponent {
     static propTypes = {

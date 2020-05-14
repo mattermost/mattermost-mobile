@@ -4,9 +4,8 @@ import {createSelector} from 'reselect';
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import LocalConfig from '@assets/config';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-
-import LocalConfig from 'assets/config';
 
 const getClientUpgrade = createSelector(
     getConfig,

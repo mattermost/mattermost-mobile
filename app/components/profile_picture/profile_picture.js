@@ -3,15 +3,14 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, Platform, View} from 'react-native';
+import {Platform, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
+import placeholder from '@assets/images/profile.jpg';
+import UserStatus from '@components/user_status';
 import {Client4} from '@mm-redux/client';
-
-import UserStatus from 'app/components/user_status';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import placeholder from 'assets/images/profile.jpg';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
@@ -61,7 +60,10 @@ export default class ProfilePicture extends PureComponent {
         } else if (edit && imageUri) {
             this.setImageURL(imageUri);
         } else if (user) {
-            this.setImageURL(Client4.getProfilePictureUrl(user.id, user.last_picture_update));
+            const uri = Client4.getProfilePictureUrl(user.id, user.last_picture_update);
+            FastImage.preload([{uri, headers: Client4.getOptions({}).headers}]);
+
+            this.setImageURL(uri);
             this.clearProfileImageUri();
         }
     }
@@ -100,6 +102,7 @@ export default class ProfilePicture extends PureComponent {
 
             if (nextUrl && url !== nextUrl) {
                 // empty function is so that promise unhandled is not triggered in dev mode
+                FastImage.preload([{uri: nextUrl, headers: Client4.getOptions({}).headers}]);
                 this.setImageURL(nextUrl);
                 this.clearProfileImageUri();
             }
@@ -150,7 +153,7 @@ export default class ProfilePicture extends PureComponent {
             };
 
             image = (
-                <Image
+                <FastImage
                     key={pictureUrl}
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={source}
@@ -158,7 +161,7 @@ export default class ProfilePicture extends PureComponent {
             );
         } else {
             image = (
-                <Image
+                <FastImage
                     style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
                     source={placeholder}
                 />

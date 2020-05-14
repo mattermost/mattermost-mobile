@@ -6,13 +6,14 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import semver from 'semver/preload';
 
-import PushNotification from 'app/push_notifications';
-import mattermostBucket from 'app/mattermost_bucket';
+import {MinServerVersion} from '@assets/config';
 import * as I18n from '@i18n';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import Store from '@store/store';
 import intitialState from '@store/initial_state';
 
-import {MinServerVersion} from 'assets/config';
+import PushNotification from 'app/push_notifications';
+import mattermostBucket from 'app/mattermost_bucket';
 
 import GlobalEventHandler from './global_event_handler';
 
@@ -22,7 +23,7 @@ jest.mock('app/init/credentials', () => ({
     removeAppCredentials: jest.fn(),
 }));
 
-jest.mock('app/utils/error_handling', () => ({
+jest.mock('@utils/error_handling', () => ({
     default: {
         initializeErrorHandling: jest.fn(),
     },
@@ -45,7 +46,7 @@ jest.mock('@mm-redux/actions/general', () => ({
     setServerVersion: jest.fn().mockReturnValue('setServerVersion'),
 }));
 
-jest.mock('app/actions/views/root', () => ({
+jest.mock('@actions/views/root', () => ({
     startDataCleanup: jest.fn(),
     loadConfigAndLicense: jest.fn().mockReturnValue('loadConfigAndLicense'),
 }));
@@ -123,6 +124,34 @@ describe('GlobalEventHandler', () => {
         expect(setUserTimezone).toHaveBeenCalledTimes(1);
     });
 
+    it('should register NOTIFICATION_IN_APP once', () => {
+        const on = jest.spyOn(EventEmitter, 'on');
+
+        // Reset the listener
+        GlobalEventHandler.pushNotificationListener = false;
+
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+
+        // call it a second time
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+
+        expect(on).toBeCalledTimes(1);
+        expect(on).toBeCalledWith('NOTIFICATION_IN_APP', GlobalEventHandler.handleInAppNotification);
+    });
+
+    it('should register NOTIFICATION_IN_APP once after unregister', () => {
+        const on = jest.spyOn(EventEmitter, 'on');
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+        GlobalEventHandler.turnOffInAppNotificationHandling();
+
+        // call it a second time
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+        GlobalEventHandler.turnOnInAppNotificationHandling();
+
+        expect(on).toBeCalledTimes(1);
+        expect(on).toBeCalledWith('NOTIFICATION_IN_APP', GlobalEventHandler.handleInAppNotification);
+    });
+
     describe('onServerVersionChanged', () => {
         beforeEach(() => {
             jest.clearAllMocks();
@@ -154,7 +183,6 @@ describe('GlobalEventHandler', () => {
             expect(dispatch).toHaveBeenCalledTimes(2);
             expect(dispatch).toHaveBeenCalledWith('setServerVersion');
             expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
-            expect(configureAnalytics).toHaveBeenCalledTimes(1);
         });
 
         it('should dispatch on gte min server version  with currentUserId', async () => {
@@ -164,13 +192,11 @@ describe('GlobalEventHandler', () => {
             expect(dispatch).toHaveBeenCalledTimes(2);
             expect(dispatch).toHaveBeenCalledWith('setServerVersion');
             expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
-            expect(configureAnalytics).toHaveBeenCalledTimes(1);
 
             version = semver.coerce(minVersion.major + 1).version;
             await GlobalEventHandler.onServerVersionChanged(version);
             expect(alert).not.toHaveBeenCalled();
             expect(dispatch).toHaveBeenCalledTimes(4);
-            expect(configureAnalytics).toHaveBeenCalledTimes(2);
         });
 
         it('should alert on lt min server version', async () => {

@@ -9,10 +9,8 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import addReactionIcon from 'assets/images/icons/reaction.png';
-import ReactionButton from './reaction_button';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import addReactionIcon from '@assets/images/icons/reaction.png';
 import {
     REACTION_PICKER_HEIGHT,
     DEFAULT_EMOJIS,
@@ -21,7 +19,10 @@ import {
     LARGE_CONTAINER_SIZE,
     SMALL_ICON_SIZE,
     LARGE_ICON_SIZE,
-} from 'app/constants/reaction_picker';
+} from '@constants/reaction_picker';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import ReactionButton from './reaction_button';
 
 export default class ReactionPicker extends PureComponent {
     static propTypes = {

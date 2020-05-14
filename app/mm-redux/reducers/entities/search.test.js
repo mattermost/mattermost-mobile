@@ -3,11 +3,7 @@
 
 import assert from 'assert';
 
-import {
-    PostTypes,
-    SearchTypes,
-    UserTypes,
-} from '@mm-redux/action_types';
+import {PostTypes, SearchTypes} from '@mm-redux/action_types';
 import reducer from '@mm-redux/reducers/entities/search';
 
 describe('reducers.entities.search', () => {

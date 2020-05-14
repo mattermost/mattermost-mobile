@@ -13,17 +13,17 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {GlobalStyles} from 'app/styles';
-import {preventDoubleTap} from 'app/utils/tap';
-import {ViewTypes} from 'app/constants';
-import {goToScreen} from 'app/actions/navigation';
+import {goToScreen} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import gitlab from '@assets/images/gitlab.png';
+import logo from '@assets/images/logo.png';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {ViewTypes} from '@constants';
+import {preventDoubleTap} from '@utils/tap';
 
-import LocalConfig from 'assets/config';
-import gitlab from 'assets/images/gitlab.png';
-import logo from 'assets/images/logo.png';
+import {GlobalStyles} from 'app/styles';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {

@@ -154,8 +154,8 @@ lane :configure do
   json = load_config_json('../dist/assets/config.json')
 
   # Set the Segment API Key
-  unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
-    json['SegmentApiKey'] =  ENV['SEGMENT_API_KEY']
+  unless ENV['RUDDER_API_KEY'].nil? || ENV['RUDDER_API_KEY'].empty?
+    json['RudderApiKey'] =  ENV['RUDDER_API_KEY']
   end
 
   # Configure Sentry if enabled
@@ -432,6 +432,12 @@ platform :ios do
 
     find_replace_string(
         path_to_file: './ios/UploadAttachments/UploadAttachments/MMMConstants.m',
+        old_string: 'group.com.mattermost.rnbeta',
+        new_string: app_group_id
+    )
+
+    find_replace_string(
+        path_to_file: './node_modules/react-native-mmkv-storage/ios/MMKVStorage.m',
         old_string: 'group.com.mattermost.rnbeta',
         new_string: app_group_id
     )

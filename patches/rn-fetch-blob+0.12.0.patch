@@ -59,6 +59,18 @@ index adbe48b..b87d383 100644
                  os.write(header.getBytes());
                  byte[] fieldData = field.data.getBytes();
                  os.write(fieldData);
+diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobConst.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobConst.java
+index b86902a..f1a16de 100644
+--- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobConst.java
++++ b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobConst.java
+@@ -6,6 +6,7 @@ public class RNFetchBlobConst {
+     public static final String EVENT_PROGRESS = "RNFetchBlobProgress";
+     public static final String EVENT_HTTP_STATE = "RNFetchBlobState";
+     public static final String EVENT_MESSAGE = "RNFetchBlobMessage";
++    public static final String EVENT_SSL_TRUST_MESSAGE = "RNFetchBlobSslProblem";
+     public static final String FILE_PREFIX = "RNFetchBlob-file://";
+     public static final String CONTENT_PREFIX = "RNFetchBlob-content://";
+     public static final String FILE_PREFIX_BUNDLE_ASSET = "bundle-assets://";
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobFS.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobFS.java
 index a4d7015..f430865 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobFS.java
@@ -119,9 +131,18 @@ index a4d7015..f430865 100644
       * List content of folder
       * @param path Target folder
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
-index a8abd71..ad273ce 100644
+index a8abd71..9078855 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
 +++ b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobReq.java
+@@ -233,7 +233,7 @@ public class RNFetchBlobReq extends BroadcastReceiver implements Runnable {
+             if (this.options.trusty) {
+                 clientBuilder = RNFetchBlobUtils.getUnsafeOkHttpClient(client);
+             } else {
+-                clientBuilder = client.newBuilder();
++                clientBuilder = RNFetchBlobUtils.newOkHttpClientBuilder(client); // Emits warning if SSL connection problem encountered.
+             }
+ 
+             // wifi only, need ACCESS_NETWORK_STATE permission
 @@ -407,6 +407,7 @@ public class RNFetchBlobReq extends BroadcastReceiver implements Runnable {
                                  extended = new RNFetchBlobFileResp(
                                          RNFetchBlob.RCTContext,
@@ -172,6 +193,107 @@ index a8abd71..ad273ce 100644
  
                  if(rnFetchBlobFileResp != null && !rnFetchBlobFileResp.isDownloadComplete()){
                      callback.invoke("Download interrupted.", null);
+diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java
+index ab35fdd..60465a0 100644
+--- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java
++++ b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java
+@@ -6,12 +6,16 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
+ 
+ import java.security.MessageDigest;
+ import java.security.cert.CertificateException;
++import java.security.KeyStore;
++import java.security.NoSuchAlgorithmException;
++import java.security.KeyStoreException;
+ 
+ import javax.net.ssl.HostnameVerifier;
+ import javax.net.ssl.SSLContext;
+ import javax.net.ssl.SSLSession;
+ import javax.net.ssl.SSLSocketFactory;
+ import javax.net.ssl.TrustManager;
++import javax.net.ssl.TrustManagerFactory;
+ import javax.net.ssl.X509TrustManager;
+ 
+ import okhttp3.OkHttpClient;
+@@ -43,14 +47,16 @@ public class RNFetchBlobUtils {
+ 
+     }
+ 
+-    public static void emitWarningEvent(String data) {
++    public static void emitWarningEvent(String data, String... messageType) {
++        String msgType = messageType.length > 0 ? messageType[0] : RNFetchBlobConst.EVENT_MESSAGE;
++
+         WritableMap args = Arguments.createMap();
+         args.putString("event", "warn");
+         args.putString("detail", data);
+ 
+         // emit event to js context
+         RNFetchBlob.RCTContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+-                .emit(RNFetchBlobConst.EVENT_MESSAGE, args);
++                .emit(msgType, args);
+     }
+ 
+     public static OkHttpClient.Builder getUnsafeOkHttpClient(OkHttpClient client) {
+@@ -92,4 +98,60 @@ public class RNFetchBlobUtils {
+             throw new RuntimeException(e);
+         }
+     }
++
++    // Uses default, secure trust manager for connection validation.
++    public static OkHttpClient.Builder newOkHttpClientBuilder(OkHttpClient client) {
++        try {
++            final X509TrustManager defaultTrustManager = getDefaultTrustManager();
++
++            final X509TrustManager x509TrustManager = new X509TrustManager() {
++                @Override
++                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
++                    defaultTrustManager.checkClientTrusted(chain, authType);
++                }
++
++                @Override
++                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, final String authType) throws CertificateException {
++                    try {
++                        defaultTrustManager.checkServerTrusted(chain, authType);
++                    } catch(CertificateException ce) {
++                        emitWarningEvent("RNFetchBlob custom: Server presented problem with SSL handshake.", RNFetchBlobConst.EVENT_SSL_TRUST_MESSAGE);
++                        throw ce;
++                    }
++                }
++
++                @Override
++                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
++                    return defaultTrustManager.getAcceptedIssuers();
++                }
++            };
++
++            final TrustManager[] trustManagers = new TrustManager[]{x509TrustManager};
++
++            final SSLContext sslContext = SSLContext.getInstance("TLS");
++            sslContext.init(null, trustManagers, new java.security.SecureRandom());
++
++            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
++            OkHttpClient.Builder builder = client.newBuilder();
++            builder.sslSocketFactory(sslSocketFactory, x509TrustManager);
++
++            return builder;
++
++        } catch (Exception e) {
++            throw new RuntimeException(e);
++        }
++    }
++
++    public static X509TrustManager getDefaultTrustManager() throws NoSuchAlgorithmException, KeyStoreException {
++        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
++        trustManagerFactory.init((KeyStore) null); // Using null here initialises the TrustManagerFactory with the default trust store.
++
++        X509TrustManager defaultTrustManager = null;
++        for (TrustManager tm : trustManagerFactory.getTrustManagers()) {
++            if (tm instanceof X509TrustManager) {
++                defaultTrustManager = (X509TrustManager) tm;
++            }
++        }
++        return defaultTrustManager;
++    }
+ }
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java
 index 2470eef..4e92989 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/Response/RNFetchBlobFileResp.java
@@ -7351,18 +7473,19 @@ index 671aa69..0522ffc 100644
  
  @end
 diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.h b/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.h
-index 7d09c3a..f2ddcdf 100644
+index 7d09c3a..60a87f8 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.h
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.h
-@@ -22,6 +22,7 @@ extern NSString *const EVENT_PROGRESS;
+@@ -22,6 +22,8 @@ extern NSString *const EVENT_PROGRESS;
  extern NSString *const EVENT_SERVER_PUSH;
  extern NSString *const EVENT_PROGRESS_UPLOAD;
  extern NSString *const EVENT_STATE_CHANGE;
 +extern NSString *const EVENT_CERTIFICATE_NEEDED;
++extern NSString *const EVENT_SSL_HANDSHAKE_PROBLEM;
  
  extern NSString *const FILE_PREFIX;
  extern NSString *const ASSET_PREFIX;
-@@ -51,6 +52,4 @@ extern NSString *const RESP_TYPE_BASE64;
+@@ -51,6 +53,4 @@ extern NSString *const RESP_TYPE_BASE64;
  extern NSString *const RESP_TYPE_UTF8;
  extern NSString *const RESP_TYPE_PATH;
  
@@ -7370,14 +7493,15 @@ index 7d09c3a..f2ddcdf 100644
 -
  #endif /* RNFetchBlobConst_h */
 diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.m b/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.m
-index 1376d69..9608be3 100644
+index 1376d69..cd0832e 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.m
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobConst.m
-@@ -26,6 +26,7 @@
+@@ -26,6 +26,8 @@
  NSString *const EVENT_PROGRESS = @"RNFetchBlobProgress";
  NSString *const EVENT_PROGRESS_UPLOAD = @"RNFetchBlobProgress-upload";
  NSString *const EVENT_EXPIRE = @"RNFetchBlobExpire";
 +NSString *const EVENT_CERTIFICATE_NEEDED = @"RNFetchBlobCertificate";
++NSString *const EVENT_SSL_HANDSHAKE_PROBLEM = @"RNFetchBlobSslProblem";
  
  NSString *const MSG_EVENT = @"RNFetchBlobMessage";
  NSString *const MSG_EVENT_LOG = @"log";
@@ -7478,7 +7602,7 @@ index b550ac2..b603f44 100644
  - (void) sendRequest:(NSDictionary  * _Nullable )options
         contentLength:(long)contentLength
 diff --git a/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m b/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
-index cdbe6b1..094c506 100644
+index cdbe6b1..6ad5846 100644
 --- a/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
 +++ b/node_modules/rn-fetch-blob/ios/RNFetchBlobRequest.m
 @@ -51,7 +51,6 @@ @implementation RNFetchBlobRequest
@@ -7529,7 +7653,22 @@ index cdbe6b1..094c506 100644
      NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
      NSString * respType = @"";
      respStatus = statusCode;
-@@ -453,6 +471,30 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didSen
+@@ -381,6 +399,14 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCom
+     }
+ 
+     if (error) {
++        if ([error.domain isEqualToString:NSURLErrorDomain] && (error.code == NSURLErrorServerCertificateUntrusted) ) {
++            [self.bridge.eventDispatcher
++             sendDeviceEventWithName:EVENT_SSL_HANDSHAKE_PROBLEM
++             body: nil
++            ];
++            return;
++        }
++        
+         if (error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled) {
+             errMsg = @"task cancelled";
+         } else {
+@@ -453,6 +479,30 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didSen
  
  - (void) URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable credantial))completionHandler
  {
@@ -7560,7 +7699,7 @@ index cdbe6b1..094c506 100644
      if ([[options valueForKey:CONFIG_TRUSTY] boolValue]) {
          completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
      } else {
-@@ -480,5 +522,4 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task willPe
+@@ -480,5 +530,4 @@ - (void) URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task willPe
      }
  }
  

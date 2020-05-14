@@ -11,16 +11,14 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
+import {dismissModal, goToScreen, showModalOverCurrentContext} from '@actions/navigation';
+import pinIcon from '@assets/images/channel_info/pin.png';
+import StatusBar from '@components/status_bar';
 import {General, Users} from '@mm-redux/constants';
-
-import StatusBar from 'app/components/status_bar';
-import {preventDoubleTap} from 'app/utils/tap';
-import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {dismissModal, goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
-
-import pinIcon from 'assets/images/channel_info/pin.png';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelInfoHeader from './channel_info_header';
 import ChannelInfoRow from './channel_info_row';
