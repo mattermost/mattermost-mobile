@@ -237,40 +237,40 @@ export default class MoreChannels extends PureComponent {
     onSelectChannel = async (id) => {
         const {intl} = this.context;
         const {actions, currentTeamId, currentUserId} = this.props;
-        const {adding, channels} = this.state;
+        const {channels} = this.state;
 
-        if (!adding) {
-            this.setState({adding: true});
+        this.setHeaderButtons(false);
+        this.setState({adding: true});
 
-            const channel = channels.find((c) => c.id === id);
-            const result = await actions.joinChannel(currentUserId, currentTeamId, id);
+        const channel = channels.find((c) => c.id === id);
+        const result = await actions.joinChannel(currentUserId, currentTeamId, id);
 
-            if (result.error) {
-                alertErrorWithFallback(
-                    intl,
-                    result.error,
-                    {
-                        id: 'mobile.join_channel.error',
-                        defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
-                    },
-                    {
-                        displayName: channel ? channel.display_name : '',
-                    },
-                );
-                this.setState({adding: false});
+        if (result.error) {
+            alertErrorWithFallback(
+                intl,
+                result.error,
+                {
+                    id: 'mobile.join_channel.error',
+                    defaultMessage: "We couldn't join the channel {displayName}. Please check your connection and try again.",
+                },
+                {
+                    displayName: channel ? channel.display_name : '',
+                },
+            );
+            this.setHeaderButtons(true);
+            this.setState({adding: false});
+        } else {
+            if (channel) {
+                actions.setChannelDisplayName(channel.display_name);
             } else {
-                if (channel) {
-                    actions.setChannelDisplayName(channel.display_name);
-                } else {
-                    actions.setChannelDisplayName('');
-                }
-                await actions.handleSelectChannel(id);
-
-                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-                requestAnimationFrame(() => {
-                    this.close();
-                });
+                actions.setChannelDisplayName('');
             }
+            await actions.handleSelectChannel(id);
+
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+            requestAnimationFrame(() => {
+                this.close();
+            });
         }
     };
 
