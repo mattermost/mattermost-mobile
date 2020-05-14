@@ -15,15 +15,16 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import ErrorText from 'app/components/error_text';
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {popTopScreen} from '@actions/navigation';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {setMfaPreflightDone} from '@utils/security';
+
 import {GlobalStyles} from 'app/styles';
-import {preventDoubleTap} from 'app/utils/tap';
-import {t} from 'app/utils/i18n';
-import {setMfaPreflightDone} from 'app/utils/security';
-import {popTopScreen} from 'app/actions/navigation';
 
 export default class Mfa extends PureComponent {
     static propTypes = {
@@ -140,7 +141,7 @@ export default class Mfa extends PureComponent {
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                         <Image
-                            source={require('assets/images/logo.png')}
+                            source={require('@assets/images/logo.png')}
                         />
                         <View>
                             <FormattedText

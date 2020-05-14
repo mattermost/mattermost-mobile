@@ -3,15 +3,14 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
 import {General} from '@mm-redux/constants';
-
-import * as NavigationActions from '@actions/navigation';
 
 import ChannelInfo from './channel_info';
 
 // ChannelInfoRow expects to receive the pinIcon as a number
-jest.mock('assets/images/channel_info/pin.png', () => {
+jest.mock('@assets/images/channel_info/pin.png', () => {
     return 1;
 });
 

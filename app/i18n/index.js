@@ -6,7 +6,7 @@ import {addLocaleData} from 'react-intl';
 import enLocaleData from 'react-intl/locale-data/en';
 import moment from 'moment';
 
-import en from 'assets/i18n/en.json';
+import en from '@assets/i18n/en.json';
 
 export const DEFAULT_LOCALE = 'en';
 
@@ -19,77 +19,77 @@ function loadTranslation(locale) {
         let momentData;
         switch (locale) {
         case 'de':
-            translations = require('assets/i18n/de.json');
+            translations = require('@assets/i18n/de.json');
             localeData = require('react-intl/locale-data/de');
             momentData = require('moment/locale/de');
             break;
         case 'es':
-            translations = require('assets/i18n/es.json');
+            translations = require('@assets/i18n/es.json');
             localeData = require('react-intl/locale-data/es');
             momentData = require('moment/locale/es');
             break;
         case 'fr':
-            translations = require('assets/i18n/fr.json');
+            translations = require('@assets/i18n/fr.json');
             localeData = require('react-intl/locale-data/fr');
             momentData = require('moment/locale/fr');
             break;
         case 'it':
-            translations = require('assets/i18n/it.json');
+            translations = require('@assets/i18n/it.json');
             localeData = require('react-intl/locale-data/it');
             momentData = require('moment/locale/it');
             break;
         case 'ja':
-            translations = require('assets/i18n/ja.json');
+            translations = require('@assets/i18n/ja.json');
             localeData = require('react-intl/locale-data/ja');
             momentData = require('moment/locale/ja');
             break;
         case 'ko':
-            translations = require('assets/i18n/ko.json');
+            translations = require('@assets/i18n/ko.json');
             localeData = require('react-intl/locale-data/ko');
             momentData = require('moment/locale/ko');
             break;
         case 'nl':
-            translations = require('assets/i18n/nl.json');
+            translations = require('@assets/i18n/nl.json');
             localeData = require('react-intl/locale-data/nl');
             momentData = require('moment/locale/nl');
             break;
         case 'pl':
-            translations = require('assets/i18n/pl.json');
+            translations = require('@assets/i18n/pl.json');
             localeData = require('react-intl/locale-data/pl');
             momentData = require('moment/locale/pl');
             break;
         case 'pt-BR':
-            translations = require('assets/i18n/pt-BR.json');
+            translations = require('@assets/i18n/pt-BR.json');
             localeData = require('react-intl/locale-data/pt');
             momentData = require('moment/locale/pt-br');
             break;
         case 'ro':
-            translations = require('assets/i18n/ro.json');
+            translations = require('@assets/i18n/ro.json');
             localeData = require('react-intl/locale-data/ro');
             momentData = require('moment/locale/ro');
             break;
         case 'ru':
-            translations = require('assets/i18n/ru.json');
+            translations = require('@assets/i18n/ru.json');
             localeData = require('react-intl/locale-data/ru');
             momentData = require('moment/locale/ru');
             break;
         case 'tr':
-            translations = require('assets/i18n/tr.json');
+            translations = require('@assets/i18n/tr.json');
             localeData = require('react-intl/locale-data/tr');
             momentData = require('moment/locale/tr');
             break;
         case 'uk':
-            translations = require('assets/i18n/uk.json');
+            translations = require('@assets/i18n/uk.json');
             localeData = require('react-intl/locale-data/uk');
             momentData = require('moment/locale/uk');
             break;
         case 'zh-CN':
-            translations = require('assets/i18n/zh-CN.json');
+            translations = require('@assets/i18n/zh-CN.json');
             localeData = require('react-intl/locale-data/zh');
             momentData = require('moment/locale/zh-cn');
             break;
         case 'zh-TW':
-            translations = require('assets/i18n/zh-TW.json');
+            translations = require('@assets/i18n/zh-TW.json');
             localeData = require('react-intl/locale-data/zh');
             momentData = require('moment/locale/zh-tw');
             break;

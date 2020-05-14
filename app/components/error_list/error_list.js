@@ -10,9 +10,11 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import FormattedText from 'app/components/formatted_text';
+
+import Config from '@assets/config.json';
+import FormattedText from '@components/formatted_text';
+
 import GeneralError from './general_error';
-import Config from 'assets/config.json';
 
 const {width: deviceWidth} = Dimensions.get('window');
 

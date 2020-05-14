@@ -14,17 +14,15 @@ import {
 } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
+import {dismissAllModals} from '@actions/navigation';
+import Config from '@assets/config';
+import StatusBar from '@components/status_bar';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
-
-import SettingsItem from 'app/screens/settings/settings_item';
-import StatusBar from 'app/components/status_bar';
-import {t} from 'app/utils/i18n';
-import {deleteFileCache, getFileCacheSize} from 'app/utils/file';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {dismissAllModals} from 'app/actions/navigation';
-
-import Config from 'assets/config';
+import SettingsItem from '@screens/settings/settings_item';
+import {t} from '@utils/i18n';
+import {deleteFileCache, getFileCacheSize} from '@utils/file';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 class AdvancedSettings extends Component {
     static propTypes = {

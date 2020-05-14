@@ -11,7 +11,7 @@ import FoundationIcon from 'react-native-vector-icons/Foundation';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import icoMoonConfig from 'assets/mattermost-fonts.json';
+import icoMoonConfig from '@assets/mattermost-fonts.json';
 
 const Mattermost = createIconSetFromIcoMoon(
     icoMoonConfig,

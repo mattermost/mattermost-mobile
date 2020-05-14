@@ -5,7 +5,7 @@ import {Dimensions} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import * as RNLocalize from 'react-native-localize';
 
-import LocalConfig from 'assets/config';
+import LocalConfig from '@assets/config';
 
 export function saveToTelemetryServer(data) {
     const {

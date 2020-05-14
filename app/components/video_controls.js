@@ -18,10 +18,10 @@ import {
 import FastImage from 'react-native-fast-image';
 import Slider from 'react-native-slider';
 
-import fullscreenImage from 'assets/images/video_player/fullscreen.png';
-import pauseImage from 'assets/images/video_player/pause.png';
-import playImage from 'assets/images/video_player/play.png';
-import replayImage from 'assets/images/video_player/replay.png';
+import fullscreenImage from '@assets/images/video_player/fullscreen.png';
+import pauseImage from '@assets/images/video_player/pause.png';
+import playImage from '@assets/images/video_player/play.png';
+import replayImage from '@assets/images/video_player/replay.png';
 
 export const PLAYER_STATE = {
     PLAYING: 0,

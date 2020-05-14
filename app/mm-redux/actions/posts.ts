@@ -16,9 +16,10 @@ import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
+import {getSystemEmojis} from 'app/utils/emojis';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
-import {systemEmojis, getCustomEmojiByName, getCustomEmojisByName} from './emojis';
+import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
 
@@ -592,7 +593,7 @@ export function getCustomEmojiForReaction(name: string) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const nonExistentEmoji = getState().entities.emojis.nonExistentEmoji;
         const customEmojisByName = selectCustomEmojisByName(getState());
-
+        const systemEmojis = getSystemEmojis();
         if (systemEmojis.has(name)) {
             return {data: true};
         }
@@ -623,6 +624,7 @@ export function getReactionsForPost(postId: string) {
         if (reactions && reactions.length > 0) {
             const nonExistentEmoji = getState().entities.emojis.nonExistentEmoji;
             const customEmojisByName = selectCustomEmojisByName(getState());
+            const systemEmojis = getSystemEmojis();
             const emojisToLoad = new Set<string>();
 
             reactions.forEach((r: Reaction) => {
@@ -1034,6 +1036,7 @@ export function getNeededCustomEmojis(state: GlobalState, posts: Array<Post>): S
 
     let customEmojisByName: Map<string, CustomEmoji>; // Populate this lazily since it's relatively expensive
     const nonExistentEmoji = state.entities.emojis.nonExistentEmoji;
+    const systemEmojis = getSystemEmojis();
 
     posts.forEach((post) => {
         if (post.message.includes(':')) {
