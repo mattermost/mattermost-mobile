@@ -1,5 +1,34 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.32.0 Release
+- Release Date: June 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Highlights
+ - Upgraded to React Native 0.62.
+
+### Improvements
+ - Show appropriate error message when there is an invalid SSL cert when connectiong to the server on the mobile app.
+ - Added the ability to access recent reactions from the long press menu.
+ - Added the ability to find users by nickname when searching using ``@``.
+ - Added the ability to view first and last name in profile view.
+ - Updated the search bar to make it have a more native feel with smooth animations.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue where using emoji on an instance with the custom emoji feature disabled triggered an error "Custom emoji have been disabled by the system admin".
+
+#### iOS specific
+ - 
+
+#### Android specific
+
+
 ## 1.31.0 Release
 - Release Date: May 16, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
