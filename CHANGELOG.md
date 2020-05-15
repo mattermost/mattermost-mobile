@@ -7,6 +7,8 @@
 ### Compatibility
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
+ 
+**Note:** Support for ESR 5.9 has ended and we strongly recommend upgrading to Extended Support Release 5.19 or a later version for improved security, performance, mobile app compatibility, and user experience. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
 
 ### Improvements
  - Improved network reliability and channel switching time for unread channels by fetching new posts as soon as the app reconnects.
