@@ -27,6 +27,7 @@ export default class EmojiSuggestion extends PureComponent {
             autocompleteCustomEmojis: PropTypes.func.isRequired,
         }).isRequired,
         cursorPosition: PropTypes.number,
+        customEmojisEnabled: PropTypes.bool,
         emojis: PropTypes.array.isRequired,
         isSearch: PropTypes.bool,
         fuse: PropTypes.object.isRequired,
@@ -77,7 +78,7 @@ export default class EmojiSuggestion extends PureComponent {
         const oldMatchTerm = this.matchTerm;
         this.matchTerm = match[3] || '';
 
-        if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
+        if (this.matchTerm !== oldMatchTerm && this.matchTerm.length && nextProps.customEmojisEnabled) {
             this.props.actions.autocompleteCustomEmojis(this.matchTerm);
             return;
         }
@@ -89,10 +90,10 @@ export default class EmojiSuggestion extends PureComponent {
         }
     }
 
-    handleFuzzySearch = async (matchTerm, props) => {
+    handleFuzzySearch = (matchTerm, props) => {
         const {emojis, fuse} = props;
 
-        const results = await fuse.search(matchTerm.toLowerCase());
+        const results = fuse.search(matchTerm.toLowerCase());
         const data = results.map((index) => emojis[index]);
         this.setEmojiData(data, matchTerm);
     };

@@ -6,14 +6,14 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import semver from 'semver/preload';
 
-import PushNotification from 'app/push_notifications';
-import mattermostBucket from 'app/mattermost_bucket';
+import {MinServerVersion} from '@assets/config';
 import * as I18n from '@i18n';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import Store from '@store/store';
 import intitialState from '@store/initial_state';
 
-import {MinServerVersion} from 'assets/config';
+import PushNotification from 'app/push_notifications';
+import mattermostBucket from 'app/mattermost_bucket';
 
 import GlobalEventHandler from './global_event_handler';
 
@@ -183,7 +183,6 @@ describe('GlobalEventHandler', () => {
             expect(dispatch).toHaveBeenCalledTimes(2);
             expect(dispatch).toHaveBeenCalledWith('setServerVersion');
             expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
-            expect(configureAnalytics).toHaveBeenCalledTimes(1);
         });
 
         it('should dispatch on gte min server version  with currentUserId', async () => {
@@ -193,13 +192,11 @@ describe('GlobalEventHandler', () => {
             expect(dispatch).toHaveBeenCalledTimes(2);
             expect(dispatch).toHaveBeenCalledWith('setServerVersion');
             expect(dispatch).toHaveBeenCalledWith('loadConfigAndLicense');
-            expect(configureAnalytics).toHaveBeenCalledTimes(1);
 
             version = semver.coerce(minVersion.major + 1).version;
             await GlobalEventHandler.onServerVersionChanged(version);
             expect(alert).not.toHaveBeenCalled();
             expect(dispatch).toHaveBeenCalledTimes(4);
-            expect(configureAnalytics).toHaveBeenCalledTimes(2);
         });
 
         it('should alert on lt min server version', async () => {

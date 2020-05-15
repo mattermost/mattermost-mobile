@@ -13,6 +13,7 @@ import {selectDefaultChannel} from '@actions/views/channel';
 import {showOverlay} from '@actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
+import LocalConfig from '@assets/config';
 import {NavigationTypes, ViewTypes} from '@constants';
 import {getTranslations, resetMomentLocale} from '@i18n';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
@@ -20,6 +21,7 @@ import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
@@ -35,13 +37,14 @@ import {getDeviceTimezoneAsync} from '@utils/timezone';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
-import LocalConfig from 'assets/config';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
 
 const {StatusBarManager} = NativeModules;
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
+
+let analytics;
 
 class GlobalEventHandler {
     constructor() {
@@ -112,14 +115,16 @@ class GlobalEventHandler {
         mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
     };
 
-    configureAnalytics = (config) => {
-        const initAnalytics = require('app/utils/segment').init;
+    configureAnalytics = async () => {
+        const state = Store.redux.getState();
+        const config = getConfig(state);
+        const initAnalytics = require('./analytics').init;
 
-        if (!__DEV__ && config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.SegmentApiKey) {
-            initAnalytics(config);
-        } else {
-            global.analytics = null;
+        if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.RudderApiKey) {
+            analytics = await initAnalytics(config);
         }
+
+        return analytics;
     };
 
     onAppStateChange = (appState) => {
@@ -153,6 +158,11 @@ class GlobalEventHandler {
     onLogout = async () => {
         Store.redux.dispatch(closeWebSocket(false));
         Store.redux.dispatch(setServerVersion(''));
+
+        if (analytics) {
+            await analytics.reset();
+        }
+
         removeAppCredentials();
         deleteFileCache();
         resetMomentLocale();

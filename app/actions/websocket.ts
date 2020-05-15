@@ -16,7 +16,6 @@ import {
     getCurrentChannelStats,
     getChannelMembersInChannels,
     isManuallyUnread,
-    getKnownUsers,
 } from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getAllPosts, getPost as selectPost} from '@mm-redux/selectors/entities/posts';
@@ -518,7 +517,7 @@ function handlePostUnread(msg: WebSocketMessage) {
 }
 
 function handleLeaveTeamEvent(msg: Partial<WebSocketMessage>) {
-    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const teams = getTeamsSelector(state);
         const currentTeamId = getCurrentTeamId(state);
@@ -527,7 +526,7 @@ function handleLeaveTeamEvent(msg: Partial<WebSocketMessage>) {
         if (currentUser.id === msg.data.user_id) {
             const actions: Array<GenericAction> = [{type: TeamTypes.LEAVE_TEAM, data: teams[msg.data.team_id]}];
             if (isGuest(currentUser.roles)) {
-                const notVisible = notVisibleUsersActions(state);
+                const notVisible = await notVisibleUsersActions(state);
                 if (notVisible.length) {
                     actions.push(...notVisible);
                 }
@@ -641,17 +640,31 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
             const currentChannelId = getCurrentChannelId(state);
             const currentTeamId = getCurrentTeamId(state);
             const currentUser = getCurrentUser(state);
-            const actions: Array<GenericAction> = [{
-                type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
-                data: {
-                    channel_id: msg.broadcast.channel_id,
-                    user_id: msg.data.user_id,
-                },
-            }];
+            const actions: Array<GenericAction> = [];
+            let channelId;
+            let userId;
+
+            if (msg.data.user_id) {
+                userId = msg.data.user_id;
+                channelId = msg.broadcast.channel_id;
+            } else if (msg.broadcast.user_id) {
+                channelId = msg.data.channel_id;
+                userId = msg.broadcast.user_id;
+            }
+
+            if (userId) {
+                actions.push({
+                    type: ChannelTypes.CHANNEL_MEMBER_REMOVED,
+                    data: {
+                        channel_id: channelId,
+                        user_id: userId,
+                    },
+                });
+            }
 
             const channel = channels[currentChannelId];
 
-            if (msg.data.user_id !== currentUser.id) {
+            if (msg.data?.user_id !== currentUser.id) {
                 const members = getChannelMembersInChannels(state);
                 const isMember = Object.values(members).some((member) => member[msg.data.user_id]);
                 if (channel && isGuest(currentUser.roles) && !isMember) {
@@ -665,6 +678,7 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
                 }
             }
 
+            let redirectToDefaultChannel = false;
             if (msg.broadcast.user_id === currentUser.id && currentTeamId) {
                 const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true));
 
@@ -689,10 +703,10 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
 
                 if (msg.data.channel_id === currentChannelId) {
                     // emit the event so the client can change his own state
-                    EventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
+                    redirectToDefaultChannel = true;
                 }
                 if (isGuest(currentUser.roles)) {
-                    const notVisible = notVisibleUsersActions(state);
+                    const notVisible = await notVisibleUsersActions(state);
                     if (notVisible.length) {
                         actions.push(...notVisible);
                     }
@@ -706,6 +720,9 @@ function handleUserRemovedEvent(msg: WebSocketMessage) {
             }
 
             dispatch(batchActions(actions, 'BATCH_WS_USER_REMOVED'));
+            if (redirectToDefaultChannel) {
+                EventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
+            }
         } catch {
             // do nothing
         }
@@ -1126,8 +1143,18 @@ function handleOpenDialogEvent(msg: WebSocketMessage) {
 }
 
 // Helpers
-export function notVisibleUsersActions(state: GlobalState): Array<GenericAction> {
-    const knownUsers = getKnownUsers(state);
+export async function notVisibleUsersActions(state: GlobalState): Promise<Array<GenericAction>> {
+    if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 23)) {
+        return [];
+    }
+    let knownUsers: Set<string>;
+    try {
+        const fetchResult = await Client4.getKnownUsers();
+        knownUsers = new Set(fetchResult);
+    } catch (err) {
+        return [];
+    }
+    knownUsers.add(getCurrentUserId(state));
     const allUsers = Object.keys(getUsers(state));
     const usersToRemove = new Set(allUsers.filter((x) => !knownUsers.has(x)));
 
