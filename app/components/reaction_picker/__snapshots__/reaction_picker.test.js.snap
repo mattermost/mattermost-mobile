@@ -3,15 +3,19 @@
 exports[`Reactions Should match snapshot with default emojis 1`] = `
 <View
   style={
-    Object {
-      "alignItems": "center",
-      "flex": 1,
-      "flexDirection": "row",
-      "height": 72,
-      "justifyContent": "space-between",
-      "paddingLeft": 12,
-      "paddingRight": 12,
-    }
+    Array [
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 72,
+        "justifyContent": "space-between",
+      },
+      Object {
+        "paddingLeft": 12,
+        "paddingRight": 12,
+      },
+    ]
   }
 >
   <ReactionButton
@@ -267,15 +271,19 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
 exports[`Reactions Should match snapshot with default emojis 2`] = `
 <View
   style={
-    Object {
-      "alignItems": "center",
-      "flex": 1,
-      "flexDirection": "row",
-      "height": 72,
-      "justifyContent": "space-between",
-      "paddingLeft": 12,
-      "paddingRight": 12,
-    }
+    Array [
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 72,
+        "justifyContent": "space-between",
+      },
+      Object {
+        "paddingLeft": 12,
+        "paddingRight": 12,
+      },
+    ]
   }
 >
   <ReactionButton
