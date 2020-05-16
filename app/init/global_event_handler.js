@@ -163,7 +163,6 @@ class GlobalEventHandler {
     onLogout = async () => {
         Store.redux.dispatch(closeWebSocket(false));
         Store.redux.dispatch(setServerVersion(''));
-        await this.resetState();
 
         if (analytics) {
             await analytics.reset();
@@ -171,6 +170,7 @@ class GlobalEventHandler {
 
         removeAppCredentials();
         deleteFileCache();
+        await this.resetState();
         resetMomentLocale();
 
         // TODO: Handle when multi-server support is added

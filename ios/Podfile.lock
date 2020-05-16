@@ -306,7 +306,7 @@ PODS:
     - React-RCTText
   - rn-fetch-blob (0.12.0):
     - React-Core
-  - RNCAsyncStorage (1.10.0):
+  - RNCAsyncStorage (1.10.1):
     - React
   - RNCMaskedView (0.1.10):
     - React
@@ -316,7 +316,7 @@ PODS:
     - React
     - SDWebImage (~> 5.0)
     - SDWebImageWebPCoder (~> 0.4.1)
-  - RNFileViewer (2.0.3):
+  - RNFileViewer (2.1.0):
     - React
   - RNGestureHandler (1.6.1):
     - React
@@ -333,7 +333,7 @@ PODS:
     - Rudder (= 1.0.3-beta-4)
   - RNScreens (2.7.0):
     - React
-  - RNSentry (1.3.8):
+  - RNSentry (1.3.9):
     - React
     - Sentry (~> 4.4.0)
   - RNSVG (12.1.0):
@@ -619,11 +619,11 @@ SPEC CHECKSUMS:
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 667586f6924fbd09512e2933fe70497db914b758
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
-  RNCAsyncStorage: b34d2399d3e25db01d5b881949b503bd3c224d57
+  RNCAsyncStorage: f640ddf9266df777c38e112ea5881ead7188b59c
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
   RNDeviceInfo: 498ccbf8b1361fe858581e3c1193ecee1a031e62
   RNFastImage: 35ae972d6727c84ee3f5c6897e07f84d0a3445e9
-  RNFileViewer: 98a887f39323fad493575c57bc76d1f0760824d2
+  RNFileViewer: 3600e85d326dadfd0fd367eb38fcb4300b699b49
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
   RNKeychain: bf2d7e9a0ae7a073c07770dd2aa6d11c67581733
   RNLocalize: fc27ee5878ce5a3af73873fb2d8e866e0d1e6d84
@@ -631,7 +631,7 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
   RNRudderSdk: 3abdcc4b145b3db6571827b0fc7af4e75a96af13
   RNScreens: cf198f915f8a2bf163de94ca9f5bfc8d326c3706
-  RNSentry: 05cc998036c027785e466c896211b5c75b3e0ffd
+  RNSentry: 9c9783b13fb5cba387fff55f085cc1da3854ce71
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   Rudder: 358a71278045a608ae4b081b37a465ffb65c129d
