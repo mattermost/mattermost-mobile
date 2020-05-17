@@ -2,21 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
+import {createSelector} from 'reselect';
+import Fuse from 'fuse.js';
 
+import {incrementEmojiPickerPage} from '@actions/views/emoji';
+import {getCustomEmojis} from '@mm-redux/actions/emojis';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {getConfig} from '@mm-redux/selectors/entities/general';
-import {getCustomEmojis} from '@mm-redux/actions/emojis';
-
-import {incrementEmojiPickerPage} from 'app/actions/views/emoji';
-import {getDimensions, isLandscape} from 'app/selectors/device';
-import {BuiltInEmojis, CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from 'app/utils/emojis';
-import {t} from 'app/utils/i18n';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
+import {getDimensions, isLandscape} from '@selectors/device';
+import {BuiltInEmojis, CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from '@utils/emojis';
+import {t} from '@utils/i18n';
 
 import EmojiPicker from './emoji_picker';
-import Fuse from 'fuse.js';
 
 const categoryToI18n = {
     activity: {
@@ -128,7 +128,7 @@ const getEmojisBySection = createSelector(
     },
 );
 
-const getEmojisByName = createSelector(
+const getEmojisByName = createIdsSelector(
     getCustomEmojisByName,
     (customEmojis) => {
         const emoticons = new Set();

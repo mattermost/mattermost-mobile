@@ -210,7 +210,7 @@ export default class EmojiPicker extends PureComponent {
             return [];
         }
 
-        const results = fuse.search(searchTermLowerCase);
+        const results = fuse.search(searchTermLowerCase).map((r) => r.refIndex);
         const sorter = (a, b) => compareEmojis(a, b, searchTerm);
         const data = results.map((index) => emojis[index]).sort(sorter);
 
