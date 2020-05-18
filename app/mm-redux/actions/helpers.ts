@@ -17,7 +17,7 @@ export function forceLogoutIfNecessary(err: Client4Error, dispatch: DispatchFunc
     }
 }
 
-function dispatcher(type: ActionType, data: any, dispatch: DispatchFunc, getState: GetStateFunc) {
+function dispatcher(type: ActionType, data: any, dispatch: DispatchFunc) {
     if (type.indexOf('SUCCESS') === -1) { // we don't want to pass the data for the request types
         dispatch(requestSuccess(type, data));
     } else {
@@ -93,10 +93,10 @@ export function bindClientFunc({
 
         if (Array.isArray(onSuccess)) {
             onSuccess.forEach((s) => {
-                dispatcher(s, data, dispatch, getState);
+                dispatcher(s, data, dispatch);
             });
         } else if (onSuccess) {
-            dispatcher(onSuccess, data, dispatch, getState);
+            dispatcher(onSuccess, data, dispatch);
         }
 
         return {data};

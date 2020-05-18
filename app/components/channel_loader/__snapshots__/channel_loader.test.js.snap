@@ -17,13 +17,12 @@ exports[`ChannelLoader should match snapshot 1`] = `
     ]
   }
 >
-  <ForwardRef(AnimatedComponentWrapper)
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -31,30 +30,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -62,30 +70,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -93,30 +110,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -124,30 +150,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -155,30 +190,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -186,30 +230,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -217,30 +270,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -248,30 +310,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -279,30 +350,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -310,30 +390,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -341,30 +430,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -372,30 +470,39 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
-  <ForwardRef(AnimatedComponentWrapper)
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
+  <View
     style={
       Array [
         Object {
           "backgroundColor": "#ffffff",
           "flex": 1,
-          "flexDirection": "row",
           "marginVertical": 10,
           "paddingLeft": 12,
           "paddingRight": 20,
@@ -403,22 +510,32 @@ exports[`ChannelLoader should match snapshot 1`] = `
         Object {
           "backgroundColor": "#ffffff",
         },
-        Object {
-          "opacity": 0.6,
-        },
       ]
     }
   >
-    <ImageContent
-      animate="fade"
-      color="rgba(61,60,64,0.15)"
-      firstLineWidth="80%"
-      hasRadius={true}
-      lineNumber={3}
-      lineSpacing={5}
-      size={32}
-      textSize={14}
-    />
-  </ForwardRef(AnimatedComponentWrapper)>
+    <UNDEFINED
+      Animation={[Function]}
+      Left={[Function]}
+      styles={
+        Object {
+          "left": Object {
+            "color": "rgba(61,60,64,0.15)",
+          },
+        }
+      }
+    >
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={80}
+      />
+      <UNDEFINED
+        color="rgba(61,60,64,0.15)"
+        width={60}
+      />
+    </UNDEFINED>
+  </View>
 </View>
 `;

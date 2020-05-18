@@ -9,8 +9,8 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import LongPost from './long_post';
 
-jest.mock('react-native-doc-viewer', () => ({
-    openDoc: jest.fn(),
+jest.mock('react-native-file-viewer', () => ({
+    open: jest.fn(),
 }));
 
 describe('LongPost', () => {

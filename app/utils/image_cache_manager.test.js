@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+/* eslint-disable no-import-assign */
+
 import RNFetchBlob from 'rn-fetch-blob';
 
 import ImageCacheManager, {getCacheFile, hashCode} from 'app/utils/image_cache_manager';

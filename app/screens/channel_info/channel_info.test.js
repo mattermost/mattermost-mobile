@@ -15,7 +15,7 @@ jest.mock('@assets/images/channel_info/pin.png', () => {
 });
 
 jest.mock('@utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
+    const original = jest.requireActual('../../utils/theme');
     return {
         ...original,
         changeOpacity: jest.fn(),

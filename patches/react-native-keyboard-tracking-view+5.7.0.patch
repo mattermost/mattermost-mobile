@@ -1,27 +1,8 @@
-diff --git a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.h b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.h
-index 0d9600e..03bd962 100644
---- a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.h
-+++ b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.h
-@@ -11,4 +11,5 @@
- #import <React/RCTBridgeModule.h>
- 
- @interface KeyboardTrackingViewManager : RCTViewManager
-+
- @end
 diff --git a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
-index 800bd35..c215a8d 100644
+index 1333a10..86d3678 100644
 --- a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 +++ b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
-@@ -6,6 +6,8 @@
- //  Copyright © 2016 Wix.com All rights reserved.
- //
- 
-+#import <WebKit/WebKit.h>
-+
- #import "KeyboardTrackingViewManager.h"
- #import "ObservingInputAccessoryView.h"
- #import "UIResponder+FirstResponder.h"
-@@ -22,7 +24,7 @@
+@@ -23,7 +23,7 @@
  NSUInteger const kInputViewKey = 101010;
  NSUInteger const kMaxDeferedInitializeAccessoryViews = 15;
  NSInteger  const kTrackingViewNotFoundErrorCode = 1;
@@ -30,7 +11,7 @@ index 800bd35..c215a8d 100644
  
  typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
      KeyboardTrackingScrollBehaviorNone,
-@@ -39,6 +41,7 @@ @interface KeyboardTrackingView : UIView
+@@ -40,6 +40,7 @@ @interface KeyboardTrackingView : UIView
      CGFloat _bottomViewHeight;
  }
  
@@ -38,21 +19,21 @@ index 800bd35..c215a8d 100644
  @property (nonatomic, strong) UIScrollView *scrollViewToManage;
  @property (nonatomic) BOOL scrollIsInverted;
  @property (nonatomic) BOOL revealKeyboardInteractive;
-@@ -51,6 +54,13 @@ @interface KeyboardTrackingView : UIView
- @property (nonatomic) BOOL addBottomView;
+@@ -53,6 +54,13 @@ @interface KeyboardTrackingView : UIView
  @property (nonatomic) BOOL scrollToFocusedInput;
  @property (nonatomic) BOOL allowHitsOutsideBounds;
+ 
 +@property (nonatomic) BOOL normalList;
 +@property (nonatomic) NSString* scrollViewNativeID;
 +@property (nonatomic) CGFloat initialOffsetY;
 +@property (nonatomic) BOOL initialOffsetIsSet;
-+
 +@property (nonatomic, strong) UIView *accessoriesContainer;
 +@property (nonatomic) NSString* accessoriesContainerID;
- 
++
  @end
  
-@@ -69,12 +79,17 @@ -(instancetype)init
+ @interface KeyboardTrackingView () <ObservingInputAccessoryViewDelegate, UIScrollViewDelegate>
+@@ -70,12 +78,17 @@ -(instancetype)init
          [self addObserver:self forKeyPath:@"bounds" options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew context:NULL];
          _inputViewsMap = [NSMapTable weakToWeakObjectsMapTable];
          _deferedInitializeAccessoryViewsCount = 0;
@@ -60,7 +41,7 @@ index 800bd35..c215a8d 100644
          
          _observingInputAccessoryView = [ObservingInputAccessoryView new];
          _observingInputAccessoryView.delegate = self;
-         
+ 
 +        _initialOffsetY = 0;
 +        _initialOffsetIsSet = NO;
 +        
@@ -70,13 +51,7 @@ index 800bd35..c215a8d 100644
          
          _bottomViewHeight = kBottomViewHeight;
          
-@@ -128,12 +143,12 @@ - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-     return subview;
- }
- 
---(void)_swizzleWebViewInputAccessory:(UIWebView*)webview
-+-(void)_swizzleWebViewInputAccessory:(WKWebView*)webview
- {
+@@ -134,7 +147,7 @@ -(void)_swizzleWebViewInputAccessory:(WKWebView*)webview
      UIView* subview;
      for (UIView* view in webview.scrollView.subviews)
      {
@@ -85,7 +60,7 @@ index 800bd35..c215a8d 100644
          {
              subview = view;
          }
-@@ -166,33 +181,32 @@ -(void)layoutSubviews
+@@ -167,33 +180,32 @@ -(void)layoutSubviews
  - (void)initializeAccessoryViewsAndHandleInsets
  {
      NSArray<UIView*>* allSubviews = [self getBreadthFirstSubviewsForView:[self getRootView]];
@@ -96,27 +71,27 @@ index 800bd35..c215a8d 100644
 +        if(subview.nativeID) {
 +            NSLog(@"self.accessoriesContainerID %@ %@", self.accessoriesContainerID, subview.nativeID);
 +        }
-+        
++
 +        if (subview.nativeID && [subview.nativeID isEqualToString:self.accessoriesContainerID]) {
 +            NSLog(@"SuperView ID: %@", subview.nativeID);
 +            _accessoriesContainer = subview;
 +        }
-+        
++
          if(_manageScrollView)
          {
              if(_scrollViewToManage == nil)
              {
 -                if(_requiresSameParentToManageScrollView && [subview isKindOfClass:[RCTScrollView class]] && subview.superview == self.superview)
-+                if([subview isKindOfClass:[RCTScrollView class]])
-                 {
+-                {
 -                    _scrollViewToManage = ((RCTScrollView*)subview).scrollView;
 -                }
 -                else if(!_requiresSameParentToManageScrollView && [subview isKindOfClass:[UIScrollView class]])
--                {
++                if([subview isKindOfClass:[RCTScrollView class]])
+                 {
 -                    _scrollViewToManage = (UIScrollView*)subview;
 -                }
 +                    RCTScrollView *scrollView = (RCTScrollView*)subview;
-                 
+ 
 -                if(_scrollViewToManage != nil)
 -                {
 -                    _scrollIsInverted = CGAffineTransformEqualToTransform(_scrollViewToManage.superview.transform, CGAffineTransformMakeScale(1, -1));
@@ -134,15 +109,7 @@ index 800bd35..c215a8d 100644
          }
          
          if ([subview isKindOfClass:NSClassFromString(@"RCTTextField")])
-@@ -235,13 +249,13 @@ - (void)initializeAccessoryViewsAndHandleInsets
-         {
-             [self setupTextView:(UITextView*)subview];
-         }
--        else if ([subview isKindOfClass:[UIWebView class]])
-+        else if ([subview isKindOfClass:[WKWebView class]])
-         {
--            [self _swizzleWebViewInputAccessory:(UIWebView*)subview];
-+            [self _swizzleWebViewInputAccessory:(WKWebView*)subview];
+@@ -242,7 +254,7 @@ - (void)initializeAccessoryViewsAndHandleInsets
          }
      }
      
@@ -151,7 +118,7 @@ index 800bd35..c215a8d 100644
      {
          if(scrollView.scrollView == _scrollViewToManage)
          {
-@@ -266,6 +280,21 @@ - (void)initializeAccessoryViewsAndHandleInsets
+@@ -267,6 +279,21 @@ - (void)initializeAccessoryViewsAndHandleInsets
      [self addBottomViewIfNecessary];
  }
  
@@ -173,7 +140,7 @@ index 800bd35..c215a8d 100644
  - (void)setupTextView:(UITextView*)textView
  {
      if (textView != nil)
-@@ -342,7 +371,7 @@ - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(N
+@@ -343,7 +370,7 @@ - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(N
  
  - (void)observingInputAccessoryViewKeyboardWillDisappear:(ObservingInputAccessoryView *)observingInputAccessoryView
  {
@@ -182,7 +149,7 @@ index 800bd35..c215a8d 100644
      [self updateBottomViewFrame];
  }
  
-@@ -387,32 +416,43 @@ - (void)_updateScrollViewInsets
+@@ -388,32 +415,42 @@ - (void)_updateScrollViewInsets
  {
      if(self.scrollViewToManage != nil)
      {
@@ -190,7 +157,7 @@ index 800bd35..c215a8d 100644
 +            self.initialOffsetY = self.scrollViewToManage.contentOffset.y;
 +            _initialOffsetIsSet = YES;
 +        }
-+        
++
 +        if (_observingInputAccessoryView.keyboardState != KeyboardStateWillHide && _observingInputAccessoryView.keyboardState != KeyboardStateHidden) {
 +            [self.scrollViewToManage setContentOffset:CGPointMake(self.scrollViewToManage.contentOffset.x, self.initialOffsetY) animated:NO];
 +        }
@@ -214,7 +181,6 @@ index 800bd35..c215a8d 100644
 -            insets.bottom = bottomInset;
 +            insets.bottom = keyboardHeight;
          }
-+
          self.scrollViewToManage.contentInset = insets;
          
          if(self.scrollBehavior == KeyboardTrackingScrollBehaviorScrollToBottomInvertedOnly && _scrollIsInverted)
@@ -231,10 +197,10 @@ index 800bd35..c215a8d 100644
              }
          }
          else if(self.scrollBehavior == KeyboardTrackingScrollBehaviorFixedOffset && !self.isDraggingScrollView)
-@@ -421,16 +461,16 @@ - (void)_updateScrollViewInsets
+@@ -422,16 +459,15 @@ - (void)_updateScrollViewInsets
              self.scrollViewToManage.contentOffset = CGPointMake(originalOffset.x, originalOffset.y + insetsDiff);
          }
-         
+ 
 -        insets = self.scrollViewToManage.contentInset;
 -        if(self.scrollIsInverted)
 -        {
@@ -247,30 +213,24 @@ index 800bd35..c215a8d 100644
 +        CGRect frame = CGRectMake(self.scrollViewToManage.frame.origin.x, positionY,
 +                                  self.scrollViewToManage.frame.size.width, self.scrollViewToManage.frame.size.height);
 +        self.scrollViewToManage.frame = frame;
-+        
++
 +        if (self.accessoriesContainer) {
 +            self.accessoriesContainer.bounds =  CGRectMake(self.accessoriesContainer.bounds.origin.x, positionY,
 +                                                           self.accessoriesContainer.bounds.size.width, self.accessoriesContainer.bounds.size.height);
          }
 -        self.scrollViewToManage.scrollIndicatorInsets = insets;
-+
      }
  }
  
-@@ -447,11 +487,9 @@ -(void)addBottomViewIfNecessary
+@@ -448,7 +484,6 @@ -(void)addBottomViewIfNecessary
      if (self.addBottomView && _bottomView == nil)
      {
          _bottomView = [UIView new];
 -        _bottomView.backgroundColor = [UIColor whiteColor];
          [self addSubview:_bottomView];
          [self updateBottomViewFrame];
--    }
--    else if (!self.addBottomView && _bottomView != nil)
-+    } else if (!self.addBottomView && _bottomView != nil)
-     {
-         [_bottomView removeFromSuperview];
-         _bottomView = nil;
-@@ -466,6 +504,12 @@ -(void)updateBottomViewFrame
+     }
+@@ -467,6 +502,12 @@ -(void)updateBottomViewFrame
      }
  }
  
@@ -283,16 +243,7 @@ index 800bd35..c215a8d 100644
  #pragma mark - safe area
  
  -(void)safeAreaInsetsDidChange
-@@ -483,7 +527,7 @@ -(CGFloat)getBottomSafeArea
-     CGFloat bottomSafeArea = 0;
- #if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_10_3
-     if (@available(iOS 11.0, *)) {
--        bottomSafeArea = self.superview ? self.superview.safeAreaInsets.bottom : self.safeAreaInsets.bottom;
-+            bottomSafeArea = self.superview ? self.superview.safeAreaInsets.bottom : self.safeAreaInsets.bottom;
-     }
- #endif
-     return bottomSafeArea;
-@@ -509,7 +553,7 @@ -(void)updateTransformAndInsets
+@@ -510,7 +551,7 @@ -(void)updateTransformAndInsets
      CGFloat accessoryTranslation = MIN(-bottomSafeArea, -_observingInputAccessoryView.keyboardHeight);
      
      if (_observingInputAccessoryView.keyboardHeight <= bottomSafeArea) {
@@ -301,7 +252,7 @@ index 800bd35..c215a8d 100644
      } else if (_observingInputAccessoryView.keyboardState != KeyboardStateWillHide) {
          _bottomViewHeight = 0;
      }
-@@ -553,6 +597,14 @@ - (void) observingInputAccessoryViewKeyboardWillAppear:(ObservingInputAccessoryV
+@@ -554,6 +595,14 @@ - (void) observingInputAccessoryViewKeyboardWillAppear:(ObservingInputAccessoryV
      [self performScrollToFocusedInput];
  }
  
@@ -316,7 +267,7 @@ index 800bd35..c215a8d 100644
  #pragma mark - UIScrollViewDelegate methods
  
  - (void)scrollViewDidScroll:(UIScrollView *)scrollView
-@@ -581,6 +633,8 @@ - (void)scrollViewDidScroll:(UIScrollView *)scrollView
+@@ -582,6 +631,8 @@ - (void)scrollViewDidScroll:(UIScrollView *)scrollView
  - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
  {
      self.isDraggingScrollView = YES;
@@ -325,7 +276,7 @@ index 800bd35..c215a8d 100644
  }
  
  - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
-@@ -591,6 +645,15 @@ - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoi
+@@ -592,6 +643,15 @@ - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoi
  - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
  {
      self.isDraggingScrollView = NO;
@@ -341,7 +292,7 @@ index 800bd35..c215a8d 100644
  }
  
  - (CGFloat)getKeyboardHeight
-@@ -633,6 +696,12 @@ @implementation KeyboardTrackingViewManager
+@@ -634,6 +694,12 @@ @implementation KeyboardTrackingViewManager
  RCT_REMAP_VIEW_PROPERTY(addBottomView, addBottomView, BOOL)
  RCT_REMAP_VIEW_PROPERTY(scrollToFocusedInput, scrollToFocusedInput, BOOL)
  RCT_REMAP_VIEW_PROPERTY(allowHitsOutsideBounds, allowHitsOutsideBounds, BOOL)
@@ -354,8 +305,8 @@ index 800bd35..c215a8d 100644
  
  + (BOOL)requiresMainQueueSetup
  {
-@@ -687,6 +756,20 @@ - (UIView *)view
-      }];
+@@ -654,6 +720,20 @@ - (UIView *)view
+     return [[KeyboardTrackingView alloc] init];
  }
  
 +RCT_EXPORT_METHOD(resetScrollView:(nonnull NSNumber *)reactTag scrollViewNativeID:(NSString*)scrollViewNativeID) {
@@ -372,9 +323,9 @@ index 800bd35..c215a8d 100644
 +     }];
 +}
 +
- #pragma mark - helper methods
- 
- -(void)rejectPromise:(RCTPromiseRejectBlock)reject withErrorMessage:(NSString*)errorMessage errorCode:(NSInteger)errorCode
+ RCT_EXPORT_METHOD(getNativeProps:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+ {
+     [self.bridge.uiManager addUIBlock:
 diff --git a/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.h b/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.h
 index 9b242e8..b500db1 100644
 --- a/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.h
@@ -388,21 +339,21 @@ index 9b242e8..b500db1 100644
  @end
  
 diff --git a/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m b/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m
-index e472679..1e62c61 100644
+index e472679..dbc5c5e 100644
 --- a/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m
 +++ b/node_modules/react-native-keyboard-tracking-view/lib/ObservingInputAccessoryView.m
-@@ -130,6 +130,11 @@ - (void)_keyboardDidShowNotification:(NSNotification*)notification
- 	_keyboardState = KeyboardStateShown;
- 	
- 	[self invalidateIntrinsicContentSize];
-+    
+@@ -123,6 +123,11 @@ - (void)_keyboardWillShowNotification:(NSNotification*)notification
+     {
+         [_delegate observingInputAccessoryViewKeyboardWillAppear:self keyboardDelta:_keyboardHeight - _previousKeyboardHeight];
+     }
++
 +    if([_delegate respondsToSelector:@selector(observingInputAccessoryViewKeyboardDidAppear:)])
 +    {
 +        [_delegate observingInputAccessoryViewKeyboardDidAppear:self];
 +    }
  }
  
- - (void)_keyboardWillHideNotification:(NSNotification*)notification
+ - (void)_keyboardDidShowNotification:(NSNotification*)notification
 diff --git a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.android.js b/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.android.js
 index af15edf..3ba0a3a 100644
 --- a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.android.js
@@ -415,7 +366,7 @@ index af15edf..3ba0a3a 100644
    scrollToStart() {}
  }
 diff --git a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js b/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js
-index 5e2c207..e6099f3 100644
+index 5e2c207..727017c 100644
 --- a/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js
 +++ b/node_modules/react-native-keyboard-tracking-view/src/KeyboardTrackingView.ios.js
 @@ -25,6 +25,12 @@ export default class KeyboardTrackingView extends PureComponent {
@@ -423,9 +374,9 @@ index 5e2c207..e6099f3 100644
    }
  
 +  resetScrollView(scrollViewNativeID) {
-+      if (this.ref && KeyboardTrackingViewManager && KeyboardTrackingViewManager.resetScrollView) {
-+          KeyboardTrackingViewManager.resetScrollView(ReactNative.findNodeHandle(this.ref), scrollViewNativeID);
-+      }
++    if (this.ref && KeyboardTrackingViewManager && KeyboardTrackingViewManager.resetScrollView) {
++      KeyboardTrackingViewManager.resetScrollView(ReactNative.findNodeHandle(this.ref), scrollViewNativeID);
++    }
 +  }
 +
    scrollToStart() {
