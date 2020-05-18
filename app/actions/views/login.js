@@ -14,7 +14,7 @@ import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 import {setAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
-import {getDeviceTimezoneAsync} from 'app/utils/timezone';
+import {getDeviceTimezone} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {loadConfigAndLicense} from 'app/actions/views/root';
 
@@ -35,7 +35,7 @@ export function handleSuccessfulLogin() {
 
         const enableTimezone = isTimezoneEnabled(state);
         if (enableTimezone) {
-            const timezone = await getDeviceTimezoneAsync();
+            const timezone = getDeviceTimezone();
             dispatch(autoUpdateTimezone(timezone));
         }
 

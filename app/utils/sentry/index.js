@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import Config from 'assets/config';
 
+import Config from '@assets/config';
 import {Client4} from '@mm-redux/client';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';

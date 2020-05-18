@@ -5,14 +5,14 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {Text} from 'react-native';
 
-import {alertErrorWithFallback} from 'app/utils/general';
+import {alertErrorWithFallback} from '@utils/general';
 
 import ChannelLink from './channel_link';
 
 jest.mock('react-intl');
 
-jest.mock('app/utils/general', () => {
-    const general = require.requireActual('app/utils/general');
+jest.mock('@utils/general', () => {
+    const general = jest.requireActual('../../utils/general');
     return {
         ...general,
         alertErrorWithFallback: jest.fn(),

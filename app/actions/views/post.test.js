@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-import-assign */
+
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
@@ -83,18 +85,16 @@ describe('Actions.Views.Post', () => {
         const actionTypes = store.getActions()[0].payload.map((action) => action.type);
 
         // Actions dispatched:
+        // RECEIVED_POSTS once and first, with all channel posts combined.
         // RECEIVED_POSTS_IN_CHANNEL and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
-        // RECEIVED_POSTS once, with all channel posts combined.
         expect(actionTypes.length).toBe((2 * channels.length) + 1);
+        expect(actionTypes[0]).toEqual(PostTypes.RECEIVED_POSTS);
 
         const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_IN_CHANNEL);
         expect(receivedPostsInChannelActions.length).toBe(channels.length);
 
         const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
         expect(receivedPostsForChannelAtTimeActions.length).toBe(channels.length);
-
-        const receivedPosts = actionTypes.filter((type) => type === 'RECEIVED_POSTS');
-        expect(receivedPosts.length).toBe(1);
     });
 
     test('loadUnreadChannelPosts dispatches actions for unread channels with postIds in channel', async () => {
@@ -122,18 +122,16 @@ describe('Actions.Views.Post', () => {
         const actionTypes = store.getActions()[0].payload.map((action) => action.type);
 
         // Actions dispatched:
+        // RECEIVED_POSTS once and first, with all channel posts combined.
         // RECEIVED_POSTS_SINCE and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
-        // RECEIVED_POSTS once, with all channel posts combined.
         expect(actionTypes.length).toBe((2 * channels.length) + 1);
+        expect(actionTypes[0]).toEqual(PostTypes.RECEIVED_POSTS);
 
         const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_SINCE);
         expect(receivedPostsInChannelActions.length).toBe(channels.length);
 
         const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
         expect(receivedPostsForChannelAtTimeActions.length).toBe(channels.length);
-
-        const receivedPosts = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS);
-        expect(receivedPosts.length).toBe(1);
     });
 
     test('loadUnreadChannelPosts dispatches additional actions for unread channels', async () => {
@@ -168,20 +166,18 @@ describe('Actions.Views.Post', () => {
         const actionTypes = store.getActions()[0].payload.map((action) => action.type);
 
         // Actions dispatched:
+        // RECEIVED_POSTS once and first, with all channel posts combined.
         // RECEIVED_POSTS_SINCE and RECEIVED_POSTS_FOR_CHANNEL_AT_TIME for each channel.
-        // RECEIVED_POSTS once, with all channel posts combined.
         // RECEIVED_PROFILES_LIST twice, once for getProfilesByIds and once for getProfilesByUsernames
         // RECEIVED_STATUSES for getStatusesByIds
         expect(actionTypes.length).toBe((2 * channels.length) + 4);
+        expect(actionTypes[0]).toEqual(PostTypes.RECEIVED_POSTS);
 
         const receivedPostsInChannelActions = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS_SINCE);
         expect(receivedPostsInChannelActions.length).toBe(channels.length);
 
         const receivedPostsForChannelAtTimeActions = actionTypes.filter((type) => type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
         expect(receivedPostsForChannelAtTimeActions.length).toBe(channels.length);
-
-        const receivedPosts = actionTypes.filter((type) => type === PostTypes.RECEIVED_POSTS);
-        expect(receivedPosts.length).toBe(1);
 
         const receivedProfiles = actionTypes.filter((type) => type === UserTypes.RECEIVED_PROFILES_LIST);
         expect(receivedProfiles.length).toBe(2);

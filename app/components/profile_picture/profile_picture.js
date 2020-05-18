@@ -7,12 +7,10 @@ import {Platform, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
+import placeholder from '@assets/images/profile.jpg';
+import UserStatus from '@components/user_status';
 import {Client4} from '@mm-redux/client';
-
-import UserStatus from 'app/components/user_status';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import placeholder from 'assets/images/profile.jpg';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,

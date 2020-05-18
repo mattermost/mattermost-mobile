@@ -62,6 +62,7 @@ const launchApp = (credentials) => {
             const valid = validatePreviousVersion(previousVersion);
             if (valid) {
                 store.dispatch(loadMe());
+                await globalEventHandler.configureAnalytics();
                 resetToChannel({skipMetrics: true});
             } else {
                 const error = new Error(`Previous app version "${previousVersion}" is invalid.`);

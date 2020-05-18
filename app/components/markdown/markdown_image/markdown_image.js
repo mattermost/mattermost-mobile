@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import FormattedText from '@components/formatted_text';
@@ -26,7 +27,6 @@ import {calculateDimensions, getViewPortWidth, isGifTooLarge, previewImageAtInde
 import {normalizeProtocol} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
-import brokenImageIcon from 'assets/images/icons/brokenimage.png';
 
 const ANDROID_MAX_HEIGHT = 4096;
 const ANDROID_MAX_WIDTH = 4096;

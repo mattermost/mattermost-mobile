@@ -307,12 +307,27 @@ export default class Search extends PureComponent {
                     ]}
                 >
                     <SearchBar
-                        ref={this.setInputKeywordRef}
+                        autoCapitalize={this.props.autoCapitalize}
+                        autoCorrect={false}
+                        autoFocus={this.props.autoFocus}
+                        blurOnSubmit={this.props.blurOnSubmit}
+                        cancelButtonProps={{
+                            buttonTextStyle: {
+                                ...styles.text,
+                                ...searchBarStyle.cancelButtonText,
+                            },
+                        }}
+                        cancelButtonTitle={this.props.cancelTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        cancelIcon={cancelIcon}
+                        clearIcon={clearIcon}
                         containerStyle={{
                             ...styles.searchContainer,
                             ...styles.fullWidth,
                             ...searchBarStyle.searchBarContainer,
                         }}
+                        disableFullscreenUI={true}
+                        editable={this.props.editable}
+                        enablesReturnKeyAutomatically={true}
                         inputContainerStyle={{
                             ...styles.inputContainer,
                             ...searchBarStyle.inputContainer,
@@ -322,40 +337,26 @@ export default class Search extends PureComponent {
                             ...styles.inputMargin,
                             ...searchBarStyle.inputStyle,
                         }}
+                        keyboardAppearance={this.props.keyboardAppearance}
+                        keyboardType={this.props.keyboardType}
                         leftIconContainerStyle={styles.leftIcon}
                         placeholder={this.props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         placeholderTextColor={this.props.placeholderTextColor}
-                        selectionColor={this.props.selectionColor}
-                        autoCorrect={false}
-                        blurOnSubmit={this.props.blurOnSubmit}
-                        editable={this.props.editable}
-                        cancelButtonTitle={this.props.cancelTitle || intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        cancelButtonProps={{
-                            buttonTextStyle: {
-                                ...styles.text,
-                                ...searchBarStyle.cancelButtonText,
-                            },
-                        }}
-                        onChangeText={this.onChangeText}
-                        onSubmitEditing={this.onSearch}
-                        returnKeyType={this.props.returnKeyType}
-                        keyboardType={this.props.keyboardType}
-                        autoCapitalize={this.props.autoCapitalize}
-                        onBlur={this.onBlur}
-                        onFocus={this.onFocus}
-                        onCancel={this.onCancel}
-                        onClear={this.onClear}
-                        onSelectionChange={this.onSelectionChange}
-                        underlineColorAndroid='transparent'
-                        enablesReturnKeyAutomatically={true}
-                        keyboardAppearance={this.props.keyboardAppearance}
-                        autoFocus={this.props.autoFocus}
-                        showCancel={this.props.showCancel}
-                        value={this.props.value}
                         platform={Platform.OS}
-                        clearIcon={clearIcon}
+                        onBlur={this.onBlur}
+                        onCancel={this.onCancel}
+                        onChangeText={this.onChangeText}
+                        onClear={this.onClear}
+                        onFocus={this.onFocus}
+                        onSelectionChange={this.onSelectionChange}
+                        onSubmitEditing={this.onSearch}
                         searchIcon={searchIcon}
-                        cancelIcon={cancelIcon}
+                        selectionColor={this.props.selectionColor}
+                        showCancel={this.props.showCancel}
+                        ref={this.setInputKeywordRef}
+                        returnKeyType={this.props.returnKeyType}
+                        underlineColorAndroid='transparent'
+                        value={this.props.value}
                     />
                 </Animated.View>
             </View>

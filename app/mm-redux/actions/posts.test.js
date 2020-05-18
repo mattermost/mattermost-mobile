@@ -8,7 +8,7 @@ import nock from 'nock';
 import * as Actions from '@mm-redux/actions/posts';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {login} from '@mm-redux/actions/users';
-import {setSystemEmojis, createCustomEmoji} from '@mm-redux/actions/emojis';
+import {createCustomEmoji} from '@mm-redux/actions/emojis';
 import {Client4} from '@mm-redux/client';
 import {Preferences, Posts, RequestStatus} from '../constants';
 import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
@@ -555,8 +555,6 @@ describe('Actions.Posts', () => {
             },
         };
 
-        setSystemEmojis(new Map([['systemEmoji1', {}]]));
-
         it('no emojis in post', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
@@ -578,7 +576,7 @@ describe('Actions.Posts', () => {
         it('system emoji in post', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
-                    {message: ':systemEmoji1:'},
+                    {message: ':mattermost:'},
                 ]),
                 new Set(),
             );
@@ -587,7 +585,7 @@ describe('Actions.Posts', () => {
         it('mixed emojis in post', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
-                    {message: ':systemEmoji1: :name1: :name2: :name3:'},
+                    {message: ':mattermost: :name1: :name2: :name3:'},
                 ]),
                 new Set(['name3']),
             );
@@ -659,7 +657,7 @@ describe('Actions.Posts', () => {
         it('mixed emojis in message attachment', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
-                    {message: '', props: {attachments: [{text: ':name4: :name1:', pretext: ':name3: :systemEmoji1:', fields: [{value: ':name3:'}]}]}},
+                    {message: '', props: {attachments: [{text: ':name4: :name1:', pretext: ':name3: :mattermost:', fields: [{value: ':name3:'}]}]}},
                 ]),
                 new Set(['name3', 'name4']),
             );

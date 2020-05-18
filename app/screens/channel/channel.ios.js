@@ -5,6 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
+import LocalConfig from '@assets/config';
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
@@ -15,8 +16,6 @@ import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import LocalConfig from 'assets/config';
 
 import ChannelBase, {ClientUpgradeListener} from './channel_base';
 import ChannelNavBar from './channel_nav_bar';

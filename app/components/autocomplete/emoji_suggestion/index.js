@@ -2,20 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
 
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {autocompleteCustomEmojis} from '@mm-redux/actions/emojis';
+import {createIdsSelector} from '@mm-redux/utils/helpers';
 
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {EmojiIndicesByAlias} from 'app/utils/emojis';
 
 import EmojiSuggestion from './emoji_suggestion';
-import Fuse from 'fuse.js';
 
-const getEmojisByName = createSelector(
+const getEmojisByName = createIdsSelector(
     getCustomEmojisByName,
     (customEmojis) => {
         const emoticons = new Set();
@@ -28,22 +28,11 @@ const getEmojisByName = createSelector(
 );
 
 function mapStateToProps(state) {
-    const options = {
-        shouldSort: true,
-        threshold: 0.3,
-        location: 0,
-        distance: 100,
-        minMatchCharLength: 2,
-        maxPatternLength: 32,
-    };
-
     const emojis = getEmojisByName(state);
-    const list = emojis.length ? emojis : [];
-    const fuse = new Fuse(list, options);
 
     return {
-        fuse,
         emojis,
+        customEmojisEnabled: getConfig(state).EnableCustomEmoji === 'true',
         theme: getTheme(state),
     };
 }

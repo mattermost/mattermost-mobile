@@ -6,16 +6,15 @@ import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
 import urlParse from 'url-parse';
 
+import LocalConfig from '@assets/config';
 import {Client4} from '@mm-redux/client';
 import {ClientError, HEADER_X_VERSION_ID} from '@mm-redux/client/client4';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {General} from '@mm-redux/constants';
+import {t} from '@utils/i18n';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
-import LocalConfig from 'assets/config';
-
-import {t} from 'app/utils/i18n';
 
 /* eslint-disable no-throw-literal */
 

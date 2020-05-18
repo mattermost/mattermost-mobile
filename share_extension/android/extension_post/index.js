@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import {getAllChannels, getCurrentChannel, getDefaultChannel} from '@mm-redux/selectors/entities/channels';
@@ -18,7 +17,7 @@ function mapStateToProps(state) {
     const config = getConfig(state);
 
     let channel = getCurrentChannel(state);
-    if (channel && channel.delete_at !== 0) {
+    if (channel && (channel.delete_at !== 0)) {
         channel = getDefaultChannel(state);
     }
 
@@ -31,12 +30,8 @@ function mapStateToProps(state) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            getTeamChannels,
-        }, dispatch),
-    };
-}
+const mapDispatchToProps = ({
+    getTeamChannels,
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ExtensionPost);
