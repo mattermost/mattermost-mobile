@@ -175,7 +175,7 @@ export default class Search extends PureComponent {
                 Animated.timing(
                     this.leftComponentAnimated,
                     {
-                        toValue: 100,
+                        toValue: 115,
                         duration: 200,
                     },
                 ),
@@ -273,6 +273,7 @@ export default class Search extends PureComponent {
                 size: 25,
                 color: searchBarStyle.clearIconColorAndroid,
                 name: 'arrow-back',
+                underlayColor: 'transparent',
             };
 
             clearIcon = {
