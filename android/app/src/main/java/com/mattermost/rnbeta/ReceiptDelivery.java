@@ -119,12 +119,13 @@ public class ReceiptDelivery {
                 }
             }
             promise.resolve(bundle);
+            reRequestCount = 0;
         } catch (Exception e) {
             Log.e("ReactNative", "Receipt delivery failed to send");
             try {
                 reRequestCount++;
                 if (reRequestCount < FIBONACCI_BACKOFFS.length) {
-                    Log.e("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFFS[reRequestCount] + " seconds");
+                    Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFFS[reRequestCount] + " seconds");
                     Thread.sleep(FIBONACCI_BACKOFFS[reRequestCount] * 1000);
                     makeServerRequest(client, request, isIdLoaded, promise);
                 }
