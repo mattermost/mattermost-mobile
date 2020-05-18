@@ -26,7 +26,6 @@ import com.mattermost.react_native_interface.ResolvePromise;
 public class ReceiptDelivery {
     static final String CURRENT_SERVER_URL = "@currentServerUrl";
 
-    private static int reRequestCount = 0;
     private static final int[] FIBONACCI_BACKOFFS = new int[] { 0, 1, 2, 3, 5, 8 };
 
     public static void send(Context context, final String ackId, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
@@ -98,7 +97,7 @@ public class ReceiptDelivery {
                     .post(body)
                     .build();
 
-            makeServerRequest(client, request, isIdLoaded, reRequestCount, promise);
+            makeServerRequest(client, request, isIdLoaded, 0, promise);
         }
     }
 
