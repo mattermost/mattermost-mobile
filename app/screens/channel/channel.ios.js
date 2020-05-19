@@ -54,10 +54,27 @@ export default class ChannelIOS extends ChannelBase {
 
     render() {
         const {currentChannelId, theme} = this.props;
+        let component = this.renderLoadingOrFailedChannel();
+        let renderDraftArea = false;
 
-        const channelLoadingOrFailed = this.renderLoadingOrFailedChannel();
-        if (channelLoadingOrFailed) {
-            return channelLoadingOrFailed;
+        if (!component) {
+            renderDraftArea = true;
+            component = (
+                <>
+                    <ChannelPostList
+                        updateNativeScrollView={this.updateNativeScrollView}
+                    />
+                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                        <Autocomplete
+                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                            onChangeText={this.handleAutoComplete}
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                        />
+                    </View>
+                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                </>
+            );
         }
 
         const style = getStyle(theme);
@@ -71,19 +88,9 @@ export default class ChannelIOS extends ChannelBase {
                         openSettingsSidebar={this.openSettingsSidebar}
                         onPress={this.goToChannelInfo}
                     />
-                    <ChannelPostList
-                        updateNativeScrollView={this.updateNativeScrollView}
-                    />
-                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <Autocomplete
-                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                            onChangeText={this.handleAutoComplete}
-                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        />
-                    </View>
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                    {component}
                 </SafeAreaView>
+                {renderDraftArea &&
                 <KeyboardTrackingView
                     ref={this.keyboardTracker}
                     scrollViewNativeID={currentChannelId}
@@ -96,6 +103,7 @@ export default class ChannelIOS extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardTrackingView>
+                }
             </>
         );
 
