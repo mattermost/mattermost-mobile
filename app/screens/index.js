@@ -53,7 +53,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MoreChannels', () => wrapper(require('app/screens/more_channels').default), () => require('app/screens/more_channels').default);
     Navigation.registerComponent('MoreDirectMessages', () => wrapper(require('app/screens/more_dms').default), () => require('app/screens/more_dms').default);
     if (Platform.OS === 'android') {
-        Navigation.registerComponent('Notification', () => gestureHandlerRootHOC(wrapper(require('app/screens/notification').default)), () => require('app/screens/notification').default);
+        Navigation.registerComponent('Notification', () => gestureHandlerRootHOC(wrapper(require('app/screens/notification').default), {flex: undefined, height: 100}), () => require('app/screens/notification').default);
     } else {
         Navigation.registerComponent('Notification', () => wrapper(require('app/screens/notification').default), () => require('app/screens/notification').default);
     }
