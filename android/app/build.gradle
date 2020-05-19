@@ -133,8 +133,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNNotifications.reactNativeVersion", "reactNative60"
-        versionCode 286
-        versionName "1.30.1"
+        versionCode 293
+        versionName "1.31.0"
         multiDexEnabled = true
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'

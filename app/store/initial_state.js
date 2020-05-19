@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Config from 'assets/config.json';
+import Config from '@assets/config.json';
 
 const state = {
     app: {

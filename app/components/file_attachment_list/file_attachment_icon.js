@@ -9,22 +9,20 @@ import {
     StyleSheet,
 } from 'react-native';
 
+import audioIcon from '@assets/images/icons/audio.png';
+import codeIcon from '@assets/images/icons/code.png';
+import excelIcon from '@assets/images/icons/excel.png';
+import genericIcon from '@assets/images/icons/generic.png';
+import imageIcon from '@assets/images/icons/image.png';
+import patchIcon from '@assets/images/icons/patch.png';
+import pdfIcon from '@assets/images/icons/pdf.png';
+import pptIcon from '@assets/images/icons/ppt.png';
+import textIcon from '@assets/images/icons/text.png';
+import videoIcon from '@assets/images/icons/video.png';
+import wordIcon from '@assets/images/icons/word.png';
+import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from '@constants/attachment';
 import * as Utils from '@mm-redux/utils/file_utils';
-
-import audioIcon from 'assets/images/icons/audio.png';
-import codeIcon from 'assets/images/icons/code.png';
-import excelIcon from 'assets/images/icons/excel.png';
-import genericIcon from 'assets/images/icons/generic.png';
-import imageIcon from 'assets/images/icons/image.png';
-import patchIcon from 'assets/images/icons/patch.png';
-import pdfIcon from 'assets/images/icons/pdf.png';
-import pptIcon from 'assets/images/icons/ppt.png';
-import textIcon from 'assets/images/icons/text.png';
-import videoIcon from 'assets/images/icons/video.png';
-import wordIcon from 'assets/images/icons/word.png';
-
-import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
-import {changeOpacity} from 'app/utils/theme';
+import {changeOpacity} from '@utils/theme';
 
 const ICON_PATH_FROM_FILE_TYPE = {
     audio: audioIcon,

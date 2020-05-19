@@ -33,7 +33,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_textbox';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';

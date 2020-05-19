@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {scheduleExpiredNotification} from 'app/actions/views/login';
-import {ssoLogin} from 'app/actions/views/user';
+import {ssoLogin} from '@actions/views/user';
+import {scheduleExpiredNotification} from '@actions/views/session';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from 'app/selectors/device';
+import {isLandscape} from '@selectors/device';
 
 import SSO from './sso';
 

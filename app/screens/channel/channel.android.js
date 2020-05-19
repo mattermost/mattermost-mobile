@@ -4,16 +4,14 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import KeyboardLayout from '@components/layout/keyboard_layout';
+import InteractiveDialogController from '@components/interactive_dialog_controller';
+import NetworkIndicator from '@components/network_indicator';
+import PostDraft from '@components/post_draft';
+import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {openMainSideMenu, openSettingsSideMenu} from 'app/actions/navigation';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import InteractiveDialogController from 'app/components/interactive_dialog_controller';
-import NetworkIndicator from 'app/components/network_indicator';
-import PostTextbox from 'app/components/post_textbox';
-import {NavigationTypes} from 'app/constants';
-
-import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
@@ -22,12 +20,12 @@ import ChannelBase, {ClientUpgradeListener} from './channel_base';
 
 export default class ChannelAndroid extends ChannelBase {
     openMainSidebar = () => {
-        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
         openMainSideMenu();
     };
 
     openSettingsSidebar = () => {
-        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
         openSettingsSideMenu();
     };
 
@@ -49,8 +47,8 @@ export default class ChannelAndroid extends ChannelBase {
                     <View style={style.flex}>
                         <ChannelPostList/>
                     </View>
-                    <PostTextbox
-                        ref={this.postTextbox}
+                    <PostDraft
+                        ref={this.postDraft}
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>

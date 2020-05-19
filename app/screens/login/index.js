@@ -4,11 +4,11 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {login} from 'app/actions/views/user';
+import {login} from '@actions/views/user';
+import {scheduleExpiredNotification} from '@actions/views/session';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-import {isLandscape} from 'app/selectors/device';
-import LoginActions from 'app/actions/views/login';
+import {isLandscape} from '@selectors/device';
 
 import Login from './login.js';
 
@@ -27,7 +27,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            ...LoginActions,
+            scheduleExpiredNotification,
             login,
         }, dispatch),
     };

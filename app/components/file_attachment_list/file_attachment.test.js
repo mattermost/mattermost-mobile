@@ -6,8 +6,8 @@ import {shallow} from 'enzyme';
 import FileAttachment from './file_attachment.js';
 import Preferences from '@mm-redux/constants/preferences';
 
-jest.mock('react-native-doc-viewer', () => ({
-    openDoc: jest.fn(),
+jest.mock('react-native-file-viewer', () => ({
+    open: jest.fn(),
 }));
 
 describe('FileAttachment', () => {

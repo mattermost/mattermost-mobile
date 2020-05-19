@@ -19,19 +19,19 @@ import {
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import ErrorText from 'app/components/error_text';
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import {resetToChannel, goToScreen} from 'app/actions/navigation';
-import mattermostManaged from 'app/mattermost_managed';
-import {preventDoubleTap} from 'app/utils/tap';
-import tracker from 'app/utils/time_tracker';
-import {t} from 'app/utils/i18n';
-import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
-import {changeOpacity} from 'app/utils/theme';
-import {GlobalStyles} from 'app/styles';
+import {resetToChannel, goToScreen} from '@actions/navigation';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import StatusBar from '@components/status_bar';
+import {t} from '@utils/i18n';
+import {setMfaPreflightDone, getMfaPreflightDone} from '@utils/security';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
+import tracker from '@utils/time_tracker';
 
+import mattermostManaged from 'app/mattermost_managed';
+import {GlobalStyles} from 'app/styles';
 import telemetry from 'app/telemetry';
 
 export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
@@ -39,7 +39,6 @@ export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', '
 export default class Login extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
@@ -81,7 +80,6 @@ export default class Login extends PureComponent {
         telemetry.remove(['start:overall']);
 
         tracker.initialLoad = Date.now();
-
         this.scheduleSessionExpiredNotification();
 
         resetToChannel();
@@ -94,7 +92,7 @@ export default class Login extends PureComponent {
         const loginId = this.loginId;
         const password = this.password;
 
-        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, loginId, password});
+        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, goToChannel: this.goToChannel, loginId, password});
     };
 
     blur = () => {
@@ -125,7 +123,6 @@ export default class Login extends PureComponent {
         }
 
         this.setState({isLoading: false});
-        resetToChannel();
         return true;
     };
 
@@ -309,12 +306,14 @@ export default class Login extends PureComponent {
         }
     }
 
-    signIn = () => {
+    signIn = async () => {
         const {actions} = this.props;
         const {isLoading} = this.state;
         if (isLoading) {
-            actions.login(this.loginId.toLowerCase(), this.password).
-                then(this.checkLoginResponse);
+            const result = await actions.login(this.loginId.toLowerCase(), this.password);
+            if (this.checkLoginResponse(result)) {
+                this.goToChannel();
+            }
         }
     };
 
@@ -388,7 +387,7 @@ export default class Login extends PureComponent {
                         enableOnAndroid={true}
                     >
                         <Image
-                            source={require('assets/images/logo.png')}
+                            source={require('@assets/images/logo.png')}
                         />
                         <View>
                             <Text style={GlobalStyles.header}>

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {makeMapStateToProps} from './index';
+
+/* eslint-disable no-import-assign */
 
 import {Permissions} from '@mm-redux/constants';
 import * as channelSelectors from '@mm-redux/selectors/entities/channels';
@@ -12,6 +13,8 @@ import * as roleSelectors from '@mm-redux/selectors/entities/roles';
 import * as deviceSelectors from 'app/selectors/device';
 import * as preferencesSelectors from '@mm-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+
+import {makeMapStateToProps} from './index';
 
 jest.mock('@mm-redux/utils/post_utils');
 
@@ -156,6 +159,7 @@ describe('makeMapStateToProps', () => {
             channel: undefined,
             team: undefined,
             permission: Permissions.CREATE_POST,
+            default: true,
         });
     });
 
@@ -176,6 +180,7 @@ describe('makeMapStateToProps', () => {
             channel: undefined,
             team: undefined,
             permission: Permissions.CREATE_POST,
+            default: true,
         });
     });
 });

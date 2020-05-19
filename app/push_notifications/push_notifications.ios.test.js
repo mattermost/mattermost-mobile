@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-import-assign */
+
 import NotificationsIOS from 'react-native-notifications';
 
 import * as ViewSelectors from '@selectors/views';

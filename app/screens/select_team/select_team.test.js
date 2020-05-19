@@ -9,8 +9,8 @@ import {RequestStatus} from '@mm-redux/constants';
 
 import SelectTeam from './select_team.js';
 
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
+jest.mock('@utils/theme', () => {
+    const original = jest.requireActual('../../utils/theme');
     return {
         ...original,
         changeOpacity: jest.fn(),

@@ -11,6 +11,7 @@ import {Team} from '@mm-redux/types/teams';
 function removeMemberFromChannels(state: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>, action: GenericAction) {
     const nextState = {...state};
     Object.keys(state).forEach((channel) => {
+        nextState[channel] = {...nextState[channel]};
         delete nextState[channel][action.data.user_id];
     });
     return nextState;
@@ -371,7 +372,7 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
         if (sync) {
             current.forEach((member: ChannelMembership) => {
                 const id = member.channel_id;
-                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id === id)) {
+                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id !== id)) {
                     delete nextState[id];
                     hasNewValues = true;
                 }

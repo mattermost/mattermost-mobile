@@ -12,8 +12,9 @@ module.exports = {
         ['module-resolver', {
             root: ['.'],
             alias: {
-                assets: './dist/assets',
+                '@assets': './dist/assets',
                 '@actions': './app/actions',
+                '@components': './app/components',
                 '@constants': './app/constants',
                 '@i18n': './app/i18n',
                 '@init': './app/init',

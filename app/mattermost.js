@@ -29,7 +29,6 @@ import {captureJSException} from '@utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
-    const dt = Date.now();
     const MMKVStorage = await getStorage();
 
     const {store} = configureStore(MMKVStorage);
@@ -63,6 +62,7 @@ const launchApp = (credentials) => {
             const valid = validatePreviousVersion(previousVersion);
             if (valid) {
                 store.dispatch(loadMe());
+                await globalEventHandler.configureAnalytics();
                 resetToChannel({skipMetrics: true});
             } else {
                 const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
@@ -109,10 +109,10 @@ Navigation.events().registerAppLaunchedListener(() => {
         switch (componentId) {
         case 'MainSidebar':
             EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
-            EventEmitter.emit(Navigation.BLUR_POST_TEXTBOX);
+            EventEmitter.emit(Navigation.BLUR_POST_DRAFT);
             break;
         case 'SettingsSidebar':
-            EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+            EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
             break;
         }
     });

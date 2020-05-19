@@ -154,8 +154,8 @@ lane :configure do
   json = load_config_json('../dist/assets/config.json')
 
   # Set the Segment API Key
-  unless ENV['SEGMENT_API_KEY'].nil? || ENV['SEGMENT_API_KEY'].empty?
-    json['SegmentApiKey'] =  ENV['SEGMENT_API_KEY']
+  unless ENV['RUDDER_API_KEY'].nil? || ENV['RUDDER_API_KEY'].empty?
+    json['RudderApiKey'] =  ENV['RUDDER_API_KEY']
   end
 
   # Configure Sentry if enabled
@@ -436,6 +436,12 @@ platform :ios do
         new_string: app_group_id
     )
 
+    find_replace_string(
+        path_to_file: './node_modules/react-native-mmkv-storage/ios/MMKVStorage.m',
+        old_string: 'group.com.mattermost.rnbeta',
+        new_string: app_group_id
+    )
+
     update_app_group_identifiers(
         entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
         app_group_identifiers: [app_group_id]
@@ -483,7 +489,10 @@ platform :ios do
   end
 
   def setup_code_signing
-    disable_automatic_code_signing(path: './ios/Mattermost.xcodeproj')
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: './ios/Mattermost.xcodeproj'
+    )
 
     ENV['MATCH_APP_IDENTIFIER'].split(',').each do |id|
       target = 'Mattermost'
@@ -494,12 +503,13 @@ platform :ios do
       end
 
       profile = "sigh_#{id}_#{ENV['MATCH_TYPE']}"
+      config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
 
       update_project_provisioning(
           xcodeproj: './ios/Mattermost.xcodeproj',
           profile: ENV["#{profile}_profile-path"], # optional if you use sigh
           target_filter: ".*#{target}$", # matches name or type of a target
-          build_configuration: 'Release',
+          build_configuration: config_mode,
           code_signing_identity: 'iPhone Distribution' # optionally specify the codesigning identity
       )
     end

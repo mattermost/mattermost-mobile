@@ -13,29 +13,27 @@ import {
     Text,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
-import FormattedText from 'app/components/formatted_text';
-import ProgressiveImage from 'app/components/progressive_image';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import EphemeralStore from 'app/store/ephemeral_store';
+import brokenImageIcon from '@assets/images/icons/brokenimage.png';
+import ImageViewPort from '@components/image_viewport';
+import ProgressiveImage from '@components/progressive_image';
+import FormattedText from '@components/formatted_text';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {CustomPropTypes} from '@constants';
+import EphemeralStore from '@store/ephemeral_store';
+import BottomSheet from '@utils/bottom_sheet';
+import {calculateDimensions, getViewPortWidth, isGifTooLarge, previewImageAtIndex} from '@utils/images';
+import {normalizeProtocol} from '@utils/url';
+
 import mattermostManaged from 'app/mattermost_managed';
-import BottomSheet from 'app/utils/bottom_sheet';
-import {previewImageAtIndex, calculateDimensions, isGifTooLarge} from 'app/utils/images';
-import {normalizeProtocol} from 'app/utils/url';
-
-import brokenImageIcon from 'assets/images/icons/brokenimage.png';
 
 const ANDROID_MAX_HEIGHT = 4096;
 const ANDROID_MAX_WIDTH = 4096;
-const VIEWPORT_IMAGE_OFFSET = 66;
-const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
-export default class MarkdownImage extends React.PureComponent {
+export default class MarkdownImage extends ImageViewPort {
     static propTypes = {
         children: PropTypes.node,
-        deviceHeight: PropTypes.number.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
         imagesMetadata: PropTypes.object,
         linkDestination: PropTypes.string,
         isReplyPost: PropTypes.bool,
@@ -57,38 +55,11 @@ export default class MarkdownImage extends React.PureComponent {
             failed: false,
             uri: null,
         };
-
-        this.mounted = false;
     }
 
     componentDidMount() {
-        this.mounted = true;
-
-        this.setImageUrl(this.getSource());
-    }
-
-    static getDerivedStateFromProps(props) {
-        const imageMetadata = props.imagesMetadata?.[props.source];
-
-        if (imageMetadata) {
-            return {
-                originalHeight: imageMetadata.height,
-                originalWidth: imageMetadata.width,
-            };
-        }
-
-        return null;
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.source !== prevProps.source) {
-            // getSource also depends on serverURL, but that shouldn't change while this is mounted
-            this.setImageUrl(this.getSource());
-        }
-    }
-
-    componentWillUnmount() {
-        this.mounted = false;
+        super.componentDidMount();
+        this.loadImageSize(this.getSource());
     }
 
     setImageRef = (ref) => {
@@ -100,19 +71,14 @@ export default class MarkdownImage extends React.PureComponent {
     }
 
     getSource = () => {
-        let source = this.props.source;
+        let uri = this.props.source;
 
-        if (source.startsWith('/')) {
-            source = EphemeralStore.currentServerUrl + source;
+        if (uri.startsWith('/')) {
+            uri = EphemeralStore.currentServerUrl + uri;
         }
 
-        return source;
-    };
-
-    getViewPortWidth = () => {
-        const {deviceHeight, deviceWidth, isReplyPost} = this.props;
-        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
-        return deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
+        FastImage.preload([{uri}]);
+        return uri;
     };
 
     handleSizeReceived = (width, height) => {
@@ -179,7 +145,6 @@ export default class MarkdownImage extends React.PureComponent {
         const {
             originalHeight,
             originalWidth,
-            uri,
         } = this.state;
         const link = this.getSource();
         let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
@@ -196,9 +161,9 @@ export default class MarkdownImage extends React.PureComponent {
                 width: originalWidth,
                 height: originalHeight,
             },
-            source: {uri},
+            source: {link},
             data: {
-                localPath: uri,
+                localPath: link,
             },
         }];
 
@@ -211,21 +176,15 @@ export default class MarkdownImage extends React.PureComponent {
         }
     };
 
-    setImageUrl = (imageURL) => {
-        const uri = imageURL;
-
-        this.setState({uri});
-        this.loadImageSize(uri);
-    };
-
     render() {
         if (isGifTooLarge(this.props.imagesMetadata?.[this.props.source])) {
             return null;
         }
 
         let image = null;
-        const {originalHeight, originalWidth, uri} = this.state;
-        const {height, width} = calculateDimensions(originalHeight, originalWidth, this.getViewPortWidth());
+        const {originalHeight, originalWidth} = this.state;
+        const uri = this.getSource();
+        const {height, width} = calculateDimensions(originalHeight, originalWidth, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
 
         if (width && height) {
             if (Platform.OS === 'android' && (width > ANDROID_MAX_WIDTH || height > ANDROID_MAX_HEIGHT)) {
@@ -269,7 +228,7 @@ export default class MarkdownImage extends React.PureComponent {
             }
         } else if (this.state.failed) {
             image = (
-                <Image
+                <FastImage
                     source={brokenImageIcon}
                     style={style.brokenImageIcon}
                 />

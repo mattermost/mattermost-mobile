@@ -94,7 +94,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       onPress={[Function]}
       type="none"
     >
-      <Image
+      <FastImage
         resizeMode="contain"
         style={
           Array [
@@ -269,7 +269,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
     onPress={[Function]}
     type="none"
   >
-    <Image
+    <FastImage
       resizeMode="contain"
       style={
         Array [

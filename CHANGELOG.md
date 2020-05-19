@@ -1,5 +1,60 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.31.0 Release
+- Release Date: May 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Improvements
+ - Improved network reliability and channel switching time for unread channels by fetching new posts as soon as the app reconnects.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue where slash commands with long descriptions had their description text truncated in the slash command autocomplete.
+ - Fixed an issue where users could not swipe up to dismiss in-app push notifications.
+ - Fixed an issue where the username that created the webhook was shown on webhook posts instead of the name of the bot.
+ - Fixed an issue where posts on the same thread appeared to be from different threads since the "...commented on [Thread Title]" was shown on all posts in the thread.
+ - Fixed an issue where the system message for "Edit Channel Purpose" rendered markdown.
+
+#### iOS specific
+ - Fixed an issue where code block numbering was obstructed by the iPhone's notch.
+ - Fixed an issue where the search text box was partially obstructed in landscape mode.
+ - Fixed an issue where using `Share...` option to post highlighted text to the app threw an error.
+ - Fixed an issue where the "back" button color was incorrect when transitioning from Thread screen to Channel screen.
+ - Fixed an issue where the keyboard flashed a darker color when opening Keywords from **Settings > Notifications > Mentions and replies**.
+
+#### Android specific
+ - Fixed an issue where the keyboard did not close after editing a message.
+
+## 1.30.1 Release
+- Release Date: April 24, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue with repeated forced logouts.
+ - Fixed an issue where channels appeared as read-only when opening the app.
+ - Fixed an issue where users were unable to log in if ``ExperimentalStrictCSRFEnforcement`` setting was enabled.
+    - A clean install may be required for the fix to take effect by uninstalling v1.30.0 (Build 285) and then installing v1.30.1 (Build 287).
+ - Fixed an issue where a "No internet connection" error occurred when deleting documents and data.
+
+#### iOS specific
+ - Fixed an issue where Mattermost app crashed when Enterprise mobility management (EMM) was enabled.
+
+#### Android specific
+ - Fixed an issue where using backspace out of a conversation thread or a channel caused a forced logout.
+ - Fixed an issue where a video upload attempt failed with an error.
+
 ## 1.30.0 Release
 - Release Date: April 16, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

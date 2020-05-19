@@ -1,0 +1,13 @@
+diff --git a/node_modules/moment-timezone/index.d.ts b/node_modules/moment-timezone/index.d.ts
+index 8cb684d..3a1d563 100644
+--- a/node_modules/moment-timezone/index.d.ts
++++ b/node_modules/moment-timezone/index.d.ts
+@@ -66,6 +66,8 @@ declare module 'moment' {
+ 
+             /** Parse an offset for a timestamp constructed from Date.UTC in that zone. */
+             parse(timestamp: number): number;
++
++            utcOffset(timestamp: number): number;
+         }
+ 
+         /** Return a timezone by name or null if timezone by that name is not loaded. */
