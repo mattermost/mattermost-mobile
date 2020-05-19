@@ -328,6 +328,8 @@ PODS:
     - React
   - RNReactNativeHapticFeedback (1.10.0):
     - React
+  - RNReanimated (1.8.0):
+    - React
   - RNRudderSdk (1.0.0):
     - React
     - Rudder (= 1.0.3-beta-4)
@@ -416,6 +418,7 @@ DEPENDENCIES:
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
+  - RNReanimated (from `../node_modules/react-native-reanimated`)
   - "RNRudderSdk (from `../node_modules/@rudderstack/rudder-sdk-react-native/ios`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
@@ -554,6 +557,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
+  RNReanimated:
+    :path: "../node_modules/react-native-reanimated"
   RNRudderSdk:
     :path: "../node_modules/@rudderstack/rudder-sdk-react-native/ios"
   RNScreens:
@@ -629,6 +634,7 @@ SPEC CHECKSUMS:
   RNLocalize: fc27ee5878ce5a3af73873fb2d8e866e0d1e6d84
   RNPermissions: 8ca17fd6c822eea589fe84709d9426e05cc39c39
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
+  RNReanimated: 955cf4068714003d2f1a6e2bae3fb1118f359aff
   RNRudderSdk: 3abdcc4b145b3db6571827b0fc7af4e75a96af13
   RNScreens: cf198f915f8a2bf163de94ca9f5bfc8d326c3706
   RNSentry: 9c9783b13fb5cba387fff55f085cc1da3854ce71
