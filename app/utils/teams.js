@@ -4,7 +4,7 @@
 
 export function selectFirstAvailableTeam(teams, primaryTeamName) {
     let defaultTeam;
-    if (primaryTeam) {
+    if (primaryTeamName) {
         defaultTeam = teams.find((t) => t?.name === primaryTeamName.toLowerCase());
     }
 
