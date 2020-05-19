@@ -3,11 +3,10 @@
 import {Client4} from '@mm-redux/client';
 import {FileTypes} from '@mm-redux/action_types';
 
-import {Action, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
+import {DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
-import {FileUploadResponse} from '@mm-redux/types/files';
 
 export function getFilesForPost(postId: string): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {

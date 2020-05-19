@@ -6,12 +6,12 @@ import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import SectionItem from 'app/screens/settings/section_item';
+import SectionItem from '@screens/settings/section_item';
 
 import NotificationSettingsEmailIos from './notification_settings_email.ios.js';
 
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
+jest.mock('@utils/theme', () => {
+    const original = jest.requireActual('../../../utils/theme');
     return {
         ...original,
         changeOpacity: jest.fn(),

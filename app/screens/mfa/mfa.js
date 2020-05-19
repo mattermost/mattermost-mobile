@@ -31,6 +31,7 @@ export default class Mfa extends PureComponent {
         actions: PropTypes.shape({
             login: PropTypes.func.isRequired,
         }).isRequired,
+        goToChannel: PropTypes.func.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
         onMfaComplete: PropTypes.func.isRequired,
@@ -78,7 +79,7 @@ export default class Mfa extends PureComponent {
     };
 
     submit = preventDoubleTap(() => {
-        const {actions, loginId, password, onMfaComplete} = this.props;
+        const {actions, goToChannel, loginId, password, onMfaComplete} = this.props;
         const {token} = this.state;
 
         Keyboard.dismiss();
@@ -95,11 +96,14 @@ export default class Mfa extends PureComponent {
         }
         setMfaPreflightDone(true);
         this.setState({isLoading: true});
-        actions.login(loginId, password, token).then(() => {
-            if (!onMfaComplete()) {
-                popTopScreen();
-            }
+        actions.login(loginId, password, token).then((result) => {
             this.setState({isLoading: false});
+            if (onMfaComplete(result)) {
+                goToChannel();
+                return;
+            }
+
+            popTopScreen();
         });
     });
 

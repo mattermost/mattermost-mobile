@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-import-assign */
+
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 

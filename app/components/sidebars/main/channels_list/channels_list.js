@@ -228,7 +228,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         searchContainer: {
             flex: 1,
             flexDirection: 'row',
-            overflow: 'hidden',
             ...Platform.select({
                 android: {
                     marginBottom: 1,

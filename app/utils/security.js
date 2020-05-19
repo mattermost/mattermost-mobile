@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@mm-redux/client';
-import CookieManager from 'react-native-cookies';
+import CookieManager from '@react-native-community/cookies';
 
 let mfaPreflightDone = false;
 
@@ -16,8 +16,8 @@ export function getMfaPreflightDone() {
 
 export function setCSRFFromCookie(url) {
     return new Promise((resolve) => {
-        CookieManager.get(url, false).then((res) => {
-            const token = res.MMCSRF;
+        CookieManager.get(url, false).then((cookies) => {
+            const token = cookies.MMCSRF;
             if (token) {
                 let value = null;
                 if (typeof token === 'object' && Object.prototype.hasOwnProperty.call(token, 'value')) {
