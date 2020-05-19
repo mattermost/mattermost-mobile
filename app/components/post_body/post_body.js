@@ -202,12 +202,12 @@ export default class PostBody extends PureComponent {
         }
 
         const postId = postProps.add_channel_member.post_id;
-        const noGroupsUsernames = postProps.add_channel_member?.not_in_groups_usernames;
-        let userIds = postProps.add_channel_member?.not_in_channel_user_ids;
-        let usernames = postProps.add_channel_member?.not_in_channel_usernames;
+        const noGroupsUsernames = postProps.add_channel_member?.not_in_groups_usernames; // eslint-disable-line camelcase
+        let userIds = postProps.add_channel_member?.not_in_channel_user_ids; // eslint-disable-line camelcase
+        let usernames = postProps.add_channel_member?.not_in_channel_usernames; // eslint-disable-line camelcase
 
         if (!userIds) {
-            userIds = postProps.add_channel_member?.user_ids;
+            userIds = postProps.add_channel_member?.user_ids; // eslint-disable-line camelcase
         }
         if (!usernames) {
             usernames = postProps.add_channel_member?.usernames;
