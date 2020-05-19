@@ -9,6 +9,14 @@ import {getLocales} from 'react-native-localize';
 import RNFetchBlob from 'rn-fetch-blob';
 import semver from 'semver/preload';
 
+import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from '@actions/device';
+import {selectDefaultChannel} from '@actions/views/channel';
+import {showOverlay} from '@actions/navigation';
+import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
+import {loadMe, logout} from '@actions/views/user';
+import LocalConfig from '@assets/config';
+import {NavigationTypes, ViewTypes} from '@constants';
+import {getTranslations, resetMomentLocale} from '@i18n';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
@@ -19,15 +27,7 @@ import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from '@actions/device';
-import {selectDefaultChannel} from '@actions/views/channel';
-import {showOverlay} from '@actions/navigation';
-import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
-import {loadMe, logout} from '@actions/views/user';
-import LocalConfig from '@assets/config';
-import {NavigationTypes, ViewTypes} from '@constants';
-import {getTranslations, resetMomentLocale} from '@i18n';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getCurrentLocale} from '@selectors/i18n';
 import initialState from '@store/initial_state';
 import Store from '@store/store';
@@ -156,10 +156,6 @@ class GlobalEventHandler {
         emmProvider.handleManagedConfig(true);
     };
 
-    onServerConfigChanged = (config) => {
-        this.configureAnalytics(config);
-    };
-
     onLogout = async () => {
         Store.redux.dispatch(closeWebSocket(false));
         Store.redux.dispatch(setServerVersion(''));
@@ -198,6 +194,12 @@ class GlobalEventHandler {
         if (this.launchApp) {
             this.launchApp();
         }
+
+        // Reset the state after sending
+        // the user to the Select server URL screen
+        // To avoid unavailable data crashes while components are
+        // still mounted.
+        this.resetState();
     };
 
     onOrientationChange = (dimensions) => {
@@ -246,30 +248,35 @@ class GlobalEventHandler {
         }
     };
 
-    onServerVersionChanged = async (serverVersion) => {
-        if (Store?.redux?.dispatch) {
-            const {dispatch, getState} = Store.redux;
-            const state = getState();
-            const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
-            const version = match && match[0];
-            const locale = getCurrentLocale(state);
-            const translations = getTranslations(locale);
+    onServerConfigChanged = (config) => {
+        this.configureAnalytics(config);
 
-            if (serverVersion) {
-                if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
-                    Alert.alert(
-                        translations[t('mobile.server_upgrade.title')],
-                        translations[t('mobile.server_upgrade.description')],
-                        [{
-                            text: translations[t('mobile.server_upgrade.button')],
-                            onPress: this.serverUpgradeNeeded,
-                        }],
-                        {cancelable: false},
-                    );
-                } else if (state.entities.users && state.entities.users.currentUserId) {
-                    dispatch(setServerVersion(serverVersion));
-                    dispatch(loadConfigAndLicense());
-                }
+        if (isMinimumServerVersion(Client4.serverVersion, 5, 24) && config.ExtendSessionLengthWithActivity === 'true') {
+            PushNotifications.cancelAllLocalNotifications();
+        }
+    };
+
+    onServerVersionChanged = async (serverVersion) => {
+        const {dispatch, getState} = Store.redux;
+        const state = getState();
+        const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
+        const version = match && match[0];
+        const locale = getCurrentLocale(state);
+        const translations = getTranslations(locale);
+        if (serverVersion) {
+            if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
+                Alert.alert(
+                    translations[t('mobile.server_upgrade.title')],
+                    translations[t('mobile.server_upgrade.description')],
+                    [{
+                        text: translations[t('mobile.server_upgrade.button')],
+                        onPress: this.serverUpgradeNeeded,
+                    }],
+                    {cancelable: false},
+                );
+            } else if (state.entities.users && state.entities.users.currentUserId) {
+                dispatch(setServerVersion(serverVersion));
+                dispatch(loadConfigAndLicense());
             }
         }
     };

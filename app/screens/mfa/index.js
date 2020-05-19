@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {login} from 'app/actions/views/user';
+import {login} from '@actions/views/user';
 
 import Mfa from './mfa';
 
