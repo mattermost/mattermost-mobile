@@ -29,7 +29,7 @@ const defaultNavigationOptions = {
     headerTintColor: theme.sidebarHeaderTextColor,
 };
 
-function renderStack() {
+function RootStack() {
     return (
         <Stack.Navigator
             initialRouteName='Post'
@@ -54,7 +54,7 @@ function renderStack() {
 export default function ExtensionNavigation() {
     return (
         <NavigationContainer>
-            {renderStack()}
+            <RootStack/>
         </NavigationContainer>
     );
 }
