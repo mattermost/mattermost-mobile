@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-elements/src/searchbar/SearchBar-android.js b/node_modules/react-native-elements/src/searchbar/SearchBar-android.js
-index eeaeb81..93f58de 100644
+index f44866a..76406c2 100644
 --- a/node_modules/react-native-elements/src/searchbar/SearchBar-android.js
 +++ b/node_modules/react-native-elements/src/searchbar/SearchBar-android.js
 @@ -78,6 +78,12 @@ class SearchBar extends Component {
@@ -16,7 +16,7 @@ index eeaeb81..93f58de 100644
      const {
        clearIcon,
 diff --git a/node_modules/react-native-elements/src/searchbar/SearchBar-ios.js b/node_modules/react-native-elements/src/searchbar/SearchBar-ios.js
-index 41ef6be..dbf727b 100644
+index 32a28d5..d43e9bf 100644
 --- a/node_modules/react-native-elements/src/searchbar/SearchBar-ios.js
 +++ b/node_modules/react-native-elements/src/searchbar/SearchBar-ios.js
 @@ -41,6 +41,12 @@ class SearchBar extends Component {
@@ -32,7 +32,7 @@ index 41ef6be..dbf727b 100644
    focus = () => {
      this.input.focus();
    };
-@@ -259,7 +265,6 @@ const styles = StyleSheet.create({
+@@ -260,7 +266,6 @@ const styles = StyleSheet.create({
      paddingBottom: 13,
      paddingTop: 13,
      flexDirection: 'row',
@@ -40,7 +40,7 @@ index 41ef6be..dbf727b 100644
      alignItems: 'center',
    },
    input: {
-@@ -270,7 +275,7 @@ const styles = StyleSheet.create({
+@@ -271,7 +276,7 @@ const styles = StyleSheet.create({
      borderBottomWidth: 0,
      backgroundColor: '#dcdce1',
      borderRadius: 9,

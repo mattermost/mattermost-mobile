@@ -6,7 +6,7 @@ import {General} from '../constants';
 
 import {Scheme, SchemeScope, SchemePatch} from '@mm-redux/types/schemes';
 
-import {ActionFunc, batchActions, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {ActionFunc, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {logError} from './errors';

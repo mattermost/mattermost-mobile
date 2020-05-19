@@ -9,8 +9,8 @@ import Preferences from '@mm-redux/constants/preferences';
 import UserListRow from './user_list_row';
 
 jest.mock('react-intl');
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
+jest.mock('@utils/theme', () => {
+    const original = jest.requireActual('../../../utils/theme');
     return {
         ...original,
         changeOpacity: jest.fn(),

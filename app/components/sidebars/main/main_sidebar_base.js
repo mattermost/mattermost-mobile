@@ -196,7 +196,7 @@ export default class MainSidebarBase extends Component {
             searching,
         } = this.state;
 
-        const offset = Platform.select({android: 60, ios: 0});
+        const offset = Platform.select({android: 64, ios: 0});
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {

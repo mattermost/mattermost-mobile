@@ -414,7 +414,7 @@ export function cacheGifs(gifs: any) {
 }
 
 export function cacheGifsRequest(gifs: any) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch(cacheRequest());
         dispatch(cacheGifs(gifs));
         return {data: true};

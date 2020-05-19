@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Client4} from '@mm-redux/client';
-import CookieManager from 'react-native-cookies';
+import CookieManager from '@react-native-community/cookies';
 
 let mfaPreflightDone = false;
 

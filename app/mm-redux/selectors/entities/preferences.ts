@@ -8,7 +8,7 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {createShallowSelector} from '@mm-redux/utils/helpers';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 import {GlobalState} from '@mm-redux/types/store';
-import {PreferencesType, PreferenceType} from '@mm-redux/types/preferences';
+import {PreferenceType} from '@mm-redux/types/preferences';
 
 export function getMyPreferences(state: GlobalState) {
     return state.entities.preferences.myPreferences;

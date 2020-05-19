@@ -210,6 +210,7 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
+        await globalEventHandler.resetState();
         if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
             RNFetchBlob.cba.selectCertificate((certificate) => {
                 if (certificate) {

@@ -109,15 +109,6 @@ jest.doMock('react-native', () => {
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
-jest.mock('react-native-cookies', () => ({
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    openURL: jest.fn(),
-    canOpenURL: jest.fn(),
-    getInitialURL: jest.fn(),
-    clearAll: jest.fn(),
-}));
-
 jest.mock('react-native-device-info', () => {
     return {
         getVersion: () => '0.0.0',
@@ -125,12 +116,11 @@ jest.mock('react-native-device-info', () => {
         getModel: () => 'iPhone X',
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
-        getDeviceLocale: () => 'en-US',
     };
 });
 
 jest.mock('react-native-fast-image', () => {
-    const FastImage = require.requireActual('react-native-fast-image').default;
+    const FastImage = jest.requireActual('react-native-fast-image').default;
     FastImage.preload = jest.fn();
 
     return FastImage;
@@ -162,8 +152,33 @@ jest.mock('rn-fetch-blob/fs', () => ({
     mv: jest.fn(),
 }));
 
+jest.mock('react-native-localize', () => ({
+    getTimeZone: () => 'World/Somewhere',
+    getLocales: () => ([
+        {countryCode: 'GB', languageTag: 'en-GB', languageCode: 'en', isRTL: false},
+        {countryCode: 'US', languageTag: 'en-US', languageCode: 'en', isRTL: false},
+        {countryCode: 'FR', languageTag: 'fr-FR', languageCode: 'fr', isRTL: false},
+    ]),
+}));
+
+jest.mock('@react-native-community/cookies', () => ({
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(),
+    getInitialURL: jest.fn(),
+    clearAll: jest.fn(),
+    get: () => Promise.resolve(({
+        res: {
+            MMCSRF: {
+                value: 'the cookie',
+            },
+        },
+    })),
+}));
+
 jest.mock('react-native-navigation', () => {
-    const RNN = require.requireActual('react-native-navigation');
+    const RNN = jest.requireActual('react-native-navigation');
     return {
         ...RNN,
         Navigation: {
