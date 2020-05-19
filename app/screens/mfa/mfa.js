@@ -15,14 +15,12 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import {popTopScreen} from '@actions/navigation';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
-import {setMfaPreflightDone} from '@utils/security';
 
 import {GlobalStyles} from 'app/styles';
 
@@ -34,7 +32,6 @@ export default class Mfa extends PureComponent {
         goToChannel: PropTypes.func.isRequired,
         loginId: PropTypes.string.isRequired,
         password: PropTypes.string.isRequired,
-        onMfaComplete: PropTypes.func.isRequired,
     };
 
     constructor(props) {
@@ -79,7 +76,7 @@ export default class Mfa extends PureComponent {
     };
 
     submit = preventDoubleTap(() => {
-        const {actions, goToChannel, loginId, password, onMfaComplete} = this.props;
+        const {actions, goToChannel, loginId, password} = this.props;
         const {token} = this.state;
 
         Keyboard.dismiss();
@@ -94,16 +91,16 @@ export default class Mfa extends PureComponent {
             });
             return;
         }
-        setMfaPreflightDone(true);
+
         this.setState({isLoading: true});
         actions.login(loginId, password, token).then((result) => {
             this.setState({isLoading: false});
-            if (onMfaComplete(result)) {
-                goToChannel();
+            if (result.error) {
+                this.setState({error: result.error});
                 return;
             }
 
-            popTopScreen();
+            goToChannel();
         });
     });
 
