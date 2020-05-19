@@ -23,12 +23,11 @@
   },
   "rules": {
     "global-require": 0,
+    "no-undefined": 0,
     "react/display-name": [2, { "ignoreTranspilerName": false }],
     "react/jsx-filename-extension": [2, {"extensions": [".js"]}],
-    "no-undefined": 0,
     "no-nested-ternary": 0,
     "@typescript-eslint/camelcase": 0,
-    "@typescript-eslint/no-undefined": 0,
     "@typescript-eslint/no-non-null-assertion": 0,
     "@typescript-eslint/no-unused-vars": 2,
     "@typescript-eslint/no-explicit-any": "warn",
