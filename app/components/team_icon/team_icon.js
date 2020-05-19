@@ -87,7 +87,7 @@ export default class TeamIcon extends React.PureComponent {
         } else {
             teamIconContent = (
                 <Text style={[styles.text, styleText]}>
-                    {displayName.substr(0, 2).toUpperCase()}
+                    {displayName?.substr(0, 2).toUpperCase()}
                 </Text>
             );
         }

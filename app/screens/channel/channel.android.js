@@ -31,18 +31,10 @@ export default class ChannelAndroid extends ChannelBase {
 
     render() {
         const {theme} = this.props;
-        const channelLoadingOrFailed = this.renderLoadingOrFailedChannel();
-        if (channelLoadingOrFailed) {
-            return channelLoadingOrFailed;
-        }
+        let component = this.renderLoadingOrFailedChannel();
 
-        const drawerContent = (
-            <>
-                <ChannelNavBar
-                    openMainSidebar={this.openMainSidebar}
-                    openSettingsSidebar={this.openSettingsSidebar}
-                    onPress={this.goToChannelInfo}
-                />
+        if (!component) {
+            component = (
                 <KeyboardLayout>
                     <View style={style.flex}>
                         <ChannelPostList/>
@@ -52,6 +44,17 @@ export default class ChannelAndroid extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
+            );
+        }
+
+        const drawerContent = (
+            <>
+                <ChannelNavBar
+                    openMainSidebar={this.openMainSidebar}
+                    openSettingsSidebar={this.openSettingsSidebar}
+                    onPress={this.goToChannelInfo}
+                />
+                {component}
                 <NetworkIndicator/>
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>
