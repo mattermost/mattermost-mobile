@@ -194,10 +194,10 @@ index a8abd71..9078855 100644
                  if(rnFetchBlobFileResp != null && !rnFetchBlobFileResp.isDownloadComplete()){
                      callback.invoke("Download interrupted.", null);
 diff --git a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java
-index ab35fdd..60465a0 100644
+index ab35fdd..a856e05 100644
 --- a/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java
 +++ b/node_modules/rn-fetch-blob/android/src/main/java/com/RNFetchBlob/RNFetchBlobUtils.java
-@@ -6,12 +6,16 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
+@@ -6,12 +6,17 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
  
  import java.security.MessageDigest;
  import java.security.cert.CertificateException;
@@ -206,6 +206,7 @@ index ab35fdd..60465a0 100644
 +import java.security.KeyStoreException;
  
  import javax.net.ssl.HostnameVerifier;
++import javax.net.ssl.HttpsURLConnection;
  import javax.net.ssl.SSLContext;
  import javax.net.ssl.SSLSession;
  import javax.net.ssl.SSLSocketFactory;
@@ -214,7 +215,7 @@ index ab35fdd..60465a0 100644
  import javax.net.ssl.X509TrustManager;
  
  import okhttp3.OkHttpClient;
-@@ -43,14 +47,16 @@ public class RNFetchBlobUtils {
+@@ -43,14 +48,16 @@ public class RNFetchBlobUtils {
  
      }
  
@@ -233,7 +234,7 @@ index ab35fdd..60465a0 100644
      }
  
      public static OkHttpClient.Builder getUnsafeOkHttpClient(OkHttpClient client) {
-@@ -92,4 +98,60 @@ public class RNFetchBlobUtils {
+@@ -92,4 +99,72 @@ public class RNFetchBlobUtils {
              throw new RuntimeException(e);
          }
      }
@@ -273,6 +274,18 @@ index ab35fdd..60465a0 100644
 +            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 +            OkHttpClient.Builder builder = client.newBuilder();
 +            builder.sslSocketFactory(sslSocketFactory, x509TrustManager);
++
++            builder.hostnameVerifier(new HostnameVerifier() {
++                @Override
++                public boolean verify(String hostname, SSLSession session) {
++                    HostnameVerifier hv = HttpsURLConnection.getDefaultHostnameVerifier();
++                    boolean result = hv.verify(hostname, session);
++                    if (!result) {
++                        emitWarningEvent("RNFetchBlob custom: Server presented problem with hostname verification.", RNFetchBlobConst.EVENT_SSL_TRUST_MESSAGE);
++                    }
++                    return result;
++                }
++            });
 +
 +            return builder;
 +
