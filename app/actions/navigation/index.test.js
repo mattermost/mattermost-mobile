@@ -456,7 +456,7 @@ describe('@actions/navigation', () => {
                 componentBackgroundColor: 'transparent',
             },
             overlay: {
-                interceptTouchOutside: true,
+                interceptTouchOutside: false,
             },
         };
 
