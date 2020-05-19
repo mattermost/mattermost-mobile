@@ -25,7 +25,6 @@
     "global-require": 0,
     "no-undefined": 0,
     "react/display-name": [2, { "ignoreTranspilerName": false }],
-    "no-nested-ternary": 0,
     "react/jsx-filename-extension": 0,
     "@typescript-eslint/camelcase": [
       2,
