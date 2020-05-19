@@ -3,6 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {intlShape} from 'react-intl';
 import {
     InteractionManager,
     StyleSheet,
@@ -24,6 +25,10 @@ export default class ErrorTeamsList extends PureComponent {
             selectDefaultTeam: PropTypes.func.isRequired,
         }).isRequired,
         theme: PropTypes.object,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -67,16 +72,25 @@ export default class ErrorTeamsList extends PureComponent {
     }
 
     render() {
+        const {formatMessage} = this.context.intl;
         const {theme} = this.props;
 
         if (this.state.loading) {
             return <Loading color={theme.centerChannelColor}/>;
         }
 
+        const title = formatMessage({id: 'mobile.failed_network_action.teams_title', defaultMessage: 'Something went wrong'});
+        const message = formatMessage({
+            id: 'mobile.failed_network_action.teams_description',
+            defaultMessage: 'Teams could not be loaded.',
+        });
+
         return (
             <View style={style.container}>
                 <StatusBar/>
                 <FailedNetworkAction
+                    errorMessage={message}
+                    errorTitle={title}
                     onRetry={this.getUserInfo}
                     theme={theme}
                 />

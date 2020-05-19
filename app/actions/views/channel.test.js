@@ -320,7 +320,7 @@ describe('Actions.Views.Channel', () => {
                 teamId: currentTeamId,
             },
         };
-        if (channelId.includes('not') || channelId === currentChannelId) {
+        if (channelId.includes('not')) {
             expect(selectChannelWithMember).toBe(undefined);
         } else {
             expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);

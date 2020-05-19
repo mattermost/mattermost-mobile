@@ -93,6 +93,12 @@ export function getStateForReset(initialState, currentState) {
             },
             teams: {
                 currentTeamId,
+                teams: {
+                    [currentTeamId]: currentState.entities.teams.teams[currentTeamId],
+                },
+                myMembers: {
+                    [currentTeamId]: currentState.entities.teams.myMembers[currentTeamId],
+                },
             },
             preferences,
         },

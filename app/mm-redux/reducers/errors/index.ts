@@ -11,7 +11,7 @@ export default ((state: Array<{error: any;displayable?: boolean;date: string}> =
         return nextState;
     }
     case ErrorTypes.LOG_ERROR: {
-        const nextState = [...state];
+        const nextState = state.length ? [...state] : [];
         const {displayable, error} = action;
         nextState.push({
             displayable,
