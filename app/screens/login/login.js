@@ -25,7 +25,6 @@ import FormattedText from '@components/formatted_text';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
-import {setMfaPreflightDone, getMfaPreflightDone} from '@utils/security';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import tracker from '@utils/time_tracker';
@@ -68,7 +67,6 @@ export default class Login extends PureComponent {
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
 
-        setMfaPreflightDone(false);
         this.setEmmUsernameIfAvailable();
     }
 
@@ -92,7 +90,7 @@ export default class Login extends PureComponent {
         const loginId = this.loginId;
         const password = this.password;
 
-        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, goToChannel: this.goToChannel, loginId, password});
+        goToScreen(screen, title, {goToChannel: this.goToChannel, loginId, password});
     };
 
     blur = () => {
@@ -181,9 +179,6 @@ export default class Login extends PureComponent {
         const errorId = error.server_error_id;
         if (!errorId) {
             return error.message;
-        }
-        if (mfaExpectedErrors.includes(errorId) && !getMfaPreflightDone()) {
-            return null;
         }
         if (
             errorId === 'store.sql_user.get_for_login.app_error' ||
