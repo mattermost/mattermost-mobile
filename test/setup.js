@@ -119,13 +119,6 @@ jest.mock('react-native-device-info', () => {
     };
 });
 
-jest.mock('react-native-fast-image', () => {
-    const FastImage = jest.requireActual('react-native-fast-image').default;
-    FastImage.preload = jest.fn();
-
-    return FastImage;
-});
-
 jest.mock('rn-fetch-blob', () => ({
     fs: {
         dirs: {
