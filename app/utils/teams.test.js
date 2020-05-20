@@ -31,6 +31,6 @@ describe('selectFirstAvailableTeam', () => {
 
     it('should return undefined is no team is found', () => {
         const defaultTeam = selectFirstAvailableTeam([]);
-        expect(defaultTeam).toBe(undefined); //eslint-disable-line no-undefined
+        expect(defaultTeam).toBe(undefined);
     });
 });

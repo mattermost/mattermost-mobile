@@ -21,7 +21,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';
-import initial_state from '@store/initial_state';
+import globalInitialState from '@store/initial_state';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
@@ -415,7 +415,7 @@ describe('Actions.Websocket', () => {
     it('Websocket Handle Channel Member Updated', async () => {
         const channelMember = TestHelper.basicChannelMember;
         const mockStore = configureMockStore([thunk]);
-        const st = mockStore(initial_state);
+        const st = mockStore(globalInitialState);
         await st.dispatch(Actions.init({websocketUrl: Client4.getUrl().replace(/^http:/, 'ws:')}));
         channelMember.roles = 'channel_user channel_admin';
         const rolesToLoad = channelMember.roles.split(' ');

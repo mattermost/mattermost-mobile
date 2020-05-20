@@ -296,7 +296,7 @@ describe('Actions.Posts', () => {
 
         const state = store.getState();
         const {stats} = state.entities.channels;
-        const pinned_post_count = stats.channel1.pinnedpost_count;
+        const pinnedPostCount = stats.channel1.pinnedpost_count;
 
         expect(state.entities.posts.posts).toEqual({
             post1,
@@ -310,7 +310,7 @@ describe('Actions.Posts', () => {
         expect(state.entities.posts.postsInThread).toEqual({
             post1: ['post4'],
         });
-        expect(pinned_post_count).toEqual(1);
+        expect(pinnedPostCount).toEqual(1);
     });
 
     it('removePostWithReaction', async () => {
@@ -1174,11 +1174,11 @@ describe('Actions.Posts', () => {
         const state = getState();
         const {stats} = state.entities.channels;
         const post = state.entities.posts.posts[post1.id];
-        const pinned_post_count = stats[TestHelper.basicChannel.id].pinnedpost_count;
+        const pinnedPostCount = stats[TestHelper.basicChannel.id].pinnedpost_count;
 
         assert.ok(post);
         assert.ok(post.is_pinned === true);
-        assert.ok(pinned_post_count === 1);
+        assert.ok(pinnedPostCount === 1);
     });
 
     it('unpinPost', async () => {
@@ -1218,11 +1218,11 @@ describe('Actions.Posts', () => {
         const state = getState();
         const {stats} = state.entities.channels;
         const post = state.entities.posts.posts[post1.id];
-        const pinned_post_count = stats[TestHelper.basicChannel.id].pinnedpost_count;
+        const pinnedPostCount = stats[TestHelper.basicChannel.id].pinnedpost_count;
 
         assert.ok(post);
         assert.ok(post.is_pinned === false);
-        assert.ok(pinned_post_count === 0);
+        assert.ok(pinnedPostCount === 0);
     });
 
     it('addReaction', async () => {
