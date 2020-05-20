@@ -713,7 +713,7 @@ export default class Search extends PureComponent {
             paddingRes.paddingLeft = null;
 
             if (isLandscape) {
-                paddingRes.paddingTop = 10;
+                paddingRes.paddingTop = 5;
             }
         }
 
