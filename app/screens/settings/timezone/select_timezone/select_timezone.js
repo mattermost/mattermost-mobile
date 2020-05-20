@@ -112,26 +112,28 @@ export default class Timezone extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <View style={[style.header, padding(isLandscape)]}>
-                    <SearchBar
-                        ref={this.setSearchBarRef}
-                        placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                        inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        titleCancelColor={theme.sidebarHeaderTextColor}
-                        onChangeText={this.handleTextChanged}
-                        autoCapitalize='none'
-                        value={value}
-                        containerStyle={style.searchBarContainer}
-                        showArrow={false}
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    />
+                <View style={style.header}>
+                    <View style={padding(isLandscape)}>
+                        <SearchBar
+                            ref={this.setSearchBarRef}
+                            placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={Platform.OS === 'ios' ? 33 : 46}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            titleCancelColor={theme.sidebarHeaderTextColor}
+                            onChangeText={this.handleTextChanged}
+                            autoCapitalize='none'
+                            value={value}
+                            containerStyle={style.searchBarContainer}
+                            showArrow={false}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        />
+                    </View>
                 </View>
                 <FlatList
                     data={this.filteredTimezones(value)}
