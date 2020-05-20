@@ -110,8 +110,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             dimensions = calculateDimensions(ogImage.height, ogImage.width, this.getViewPostWidth());
         }
 
-        FastImage.preload([{uri: imageUrl}]);
-
         return {
             hasImage: true,
             ...dimensions,

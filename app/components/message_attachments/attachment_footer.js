@@ -17,14 +17,6 @@ export default class AttachmentFooter extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    constructor(props) {
-        super(props);
-
-        if (props.icon) {
-            FastImage.preload([{uri: props.icon}]);
-        }
-    }
-
     render() {
         const {
             text,
