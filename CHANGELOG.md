@@ -10,10 +10,10 @@
  
 ### Highlights
  - Upgraded to React Native 0.62.
+ - Quick access to emoji reactions - Long press on a post and add recently used reactions in a single tap
 
 ### Improvements
  - Show appropriate error message when there is an invalid SSL cert when connectiong to the server on the mobile app.
- - Added the ability to access recent reactions from the long press menu.
  - Added the ability to find users by nickname when searching using ``@``.
  - Added the ability to view first and last name in profile view.
  - Updated the search bar to make it have a more native feel with smooth animations.
