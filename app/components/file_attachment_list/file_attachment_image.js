@@ -7,7 +7,6 @@ import {
     View,
     StyleSheet,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
 
 import {Client4} from '@mm-redux/client';
 
@@ -51,29 +50,9 @@ export default class FileAttachmentImage extends PureComponent {
         resizeMethod: 'resize',
     };
 
-    constructor(props) {
-        super(props);
-
-        const {file} = props;
-        if (file && file.id && !file.localPath) {
-            const headers = Client4.getOptions({}).headers;
-
-            const preloadImages = [
-                {uri: Client4.getFileThumbnailUrl(file.id), headers},
-                {uri: Client4.getFileUrl(file.id), headers},
-            ];
-
-            if (isGif(file)) {
-                preloadImages.push({uri: Client4.getFilePreviewUrl(file.id), headers});
-            }
-
-            FastImage.preload(preloadImages);
-        }
-
-        this.state = {
-            failed: false,
-        };
-    }
+    state = {
+        failed: false,
+    };
 
     boxPlaceholder = () => {
         if (this.props.isSingleImage) {

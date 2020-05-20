@@ -63,7 +63,6 @@ export default class ProfilePicture extends PureComponent {
             this.setImageURL(imageUri);
         } else if (user) {
             const uri = Client4.getProfilePictureUrl(user.id, user.last_picture_update);
-            FastImage.preload([{uri, headers: Client4.getOptions({}).headers}]);
 
             this.setImageURL(uri);
             this.clearProfileImageUri();
@@ -104,7 +103,6 @@ export default class ProfilePicture extends PureComponent {
 
             if (nextUrl && url !== nextUrl) {
                 // empty function is so that promise unhandled is not triggered in dev mode
-                FastImage.preload([{uri: nextUrl, headers: Client4.getOptions({}).headers}]);
                 this.setImageURL(nextUrl);
                 this.clearProfileImageUri();
             }
