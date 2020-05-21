@@ -38,6 +38,7 @@ export default class Search extends PureComponent {
         tintColorDelete: PropTypes.string,
         selectionColor: PropTypes.string,
         inputStyle: CustomPropTypes.Style,
+        containerStyle: CustomPropTypes.Style,
         cancelButtonStyle: CustomPropTypes.Style,
         autoFocus: PropTypes.bool,
         placeholder: PropTypes.string,
@@ -285,7 +286,7 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <View style={searchBarStyle.container}>
+            <View style={[searchBarStyle.container, this.props.containerStyle]}>
                 {((this.props.leftComponent) ?
                     <Animated.View
                         style={{
@@ -385,7 +386,7 @@ const getSearchBarStyle = memoizeResult((
         justifyContent: 'flex-start',
         alignItems: 'center',
         height: containerHeight,
-        flex: 1,
+        overflow: 'hidden',
     },
     clearIconColorIos: tintColorDelete || styles.defaultColor.color,
     clearIconColorAndroid: titleCancelColor || placeholderTextColor,
