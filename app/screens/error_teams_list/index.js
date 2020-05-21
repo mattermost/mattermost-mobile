@@ -15,7 +15,7 @@ import ErrorTeamsList from './error_teams_list.js';
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-    }
+    };
 }
 function mapDispatchToProps(dispatch) {
     return {
