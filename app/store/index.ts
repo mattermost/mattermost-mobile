@@ -178,6 +178,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             emojiBlackListFilter,
         ],
         throttle: 100,
+        timeout: 60000,
     };
 
     const persistConfig: PersistConfig<GlobalState> = Object.assign({}, defaultConfig, optionalConfig);
