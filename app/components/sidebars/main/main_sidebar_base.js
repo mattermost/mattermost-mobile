@@ -71,7 +71,7 @@ export default class MainSidebarBase extends Component {
 
         const condition = nextProps.currentTeamId !== currentTeamId ||
             nextProps.teamsCount !== teamsCount ||
-            nextProps.theme !== theme;
+            nextProps.theme !== theme || this.props.children !== nextProps.children;
 
         if (Platform.OS === 'ios') {
             return condition ||
@@ -262,6 +262,10 @@ export default class MainSidebarBase extends Component {
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
         const {logChannelSwitch, handleSelectChannel} = this.props.actions;
+
+        if (channel.id === currentChannelId) {
+            return;
+        }
 
         logChannelSwitch(channel.id, currentChannelId);
 

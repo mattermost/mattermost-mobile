@@ -77,7 +77,6 @@ export default class MarkdownImage extends ImageViewPort {
             uri = EphemeralStore.currentServerUrl + uri;
         }
 
-        FastImage.preload([{uri}]);
         return uri;
     };
 

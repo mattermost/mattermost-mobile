@@ -45,9 +45,9 @@ export function getGroupMembers(state: GlobalState, id: string) {
     return groupMemberData.members;
 }
 
-const teamGroupIDs = (state: GlobalState, teamID: string) => (state.entities.teams.groupsAssociatedToTeam[teamID] == null ? undefined : state.entities.teams.groupsAssociatedToTeam[teamID].ids == null ? undefined : state.entities.teams.groupsAssociatedToTeam[teamID].ids) || [];
+const teamGroupIDs = (state: GlobalState, teamID: string) => state.entities.teams.groupsAssociatedToTeam[teamID]?.ids || [];
 
-const channelGroupIDs = (state: GlobalState, channelID: string) => (state.entities.channels.groupsAssociatedToChannel[channelID] == null ? undefined : state.entities.channels.groupsAssociatedToChannel[channelID].ids == null ? undefined : state.entities.channels.groupsAssociatedToChannel[channelID].ids) || [];
+const channelGroupIDs = (state: GlobalState, channelID: string) => state.entities.channels.groupsAssociatedToChannel[channelID]?.ids || [];
 
 const getTeamGroupIDSet = reselect.createSelector(
     teamGroupIDs,

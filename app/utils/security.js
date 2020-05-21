@@ -4,16 +4,6 @@
 import {Client4} from '@mm-redux/client';
 import CookieManager from '@react-native-community/cookies';
 
-let mfaPreflightDone = false;
-
-export function setMfaPreflightDone(state) {
-    mfaPreflightDone = state;
-}
-
-export function getMfaPreflightDone() {
-    return mfaPreflightDone;
-}
-
 export function setCSRFFromCookie(url) {
     return new Promise((resolve) => {
         CookieManager.get(url, false).then((cookies) => {

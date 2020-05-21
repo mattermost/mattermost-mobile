@@ -94,7 +94,6 @@ describe('Login', () => {
                 'Multi-factor Authentication',
                 {
                     goToChannel: wrapper.instance().goToChannel,
-                    onMfaComplete: wrapper.instance().checkLoginResponse,
                     loginId,
                     password,
                 },

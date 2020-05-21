@@ -34,10 +34,16 @@ export function selectDefaultTeam() {
         const state = getState();
 
         const {ExperimentalPrimaryTeam} = getConfig(state);
-        const {teams: allTeams, myMembers} = state.entities.teams;
-        const teams = Object.keys(myMembers).map((key) => allTeams[key]);
+        const {teams, myMembers} = state.entities.teams;
+        const myTeams = Object.keys(teams).reduce((result, id) => {
+            if (myMembers[id]) {
+                result.push(teams[id]);
+            }
 
-        let defaultTeam = selectFirstAvailableTeam(teams, ExperimentalPrimaryTeam);
+            return result;
+        }, []);
+
+        let defaultTeam = selectFirstAvailableTeam(myTeams, ExperimentalPrimaryTeam);
 
         if (defaultTeam) {
             dispatch(handleTeamChange(defaultTeam.id));

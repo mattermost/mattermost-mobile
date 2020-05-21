@@ -52,7 +52,7 @@ export default class MoreDirectMessages extends PureComponent {
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
-        isGuest: PropTypes.object.isRequired,
+        isGuest: PropTypes.bool,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -472,25 +472,27 @@ export default class MoreDirectMessages extends PureComponent {
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={[style.searchBar, padding(isLandscape)]}>
-                    <SearchBar
-                        ref={this.setSearchBarRef}
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={33}
-                        inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                        titleCancelColor={theme.centerChannelColor}
-                        onChangeText={this.onSearch}
-                        onSearchButtonPress={this.onSearch}
-                        onCancelButtonPress={this.clearSearch}
-                        autoCapitalize='none'
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        value={term}
-                    />
+                <View style={style.searchBar}>
+                    <View style={padding(isLandscape)}>
+                        <SearchBar
+                            ref={this.setSearchBarRef}
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={33}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
+                            onChangeText={this.onSearch}
+                            onSearchButtonPress={this.onSearch}
+                            onCancelButtonPress={this.clearSearch}
+                            autoCapitalize='none'
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            value={term}
+                        />
+                    </View>
                 </View>
                 <SelectedUsers
                     selectedIds={this.state.selectedIds}
@@ -501,6 +503,7 @@ export default class MoreDirectMessages extends PureComponent {
                 <CustomList
                     data={data}
                     extraData={selectedIds}
+                    isLandscape={isLandscape}
                     key='custom_list'
                     listType={listType}
                     loading={loading}

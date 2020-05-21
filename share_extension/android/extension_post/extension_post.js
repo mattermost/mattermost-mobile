@@ -3,7 +3,6 @@
 
 import React, {PureComponent} from 'react';
 import {CommonActions as NavigationActions} from '@react-navigation/native';
-import TouchableItem from '@react-navigation/stack/lib/module/views/TouchableItem';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
@@ -14,6 +13,7 @@ import {
     ScrollView,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
@@ -302,7 +302,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     leftHeader = () => (
-        <TouchableItem
+        <TouchableOpacity
             accessibilityComponentType='button'
             accessibilityTraits='button'
             borderless={true}
@@ -316,7 +316,7 @@ export default class ExtensionPost extends PureComponent {
                     style={styles.closeButton}
                 />
             </View>
-        </TouchableItem>
+        </TouchableOpacity>
     );
 
     loadData = async (items) => {
@@ -549,7 +549,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     rightHeader = () => (
-        <TouchableItem
+        <TouchableOpacity
             accessibilityComponentType='button'
             accessibilityTraits='button'
             borderless={true}
@@ -564,7 +564,7 @@ export default class ExtensionPost extends PureComponent {
                     width={20}
                 />
             </View>
-        </TouchableItem>
+        </TouchableOpacity>
     );
 
     renderTeamButton = () => {

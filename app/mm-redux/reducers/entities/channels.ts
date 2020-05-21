@@ -365,14 +365,14 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
     case ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS: { // Used by the mobile app
         const nextState: any = {...state};
         const current = Object.values(nextState);
-        const {sync, channelMembers} = action.data;
+        const {sync, teamChannels, channelMembers} = action.data;
         let hasNewValues = channelMembers && channelMembers.length > 0;
 
         // Remove existing channel memberships when the user is no longer a member
         if (sync) {
             current.forEach((member: ChannelMembership) => {
                 const id = member.channel_id;
-                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id !== id)) {
+                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id !== id && teamChannels.includes(id))) {
                     delete nextState[id];
                     hasNewValues = true;
                 }

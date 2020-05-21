@@ -37,6 +37,16 @@ describe('getStateForReset', () => {
             },
             teams: {
                 currentTeamId,
+                teams: {
+                    [currentTeamId]: {
+                        id: 'currentTeamId',
+                        name: 'test',
+                        display_name: 'Test',
+                    },
+                },
+                myMembers: {
+                    [currentTeamId]: {},
+                },
             },
             preferences: {
                 myPreferences: {
@@ -74,10 +84,12 @@ describe('getStateForReset', () => {
         expect(users.profiles[currentUserId]).toBeDefined();
     });
 
-    it('should keep the current team ID', () => {
+    it('should keep the current team', () => {
         const resetState = getStateForReset(initialState, currentState);
         const {teams} = resetState.entities;
         expect(teams.currentTeamId).toEqual(currentTeamId);
+        expect(teams.teams[currentTeamId]).toEqual(currentState.entities.teams.teams[currentTeamId]);
+        expect(teams.myMembers[currentTeamId]).toEqual(currentState.entities.teams.myMembers[currentTeamId]);
     });
 
     it('should keep theme preferences', () => {

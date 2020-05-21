@@ -6,7 +6,7 @@ import {DeviceTypes} from 'app/constants';
 export function connection(isOnline) {
     return async (dispatch, getState) => {
         const state = getState();
-        if (isOnline !== undefined && isOnline !== state.device.connection) { //eslint-disable-line no-undefined
+        if (isOnline !== undefined && isOnline !== state.device.connection) {
             dispatch({
                 type: DeviceTypes.CONNECTION_CHANGED,
                 data: isOnline,
