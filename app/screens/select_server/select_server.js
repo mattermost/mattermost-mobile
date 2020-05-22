@@ -513,7 +513,9 @@ export default class SelectServer extends PureComponent {
                                     {buttonText}
                                 </Text>
                             </Button>
-                            <ErrorText error={error}/>
+                            <View>
+                                <ErrorText error={error}/>
+                            </View>
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>
