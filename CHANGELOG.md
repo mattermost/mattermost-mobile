@@ -9,32 +9,34 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Highlights
- - Upgraded to React Native 0.62.
- - Quick access to emoji reactions - Long press on a post and add recently used reactions in a single tap
+
+#### Upgrade to React Native 0.62
+
+#### Quick access to emoji reactions 
+ - Long press on a post and add recently used reactions in a single tap.
 
 ### Improvements
  - Automatic retry when id-loaded push notification fails to fetch on receipt.
- - Show appropriate error message when there is an invalid SSL cert when connectiong to the server on the mobile app.
+ - An appropriate error message is now shown when connecting to the server on the mobile app with an invalid SSL certificate.
  - Added the ability to find users by nickname when searching using ``@``.
  - Added the ability to view first and last name in profile view.
- - Updated the search bar to make it have a more native feel with smooth animations.
+ - Improved the search bar to have smoother animations.
  
 ### Bug Fixes
 
 #### All apps
  - Fixed an issue with an infinite skeleton channel screen on app relaunch when ``ExperimentalPrimaryTeam setting`` was enabled.
- - Fixed an issue where users were scrolled to old messages.
- - Fixed an issue where there was no logout message on mobile for session timeout.
- - Fixed a crash issue when FastImageSource.getGlideUrl is called.
+ - Fixed an issue where users were scrolled to old messages when switching to a channel with unread messages.
+ - Fixed an issue where a logout message for session timeout was missing.
  - Fixed an issue where a crash occurred instead of showing proper error on entering invalid MFA token.
- - Fixed an issue where user could not interact with the app until in-app notification was dismissed.
+ - Fixed an issue where a user could not interact with the app until in-app notifications were dismissed.
  - Fixed an issue where using emoji on an instance with the custom emoji feature disabled triggered an error "Custom emoji have been disabled by the system admin".
 
 #### iOS specific
  - 
 
 #### Android specific
-
+ - 
 
 ## 1.31.0 Release
 - Release Date: May 16, 2020
