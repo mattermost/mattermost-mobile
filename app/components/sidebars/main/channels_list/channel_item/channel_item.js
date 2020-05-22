@@ -25,6 +25,7 @@ export default class ChannelItem extends PureComponent {
         displayName: PropTypes.string.isRequired,
         isArchived: PropTypes.bool,
         isChannelMuted: PropTypes.bool,
+        isManualUnread: PropTypes.bool,
         currentUserId: PropTypes.string.isRequired,
         isUnread: PropTypes.bool,
         hasDraft: PropTypes.bool,
@@ -67,6 +68,7 @@ export default class ChannelItem extends PureComponent {
             displayName,
             isArchived,
             isChannelMuted,
+            isManualUnread,
             currentUserId,
             isUnread,
             hasDraft,
@@ -122,7 +124,7 @@ export default class ChannelItem extends PureComponent {
 
         if (isActive) {
             extraItemStyle = style.itemActive;
-            extraTextStyle = style.textActive;
+            extraTextStyle = isManualUnread ? style.textUnread : style.textActive;
 
             extraBorder = (
                 <View style={style.borderActive}/>
