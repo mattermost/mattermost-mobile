@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Bug Fixes
- - Fixed a crash issue on Android devices.
+ - Fixed a crash issue on Android when preloading images.
 
 ## 1.31.0 Release
 - Release Date: May 16, 2020
