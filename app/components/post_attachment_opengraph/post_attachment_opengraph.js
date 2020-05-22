@@ -32,19 +32,21 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     };
 
     static getDerivedStateFromProps(props, state) {
+        let update = null;
         if (props.link !== state.prevLink) {
-            return {
+            update = {
                 hasImage: false,
                 prevLink: props.link,
             };
         }
         if (props.openGraphData !== state.prevOpenGraphData) {
-            return {
+            update = {
+                ...update,
                 ...(getBestImageUrlAndDimensions(props)),
                 prevOpenGraphData: props.openGraphData,
             };
         }
-        return null;
+        return update;
     }
 
     constructor(props) {
