@@ -7,17 +7,17 @@ import {Alert, Clipboard, Linking, Text} from 'react-native';
 import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {DeepLinkTypes} from 'app/constants';
-import {getCurrentServerUrl} from 'app/init/credentials';
-import mattermostManaged from 'app/mattermost_managed';
-import BottomSheet from 'app/utils/bottom_sheet';
-import {preventDoubleTap} from 'app/utils/tap';
-import {matchDeepLink, normalizeProtocol} from 'app/utils/url';
-import {alertErrorWithFallback} from 'app/utils/general';
-import {t} from 'app/utils/i18n';
+import Config from '@assets/config';
+import {DeepLinkTypes} from '@constants';
+import CustomPropTypes from '@constants/custom_prop_types';
+import {getCurrentServerUrl} from '@init/credentials';
+import BottomSheet from '@utils/bottom_sheet';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {matchDeepLink, normalizeProtocol} from '@utils/url';
 
-import Config from 'assets/config';
+import mattermostManaged from 'app/mattermost_managed';
 
 export default class MarkdownLink extends PureComponent {
     static propTypes = {

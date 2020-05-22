@@ -6,12 +6,12 @@ import PropTypes from 'prop-types';
 import {Platform, StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import AppIcon from 'app/components/app_icon';
-import ProfilePicture from 'app/components/profile_picture';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {emptyFunction} from 'app/utils/general';
-import webhookIcon from 'assets/images/icons/webhook.jpg';
-import {ViewTypes} from 'app/constants';
+import webhookIcon from '@assets/images/icons/webhook.jpg';
+import AppIcon from '@components/app_icon';
+import ProfilePicture from '@components/profile_picture';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ViewTypes} from '@constants';
+import {emptyFunction} from '@utils/general';
 
 export default class PostProfilePicture extends PureComponent {
     static propTypes = {

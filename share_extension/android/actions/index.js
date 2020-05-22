@@ -15,7 +15,7 @@ export function getTeamChannels(teamId) {
         const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
         const redirectChannel = getChannelByName(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
 
-        return redirectChannel.id;
+        return redirectChannel?.id;
     };
 }
 

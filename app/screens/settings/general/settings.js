@@ -13,15 +13,14 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
 
-import SettingsItem from 'app/screens/settings/settings_item';
-import StatusBar from 'app/components/status_bar';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {isValidUrl} from 'app/utils/url';
-import {t} from 'app/utils/i18n';
-import {goToScreen, dismissModal} from 'app/actions/navigation';
-
-import LocalConfig from 'assets/config';
+import {goToScreen, dismissModal} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import StatusBar from '@components/status_bar';
+import SettingsItem from '@screens/settings/settings_item';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {isValidUrl} from '@utils/url';
 
 class Settings extends PureComponent {
     static propTypes = {
@@ -33,7 +32,7 @@ class Settings extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
-        errors: PropTypes.array.isRequired,
+        errors: PropTypes.object.isRequired,
         intl: intlShape.isRequired,
         joinableTeams: PropTypes.array.isRequired,
         theme: PropTypes.object,

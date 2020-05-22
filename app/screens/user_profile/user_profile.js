@@ -12,30 +12,27 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {displayUsername} from '@mm-redux/utils/user_utils';
-import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
-
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import ProfilePicture from 'app/components/profile_picture';
-import FormattedText from 'app/components/formatted_text';
-import FormattedTime from 'app/components/formatted_time';
-import StatusBar from 'app/components/status_bar';
-import {BotTag, GuestTag} from 'app/components/tag';
-
-import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {isGuest} from 'app/utils/users';
-
 import {
     goToScreen,
     popToRoot,
     dismissModal,
     setButtons,
-} from 'app/actions/navigation';
+} from '@actions/navigation';
+import Config from '@assets/config';
+import FormattedTime from '@components/formatted_time';
+import ProfilePicture from '@components/profile_picture';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import StatusBar from '@components/status_bar';
+import {BotTag, GuestTag} from '@components/tag';
+import {displayUsername} from '@mm-redux/utils/user_utils';
+import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {isGuest} from '@utils/users';
 
 import UserProfileRow from './user_profile_row';
-import Config from 'assets/config';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {

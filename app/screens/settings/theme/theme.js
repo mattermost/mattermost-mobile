@@ -8,19 +8,19 @@ import {intlShape} from 'react-intl';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import StatusBar from 'app/components/status_bar';
-import Section from 'app/screens/settings/section';
-import SectionItem from 'app/screens/settings/section_item';
-import FormattedText from 'app/components/formatted_text';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import Section from '@screens/settings/section';
+import SectionItem from '@screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ThemeTile from './theme_tile';
 
 const thumbnailImages = {
-    default: require('assets/images/themes/mattermost.png'),
-    organization: require('assets/images/themes/organization.png'),
-    mattermostDark: require('assets/images/themes/mattermost_dark.png'),
-    windows10: require('assets/images/themes/windows_dark.png'),
+    default: require('@assets/images/themes/mattermost.png'),
+    organization: require('@assets/images/themes/organization.png'),
+    mattermostDark: require('@assets/images/themes/mattermost_dark.png'),
+    windows10: require('@assets/images/themes/windows_dark.png'),
 };
 
 export default class Theme extends React.PureComponent {

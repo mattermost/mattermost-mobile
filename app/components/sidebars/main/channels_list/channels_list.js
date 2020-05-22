@@ -135,6 +135,7 @@ export default class ChannelsList extends PureComponent {
                     backgroundColor='transparent'
                     inputHeight={33}
                     inputStyle={searchBarInput}
+                    containerStyle={styles.flex}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -172,6 +173,9 @@ export default class ChannelsList extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
         above: {
             backgroundColor: theme.mentionBg,
             top: 40,
@@ -228,7 +232,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         searchContainer: {
             flex: 1,
             flexDirection: 'row',
-            overflow: 'hidden',
             ...Platform.select({
                 android: {
                     marginBottom: 1,

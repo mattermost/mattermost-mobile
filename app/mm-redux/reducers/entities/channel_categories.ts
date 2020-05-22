@@ -5,7 +5,7 @@ import {combineReducers} from 'redux';
 
 import {CategoryTypes} from '../../constants/channel_categories';
 
-import {ChannelCategoryTypes, TeamTypes} from '@mm-redux/action_types';
+import {TeamTypes} from '@mm-redux/action_types';
 
 import {GenericAction} from '@mm-redux/types/actions';
 import {ChannelCategory} from '@mm-redux/types/channel_categories';

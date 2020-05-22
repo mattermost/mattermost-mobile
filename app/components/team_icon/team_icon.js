@@ -54,7 +54,6 @@ export default class TeamIcon extends React.PureComponent {
 
     preloadTeamIcon = (teamId, lastIconUpdate) => {
         const uri = Client4.getTeamIconUrl(teamId, lastIconUpdate);
-        FastImage.preload([{uri, headers: Client4.getOptions({}).headers}]);
         this.setImageURL(uri);
     };
 
@@ -87,7 +86,7 @@ export default class TeamIcon extends React.PureComponent {
         } else {
             teamIconContent = (
                 <Text style={[styles.text, styleText]}>
-                    {displayName.substr(0, 2).toUpperCase()}
+                    {displayName?.substr(0, 2).toUpperCase()}
                 </Text>
             );
         }

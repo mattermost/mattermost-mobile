@@ -207,7 +207,7 @@ export function getExtensionFromMime(type) {
 
 function populateMaps() {
     // source preference (least -> most)
-    const preference = ['nginx', 'apache', undefined, 'iana']; //eslint-disable-line no-undefined
+    const preference = ['nginx', 'apache', undefined, 'iana'];
 
     Object.keys(mimeDB).forEach((type) => {
         const mime = mimeDB[type];

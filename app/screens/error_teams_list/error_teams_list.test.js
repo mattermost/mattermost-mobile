@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
 
+import FailedNetworkAction from '@components/failed_network_action';
 import Preferences from '@mm-redux/constants/preferences';
+import {shallowWithIntl} from 'test/intl-test-helper.js';
 
-import FailedNetworkAction from 'app/components/failed_network_action';
 import ErrorTeamsList from './error_teams_list';
 
 describe('ErrorTeamsList', () => {
@@ -28,7 +28,7 @@ describe('ErrorTeamsList', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ErrorTeamsList {...baseProps}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -51,7 +51,7 @@ describe('ErrorTeamsList', () => {
             actions,
         };
 
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <ErrorTeamsList {...newProps}/>,
         );
 

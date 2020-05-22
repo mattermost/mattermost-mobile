@@ -53,7 +53,7 @@ async function getProfilesAndStatusesForMembers(userIds: string[], dispatch: Dis
 }
 
 export function selectTeam(team: Team | string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         const teamId = (typeof team === 'string') ? team : team.id;
         dispatch({
             type: TeamTypes.SELECT_TEAM,
@@ -473,9 +473,9 @@ export function addUsersToTeamGracefully(teamId: string, userIds: Array<string>)
             return {error};
         }
 
-        const added_members = result ? result.filter((m) => !m.error) : [];
-        const profiles: Partial<UserProfile>[] = added_members.map((m) => ({id: m.user_id}));
-        const members = added_members.map((m) => m.member);
+        const addedMembers = result ? result.filter((m) => !m.error) : [];
+        const profiles: Partial<UserProfile>[] = addedMembers.map((m) => ({id: m.user_id}));
+        const members = addedMembers.map((m) => m.member);
         dispatch(batchActions([
             {
                 type: UserTypes.RECEIVED_PROFILES_LIST_IN_TEAM,

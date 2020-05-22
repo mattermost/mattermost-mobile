@@ -6,10 +6,9 @@ import PropTypes from 'prop-types';
 import {Animated, ImageBackground, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import thumb from 'assets/images/thumb.png';
+import thumb from '@assets/images/thumb.png';
+import CustomPropTypes from '@constants/custom_prop_types';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);

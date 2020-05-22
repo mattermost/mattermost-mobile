@@ -3,39 +3,48 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {Text, View} from 'react-native';
+import {intlShape} from 'react-intl';
+import Button from 'react-native-button';
 
-import FormattedText from 'app/components/formatted_text';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Cloud from './cloud';
 
 export default class FailedNetworkAction extends PureComponent {
     static propTypes = {
         onRetry: PropTypes.func.isRequired,
-        actionId: PropTypes.string,
-        actionDefaultMessage: PropTypes.string,
-        errorId: PropTypes.string,
-        errorDefaultMessage: PropTypes.string,
+        actionText: PropTypes.string,
+        errorMessage: PropTypes.string,
+        errorTitle: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     static defaultProps = {
-        actionId: t('mobile.failed_network_action.retry'),
-        actionDefaultMessage: 'try again',
-        errorId: t('mobile.failed_network_action.shortDescription'),
-        errorDefaultMessage: 'Messages will load when you have an internet connection or {tryAgainAction}.',
+        showAction: true,
     };
 
     render() {
-        const {actionId, actionDefaultMessage, errorId, errorDefaultMessage, onRetry, theme} = this.props;
+        const {formatMessage} = this.context.intl;
+        const {onRetry, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
-        const errorTitle = {
-            id: t('mobile.failed_network_action.title'),
+        const actionText = this.props.actionText || formatMessage({
+            id: 'mobile.failed_network_action.retry',
+            defaultMessage: 'Try again',
+        });
+        const errorTitle = this.props.errorTitle || formatMessage({
+            id: 'mobile.failed_network_action.title',
             defaultMessage: 'No internet connection',
-        };
+        });
+        const errorMessage = this.props.errorMessage || formatMessage({
+            id: 'mobile.failed_network_action.shortDescription',
+            defaultMessage: 'Messages will load when you have an internet connection.',
+        });
 
         return (
             <View style={style.container}>
@@ -44,26 +53,14 @@ export default class FailedNetworkAction extends PureComponent {
                     height={76}
                     width={76}
                 />
-                <FormattedText
-                    id={errorTitle.id}
-                    defaultMessage={errorTitle.defaultMessage}
-                    style={style.title}
-                />
-                <FormattedText
-                    id={errorId}
-                    defaultMessage={errorDefaultMessage}
-                    style={style.description}
-                    values={{
-                        tryAgainAction: (
-                            <FormattedText
-                                id={actionId}
-                                defaultMessage={actionDefaultMessage}
-                                style={style.link}
-                                onPress={onRetry}
-                            />
-                        ),
-                    }}
-                />
+                <Text style={style.title}>{errorTitle}</Text>
+                <Text style={style.description}>{errorMessage}</Text>
+                <Button
+                    onPress={onRetry}
+                    containerStyle={style.buttonContainer}
+                >
+                    <Text style={style.link}>{actionText}</Text>
+                </Button>
             </View>
         );
     }
@@ -92,7 +89,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             textAlign: 'center',
         },
         link: {
-            color: theme.linkColor,
+            color: theme.buttonColor,
+            fontSize: 15,
+        },
+        buttonContainer: {
+            backgroundColor: theme.buttonBg,
+            borderRadius: 5,
+            height: 42,
+            justifyContent: 'center',
+            marginTop: 20,
+            paddingHorizontal: 12,
         },
     };
 });

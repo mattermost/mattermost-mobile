@@ -27,6 +27,10 @@ describe('ChannelAddMembers', () => {
         isLandscape: false,
     };
 
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
     test('should render without error and call functions on mount', () => {
         const setButtons = jest.spyOn(NavigationActions, 'setButtons');
 

@@ -8,7 +8,6 @@ import Preferences from '@mm-redux/constants/preferences';
 import {General, RequestStatus} from '@mm-redux/constants';
 
 import PostList from 'app/components/post_list';
-import * as NavigationActions from 'app/actions/navigation';
 
 import ThreadIOS from './thread.ios';
 
@@ -51,23 +50,6 @@ describe('thread', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
-    test('should call resetToChannel on onCloseChannel', () => {
-        const resetToChannel = jest.spyOn(NavigationActions, 'resetToChannel');
-
-        const passProps = {
-            disableTermsModal: true,
-        };
-        const wrapper = shallow(
-            <ThreadIOS
-                {...baseProps}
-            />,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-        wrapper.instance().onCloseChannel();
-        expect(resetToChannel).toHaveBeenCalledTimes(1);
-        expect(resetToChannel).toBeCalledWith(passProps);
     });
 
     test('should match snapshot, render footer', () => {

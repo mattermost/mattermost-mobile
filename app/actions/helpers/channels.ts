@@ -368,11 +368,15 @@ async function getProfilesFromPromises(promises: Array<Promise<ActionResult>>): 
         return null;
     }
 
-    const result = await Promise.all(promises);
-    const data = result.filter((p: any) => !p.error);
+    try {
+        const result = await Promise.all(promises);
+        const data = result.filter((p: any) => !p.error);
 
-    return {
-        type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
-        data,
-    };
+        return {
+            type: UserTypes.RECEIVED_BATCHED_PROFILES_IN_CHANNEL,
+            data,
+        };
+    } catch {
+        return null;
+    }
 }

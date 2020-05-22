@@ -4,30 +4,24 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from '@mm-redux/actions/users';
+import {loadChannelsForTeam, selectInitialChannel} from '@actions/views/channel';
+import {recordLoadTime} from '@actions/views/root';
+import {selectDefaultTeam} from '@actions/views/select_team';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
 import {getChannelStats} from '@mm-redux/actions/channels';
 
-import {
-    loadChannelsForTeam,
-    selectInitialChannel,
-} from 'app/actions/views/channel';
-import {connection} from 'app/actions/device';
-import {recordLoadTime} from 'app/actions/views/root';
-import {logout} from 'app/actions/views/user';
-import {selectDefaultTeam} from 'app/actions/views/select_team';
-import {isLandscape} from 'app/selectors/device';
-
 import Channel from './channel';
 
 function mapStateToProps(state) {
+    const currentTeam = getCurrentTeam(state);
+
     return {
-        currentTeamId: getCurrentTeamId(state),
+        currentTeamId: currentTeam?.id,
         currentChannelId: getCurrentChannelId(state),
-        isLandscape: isLandscape(state),
+        teamName: currentTeam?.display_name,
         theme: getTheme(state),
         showTermsOfService: shouldShowTermsOfService(state),
     };
@@ -37,14 +31,10 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getChannelStats,
-            connection,
             loadChannelsForTeam,
-            logout,
             selectDefaultTeam,
             selectInitialChannel,
             recordLoadTime,
-            startPeriodicStatusUpdates,
-            stopPeriodicStatusUpdates,
         }, dispatch),
     };
 }

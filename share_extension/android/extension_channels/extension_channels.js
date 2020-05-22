@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {NavigationActions} from 'react-navigation';
+import {CommonActions as NavigationActions} from '@react-navigation/native';
 import {
     ActivityIndicator,
     SectionList,
@@ -28,6 +28,7 @@ export default class ExtensionTeam extends PureComponent {
         navigation: PropTypes.object.isRequired,
         privateChannels: PropTypes.array,
         publicChannels: PropTypes.array,
+        route: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
@@ -39,10 +40,6 @@ export default class ExtensionTeam extends PureComponent {
     static contextTypes = {
         intl: intlShape,
     };
-
-    static navigationOptions = ({navigation}) => ({
-        title: navigation.state.params.title,
-    });
 
     state = {
         sections: null,
@@ -102,14 +99,14 @@ export default class ExtensionTeam extends PureComponent {
     };
 
     handleSelectChannel = async (channel) => {
-        const {state} = this.props.navigation;
-        const backAction = NavigationActions.back();
+        const {navigation, route} = this.props;
+        const backAction = NavigationActions.goBack();
 
-        if (state.params && state.params.onSelectChannel) {
-            state.params.onSelectChannel(channel.id);
+        if (route?.params?.onSelectChannel) {
+            route.params.onSelectChannel(channel.id);
         }
 
-        this.props.navigation.dispatch(backAction);
+        navigation.dispatch(backAction);
     };
 
     handleSearch = (term) => {
@@ -160,9 +157,8 @@ export default class ExtensionTeam extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {navigation} = this.props;
-        const {params = {}} = navigation.state;
-        const {currentChannelId} = params;
+        const {route} = this.props;
+        const {currentChannelId} = route.params;
 
         return (
             <ExtensionChannelItem

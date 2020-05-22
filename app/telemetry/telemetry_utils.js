@@ -3,8 +3,9 @@
 
 import {Dimensions} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import * as RNLocalize from 'react-native-localize';
 
-import LocalConfig from 'assets/config';
+import LocalConfig from '@assets/config';
 
 export function saveToTelemetryServer(data) {
     const {
@@ -67,28 +68,28 @@ export function setTraceRecord({
     };
 }
 
-export function getDeviceInfo() {
+export async function getDeviceInfo() {
     const {height, width} = Dimensions.get('window');
 
     return {
-        api_level: DeviceInfo.getAPILevel(),
+        api_level: await DeviceInfo.getAPILevel(),
         build_number: DeviceInfo.getBuildNumber(),
         bundle_id: DeviceInfo.getBundleId(),
         brand: DeviceInfo.getBrand(),
-        country: DeviceInfo.getDeviceCountry(),
+        country: RNLocalize.getCountry(),
         device_id: DeviceInfo.getDeviceId(),
-        device_locale: DeviceInfo.getDeviceLocale().split('-')[0],
+        device_locale: RNLocalize.getLocales()[0].languageCode,
         device_type: DeviceInfo.getDeviceType(),
         device_unique_id: DeviceInfo.getUniqueID(),
         height: height ? Math.floor(height) : 0,
-        is_emulator: DeviceInfo.isEmulator(),
+        is_emulator: await DeviceInfo.isEmulator(),
         is_tablet: DeviceInfo.isTablet(),
-        manufacturer: DeviceInfo.getManufacturer(),
-        max_memory: DeviceInfo.getMaxMemory(),
+        manufacturer: await DeviceInfo.getManufacturer(),
+        max_memory: await DeviceInfo.getMaxMemory(),
         model: DeviceInfo.getModel(),
         system_name: DeviceInfo.getSystemName(),
         system_version: DeviceInfo.getSystemVersion(),
-        timezone: DeviceInfo.getTimezone(),
+        timezone: RNLocalize.getTimeZone(),
         app_version: DeviceInfo.getVersion(),
         width: width ? Math.floor(width) : 0,
     };
