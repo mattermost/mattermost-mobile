@@ -375,8 +375,6 @@ const getBestImageUrlAndDimensions = (props) => {
         dimensions = calculateDimensions(ogImage.height, ogImage.width, getViewPostWidth(props));
     }
 
-    FastImage.preload([{uri: imageUrl}]);
-
     return {
         hasImage: true,
         ...dimensions,
