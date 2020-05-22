@@ -28,6 +28,7 @@ describe('ChannelItem', () => {
         displayName: 'display_name',
         isChannelMuted: false,
         currentUserId: 'currentUser',
+        isManualUnread: false,
         isUnread: true,
         hasDraft: false,
         mentions: 0,
@@ -199,6 +200,18 @@ describe('ChannelItem', () => {
                 hasDraft={true}
                 shouldHideChannel={true}
                 unreadMsgs={0}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot for isManualUnread', () => {
+        const wrapper = shallow(
+            <ChannelItem
+                {...baseProps}
+                isManualUnread={true}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );
