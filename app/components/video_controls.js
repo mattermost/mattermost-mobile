@@ -106,17 +106,15 @@ export default class VideoControls extends PureComponent {
         });
     };
 
-    getPlayerStateIcon = (playerState) => {
+    getControlIconAndAspectRatio = (playerState) => {
         switch (playerState) {
-        case PLAYER_STATE.PAUSED:
-            return playImage;
         case PLAYER_STATE.PLAYING:
-            return pauseImage;
+            return {icon: pauseImage, aspectRatio: 0.83};
         case PLAYER_STATE.ENDED:
-            return replayImage;
+            return {icon: replayImage, aspectRatio: 1.17};
         }
 
-        return playImage;
+        return {icon: playImage, aspectRatio: 0.83};
     };
 
     handleAppStateChange = (nextAppState) => {
@@ -216,16 +214,16 @@ export default class VideoControls extends PureComponent {
     };
 
     setPlayerControls = (playerState) => {
-        const icon = this.getPlayerStateIcon(playerState);
+        const {icon, aspectRatio} = this.getControlIconAndAspectRatio(playerState);
         const pressAction = playerState === PLAYER_STATE.ENDED ? this.onReplay : this.onPause;
         return (
             <TouchableOpacity
-                style={[styles.playButton, {backgroundColor: this.props.mainColor}]}
+                style={[styles.controlButton, {backgroundColor: this.props.mainColor}]}
                 onPress={pressAction}
             >
                 <FastImage
                     source={icon}
-                    style={styles.playIcon}
+                    style={[styles.controlIcon, {aspectRatio}]}
                 />
             </TouchableOpacity>
         );
@@ -288,7 +286,7 @@ const styles = StyleSheet.create({
     timeRow: {
         alignSelf: 'stretch',
     },
-    playButton: {
+    controlButton: {
         justifyContent: 'center',
         alignItems: 'center',
         width: 50,
@@ -297,15 +295,8 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         borderColor: 'rgba(255,255,255,0.5)',
     },
-    playIcon: {
-        width: 22,
-        height: 22,
-        resizeMode: 'contain',
-    },
-    replayIcon: {
-        width: 25,
+    controlIcon: {
         height: 20,
-        resizeMode: 'stretch',
     },
     progressContainer: {
         position: 'absolute',
