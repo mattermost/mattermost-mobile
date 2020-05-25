@@ -31,12 +31,13 @@
  - Fixed an issue where a crash occurred instead of showing proper error on entering invalid MFA token.
  - Fixed an issue where a user could not interact with the app until in-app notifications were dismissed.
  - Fixed an issue where using emoji on an instance with the custom emoji feature disabled triggered an error "Custom emoji have been disabled by the system admin".
+ - Fixed an issue where the replay icon was cut off on full screen video preview.
 
 #### iOS specific
  - 
 
 #### Android specific
- - 
+ - Fixed an issue where dropdowns in the channel modal were hard to read.
 
 ## 1.31.0 Release
 - Release Date: May 16, 2020
