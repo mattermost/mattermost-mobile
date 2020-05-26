@@ -166,7 +166,7 @@ export default class MainSidebarBase extends Component {
     };
 
     showTeams = () => {
-        if (this.drawerSwiper && this.props.teamsCount > 1) {
+        if (this.drawerSwiper) {
             this.drawerSwiper.showTeamsPage();
         }
     };
@@ -232,7 +232,7 @@ export default class MainSidebarBase extends Component {
                     ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}
-                    onShowTeams={this.showTeams}
+                    onShowTeams={multipleTeams ? this.showTeams : undefined}
                     onSearchStart={this.onSearchStart}
                     onSearchEnds={this.onSearchEnds}
                     theme={theme}
