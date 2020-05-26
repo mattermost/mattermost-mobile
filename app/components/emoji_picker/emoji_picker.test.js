@@ -5,7 +5,7 @@ import React from 'react';
 import Fuse from 'fuse.js';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {getEmojisByName, getEmojisBySection} from '@selectors/emojis';
+import {selectEmojisByName, selectEmojisBySection} from '@selectors/emojis';
 import initialState from '@store/initial_state';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
@@ -19,8 +19,8 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
             recentEmojis: [],
         },
     };
-    const emojis = getEmojisByName(state);
-    const emojisBySection = getEmojisBySection(state);
+    const emojis = selectEmojisByName(state);
+    const emojisBySection = selectEmojisBySection(state);
     const options = {
         shouldSort: false,
         threshold: 0.3,
