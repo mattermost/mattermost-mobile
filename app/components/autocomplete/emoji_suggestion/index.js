@@ -3,34 +3,32 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
+import Fuse from 'fuse.js';
 
-import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
-import {getConfig} from '@mm-redux/selectors/entities/general';
+import {addReactionToLatestPost} from '@actions/views/emoji';
 import {autocompleteCustomEmojis} from '@mm-redux/actions/emojis';
-import {createIdsSelector} from '@mm-redux/utils/helpers';
-
-import {addReactionToLatestPost} from 'app/actions/views/emoji';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {EmojiIndicesByAlias} from 'app/utils/emojis';
+import {getEmojisByName} from '@selectors/emojis';
 
 import EmojiSuggestion from './emoji_suggestion';
 
-const getEmojisByName = createIdsSelector(
-    getCustomEmojisByName,
-    (customEmojis) => {
-        const emoticons = new Set();
-        for (const [key] of [...EmojiIndicesByAlias.entries(), ...customEmojis.entries()]) {
-            emoticons.add(key);
-        }
-
-        return Array.from(emoticons);
-    },
-);
-
 function mapStateToProps(state) {
     const emojis = getEmojisByName(state);
+    const options = {
+        shouldSort: false,
+        threshold: 0.3,
+        location: 0,
+        distance: 10,
+        includeMatches: true,
+        findAllMatches: true,
+    };
+
+    const list = emojis.length ? emojis : [];
+    const fuse = new Fuse(list, options);
 
     return {
+        fuse,
         emojis,
         customEmojisEnabled: getConfig(state).EnableCustomEmoji === 'true',
         theme: getTheme(state),
