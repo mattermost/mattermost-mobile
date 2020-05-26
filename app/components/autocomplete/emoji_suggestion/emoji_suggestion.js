@@ -9,7 +9,6 @@ import {
     Text,
     View,
 } from 'react-native';
-import Fuse from 'fuse.js';
 
 import AutocompleteDivider from '@components/autocomplete/autocomplete_divider';
 import Emoji from '@components/emoji';
@@ -21,15 +20,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
 
-const options = {
-    shouldSort: true,
-    threshold: 0.3,
-    location: 0,
-    distance: 100,
-    minMatchCharLength: 2,
-    maxPatternLength: 32,
-};
-
 export default class EmojiSuggestion extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
@@ -39,6 +29,7 @@ export default class EmojiSuggestion extends PureComponent {
         cursorPosition: PropTypes.number,
         customEmojisEnabled: PropTypes.bool,
         emojis: PropTypes.array.isRequired,
+        fuse: PropTypes.object.isRequired,
         isSearch: PropTypes.bool,
         maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
@@ -63,22 +54,15 @@ export default class EmojiSuggestion extends PureComponent {
         super(props);
 
         this.matchTerm = '';
-        const list = props.emojis || [];
-        this.fuse = new Fuse(list, options);
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
         if (this.props.isSearch) {
             return;
         }
 
-        const {cursorPosition, emojis, value} = this.props;
+        const {cursorPosition, value} = this.props;
         const match = value.substring(0, cursorPosition).match(EMOJI_REGEX);
-
-        if (prevProps.emojis !== emojis) {
-            const list = emojis || [];
-            this.fuse = new Fuse(list, options);
-        }
 
         if (!match || this.state.emojiComplete) {
             this.resetAutocomplete();
@@ -91,7 +75,7 @@ export default class EmojiSuggestion extends PureComponent {
             if (this.props.customEmojisEnabled) {
                 this.props.actions.autocompleteCustomEmojis(this.matchTerm);
             }
-            this.searchEmoji(this.matchTerm);
+            this.searchEmojis(this.matchTerm);
         }
     }
 
@@ -145,17 +129,6 @@ export default class EmojiSuggestion extends PureComponent {
 
     getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index})
 
-    handleFuzzySearch = (matchTerm) => {
-        const {emojis} = this.props;
-
-        clearTimeout(this.searchTermTimeout);
-        this.searchTermTimeout = setTimeout(() => {
-            const results = this.fuse.search(matchTerm.toLowerCase()).map((r) => r.refIndex);
-            const data = results.map((index) => emojis[index]);
-            this.setEmojiData(data, matchTerm);
-        }, 100);
-    };
-
     keyExtractor = (item) => item;
 
     renderItem = ({item}) => {
@@ -188,26 +161,38 @@ export default class EmojiSuggestion extends PureComponent {
         this.props.onResultCountChange(0);
     }
 
-    searchEmoji = (matchTerm) => {
-        if (matchTerm.length) {
-            this.handleFuzzySearch(matchTerm);
-        } else {
-            this.setEmojiData(this.props.emojis);
-        }
-    }
+    searchEmojis = (searchTerm) => {
+        const {emojis, fuse} = this.props;
 
-    setEmojiData = (data, matchTerm = null) => {
         let sorter = compareEmojis;
-        if (matchTerm) {
-            sorter = (a, b) => compareEmojis(a, b, matchTerm);
+        if (searchTerm.trim().length) {
+            const searchTermLowerCase = searchTerm.toLowerCase();
+
+            sorter = (a, b) => compareEmojis(a, b, searchTermLowerCase);
+            clearTimeout(this.searchTermTimeout);
+
+            this.searchTermTimeout = setTimeout(() => {
+                const fuzz = fuse.search(searchTerm);
+                const results = fuzz.reduce((values, r) => {
+                    const v = r.matches[0]?.value;
+                    if (v) {
+                        values.push(v);
+                    }
+
+                    return values;
+                }, []);
+                const data = results.sort(sorter);
+                this.setState({
+                    active: data.length > 0,
+                    dataSource: data,
+                });
+            }, 100);
+        } else {
+            this.setState({
+                active: emojis.length > 0,
+                dataSource: emojis.sort(sorter),
+            });
         }
-
-        this.setState({
-            active: data.length > 0,
-            dataSource: data.sort(sorter),
-        });
-
-        this.props.onResultCountChange(data.length);
     };
 
     render() {
