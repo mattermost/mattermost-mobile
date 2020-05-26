@@ -2,14 +2,35 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import Fuse from 'fuse.js';
 
 import Preferences from '@mm-redux/constants/preferences';
-
+import {getEmojisByName, getEmojisBySection} from '@selectors/emojis';
+import initialState from '@store/initial_state';
 import {shallowWithIntl} from 'test/intl-test-helper';
+
 import {filterEmojiSearchInput} from './emoji_picker_base';
 import EmojiPicker from './emoji_picker.ios';
 
-describe('components/emoji_picker/EmojiPicker', () => {
+describe('components/emoji_picker/emoji_picker.ios', () => {
+    const state = {
+        ...initialState,
+        views: {
+            recentEmojis: [],
+        },
+    };
+    const emojis = getEmojisByName(state);
+    const emojisBySection = getEmojisBySection(state);
+    const options = {
+        shouldSort: false,
+        threshold: 0.3,
+        location: 0,
+        distance: 10,
+        includeMatches: true,
+        findAllMatches: true,
+    };
+    const fuse = new Fuse(emojis, options);
+
     const baseProps = {
         actions: {
             getCustomEmojis: jest.fn(),
@@ -19,9 +40,9 @@ describe('components/emoji_picker/EmojiPicker', () => {
         customEmojisEnabled: false,
         customEmojiPage: 200,
         deviceWidth: 400,
-        emojis: [],
-        emojisBySection: [],
-        fuse: {},
+        emojis,
+        emojisBySection,
+        fuse,
         isLandscape: false,
         theme: Preferences.THEMES.default,
     };
@@ -46,6 +67,15 @@ describe('components/emoji_picker/EmojiPicker', () => {
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('searchEmojis should return the right values on fuse', () => {
+        const input = '1';
+        const output = ['100', '1234', '1st_place_medal', '+1', '-1', 'u7121'];
+
+        const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
+        const result = wrapper.instance().searchEmojis(input);
+        expect(result).toEqual(output);
     });
 
     test('should set rebuildEmojis to true when deviceWidth changes', () => {
@@ -84,7 +114,7 @@ describe('components/emoji_picker/EmojiPicker', () => {
         const setRebuiltEmojis = jest.spyOn(instance, 'setRebuiltEmojis');
         setRebuiltEmojis(searchBarAnimationComplete);
 
-        expect(instance.setState).toHaveBeenCalledWith({emojis: []});
+        expect(instance.setState).toHaveBeenCalledTimes(1);
         expect(instance.rebuildEmojis).toBe(false);
     });
 
