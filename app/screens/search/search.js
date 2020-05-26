@@ -775,7 +775,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: '100%',
-            paddingTop: 5,
             ...Platform.select({
                 android: {
                     height: 46,
@@ -784,6 +783,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                 ios: {
                     height: 44,
                     paddingLeft: 8,
+                    paddingTop: 5,
                     paddingBottom: 10,
                 },
             }),
