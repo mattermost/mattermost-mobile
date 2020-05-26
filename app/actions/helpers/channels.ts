@@ -169,6 +169,7 @@ export function makeDirectChannelVisibleIfNecessary(state: GlobalState, otherUse
             value: 'true',
         };
 
+        Client4.savePreferences(currentUserId, [preference]);
         return {
             type: PreferenceTypes.RECEIVED_PREFERENCES,
             data: [preference],
@@ -192,6 +193,8 @@ export async function makeGroupMessageVisibleIfNecessary(state: GlobalState, cha
                 name: channelId,
                 value: 'true',
             };
+
+            Client4.savePreferences(currentUserId, [preference]);
 
             const profilesInChannel = await fetchUsersInChannel(state, channelId);
 
