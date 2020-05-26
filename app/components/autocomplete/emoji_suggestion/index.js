@@ -9,12 +9,12 @@ import {addReactionToLatestPost} from '@actions/views/emoji';
 import {autocompleteCustomEmojis} from '@mm-redux/actions/emojis';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getEmojisByName} from '@selectors/emojis';
+import {selectEmojisByName} from '@selectors/emojis';
 
 import EmojiSuggestion from './emoji_suggestion';
 
 function mapStateToProps(state) {
-    const emojis = getEmojisByName(state);
+    const emojis = selectEmojisByName(state);
     const options = {
         shouldSort: false,
         threshold: 0.3,

@@ -10,13 +10,13 @@ import {getCustomEmojis} from '@mm-redux/actions/emojis';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getDimensions, isLandscape} from '@selectors/device';
-import {getEmojisByName, getEmojisBySection} from '@selectors/emojis';
+import {selectEmojisByName, selectEmojisBySection} from '@selectors/emojis';
 
 import EmojiPicker from './emoji_picker';
 
 function mapStateToProps(state) {
-    const emojisBySection = getEmojisBySection(state);
-    const emojis = getEmojisByName(state);
+    const emojisBySection = selectEmojisBySection(state);
+    const emojis = selectEmojisByName(state);
     const {deviceWidth} = getDimensions(state);
     const options = {
         shouldSort: false,

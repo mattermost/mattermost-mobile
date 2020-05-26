@@ -5,7 +5,7 @@ import React from 'react';
 import Fuse from 'fuse.js';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {getEmojisByName} from '@selectors/emojis';
+import {selectEmojisByName} from '@selectors/emojis';
 import initialState from '@store/initial_state';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
@@ -20,7 +20,7 @@ describe('components/autocomplete/emoji_suggestion', () => {
             recentEmojis: [],
         },
     };
-    const emojis = getEmojisByName(state);
+    const emojis = selectEmojisByName(state);
     const options = {
         shouldSort: false,
         threshold: 0.3,

@@ -4,7 +4,7 @@
 import {createSelector} from 'reselect';
 
 import {t} from '@utils/i18n';
-import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {getCustomEmojisByName as selectCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {createIdsSelector} from '@mm-redux/utils/helpers';
 import {BuiltInEmojis, CategoryNames, Emojis, EmojiIndicesByAlias, EmojiIndicesByCategory} from '@utils/emojis';
 
@@ -69,8 +69,8 @@ function fillEmoji(indice) {
     };
 }
 
-export const getEmojisByName = createIdsSelector(
-    getCustomEmojisByName,
+export const selectEmojisByName = createIdsSelector(
+    selectCustomEmojisByName,
     (customEmojis) => {
         const emoticons = new Set();
         for (const [key] of [...EmojiIndicesByAlias.entries(), ...customEmojis.entries()]) {
@@ -81,8 +81,8 @@ export const getEmojisByName = createIdsSelector(
     },
 );
 
-export const getEmojisBySection = createSelector(
-    getCustomEmojisByName,
+export const selectEmojisBySection = createSelector(
+    selectCustomEmojisByName,
     (state) => state.views.recentEmojis,
     (customEmojis, recentEmojis) => {
         const emoticons = CategoryNames.filter((name) => name !== 'custom').map((category) => {
