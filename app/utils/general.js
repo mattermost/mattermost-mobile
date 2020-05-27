@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 import {Posts} from '@mm-redux/constants';
@@ -86,6 +86,10 @@ export function isPendingPost(postId, userId) {
 }
 
 export function validatePreviousVersion(previousVersion) {
+    if (Platform.OS === 'ios') {
+        INVALID_VERSIONS.push('1.31.0', '1.31.1');
+    }
+
     if (!previousVersion || INVALID_VERSIONS.includes(previousVersion)) {
         return false;
     }
