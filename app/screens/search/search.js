@@ -712,7 +712,7 @@ export default class Search extends PureComponent {
             paddingRes.paddingLeft = null;
 
             if (isLandscape) {
-                paddingRes.paddingTop = 5;
+                paddingRes.paddingTop = 13;
             }
         }
 
@@ -781,10 +781,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     justifyContent: 'center',
                 },
                 ios: {
-                    height: 44,
-                    paddingLeft: 8,
-                    paddingTop: 5,
-                    paddingBottom: 10,
+                    height: 58,
+                    paddingLeft: 15,
+                    paddingRight: 5,
+                    paddingTop: 13,
                 },
             }),
         },
