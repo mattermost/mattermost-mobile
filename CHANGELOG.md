@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.31.2 Release
-- Release Date: May , 2020
+- Release Date: May 27, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Compatibility
@@ -9,8 +9,10 @@
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
  
+Mattermost Mobile App v1.31.2 contains a high level security fix. [Upgrading](http://docs.mattermost.com/administration/upgrade.html) is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
+ 
 ### Bug Fixes
- - Fixed an issue where files uploads fail due to a time out when the [Antivirus plugin](https://github.com/mattermost/mattermost-plugin-antivirus) is enabled.
+ - Fixed an issue where files uploads failed due to a time out when the [Antivirus plugin](https://github.com/mattermost/mattermost-plugin-antivirus) was enabled.
 
 ## 1.31.1 Release
 - Release Date: May 22, 2020
