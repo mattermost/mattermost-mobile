@@ -181,18 +181,14 @@ export default class LoginOptions extends PureComponent {
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
 
         if (!forceHideFromLocal && o365Enabled) {
-            const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
+            const backgroundColor = '#2389d7';
             const additionalStyle = {
                 backgroundColor,
                 borderColor: 'transparent',
                 borderWidth: 0,
             };
 
-            if (config.EmailLoginButtonBorderColor) {
-                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
-            }
-
-            const textColor = config.EmailLoginButtonTextColor || 'white';
+            const textColor = 'white';
 
             return (
                 <Button
