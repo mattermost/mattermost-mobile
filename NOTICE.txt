@@ -155,7 +155,7 @@ React Native Masked View Library
 * HOMEPAGE:
   * https://github.com/react-native-community/react-native-masked-view
 
-* LICENSE:
+* LICENSE: MIT
 
 ---
 
