@@ -12,7 +12,7 @@
 Mattermost Mobile App v1.31.2 contains a high level security fix. [Upgrading](http://docs.mattermost.com/administration/upgrade.html) is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
  
 ### Bug Fixes
- - Fixed an issue where files uploads failed due to a time out when the [Antivirus plugin](https://github.com/mattermost/mattermost-plugin-antivirus) was enabled.
+ - Fixed an issue where file uploads failed due to a time out when the [Antivirus plugin](https://github.com/mattermost/mattermost-plugin-antivirus) was enabled.
 
 ## 1.31.1 Release
 - Release Date: May 22, 2020
