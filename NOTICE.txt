@@ -1520,10 +1520,6 @@ SOFTWARE.
 
 ---
 
-## react-native-elements
-
----
-
 ## react-native-exception-handler
 
 This product contains 'react-native-exception-handler' by master-atul.
