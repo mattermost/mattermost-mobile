@@ -87,7 +87,10 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
             const postForChannel = postsInChannel[channelId];
             const data = await Client4.getPosts(channelId, page, perPage);
             const posts = Object.values(data.posts);
-            const actions = [];
+            const actions = [{
+                type: ViewTypes.SET_CHANNEL_RETRY_FAILED,
+                failed: false,
+            }];
 
             if (posts?.length) {
                 actions.push(receivedPosts(data));

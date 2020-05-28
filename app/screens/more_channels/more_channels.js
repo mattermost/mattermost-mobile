@@ -452,25 +452,27 @@ export default class MoreChannels extends PureComponent {
 
             content = (
                 <React.Fragment>
-                    <View style={[style.searchBar, padding(isLandscape)]}>
-                        <SearchBar
-                            ref={this.setSearchBarRef}
-                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                            backgroundColor='transparent'
-                            inputHeight={33}
-                            inputStyle={searchBarInput}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                            titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.searchChannels}
-                            onSearchButtonPress={this.searchChannels}
-                            onCancelButtonPress={this.cancelSearch}
-                            autoCapitalize='none'
-                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                            value={term}
-                        />
+                    <View style={style.searchBar}>
+                        <View style={padding(isLandscape)}>
+                            <SearchBar
+                                ref={this.setSearchBarRef}
+                                placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                                cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                                backgroundColor='transparent'
+                                inputHeight={33}
+                                inputStyle={searchBarInput}
+                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                                tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                                tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                                titleCancelColor={theme.centerChannelColor}
+                                onChangeText={this.searchChannels}
+                                onSearchButtonPress={this.searchChannels}
+                                onCancelButtonPress={this.cancelSearch}
+                                autoCapitalize='none'
+                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                value={term}
+                            />
+                        </View>
                     </View>
                     {channelDropdown}
                     <CustomList

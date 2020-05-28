@@ -10,10 +10,10 @@ import TeamIcon from './team_icon';
 
 function mapStateToProps(state, ownProps) {
     const team = getTeam(state, ownProps.teamId);
-    const lastIconUpdate = team.last_team_icon_update;
+    const lastIconUpdate = team?.last_team_icon_update;
 
     return {
-        displayName: team.display_name,
+        displayName: team?.display_name,
         lastIconUpdate,
         theme: getTheme(state),
     };

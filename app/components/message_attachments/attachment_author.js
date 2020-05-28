@@ -16,14 +16,6 @@ export default class AttachmentAuthor extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    constructor(props) {
-        super(props);
-
-        if (props.icon) {
-            FastImage.preload([{uri: props.icon}]);
-        }
-    }
-
     openLink = () => {
         const {link} = this.props;
         if (link && Linking.canOpenURL(link)) {

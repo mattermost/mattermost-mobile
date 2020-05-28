@@ -19,7 +19,7 @@ function makeMapStateToProps() {
     const getProfilesByIdsAndUsernames = makeGetProfilesByIdsAndUsernames();
 
     return function mapStateToProps(state, ownProps) {
-        const reactions = getReactionsForPostSelector(state, ownProps.postId);
+        const reactions = getReactionsForPostSelector(state, ownProps.postId) || undefined;
         const allUserIds = getUniqueUserIds(reactions);
 
         return {

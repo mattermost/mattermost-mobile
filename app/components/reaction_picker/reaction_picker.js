@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
 } from 'react-native';
 
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import addReactionIcon from '@assets/images/icons/reaction.png';
 import {
     REACTION_PICKER_HEIGHT,
@@ -30,6 +31,7 @@ export default class ReactionPicker extends PureComponent {
         theme: PropTypes.object.isRequired,
         recentEmojis: PropTypes.array,
         deviceWidth: PropTypes.number,
+        isLandscape: PropTypes.bool.isRequired,
     }
 
     handlePress = (emoji) => {
@@ -40,6 +42,7 @@ export default class ReactionPicker extends PureComponent {
         const {
             theme,
             deviceWidth,
+            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
         const isSmallDevice = deviceWidth < SMALL_ICON_BREAKPOINT;
@@ -68,8 +71,16 @@ export default class ReactionPicker extends PureComponent {
             );
         });
 
+        let paddingRes = padding(isLandscape, 12);
+        if (!paddingRes) {
+            paddingRes = {
+                paddingLeft: 12,
+                paddingRight: 12,
+            };
+        }
+
         return (
-            <View style={style.reactionListContainer}>
+            <View style={[style.reactionListContainer, paddingRes]}>
                 {list}
                 <TouchableWithoutFeedback onPress={this.props.openReactionScreen}>
                     <View
@@ -103,8 +114,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            paddingLeft: 12,
-            paddingRight: 12,
             height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
         },

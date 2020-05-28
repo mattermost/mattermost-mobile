@@ -1,0 +1,39 @@
+diff --git a/node_modules/@react-native-community/cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m b/node_modules/@react-native-community/cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m
+index 9cdc74d..5477405 100644
+--- a/node_modules/@react-native-community/cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m
++++ b/node_modules/@react-native-community/cookies/ios/RNCookieManagerIOS/RNCookieManagerIOS.m
+@@ -139,7 +139,8 @@ + (BOOL)requiresMainQueueSetup
+                 [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *allCookies) {
+                     NSMutableDictionary *cookies = [NSMutableDictionary dictionary];
+                     for (NSHTTPCookie *cookie in allCookies) {
+-                        if ([topLevelDomain containsString:cookie.domain]) {
++                        NSString *domainWithDot = [NSString stringWithFormat:@".%@", cookie.domain];
++                        if([cookie.domain containsString:topLevelDomain] || [domainWithDot containsString:topLevelDomain]) {
+                             [cookies setObject:[self createCookieData:cookie] forKey:cookie.name];
+                         }
+                     }
+@@ -185,6 +186,8 @@ + (BOOL)requiresMainQueueSetup
+         }
+         resolve(nil);
+     }
++
++    [self deleteBinaryCookiesAndWebsiteData];
+ }
+ 
+ RCT_EXPORT_METHOD(clearByName:(NSString *) name
+@@ -244,4 +247,15 @@ -(NSDictionary *)createCookieData:(NSHTTPCookie *)cookie
+     return cookieData;
+ }
+ 
++-(void) deleteBinaryCookiesAndWebsiteData {
++    NSString *libraryPath = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES)[0];
++    NSString *cookiesPath = [libraryPath stringByAppendingString:@"/Cookies/Cookies.binarycookies"];
++    NSString *dataPath = [libraryPath stringByAppendingString:@"/WebKit/WebsiteData"];
++
++    NSError *error;
++    NSFileManager *fileManager = [NSFileManager defaultManager];
++    [fileManager removeItemAtPath:cookiesPath error:&error];
++    [fileManager removeItemAtPath:dataPath error:&error];
++}
++
+ @end

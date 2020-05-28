@@ -23,6 +23,8 @@ import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 
+const LEFT_COMPONENT_INITIAL_POSITION = Platform.OS === 'ios' ? 7 : 0;
+
 export default class Search extends PureComponent {
     static propTypes = {
         onBlur: PropTypes.func,
@@ -38,6 +40,7 @@ export default class Search extends PureComponent {
         tintColorDelete: PropTypes.string,
         selectionColor: PropTypes.string,
         inputStyle: CustomPropTypes.Style,
+        containerStyle: CustomPropTypes.Style,
         cancelButtonStyle: CustomPropTypes.Style,
         autoFocus: PropTypes.bool,
         placeholder: PropTypes.string,
@@ -93,7 +96,7 @@ export default class Search extends PureComponent {
             leftComponentWidth: 0,
         };
 
-        this.leftComponentAnimated = new Animated.Value(0);
+        this.leftComponentAnimated = new Animated.Value(LEFT_COMPONENT_INITIAL_POSITION);
         this.searchContainerAnimated = new Animated.Value(0);
     }
 
@@ -114,10 +117,11 @@ export default class Search extends PureComponent {
     };
 
     onBlur = async () => {
+        this.props.onBlur();
+
         if (this.props.leftComponent) {
             await this.collapseAnimation();
         }
-        this.props.onBlur();
     };
 
     onLeftComponentLayout = (event) => {
@@ -141,12 +145,12 @@ export default class Search extends PureComponent {
 
     onFocus = () => {
         InteractionManager.runAfterInteractions(async () => {
-            if (this.props.leftComponent) {
-                await this.expandAnimation();
-            }
-
             if (this.props.onFocus) {
                 this.props.onFocus();
+            }
+
+            if (this.props.leftComponent) {
+                await this.expandAnimation();
             }
         });
     };
@@ -175,7 +179,7 @@ export default class Search extends PureComponent {
                 Animated.timing(
                     this.leftComponentAnimated,
                     {
-                        toValue: 100,
+                        toValue: -115,
                         duration: 200,
                     },
                 ),
@@ -196,7 +200,7 @@ export default class Search extends PureComponent {
                 Animated.timing(
                     this.leftComponentAnimated,
                     {
-                        toValue: 0,
+                        toValue: LEFT_COMPONENT_INITIAL_POSITION,
                         duration: 200,
                     },
                 ),
@@ -273,6 +277,7 @@ export default class Search extends PureComponent {
                 size: 25,
                 color: searchBarStyle.clearIconColorAndroid,
                 name: 'arrow-back',
+                underlayColor: 'transparent',
             };
 
             clearIcon = {
@@ -284,12 +289,12 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <View style={searchBarStyle.container}>
+            <View style={[searchBarStyle.container, this.props.containerStyle]}>
                 {((this.props.leftComponent) ?
                     <Animated.View
-                        style={{
-                            right: this.leftComponentAnimated,
-                        }}
+                        style={[styles.leftComponent, {
+                            left: this.leftComponentAnimated,
+                        }]}
                         onLayout={this.onLeftComponentLayout}
                     >
                         {this.props.leftComponent}
@@ -384,7 +389,7 @@ const getSearchBarStyle = memoizeResult((
         justifyContent: 'flex-start',
         alignItems: 'center',
         height: containerHeight,
-        flex: 1,
+        overflow: 'hidden',
     },
     clearIconColorIos: tintColorDelete || styles.defaultColor.color,
     clearIconColorAndroid: titleCancelColor || placeholderTextColor,
@@ -422,7 +427,6 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     inputContainer: {
-        marginLeft: 0,
         borderRadius: Platform.select({
             ios: 2,
             android: 0,
@@ -438,11 +442,11 @@ const styles = StyleSheet.create({
     },
     leftIcon: {
         marginLeft: 4,
+        width: 30,
     },
     searchContainer: {
         paddingTop: 0,
         paddingBottom: 0,
-        marginLeft: 0,
     },
     text: {
         fontSize: Platform.select({
@@ -450,5 +454,9 @@ const styles = StyleSheet.create({
             android: 15,
         }),
         color: '#fff',
+    },
+    leftComponent: {
+        position: 'relative',
+        marginLeft: 2,
     },
 });

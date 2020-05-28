@@ -280,18 +280,18 @@ function profilesNotInTeam(state: RelationOneToMany<Team, UserProfile> = {}, act
 function profilesWithoutTeam(state: Set<string> = new Set(), action: GenericAction) {
     switch (action.type) {
     case UserTypes.RECEIVED_PROFILE_WITHOUT_TEAM: {
-        const nextSet = new Set(state);
+        const nextSet = new Set(Array.from(state));
         Object.values(action.data).forEach((id: string) => nextSet.add(id));
         return nextSet;
     }
     case UserTypes.RECEIVED_PROFILES_LIST_WITHOUT_TEAM: {
-        const nextSet = new Set(state);
+        const nextSet = new Set(Array.from(state));
         action.data.forEach((user: UserProfile) => nextSet.add(user.id));
         return nextSet;
     }
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
     case UserTypes.RECEIVED_PROFILE_IN_TEAM: {
-        const nextSet = new Set(state);
+        const nextSet = new Set(Array.from(state));
         nextSet.delete(action.data.id);
         return nextSet;
     }

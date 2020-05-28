@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 // @flow
 
-export function selectFirstAvailableTeam(teams, primaryTeam) {
+export function selectFirstAvailableTeam(teams, primaryTeamName) {
     let defaultTeam;
-    if (primaryTeam) {
-        defaultTeam = teams.find((t) => t.name === primaryTeam.toLowerCase());
+    if (primaryTeamName) {
+        defaultTeam = teams.find((t) => t?.name === primaryTeamName.toLowerCase());
     }
 
     if (!defaultTeam) {

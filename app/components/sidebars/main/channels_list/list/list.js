@@ -21,7 +21,7 @@ import {General} from '@mm-redux/constants';
 import {debounce} from '@mm-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes} from 'app/constants';
 import {SidebarSectionTypes} from 'app/constants/view';
 
@@ -333,7 +333,7 @@ export default class List extends PureComponent {
 
         return (
             <React.Fragment>
-                <View style={[styles.titleContainer, padding(isLandscape)]}>
+                <View style={[styles.titleContainer, paddingLeft(isLandscape)]}>
                     <Text style={styles.title}>
                         {intl.formatMessage({id, defaultMessage}).toUpperCase()}
                     </Text>

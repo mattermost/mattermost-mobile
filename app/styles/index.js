@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable
-no-magic-numbers */
-
 import {StyleSheet} from 'react-native';
 
 export const GlobalStyles = StyleSheet.create({

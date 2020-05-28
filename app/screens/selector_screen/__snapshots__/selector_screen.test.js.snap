@@ -11,53 +11,54 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Array [
-        Object {
-          "height": 38,
-          "marginVertical": 5,
-          "paddingLeft": 8,
-        },
-        null,
-      ]
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
     }
   >
-    <Search
-      autoCapitalize="none"
-      backArrowSize={24}
-      backgroundColor="transparent"
-      blurOnSubmit={false}
-      cancelTitle="Cancel"
-      containerHeight={40}
-      deleteIconSize={20}
-      editable={true}
-      inputHeight={33}
-      inputStyle={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "color": "#3d3c40",
-          "fontSize": 15,
+    <View
+      style={null}
+    >
+      <Search
+        autoCapitalize="none"
+        backArrowSize={24}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={40}
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
-      }
-      keyboardAppearance="light"
-      keyboardShouldPersist={false}
-      keyboardType="default"
-      onBlur={[Function]}
-      onCancelButtonPress={[Function]}
-      onChangeText={[Function]}
-      onSearchButtonPress={[Function]}
-      onSelectionChange={[Function]}
-      placeholder="Search"
-      placeholderTextColor="rgba(61,60,64,0.5)"
-      returnKeyType="search"
-      searchBarRightMargin={0}
-      searchIconSize={24}
-      showArrow={false}
-      showCancel={true}
-      tintColorDelete="rgba(61,60,64,0.5)"
-      tintColorSearch="rgba(61,60,64,0.5)"
-      titleCancelColor="#3d3c40"
-      value=""
-    />
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        showArrow={false}
+        showCancel={true}
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.5)"
+        titleCancelColor="#3d3c40"
+        value=""
+      />
+    </View>
   </View>
   <CustomList
     canRefresh={true}
@@ -116,53 +117,54 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Array [
-        Object {
-          "height": 38,
-          "marginVertical": 5,
-          "paddingLeft": 8,
-        },
-        null,
-      ]
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
     }
   >
-    <Search
-      autoCapitalize="none"
-      backArrowSize={24}
-      backgroundColor="transparent"
-      blurOnSubmit={false}
-      cancelTitle="Cancel"
-      containerHeight={40}
-      deleteIconSize={20}
-      editable={true}
-      inputHeight={33}
-      inputStyle={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "color": "#3d3c40",
-          "fontSize": 15,
+    <View
+      style={null}
+    >
+      <Search
+        autoCapitalize="none"
+        backArrowSize={24}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={40}
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
-      }
-      keyboardAppearance="light"
-      keyboardShouldPersist={false}
-      keyboardType="default"
-      onBlur={[Function]}
-      onCancelButtonPress={[Function]}
-      onChangeText={[Function]}
-      onSearchButtonPress={[Function]}
-      onSelectionChange={[Function]}
-      placeholder="Search"
-      placeholderTextColor="rgba(61,60,64,0.5)"
-      returnKeyType="search"
-      searchBarRightMargin={0}
-      searchIconSize={24}
-      showArrow={false}
-      showCancel={true}
-      tintColorDelete="rgba(61,60,64,0.5)"
-      tintColorSearch="rgba(61,60,64,0.5)"
-      titleCancelColor="#3d3c40"
-      value=""
-    />
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        showArrow={false}
+        showCancel={true}
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.5)"
+        titleCancelColor="#3d3c40"
+        value=""
+      />
+    </View>
   </View>
   <CustomList
     canRefresh={true}
@@ -221,53 +223,54 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Array [
-        Object {
-          "height": 38,
-          "marginVertical": 5,
-          "paddingLeft": 8,
-        },
-        null,
-      ]
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
     }
   >
-    <Search
-      autoCapitalize="none"
-      backArrowSize={24}
-      backgroundColor="transparent"
-      blurOnSubmit={false}
-      cancelTitle="Cancel"
-      containerHeight={40}
-      deleteIconSize={20}
-      editable={true}
-      inputHeight={33}
-      inputStyle={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "color": "#3d3c40",
-          "fontSize": 15,
+    <View
+      style={null}
+    >
+      <Search
+        autoCapitalize="none"
+        backArrowSize={24}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={40}
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
-      }
-      keyboardAppearance="light"
-      keyboardShouldPersist={false}
-      keyboardType="default"
-      onBlur={[Function]}
-      onCancelButtonPress={[Function]}
-      onChangeText={[Function]}
-      onSearchButtonPress={[Function]}
-      onSelectionChange={[Function]}
-      placeholder="Search"
-      placeholderTextColor="rgba(61,60,64,0.5)"
-      returnKeyType="search"
-      searchBarRightMargin={0}
-      searchIconSize={24}
-      showArrow={false}
-      showCancel={true}
-      tintColorDelete="rgba(61,60,64,0.5)"
-      tintColorSearch="rgba(61,60,64,0.5)"
-      titleCancelColor="#3d3c40"
-      value=""
-    />
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        showArrow={false}
+        showCancel={true}
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.5)"
+        titleCancelColor="#3d3c40"
+        value=""
+      />
+    </View>
   </View>
   <CustomList
     canRefresh={true}
@@ -333,53 +336,54 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Array [
-        Object {
-          "height": 38,
-          "marginVertical": 5,
-          "paddingLeft": 8,
-        },
-        null,
-      ]
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
     }
   >
-    <Search
-      autoCapitalize="none"
-      backArrowSize={24}
-      backgroundColor="transparent"
-      blurOnSubmit={false}
-      cancelTitle="Cancel"
-      containerHeight={40}
-      deleteIconSize={20}
-      editable={true}
-      inputHeight={33}
-      inputStyle={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "color": "#3d3c40",
-          "fontSize": 15,
+    <View
+      style={null}
+    >
+      <Search
+        autoCapitalize="none"
+        backArrowSize={24}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={40}
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
-      }
-      keyboardAppearance="light"
-      keyboardShouldPersist={false}
-      keyboardType="default"
-      onBlur={[Function]}
-      onCancelButtonPress={[Function]}
-      onChangeText={[Function]}
-      onSearchButtonPress={[Function]}
-      onSelectionChange={[Function]}
-      placeholder="Search"
-      placeholderTextColor="rgba(61,60,64,0.5)"
-      returnKeyType="search"
-      searchBarRightMargin={0}
-      searchIconSize={24}
-      showArrow={false}
-      showCancel={true}
-      tintColorDelete="rgba(61,60,64,0.5)"
-      tintColorSearch="rgba(61,60,64,0.5)"
-      titleCancelColor="#3d3c40"
-      value="name2"
-    />
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        showArrow={false}
+        showCancel={true}
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.5)"
+        titleCancelColor="#3d3c40"
+        value="name2"
+      />
+    </View>
   </View>
   <CustomList
     canRefresh={true}
@@ -438,53 +442,54 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Array [
-        Object {
-          "height": 38,
-          "marginVertical": 5,
-          "paddingLeft": 8,
-        },
-        null,
-      ]
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
     }
   >
-    <Search
-      autoCapitalize="none"
-      backArrowSize={24}
-      backgroundColor="transparent"
-      blurOnSubmit={false}
-      cancelTitle="Cancel"
-      containerHeight={40}
-      deleteIconSize={20}
-      editable={true}
-      inputHeight={33}
-      inputStyle={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "color": "#3d3c40",
-          "fontSize": 15,
+    <View
+      style={null}
+    >
+      <Search
+        autoCapitalize="none"
+        backArrowSize={24}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={40}
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
-      }
-      keyboardAppearance="light"
-      keyboardShouldPersist={false}
-      keyboardType="default"
-      onBlur={[Function]}
-      onCancelButtonPress={[Function]}
-      onChangeText={[Function]}
-      onSearchButtonPress={[Function]}
-      onSelectionChange={[Function]}
-      placeholder="Search"
-      placeholderTextColor="rgba(61,60,64,0.5)"
-      returnKeyType="search"
-      searchBarRightMargin={0}
-      searchIconSize={24}
-      showArrow={false}
-      showCancel={true}
-      tintColorDelete="rgba(61,60,64,0.5)"
-      tintColorSearch="rgba(61,60,64,0.5)"
-      titleCancelColor="#3d3c40"
-      value=""
-    />
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        showArrow={false}
+        showCancel={true}
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.5)"
+        titleCancelColor="#3d3c40"
+        value=""
+      />
+    </View>
   </View>
   <CustomList
     canRefresh={true}
@@ -543,53 +548,54 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Array [
-        Object {
-          "height": 38,
-          "marginVertical": 5,
-          "paddingLeft": 8,
-        },
-        null,
-      ]
+      Object {
+        "height": 38,
+        "marginVertical": 5,
+        "paddingLeft": 8,
+      }
     }
   >
-    <Search
-      autoCapitalize="none"
-      backArrowSize={24}
-      backgroundColor="transparent"
-      blurOnSubmit={false}
-      cancelTitle="Cancel"
-      containerHeight={40}
-      deleteIconSize={20}
-      editable={true}
-      inputHeight={33}
-      inputStyle={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "color": "#3d3c40",
-          "fontSize": 15,
+    <View
+      style={null}
+    >
+      <Search
+        autoCapitalize="none"
+        backArrowSize={24}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={40}
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "color": "#3d3c40",
+            "fontSize": 15,
+          }
         }
-      }
-      keyboardAppearance="light"
-      keyboardShouldPersist={false}
-      keyboardType="default"
-      onBlur={[Function]}
-      onCancelButtonPress={[Function]}
-      onChangeText={[Function]}
-      onSearchButtonPress={[Function]}
-      onSelectionChange={[Function]}
-      placeholder="Search"
-      placeholderTextColor="rgba(61,60,64,0.5)"
-      returnKeyType="search"
-      searchBarRightMargin={0}
-      searchIconSize={24}
-      showArrow={false}
-      showCancel={true}
-      tintColorDelete="rgba(61,60,64,0.5)"
-      tintColorSearch="rgba(61,60,64,0.5)"
-      titleCancelColor="#3d3c40"
-      value=""
-    />
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        showArrow={false}
+        showCancel={true}
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.5)"
+        titleCancelColor="#3d3c40"
+        value=""
+      />
+    </View>
   </View>
   <CustomList
     canRefresh={true}

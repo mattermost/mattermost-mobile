@@ -203,16 +203,24 @@ export default class EmojiPicker extends PureComponent {
     };
 
     searchEmojis = (searchTerm) => {
-        const {emojis, fuse} = this.props;
+        const {fuse} = this.props;
         const searchTermLowerCase = searchTerm.toLowerCase();
 
         if (!searchTerm) {
             return [];
         }
 
-        const results = fuse.search(searchTermLowerCase);
-        const sorter = (a, b) => compareEmojis(a, b, searchTerm);
-        const data = results.map((index) => emojis[index]).sort(sorter);
+        const sorter = (a, b) => compareEmojis(a, b, searchTermLowerCase);
+        const fuzz = fuse.search(searchTermLowerCase);
+        const results = fuzz.reduce((values, r) => {
+            const v = r.matches[0]?.value;
+            if (v) {
+                values.push(v);
+            }
+
+            return values;
+        }, []);
+        const data = results.sort(sorter);
 
         return data;
     };
@@ -295,6 +303,7 @@ export default class EmojiPicker extends PureComponent {
                 <View style={[style.flatListEmoji, padding(this.props.isLandscape)]}>
                     <Emoji
                         emojiName={item}
+                        textStyle={style.emojiText}
                         size={20}
                     />
                 </View>
@@ -475,6 +484,10 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
             flex: 1,
+        },
+        emojiText: {
+            color: '#000',
+            fontWeight: 'bold',
         },
         flatList: {
             flex: 1,

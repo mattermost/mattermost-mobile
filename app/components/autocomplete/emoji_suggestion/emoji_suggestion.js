@@ -10,12 +10,12 @@ import {
     View,
 } from 'react-native';
 
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
-import Emoji from 'app/components/emoji';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {BuiltInEmojis} from 'app/utils/emojis';
-import {getEmojiByName, compareEmojis} from 'app/utils/emoji_utils';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import AutocompleteDivider from '@components/autocomplete/autocomplete_divider';
+import Emoji from '@components/emoji';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {BuiltInEmojis} from '@utils/emojis';
+import {getEmojiByName, compareEmojis} from '@utils/emoji_utils';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
@@ -29,8 +29,8 @@ export default class EmojiSuggestion extends PureComponent {
         cursorPosition: PropTypes.number,
         customEmojisEnabled: PropTypes.bool,
         emojis: PropTypes.array.isRequired,
-        isSearch: PropTypes.bool,
         fuse: PropTypes.object.isRequired,
+        isSearch: PropTypes.bool,
         maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
         onChangeText: PropTypes.func.isRequired,
@@ -56,61 +56,28 @@ export default class EmojiSuggestion extends PureComponent {
         this.matchTerm = '';
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.isSearch) {
+    componentDidUpdate() {
+        if (this.props.isSearch) {
             return;
         }
 
-        const regex = EMOJI_REGEX;
-        const match = nextProps.value.substring(0, nextProps.cursorPosition).match(regex);
+        const {cursorPosition, value} = this.props;
+        const match = value.substring(0, cursorPosition).match(EMOJI_REGEX);
 
         if (!match || this.state.emojiComplete) {
-            this.setState({
-                active: false,
-                emojiComplete: false,
-            });
-
-            this.props.onResultCountChange(0);
-
+            this.resetAutocomplete();
             return;
         }
 
         const oldMatchTerm = this.matchTerm;
         this.matchTerm = match[3] || '';
-
-        if (this.matchTerm !== oldMatchTerm && this.matchTerm.length && nextProps.customEmojisEnabled) {
-            this.props.actions.autocompleteCustomEmojis(this.matchTerm);
-            return;
-        }
-
-        if (this.matchTerm.length) {
-            this.handleFuzzySearch(this.matchTerm, nextProps);
-        } else {
-            this.setEmojiData(nextProps.emojis);
+        if (this.matchTerm !== oldMatchTerm || match[2] === ':') {
+            if (this.props.customEmojisEnabled) {
+                this.props.actions.autocompleteCustomEmojis(this.matchTerm);
+            }
+            this.searchEmojis(this.matchTerm);
         }
     }
-
-    handleFuzzySearch = (matchTerm, props) => {
-        const {emojis, fuse} = props;
-
-        const results = fuse.search(matchTerm.toLowerCase());
-        const data = results.map((index) => emojis[index]);
-        this.setEmojiData(data, matchTerm);
-    };
-
-    setEmojiData = (data, matchTerm = null) => {
-        let sorter = compareEmojis;
-        if (matchTerm) {
-            sorter = (a, b) => compareEmojis(a, b, matchTerm);
-        }
-
-        this.setState({
-            active: data.length > 0,
-            dataSource: data.sort(sorter),
-        });
-
-        this.props.onResultCountChange(data.length);
-    };
 
     completeSuggestion = (emoji) => {
         const {actions, cursorPosition, onChangeText, value, rootId} = this.props;
@@ -160,6 +127,8 @@ export default class EmojiSuggestion extends PureComponent {
         });
     };
 
+    getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index})
+
     keyExtractor = (item) => item;
 
     renderItem = ({item}) => {
@@ -183,7 +152,48 @@ export default class EmojiSuggestion extends PureComponent {
         );
     };
 
-    getItemLayout = ({index}) => ({length: 40, offset: 40 * index, index})
+    resetAutocomplete = () => {
+        this.setState({
+            active: false,
+            emojiComplete: false,
+        });
+
+        this.props.onResultCountChange(0);
+    }
+
+    searchEmojis = (searchTerm) => {
+        const {emojis, fuse} = this.props;
+
+        let sorter = compareEmojis;
+        if (searchTerm.trim().length) {
+            const searchTermLowerCase = searchTerm.toLowerCase();
+
+            sorter = (a, b) => compareEmojis(a, b, searchTermLowerCase);
+            clearTimeout(this.searchTermTimeout);
+
+            this.searchTermTimeout = setTimeout(() => {
+                const fuzz = fuse.search(searchTerm);
+                const results = fuzz.reduce((values, r) => {
+                    const v = r.matches[0]?.value;
+                    if (v) {
+                        values.push(v);
+                    }
+
+                    return values;
+                }, []);
+                const data = results.sort(sorter);
+                this.setState({
+                    active: data.length > 0,
+                    dataSource: data,
+                });
+            }, 100);
+        } else {
+            this.setState({
+                active: emojis.length > 0,
+                dataSource: emojis.sort(sorter),
+            });
+        }
+    };
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;

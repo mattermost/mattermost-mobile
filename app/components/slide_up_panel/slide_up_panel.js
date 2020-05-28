@@ -221,7 +221,7 @@ export default class SlideUpPanel extends PureComponent {
 
     scrollToTop = () => {
         if (this.scrollViewRef?.current) {
-            this.scrollViewRef.current._component.scrollTo({ //eslint-disable-line no-underscore-dangle
+            this.scrollViewRef.current.scrollTo({
                 x: 0,
                 y: 0,
                 animated: false,
