@@ -77,21 +77,22 @@ export default class SelectServer extends PureComponent {
 
     constructor(props) {
         super(props);
-        const {allowOtherServers, serverUrl, deepLinkURL} = props;
-
-        let theUrl = serverUrl;
-        if (allowOtherServers && deepLinkURL) {
-            theUrl = urlParse(deepLinkURL).host;
-        }
 
         this.state = {
             connected: false,
             connecting: false,
             error: null,
-            url: theUrl,
         };
 
         this.cancelPing = null;
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (!state.url && props.allowOtherServers && props.deepLinkURL) {
+            const url = urlParse(props.deepLinkURL).host;
+            return {url};
+        }
+        return null;
     }
 
     componentDidMount() {
@@ -382,7 +383,6 @@ export default class SelectServer extends PureComponent {
 
         this.cancelPing();
 
-        const urlParse = require('url-parse');
         const host = urlParse(this.state.url, true).host || this.state.url;
 
         const {formatMessage} = this.context.intl;
