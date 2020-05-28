@@ -3,20 +3,15 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Image,
-    Linking,
-    Text,
-    View,
-} from 'react-native';
+import {Image, Linking, Text, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
-import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {DeviceTypes} from 'app/constants';
-
-import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
-import {getNearestPoint} from 'app/utils/opengraph';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {TABLET_WIDTH} from '@components/sidebars/drawer_layout';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {DeviceTypes} from '@constants';
+import {previewImageAtIndex, calculateDimensions} from '@utils/images';
+import {getNearestPoint} from '@utils/opengraph';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const MAX_IMAGE_HEIGHT = 150;
 const VIEWPORT_IMAGE_OFFSET = 93;
@@ -259,7 +254,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                     onPress={this.handlePreviewImage}
                     type={'none'}
                 >
-                    <Image
+                    <FastImage
                         style={[style.image, {width, height}]}
                         source={source}
                         resizeMode='contain'

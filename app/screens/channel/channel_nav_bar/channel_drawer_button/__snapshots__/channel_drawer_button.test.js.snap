@@ -1,12 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelDrawerButton should match, full snapshot 1`] = `
-<TouchableOpacity
+<Component
   accessibilityHint="Opens the channels and teams drawer"
   accessibilityLabel="Channels and teams"
   accessibilityRole="button"
   accessible={true}
-  activeOpacity={0.2}
   onPress={[Function]}
   style={
     Object {
@@ -37,16 +36,15 @@ exports[`ChannelDrawerButton should match, full snapshot 1`] = `
       />
     </View>
   </View>
-</TouchableOpacity>
+</Component>
 `;
 
 exports[`ChannelDrawerButton should match, full snapshot 2`] = `
-<TouchableOpacity
+<Component
   accessibilityHint="Opens the channels and teams drawer"
   accessibilityLabel="Channels and teams"
   accessibilityRole="button"
   accessible={true}
-  activeOpacity={0.2}
   onPress={[Function]}
   style={
     Object {
@@ -106,5 +104,5 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
       />
     </View>
   </View>
-</TouchableOpacity>
+</Component>
 `;

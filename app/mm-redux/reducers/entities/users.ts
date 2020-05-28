@@ -102,10 +102,7 @@ function currentUserId(state = '', action: GenericAction) {
 
         return user ? user.id : state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return '';
     }
-
     return state;
 }
 
@@ -139,9 +136,6 @@ function mySessions(state: Array<{id: string}> = [], action: GenericAction) {
     case UserTypes.REVOKE_SESSIONS_FOR_ALL_USERS_SUCCESS:
         return [];
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return [];
-
     default:
         return state;
     }
@@ -151,9 +145,6 @@ function myAudits(state = [], action: GenericAction) {
     switch (action.type) {
     case UserTypes.RECEIVED_AUDITS:
         return [...action.data];
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return [];
 
     default:
         return state;
@@ -212,8 +203,6 @@ function profiles(state: IDMappedObjects<UserProfile> = {}, action: GenericActio
 
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     case UserTypes.RECEIVED_TERMS_OF_SERVICE_STATUS: {
         const data = action.data || action.payload;
         return {
@@ -255,9 +244,6 @@ function profilesInTeam(state: RelationOneToMany<Team, UserProfile> = {}, action
     case UserTypes.RECEIVED_PROFILES_LIST_NOT_IN_TEAM:
         return removeProfileListFromSet(state, action);
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
-
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
         return removeProfileFromTeams(state, action);
 
@@ -283,9 +269,6 @@ function profilesNotInTeam(state: RelationOneToMany<Team, UserProfile> = {}, act
     case UserTypes.RECEIVED_PROFILES_LIST_IN_TEAM:
         return removeProfileListFromSet(state, action);
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
-
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
         return removeProfileFromTeams(state, action);
 
@@ -297,24 +280,21 @@ function profilesNotInTeam(state: RelationOneToMany<Team, UserProfile> = {}, act
 function profilesWithoutTeam(state: Set<string> = new Set(), action: GenericAction) {
     switch (action.type) {
     case UserTypes.RECEIVED_PROFILE_WITHOUT_TEAM: {
-        const nextSet = new Set(state);
+        const nextSet = new Set(Array.from(state));
         Object.values(action.data).forEach((id: string) => nextSet.add(id));
         return nextSet;
     }
     case UserTypes.RECEIVED_PROFILES_LIST_WITHOUT_TEAM: {
-        const nextSet = new Set(state);
+        const nextSet = new Set(Array.from(state));
         action.data.forEach((user: UserProfile) => nextSet.add(user.id));
         return nextSet;
     }
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
     case UserTypes.RECEIVED_PROFILE_IN_TEAM: {
-        const nextSet = new Set(state);
+        const nextSet = new Set(Array.from(state));
         nextSet.delete(action.data.id);
         return nextSet;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return new Set();
-
     default:
         return state;
     }
@@ -341,9 +321,6 @@ function profilesInChannel(state: RelationOneToMany<Channel, UserProfile> = {}, 
                 id: action.data.channel_id,
                 user_id: action.data.user_id,
             }});
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
 
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
         return removeProfileFromTeams(state, action);
@@ -396,9 +373,6 @@ function profilesNotInChannel(state: RelationOneToMany<Channel, UserProfile> = {
                 user_id: action.data.user_id,
             }});
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
-
     case UserTypes.PROFILE_NO_LONGER_VISIBLE:
         return removeProfileFromTeams(state, action);
 
@@ -424,8 +398,6 @@ function statuses(state: RelationOneToOne<UserProfile, string> = {}, action: Gen
 
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     case UserTypes.PROFILE_NO_LONGER_VISIBLE: {
         if (state[action.data.user_id]) {
             const newState = {...state};
@@ -483,8 +455,6 @@ function isManualStatus(state: RelationOneToOne<UserProfile, boolean> = {}, acti
 
         return nextState;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     case UserTypes.PROFILE_NO_LONGER_VISIBLE: {
         if (state[action.data.user_id]) {
             const newState = {...state};
@@ -541,7 +511,6 @@ function myUserAccessTokens(state: any = {}, action: GenericAction) {
     }
 
     case UserTypes.CLEAR_MY_USER_ACCESS_TOKENS:
-    case UserTypes.LOGOUT_SUCCESS:
         return {};
 
     default:

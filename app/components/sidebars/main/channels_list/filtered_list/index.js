@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
+import Config from '@assets/config';
 import {searchChannels} from '@mm-redux/actions/channels';
 import {getProfilesInTeam, searchProfiles} from '@mm-redux/actions/users';
 import {makeGroupMessageVisibleIfNecessary} from '@mm-redux/actions/preferences';
@@ -20,8 +21,7 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId, getProfilesInCurrentTeam, getUsers, getUserIdsInChannels, getUserStatuses} from '@mm-redux/selectors/entities/users';
 import {getDirectShowPreferences, getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from 'app/selectors/device';
-import Config from 'assets/config';
+import {isLandscape} from '@selectors/device';
 
 import FilteredList from './filtered_list';
 

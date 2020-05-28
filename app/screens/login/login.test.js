@@ -23,7 +23,6 @@ describe('Login', () => {
         },
         loginRequest: {},
         actions: {
-            handleSuccessfulLogin: jest.fn(),
             scheduleExpiredNotification: jest.fn(),
             login: jest.fn(),
         },
@@ -83,13 +82,21 @@ describe('Login', () => {
         };
 
         const wrapper = shallowWithIntl(<Login {...baseProps}/>);
+        const loginId = 'user';
+        const password = 'password';
+        wrapper.instance().loginId = loginId;
+        wrapper.instance().password = password;
         wrapper.instance().checkLoginResponse(mfaError);
 
         expect(goToScreen).
             toHaveBeenCalledWith(
                 'MFA',
                 'Multi-factor Authentication',
-                {onMfaComplete: wrapper.instance().checkLoginResponse},
+                {
+                    goToChannel: wrapper.instance().goToChannel,
+                    loginId,
+                    password,
+                },
             );
     });
 

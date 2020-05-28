@@ -87,6 +87,10 @@ jest.doMock('react-native', () => {
             pick: jest.fn(),
         },
         RNPermissions: {},
+        RNFastStorage: {
+            setupLibrary: jest.fn(),
+            setStringAsync: jest.fn(),
+        },
     };
 
     return Object.setPrototypeOf({
@@ -112,21 +116,62 @@ jest.mock('react-native-device-info', () => {
         getModel: () => 'iPhone X',
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
-        getDeviceLocale: () => 'en-US',
     };
 });
 
-jest.mock('react-native-cookies', () => ({
+jest.mock('rn-fetch-blob', () => ({
+    fs: {
+        dirs: {
+            DocumentDir: () => jest.fn(),
+            CacheDir: '/data/com.mattermost.beta/cache',
+        },
+        exists: jest.fn(),
+        existsWithDiffExt: jest.fn(),
+        unlink: jest.fn(),
+        mv: jest.fn(),
+    },
+    fetch: jest.fn(),
+    config: jest.fn(),
+}));
+
+jest.mock('rn-fetch-blob/fs', () => ({
+    dirs: {
+        DocumentDir: () => jest.fn(),
+        CacheDir: '/data/com.mattermost.beta/cache',
+    },
+    exists: jest.fn(),
+    existsWithDiffExt: jest.fn(),
+    unlink: jest.fn(),
+    mv: jest.fn(),
+}));
+
+jest.mock('react-native-localize', () => ({
+    getTimeZone: () => 'World/Somewhere',
+    getLocales: () => ([
+        {countryCode: 'GB', languageTag: 'en-GB', languageCode: 'en', isRTL: false},
+        {countryCode: 'US', languageTag: 'en-US', languageCode: 'en', isRTL: false},
+        {countryCode: 'FR', languageTag: 'fr-FR', languageCode: 'fr', isRTL: false},
+    ]),
+}));
+
+jest.mock('@react-native-community/cookies', () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     openURL: jest.fn(),
     canOpenURL: jest.fn(),
     getInitialURL: jest.fn(),
     clearAll: jest.fn(),
+    get: () => Promise.resolve(({
+        res: {
+            MMCSRF: {
+                value: 'the cookie',
+            },
+        },
+    })),
 }));
 
 jest.mock('react-native-navigation', () => {
-    const RNN = require.requireActual('react-native-navigation');
+    const RNN = jest.requireActual('react-native-navigation');
     return {
         ...RNN,
         Navigation: {
@@ -195,32 +240,6 @@ beforeEach(() => {
     warns = [];
     errors = [];
 });
-
-jest.mock('rn-fetch-blob', () => ({
-    fs: {
-        dirs: {
-            DocumentDir: () => jest.fn(),
-            CacheDir: '/data/com.mattermost.beta/cache',
-        },
-        exists: jest.fn(),
-        existsWithDiffExt: jest.fn(),
-        unlink: jest.fn(),
-        mv: jest.fn(),
-    },
-    fetch: jest.fn(),
-    config: jest.fn(),
-}));
-
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: '/data/com.mattermost.beta/cache',
-    },
-    exists: jest.fn(),
-    existsWithDiffExt: jest.fn(),
-    unlink: jest.fn(),
-    mv: jest.fn(),
-}));
 
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);

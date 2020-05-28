@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-underscore-dangle */
+
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
@@ -141,7 +143,7 @@ export default class Search extends PureComponent {
 
                 Keyboard.dismiss();
                 if (this.listRef?._wrapperListRef) {
-                    this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+                    this.listRef._wrapperListRef.getListRef().scrollToOffset({
                         animated: true,
                         offset,
                     });
@@ -483,7 +485,7 @@ export default class Search extends PureComponent {
 
     scrollToTop = () => {
         if (this.listRef?._wrapperListRef) {
-            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({
                 animated: false,
                 offset: 0,
             });
@@ -704,6 +706,17 @@ export default class Search extends PureComponent {
             fontSize: 15,
         };
 
+        const paddingRes = padding(isLandscape);
+        if (paddingRes) {
+            // Without this the default paddingLeft in style.header
+            // overrides the paddingHorizontal value gotten from padding(isLandscape)
+            paddingRes.paddingLeft = null;
+
+            if (isLandscape) {
+                paddingRes.paddingTop = 5;
+            }
+        }
+
         return (
             <SafeAreaView
                 excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_WITH_INSETS}
@@ -711,7 +724,7 @@ export default class Search extends PureComponent {
             >
                 <KeyboardLayout>
                     <StatusBar/>
-                    <View style={[style.header, padding(isLandscape)]}>
+                    <View style={[style.header, paddingRes]}>
                         <SearchBar
                             ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

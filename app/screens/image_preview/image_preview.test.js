@@ -17,17 +17,9 @@ import ImagePreview from './image_preview';
 
 jest.useFakeTimers();
 jest.mock('react-intl');
-jest.mock('react-native-doc-viewer', () => {
-    return {
-        OpenFile: jest.fn(),
-    };
-});
-
-// jest.mock('react-native-permissions', () => {
-//     return {
-//         check: jest.fn(),
-//     };
-// });
+jest.mock('react-native-file-viewer', () => ({
+    open: jest.fn(),
+}));
 
 describe('ImagePreview', () => {
     const baseProps = {

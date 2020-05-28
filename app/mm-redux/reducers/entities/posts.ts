@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {ChannelTypes, GeneralTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
+import {ChannelTypes, GeneralTypes, PostTypes} from '@mm-redux/action_types';
 import {Posts} from '../../constants';
 import {comparePosts} from '@mm-redux/utils/post_utils';
 import {Post, PostsState, PostOrderBlock, MessageHistory} from '@mm-redux/types/posts';
@@ -165,9 +165,6 @@ export function handlePosts(state: RelationOneToOne<Post, Post> = {}, action: Ge
 
         return nextState;
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -653,9 +650,6 @@ export function postsInChannel(state: Dictionary<Array<PostOrderBlock>> = {}, ac
 
         return nextState;
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -937,9 +931,6 @@ export function postsInThread(state: RelationOneToMany<Post, Post> = {}, action:
 
         return nextState;
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -949,8 +940,6 @@ function selectedPostId(state = '', action: GenericAction) {
     switch (action.type) {
     case PostTypes.RECEIVED_POST_SELECTED:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return '';
     default:
         return state;
     }
@@ -960,8 +949,6 @@ function currentFocusedPostId(state = '', action: GenericAction) {
     switch (action.type) {
     case PostTypes.RECEIVED_FOCUSED_POST:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return '';
     default:
         return state;
     }
@@ -1033,8 +1020,6 @@ export function reactions(state: RelationOneToOne<Post, Dictionary<Reaction>> = 
         return state;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -1079,8 +1064,6 @@ export function openGraph(state: RelationOneToOne<Post, any> = {}, action: Gener
         return posts.reduce(storeOpenGraphForPost, state);
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -1165,16 +1148,6 @@ function messagesHistory(state: Partial<MessageHistory> = {}, action: GenericAct
             index: nextIndex,
         };
     }
-    case UserTypes.LOGOUT_SUCCESS: {
-        const index: Dictionary<number> = {};
-        index[Posts.MESSAGE_TYPES.POST] = -1;
-        index[Posts.MESSAGE_TYPES.COMMENT] = -1;
-
-        return {
-            messages: [],
-            index,
-        };
-    }
     default:
         return state;
     }
@@ -1197,7 +1170,7 @@ export function expandedURLs(state: Dictionary<string> = {}, action: GenericActi
     }
 }
 
-export default function(state: Partial<PostsState> = {}, action: GenericAction) {
+export default function reducer(state: Partial<PostsState> = {}, action: GenericAction) {
     const nextPosts = handlePosts(state.posts, action);
     const nextPostsInChannel = postsInChannel(state.postsInChannel, action, state.posts!, nextPosts);
 

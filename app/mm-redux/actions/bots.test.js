@@ -5,7 +5,6 @@ import assert from 'assert';
 import nock from 'nock';
 
 import * as BotActions from '@mm-redux/actions/bots';
-import * as UserActions from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
 
 import TestHelper from 'test/test_helper';
@@ -129,24 +128,5 @@ describe('Actions.Bots', () => {
         const state = store.getState();
         const botsResult = state.entities.bots.accounts[bot.user_id];
         assert.equal(bot.owner_id, botsResult.owner_id);
-    });
-
-    it('logout', async () => {
-        // Fill redux store with somthing
-        const bot = TestHelper.fakeBot();
-        nock(Client4.getBaseRoute()).
-            post('/bots').
-            reply(200, bot);
-        await store.dispatch(BotActions.createBot(bot));
-
-        // Should be cleared by logout
-        nock(Client4.getUsersRoute()).
-            post('/logout').
-            reply(200, {status: 'OK'});
-        await store.dispatch(UserActions.logout());
-
-        // Check is clear
-        const state = store.getState();
-        assert.equal(0, Object.keys(state.entities.bots.accounts).length);
     });
 });

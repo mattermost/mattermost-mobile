@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DeviceInfo from 'react-native-device-info';
-
+import {getTimeZone} from 'react-native-localize';
 import moment from 'moment-timezone';
 
-export function getDeviceTimezoneAsync() {
-    return DeviceInfo.getTimezoneAsync();
+export function getDeviceTimezone() {
+    return getTimeZone();
 }
 
 export function getDeviceUtcOffset() {

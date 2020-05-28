@@ -3,12 +3,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import {
-    Image,
-    Text,
-    View,
-} from 'react-native';
+import {Text, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import {Client4} from '@mm-redux/client';
 
@@ -39,7 +35,7 @@ export default class TeamIcon extends React.PureComponent {
         this.mounted = true;
 
         if (lastIconUpdate) {
-            this.setImageURL(Client4.getTeamIconUrl(teamId, lastIconUpdate));
+            this.preloadTeamIcon(teamId, lastIconUpdate);
         }
     }
 
@@ -48,13 +44,18 @@ export default class TeamIcon extends React.PureComponent {
             this.setImageURL(null);
         } else if (this.props.lastIconUpdate && this.props.lastIconUpdate !== prevProps.lastIconUpdate) {
             const {lastIconUpdate, teamId} = this.props;
-            this.setImageURL(Client4.getTeamIconUrl(teamId, lastIconUpdate));
+            this.preloadTeamIcon(teamId, lastIconUpdate);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
     }
+
+    preloadTeamIcon = (teamId, lastIconUpdate) => {
+        const uri = Client4.getTeamIconUrl(teamId, lastIconUpdate);
+        this.setImageURL(uri);
+    };
 
     setImageURL = (teamIcon) => {
         if (this.mounted) {
@@ -76,7 +77,7 @@ export default class TeamIcon extends React.PureComponent {
         let teamIconContent;
         if (this.state.teamIcon) {
             teamIconContent = (
-                <Image
+                <FastImage
                     style={[styles.image, styleImage]}
                     source={{uri: this.state.teamIcon}}
                     onError={() => this.setState({imageError: true})}
@@ -85,7 +86,7 @@ export default class TeamIcon extends React.PureComponent {
         } else {
             teamIconContent = (
                 <Text style={[styles.text, styleText]}>
-                    {displayName.substr(0, 2).toUpperCase()}
+                    {displayName?.substr(0, 2).toUpperCase()}
                 </Text>
             );
         }

@@ -97,7 +97,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
     };
 
     open = () => {
-        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
 
         if (this.drawerRef?.current) {
             this.drawerRef.current.openDrawer();
@@ -113,10 +113,14 @@ export default class MainSidebarIOS extends MainSidebarBase {
     };
 
     render() {
-        const {children} = this.props;
+        const {children, currentUserId} = this.props;
         const {deviceWidth, openDrawerOffset} = this.state;
         const isTablet = DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
         const drawerWidth = DeviceTypes.IS_TABLET ? TABLET_WIDTH : (deviceWidth - openDrawerOffset);
+
+        if (!currentUserId) {
+            return null;
+        }
 
         return (
             <DrawerLayout

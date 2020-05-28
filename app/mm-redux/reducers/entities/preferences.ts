@@ -53,9 +53,6 @@ function myPreferences(state: Dictionary<PreferenceType> = {}, action: GenericAc
 
         return nextState;
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }

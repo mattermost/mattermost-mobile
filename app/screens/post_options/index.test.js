@@ -1,15 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {makeMapStateToProps} from './index';
 
+/* eslint-disable no-import-assign */
+
+import {Permissions} from '@mm-redux/constants';
 import * as channelSelectors from '@mm-redux/selectors/entities/channels';
 import * as generalSelectors from '@mm-redux/selectors/entities/general';
 import * as userSelectors from '@mm-redux/selectors/entities/users';
 import * as commonSelectors from '@mm-redux/selectors/entities/common';
 import * as teamSelectors from '@mm-redux/selectors/entities/teams';
+import * as roleSelectors from '@mm-redux/selectors/entities/roles';
 import * as deviceSelectors from 'app/selectors/device';
 import * as preferencesSelectors from '@mm-redux/selectors/entities/preferences';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+
+import {makeMapStateToProps} from './index';
 
 jest.mock('@mm-redux/utils/post_utils');
 
@@ -26,6 +31,7 @@ teamSelectors.getCurrentTeamUrl = jest.fn();
 deviceSelectors.getDimensions = jest.fn();
 deviceSelectors.isLandscape = jest.fn();
 preferencesSelectors.getTheme = jest.fn();
+roleSelectors.haveIChannelPermission = jest.fn();
 
 describe('makeMapStateToProps', () => {
     const baseState = {
@@ -134,5 +140,47 @@ describe('makeMapStateToProps', () => {
         const props = mapStateToProps(state, baseOwnProps);
         expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 18)).toBe(false);
         expect(props.canMarkAsUnread).toBe(false);
+    });
+
+    test('haveIChannelPermission for canPost is not called when isMinimumServerVersion is not 5.22v', () => {
+        const state = {
+            entities: {
+                ...baseState.entities,
+                general: {
+                    serverVersion: '5.21',
+                },
+            },
+        };
+
+        const mapStateToProps = makeMapStateToProps();
+        mapStateToProps(state, baseOwnProps);
+        expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)).toBe(false);
+        expect(roleSelectors.haveIChannelPermission).not.toHaveBeenCalledWith(state, {
+            channel: undefined,
+            team: undefined,
+            permission: Permissions.CREATE_POST,
+            default: true,
+        });
+    });
+
+    test('haveIChannelPermission for canPost is called when isMinimumServerVersion is 5.22v', () => {
+        const state = {
+            entities: {
+                ...baseState.entities,
+                general: {
+                    serverVersion: '5.22',
+                },
+            },
+        };
+
+        const mapStateToProps = makeMapStateToProps();
+        mapStateToProps(state, baseOwnProps);
+        expect(isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)).toBe(true);
+        expect(roleSelectors.haveIChannelPermission).toHaveBeenCalledWith(state, {
+            channel: undefined,
+            team: undefined,
+            permission: Permissions.CREATE_POST,
+            default: true,
+        });
     });
 });

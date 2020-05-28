@@ -19,7 +19,7 @@ import {displayUsername} from '@mm-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -362,7 +362,7 @@ class FilteredList extends Component {
 
         return (
             <React.Fragment>
-                <View style={[styles.titleContainer, padding(isLandscape)]}>
+                <View style={[styles.titleContainer, paddingLeft(isLandscape)]}>
                     <Text style={styles.title}>
                         {intl.formatMessage({id, defaultMessage}).toUpperCase()}
                     </Text>

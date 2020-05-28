@@ -3,16 +3,17 @@
 
 import {Alert, Platform} from 'react-native';
 
-import {setServerUrl} from 'app/actions/views/select_server';
-import {getTranslations} from 'app/i18n';
+import {setServerUrl} from '@actions/views/select_server';
+import LocalConfig from '@assets/config';
+import {getTranslations} from '@i18n';
+import {getCurrentLocale} from '@selectors/i18n';
+import Store from '@store/store';
+import {t} from '@utils/i18n';
+
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
-import {getCurrentLocale} from 'app/selectors/i18n';
-import {t} from 'app/utils/i18n';
 
 import {getAppCredentials} from './credentials';
-
-import LocalConfig from 'assets/config';
 
 class EMMProvider {
     constructor() {
@@ -29,11 +30,11 @@ class EMMProvider {
         this.emmServerUrl = null;
     }
 
-    checkIfDeviceIsTrusted = (store) => {
+    checkIfDeviceIsTrusted = () => {
         const isTrusted = mattermostManaged.isTrustedDevice();
 
         if (!isTrusted) {
-            const state = store.getState();
+            const state = Store.redux.getState();
             const locale = getCurrentLocale(state);
             const translations = getTranslations(locale);
             Alert.alert(
@@ -51,10 +52,10 @@ class EMMProvider {
         }
     };
 
-    handleAuthentication = async (store, prompt = true) => {
+    handleAuthentication = async (prompt = true) => {
         this.performingAuthentication = true;
         const isSecured = await mattermostManaged.isDeviceSecure();
-        const state = store.getState();
+        const state = Store.redux.getState();
         const locale = getCurrentLocale(state);
         const translations = getTranslations(locale);
 
@@ -83,12 +84,12 @@ class EMMProvider {
         return true;
     };
 
-    handleManagedConfig = async (store) => {
+    handleManagedConfig = async () => {
         if (this.performingAuthentication) {
             return true;
         }
 
-        const {dispatch} = store;
+        const {dispatch} = Store.redux;
 
         if (LocalConfig.AutoSelectServerUrl) {
             dispatch(setServerUrl(LocalConfig.DefaultServerUrl));

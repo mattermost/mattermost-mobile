@@ -11,6 +11,7 @@ import {Team} from '@mm-redux/types/teams';
 function removeMemberFromChannels(state: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>, action: GenericAction) {
     const nextState = {...state};
     Object.keys(state).forEach((channel) => {
+        nextState[channel] = {...nextState[channel]};
         delete nextState[channel][action.data.user_id];
     });
     return nextState;
@@ -42,8 +43,6 @@ function currentChannelId(state = '', action: GenericAction) {
     switch (action.type) {
     case ChannelTypes.SELECT_CHANNEL:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return '';
     default:
         return state;
     }
@@ -182,8 +181,6 @@ function channels(state: IDMappedObjects<Channel> = {}, action: GenericAction) {
         return hasNewValues ? nextState : state;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -217,8 +214,6 @@ function channelsInTeam(state: RelationOneToMany<Team, Channel> = {}, action: Ge
         };
         return channelListToSet(state, values);
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -370,14 +365,14 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
     case ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS: { // Used by the mobile app
         const nextState: any = {...state};
         const current = Object.values(nextState);
-        const {sync, channelMembers} = action.data;
+        const {sync, teamChannels, channelMembers} = action.data;
         let hasNewValues = channelMembers && channelMembers.length > 0;
 
         // Remove existing channel memberships when the user is no longer a member
         if (sync) {
             current.forEach((member: ChannelMembership) => {
                 const id = member.channel_id;
-                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id === id)) {
+                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id !== id && teamChannels.includes(id))) {
                     delete nextState[id];
                     hasNewValues = true;
                 }
@@ -396,8 +391,6 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
         return state;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -462,8 +455,6 @@ function membersInChannel(state: RelationOneToOne<Channel, UserIDMappedObjects<C
     case ChannelTypes.UPDATED_CHANNEL_MEMBER_SCHEME_ROLES: {
         return updateChannelMemberSchemeRoles(state, action);
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -546,8 +537,6 @@ function stats(state: RelationOneToOne<Channel, ChannelStats> = {}, action: Gene
 
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -633,11 +622,6 @@ export function manuallyUnread(state: RelationOneToOne<Channel, boolean> = {}, a
         }
         return state;
     }
-    case UserTypes.LOGOUT_SUCCESS: {
-        // user is logging out, remove any reference
-        return {};
-    }
-
     case ChannelTypes.ADD_MANUALLY_UNREAD:
     case ChannelTypes.POST_UNREAD_SUCCESS: {
         return {...state, [action.data.channelId]: true};

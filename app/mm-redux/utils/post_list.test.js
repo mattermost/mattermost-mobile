@@ -836,6 +836,8 @@ describe('makeCombineUserActivityPosts', () => {
 
 describe('isDateLine', () => {
     test('should correctly identify date line items', () => {
+        expect(isDateLine(undefined)).toBe(false);
+        expect(isDateLine(null)).toBe(false);
         expect(isDateLine('')).toBe(false);
         expect(isDateLine('date')).toBe(false);
         expect(isDateLine('date-')).toBe(true);

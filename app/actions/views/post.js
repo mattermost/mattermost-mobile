@@ -20,7 +20,7 @@ import {Posts} from '@mm-redux/constants';
 import {getPost as selectPost, getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
-import {isUnreadChannel} from '@mm-redux/utils/channel_utils';
+import {isUnreadChannel, isArchivedChannel} from '@mm-redux/utils/channel_utils';
 
 import {ViewTypes} from '@constants';
 import {generateId} from '@utils/file';
@@ -87,7 +87,10 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
             const postForChannel = postsInChannel[channelId];
             const data = await Client4.getPosts(channelId, page, perPage);
             const posts = Object.values(data.posts);
-            const actions = [];
+            const actions = [{
+                type: ViewTypes.SET_CHANNEL_RETRY_FAILED,
+                failed: false,
+            }];
 
             if (posts?.length) {
                 actions.push(receivedPosts(data));
@@ -409,7 +412,7 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
         });
 
         channels.forEach((channel) => {
-            if (channel.id === currentChannelId) {
+            if (channel.id === currentChannelId || isArchivedChannel(channel)) {
                 return;
             }
 
@@ -465,10 +468,13 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
 
         console.log(`Fetched ${posts.length} posts from ${promises.length} unread channels`); //eslint-disable-line no-console
         if (posts.length) {
-            actions.push(receivedPosts({posts}));
+            // receivedPosts should be the first action dispatched as
+            // receivedPostsSince and receivedPostsInChannel reducers are
+            // dependent on it.
+            actions.unshift(receivedPosts({posts}));
             const additional = await dispatch(getPostsAdditionalDataBatch(posts));
-            if (additional.length) {
-                actions.push(...additional);
+            if (additional.data.length) {
+                actions.push(...additional.data);
             }
 
             dispatch(batchActions(actions));

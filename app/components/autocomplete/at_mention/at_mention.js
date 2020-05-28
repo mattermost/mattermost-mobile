@@ -22,7 +22,7 @@ export default class AtMention extends PureComponent {
         }).isRequired,
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
-        cursorPosition: PropTypes.number.isRequired,
+        cursorPosition: PropTypes.number,
         defaultChannel: PropTypes.object,
         inChannel: PropTypes.array,
         isSearch: PropTypes.bool,

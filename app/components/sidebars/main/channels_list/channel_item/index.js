@@ -6,8 +6,9 @@ import {connect} from 'react-redux';
 import {General} from '@mm-redux/constants';
 import {
     getCurrentChannelId,
-    makeGetChannel,
     getMyChannelMember,
+    isManuallyUnread,
+    makeGetChannel,
     shouldHideDefaultChannel,
 } from '@mm-redux/selectors/entities/channels';
 import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
@@ -74,19 +75,20 @@ function makeMapStateToProps() {
         return {
             channel,
             currentChannelId,
-            displayName,
-            isArchived,
-            isChannelMuted: isChannelMuted(member),
             currentUserId,
-            hasDraft: Boolean(channelDraft.draft.trim() || channelDraft.files.length),
+            displayName,
+            hasDraft: Boolean(channelDraft.draft.trim() || channelDraft?.files?.length),
+            isArchived,
+            isBot,
+            isChannelMuted: isChannelMuted(member),
+            isGuest,
+            isLandscape: isLandscape(state),
+            isManualUnread: isManuallyUnread(state, ownProps.channelId),
             mentions: member ? member.mention_count : 0,
             shouldHideChannel,
             showUnreadForMsgs,
             theme: getTheme(state),
             unreadMsgs,
-            isBot,
-            isLandscape: isLandscape(state),
-            isGuest,
         };
     };
 }

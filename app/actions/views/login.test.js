@@ -4,27 +4,12 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import * as GeneralActions from '@mm-redux/actions/general';
+import {Client4} from '@mm-redux/client';
 
 import {handleSuccessfulLogin} from 'app/actions/views/login';
 
 jest.mock('app/init/credentials', () => ({
     setAppCredentials: () => jest.fn(),
-}));
-
-jest.mock('react-native-cookies', () => ({
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    openURL: jest.fn(),
-    canOpenURL: jest.fn(),
-    getInitialURL: jest.fn(),
-    get: () => Promise.resolve(({
-        res: {
-            MMCSRF: {
-                value: 'the cookie',
-            },
-        },
-    })),
 }));
 
 const mockStore = configureStore([thunk]);
@@ -46,8 +31,8 @@ describe('Actions.Views.Login', () => {
     });
 
     test('handleSuccessfulLogin gets config and license ', async () => {
-        const getClientConfig = jest.spyOn(GeneralActions, 'getClientConfig');
-        const getLicenseConfig = jest.spyOn(GeneralActions, 'getLicenseConfig');
+        const getClientConfig = jest.spyOn(Client4, 'getClientConfigOld');
+        const getLicenseConfig = jest.spyOn(Client4, 'getClientLicenseOld');
 
         await store.dispatch(handleSuccessfulLogin());
         expect(getClientConfig).toHaveBeenCalled();

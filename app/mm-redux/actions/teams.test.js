@@ -386,18 +386,18 @@ describe('Actions.Teams', () => {
         nock(Client4.getTeamRoute(TestHelper.basicTeam.id)).
             post('/members').
             reply(201, {user_id: user1.id, team_id: TestHelper.basicTeam.id});
-        const {data: member1} = await Actions.addUserToTeam(TestHelper.basicTeam.id, user1.id)(store.dispatch, store.getState);
+        const {data: member1} = await store.dispatch(Actions.addUserToTeam(TestHelper.basicTeam.id, user1.id));
 
         nock(Client4.getTeamRoute(TestHelper.basicTeam.id)).
             post('/members').
             reply(201, {user_id: user2.id, team_id: TestHelper.basicTeam.id});
-        const {data: member2} = await Actions.addUserToTeam(TestHelper.basicTeam.id, user2.id)(store.dispatch, store.getState);
+        const {data: member2} = await store.dispatch(Actions.addUserToTeam(TestHelper.basicTeam.id, user2.id));
 
         nock(Client4.getBaseRoute()).
             get(`/teams/${TestHelper.basicTeam.id}/members`).
             query(true).
             reply(200, [member1, member2, TestHelper.basicTeamMember]);
-        await Actions.getTeamMembers(TestHelper.basicTeam.id)(store.dispatch, store.getState);
+        await store.dispatch(Actions.getTeamMembers(TestHelper.basicTeam.id));
         const membersInTeam = store.getState().entities.teams.membersInTeam;
 
         assert.ok(membersInTeam[TestHelper.basicTeam.id]);
@@ -747,7 +747,7 @@ describe('Actions.Teams', () => {
             post('/teams/search').
             reply(200, [TestHelper.basicTeam, userTeam]);
 
-        const {data} = await store.dispatch(Actions.searchTeams('test', 0));
+        await store.dispatch(Actions.searchTeams('test', 0));
 
         const moreRequest = store.getState().requests.teams.getTeams;
         if (moreRequest.status === RequestStatus.FAILURE) {

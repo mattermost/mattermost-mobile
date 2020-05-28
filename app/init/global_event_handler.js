@@ -3,40 +3,41 @@
 
 import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import CookieManager from 'react-native-cookies';
+import CookieManager from '@react-native-community/cookies';
 import DeviceInfo from 'react-native-device-info';
+import {getLocales} from 'react-native-localize';
 import RNFetchBlob from 'rn-fetch-blob';
-import {batchActions} from 'redux-batched-actions';
 import semver from 'semver/preload';
 
+import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from '@actions/device';
+import {selectDefaultChannel} from '@actions/views/channel';
+import {showOverlay} from '@actions/navigation';
+import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from '@actions/views/root';
+import {loadMe, logout} from '@actions/views/user';
+import LocalConfig from '@assets/config';
+import {NavigationTypes, ViewTypes} from '@constants';
+import {getTranslations, resetMomentLocale} from '@i18n';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
-import {GeneralTypes} from '@mm-redux/action_types';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {getCurrentUser, getUser} from '@mm-redux/selectors/entities/users';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {getCurrentLocale} from '@selectors/i18n';
+import initialState from '@store/initial_state';
+import Store from '@store/store';
+import {t} from '@utils/i18n';
+import {deleteFileCache} from '@utils/file';
+import {getDeviceTimezone} from '@utils/timezone';
 
-import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
-import {selectDefaultChannel} from 'app/actions/views/channel';
-import {showOverlay} from 'app/actions/navigation';
-import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
-import {loadMe, logout} from 'app/actions/views/user';
-import {NavigationTypes, ViewTypes} from 'app/constants';
-import {getTranslations, resetMomentLocale} from 'app/i18n';
-import initialState from 'app/initial_state';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
-import {getCurrentLocale} from 'app/selectors/i18n';
-import {t} from 'app/utils/i18n';
-import {deleteFileCache} from 'app/utils/file';
-import {getDeviceTimezoneAsync} from 'app/utils/timezone';
-
-import LocalConfig from 'assets/config';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
@@ -44,8 +45,12 @@ import emmProvider from './emm_provider';
 const {StatusBarManager} = NativeModules;
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
 
+let analytics;
+
 class GlobalEventHandler {
     constructor() {
+        this.pushNotificationListener = false;
+
         EventEmitter.on(NavigationTypes.NAVIGATION_RESET, this.onLogout);
         EventEmitter.on(NavigationTypes.RESTART_APP, this.onRestartApp);
         EventEmitter.on(General.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
@@ -66,7 +71,7 @@ class GlobalEventHandler {
 
             // Once the app becomes active we check if the device needs to have a passcode set
             const prompt = emmProvider.inBackgroundSince && authExpired; // if more than 5 minutes have passed prompt for passcode
-            await emmProvider.handleAuthentication(this.store, prompt);
+            await emmProvider.handleAuthentication(prompt);
         }
 
         emmProvider.inBackgroundSince = null; /* eslint-disable-line require-atomic-updates */
@@ -75,7 +80,7 @@ class GlobalEventHandler {
     appInactive = () => {
         this.turnOffInAppNotificationHandling();
 
-        const {dispatch} = this.store;
+        const {dispatch} = Store.redux;
 
         // When the app is sent to the background we set the time when that happens
         // and perform a data clean up to improve on performance
@@ -85,7 +90,6 @@ class GlobalEventHandler {
     };
 
     configure = (opts) => {
-        this.store = opts.store;
         this.launchApp = opts.launchApp;
 
         // onAppStateChange may be called by the AppState listener before we
@@ -107,27 +111,29 @@ class GlobalEventHandler {
         }
 
         this.JavascriptAndNativeErrorHandler = require('app/utils/error_handling').default;
-        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(this.store);
+        this.JavascriptAndNativeErrorHandler.initializeErrorHandling(Store.redux);
 
         mattermostManaged.addEventListener('managedConfigDidChange', this.onManagedConfigurationChange);
     };
 
-    configureAnalytics = (config) => {
-        const initAnalytics = require('app/utils/segment').init;
+    configureAnalytics = async () => {
+        const state = Store.redux.getState();
+        const config = getConfig(state);
+        const initAnalytics = require('./analytics').init;
 
-        if (!__DEV__ && config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.SegmentApiKey) {
-            initAnalytics(config);
-        } else {
-            global.analytics = null;
+        if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.RudderApiKey) {
+            analytics = await initAnalytics(config);
         }
+
+        return analytics;
     };
 
     onAppStateChange = (appState) => {
         const isActive = appState === 'active';
         const isBackground = appState === 'background';
 
-        if (this.store) {
-            this.store.dispatch(setAppState(isActive));
+        if (Store.redux) {
+            Store.redux.dispatch(setAppState(isActive));
 
             if (isActive && (!emmProvider.enabled || emmProvider.previousAppState === 'background')) {
                 this.appActive();
@@ -142,24 +148,25 @@ class GlobalEventHandler {
     onDeepLink = (event) => {
         const {url} = event;
         if (url) {
-            this.store.dispatch(setDeepLinkURL(url));
+            Store.redux.dispatch(setDeepLinkURL(url));
         }
     };
 
     onManagedConfigurationChange = () => {
-        emmProvider.handleManagedConfig(this.store, true);
-    };
-
-    onServerConfigChanged = (config) => {
-        this.configureAnalytics(config);
+        emmProvider.handleManagedConfig(true);
     };
 
     onLogout = async () => {
-        this.store.dispatch(closeWebSocket(false));
-        this.store.dispatch(setServerVersion(''));
-        this.resetState();
+        Store.redux.dispatch(closeWebSocket(false));
+        Store.redux.dispatch(setServerVersion(''));
+
+        if (analytics) {
+            await analytics.reset();
+        }
+
         removeAppCredentials();
         deleteFileCache();
+        await this.resetState();
         resetMomentLocale();
 
         // TODO: Handle when multi-server support is added
@@ -187,11 +194,17 @@ class GlobalEventHandler {
         if (this.launchApp) {
             this.launchApp();
         }
+
+        // Reset the state after sending
+        // the user to the Select server URL screen
+        // To avoid unavailable data crashes while components are
+        // still mounted.
+        this.resetState();
     };
 
     onOrientationChange = (dimensions) => {
-        if (this.store) {
-            const {dispatch, getState} = this.store;
+        if (Store.redux) {
+            const {dispatch, getState} = Store.redux;
             const deviceState = getState().device;
 
             if (DeviceInfo.isTablet()) {
@@ -215,7 +228,7 @@ class GlobalEventHandler {
     };
 
     onRestartApp = async () => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const {currentUserId} = state.entities.users;
         const user = getUser(state, currentUserId);
@@ -235,14 +248,21 @@ class GlobalEventHandler {
         }
     };
 
+    onServerConfigChanged = (config) => {
+        this.configureAnalytics(config);
+
+        if (isMinimumServerVersion(Client4.serverVersion, 5, 24) && config.ExtendSessionLengthWithActivity === 'true') {
+            PushNotifications.cancelAllLocalNotifications();
+        }
+    };
+
     onServerVersionChanged = async (serverVersion) => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
         const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
         const version = match && match[0];
         const locale = getCurrentLocale(state);
         const translations = getTranslations(locale);
-
         if (serverVersion) {
             if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
                 Alert.alert(
@@ -256,48 +276,65 @@ class GlobalEventHandler {
                 );
             } else if (state.entities.users && state.entities.users.currentUserId) {
                 dispatch(setServerVersion(serverVersion));
-                const data = await dispatch(loadConfigAndLicense());
-                this.configureAnalytics(data.config);
+                dispatch(loadConfigAndLicense());
             }
         }
     };
 
     onStatusBarHeightChange = (nextStatusBarHeight) => {
-        this.store.dispatch(setStatusBarHeight(nextStatusBarHeight));
+        Store.redux.dispatch(setStatusBarHeight(nextStatusBarHeight));
     };
 
     onSwitchToDefaultChannel = (teamId) => {
-        this.store.dispatch(selectDefaultChannel(teamId));
+        Store.redux.dispatch(selectDefaultChannel(teamId));
     };
 
     resetState = async () => {
         try {
             await AsyncStorage.clear();
-            const state = this.store.getState();
-            this.store.dispatch(batchActions([
-                {
-                    type: General.OFFLINE_STORE_RESET,
-                    data: initialState,
+            const state = Store.redux.getState();
+            const newState = {
+                ...initialState,
+                app: {
+                    build: DeviceInfo.getBuildNumber(),
+                    version: DeviceInfo.getVersion(),
+                    previousVersion: DeviceInfo.getVersion(),
                 },
-                {
-                    type: General.STORE_REHYDRATION_COMPLETE,
+                entities: {
+                    ...initialState.entities,
+                    general: {
+                        ...initialState.entities.general,
+                        deviceToken: state.entities.general.deviceToken,
+                    },
                 },
-                {
-                    type: ViewTypes.SERVER_URL_CHANGED,
-                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
+                views: {
+                    i18n: {
+                        locale: getLocales()[0].languageCode,
+                    },
+                    root: {
+                        hydrationComplete: true,
+                    },
+                    selectServer: {
+                        serverUrl: state.views.selectServer.serverUrl,
+                    },
                 },
-                {
-                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
-                    data: state.entities.general.deviceToken,
+                _persist: {
+                    rehydrated: true,
                 },
-            ], 'BATCH_RESET_STATE'));
+            };
+
+            return Store.redux.dispatch({
+                type: General.OFFLINE_STORE_PURGE,
+                state: newState,
+            });
         } catch (e) {
             // clear error
+            return e;
         }
     }
 
     serverUpgradeNeeded = async () => {
-        const {dispatch} = this.store;
+        const {dispatch} = Store.redux;
 
         dispatch(setServerVersion(''));
         Client4.serverVersion = '';
@@ -310,16 +347,20 @@ class GlobalEventHandler {
     };
 
     turnOnInAppNotificationHandling = () => {
-        EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        if (!this.pushNotificationListener) {
+            this.pushNotificationListener = true;
+            EventEmitter.on(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
+        }
     }
 
     turnOffInAppNotificationHandling = () => {
+        this.pushNotificationListener = false;
         EventEmitter.off(ViewTypes.NOTIFICATION_IN_APP, this.handleInAppNotification);
     }
 
     handleInAppNotification = (notification) => {
         const {data} = notification;
-        const {getState} = this.store;
+        const {getState} = Store.redux;
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
@@ -335,14 +376,29 @@ class GlobalEventHandler {
     };
 
     setUserTimezone = async () => {
-        const {dispatch, getState} = this.store;
+        const {dispatch, getState} = Store.redux;
         const state = getState();
-        const currentUserId = getCurrentUserId(state);
+        const currentUser = getCurrentUser(state);
 
         const enableTimezone = isTimezoneEnabled(state);
-        if (enableTimezone && currentUserId) {
-            const timezone = await getDeviceTimezoneAsync();
-            dispatch(autoUpdateTimezone(timezone));
+        if (enableTimezone && currentUser.id) {
+            const timezone = getDeviceTimezone();
+            const {
+                automaticTimezone,
+                manualTimezone,
+                useAutomaticTimezone,
+            } = currentUser.timezone;
+            let updateTimeZone = false;
+
+            if (useAutomaticTimezone) {
+                updateTimeZone = timezone !== automaticTimezone;
+            } else {
+                updateTimeZone = timezone !== manualTimezone;
+            }
+
+            if (updateTimeZone) {
+                dispatch(autoUpdateTimezone(timezone));
+            }
         }
     };
 }

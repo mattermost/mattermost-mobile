@@ -10,18 +10,18 @@ import {
     ActivityIndicator,
     Animated,
     AppState,
-    Image,
     TouchableOpacity,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import Slider from 'react-native-slider';
 
-import fullscreenImage from 'assets/images/video_player/fullscreen.png';
-import pauseImage from 'assets/images/video_player/pause.png';
-import playImage from 'assets/images/video_player/play.png';
-import replayImage from 'assets/images/video_player/replay.png';
+import fullscreenImage from '@assets/images/video_player/fullscreen.png';
+import pauseImage from '@assets/images/video_player/pause.png';
+import playImage from '@assets/images/video_player/play.png';
+import replayImage from '@assets/images/video_player/replay.png';
 
 export const PLAYER_STATE = {
     PLAYING: 0,
@@ -106,17 +106,15 @@ export default class VideoControls extends PureComponent {
         });
     };
 
-    getPlayerStateIcon = (playerState) => {
+    getControlIconAndAspectRatio = (playerState) => {
         switch (playerState) {
-        case PLAYER_STATE.PAUSED:
-            return playImage;
         case PLAYER_STATE.PLAYING:
-            return pauseImage;
+            return {icon: pauseImage, aspectRatio: 0.83};
         case PLAYER_STATE.ENDED:
-            return replayImage;
+            return {icon: replayImage, aspectRatio: 1.17};
         }
 
-        return playImage;
+        return {icon: playImage, aspectRatio: 0.83};
     };
 
     handleAppStateChange = (nextAppState) => {
@@ -150,8 +148,7 @@ export default class VideoControls extends PureComponent {
     renderControls() {
         return (
             <View style={styles.container}>
-                <View style={styles.controlsRow}/>
-                <View style={[styles.controlsRow]}>
+                <View style={[styles.controlsRow, StyleSheet.absoluteFill]}>
                     {
                         this.props.isLoading ? this.setLoadingView() : this.setPlayerControls(this.props.playerState)
                     }
@@ -182,7 +179,10 @@ export default class VideoControls extends PureComponent {
                         style={styles.fullScreenContainer}
                         onPress={this.props.onFullScreen}
                     >
-                        <Image source={fullscreenImage}/>
+                        <FastImage
+                            source={fullscreenImage}
+                            style={{width: 20, height: 20}}
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -214,16 +214,16 @@ export default class VideoControls extends PureComponent {
     };
 
     setPlayerControls = (playerState) => {
-        const icon = this.getPlayerStateIcon(playerState);
+        const {icon, aspectRatio} = this.getControlIconAndAspectRatio(playerState);
         const pressAction = playerState === PLAYER_STATE.ENDED ? this.onReplay : this.onPause;
         return (
             <TouchableOpacity
-                style={[styles.playButton, {backgroundColor: this.props.mainColor}]}
+                style={[styles.controlButton, {backgroundColor: this.props.mainColor}]}
                 onPress={pressAction}
             >
-                <Image
+                <FastImage
                     source={icon}
-                    style={styles.playIcon}
+                    style={[styles.controlIcon, {aspectRatio}]}
                 />
             </TouchableOpacity>
         );
@@ -279,7 +279,6 @@ const styles = StyleSheet.create({
         right: 0,
     },
     controlsRow: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'stretch',
@@ -287,7 +286,7 @@ const styles = StyleSheet.create({
     timeRow: {
         alignSelf: 'stretch',
     },
-    playButton: {
+    controlButton: {
         justifyContent: 'center',
         alignItems: 'center',
         width: 50,
@@ -296,20 +295,15 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         borderColor: 'rgba(255,255,255,0.5)',
     },
-    playIcon: {
-        width: 22,
-        height: 22,
-        resizeMode: 'contain',
-    },
-    replayIcon: {
-        width: 25,
+    controlIcon: {
         height: 20,
-        resizeMode: 'stretch',
     },
     progressContainer: {
+        position: 'absolute',
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        marginBottom: -25,
+        bottom: 25,
+        marginLeft: 16,
     },
     progressColumnContainer: {
         flex: 1,
@@ -318,7 +312,8 @@ const styles = StyleSheet.create({
         alignSelf: 'stretch',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingLeft: 20,
+        paddingLeft: 10,
+        paddingTop: 8,
     },
     progressSlider: {
         alignSelf: 'stretch',

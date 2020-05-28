@@ -10,12 +10,11 @@ import {
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
-
-import addReactionIcon from 'assets/images/icons/reaction.png';
+import {showModal, showModalOverCurrentContext} from '@actions/navigation';
+import addReactionIcon from '@assets/images/icons/reaction.png';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Reaction from './reaction';
 
@@ -186,7 +185,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         addReaction: {
             tintColor: changeOpacity(theme.centerChannelColor, 0.5),
             width: 23,
-            height: 20,
+            height: 23,
         },
         reaction: {
             alignItems: 'center',

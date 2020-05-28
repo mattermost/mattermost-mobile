@@ -23,7 +23,7 @@ import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
 import {Dictionary} from '@mm-redux/types/utilities';
 export function checkMfa(loginId: string): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({type: UserTypes.CHECK_MFA_REQUEST, data: null});
         try {
             const data = await Client4.checkUserMfa(loginId);
@@ -237,22 +237,6 @@ export function loadMe(): ActionFunc {
         if (user) {
             Client4.setUserRoles(user.roles);
         }
-
-        return {data: true};
-    };
-}
-
-export function logout(): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        dispatch({type: UserTypes.LOGOUT_REQUEST, data: null});
-
-        try {
-            await Client4.logout();
-        } catch (error) {
-            // nothing to do here
-        }
-
-        dispatch({type: UserTypes.LOGOUT_SUCCESS, data: null});
 
         return {data: true};
     };
@@ -1001,7 +985,7 @@ export function stopPeriodicStatusUpdates(): ActionFunc {
 }
 
 export function updateMe(user: UserProfile): ActionFunc {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({type: UserTypes.UPDATE_ME_REQUEST, data: null});
 
         let data;
@@ -1421,7 +1405,6 @@ export default {
     checkMfa,
     generateMfaSecret,
     login,
-    logout,
     getProfiles,
     getProfilesByIds,
     getProfilesInTeam,

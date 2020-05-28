@@ -52,6 +52,7 @@ export default class MoreDirectMessages extends PureComponent {
         currentDisplayName: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        isGuest: PropTypes.bool,
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -137,6 +138,11 @@ export default class MoreDirectMessages extends PureComponent {
 
     handleSelectProfile = (id) => {
         const {currentUserId} = this.props;
+
+        if (this.state.selectedIds[id]) {
+            this.handleRemoveProfile(id);
+            return;
+        }
 
         if (id === currentUserId) {
             const selectedId = {};
@@ -358,6 +364,8 @@ export default class MoreDirectMessages extends PureComponent {
         );
     };
 
+    filterUnknownUsers = (u) => Boolean(this.props.allProfiles[u.id])
+
     renderLoading = () => {
         const {theme} = this.props;
         const {loading} = this.state;
@@ -399,7 +407,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, theme, isLandscape} = this.props;
+        const {isGuest, currentUserId, theme, isLandscape} = this.props;
         const {
             loading,
             profiles,
@@ -430,7 +438,7 @@ export default class MoreDirectMessages extends PureComponent {
         let listType;
         if (term) {
             const exactMatches = [];
-            const results = filterProfilesMatchingTerm(searchResults, term).filter((p) => {
+            const filterByTerm = (p) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
                     return false;
                 }
@@ -441,46 +449,61 @@ export default class MoreDirectMessages extends PureComponent {
                 }
 
                 return true;
-            });
+            };
+
+            let results;
+            if (isGuest) {
+                results = filterProfilesMatchingTerm(searchResults, term).filter((u) => filterByTerm(u) && this.filterUnknownUsers(u));
+            } else {
+                results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            }
             data = [...exactMatches, ...results];
+
             listType = FLATLIST;
         } else {
-            data = createProfilesSections(profiles);
+            if (isGuest) {
+                data = createProfilesSections(profiles.filter(this.filterUnknownUsers));
+            } else {
+                data = createProfilesSections(profiles);
+            }
             listType = SECTIONLIST;
         }
 
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={[style.searchBar, padding(isLandscape)]}>
-                    <SearchBar
-                        ref={this.setSearchBarRef}
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={33}
-                        inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                        titleCancelColor={theme.centerChannelColor}
-                        onChangeText={this.onSearch}
-                        onSearchButtonPress={this.onSearch}
-                        onCancelButtonPress={this.clearSearch}
-                        autoCapitalize='none'
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        value={term}
-                    />
-                    <SelectedUsers
-                        selectedIds={this.state.selectedIds}
-                        warnCount={5}
-                        maxCount={7}
-                        onRemove={this.handleRemoveProfile}
-                    />
+                <View style={style.searchBar}>
+                    <View style={padding(isLandscape)}>
+                        <SearchBar
+                            ref={this.setSearchBarRef}
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={33}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
+                            onChangeText={this.onSearch}
+                            onSearchButtonPress={this.onSearch}
+                            onCancelButtonPress={this.clearSearch}
+                            autoCapitalize='none'
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            value={term}
+                        />
+                    </View>
                 </View>
+                <SelectedUsers
+                    selectedIds={this.state.selectedIds}
+                    warnCount={5}
+                    maxCount={7}
+                    onRemove={this.handleRemoveProfile}
+                />
                 <CustomList
                     data={data}
                     extraData={selectedIds}
+                    isLandscape={isLandscape}
                     key='custom_list'
                     listType={listType}
                     loading={loading}

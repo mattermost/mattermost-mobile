@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Alert,
@@ -14,26 +14,22 @@ import {
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {intlShape} from 'react-intl';
 
+import ImageViewPort from '@components/image_viewport';
+import PostAttachmentImage from '@components/post_attachment_image';
+import ProgressiveImage from '@components/progressive_image';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import CustomPropTypes from '@constants/custom_prop_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {calculateDimensions, getViewPortWidth, previewImageAtIndex} from '@utils/images';
+import {getYouTubeVideoId, isImageLink, isYoutubeLink} from '@utils/url';
 
-import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
-import PostAttachmentImage from 'app/components/post_attachment_image';
-import ProgressiveImage from 'app/components/progressive_image';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-
-import {DeviceTypes} from 'app/constants';
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {previewImageAtIndex, calculateDimensions} from 'app/utils/images';
-import {getYouTubeVideoId, isImageLink, isYoutubeLink} from 'app/utils/url';
-
-const VIEWPORT_IMAGE_OFFSET = 66;
-const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
-const MAX_YOUTUBE_IMAGE_HEIGHT = 150;
-const MAX_YOUTUBE_IMAGE_WIDTH = 297;
+const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
+const MAX_YOUTUBE_IMAGE_WIDTH = 360;
+const MAX_IMAGE_HEIGHT = 150;
 let MessageAttachments;
 let PostAttachmentOpenGraph;
 
-export default class PostBodyAdditionalContent extends PureComponent {
+export default class PostBodyAdditionalContent extends ImageViewPort {
     static propTypes = {
         actions: PropTypes.shape({
             getRedirectLocation: PropTypes.func.isRequired,
@@ -73,7 +69,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
         if (this.isImage() && props.metadata && props.metadata.images) {
             const img = props.metadata.images[props.link];
             if (img && img.height && img.width) {
-                dimensions = calculateDimensions(img.height, img.width, this.getViewPortWidth(props));
+                dimensions = calculateDimensions(img.height, img.width, getViewPortWidth(props.isReplyPost, this.hasPermanentSidebar()));
             }
         }
 
@@ -82,13 +78,10 @@ export default class PostBodyAdditionalContent extends PureComponent {
             linkLoaded: false,
             ...dimensions,
         };
-
-        this.mounted = false;
     }
 
     componentDidMount() {
-        this.mounted = true;
-
+        super.componentDidMount();
         this.load();
     }
 
@@ -98,174 +91,20 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
     }
 
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
-    isImage = (specificLink) => {
-        const {metadata, link} = this.props;
-
-        if (isImageLink(specificLink || link)) {
-            return true;
-        }
-
-        if (metadata && metadata.images) {
-            return Boolean(metadata.images[specificLink] || metadata.images[link]);
-        }
-
-        return false;
-    };
-
-    getImageUrl = (link) => {
-        let imageUrl;
-
-        if (this.isImage()) {
-            imageUrl = link;
-        } else if (isYoutubeLink(link)) {
-            const videoId = getYouTubeVideoId(link);
-            imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-        }
-
-        return imageUrl;
-    }
-
-    load = (linkChanged = false) => {
-        const {link, expandedLink, actions} = this.props;
-
-        if (link) {
-            let imageUrl = this.getImageUrl(link);
-
-            if (!imageUrl) {
-                if (!expandedLink || linkChanged) {
-                    actions.getRedirectLocation(link);
-                } else {
-                    imageUrl = this.getImageUrl(expandedLink);
-                }
-            }
-
-            if (imageUrl) {
-                this.getImageSize(imageUrl);
-            }
-        }
-    };
-
-    calculateYouTubeImageDimensions = (width, height) => {
-        const {deviceHeight, deviceWidth} = this.props;
-        let maxHeight = MAX_YOUTUBE_IMAGE_HEIGHT;
-        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
-        let maxWidth = deviceSize - 78;
-
-        if (maxWidth > MAX_YOUTUBE_IMAGE_WIDTH) {
-            maxWidth = MAX_YOUTUBE_IMAGE_WIDTH;
-        }
-
-        if (height <= MAX_YOUTUBE_IMAGE_HEIGHT) {
-            maxHeight = height;
-        } else {
-            maxHeight = (height / width) * maxWidth;
-            if (maxHeight > MAX_YOUTUBE_IMAGE_HEIGHT) {
-                maxHeight = MAX_YOUTUBE_IMAGE_HEIGHT;
-            }
-        }
-
-        if (height > width) {
-            maxWidth = (width / height) * maxHeight;
-        }
-
-        return {width: maxWidth, height: maxHeight};
-    };
-
-    generateStaticEmbed = (isYouTube, isImage) => {
-        const {isReplyPost, link, metadata, openGraphData, showLinkPreviews, theme} = this.props;
-
-        if (isYouTube || (isImage && !openGraphData)) {
-            return null;
-        }
-
-        const attachments = this.getMessageAttachment();
-        if (attachments) {
-            return attachments;
-        }
-
-        if (!openGraphData && metadata) {
-            return null;
-        }
-
-        if (link && showLinkPreviews) {
-            if (!PostAttachmentOpenGraph) {
-                PostAttachmentOpenGraph = require('app/components/post_attachment_opengraph').default;
-            }
-
-            return (
-                <PostAttachmentOpenGraph
-                    isReplyPost={isReplyPost}
-                    link={link}
-                    openGraphData={openGraphData}
-                    imagesMetadata={metadata && metadata.images}
-                    theme={theme}
-                />
-            );
-        }
-
-        return null;
-    };
-
     generateToggleableEmbed = (isImage, isYouTube) => {
         let {link} = this.props;
         const {expandedLink} = this.props;
         if (expandedLink) {
             link = expandedLink;
         }
-        const {width, height, uri} = this.state;
 
         if (link) {
             if (isYouTube) {
-                const videoId = getYouTubeVideoId(link);
-                const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                const thumbUrl = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
-
-                return (
-                    <TouchableWithFeedback
-                        style={[styles.imageContainer, {height: height || MAX_YOUTUBE_IMAGE_HEIGHT}]}
-                        onPress={this.playYouTubeVideo}
-                        type={'opacity'}
-                    >
-                        <ProgressiveImage
-                            isBackgroundImage={true}
-                            imageUri={imgUrl}
-                            style={[styles.image, {width: width || MAX_YOUTUBE_IMAGE_WIDTH, height: height || MAX_YOUTUBE_IMAGE_HEIGHT}]}
-                            thumbnailUri={thumbUrl}
-                            resizeMode='cover'
-                            onError={this.handleLinkLoadError}
-                        >
-                            <TouchableWithFeedback
-                                style={styles.playButton}
-                                onPress={this.playYouTubeVideo}
-                                type={'opacity'}
-                            >
-                                <Image
-                                    source={require('assets/images/icons/youtube-play-icon.png')}
-                                    onPress={this.playYouTubeVideo}
-                                />
-                            </TouchableWithFeedback>
-                        </ProgressiveImage>
-                    </TouchableWithFeedback>
-                );
+                return this.renderYouTubeVideo(link);
             }
 
             if (isImage) {
-                const imageMetadata = this.props.metadata?.images?.[link];
-
-                return (
-                    <PostAttachmentImage
-                        height={height || MAX_YOUTUBE_IMAGE_HEIGHT}
-                        imageMetadata={imageMetadata}
-                        onImagePress={this.handlePreviewImage}
-                        onError={this.handleLinkLoadError}
-                        uri={uri}
-                        width={width}
-                    />
-                );
+                return this.renderImage(link);
             }
         }
 
@@ -291,83 +130,17 @@ export default class PostBodyAdditionalContent extends PureComponent {
         }
     };
 
-    getViewPortWidth = (props) => {
-        const {deviceHeight, deviceWidth, isReplyPost} = props;
-        const deviceSize = deviceWidth > deviceHeight ? deviceHeight : deviceWidth;
-        const viewPortWidth = deviceSize - VIEWPORT_IMAGE_OFFSET - (isReplyPost ? VIEWPORT_IMAGE_REPLY_OFFSET : 0);
-        const tabletOffset = DeviceTypes.IS_TABLET ? TABLET_WIDTH : 0;
+    getImageUrl = (link) => {
+        let imageUrl;
 
-        return viewPortWidth - tabletOffset;
-    };
-
-    setImageSize = (uri, originalWidth, originalHeight) => {
-        if (!this.mounted) {
-            return;
+        if (this.isImage()) {
+            imageUrl = link;
+        } else if (isYoutubeLink(link)) {
+            const videoId = getYouTubeVideoId(link);
+            imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         }
 
-        if (!originalWidth && !originalHeight) {
-            this.setState({linkLoadError: true});
-            return;
-        }
-
-        const {link} = this.props;
-        const viewPortWidth = this.getViewPortWidth(this.props);
-
-        let dimensions;
-        if (isYoutubeLink(link)) {
-            dimensions = this.calculateYouTubeImageDimensions(originalWidth, originalHeight);
-        } else {
-            dimensions = calculateDimensions(originalHeight, originalWidth, viewPortWidth);
-        }
-
-        this.setState({
-            ...dimensions,
-            originalHeight,
-            originalWidth,
-            linkLoaded: true,
-            uri,
-        });
-    };
-
-    getMessageAttachment = () => {
-        const {
-            postId,
-            postProps,
-            baseTextStyle,
-            blockStyles,
-            deviceHeight,
-            deviceWidth,
-            metadata,
-            onHashtagPress,
-            onPermalinkPress,
-            textStyles,
-            theme,
-        } = this.props;
-        const {attachments} = postProps;
-
-        if (attachments && attachments.length) {
-            if (!MessageAttachments) {
-                MessageAttachments = require('app/components/message_attachments').default;
-            }
-
-            return (
-                <MessageAttachments
-                    attachments={attachments}
-                    baseTextStyle={baseTextStyle}
-                    blockStyles={blockStyles}
-                    deviceHeight={deviceHeight}
-                    deviceWidth={deviceWidth}
-                    metadata={metadata}
-                    postId={postId}
-                    textStyles={textStyles}
-                    theme={theme}
-                    onHashtagPress={onHashtagPress}
-                    onPermalinkPress={onPermalinkPress}
-                />
-            );
-        }
-
-        return null;
+        return imageUrl;
     };
 
     getYouTubeTime = (link) => {
@@ -430,6 +203,44 @@ export default class PostBodyAdditionalContent extends PureComponent {
         previewImageAtIndex([imageRef], 0, files);
     };
 
+    isImage = (specificLink) => {
+        const {metadata, link} = this.props;
+
+        if (isImageLink(specificLink || link)) {
+            return true;
+        }
+
+        if (metadata && metadata.images) {
+            return Boolean(metadata.images[specificLink] || metadata.images[link]);
+        }
+
+        return false;
+    };
+
+    load = (linkChanged = false) => {
+        const {link, expandedLink, actions} = this.props;
+
+        if (link) {
+            let imageUrl = this.getImageUrl(link);
+
+            if (isYoutubeLink(link)) {
+                return;
+            }
+
+            if (!imageUrl) {
+                if (!expandedLink || linkChanged) {
+                    actions.getRedirectLocation(link);
+                } else {
+                    imageUrl = this.getImageUrl(expandedLink);
+                }
+            }
+
+            if (imageUrl) {
+                this.getImageSize(imageUrl);
+            }
+        }
+    };
+
     playYouTubeVideo = () => {
         const {link} = this.props;
         const videoId = getYouTubeVideoId(link);
@@ -480,6 +291,164 @@ export default class PostBodyAdditionalContent extends PureComponent {
         );
     };
 
+    renderImage = (link) => {
+        const imageMetadata = this.props.metadata?.images?.[link];
+        const {width, height, uri} = this.state;
+
+        return (
+            <PostAttachmentImage
+                height={height || MAX_IMAGE_HEIGHT}
+                imageMetadata={imageMetadata}
+                onImagePress={this.handlePreviewImage}
+                onError={this.handleLinkLoadError}
+                uri={uri}
+                width={width}
+            />
+        );
+    };
+
+    renderMessageAttachment = () => {
+        const {
+            postId,
+            postProps,
+            baseTextStyle,
+            blockStyles,
+            deviceHeight,
+            deviceWidth,
+            metadata,
+            onHashtagPress,
+            onPermalinkPress,
+            textStyles,
+            theme,
+        } = this.props;
+        const {attachments} = postProps;
+
+        if (attachments && attachments.length) {
+            if (!MessageAttachments) {
+                MessageAttachments = require('app/components/message_attachments').default;
+            }
+
+            return (
+                <MessageAttachments
+                    attachments={attachments}
+                    baseTextStyle={baseTextStyle}
+                    blockStyles={blockStyles}
+                    deviceHeight={deviceHeight}
+                    deviceWidth={deviceWidth}
+                    metadata={metadata}
+                    postId={postId}
+                    textStyles={textStyles}
+                    theme={theme}
+                    onHashtagPress={onHashtagPress}
+                    onPermalinkPress={onPermalinkPress}
+                />
+            );
+        }
+
+        return null;
+    };
+
+    renderOpenGraph = (isYouTube, isImage) => {
+        const {isReplyPost, link, metadata, openGraphData, showLinkPreviews, theme} = this.props;
+
+        if (isYouTube || (isImage && !openGraphData)) {
+            return null;
+        }
+
+        const attachments = this.renderMessageAttachment();
+        if (attachments) {
+            return attachments;
+        }
+
+        if (!openGraphData && metadata) {
+            return null;
+        }
+
+        if (link && showLinkPreviews) {
+            if (!PostAttachmentOpenGraph) {
+                PostAttachmentOpenGraph = require('app/components/post_attachment_opengraph').default;
+            }
+
+            return (
+                <PostAttachmentOpenGraph
+                    isReplyPost={isReplyPost}
+                    link={link}
+                    openGraphData={openGraphData}
+                    imagesMetadata={metadata && metadata.images}
+                    theme={theme}
+                />
+            );
+        }
+
+        return null;
+    };
+
+    renderYouTubeVideo = (link) => {
+        const videoId = getYouTubeVideoId(link);
+        const dimensions = calculateDimensions(
+            MAX_YOUTUBE_IMAGE_HEIGHT,
+            MAX_YOUTUBE_IMAGE_WIDTH,
+            getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()),
+        );
+        const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+        return (
+            <TouchableWithFeedback
+                style={[styles.imageContainer, {height: dimensions.height}]}
+                onPress={this.playYouTubeVideo}
+                type={'opacity'}
+            >
+                <ProgressiveImage
+                    isBackgroundImage={true}
+                    imageUri={imgUrl}
+                    style={[styles.image, dimensions]}
+                    resizeMode='cover'
+                    onError={this.handleLinkLoadError}
+                >
+                    <TouchableWithFeedback
+                        style={styles.playButton}
+                        onPress={this.playYouTubeVideo}
+                        type={'opacity'}
+                    >
+                        <Image
+                            source={require('@assets/images/icons/youtube-play-icon.png')}
+                            onPress={this.playYouTubeVideo}
+                        />
+                    </TouchableWithFeedback>
+                </ProgressiveImage>
+            </TouchableWithFeedback>
+        );
+    }
+
+    setImageSize = (uri, originalWidth, originalHeight) => {
+        if (!this.mounted) {
+            return;
+        }
+
+        if (!originalWidth && !originalHeight) {
+            this.setState({linkLoadError: true});
+            return;
+        }
+
+        const {isReplyPost, link} = this.props;
+        const viewPortWidth = getViewPortWidth(isReplyPost, this.hasPermanentSidebar());
+
+        let dimensions;
+        if (isYoutubeLink(link)) {
+            dimensions = calculateDimensions(MAX_YOUTUBE_IMAGE_HEIGHT, MAX_YOUTUBE_IMAGE_WIDTH, viewPortWidth);
+        } else {
+            dimensions = calculateDimensions(originalHeight, originalWidth, viewPortWidth);
+        }
+
+        this.setState({
+            ...dimensions,
+            originalHeight,
+            originalWidth,
+            linkLoaded: true,
+            uri,
+        });
+    };
+
     render() {
         let {link} = this.props;
         const {openGraphData, postProps, expandedLink} = this.props;
@@ -504,7 +473,7 @@ export default class PostBodyAdditionalContent extends PureComponent {
             }
         }
 
-        return this.generateStaticEmbed(isYouTube, isImage && !linkLoadError);
+        return this.renderOpenGraph(isYouTube, isImage && !linkLoadError);
     }
 }
 

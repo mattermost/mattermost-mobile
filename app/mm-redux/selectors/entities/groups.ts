@@ -45,9 +45,9 @@ export function getGroupMembers(state: GlobalState, id: string) {
     return groupMemberData.members;
 }
 
-const teamGroupIDs = (state: GlobalState, teamID: string) => (state.entities.teams.groupsAssociatedToTeam[teamID] == null ? undefined : state.entities.teams.groupsAssociatedToTeam[teamID].ids == null ? undefined : state.entities.teams.groupsAssociatedToTeam[teamID].ids) || [];
+const teamGroupIDs = (state: GlobalState, teamID: string) => state.entities.teams.groupsAssociatedToTeam[teamID]?.ids || [];
 
-const channelGroupIDs = (state: GlobalState, channelID: string) => (state.entities.channels.groupsAssociatedToChannel[channelID] == null ? undefined : state.entities.channels.groupsAssociatedToChannel[channelID].ids == null ? undefined : state.entities.channels.groupsAssociatedToChannel[channelID].ids) || [];
+const channelGroupIDs = (state: GlobalState, channelID: string) => state.entities.channels.groupsAssociatedToChannel[channelID]?.ids || [];
 
 const getTeamGroupIDSet = reselect.createSelector(
     teamGroupIDs,
@@ -64,7 +64,7 @@ export const getGroupsNotAssociatedToTeam = reselect.createSelector(
     (state: GlobalState, teamID: string) => getTeamGroupIDSet(state, teamID),
     (allGroups, teamGroupIDSet) => {
         return Object.entries(allGroups).filter(([groupID]) => !teamGroupIDSet.has(groupID)).map((entry) => entry[1]);
-    }
+    },
 );
 
 export const getGroupsAssociatedToTeam = reselect.createSelector(
@@ -72,7 +72,7 @@ export const getGroupsAssociatedToTeam = reselect.createSelector(
     (state: GlobalState, teamID: string) => getTeamGroupIDSet(state, teamID),
     (allGroups, teamGroupIDSet) => {
         return Object.entries(allGroups).filter(([groupID]) => teamGroupIDSet.has(groupID)).map((entry) => entry[1]);
-    }
+    },
 );
 
 export const getGroupsNotAssociatedToChannel = reselect.createSelector(
@@ -80,7 +80,7 @@ export const getGroupsNotAssociatedToChannel = reselect.createSelector(
     (state: GlobalState, channelID: string) => getChannelGroupIDSet(state, channelID),
     (allGroups, channelGroupIDSet) => {
         return Object.entries(allGroups).filter(([groupID]) => !channelGroupIDSet.has(groupID)).map((entry) => entry[1]);
-    }
+    },
 );
 
 export const getGroupsAssociatedToChannel = reselect.createSelector(
@@ -88,5 +88,5 @@ export const getGroupsAssociatedToChannel = reselect.createSelector(
     (state: GlobalState, channelID: string) => getChannelGroupIDSet(state, channelID),
     (allGroups, channelGroupIDSet) => {
         return Object.entries(allGroups).filter(([groupID]) => channelGroupIDSet.has(groupID)).map((entry) => entry[1]);
-    }
+    },
 );

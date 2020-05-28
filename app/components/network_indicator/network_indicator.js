@@ -3,10 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
-    Alert,
     Animated,
     AppState,
     Platform,
@@ -59,10 +57,6 @@ export default class NetworkIndicator extends PureComponent {
 
     static defaultProps = {
         isOnline: true,
-    };
-
-    static contextTypes = {
-        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -129,8 +123,11 @@ export default class NetworkIndicator extends PureComponent {
     }
 
     componentWillUnmount() {
+        const {closeWebSocket, stopPeriodicStatusUpdates} = this.props.actions;
         this.mounted = false;
 
+        closeWebSocket(false);
+        stopPeriodicStatusUpdates();
         this.networkListener.removeEventListener();
         AppState.removeEventListener('change', this.handleAppStateChange);
 
@@ -174,6 +171,7 @@ export default class NetworkIndicator extends PureComponent {
                 this.backgroundColor, {
                     toValue: 1,
                     duration: 100,
+                    useNativeDriver: false,
                 },
             ),
             Animated.timing(
@@ -181,6 +179,7 @@ export default class NetworkIndicator extends PureComponent {
                     toValue: (this.getNavBarHeight() - HEIGHT),
                     duration: 300,
                     delay: 500,
+                    useNativeDriver: false,
                 },
             ),
         ]).start(() => {
@@ -292,7 +291,6 @@ export default class NetworkIndicator extends PureComponent {
     };
 
     initializeWebSocket = async () => {
-        const {formatMessage} = this.context.intl;
         const {actions} = this.props;
         const {closeWebSocket, initWebSocket} = actions;
         const platform = Platform.OS;
@@ -303,21 +301,6 @@ export default class NetworkIndicator extends PureComponent {
 
         initWebSocket({certificate, forceConnection: true}).catch(() => {
             // we should dispatch a failure and show the app as disconnected
-            Alert.alert(
-                formatMessage({id: 'mobile.authentication_error.title', defaultMessage: 'Authentication Error'}),
-                formatMessage({
-                    id: 'mobile.authentication_error.message',
-                    defaultMessage: 'Mattermost has encountered an error. Please re-authenticate to start a new session.',
-                }),
-                [{
-                    text: formatMessage({
-                        id: 'navbar_dropdown.logout',
-                        defaultMessage: 'Logout',
-                    }),
-                    onPress: actions.logout,
-                }],
-                {cancelable: false},
-            );
             closeWebSocket(true);
         });
     };
@@ -339,6 +322,7 @@ export default class NetworkIndicator extends PureComponent {
             this.top, {
                 toValue: this.getNavBarHeight(),
                 duration: 300,
+                useNativeDriver: false,
             },
         ).start(() => {
             this.props.actions.setCurrentUserStatusOffline();

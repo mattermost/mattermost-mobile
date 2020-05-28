@@ -34,7 +34,6 @@ export type TeamsRequestsStatuses = {
 export type UsersRequestsStatuses = {
     checkMfa: RequestStatusType;
     login: RequestStatusType;
-    logout: RequestStatusType;
     autocompleteUsers: RequestStatusType;
     updateMe: RequestStatusType;
 };

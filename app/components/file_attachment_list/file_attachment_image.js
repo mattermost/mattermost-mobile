@@ -4,19 +4,15 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Animated,
     View,
     StyleSheet,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
 
+import brokenImageIcon from '@assets/images/icons/brokenimage.png';
+import ProgressiveImage from '@components/progressive_image';
 import {Client4} from '@mm-redux/client';
-
-import ProgressiveImage from 'app/components/progressive_image';
-import {isGif} from 'app/utils/file';
-import {changeOpacity} from 'app/utils/theme';
-
-import thumb from 'assets/images/thumb.png';
+import {isGif} from '@utils/file';
+import {changeOpacity} from '@utils/theme';
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
 const SMALL_IMAGE_MAX_WIDTH = 48;
@@ -52,27 +48,9 @@ export default class FileAttachmentImage extends PureComponent {
         resizeMethod: 'resize',
     };
 
-    constructor(props) {
-        super(props);
-
-        const {file} = props;
-        if (file && file.id) {
-            const headers = {Authorization: `Bearer ${Client4.getToken()}`};
-            const preloadImages = [{uri: Client4.getFileThumbnailUrl(file.id), headers}];
-
-            if (isGif(file)) {
-                preloadImages.push({uri: Client4.getFileUrl(file.id), headers});
-            }
-
-            FastImage.preload(preloadImages);
-        }
-
-        this.state = {
-            opacity: new Animated.Value(0),
-            requesting: true,
-            retry: 0,
-        };
-    }
+    state = {
+        failed: false,
+    };
 
     boxPlaceholder = () => {
         if (this.props.isSingleImage) {
@@ -89,13 +67,21 @@ export default class FileAttachmentImage extends PureComponent {
         }
     };
 
+    handleError = () => {
+        this.setState({failed: true});
+    }
+
     imageProps = (file) => {
         const imageProps = {};
-        if (file.localPath) {
+        const {failed} = this.state;
+
+        if (failed) {
+            imageProps.defaultSource = brokenImageIcon;
+        } else if (file.localPath) {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
-            imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.imageUri = isGif(file) ? Client4.getFilePreviewUrl(file.id) : Client4.getFileUrl(file.id);
         }
         return imageProps;
     };
@@ -126,9 +112,9 @@ export default class FileAttachmentImage extends PureComponent {
                 <View style={style.smallImageOverlay}>
                     <ProgressiveImage
                         style={{height: file.height, width: file.width}}
-                        defaultSource={thumb}
-                        tintDefaultSource={!file.localPath}
+                        tintDefaultSource={!file.localPath && !this.state.failed}
                         filename={file.name}
+                        onError={this.handleError}
                         resizeMode={'contain'}
                         resizeMethod={resizeMethod}
                         {...this.imageProps(file)}
@@ -150,6 +136,8 @@ export default class FileAttachmentImage extends PureComponent {
             return this.renderSmallImage();
         }
 
+        const imageProps = this.imageProps(file);
+
         return (
             <View
                 ref={this.handleCaptureRef}
@@ -158,12 +146,12 @@ export default class FileAttachmentImage extends PureComponent {
                 {this.boxPlaceholder()}
                 <ProgressiveImage
                     style={[this.props.isSingleImage ? null : style.imagePreview, imageDimensions]}
-                    defaultSource={thumb}
-                    tintDefaultSource={!file.localPath}
+                    tintDefaultSource={!file.localPath && !this.state.failed}
                     filename={file.name}
+                    onError={this.handleError}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
-                    {...this.imageProps(file)}
+                    {...imageProps}
                 />
             </View>
         );

@@ -5,14 +5,20 @@ import assert from 'assert';
 import nock from 'nock';
 import fs from 'fs';
 
+import {NavigationTypes} from '@constants';
+import {logout} from '@actions/views/user';
 import * as Actions from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
 import {RequestStatus} from '../constants';
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
+import initialState from '@store/initial_state';
 
 const OK_RESPONSE = {status: 'OK'};
+const UNAUTHORIZED = {status_code: 401};
 
 describe('Actions.Users', () => {
     let store;
@@ -21,7 +27,17 @@ describe('Actions.Users', () => {
     });
 
     beforeEach(async () => {
-        store = await configureStore();
+        const initial = {
+            ...initialState,
+            entities: {
+                ...initialState.entities,
+                users: {
+                    ...initialState.entities.users,
+                    currentUserId: 'current-user-id',
+                },
+            },
+        };
+        store = await configureStore(initial);
     });
 
     afterAll(async () => {
@@ -171,50 +187,13 @@ describe('Actions.Users', () => {
     });
 
     it('logout', async () => {
+        const emit = jest.spyOn(EventEmitter, 'emit');
         nock(Client4.getBaseRoute()).
             post('/users/logout').
             reply(200, OK_RESPONSE);
 
-        await Actions.logout()(store.dispatch, store.getState);
-
-        const state = store.getState();
-        const logoutRequest = state.requests.users.logout;
-        const general = state.entities.general;
-        const users = state.entities.users;
-        const teams = state.entities.teams;
-        const channels = state.entities.channels;
-        const posts = state.entities.posts;
-        const preferences = state.entities.preferences;
-
-        if (logoutRequest.status === RequestStatus.FAILURE) {
-            throw new Error(JSON.stringify(logoutRequest.error));
-        }
-
-        assert.deepStrictEqual(general.config, {}, 'config not empty');
-        assert.deepStrictEqual(general.license, {}, 'license not empty');
-        assert.strictEqual(users.currentUserId, '', 'current user id not empty');
-        assert.deepStrictEqual(users.mySessions, [], 'user sessions not empty');
-        assert.deepStrictEqual(users.myAudits, [], 'user audits not empty');
-        assert.deepStrictEqual(users.profiles, {}, 'user profiles not empty');
-        assert.deepStrictEqual(users.profilesInTeam, {}, 'users profiles in team not empty');
-        assert.deepStrictEqual(users.profilesInChannel, {}, 'users profiles in channel not empty');
-        assert.deepStrictEqual(users.profilesNotInChannel, {}, 'users profiles NOT in channel not empty');
-        assert.deepStrictEqual(users.statuses, {}, 'users statuses not empty');
-        assert.strictEqual(teams.currentTeamId, '', 'current team id is not empty');
-        assert.deepStrictEqual(teams.teams, {}, 'teams is not empty');
-        assert.deepStrictEqual(teams.myMembers, {}, 'team members is not empty');
-        assert.deepStrictEqual(teams.membersInTeam, {}, 'members in team is not empty');
-        assert.deepStrictEqual(teams.stats, {}, 'team stats is not empty');
-        assert.strictEqual(channels.currentChannelId, '', 'current channel id is not empty');
-        assert.deepStrictEqual(channels.channels, {}, 'channels is not empty');
-        assert.deepStrictEqual(channels.channelsInTeam, {}, 'channelsInTeam is not empty');
-        assert.deepStrictEqual(channels.myMembers, {}, 'channel members is not empty');
-        assert.deepStrictEqual(channels.stats, {}, 'channel stats is not empty');
-        assert.strictEqual(posts.selectedPostId, '', 'selected post id is not empty');
-        assert.strictEqual(posts.currentFocusedPostId, '', 'current focused post id is not empty');
-        assert.deepStrictEqual(posts.posts, {}, 'posts is not empty');
-        assert.deepStrictEqual(posts.postsInChannel, {}, 'posts by channel is not empty');
-        assert.deepStrictEqual(preferences.myPreferences, {}, 'user preferences not empty');
+        await store.dispatch(logout(false));
+        expect(emit).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_RESET);
 
         nock(Client4.getBaseRoute()).
             post('/users/login').
@@ -625,7 +604,7 @@ describe('Actions.Users', () => {
         assert.strictEqual(sessions.length, 0);
 
         TestHelper.mockLogin();
-        await Actions.loginById(user.id, 'password1')(store.dispatch, store.getState);
+        await store.dispatch(Actions.loginById(user.id, 'password1'));
 
         nock(Client4.getBaseRoute()).
             post('/users/login').
@@ -635,7 +614,7 @@ describe('Actions.Users', () => {
         nock(Client4.getBaseRoute()).
             get(`/users/${user.id}/sessions`).
             reply(200, [{id: TestHelper.generateId(), create_at: 1507756921338, expires_at: 1510348921338, last_activity_at: 1507821125630, user_id: TestHelper.basicUser.id, device_id: '', roles: 'system_admin system_user'}, {id: TestHelper.generateId(), create_at: 1507756921338, expires_at: 1510348921338, last_activity_at: 1507821125630, user_id: TestHelper.basicUser.id, device_id: '', roles: 'system_admin system_user'}]);
-        await Actions.getSessions(user.id)(store.dispatch, store.getState);
+        await store.dispatch(Actions.getSessions(user.id));
 
         sessions = store.getState().entities.users.mySessions;
         assert.ok(sessions.length > 1);
@@ -643,23 +622,14 @@ describe('Actions.Users', () => {
         nock(Client4.getBaseRoute()).
             post(`/users/${user.id}/sessions/revoke/all`).
             reply(200, OK_RESPONSE);
-        const {data} = await Actions.revokeAllSessionsForUser(user.id)(store.dispatch, store.getState);
+        const {data} = await store.dispatch(Actions.revokeAllSessionsForUser(user.id));
         assert.deepEqual(data, true);
 
         nock(Client4.getBaseRoute()).
             get('/users').
             query(true).
-            reply(401, {});
-        await Actions.getProfiles(0)(store.dispatch, store.getState);
-
-        const logoutRequest = store.getState().requests.users.logout;
-        if (logoutRequest.status === RequestStatus.FAILURE) {
-            throw new Error(JSON.stringify(logoutRequest.error));
-        }
-
-        sessions = store.getState().entities.users.mySessions;
-
-        assert.strictEqual(sessions.length, 0);
+            reply(401, UNAUTHORIZED);
+        await store.dispatch(Actions.getProfiles(0));
 
         nock(Client4.getBaseRoute()).
             post('/users/login').
@@ -669,6 +639,11 @@ describe('Actions.Users', () => {
 
     it('revokeSessionsForAllUsers', async () => {
         const user = TestHelper.basicUser;
+
+        nock(Client4.getBaseRoute()).
+            post('/roles/names').
+            reply(200, []);
+
         nock(Client4.getBaseRoute()).
             post('/users/logout').
             reply(200, OK_RESPONSE);
@@ -678,7 +653,7 @@ describe('Actions.Users', () => {
         assert.strictEqual(sessions.length, 0);
 
         TestHelper.mockLogin();
-        await Actions.loginById(user.id, 'password1')(store.dispatch, store.getState);
+        await store.dispatch(Actions.loginById(user.id, 'password1'));
 
         nock(Client4.getBaseRoute()).
             post('/users/login').
@@ -688,7 +663,7 @@ describe('Actions.Users', () => {
         nock(Client4.getBaseRoute()).
             get(`/users/${user.id}/sessions`).
             reply(200, [{id: TestHelper.generateId(), create_at: 1507756921338, expires_at: 1510348921338, last_activity_at: 1507821125630, user_id: TestHelper.basicUser.id, device_id: '', roles: 'system_admin system_user'}, {id: TestHelper.generateId(), create_at: 1507756921338, expires_at: 1510348921338, last_activity_at: 1507821125630, user_id: TestHelper.basicUser.id, device_id: '', roles: 'system_admin system_user'}]);
-        await Actions.getSessions(user.id)(store.dispatch, store.getState);
+        await store.dispatch(Actions.getSessions(user.id));
 
         sessions = store.getState().entities.users.mySessions;
         assert.ok(sessions.length > 1);
@@ -696,23 +671,8 @@ describe('Actions.Users', () => {
         nock(Client4.getBaseRoute()).
             post('/users/sessions/revoke/all').
             reply(200, OK_RESPONSE);
-        const {data} = await Actions.revokeSessionsForAllUsers(user.id)(store.dispatch, store.getState);
+        const {data} = await store.dispatch(Actions.revokeSessionsForAllUsers(user.id));
         assert.deepEqual(data, true);
-
-        nock(Client4.getBaseRoute()).
-            get('/users').
-            query(true).
-            reply(401, {});
-        await Actions.getProfiles(0)(store.dispatch, store.getState);
-
-        const logoutRequest = store.getState().requests.users.logout;
-        if (logoutRequest.status === RequestStatus.FAILURE) {
-            throw new Error(JSON.stringify(logoutRequest.error));
-        }
-
-        sessions = store.getState().entities.users.mySessions;
-
-        assert.strictEqual(sessions.length, 0);
 
         nock(Client4.getBaseRoute()).
             post('/users/login').
@@ -957,14 +917,14 @@ describe('Actions.Users', () => {
             post('/users').
             reply(200, TestHelper.fakeUserWithId());
 
-        const {data: user} = await Actions.createUser(TestHelper.fakeUser())(store.dispatch, store.getState);
+        const {data: user} = await store.dispatch(Actions.createUser(TestHelper.fakeUser()));
 
         const beforeTime = new Date().getTime();
 
         nock(Client4.getBaseRoute()).
             put(`/users/${user.id}/active`).
             reply(200, OK_RESPONSE);
-        await Actions.updateUserActive(user.id, false)(store.dispatch, store.getState);
+        await store.dispatch(Actions.updateUserActive(user.id, false));
 
         const {profiles} = store.getState().entities.users;
 

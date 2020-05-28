@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelItem should match snapshot 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -101,13 +99,11 @@ exports[`ChannelItem should match snapshot 1`] = `
       </Text>
     </View>
   </View>
-</TouchableHighlight>
+</Component>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -215,13 +211,11 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
       </Text>
     </View>
   </View>
-</TouchableHighlight>
+</Component>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) when isSearchResult 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -329,13 +323,11 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
       </Text>
     </View>
   </View>
-</TouchableHighlight>
+</Component>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is currentChannel 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -443,13 +435,11 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
       </Text>
     </View>
   </View>
-</TouchableHighlight>
+</Component>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is searchResult 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -547,13 +537,11 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
       </Text>
     </View>
   </View>
-</TouchableHighlight>
+</Component>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and not searchResults or currentChannel 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -651,7 +639,109 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
       </Text>
     </View>
   </View>
-</TouchableHighlight>
+</Component>
+`;
+
+exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
+<Component
+  onPress={[Function]}
+  underlayColor="rgba(69,120,191,0.5)"
+>
+  <View
+    style={
+      Array [
+        Object {
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 44,
+        },
+        undefined,
+        null,
+      ]
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "paddingLeft": 16,
+          },
+          undefined,
+        ]
+      }
+    >
+      <ChannelIcon
+        channelId="channel_id"
+        hasDraft={false}
+        isActive={false}
+        isArchived={false}
+        isBot={false}
+        isInfo={false}
+        isUnread={true}
+        membersCount={1}
+        size={16}
+        status="online"
+        theme={
+          Object {
+            "awayIndicator": "#ffbc42",
+            "buttonBg": "#166de0",
+            "buttonColor": "#ffffff",
+            "centerChannelBg": "#ffffff",
+            "centerChannelColor": "#3d3c40",
+            "codeTheme": "github",
+            "dndIndicator": "#f74343",
+            "errorTextColor": "#fd5960",
+            "linkColor": "#2389d7",
+            "mentionBg": "#ffffff",
+            "mentionBj": "#ffffff",
+            "mentionColor": "#145dbf",
+            "mentionHighlightBg": "#ffe577",
+            "mentionHighlightLink": "#166de0",
+            "newMessageSeparator": "#ff8800",
+            "onlineIndicator": "#06d6a0",
+            "sidebarBg": "#145dbf",
+            "sidebarHeaderBg": "#1153ab",
+            "sidebarHeaderTextColor": "#ffffff",
+            "sidebarText": "#ffffff",
+            "sidebarTextActiveBorder": "#579eff",
+            "sidebarTextActiveColor": "#ffffff",
+            "sidebarTextHoverBg": "#4578bf",
+            "sidebarUnreadText": "#ffffff",
+            "type": "Mattermost",
+          }
+        }
+        type="O"
+      />
+      <Text
+        ellipsizeMode="tail"
+        numberOfLines={1}
+        style={
+          Array [
+            Object {
+              "alignSelf": "center",
+              "color": "rgba(255,255,255,0.6)",
+              "flex": 1,
+              "fontFamily": "Open Sans",
+              "fontSize": 16,
+              "lineHeight": 24,
+              "maxWidth": "80%",
+              "paddingRight": 10,
+            },
+            Object {
+              "color": "#ffffff",
+              "fontWeight": "500",
+            },
+          ]
+        }
+      >
+        display_name
+      </Text>
+    </View>
+  </View>
+</Component>
 `;
 
 exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
@@ -659,9 +749,7 @@ exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
 exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
 
 exports[`ChannelItem should match snapshot with draft 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -759,13 +847,11 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
       </Text>
     </View>
   </View>
-</TouchableHighlight>
+</Component>
 `;
 
 exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
-<TouchableHighlight
-  activeOpacity={0.85}
-  delayPressOut={100}
+<Component
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -896,5 +982,5 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
       />
     </View>
   </View>
-</TouchableHighlight>
+</Component>
 `;

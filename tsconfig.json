@@ -29,15 +29,20 @@
         "noUnusedParameters": false,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
+        "resolveJsonModule": true,
         "baseUrl": ".",
         "paths": {
             "@actions/*": ["app/actions/*"],
+            "@assets/*": ["dist/assets/*"],
             "@constants/*": ["app/constants/*"],
             "@constants": ["app/constants/index"],
+            "@i18n": ["app/i18n/index"],
+            "@init/*": ["app/init/*"],
+            "@mm-redux/*": ["app/mm-redux/*"],
             "@selectors/*": ["app/selectors/*"],
+            "@store/*": ["app/store"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
-            "@mm-redux/*": ["app/mm-redux/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"]
         }

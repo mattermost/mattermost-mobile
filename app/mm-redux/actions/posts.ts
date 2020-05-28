@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client4, DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE} from '@mm-redux/client';
-import {General, Preferences, Posts, WebsocketEvents} from '../constants';
+import {Client4} from '@mm-redux/client';
+import {General, Preferences, Posts} from '@mm-redux/constants';
+import {WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
@@ -15,11 +16,12 @@ import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
+import {getSystemEmojis} from 'app/utils/emojis';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
-import {systemEmojis, getCustomEmojiByName, getCustomEmojisByName} from './emojis';
+import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
-import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
+import {forceLogoutIfNecessary} from './helpers';
 
 import {
     deletePreferences,
@@ -32,7 +34,6 @@ import {Action, ActionResult, batchActions, DispatchFunc, GetStateFunc, GenericA
 import {ChannelUnread} from '@mm-redux/types/channels';
 import {GlobalState} from '@mm-redux/types/store';
 import {Post} from '@mm-redux/types/posts';
-import {Error} from '@mm-redux/types/errors';
 import {Reaction} from '@mm-redux/types/reactions';
 import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
@@ -168,9 +169,9 @@ export function createPost(post: Post, files: any[] = []) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentUserId = state.entities.users.currentUserId;
-
         const timestamp = Date.now();
         const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
+        let actions: Array<Action> = [];
 
         if (Selectors.isPostIdSending(state, pendingPostId)) {
             return {data: true};
@@ -196,79 +197,78 @@ export function createPost(post: Post, files: any[] = []) {
                 file_ids: fileIds,
             };
 
-            dispatch({
+            actions.push({
                 type: FileTypes.RECEIVED_FILES_FOR_POST,
                 postId: pendingPostId,
                 data: files,
             });
         }
 
-        dispatch({
+        actions.push({
             type: PostTypes.RECEIVED_NEW_POST,
             data: {
-                id: pendingPostId,
                 ...newPost,
-            },
-            meta: {
-                offline: {
-                    effect: () => Client4.createPost({...newPost, create_at: 0}),
-                    commit: (result: any, payload: any) => {
-                        const actions: Action[] = [
-                            receivedPost(payload),
-                            {
-                                type: PostTypes.CREATE_POST_SUCCESS,
-                            },
-                            {
-                                type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
-                                data: {
-                                    channelId: newPost.channel_id,
-                                    amount: 1,
-                                },
-                            },
-                            {
-                                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
-                                data: {
-                                    channelId: newPost.channel_id,
-                                    amount: 1,
-                                },
-                            },
-                        ];
-
-                        if (files) {
-                            actions.push({
-                                type: FileTypes.RECEIVED_FILES_FOR_POST,
-                                postId: payload.id,
-                                data: files,
-                            });
-                        }
-
-                        dispatch(batchActions(actions));
-                    },
-                    maxRetry: 0,
-                    offlineRollback: true,
-                    rollback: (result: any, error: Error) => {
-                        const data = {
-                            ...newPost,
-                            id: pendingPostId,
-                            failed: true,
-                            update_at: Date.now(),
-                        };
-                        dispatch({type: PostTypes.CREATE_POST_FAILURE, error});
-
-                        // If the failure was because: the root post was deleted or
-                        // TownSquareIsReadOnly=true then remove the post
-                        if (error.server_error_id === 'api.post.create_post.root_id.app_error' ||
-                            error.server_error_id === 'api.post.create_post.town_square_read_only' ||
-                            error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
-                        ) {
-                            dispatch(removePost(data) as any);
-                        } else {
-                            dispatch(receivedPost(data));
-                        }
-                    },
-                },
+                id: pendingPostId,
             },
         });
+
+        dispatch(batchActions(actions, 'BATCH_CREATE_POST_INIT'));
+
+        try {
+            const created = await Client4.createPost({...newPost, create_at: 0});
+
+            actions = [
+                receivedPost(created),
+                {
+                    type: PostTypes.CREATE_POST_SUCCESS,
+                },
+                {
+                    type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
+                    },
+                },
+                {
+                    type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
+                    },
+                },
+            ];
+
+            if (files) {
+                actions.push({
+                    type: FileTypes.RECEIVED_FILES_FOR_POST,
+                    postId: created.id,
+                    data: files,
+                });
+            }
+
+            dispatch(batchActions(actions, 'BATCH_CREATE_POST'));
+        } catch (error) {
+            const data = {
+                ...newPost,
+                id: pendingPostId,
+                failed: true,
+                update_at: Date.now(),
+            };
+            actions = [{type: PostTypes.CREATE_POST_FAILURE, error}];
+
+            // If the failure was because: the root post was deleted or
+            // TownSquareIsReadOnly=true then remove the post
+            if (error.server_error_id === 'api.post.create_post.root_id.app_error' ||
+                error.server_error_id === 'api.post.create_post.town_square_read_only' ||
+                error.server_error_id === 'plugin.message_will_be_posted.dismiss_post'
+            ) {
+                actions.push(removePost(data) as any);
+            } else {
+                actions.push(receivedPost(data));
+            }
+
+            dispatch(batchActions(actions, 'BATCH_CREATE_POST_FAILED'));
+        }
 
         return {data: true};
     };
@@ -305,8 +305,8 @@ export function createPostImmediately(post: Post, files: any[] = []) {
         }
 
         dispatch(receivedNewPost({
-            id: pendingPostId,
             ...newPost,
+            id: pendingPostId,
         }));
 
         try {
@@ -316,7 +316,7 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(batchActions([
                 {type: PostTypes.CREATE_POST_FAILURE, error},
-                removePost({id: pendingPostId, ...newPost}) as any,
+                removePost({...newPost, id: pendingPostId}) as any,
                 logError(error),
             ]));
             return {error};
@@ -362,11 +362,10 @@ export function resetCreatePostRequest() {
 }
 
 export function deletePost(post: ExtendedPost) {
-    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
-        const delPost = {...post};
-        if (delPost.type === Posts.POST_TYPES.COMBINED_USER_ACTIVITY && delPost.system_post_ids) {
-            delPost.system_post_ids.forEach((systemPostId) => {
+        if (post.type === Posts.POST_TYPES.COMBINED_USER_ACTIVITY && post.system_post_ids) {
+            post.system_post_ids.forEach((systemPostId) => {
                 const systemPost = Selectors.getPost(state, systemPostId);
                 if (systemPost) {
                     dispatch(deletePost(systemPost));
@@ -375,15 +374,14 @@ export function deletePost(post: ExtendedPost) {
         } else {
             dispatch({
                 type: PostTypes.POST_DELETED,
-                data: delPost,
-                meta: {
-                    offline: {
-                        effect: () => Client4.deletePost(post.id),
-                        commit: {type: 'do_nothing'}, // redux-offline always needs to dispatch something on commit
-                        rollback: receivedPost(delPost),
-                    },
-                },
+                data: post,
             });
+
+            try {
+                await Client4.deletePost(post.id);
+            } catch (error) {
+                dispatch(receivedPost(post));
+            }
         }
 
         return {data: true};
@@ -391,15 +389,20 @@ export function deletePost(post: ExtendedPost) {
 }
 
 export function editPost(post: Post) {
-    return bindClientFunc({
-        clientFunc: Client4.patchPost,
-        onRequest: PostTypes.EDIT_POST_REQUEST,
-        onSuccess: [PostTypes.RECEIVED_POST, PostTypes.EDIT_POST_SUCCESS],
-        onFailure: PostTypes.EDIT_POST_FAILURE,
-        params: [
-            post,
-        ],
-    });
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let data;
+
+        try {
+            data = await Client4.patchPost(post);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            return {error};
+        }
+
+        dispatch(receivedPost(post));
+
+        return {data};
+    };
 }
 
 export function getUnreadPostData(unreadChan: ChannelUnread, state: GlobalState) {
@@ -590,7 +593,7 @@ export function getCustomEmojiForReaction(name: string) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const nonExistentEmoji = getState().entities.emojis.nonExistentEmoji;
         const customEmojisByName = selectCustomEmojisByName(getState());
-
+        const systemEmojis = getSystemEmojis();
         if (systemEmojis.has(name)) {
             return {data: true};
         }
@@ -621,6 +624,7 @@ export function getReactionsForPost(postId: string) {
         if (reactions && reactions.length > 0) {
             const nonExistentEmoji = getState().entities.emojis.nonExistentEmoji;
             const customEmojisByName = selectCustomEmojisByName(getState());
+            const systemEmojis = getSystemEmojis();
             const emojisToLoad = new Set<string>();
 
             reactions.forEach((r: Reaction) => {
@@ -1032,6 +1036,7 @@ export function getNeededCustomEmojis(state: GlobalState, posts: Array<Post>): S
 
     let customEmojisByName: Map<string, CustomEmoji>; // Populate this lazily since it's relatively expensive
     const nonExistentEmoji = state.entities.emojis.nonExistentEmoji;
+    const systemEmojis = getSystemEmojis();
 
     posts.forEach((post) => {
         if (post.message.includes(':')) {
@@ -1095,7 +1100,7 @@ export function removePost(post: ExtendedPost) {
 }
 
 export function selectPost(postId: string) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.RECEIVED_POST_SELECTED,
             data: postId,
@@ -1177,7 +1182,7 @@ export function doPostActionWithCookie(postId: string, actionId: string, actionC
 }
 
 export function addMessageIntoHistory(message: string) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.ADD_MESSAGE_INTO_HISTORY,
             data: message,
@@ -1188,7 +1193,7 @@ export function addMessageIntoHistory(message: string) {
 }
 
 export function resetHistoryIndex(index: number) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.RESET_HISTORY_INDEX,
             data: index,
@@ -1199,7 +1204,7 @@ export function resetHistoryIndex(index: number) {
 }
 
 export function moveHistoryIndexBack(index: number) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.MOVE_HISTORY_INDEX_BACK,
             data: index,
@@ -1210,7 +1215,7 @@ export function moveHistoryIndexBack(index: number) {
 }
 
 export function moveHistoryIndexForward(index: number) {
-    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: PostTypes.MOVE_HISTORY_INDEX_FORWARD,
             data: index,

@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Image, Linking, Text, View} from 'react-native';
+import {Linking, Text, View} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import PropTypes from 'prop-types';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -39,7 +40,7 @@ export default class AttachmentAuthor extends PureComponent {
         return (
             <View style={style.container}>
                 {Boolean(icon) &&
-                <Image
+                <FastImage
                     source={{uri: icon}}
                     key='author_icon'
                     style={style.icon}

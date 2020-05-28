@@ -3,20 +3,19 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
+import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
 import {General} from '@mm-redux/constants';
-
-import * as NavigationActions from 'app/actions/navigation';
 
 import ChannelInfo from './channel_info';
 
 // ChannelInfoRow expects to receive the pinIcon as a number
-jest.mock('assets/images/channel_info/pin.png', () => {
+jest.mock('@assets/images/channel_info/pin.png', () => {
     return 1;
 });
 
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
+jest.mock('@utils/theme', () => {
+    const original = jest.requireActual('../../utils/theme');
     return {
         ...original,
         changeOpacity: jest.fn(),

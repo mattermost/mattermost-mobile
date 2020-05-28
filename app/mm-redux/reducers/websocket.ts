@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {GeneralTypes, UserTypes} from '@mm-redux/action_types';
+import {GeneralTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
 
 function getInitialState() {
@@ -12,7 +12,7 @@ function getInitialState() {
     };
 }
 
-export default function(state = getInitialState(), action: GenericAction) {
+export default function reducer(state = getInitialState(), action: GenericAction) {
     if (!state.connected && action.type === GeneralTypes.WEBSOCKET_SUCCESS) {
         return {
             ...state,
@@ -25,10 +25,6 @@ export default function(state = getInitialState(), action: GenericAction) {
             connected: false,
             lastDisconnectAt: action.timestamp,
         };
-    }
-
-    if (action.type === UserTypes.LOGOUT_SUCCESS) {
-        return getInitialState();
     }
 
     return state;

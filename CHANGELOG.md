@@ -1,5 +1,128 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.31.2 Release
+- Release Date: May 27, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+Mattermost Mobile App v1.31.2 contains a high level security fix. [Upgrading](http://docs.mattermost.com/administration/upgrade.html) is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
+ 
+### Bug Fixes
+ - Fixed an issue where file uploads failed due to a time out when the [Antivirus plugin](https://github.com/mattermost/mattermost-plugin-antivirus) was enabled.
+
+## 1.31.1 Release
+- Release Date: May 22, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Bug Fixes
+ - Fixed a crash issue on Android when preloading images.
+
+## 1.31.0 Release
+- Release Date: May 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Improvements
+ - Improved network reliability and channel switching time for unread channels by fetching new posts as soon as the app reconnects.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue where slash commands with long descriptions had their description text truncated in the slash command autocomplete.
+ - Fixed an issue where users could not swipe up to dismiss in-app push notifications.
+ - Fixed an issue where the username that created the webhook was shown on webhook posts instead of the name of the bot.
+ - Fixed an issue where posts on the same thread appeared to be from different threads since the "...commented on [Thread Title]" was shown on all posts in the thread.
+ - Fixed an issue where the system message for "Edit Channel Purpose" rendered markdown.
+
+#### iOS specific
+ - Fixed an issue where code block numbering was obstructed by the iPhone's notch.
+ - Fixed an issue where the search text box was partially obstructed in landscape mode.
+ - Fixed an issue where using `Share...` option to post highlighted text to the app threw an error.
+ - Fixed an issue where the "back" button color was incorrect when transitioning from Thread screen to Channel screen.
+ - Fixed an issue where the keyboard flashed a darker color when opening Keywords from **Settings > Notifications > Mentions and replies**.
+
+#### Android specific
+ - Fixed an issue where the keyboard did not close after editing a message.
+
+## 1.30.1 Release
+- Release Date: April 24, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue with repeated forced logouts.
+ - Fixed an issue where channels appeared as read-only when opening the app.
+ - Fixed an issue where users were unable to log in if ``ExperimentalStrictCSRFEnforcement`` setting was enabled.
+    - A clean install may be required for the fix to take effect by uninstalling v1.30.0 (Build 285) and then installing v1.30.1 (Build 287).
+ - Fixed an issue where a "No internet connection" error occurred when deleting documents and data.
+
+#### iOS specific
+ - Fixed an issue where Mattermost app crashed when Enterprise mobility management (EMM) was enabled.
+
+#### Android specific
+ - Fixed an issue where using backspace out of a conversation thread or a channel caused a forced logout.
+ - Fixed an issue where a video upload attempt failed with an error.
+
+## 1.30.0 Release
+- Release Date: April 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+Mattermost Mobile App v1.30.0 contains a high level security fix. [Upgrading](http://docs.mattermost.com/administration/upgrade.html) is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
+ 
+**Note:** v5.9.0 as our Extended Support Release (ESR) is coming to the end of its lifecycle and upgrading to 5.19.0 ESR or a later version is highly recommended. v5.19.0 will continue to be our current ESR until October 15, 2020. [Learn more in our forum post](https://forum.mattermost.org/t/upcoming-extended-support-release-updates/8526).
+
+**Note:** [The Channel Moderation Settings feature](https://docs.mattermost.com/deployment/advanced-permissions.html#channel-moderation-beta-e20) released in v5.22.0 is supported on mobile app versions v1.30 and later. In earlier versions of the mobile app, users who attempt to post or react to posts without proper permissions will see an error.
+ 
+### Improvements
+ - Significantly improved Android performance, including how quickly posts in the center screen are displayed.
+ - Added support for different interactive message button styles on mobile.
+ - Enter key on hardware Android keyboard now posts a message.
+ - The statuses of those users that are in the Direct Message list are now fetched when opening the app and on login.
+ - Added "Unarchive Channel" option to the channel info screen.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue where the modal popped down when attempting to scroll down to see if there are more emoji.
+ - Fixed a few crash issues.
+ - Fixed an issue where the navigation bar tucked under status bar when using photo or camera post icons in landscape.
+ - Removed mark as unread option from post menus for archived channels.
+ - Fixed an issue where the "Refreshing message failed" error was shown when starting a Direct Message with a new user without a verified email.
+ - Fixed an issue where Markdown tables was rendering in full in the center channel on larger screen sizes.
+ - Made the name displayed consistent with teammate display name setting.
+ - Fixed some selected emojis in autocomplete from rendering properly when posted.
+
+#### iOS specific
+ - Fixed an issue on iOS where the navigation bar tucked under status bar when using photo or camera post icons in landscape.
+ - Fixed an issue on iOS where Automatic Replies custom message text box was obstructed by the iPhone's notch.
+ - Fixed an issue on iOS where double dashes in mobile inside a code block got converted to emdash.
+
+#### Android specific
+ - Fixed an issue on Android where downloading a file or video was not reporting progress.
+ - Fixed an issue on Android that was preventing to share content through the share extension.
+
 ## 1.29.0 Release
 - Release Date: March 16, 2020
 - Server Versions Supported: Server v5.9+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

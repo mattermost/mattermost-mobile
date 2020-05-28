@@ -3,17 +3,19 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {NavigationTypes, ViewTypes} from '@constants';
+import {recordTime} from '@init/analytics.ts';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
-import {Client4} from '@mm-redux/client';
-import {General} from '@mm-redux/constants';
 import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
-import {getClientConfig, getDataRetentionPolicy, getLicenseConfig} from '@mm-redux/actions/general';
+import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
-
-import {ViewTypes} from 'app/constants';
-import EphemeralStore from 'app/store/ephemeral_store';
-import {recordTime} from 'app/utils/segment';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import EphemeralStore from '@store/ephemeral_store';
+import initialState from '@store/initial_state';
+import {getStateForReset} from '@store/utils';
 
 import {markChannelViewedAndRead} from './channel';
 
@@ -29,24 +31,36 @@ export function startDataCleanup() {
 export function loadConfigAndLicense() {
     return async (dispatch, getState) => {
         const {currentUserId} = getState().entities.users;
-        const [configData, licenseData] = await Promise.all([
-            getClientConfig()(dispatch, getState),
-            getLicenseConfig()(dispatch, getState),
-        ]);
 
-        const config = configData.data || {};
-        const license = licenseData.data || {};
+        try {
+            const [config, license] = await Promise.all([
+                Client4.getClientConfigOld(),
+                Client4.getClientLicenseOld(),
+            ]);
 
-        if (currentUserId) {
-            if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
-                license.IsLicensed === 'true' && license.DataRetention === 'true') {
-                dispatch(getDataRetentionPolicy());
-            } else {
-                dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+            const actions = [{
+                type: GeneralTypes.CLIENT_CONFIG_RECEIVED,
+                data: config,
+            }, {
+                type: GeneralTypes.CLIENT_LICENSE_RECEIVED,
+                data: license,
+            }];
+
+            if (currentUserId) {
+                if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
+                    license.IsLicensed === 'true' && license.DataRetention === 'true') {
+                    dispatch(getDataRetentionPolicy());
+                } else {
+                    actions.push({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
+                }
             }
-        }
 
-        return {config, license};
+            dispatch(batchActions(actions, 'BATCH_LOAD_CONFIG_AND_LICENSE'));
+
+            return {config, license};
+        } catch (error) {
+            return {error};
+        }
     };
 }
 
@@ -126,7 +140,16 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
 }
 
 export function purgeOfflineStore() {
-    return {type: General.OFFLINE_STORE_PURGE};
+    return (dispatch, getState) => {
+        const currentState = getState();
+
+        dispatch({
+            type: General.OFFLINE_STORE_PURGE,
+            state: getStateForReset(initialState, currentState),
+        });
+
+        EventEmitter.emit(NavigationTypes.RESTART_APP);
+    };
 }
 
 // A non-optimistic version of the createPost action in app/mm-redux with the file handling

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import merge from 'deepmerge';
+import DeviceInfo from 'react-native-device-info';
 
 function transformFromSet(incoming) {
     const state = {...incoming};
@@ -45,14 +46,19 @@ export function transformSet(incoming, setTransforms, toStorage = true) {
 
 export function waitForHydration(store, callback) {
     let executed = false; // this is to prevent a race condition when subcription runs before unsubscribed
-    if (store.getState().views.root.hydrationComplete && !executed) {
+    let state = store.getState();
+    let root = state.views?.root;
+
+    if (root?.hydrationComplete && !executed) {
         if (callback && typeof callback === 'function') {
             executed = true;
             callback();
         }
     } else {
         const subscription = () => {
-            if (store.getState().views.root.hydrationComplete && !executed) {
+            state = store.getState();
+            root = state.views?.root;
+            if (root?.hydrationComplete && !executed) {
                 unsubscribeFromStore();
                 if (callback && typeof callback === 'function') {
                     executed = true;
@@ -66,13 +72,19 @@ export function waitForHydration(store, callback) {
 }
 
 export function getStateForReset(initialState, currentState) {
+    const {app} = currentState;
     const {currentUserId} = currentState.entities.users;
     const currentUserProfile = currentState.entities.users.profiles[currentUserId];
     const {currentTeamId} = currentState.entities.teams;
     const preferences = currentState.entities.preferences;
 
     const resetState = merge(initialState, {
+        app: {
+            ...app,
+            previousVersion: DeviceInfo.getVersion(),
+        },
         entities: {
+            general: currentState.entities.general,
             users: {
                 currentUserId,
                 profiles: {
@@ -81,8 +93,26 @@ export function getStateForReset(initialState, currentState) {
             },
             teams: {
                 currentTeamId,
+                teams: {
+                    [currentTeamId]: currentState.entities.teams.teams[currentTeamId],
+                },
+                myMembers: {
+                    [currentTeamId]: currentState.entities.teams.myMembers[currentTeamId],
+                },
             },
             preferences,
+        },
+        errors: currentState.errors,
+        views: {
+            selectServer: {
+                serverUrl: currentState.views?.selectServer?.serverUrl,
+            },
+            root: {
+                hydrationComplete: true,
+            },
+        },
+        _persist: {
+            rehydrated: true,
         },
     });
 

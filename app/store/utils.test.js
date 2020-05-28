@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import initialState from 'app/initial_state';
-import {getStateForReset} from 'app/store/utils';
+import DeviceInfo from 'react-native-device-info';
+
+import initialState from '@store/initial_state';
+import {getStateForReset} from '@store/utils';
 
 /*
 const {currentUserId} = currentState.entities.users;
@@ -20,6 +22,11 @@ describe('getStateForReset', () => {
     const otherUserId = 'other-user-id';
     const currentTeamId = 'current-team-id';
     const currentState = {
+        app: {
+            build: DeviceInfo.getBuildNumber(),
+            version: DeviceInfo.getVersion(),
+            previousVersion: 'previousVersion',
+        },
         entities: {
             users: {
                 currentUserId,
@@ -30,6 +37,16 @@ describe('getStateForReset', () => {
             },
             teams: {
                 currentTeamId,
+                teams: {
+                    [currentTeamId]: {
+                        id: 'currentTeamId',
+                        name: 'test',
+                        display_name: 'Test',
+                    },
+                },
+                myMembers: {
+                    [currentTeamId]: {},
+                },
             },
             preferences: {
                 myPreferences: {
@@ -52,6 +69,11 @@ describe('getStateForReset', () => {
                 },
             },
         },
+        views: {
+            selectServer: {
+                serverUrl: 'localhost:8065',
+            },
+        },
     };
 
     it('should keep the current user\'s ID and profile', () => {
@@ -62,10 +84,12 @@ describe('getStateForReset', () => {
         expect(users.profiles[currentUserId]).toBeDefined();
     });
 
-    it('should keep the current team ID', () => {
+    it('should keep the current team', () => {
         const resetState = getStateForReset(initialState, currentState);
         const {teams} = resetState.entities;
         expect(teams.currentTeamId).toEqual(currentTeamId);
+        expect(teams.teams[currentTeamId]).toEqual(currentState.entities.teams.teams[currentTeamId]);
+        expect(teams.myMembers[currentTeamId]).toEqual(currentState.entities.teams.myMembers[currentTeamId]);
     });
 
     it('should keep theme preferences', () => {
@@ -74,5 +98,11 @@ describe('getStateForReset', () => {
         const preferenceKeys = Object.keys(myPreferences);
         const themeKeys = preferenceKeys.filter((key) => key.startsWith('theme--'));
         expect(themeKeys.length).toEqual(2);
+    });
+
+    it('should set previous version as current', () => {
+        const resetState = getStateForReset(initialState, currentState);
+        const {app} = resetState;
+        expect(app.previousVersion).toStrictEqual(currentState.app.version);
     });
 });

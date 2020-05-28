@@ -3,23 +3,21 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, Image, ImageBackground, Platform, View, StyleSheet} from 'react-native';
+import {Animated, ImageBackground, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {Client4} from '@mm-redux/client';
-
-import CustomPropTypes from 'app/constants/custom_prop_types';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import thumb from '@assets/images/thumb.png';
+import CustomPropTypes from '@constants/custom_prop_types';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
-const AnimatedImage = Animated.createAnimatedComponent(FastImage);
+const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 
 export default class ProgressiveImage extends PureComponent {
     static propTypes = {
         isBackgroundImage: PropTypes.bool,
         children: CustomPropTypes.Children,
         defaultSource: PropTypes.oneOfType([PropTypes.object, PropTypes.number]), // this should be provided by the component
-        filename: PropTypes.string,
         imageUri: PropTypes.string,
         imageStyle: CustomPropTypes.Style,
         onError: PropTypes.func,
@@ -27,92 +25,35 @@ export default class ProgressiveImage extends PureComponent {
         resizeMode: PropTypes.string,
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
-        thumbnailUri: PropTypes.string,
         tintDefaultSource: PropTypes.bool,
     };
 
     static defaultProps = {
         style: {},
+        resizeMode: 'contain',
     };
 
     constructor(props) {
         super(props);
 
-        this.subscribedToCache = true;
-
         this.state = {
-            intensity: new Animated.Value(80),
-            thumb: null,
-            uri: null,
-            failedImageLoad: false,
+            intensity: new Animated.Value(0),
         };
     }
 
-    componentDidMount() {
-        this.load();
+    onLoadImageEnd = () => {
+        Animated.timing(this.state.intensity, {
+            duration: 300,
+            toValue: 100,
+            useNativeDriver: true,
+        }).start();
     }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (this.props.filename !== prevProps.filename ||
-            this.props.imageUri !== prevProps.imageUri ||
-            this.props.thumbnailUri !== prevProps.thumbnailUri) {
-            this.load();
-        }
-
-        const {intensity, thumb, uri} = this.state;
-        if (uri && thumb && uri !== thumb && prevState.uri !== uri) {
-            Animated.timing(intensity, {
-                duration: 300,
-                toValue: 0,
-                useNativeDriver: Platform.OS === 'android',
-            }).start();
-        }
-    }
-
-    componentWillUnmount() {
-        this.subscribedToCache = false;
-    }
-
-    load = () => {
-        const {imageUri, thumbnailUri} = this.props;
-        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
-
-        if (thumbnailUri && imageUri) {
-            FastImage.preload([{uri: imageUri, headers}]);
-            this.setThumbnail(thumbnailUri);
-        } else if (imageUri) {
-            this.setImage(imageUri);
-        }
-    };
-
-    loadFullImage = () => {
-        if (!this.state.uri) {
-            const {imageUri} = this.props;
-            this.setImage(imageUri);
-        }
-    }
-
-    setImage = (uri) => {
-        if (this.subscribedToCache) {
-            this.setState({uri});
-        }
-    };
-
-    setThumbnail = (thumb) => {
-        if (this.subscribedToCache) {
-            if (!thumb && !this.state.failedImageLoad) {
-                this.load();
-                this.setState({failedImageLoad: true});
-            } else {
-                this.setState({thumb, uri: null});
-            }
-        }
-    };
 
     render() {
         const {
             defaultSource,
             imageStyle,
+            imageUri,
             isBackgroundImage,
             onError,
             resizeMode,
@@ -121,15 +62,6 @@ export default class ProgressiveImage extends PureComponent {
             theme,
             tintDefaultSource,
         } = this.props;
-        const {uri, intensity, thumb} = this.state;
-        const hasDefaultSource = Boolean(defaultSource);
-        const hasPreview = Boolean(thumb);
-        const hasURI = Boolean(uri);
-        const isImageReady = uri && uri !== thumb;
-        const opacity = intensity.interpolate({
-            inputRange: [50, 100],
-            outputRange: [0.5, 1],
-        });
 
         let DefaultComponent;
         let ImageComponent;
@@ -137,20 +69,33 @@ export default class ProgressiveImage extends PureComponent {
             DefaultComponent = ImageBackground;
             ImageComponent = AnimatedImageBackground;
         } else {
-            DefaultComponent = Image;
-            ImageComponent = AnimatedImage;
+            DefaultComponent = Animated.Image;
+            ImageComponent = AnimatedFastImage;
         }
 
         const styles = getStyleSheet(theme);
 
-        let defaultImage;
-        if (hasDefaultSource && tintDefaultSource) {
-            defaultImage = (
-                <View style={styles.defaultImageContainer}>
+        if (isBackgroundImage) {
+            return (
+                <View style={[styles.defaultImageContainer, style]}>
+                    <DefaultComponent
+                        source={{uri: imageUri}}
+                        resizeMode={'cover'}
+                        style={[StyleSheet.absoluteFill, imageStyle]}
+                    >
+                        {this.props.children}
+                    </DefaultComponent>
+                </View>
+            );
+        }
+
+        if (defaultSource) {
+            return (
+                <View style={[styles.defaultImageContainer, style]}>
                     <DefaultComponent
                         source={defaultSource}
-                        style={styles.defaultImageTint}
-                        resizeMode='center'
+                        style={[StyleSheet.absoluteFill, imageStyle, tintDefaultSource ? styles.defaultImageTint : null]}
+                        resizeMode={resizeMode}
                         resizeMethod={resizeMethod}
                         onError={onError}
                     >
@@ -158,58 +103,41 @@ export default class ProgressiveImage extends PureComponent {
                     </DefaultComponent>
                 </View>
             );
-        } else {
-            defaultImage = (
+        }
+
+        const opacity = this.state.intensity.interpolate({
+            inputRange: [20, 100],
+            outputRange: [0.2, 1],
+        });
+        const defaultOpacity = this.state.intensity.interpolate({
+            inputRange: [0, 100],
+            outputRange: [0.5, 0],
+        });
+
+        const containerStyle = {
+            backgroundColor: changeOpacity(theme.centerChannelColor, defaultOpacity),
+        };
+
+        return (
+            <Animated.View style={[styles.defaultImageContainer, style, containerStyle]}>
                 <DefaultComponent
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
                     onError={onError}
-                    source={defaultSource}
-                    style={[StyleSheet.absoluteFill, imageStyle]}
-                >
-                    {this.props.children}
-                </DefaultComponent>
-            );
-        }
-
-        if (hasDefaultSource && !hasPreview && !hasURI) {
-            return (
-                <View style={style}>
-                    {defaultImage}
-                    {hasPreview &&
-                    <Animated.View style={[StyleSheet.absoluteFill, {backgroundColor: theme.centerChannelBg, opacity}]}/>
-                    }
-                </View>
-            );
-        }
-
-        let source;
-        const headers = {Authorization: `Bearer ${Client4.getToken()}`};
-        if (hasPreview && !isImageReady) {
-            source = {uri: thumb, headers};
-        } else if (isImageReady) {
-            source = {uri, headers};
-        }
-
-        return (
-            <View style={style}>
-                {source &&
+                    source={thumb}
+                    style={[imageStyle, {tintColor: theme.centerChannelColor, opacity: defaultOpacity}]}
+                />
                 <ImageComponent
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
                     onError={onError}
-                    source={source}
-                    style={[StyleSheet.absoluteFill, imageStyle]}
-                    blurRadius={isImageReady ? null : 5}
-                    onLoadEnd={this.loadFullImage}
+                    source={{uri: imageUri}}
+                    style={[StyleSheet.absoluteFill, imageStyle, {opacity}]}
+                    onLoadEnd={this.onLoadImageEnd}
                 >
                     {this.props.children}
                 </ImageComponent>
-                }
-                {hasPreview &&
-                <Animated.View style={[StyleSheet.absoluteFill, {backgroundColor: theme.centerChannelBg, opacity}]}/>
-                }
-            </View>
+            </Animated.View>
         );
     }
 }
@@ -217,10 +145,6 @@ export default class ProgressiveImage extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         defaultImageContainer: {
-            flex: 1,
-            position: 'absolute',
-            height: 80,
-            width: 80,
             alignItems: 'center',
             justifyContent: 'center',
         },

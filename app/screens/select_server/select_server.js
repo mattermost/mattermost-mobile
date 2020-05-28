@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
+    Alert,
     DeviceEventEmitter,
     Image,
     Keyboard,
@@ -22,35 +23,32 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
-
 import merge from 'deepmerge';
 import urlParse from 'url-parse';
 
+import {resetToChannel, goToScreen} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import fetchConfig from '@init/fetch';
+import globalEventHandler from '@init/global_event_handler';
 import {Client4} from '@mm-redux/client';
+import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
+import tracker from '@utils/time_tracker';
+import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 
-import ErrorText from 'app/components/error_text';
-import FormattedText from 'app/components/formatted_text';
-import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
-import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
-import {preventDoubleTap} from 'app/utils/tap';
-import tracker from 'app/utils/time_tracker';
-import {t} from 'app/utils/i18n';
-import {changeOpacity} from 'app/utils/theme';
-import {resetToChannel, goToScreen} from 'app/actions/navigation';
-
 import telemetry from 'app/telemetry';
-
-import LocalConfig from 'assets/config';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
             handleServerUrlChanged: PropTypes.func.isRequired,
-            handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
@@ -67,6 +65,10 @@ export default class SelectServer extends PureComponent {
         minVersion: PropTypes.string,
         serverUrl: PropTypes.string.isRequired,
         deepLinkURL: PropTypes.string,
+    };
+
+    static defaultProps = {
+        allowOtherServers: true,
     };
 
     static contextTypes = {
@@ -107,6 +109,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
+        this.sslProblemListener = DeviceEventEmitter.addListener('RNFetchBlobSslProblem', this.handleSslProblem);
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
@@ -135,6 +138,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener.remove();
+        this.sslProblemListener.remove();
 
         this.navigationEventListener.remove();
     }
@@ -166,11 +170,18 @@ export default class SelectServer extends PureComponent {
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
+        const {allowOtherServers} = this.props;
+        let visible = !LocalConfig.AutoSelectServerUrl;
+
+        if (!allowOtherServers) {
+            visible = false;
+        }
+
         const defaultOptions = {
-            popGesture: !LocalConfig.AutoSelectServerUrl,
+            popGesture: visible,
             topBar: {
-                visible: !LocalConfig.AutoSelectServerUrl,
-                height: LocalConfig.AutoSelectServerUrl ? 0 : null,
+                visible,
+                height: visible ? null : 0,
             },
         };
         const options = merge(defaultOptions, navOptions);
@@ -206,6 +217,7 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
+        await globalEventHandler.resetState();
         if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
             RNFetchBlob.cba.selectCertificate((certificate) => {
                 if (certificate) {
@@ -222,7 +234,7 @@ export default class SelectServer extends PureComponent {
         }
     });
 
-    handleLoginOptions = (props = this.props) => {
+    handleLoginOptions = async (props = this.props) => {
         const {formatMessage} = this.context.intl;
         const {config, license} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
@@ -245,6 +257,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.props.actions.resetPing();
+        await globalEventHandler.configureAnalytics();
 
         if (Platform.OS === 'ios') {
             if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
@@ -290,7 +303,6 @@ export default class SelectServer extends PureComponent {
         tracker.initialLoad = Date.now();
 
         await this.props.actions.login('credential', 'password');
-        await this.props.actions.handleSuccessfulLogin();
         this.scheduleSessionExpiredNotification();
 
         resetToChannel();
@@ -361,6 +373,38 @@ export default class SelectServer extends PureComponent {
         const {actions} = this.props;
 
         actions.scheduleExpiredNotification(intl);
+    };
+
+    handleSslProblem = () => {
+        if (!this.state.connecting && !this.state.connected) {
+            return null;
+        }
+
+        this.cancelPing();
+
+        const urlParse = require('url-parse');
+        const host = urlParse(this.state.url, true).host || this.state.url;
+
+        const {formatMessage} = this.context.intl;
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.server_ssl.error.title',
+                defaultMessage: 'Untrusted Certificate',
+            }),
+
+            formatMessage({
+                id: 'mobile.server_ssl.error.text',
+                defaultMessage: 'The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.',
+            },
+            {
+                host,
+            }),
+            [
+                {text: 'OK'},
+            ],
+            {cancelable: false},
+        );
+        return null;
     };
 
     selectCertificate = () => {
@@ -438,7 +482,7 @@ export default class SelectServer extends PureComponent {
                     >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                             <Image
-                                source={require('assets/images/logo.png')}
+                                source={require('@assets/images/logo.png')}
                             />
 
                             <View>
@@ -476,7 +520,9 @@ export default class SelectServer extends PureComponent {
                                     {buttonText}
                                 </Text>
                             </Button>
-                            <ErrorText error={error}/>
+                            <View>
+                                <ErrorText error={error}/>
+                            </View>
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>

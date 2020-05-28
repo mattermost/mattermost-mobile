@@ -3,11 +3,7 @@
 
 import assert from 'assert';
 
-import {
-    PostTypes,
-    SearchTypes,
-    UserTypes,
-} from '@mm-redux/action_types';
+import {PostTypes, SearchTypes} from '@mm-redux/action_types';
 import reducer from '@mm-redux/reducers/entities/search';
 
 describe('reducers.entities.search', () => {
@@ -94,17 +90,6 @@ describe('reducers.entities.search', () => {
             const inputState = ['abcd', 'efgh'];
             const action = {
                 type: SearchTypes.REMOVE_SEARCH_POSTS,
-            };
-            const expectedState = [];
-
-            const actualState = reducer({results: inputState}, action);
-            assert.deepEqual(actualState.results, expectedState);
-        });
-
-        describe('UserTypes.LOGOUT_SUCCESS', () => {
-            const inputState = ['abcd', 'efgh'];
-            const action = {
-                type: UserTypes.LOGOUT_SUCCESS,
             };
             const expectedState = [];
 
@@ -245,20 +230,6 @@ describe('reducers.entities.search', () => {
             };
             const action = {
                 type: SearchTypes.REMOVE_SEARCH_POSTS,
-            };
-            const expectedState = [];
-
-            const actualState = reducer({matches: inputState}, action);
-            assert.deepEqual(actualState.matches, expectedState);
-        });
-
-        describe('UserTypes.LOGOUT_SUCCESS', () => {
-            const inputState = {
-                abcd: ['test', 'testing'],
-                efgh: ['tests'],
-            };
-            const action = {
-                type: UserTypes.LOGOUT_SUCCESS,
             };
             const expectedState = [];
 

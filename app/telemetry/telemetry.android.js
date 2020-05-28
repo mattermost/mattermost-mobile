@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import LocalConfig from 'assets/config'; // eslint-disable-line
-
-import store from 'app/store';
+import LocalConfig from '@assets/config';
+import Store from '@store/store';
 
 import {
     saveToTelemetryServer,
@@ -32,7 +31,7 @@ class Telemetry {
     }
 
     canSendTelemetry() {
-        const {config} = store.getState().entities.general;
+        const {config} = Store.redux.getState().entities.general;
         return Boolean(!__DEV__ && config.EnableDiagnostics === 'true' && LocalConfig.TelemetryEnabled);
     }
 
@@ -114,7 +113,7 @@ class Telemetry {
         });
     }
 
-    save() {
+    async save() {
         if (!this.canSendTelemetry()) {
             return;
         }
@@ -144,7 +143,7 @@ class Telemetry {
             });
         });
 
-        const {config} = store.getState().entities.general;
+        const {config} = Store.redux.getState().entities.general;
         const deviceInfo = getDeviceInfo();
         deviceInfo.server_version = config.Version;
 

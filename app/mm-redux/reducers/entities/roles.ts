@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {RoleTypes, UserTypes} from '@mm-redux/action_types';
+import {RoleTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {Role} from '@mm-redux/types/roles';
@@ -11,8 +11,6 @@ function pending(state: Set<string> = new Set(), action: GenericAction) {
     switch (action.type) {
     case RoleTypes.SET_PENDING_ROLES:
         return action.data;
-    case UserTypes.LOGOUT_SUCCESS:
-        return new Set();
     default:
         return state;
     }
@@ -49,9 +47,6 @@ function roles(state: Dictionary<Role> = {}, action: GenericAction) {
 
         return state;
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }

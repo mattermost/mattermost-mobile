@@ -19,19 +19,18 @@ import {
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import ErrorText from 'app/components/error_text';
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import {resetToChannel, goToScreen} from 'app/actions/navigation';
-import mattermostManaged from 'app/mattermost_managed';
-import {preventDoubleTap} from 'app/utils/tap';
-import tracker from 'app/utils/time_tracker';
-import {t} from 'app/utils/i18n';
-import {setMfaPreflightDone, getMfaPreflightDone} from 'app/utils/security';
-import {changeOpacity} from 'app/utils/theme';
-import {GlobalStyles} from 'app/styles';
+import {resetToChannel, goToScreen} from '@actions/navigation';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import StatusBar from '@components/status_bar';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
+import tracker from '@utils/time_tracker';
 
+import mattermostManaged from 'app/mattermost_managed';
+import {GlobalStyles} from 'app/styles';
 import telemetry from 'app/telemetry';
 
 export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
@@ -39,7 +38,6 @@ export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', '
 export default class Login extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
@@ -55,6 +53,11 @@ export default class Login extends PureComponent {
     constructor(props) {
         super(props);
 
+        this.loginRef = React.createRef();
+        this.passwordRef = React.createRef();
+        this.loginId = '';
+        this.password = '';
+
         this.state = {
             error: null,
             isLoading: false,
@@ -64,7 +67,6 @@ export default class Login extends PureComponent {
     componentDidMount() {
         Dimensions.addEventListener('change', this.orientationDidChange);
 
-        setMfaPreflightDone(false);
         this.setEmmUsernameIfAvailable();
     }
 
@@ -76,7 +78,6 @@ export default class Login extends PureComponent {
         telemetry.remove(['start:overall']);
 
         tracker.initialLoad = Date.now();
-
         this.scheduleSessionExpiredNotification();
 
         resetToChannel();
@@ -86,15 +87,21 @@ export default class Login extends PureComponent {
         const {intl} = this.context;
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
-        const loginId = this.loginId?._lastNativeText; //eslint-disable-line no-underscore-dangle
-        const password = this.passwd?._lastNativeText; //eslint-disable-line no-underscore-dangle
+        const loginId = this.loginId;
+        const password = this.password;
 
-        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, loginId, password});
+        goToScreen(screen, title, {goToChannel: this.goToChannel, loginId, password});
     };
 
     blur = () => {
-        this.loginId.blur();
-        this.passwd.blur();
+        if (this.loginRef.current) {
+            this.loginRef.current.blur();
+        }
+
+        if (this.passwordRef.current) {
+            this.passwordRef.current.blur();
+        }
+
         Keyboard.dismiss();
     };
 
@@ -114,7 +121,6 @@ export default class Login extends PureComponent {
         }
 
         this.setState({isLoading: false});
-        resetToChannel();
         return true;
     };
 
@@ -174,9 +180,6 @@ export default class Login extends PureComponent {
         if (!errorId) {
             return error.message;
         }
-        if (mfaExpectedErrors.includes(errorId) && !getMfaPreflightDone()) {
-            return null;
-        }
         if (
             errorId === 'store.sql_user.get_for_login.app_error' ||
             errorId === 'ent.ldap.do_login.user_not_registered.app_error'
@@ -201,28 +204,29 @@ export default class Login extends PureComponent {
         return error.message;
     };
 
-    loginRef = (ref) => {
-        this.loginId = ref;
+    handleLoginChange = (text) => {
+        this.loginId = text;
+    };
+
+    handlePasswordChange = (text) => {
+        this.password = text;
     };
 
     orientationDidChange = () => {
         this.scroll.scrollToPosition(0, 0, true);
     };
 
-    passwordRef = (ref) => {
-        this.passwd = ref;
-    };
-
     passwordFocus = () => {
-        this.passwd.focus();
+        if (this.passwordRef.current) {
+            this.passwordRef.current.focus();
+        }
     };
 
     preSignIn = preventDoubleTap(() => {
         this.setState({error: null, isLoading: true});
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(async () => {
-            const loginId = this.loginId?._lastNativeText; //eslint-disable-line no-underscore-dangle
-            if (!loginId) {
+            if (!this.loginId) {
                 t('login.noEmail');
                 t('login.noEmailLdapUsername');
                 t('login.noEmailUsername');
@@ -262,8 +266,7 @@ export default class Login extends PureComponent {
                 return;
             }
 
-            const password = this.passwd?._lastNativeText; //eslint-disable-line no-underscore-dangle
-            if (!password) {
+            if (!this.password) {
                 this.setState({
                     isLoading: false,
                     error: {
@@ -293,19 +296,19 @@ export default class Login extends PureComponent {
 
     setEmmUsernameIfAvailable = async () => {
         const managedConfig = await mattermostManaged.getConfig();
-        if (managedConfig?.username && this.loginId) {
-            this.loginId.setNativeProps({text: 'sample'});
+        if (managedConfig?.username && this.loginRef.current) {
+            this.loginRef.current.setNativeProps({text: managedConfig?.username});
         }
     }
 
-    signIn = () => {
-        const loginId = this.loginId?._lastNativeText; //eslint-disable-line no-underscore-dangle
-        const password = this.passwd?._lastNativeText; //eslint-disable-line no-underscore-dangle
+    signIn = async () => {
         const {actions} = this.props;
         const {isLoading} = this.state;
         if (isLoading) {
-            actions.login(loginId.toLowerCase(), password).
-                then(this.checkLoginResponse);
+            const result = await actions.login(this.loginId.toLowerCase(), this.password);
+            if (this.checkLoginResponse(result)) {
+                this.goToChannel();
+            }
         }
     };
 
@@ -379,7 +382,7 @@ export default class Login extends PureComponent {
                         enableOnAndroid={true}
                     >
                         <Image
-                            source={require('assets/images/logo.png')}
+                            source={require('@assets/images/logo.png')}
                         />
                         <View>
                             <Text style={GlobalStyles.header}>
@@ -393,31 +396,33 @@ export default class Login extends PureComponent {
                         </View>
                         <ErrorText error={this.state.error}/>
                         <TextInput
-                            ref={this.loginRef}
-                            style={GlobalStyles.inputBox}
-                            placeholder={this.createLoginPlaceholder()}
-                            placeholderTextColor={changeOpacity('#000', 0.5)}
-                            autoCorrect={false}
                             autoCapitalize='none'
-                            keyboardType='email-address'
-                            returnKeyType='next'
-                            underlineColorAndroid='transparent'
-                            onSubmitEditing={this.passwordFocus}
+                            autoCorrect={false}
                             blurOnSubmit={false}
                             disableFullscreenUI={true}
+                            keyboardType='email-address'
+                            onChangeText={this.handleLoginChange}
+                            onSubmitEditing={this.passwordFocus}
+                            placeholder={this.createLoginPlaceholder()}
+                            placeholderTextColor={changeOpacity('#000', 0.5)}
+                            ref={this.loginRef}
+                            returnKeyType='next'
+                            style={GlobalStyles.inputBox}
+                            underlineColorAndroid='transparent'
                         />
                         <TextInput
-                            ref={this.passwordRef}
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            disableFullscreenUI={true}
+                            onChangeText={this.handlePasswordChange}
+                            onSubmitEditing={this.preSignIn}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             placeholderTextColor={changeOpacity('#000', 0.5)}
-                            secureTextEntry={true}
-                            autoCorrect={false}
-                            autoCapitalize='none'
-                            underlineColorAndroid='transparent'
+                            ref={this.passwordRef}
                             returnKeyType='go'
-                            onSubmitEditing={this.preSignIn}
-                            disableFullscreenUI={true}
+                            secureTextEntry={true}
+                            underlineColorAndroid='transparent'
                         />
                         {proceed}
                         {forgotPassword}

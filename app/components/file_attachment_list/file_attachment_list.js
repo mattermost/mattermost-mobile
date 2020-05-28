@@ -1,28 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import {Dimensions, StyleSheet, View} from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
+import {StyleSheet, View} from 'react-native';
 
+import ImageViewPort from '@components/image_viewport';
 import {Client4} from '@mm-redux/client';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {TABLET_WIDTH} from 'app/components/sidebars/drawer_layout';
-import {DeviceTypes} from 'app/constants';
-import mattermostManaged from 'app/mattermost_managed';
-import {isDocument, isGif, isVideo} from 'app/utils/file';
-import {previewImageAtIndex} from 'app/utils/images';
-import {preventDoubleTap} from 'app/utils/tap';
+import {isDocument, isGif, isVideo} from '@utils/file';
+import {getViewPortWidth, previewImageAtIndex} from '@utils/images';
+import {preventDoubleTap} from '@utils/tap';
 
 import FileAttachment from './file_attachment';
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
-const VIEWPORT_IMAGE_OFFSET = 70;
-const VIEWPORT_IMAGE_REPLY_OFFSET = 11;
 
-export default class FileAttachmentList extends PureComponent {
+export default class FileAttachmentList extends ImageViewPort {
     static propTypes = {
         actions: PropTypes.shape({
             loadFilesForPostIfNecessary: PropTypes.func.isRequired,
@@ -41,8 +34,6 @@ export default class FileAttachmentList extends PureComponent {
         files: [],
     };
 
-    state = {};
-
     constructor(props) {
         super(props);
 
@@ -55,13 +46,8 @@ export default class FileAttachmentList extends PureComponent {
     }
 
     componentDidMount() {
+        super.componentDidMount();
         const {files} = this.props;
-
-        this.mounted = true;
-        this.handlePermanentSidebar();
-        this.handleDimensions();
-        EventEmitter.on(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        Dimensions.addEventListener('change', this.handleDimensions);
 
         if (files.length === 0) {
             this.loadFilesForPost();
@@ -69,21 +55,13 @@ export default class FileAttachmentList extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.files !== this.props.files) {
+        if (prevProps.files.length !== this.props.files.length) {
             this.filesForGallery = this.getFilesForGallery(this.props);
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
-        }
-        if (this.props.files !== prevProps.files && this.props.files.length === 0) {
             this.loadFilesForPost();
         }
-    }
-
-    componentWillUnmount() {
-        this.mounted = false;
-        EventEmitter.off(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS, this.handlePermanentSidebar);
-        Dimensions.removeEventListener('change', this.handleDimensions);
     }
 
     attachmentIndex = (fileId) => {
@@ -120,10 +98,8 @@ export default class FileAttachmentList extends PureComponent {
                 let uri;
                 if (file.localPath) {
                     uri = file.localPath;
-                } else if (isGif(file)) {
-                    uri = Client4.getFileUrl(file.id);
                 } else {
-                    uri = Client4.getFilePreviewUrl(file.id);
+                    uri = Client4.getFileUrl(file.id);
                 }
 
                 results.push({
@@ -151,43 +127,8 @@ export default class FileAttachmentList extends PureComponent {
         return results;
     };
 
-    getPortraitPostWidth = () => {
-        const {isReplyPost} = this.props;
-        const {width, height} = Dimensions.get('window');
-        const permanentSidebar = DeviceTypes.IS_TABLET && !this.state?.isSplitView && this.state?.permanentSidebar;
-        let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
-
-        if (permanentSidebar) {
-            portraitPostWidth -= TABLET_WIDTH;
-        }
-
-        if (isReplyPost) {
-            portraitPostWidth -= VIEWPORT_IMAGE_REPLY_OFFSET;
-        }
-
-        return portraitPostWidth;
-    };
-
     handleCaptureRef = (ref, idx) => {
         this.items[idx] = ref;
-    };
-
-    handleDimensions = () => {
-        if (this.mounted) {
-            if (DeviceTypes.IS_TABLET) {
-                mattermostManaged.isRunningInSplitView().then((result) => {
-                    const isSplitView = Boolean(result.isSplitView);
-                    this.setState({isSplitView});
-                });
-            }
-        }
-    };
-
-    handlePermanentSidebar = async () => {
-        if (DeviceTypes.IS_TABLET && this.mounted) {
-            const enabled = await AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS);
-            this.setState({permanentSidebar: enabled === 'true'});
-        }
     };
 
     handlePreviewPress = preventDoubleTap((idx) => {
@@ -203,7 +144,7 @@ export default class FileAttachmentList extends PureComponent {
     }
 
     renderItems = (items, moreImagesCount, includeGutter = false) => {
-        const {canDownloadFiles, onLongPress, theme} = this.props;
+        const {canDownloadFiles, isReplyPost, onLongPress, theme} = this.props;
         const isSingleImage = this.isSingleImage(items);
         let nonVisibleImagesCount;
         let container = styles.container;
@@ -240,7 +181,7 @@ export default class FileAttachmentList extends PureComponent {
                         theme={theme}
                         isSingleImage={isSingleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
-                        wrapperWidth={this.getPortraitPostWidth()}
+                        wrapperWidth={getViewPortWidth(isReplyPost, this.hasPermanentSidebar())}
                     />
                 </View>
             );
@@ -252,8 +193,9 @@ export default class FileAttachmentList extends PureComponent {
             return null;
         }
 
+        const {isReplyPost} = this.props;
         const visibleImages = images.slice(0, MAX_VISIBLE_ROW_IMAGES);
-        const {portraitPostWidth} = this.state;
+        const portraitPostWidth = getViewPortWidth(isReplyPost, this.hasPermanentSidebar());
 
         let nonVisibleImagesCount;
         if (images.length > MAX_VISIBLE_ROW_IMAGES) {

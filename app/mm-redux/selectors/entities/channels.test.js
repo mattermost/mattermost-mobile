@@ -7,8 +7,6 @@ import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import TestHelper from 'test/test_helper';
 import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
 import * as Selectors from '@mm-redux/selectors/entities/channels';
-import * as TeamSelectors from '@mm-redux/selectors/entities/teams';
-import * as PreferencesSelectors from '@mm-redux/selectors/entities/preferences';
 import {General, Preferences, Permissions} from '../../constants';
 
 const sortUsernames = (a, b) => a.localeCompare(b, General.DEFAULT_LOCALE, {numeric: true});
@@ -134,56 +132,6 @@ describe('Selectors.Channels.getChannelsInCurrentTeam', () => {
 
         assert.deepEqual(Selectors.getChannelsInCurrentTeam(testStateDe), channelsInCurrentTeamDe);
         assert.deepEqual(Selectors.getChannelsInCurrentTeam(testStateSv), channelsInCurrentTeamSv);
-    });
-});
-
-describe('Selectors.Channels.getKnownUsers', () => {
-    const channel1 = TestHelper.fakeChannelWithId('');
-    const channel2 = TestHelper.fakeChannelWithId('');
-
-    const me = TestHelper.fakeUserWithId();
-    const user = TestHelper.fakeUserWithId();
-    const user2 = TestHelper.fakeUserWithId();
-    const user3 = TestHelper.fakeUserWithId();
-
-    const membersInChannel = {
-        [channel1.id]: {
-            [user.id]: {channel_id: channel1.id, user_id: user.id},
-            [user2.id]: {channel_id: channel1.id, user_id: user2.id},
-        },
-        [channel2.id]: {
-            [user3.id]: {channel_id: channel2.id, user_id: user3.id},
-        },
-    };
-
-    it('should return all members of all my channels', () => {
-        const testState = deepFreezeAndThrowOnMutation({
-            entities: {
-                users: {
-                    currentUserId: me.id,
-                },
-                channels: {
-                    membersInChannel,
-                },
-            },
-        });
-
-        assert.deepEqual(Selectors.getKnownUsers(testState), new Set([me.id, user.id, user2.id, user3.id]));
-    });
-
-    it('should return only me if I have no channels', () => {
-        const testState = deepFreezeAndThrowOnMutation({
-            entities: {
-                users: {
-                    currentUserId: me.id,
-                },
-                channels: {
-                    membersInChannel: {},
-                },
-            },
-        });
-
-        assert.deepEqual(Selectors.getKnownUsers(testState), new Set([me.id]));
     });
 });
 

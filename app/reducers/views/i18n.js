@@ -2,20 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import DeviceInfo from 'react-native-device-info';
+import {getLocales} from 'react-native-localize';
 
 import {UserTypes} from '@mm-redux/action_types';
 
-const defaultLocale = DeviceInfo.getDeviceLocale().split('-')[0];
+const defaultLocale = getLocales()[0].languageCode;
 
 function locale(state = defaultLocale, action) {
     switch (action.type) {
     case UserTypes.RECEIVED_ME: {
         const data = action.data || action.payload;
-        return data.locale;
+        if (data?.locale) {
+            return data.locale;
+        }
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return defaultLocale;
     }
 
     return state;

@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
+
+import {ViewTypes} from '@constants';
 import {
     ChannelTypes,
     FileTypes,
     PostTypes,
-    UserTypes,
 } from '@mm-redux/action_types';
-
-import {ViewTypes} from 'app/constants';
 
 function displayName(state = '', action) {
     switch (action.type) {
@@ -355,9 +354,6 @@ function keepChannelIdAsUnread(state = null, action) {
         }
         return state;
     }
-
-    case UserTypes.LOGOUT_SUCCESS:
-        return null;
     default:
         return state;
     }

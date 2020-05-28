@@ -1,20 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ProgressiveImage should match snapshot 1`] = `
+exports[`ProgressiveImage should match snapshot for BackgroundImage 1`] = `
 <View
-  style={Object {}}
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      Object {},
+    ]
+  }
 >
-  <AnimatedComponent
-    blurRadius={5}
-    onError={[MockFunction]}
-    onLoadEnd={[Function]}
-    resizeMethod="auto"
-    resizeMode="contain"
+  <ImageBackground
+    resizeMode="cover"
     source={
       Object {
-        "headers": Object {
-          "Authorization": "Bearer ",
-        },
         "uri": "https://images.com/image.png",
       }
     }
@@ -31,7 +32,26 @@ exports[`ProgressiveImage should match snapshot 1`] = `
       ]
     }
   />
-  <AnimatedComponent
+</View>
+`;
+
+exports[`ProgressiveImage should match snapshot for Default Image 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      Object {},
+    ]
+  }
+>
+  <ForwardRef(AnimatedComponentWrapper)
+    onError={[MockFunction]}
+    resizeMethod="auto"
+    resizeMode="contain"
+    source="https://images.com/image.png"
     style={
       Array [
         Object {
@@ -41,12 +61,73 @@ exports[`ProgressiveImage should match snapshot 1`] = `
           "right": 0,
           "top": 0,
         },
-        Object {
-          "backgroundColor": "#ffffff",
-          "opacity": 0.8,
-        },
+        undefined,
+        null,
       ]
     }
   />
 </View>
+`;
+
+exports[`ProgressiveImage should match snapshot for Image 1`] = `
+<ForwardRef(AnimatedComponentWrapper)
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      Object {},
+      Object {
+        "backgroundColor": "rgba(61,60,64,NaN)",
+      },
+    ]
+  }
+>
+  <ForwardRef(AnimatedComponentWrapper)
+    onError={[MockFunction]}
+    resizeMethod="auto"
+    resizeMode="contain"
+    source={
+      Object {
+        "testUri": "../../../dist/assets/images/thumb.png",
+      }
+    }
+    style={
+      Array [
+        undefined,
+        Object {
+          "opacity": 0.5,
+          "tintColor": "#3d3c40",
+        },
+      ]
+    }
+  />
+  <ForwardRef(AnimatedComponentWrapper)
+    onError={[MockFunction]}
+    onLoadEnd={[Function]}
+    resizeMethod="auto"
+    resizeMode="contain"
+    source={
+      Object {
+        "uri": "https://images.com/image.png",
+      }
+    }
+    style={
+      Array [
+        Object {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        undefined,
+        Object {
+          "opacity": 0,
+        },
+      ]
+    }
+  />
+</ForwardRef(AnimatedComponentWrapper)>
 `;

@@ -290,7 +290,7 @@ export default class Post extends PureComponent {
             postHeader = (
                 <PostHeader
                     post={post}
-                    commentedOnUserId={commentedOnPost && commentedOnPost.user_id}
+                    commentedOnPost={commentedOnPost}
                     createAt={post.create_at}
                     isSearchResult={isSearchResult}
                     shouldRenderReplyButton={shouldRenderReplyButton}
@@ -312,7 +312,7 @@ export default class Post extends PureComponent {
                 <TouchableWithFeedback
                     onPress={this.handlePress}
                     onLongPress={this.showPostOptions}
-                    delayLongPress={100}
+                    delayLongPress={200}
                     underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     cancelTouchOnPanning={true}
                 >

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {combineReducers} from 'redux';
-import {FileTypes, PostTypes, UserTypes} from '@mm-redux/action_types';
+import {FileTypes, PostTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
 import {Post} from '@mm-redux/types/posts';
 import {FileInfo} from '@mm-redux/types/files';
@@ -50,8 +50,6 @@ export function files(state: Dictionary<FileInfo> = {}, action: GenericAction) {
         return state;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -109,8 +107,6 @@ export function fileIdsByPostId(state: Dictionary<Array<string>> = {}, action: G
         return state;
     }
 
-    case UserTypes.LOGOUT_SUCCESS:
-        return {};
     default:
         return state;
     }
@@ -132,8 +128,6 @@ function filePublicLink(state: {link: string} = {link: ''}, action: GenericActio
     case FileTypes.RECEIVED_FILE_PUBLIC_LINK: {
         return action.data;
     }
-    case UserTypes.LOGOUT_SUCCESS:
-        return {link: ''};
 
     default:
         return state;

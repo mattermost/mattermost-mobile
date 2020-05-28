@@ -12,30 +12,27 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {displayUsername} from '@mm-redux/utils/user_utils';
-import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
-
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import ProfilePicture from 'app/components/profile_picture';
-import FormattedText from 'app/components/formatted_text';
-import FormattedTime from 'app/components/formatted_time';
-import StatusBar from 'app/components/status_bar';
-import {BotTag, GuestTag} from 'app/components/tag';
-
-import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {isGuest} from 'app/utils/users';
-
 import {
     goToScreen,
     popToRoot,
     dismissModal,
     setButtons,
-} from 'app/actions/navigation';
+} from '@actions/navigation';
+import Config from '@assets/config';
+import FormattedTime from '@components/formatted_time';
+import ProfilePicture from '@components/profile_picture';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import StatusBar from '@components/status_bar';
+import {BotTag, GuestTag} from '@components/tag';
+import {displayUsername} from '@mm-redux/utils/user_utils';
+import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {isGuest} from '@utils/users';
 
 import UserProfileRow from './user_profile_row';
-import Config from 'assets/config';
 
 export default class UserProfile extends PureComponent {
     static propTypes = {
@@ -140,13 +137,32 @@ export default class UserProfile extends PureComponent {
     };
 
     buildDisplayBlock = (property) => {
+        const {formatMessage} = this.context.intl;
         const {theme, user, isLandscape} = this.props;
         const style = createStyleSheet(theme);
+        let label;
 
-        if (user.hasOwnProperty(property) && user[property].length > 0) {
+        if (Object.prototype.hasOwnProperty.call(user, property) && user[property].length > 0) {
+            switch (property) {
+            case 'first_name':
+                label = formatMessage({id: 'user.settings.general.firstName', defaultMessage: 'First Name'});
+                break;
+            case 'last_name':
+                label = formatMessage({id: 'user.settings.general.lastName', defaultMessage: 'Last Name'});
+                break;
+            case 'email':
+                label = formatMessage({id: 'user.settings.general.email', defaultMessage: 'Email'});
+                break;
+            case 'nickname':
+                label = formatMessage({id: 'user.settings.general.nickname', defaultMessage: 'Nickname'});
+                break;
+            case 'position':
+                label = formatMessage({id: 'user.settings.general.position', defaultMessage: 'Position'});
+            }
+
             return (
                 <View>
-                    <Text style={[style.header, padding(isLandscape)]}>{property.toUpperCase()}</Text>
+                    <Text style={[style.header, padding(isLandscape)]}>{label}</Text>
                     <Text style={[style.text, padding(isLandscape)]}>{user[property]}</Text>
                 </View>
             );
@@ -284,11 +300,12 @@ export default class UserProfile extends PureComponent {
 
         return (
             <View style={style.content}>
-                {this.props.enableTimezone && this.buildTimezoneBlock()}
-                {this.buildDisplayBlock('username')}
+                {this.buildDisplayBlock('first_name')}
+                {this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}
+                {this.props.enableTimezone && this.buildTimezoneBlock()}
             </View>
         );
     }
@@ -351,6 +368,7 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         header: {
             fontSize: 13,
             fontWeight: '600',
+            textTransform: 'uppercase',
             color: changeOpacity(theme.centerChannelColor, 0.5),
             marginTop: 25,
             marginBottom: 10,

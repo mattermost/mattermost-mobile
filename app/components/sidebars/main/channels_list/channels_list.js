@@ -12,7 +12,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import SearchBar from 'app/components/search_bar';
 import {ViewTypes} from 'app/constants';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -135,6 +135,7 @@ export default class ChannelsList extends PureComponent {
                     backgroundColor='transparent'
                     inputHeight={33}
                     inputStyle={searchBarInput}
+                    containerStyle={styles.searchBar}
                     placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
                     tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
@@ -175,6 +176,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         above: {
             backgroundColor: theme.mentionBg,
             top: 40,
+            height: 40,
+            borderRadius: 4,
+            paddingTop: 12,
+            paddingRight: 16,
+            paddingBottom: 12,
+            paddingLeft: 16,
         },
         action: {
             color: changeOpacity(theme.sidebarText, 0.4),
@@ -218,6 +225,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             left: 10,
             right: 10,
             top: 10,
+        },
+        searchBar: {
+            flex: 1,
+            overflow: 'visible',
         },
         searchContainer: {
             flex: 1,

@@ -17,7 +17,7 @@ import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getDeviceTimezoneAsync} from 'app/utils/timezone';
+import {getDeviceTimezone} from 'app/utils/timezone';
 import {goToScreen} from 'app/actions/navigation';
 
 export default class Timezone extends PureComponent {
@@ -61,13 +61,13 @@ export default class Timezone extends PureComponent {
         }
     }
 
-    updateAutomaticTimezone = async (useAutomaticTimezone) => {
+    updateAutomaticTimezone = (useAutomaticTimezone) => {
         const {userTimezone: {manualTimezone}} = this.props;
         let automaticTimezone = '';
 
         this.setState({useAutomaticTimezone});
         if (useAutomaticTimezone) {
-            automaticTimezone = await getDeviceTimezoneAsync();
+            automaticTimezone = getDeviceTimezone();
             this.submitUser({
                 useAutomaticTimezone,
                 automaticTimezone,

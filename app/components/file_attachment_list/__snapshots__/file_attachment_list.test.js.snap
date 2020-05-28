@@ -17,7 +17,7 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
           "marginTop": 5,
         },
         Object {
-          "width": undefined,
+          "width": 680,
         },
       ]
     }
@@ -109,7 +109,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
           "marginTop": 5,
         },
         Object {
-          "width": undefined,
+          "width": 680,
         },
       ]
     }
@@ -332,7 +332,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
           "marginTop": 5,
         },
         Object {
-          "width": undefined,
+          "width": 680,
         },
       ]
     }
@@ -637,7 +637,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
           "marginTop": 5,
         },
         Object {
-          "width": undefined,
+          "width": 680,
         },
       ]
     }
@@ -1014,7 +1014,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
           "marginTop": 5,
         },
         Object {
-          "width": undefined,
+          "width": 680,
         },
       ]
     }
@@ -1248,7 +1248,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
           "marginTop": 5,
         },
         Object {
-          "width": undefined,
+          "width": 680,
         },
       ]
     }

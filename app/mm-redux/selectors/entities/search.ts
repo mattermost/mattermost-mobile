@@ -12,5 +12,5 @@ export const getCurrentSearchForCurrentTeam = reselect.createSelector(
     getCurrentTeamId,
     (current, teamId) => {
         return current[teamId];
-    }
+    },
 );

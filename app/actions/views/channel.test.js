@@ -4,25 +4,25 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import initialState from 'app/initial_state';
-import {ChannelTypes} from '@mm-redux/action_types';
 import testHelper from 'test/test_helper';
 
-import {ViewTypes} from 'app/constants';
-import * as ChannelActions from 'app/actions/views/channel';
+import * as ChannelActions from '@actions/views/channel';
+import {ViewTypes} from '@constants';
+import {ChannelTypes} from '@mm-redux/action_types';
+import postReducer from '@mm-redux/reducers/entities/posts';
+import initialState from '@store/initial_state';
+
 const {
     handleSelectChannel,
     handleSelectChannelByName,
     loadPostsIfNecessaryWithRetry,
 } = ChannelActions;
 
-import postReducer from '@mm-redux/reducers/entities/posts';
-
 const MOCK_CHANNEL_MARK_AS_READ = 'MOCK_CHANNEL_MARK_AS_READ';
 const MOCK_CHANNEL_MARK_AS_VIEWED = 'MOCK_CHANNEL_MARK_AS_VIEWED';
 
 jest.mock('@mm-redux/actions/channels', () => {
-    const channelActions = require.requireActual('@mm-redux/actions/channels');
+    const channelActions = jest.requireActual('../../mm-redux/actions/channels');
     return {
         ...channelActions,
         markChannelAsRead: jest.fn().mockReturnValue({type: 'MOCK_CHANNEL_MARK_AS_READ'}),
@@ -31,7 +31,7 @@ jest.mock('@mm-redux/actions/channels', () => {
 });
 
 jest.mock('@mm-redux/selectors/entities/teams', () => {
-    const teamSelectors = require.requireActual('@mm-redux/selectors/entities/teams');
+    const teamSelectors = jest.requireActual('../../mm-redux/selectors/entities/teams');
     return {
         ...teamSelectors,
         getTeamByName: jest.fn(() => ({name: 'current-team-name'})),
@@ -320,7 +320,7 @@ describe('Actions.Views.Channel', () => {
                 teamId: currentTeamId,
             },
         };
-        if (channelId.includes('not') || channelId === currentChannelId) {
+        if (channelId.includes('not')) {
             expect(selectChannelWithMember).toBe(undefined);
         } else {
             expect(selectChannelWithMember).toStrictEqual(expectedSelectChannelWithMember);

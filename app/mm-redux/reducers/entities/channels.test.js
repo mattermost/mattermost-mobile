@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelTypes, UserTypes} from '@mm-redux/action_types';
+import {ChannelTypes} from '@mm-redux/action_types';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 
 import channelsReducer, * as Reducers from './channels';
@@ -432,18 +432,6 @@ describe('channels', () => {
                 data: {channelId: 'channel1'},
             });
             expect(nextState.channel1).toBe(undefined);
-        });
-        test('remove all marks if user logs out', () => {
-            const state = deepFreeze({
-                channel1: true,
-                channel231: false,
-            });
-            const nextState = Reducers.manuallyUnread(state, {
-                type: UserTypes.LOGOUT_SUCCESS,
-                data: {},
-            });
-            expect(nextState.channel1).toBe(undefined);
-            expect(nextState.channel231).toBe(undefined);
         });
     });
     describe('RECEIVED_CHANNELS', () => {
