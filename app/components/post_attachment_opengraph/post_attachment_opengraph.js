@@ -31,31 +31,11 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    static getDerivedStateFromProps(props, state) {
-        let update = null;
-        if (props.link !== state.prevLink) {
-            update = {
-                hasImage: false,
-                prevLink: props.link,
-            };
-        }
-        if (props.openGraphData !== state.prevOpenGraphData) {
-            update = {
-                ...update,
-                ...(getBestImageUrlAndDimensions(props)),
-                prevOpenGraphData: props.openGraphData,
-            };
-        }
-        return update;
-    }
-
     constructor(props) {
         super(props);
 
         this.state = {
             ...(getBestImageUrlAndDimensions(props)),
-            prevOpenGraphData: props.openGraphData,
-            prevLink: props.link,
         };
     }
 
