@@ -35,9 +35,10 @@ export default class EditPost extends PureComponent {
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
         deviceWidth: PropTypes.number,
+        isLandscape: PropTypes.bool.isRequired,
+        maxMessageLength: PropTypes.number,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -57,10 +58,10 @@ export default class EditPost extends PureComponent {
         super(props);
 
         this.state = {
-            message: props.post.message,
-            cursorPosition: 0,
             autocompleteVisible: false,
+            cursorPosition: 0,
             keyboardType: 'default',
+            message: props.post.message,
         };
 
         this.rightButton.color = props.theme.sidebarHeaderTextColor;
@@ -144,6 +145,11 @@ export default class EditPost extends PureComponent {
         }
     };
 
+    isMessageTooLong = (message) => {
+        const {maxMessageLength} = this.props;
+        return (message && message.trim().length > maxMessageLength);
+    }
+
     onPostChangeText = (message) => {
         // Workaround to avoid iOS emdash autocorrect in Code Blocks
         if (Platform.OS === 'ios') {
@@ -153,8 +159,23 @@ export default class EditPost extends PureComponent {
             this.setState({message});
         }
 
+        const tooLong = this.isMessageTooLong(message);
+        if (tooLong) {
+            const errorLine = this.context.intl.formatMessage({
+                id: 'mobile.message_length.message_multiline',
+                defaultMessage: 'Your current message is too long.\nCurrent character count: {count}/{max}',
+            }, {
+                max: this.props.maxMessageLength,
+                count: message.trim().length,
+            });
+
+            this.setState({error: errorLine});
+        } else {
+            this.setState({error: null});
+        }
+
         if (message) {
-            this.emitCanEditPost(true);
+            this.emitCanEditPost(!tooLong);
         } else {
             this.emitCanEditPost(false);
         }
