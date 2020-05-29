@@ -29,6 +29,7 @@ const AUTOCOMPLETE_MAX_HEIGHT = 200;
 
 export default class PostDraft extends PureComponent {
     static propTypes = {
+        registerTypingAnimation: PropTypes.func.isRequired,
         addReactionToLatestPost: PropTypes.func.isRequired,
         canPost: PropTypes.bool.isRequired,
         channelDisplayName: PropTypes.string,
@@ -523,13 +524,17 @@ export default class PostDraft extends PureComponent {
             maxMessageLength,
             screenId,
             valueEvent,
+            registerTypingAnimation,
         } = this.props;
         const style = getStyleSheet(theme);
         const readonly = channelIsReadOnly || !canPost;
 
         return (
             <>
-                <Typing theme={theme}/>
+                <Typing
+                    theme={theme}
+                    registerTypingAnimation={registerTypingAnimation}
+                />
                 {Platform.OS === 'android' &&
                 <Autocomplete
                     cursorPositionEvent={cursorPositionEvent}

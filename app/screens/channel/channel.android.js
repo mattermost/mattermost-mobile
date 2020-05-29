@@ -37,11 +37,12 @@ export default class ChannelAndroid extends ChannelBase {
             component = (
                 <KeyboardLayout>
                     <View style={style.flex}>
-                        <ChannelPostList/>
+                        <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
                     </View>
                     <PostDraft
                         ref={this.postDraft}
                         screenId={this.props.componentId}
+                        registerTypingAnimation={this.registerTypingAnimation}
                     />
                 </KeyboardLayout>
             );

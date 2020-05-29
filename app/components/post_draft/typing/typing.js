@@ -8,43 +8,47 @@ import {
     Text,
 } from 'react-native';
 
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import FormattedText from 'app/components/formatted_text';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-const {View: AnimatedView} = Animated;
+import {TYPING_VISIBLE, TYPING_HEIGHT} from '@constants/post_draft';
 
 export default class Typing extends PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
         typing: PropTypes.array.isRequired,
+        registerTypingAnimation: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
         typing: [],
     };
 
-    state = {
-        typingHeight: new Animated.Value(0),
+    typingBottom = new Animated.Value(0);
+
+    componentDidMount() {
+        this.props.registerTypingAnimation(this.typingAnimation);
     }
 
     componentDidUpdate(prevProps) {
         if (this.props.typing.length && !prevProps.typing.length) {
-            this.animateTyping(true);
+            EventEmitter.emit(TYPING_VISIBLE, true);
         } else if (!this.props.typing.length) {
-            this.animateTyping();
+            EventEmitter.emit(TYPING_VISIBLE, false);
         }
     }
 
-    animateTyping = (show = false) => {
-        const [height, duration] = show ?
-            [20, 200] :
+    typingAnimation = (visible = false) => {
+        const [bottom, duration] = visible ?
+            [TYPING_HEIGHT, 200] :
             [0, 400];
 
-        Animated.timing(this.state.typingHeight, {
-            toValue: height,
+        return Animated.timing(this.typingBottom, {
+            toValue: bottom,
             duration,
             useNativeDriver: false,
-        }).start();
+        });
     }
 
     renderTyping = () => {
@@ -85,7 +89,7 @@ export default class Typing extends PureComponent {
         const style = getStyleSheet(this.props.theme);
 
         return (
-            <AnimatedView style={{height: this.state.typingHeight}}>
+            <Animated.View style={{bottom: this.typingBottom}}>
                 <Text
                     style={style.typing}
                     ellipsizeMode='tail'
@@ -93,7 +97,7 @@ export default class Typing extends PureComponent {
                 >
                     {this.renderTyping()}
                 </Text>
-            </AnimatedView>
+            </Animated.View>
         );
     }
 }
@@ -101,6 +105,7 @@ export default class Typing extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         typing: {
+            position: 'absolute',
             paddingLeft: 10,
             paddingTop: 3,
             fontSize: 11,

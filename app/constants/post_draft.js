@@ -9,3 +9,5 @@ export const ICON_SIZE = 24;
 export const ACCESSORIES_CONTAINER_NATIVE_ID = 'channelAccessoriesContainer';
 export const CHANNEL_POST_TEXTBOX_CURSOR_CHANGE = 'onChannelTextBoxCursorChange';
 export const CHANNEL_POST_TEXTBOX_VALUE_CHANGE = 'onChannelTextBoxValueChange';
+export const TYPING_VISIBLE = 'typingVisible';
+export const TYPING_HEIGHT = 18;

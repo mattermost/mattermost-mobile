@@ -7,12 +7,14 @@ import {intlShape} from 'react-intl';
 import {
     Keyboard,
     StyleSheet,
+    Animated,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import {NavigationTypes} from '@constants';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import {preventDoubleTap} from '@utils/tap';
@@ -64,11 +66,14 @@ export default class ChannelBase extends PureComponent {
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
+
+        this.typingAnimations = [];
     }
 
     componentDidMount() {
         EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
+        EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
 
         if (this.props.currentTeamId) {
             this.loadChannels(this.props.currentTeamId);
@@ -132,6 +137,17 @@ export default class ChannelBase extends PureComponent {
     componentWillUnmount() {
         EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
+        EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+    }
+
+    registerTypingAnimation = (animation) => {
+        this.typingAnimations.push(animation);
+    }
+
+    runTypingAnimations = (typingVisible) => {
+        Animated.parallel(
+            this.typingAnimations.map((animation) => animation(typingVisible)),
+        ).start();
     }
 
     blurPostDraft = () => {

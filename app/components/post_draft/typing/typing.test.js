@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
-import {
-    Animated,
-} from 'react-native';
-const {View: AnimatedView} = Animated;
+import {Animated} from 'react-native';
+
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
+import {TYPING_VISIBLE} from '@constants/post_draft';
 
 import Typing from './typing';
 
@@ -15,17 +16,33 @@ describe('Typing', () => {
         theme: {
             centerChannelColor: 'blue',
         },
+        registerTypingAnimation: jest.fn(),
     };
+
+    EventEmitter.emit = jest.fn();
 
     test('should render component without error', () => {
         const wrapper = shallow(
             <Typing {...baseProps}/>,
         );
 
-        expect(wrapper.find(AnimatedView).exists()).toBe(true);
+        expect(wrapper.find(Animated.View).exists()).toBe(true);
     });
 
-    test('should call animateTyping when next typing props is not empty and current is empty', () => {
+    test('should not emit TYPING_VISIBLE when typing props is not empty and previous is not empty', () => {
+        const props = {
+            ...baseProps,
+            typing: ['user2'],
+        };
+        const wrapper = shallow(
+            <Typing {...props}/>,
+        );
+
+        wrapper.setProps({typing: ['user2 and user3']});
+        expect(EventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    test('should emit TYPING_VISIBLE with true when typing props is not empty and previous is empty', () => {
         const props = {
             ...baseProps,
             typing: [],
@@ -33,22 +50,20 @@ describe('Typing', () => {
         const wrapper = shallow(
             <Typing {...props}/>,
         );
-        wrapper.instance().animateTyping = jest.fn();
 
         wrapper.setProps({typing: ['user2']});
-        expect(wrapper.instance().animateTyping).toHaveBeenCalledWith(true);
+        expect(EventEmitter.emit).toHaveBeenCalledWith(TYPING_VISIBLE, true);
     });
 
-    test('should call animateTyping when next typing props is not empty', () => {
+    test('should emit TYPING_VISIBLE with false when typing props is empty', () => {
         const props = {
             ...baseProps,
         };
         const wrapper = shallow(
             <Typing {...props}/>,
         );
-        wrapper.instance().animateTyping = jest.fn();
 
         wrapper.setProps({typing: []});
-        expect(wrapper.instance().animateTyping).toHaveBeenCalledWith();
+        expect(EventEmitter.emit).toHaveBeenCalledWith(TYPING_VISIBLE, false);
     });
 });
