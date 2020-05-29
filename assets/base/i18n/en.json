@@ -300,6 +300,7 @@
   "mobile.markdown.link.copy_url": "Copy URL",
   "mobile.mention.copy_mention": "Copy Mention",
   "mobile.message_length.message": "Your current message is too long. Current character count: {count}/{max}",
+  "mobile.message_length.message_multiline": "Your current message is too long.\nCurrent character count: {count}/{max}",
   "mobile.message_length.title": "Message Length",
   "mobile.more_dms.add_more": "You can add {remaining, number} more users",
   "mobile.more_dms.cannot_add_more": "You cannot add more users",
