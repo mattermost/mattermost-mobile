@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Dimensions, Keyboard, NativeModules, View, Animated} from 'react-native';
+import {Animated, Dimensions, Keyboard, NativeModules, View} from 'react-native';
 import SafeArea from 'react-native-safe-area';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
