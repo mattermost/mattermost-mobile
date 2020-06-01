@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Animated, View} from 'react-native';
 
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import Loading from '@components/loading';
@@ -31,16 +31,18 @@ export default class ThreadAndroid extends ThreadBase {
         if (this.hasRootPost()) {
             content = (
                 <>
-                    <PostList
-                        renderFooter={this.renderFooter()}
-                        indicateNewMessages={false}
-                        postIds={postIds}
-                        currentUserId={myMember && myMember.user_id}
-                        lastViewedAt={this.state.lastViewedAt}
-                        lastPostIndex={-1}
-                        onPostPress={this.hideKeyboard}
-                        location={THREAD}
-                    />
+                    <Animated.View style={{flex: 1, paddingBottom: this.bottomPadding}}>
+                        <PostList
+                            renderFooter={this.renderFooter()}
+                            indicateNewMessages={false}
+                            postIds={postIds}
+                            currentUserId={myMember && myMember.user_id}
+                            lastViewedAt={this.state.lastViewedAt}
+                            lastPostIndex={-1}
+                            onPostPress={this.hideKeyboard}
+                            location={THREAD}
+                        />
+                    </Animated.View>
                     <PostDraft
                         ref={this.postDraft}
                         channelId={channelId}
