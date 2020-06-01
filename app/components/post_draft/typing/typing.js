@@ -10,8 +10,9 @@ import {
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import FormattedText from 'app/components/formatted_text';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import FormattedText from '@components/formatted_text';
+import SafeAreaView from '@components/safe_area_view';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {TYPING_VISIBLE, TYPING_HEIGHT} from '@constants/post_draft';
 
 export default class Typing extends PureComponent {
@@ -28,7 +29,7 @@ export default class Typing extends PureComponent {
     typingBottom = new Animated.Value(0);
 
     componentDidMount() {
-        this.props.registerTypingAnimation(this.typingAnimation);
+        this.removeTypingAnimation = this.props.registerTypingAnimation(this.typingAnimation);
     }
 
     componentDidUpdate(prevProps) {
@@ -37,6 +38,10 @@ export default class Typing extends PureComponent {
         } else if (!this.props.typing.length) {
             EventEmitter.emit(TYPING_VISIBLE, false);
         }
+    }
+
+    componentWillUnmount() {
+        this.removeTypingAnimation();
     }
 
     typingAnimation = (visible = false) => {
@@ -90,13 +95,19 @@ export default class Typing extends PureComponent {
 
         return (
             <Animated.View style={{bottom: this.typingBottom}}>
-                <Text
-                    style={style.typing}
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
+                <SafeAreaView
+                    excludeHeader={true}
+                    excludeFooter={true}
+                    useLandscapeMargin={true}
                 >
-                    {this.renderTyping()}
-                </Text>
+                    <Text
+                        style={style.typing}
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                    >
+                        {this.renderTyping()}
+                    </Text>
+                </SafeAreaView>
             </Animated.View>
         );
     }

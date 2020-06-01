@@ -66,7 +66,7 @@ export default class ChannelPostList extends PureComponent {
 
     componentDidMount() {
         EventEmitter.on('goToThread', this.goToThread);
-        this.props.registerTypingAnimation(this.containerPaddingAnimation);
+        this.removeTypingAnimation = this.props.registerTypingAnimation(this.bottomPaddingAnimation);
     }
 
     componentDidUpdate(prevProps) {
@@ -85,9 +85,10 @@ export default class ChannelPostList extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off('goToThread', this.goToThread);
+        this.removeTypingAnimation();
     }
 
-    containerPaddingAnimation = (visible) => {
+    bottomPaddingAnimation = (visible) => {
         const [padding, duration] = visible ?
             [TYPING_HEIGHT, 200] :
             [0, 400];
@@ -101,7 +102,7 @@ export default class ChannelPostList extends PureComponent {
 
     goToThread = (post) => {
         telemetry.start(['post_list:thread']);
-        const {actions, channelId} = this.props;
+        const {actions, channelId, registerTypingAnimation} = this.props;
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
@@ -113,6 +114,7 @@ export default class ChannelPostList extends PureComponent {
         const passProps = {
             channelId,
             rootId,
+            registerTypingAnimation,
         };
 
         requestAnimationFrame(() => {

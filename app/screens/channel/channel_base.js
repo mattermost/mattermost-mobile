@@ -141,7 +141,13 @@ export default class ChannelBase extends PureComponent {
     }
 
     registerTypingAnimation = (animation) => {
-        this.typingAnimations.push(animation);
+        const length = this.typingAnimations.push(animation);
+        const removeAnimation = () => {
+            const animationIndex = length - 1;
+            this.typingAnimations = this.typingAnimations.filter((a, index) => index !== animationIndex);
+        };
+
+        return removeAnimation;
     }
 
     runTypingAnimations = (typingVisible) => {

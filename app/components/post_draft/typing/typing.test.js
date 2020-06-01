@@ -16,7 +16,9 @@ describe('Typing', () => {
         theme: {
             centerChannelColor: 'blue',
         },
-        registerTypingAnimation: jest.fn(),
+        registerTypingAnimation: jest.fn(() => {
+            return jest.fn();
+        }),
     };
 
     EventEmitter.emit = jest.fn();
@@ -56,14 +58,24 @@ describe('Typing', () => {
     });
 
     test('should emit TYPING_VISIBLE with false when typing props is empty', () => {
-        const props = {
-            ...baseProps,
-        };
         const wrapper = shallow(
-            <Typing {...props}/>,
+            <Typing {...baseProps}/>,
         );
 
         wrapper.setProps({typing: []});
         expect(EventEmitter.emit).toHaveBeenCalledWith(TYPING_VISIBLE, false);
+    });
+
+    test('should add/remove typing animation on mount/unmount', () => {
+        const wrapper = shallow(
+            <Typing {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+
+        expect(baseProps.registerTypingAnimation).toHaveBeenCalledTimes(1);
+        expect(instance.removeTypingAnimation).not.toHaveBeenCalled();
+
+        wrapper.unmount();
+        expect(instance.removeTypingAnimation).toHaveBeenCalledTimes(1);
     });
 });

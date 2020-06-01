@@ -24,6 +24,7 @@ export default class ThreadAndroid extends ThreadBase {
             rootId,
             channelIsArchived,
             theme,
+            registerTypingAnimation,
         } = this.props;
 
         let content;
@@ -46,6 +47,7 @@ export default class ThreadAndroid extends ThreadBase {
                         channelIsArchived={channelIsArchived}
                         rootId={rootId}
                         screenId={this.props.componentId}
+                        registerTypingAnimation={registerTypingAnimation}
                     />
                 </>
             );
