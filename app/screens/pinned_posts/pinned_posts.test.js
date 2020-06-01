@@ -9,10 +9,6 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import PinnedPosts from './pinned_posts';
 
-jest.mock('rn-placeholder', () => ({
-    ImageContent: () => null,
-}));
-
 describe('PinnedPosts', () => {
     const baseProps = {
         actions: {
