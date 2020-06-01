@@ -214,12 +214,19 @@ export default class EditPost extends PureComponent {
             );
         }
 
+        let inputContainerStyle = style.inputContainer;
+
         let displayError;
         if (error) {
+            inputContainerStyle = [inputContainerStyle, {marginTop: 0}];
+
             if (errorExtra) {
                 displayError = (
                     <View style={[style.errorContainerSplit, {width: deviceWidth}]}>
-                        <ErrorText error={error}/>
+                        <ErrorText
+                            error={error}
+                            textStyle={style.errorWrap}
+                        />
                         <ErrorText error={errorExtra}/>
                     </View>
                 );
@@ -245,7 +252,7 @@ export default class EditPost extends PureComponent {
                 <StatusBar/>
                 <View style={style.scrollView}>
                     {displayError}
-                    <View style={[style.inputContainer, padding(isLandscape), {height}]}>
+                    <View style={[inputContainerStyle, padding(isLandscape), {height}]}>
                         <TextInputWithLocalizedPlaceholder
                             ref={this.messageRef}
                             value={message}
@@ -295,9 +302,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 10,
             flexDirection: 'row',
             justifyContent: 'space-between',
+            alignItems: 'center',
         },
         errorWrapper: {
             alignItems: 'center',
+        },
+        errorWrap: {
+            flexShrink: 1,
         },
         inputContainer: {
             borderTopWidth: 1,
