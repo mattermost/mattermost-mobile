@@ -129,6 +129,7 @@ export default class EditPost extends PureComponent {
         this.setState({
             editing: true,
             error: null,
+            errorExtra: null,
         });
 
         this.emitEditing(true);
@@ -162,16 +163,14 @@ export default class EditPost extends PureComponent {
         const tooLong = this.isMessageTooLong(message);
         if (tooLong) {
             const errorLine = this.context.intl.formatMessage({
-                id: 'mobile.message_length.message_multiline',
-                defaultMessage: 'Your current message is too long.\nCurrent character count: {count}/{max}',
-            }, {
-                max: this.props.maxMessageLength,
-                count: message.trim().length,
+                id: 'mobile.message_length.message_split_left',
+                defaultMessage: 'Message exceeds the character limit',
             });
 
-            this.setState({error: errorLine});
+            const errorExtra = `${message.trim().length} / ${this.props.maxMessageLength}`;
+            this.setState({error: errorLine, errorExtra});
         } else {
-            this.setState({error: null});
+            this.setState({error: null, errorExtra: null});
         }
 
         if (message) {
@@ -202,7 +201,7 @@ export default class EditPost extends PureComponent {
 
     render() {
         const {deviceHeight, deviceWidth, theme, isLandscape} = this.props;
-        const {editing, message, error, autocompleteVisible} = this.state;
+        const {editing, message, error, errorExtra, autocompleteVisible} = this.state;
 
         const style = getStyleSheet(theme);
 
@@ -217,13 +216,22 @@ export default class EditPost extends PureComponent {
 
         let displayError;
         if (error) {
-            displayError = (
-                <View style={[style.errorContainer, {width: deviceWidth}]}>
-                    <View style={style.errorWrapper}>
+            if (errorExtra) {
+                displayError = (
+                    <View style={[style.errorContainerSplit, {width: deviceWidth}]}>
                         <ErrorText error={error}/>
+                        <ErrorText error={errorExtra}/>
                     </View>
-                </View>
-            );
+                );
+            } else {
+                displayError = (
+                    <View style={[style.errorContainer, {width: deviceWidth}]}>
+                        <View style={style.errorWrapper}>
+                            <ErrorText error={error}/>
+                        </View>
+                    </View>
+                );
+            }
         }
 
         const height = Platform.OS === 'android' ? (deviceHeight / 2) - 40 : (deviceHeight / 2);
@@ -282,6 +290,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         errorContainer: {
             paddingHorizontal: 10,
+        },
+        errorContainerSplit: {
+            paddingHorizontal: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
         },
         errorWrapper: {
             alignItems: 'center',
