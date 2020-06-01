@@ -87,15 +87,15 @@ class SSO extends PureComponent {
         switch (props.ssoType) {
         case ViewTypes.GITLAB:
             this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login`;
-            this.completedUrl = '/signup/gitlab/complete';
+            this.completeUrlPath = '/signup/gitlab/complete';
             break;
         case ViewTypes.SAML:
             this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile`;
-            this.completedUrl = '/login/sso/saml';
+            this.completeUrlPath = '/login/sso/saml';
             break;
         case ViewTypes.OFFICE365:
             this.loginUrl = `${props.serverUrl}/oauth/office365/mobile_login`;
-            this.completedUrl = '/signup/office365/complete';
+            this.completeUrlPath = '/signup/office365/complete';
             break;
         }
 
@@ -139,7 +139,7 @@ class SSO extends PureComponent {
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
-        } else if (parsed.pathname === this.completedUrl) {
+        } else if (parsed.pathname === this.completeUrlPath) {
             // To avoid `window.postMessage` conflicts in any of the SSO flows
             // we enable the onMessage handler only When the webView navigates to the final SSO URL.
             nextState.messagingEnabled = true;
@@ -151,7 +151,13 @@ class SSO extends PureComponent {
     onLoadEnd = (event) => {
         const url = event.nativeEvent.url;
         const parsed = urlParse(url);
-        if (url.includes(this.completedUrl) && !parsed.query) {
+
+        let isLastRedirect = url.includes(this.completeUrlPath);
+        if (this.props.ssoType === ViewTypes.SAML) {
+            isLastRedirect = isLastRedirect && !parsed.query;
+        }
+
+        if (isLastRedirect) {
             CookieManager.get(parsed.origin, this.useWebkit).then((res) => {
                 const mmtoken = res.MMAUTHTOKEN;
                 const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
