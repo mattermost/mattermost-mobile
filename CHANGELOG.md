@@ -28,6 +28,7 @@
  - Fixed an issue with an infinite skeleton channel screen on app relaunch when ``ExperimentalPrimaryTeam setting`` was enabled.
  - Fixed an issue where users were scrolled to old messages when switching to a channel with unread messages.
  - Fixed an issue where a logout message for session timeout was missing.
+ - Fixed an issue where the app did not properly handle server URL and SSO redirects.
  - Fixed an issue where Direct and Group Messages disappeared from the left-hand side after opening them on webapp.
  - Fixed an issue where a crash occurred instead of showing proper error on entering invalid MFA token.
  - Fixed an issue where a user could not interact with the app until in-app notifications were dismissed.
