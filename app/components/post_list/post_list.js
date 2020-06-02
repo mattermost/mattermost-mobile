@@ -134,10 +134,6 @@ export default class PostList extends PureComponent {
             this.shouldScrollToBottom = false;
         }
 
-        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && !this.cancelScrollToIndex) {
-            this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
-        }
-
         if (
             this.props.channelId === prevProps.channelId &&
             this.props.postIds.length &&
