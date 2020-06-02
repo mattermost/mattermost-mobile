@@ -95,6 +95,7 @@ export default class EditProfile extends PureComponent {
         lastNameDisabled: PropTypes.bool.isRequired,
         nicknameDisabled: PropTypes.bool.isRequired,
         positionDisabled: PropTypes.bool.isRequired,
+        profilePictureDisabled: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         commandType: PropTypes.string.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -504,6 +505,7 @@ export default class EditProfile extends PureComponent {
     renderProfilePicture = () => {
         const {
             currentUser,
+            profilePictureDisabled,
             theme,
         } = this.props;
 
@@ -514,6 +516,25 @@ export default class EditProfile extends PureComponent {
 
         const style = getStyleSheet(theme);
         const uri = profileImage ? profileImage.uri : null;
+        const profilePicture = (
+            <ProfilePicture
+                userId={currentUser.id}
+                size={150}
+                statusBorderWidth={6}
+                statusSize={40}
+                edit={!profilePictureDisabled}
+                imageUri={uri}
+                profileImageRemove={profileImageRemove}
+            />
+        );
+
+        if (profilePictureDisabled) {
+            return (
+                <View style={style.top}>
+                    {profilePicture}
+                </View>
+            );
+        }
 
         return (
             <View style={style.top}>
@@ -532,15 +553,7 @@ export default class EditProfile extends PureComponent {
                     onShowUnsupportedMimeTypeWarning={this.onShowUnsupportedMimeTypeWarning}
                     validMimeTypes={VALID_MIME_TYPES}
                 >
-                    <ProfilePicture
-                        userId={currentUser.id}
-                        size={150}
-                        statusBorderWidth={6}
-                        statusSize={40}
-                        edit={true}
-                        imageUri={uri}
-                        profileImageRemove={profileImageRemove}
-                    />
+                    {profilePicture}
                 </ProfilePictureButton>
             </View>
         );

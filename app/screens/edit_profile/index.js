@@ -26,12 +26,12 @@ function mapStateToProps(state, ownProps) {
     const nicknameDisabled = (service === 'ldap' && config.LdapNicknameAttributeSet === 'true') ||
         (service === 'saml' && config.SamlNicknameAttributeSet === 'true');
 
-    let positionDisabled = false;
-    if (isMinimumServerVersion(serverVersion, 5, 12)) {
-        positionDisabled = (service === 'ldap' && config.LdapPositionAttributeSet === 'true') ||
-            (service === 'saml' && config.SamlPositionAttributeSet === 'true');
-    } else {
-        positionDisabled = (service === 'ldap' || service === 'saml') && config.PositionAttribute === 'true';
+    const positionDisabled = (service === 'ldap' && config.LdapPositionAttributeSet === 'true') ||
+        (service === 'saml' && config.SamlPositionAttributeSet === 'true');
+
+    let profilePictureDisabled = false;
+    if (isMinimumServerVersion(serverVersion, 5, 24)) {
+        profilePictureDisabled = (service === 'ldap' || service === 'saml') && config.LdapPictureAttributeSet === 'true';
     }
 
     return {
@@ -39,6 +39,7 @@ function mapStateToProps(state, ownProps) {
         lastNameDisabled,
         nicknameDisabled,
         positionDisabled,
+        profilePictureDisabled,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
     };
