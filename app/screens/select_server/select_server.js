@@ -156,18 +156,19 @@ export default class SelectServer extends PureComponent {
         }
     };
 
-    getUrl = () => {
-        let preUrl = urlParse(this.state.url, true);
+    getUrl = async (serverUrl, useHttp = false) => {
+        let url = this.sanitizeUrl(serverUrl, useHttp);
 
-        if (!preUrl.host || preUrl.protocol === 'file:') {
-            preUrl = urlParse('https://' + stripTrailingSlashes(this.state.url), true);
+        try {
+            const resp = await fetch(url, {method: 'HEAD'});
+            if (resp?.rnfbRespInfo?.redirects?.length) {
+                url = resp.rnfbRespInfo.redirects[resp.rnfbRespInfo.redirects.length - 1];
+            }
+        } catch {
+            // do nothing
         }
 
-        if (preUrl.protocol === 'http:') {
-            preUrl.protocol = 'https:';
-        }
-
-        return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
+        return this.sanitizeUrl(url, useHttp);
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
@@ -195,8 +196,6 @@ export default class SelectServer extends PureComponent {
     };
 
     handleConnect = preventDoubleTap(async () => {
-        const url = this.getUrl();
-
         Keyboard.dismiss();
 
         if (this.state.connecting || this.state.connected) {
@@ -205,7 +204,7 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
-        if (!isValidUrl(url)) {
+        if (!isValidUrl(this.sanitizeUrl(this.state.url))) {
             this.setState({
                 error: {
                     intl: {
@@ -227,11 +226,11 @@ export default class SelectServer extends PureComponent {
                         auto: true,
                         certificate,
                     }).build();
-                    this.pingServer(url);
+                    this.pingServer(this.state.url);
                 }
             });
         } else {
-            this.pingServer(url);
+            this.pingServer(this.state.url);
         }
     });
 
@@ -309,7 +308,7 @@ export default class SelectServer extends PureComponent {
         resetToChannel();
     };
 
-    pingServer = (url, retryWithHttp = true) => {
+    pingServer = async (url, retryWithHttp = true) => {
         const {
             getPing,
             handleServerUrlChanged,
@@ -323,8 +322,9 @@ export default class SelectServer extends PureComponent {
             error: null,
         });
 
-        Client4.setUrl(url);
-        handleServerUrlChanged(url);
+        const serverUrl = await this.getUrl(url, !retryWithHttp);
+        Client4.setUrl(serverUrl);
+        handleServerUrlChanged(serverUrl);
 
         let cancel = false;
         this.cancelPing = () => {
@@ -338,13 +338,16 @@ export default class SelectServer extends PureComponent {
             this.cancelPing = null;
         };
 
-        getPing().then((result) => {
+        try {
+            const result = await getPing();
+
             if (cancel) {
                 return;
             }
 
             if (result.error && retryWithHttp) {
-                this.pingServer(url.replace('https:', 'http:'), false);
+                const nurl = serverUrl.replace('https:', 'http:');
+                this.pingServer(nurl, false);
                 return;
             }
 
@@ -358,7 +361,7 @@ export default class SelectServer extends PureComponent {
                 connecting: false,
                 error: result.error,
             });
-        }).catch(() => {
+        } catch {
             if (cancel) {
                 return;
             }
@@ -366,8 +369,21 @@ export default class SelectServer extends PureComponent {
             this.setState({
                 connecting: false,
             });
-        });
+        }
     };
+
+    sanitizeUrl = (url, useHttp = false) => {
+        let preUrl = urlParse(url, true);
+
+        if (!preUrl.host || preUrl.protocol === 'file:') {
+            preUrl = urlParse('https://' + stripTrailingSlashes(url), true);
+        }
+
+        if (preUrl.protocol === 'http:' && !useHttp) {
+            preUrl.protocol = 'https:';
+        }
+        return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
+    }
 
     scheduleSessionExpiredNotification = () => {
         const {intl} = this.context;

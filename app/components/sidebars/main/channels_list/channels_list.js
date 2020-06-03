@@ -31,9 +31,9 @@ export default class ChannelsList extends PureComponent {
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
-        onShowTeams: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        onShowTeams: PropTypes.func,
     };
 
     static contextTypes = {
@@ -126,6 +126,8 @@ export default class ChannelsList extends PureComponent {
             fontSize: 15,
         };
 
+        const leftComponent = onShowTeams ? <SwitchTeamsButton onShowTeams={onShowTeams}/> : null;
+
         const title = (
             <View style={[styles.searchContainer, padding(isLandscape)]}>
                 <SearchBar
@@ -148,12 +150,7 @@ export default class ChannelsList extends PureComponent {
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                     showCancel={Platform.OS === 'android'}
-                    leftComponentWidth={67}
-                    leftComponent={(
-                        <SwitchTeamsButton
-                            onShowTeams={onShowTeams}
-                        />
-                    )}
+                    leftComponent={leftComponent}
                 />
             </View>
         );
@@ -206,7 +203,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         headerContainer: {
             alignItems: 'center',
-            paddingLeft: 13,
             backgroundColor: theme.sidebarBg,
             flexDirection: 'row',
             borderBottomWidth: 1,
@@ -236,7 +232,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...Platform.select({
                 android: {
                     marginBottom: 1,
-                    paddingRight: 17,
+                    paddingRight: 8,
+                    paddingLeft: 8,
                 },
                 ios: {
                     marginBottom: 3,
@@ -252,10 +249,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             justifyContent: 'center',
             marginHorizontal: 16,
-        },
-        switchContainer: {
-            position: 'relative',
-            top: -1,
         },
         title: {
             color: theme.sidebarText,

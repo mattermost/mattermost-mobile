@@ -18,6 +18,7 @@ import LocalConfig from '@assets/config';
 import {NavigationTypes, ViewTypes} from '@constants';
 import {getTranslations, resetMomentLocale} from '@i18n';
 import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {getTeams} from '@mm-redux/actions/teams';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
 import {close as closeWebSocket} from '@actions/websocket';
 import {Client4} from '@mm-redux/client';
@@ -234,6 +235,7 @@ class GlobalEventHandler {
         const user = getUser(state, currentUserId);
 
         await dispatch(loadConfigAndLicense());
+        await dispatch(getTeams());
         await dispatch(loadMe(user));
 
         const window = Dimensions.get('window');

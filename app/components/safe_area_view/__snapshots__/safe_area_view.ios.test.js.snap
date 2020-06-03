@@ -11,7 +11,7 @@ exports[`SafeAreaIos should match snapshot 1`] = `
     }
   }
 >
-  <View
+  <ForwardRef(AnimatedComponentWrapper)
     style={
       Object {
         "backgroundColor": "#1153ab",
