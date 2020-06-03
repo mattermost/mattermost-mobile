@@ -64,6 +64,7 @@ export type GlobalState = {
         roles: RolesRequestsStatuses;
         jobs: JobsRequestsStatuses;
     };
+    views: any;
     websocket: {
         connected: boolean;
         lastConnectAt: number;

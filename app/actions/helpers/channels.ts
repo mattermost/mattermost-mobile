@@ -4,11 +4,11 @@
 import {ChannelTypes, PreferenceTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
-import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannelId, getRedirectChannelNameForTeam, getChannelsNameMapInTeam} from '@mm-redux/selectors/entities/channels';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getMyPreferences} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getUsers, getUserIdsInChannels} from '@mm-redux/selectors/entities/users';
-import {getUserIdFromChannelName, isAutoClosed} from '@mm-redux/utils/channel_utils';
+import {getChannelByName as selectChannelByName, getUserIdFromChannelName, isAutoClosed} from '@mm-redux/utils/channel_utils';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
 import {ActionResult, GenericAction} from '@mm-redux/types/actions';
@@ -169,6 +169,7 @@ export function makeDirectChannelVisibleIfNecessary(state: GlobalState, otherUse
             value: 'true',
         };
 
+        Client4.savePreferences(currentUserId, [preference]);
         return {
             type: PreferenceTypes.RECEIVED_PREFERENCES,
             data: [preference],
@@ -192,6 +193,8 @@ export async function makeGroupMessageVisibleIfNecessary(state: GlobalState, cha
                 name: channelId,
                 value: 'true',
             };
+
+            Client4.savePreferences(currentUserId, [preference]);
 
             const profilesInChannel = await fetchUsersInChannel(state, channelId);
 
@@ -276,6 +279,43 @@ export async function getAddedDmUsersIfNecessary(state: GlobalState, preferences
     }
 
     return actions;
+}
+
+export function lastChannelIdForTeam(state: GlobalState, teamId: string): string {
+    const {channels, myMembers} = state.entities.channels;
+    const {currentUserId} = state.entities.users;
+    const {myPreferences} = state.entities.preferences;
+    const lastChannelForTeam = state.views.team.lastChannelForTeam[teamId];
+    const lastChannelId = lastChannelForTeam && lastChannelForTeam.length ? lastChannelForTeam[0] : '';
+    const lastChannel = channels[lastChannelId];
+
+    const isDMVisible = lastChannel && lastChannel.type === General.DM_CHANNEL &&
+            isDirectChannelVisible(currentUserId, myPreferences, lastChannel);
+
+    const isGMVisible = lastChannel && lastChannel.type === General.GM_CHANNEL &&
+        isGroupChannelVisible(myPreferences, lastChannel);
+
+    if (
+        myMembers[lastChannelId] &&
+        lastChannel &&
+        (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
+    ) {
+        return lastChannelId;
+    }
+
+    // Fallback to default channel
+    const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
+    const channel = selectChannelByName(channelsInTeam, getRedirectChannelNameForTeam(state, teamId));
+
+    if (channel) {
+        return channel.id;
+    }
+
+    // Handle case when the default channel cannot be found
+    // so we need to get the first available channel of the team
+    const teamChannels = Object.values(channelsInTeam);
+    const firstChannel = teamChannels.length ? teamChannels[0].id : '';
+    return firstChannel;
 }
 
 function fetchDirectMessageProfileIfNeeded(state: GlobalState, channel: Channel, channelMembers: Array<ChannelMembership>, profilesInChannel: Array<string>) {

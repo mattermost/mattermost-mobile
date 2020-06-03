@@ -32,6 +32,7 @@ describe('edit_profile', () => {
         lastNameDisabled: true,
         nicknameDisabled: true,
         positionDisabled: true,
+        profilePictureDisabled: true,
         theme: Preferences.THEMES.default,
         currentUser: {
             first_name: 'Dwight',
@@ -58,6 +59,7 @@ describe('edit_profile', () => {
         const wrapper = shallow(
             <EditProfile
                 {...baseProps}
+                profilePictureDisabled={false}
             />,
             {context: {intl: {formatMessage: jest.fn()}}},
         );

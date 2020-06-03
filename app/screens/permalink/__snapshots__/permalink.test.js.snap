@@ -5,7 +5,6 @@ exports[`Permalink should match snapshot 1`] = `
   backgroundColor="transparent"
   excludeHeader={true}
   footerColor="transparent"
-  forceTop={44}
 >
   <View
     style={

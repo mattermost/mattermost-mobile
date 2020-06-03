@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 import {Client4} from '@mm-redux/client';
 import {General} from '../constants';
-import {ChannelTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
+import {ChannelTypes, RoleTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {isCompatibleWithJoinViewTeamPermissions} from '@mm-redux/selectors/entities/general';
-
+import {getRoles} from '@mm-redux/selectors/entities/roles_helpers';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 import {GetStateFunc, DispatchFunc, ActionFunc, ActionResult, batchActions, Action} from '@mm-redux/types/actions';
@@ -133,7 +132,7 @@ export function getTeams(page = 0, perPage: number = General.TEAMS_CHUNK_SIZE, i
             });
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_GET_TEAMS'));
 
         return {data};
     };
@@ -165,7 +164,7 @@ export function searchTeams(term: string, page?: number, perPage?: number): Acti
             {
                 type: TeamTypes.GET_TEAMS_SUCCESS,
             },
-        ]));
+        ], 'BATCH_SEARCH_TEAMS'));
 
         return {data: response};
     };
@@ -204,7 +203,7 @@ export function createTeam(team: Team): ActionFunc {
                 type: TeamTypes.SELECT_TEAM,
                 data: created.id,
             },
-        ]));
+        ], 'BATCH_CREATE_TEAM'));
         dispatch(loadRolesIfNeeded(member.roles.split(' ')));
 
         return {data: created};
@@ -238,7 +237,7 @@ export function deleteTeam(teamId: string): ActionFunc {
             },
         );
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_DELETE_TEAM'));
 
         return {data: true};
     };
@@ -417,16 +416,43 @@ export function addUserToTeam(teamId: string, userId: string): ActionFunc {
             return {error};
         }
 
-        dispatch(batchActions([
-            {
-                type: UserTypes.RECEIVED_PROFILE_IN_TEAM,
-                data: {id: teamId, user_id: userId},
-            },
-            {
-                type: TeamTypes.RECEIVED_MEMBER_IN_TEAM,
-                data: member,
-            },
-        ]));
+        const actions: Array<Action> = [{
+            type: UserTypes.RECEIVED_PROFILE_IN_TEAM,
+            data: {id: teamId, user_id: userId},
+        }, {
+            type: TeamTypes.RECEIVED_MY_TEAM_MEMBER,
+            data: member,
+        }, {
+            type: TeamTypes.RECEIVED_MEMBER_IN_TEAM,
+            data: member,
+        }];
+
+        if (member.roles) {
+            const state = getState();
+            const currentRoles = getRoles(state);
+            const rolesToLoad = new Set<string>();
+            for (const role of member.roles?.split(' ')) {
+                if (!currentRoles[role] && role.trim() !== '') {
+                    rolesToLoad.add(role);
+                }
+            }
+
+            if (rolesToLoad.size > 0) {
+                try {
+                    const roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
+                    if (roles.length) {
+                        actions.push({
+                            type: RoleTypes.RECEIVED_ROLES,
+                            data: roles,
+                        });
+                    }
+                } catch {
+                    // do nothing
+                }
+            }
+        }
+
+        dispatch(batchActions(actions, 'BATCH_ADD_USER_TO_TEAM'));
 
         return {data: member};
     };
@@ -456,7 +482,7 @@ export function addUsersToTeam(teamId: string, userIds: Array<string>): ActionFu
                 type: TeamTypes.RECEIVED_MEMBERS_IN_TEAM,
                 data: members,
             },
-        ]));
+        ], 'BATCH_ADD_USERS_TO_TEAM'));
 
         return {data: members};
     };
@@ -486,7 +512,7 @@ export function addUsersToTeamGracefully(teamId: string, userIds: Array<string>)
                 type: TeamTypes.RECEIVED_MEMBERS_IN_TEAM,
                 data: members,
             },
-        ]));
+        ], 'BATCH_ADD_USERS_TO_TEAM_GRACEFULLY'));
 
         return {data: result};
     };
@@ -540,7 +566,7 @@ export function removeUserFromTeam(teamId: string, userId: string): ActionFunc {
             }
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_REMOVE_USER_FROM_TEAM'));
 
         return {data: true};
     };

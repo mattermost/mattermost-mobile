@@ -4,9 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {getTeams, addUserToTeam, joinTeam} from '@mm-redux/actions/teams';
+import {getTeams, addUserToTeam} from '@mm-redux/actions/teams';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getJoinableTeams} from '@mm-redux/selectors/entities/teams';
+import {getSortedJoinableTeams} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import {logout} from 'app/actions/views/user';
@@ -24,9 +24,8 @@ function mapStateToProps(state) {
         currentUserId: currentUser && currentUser.id,
         currentUserIsGuest,
         isLandscape: isLandscape(state),
-        serverVersion: state.entities.general.serverVersion,
         teamsRequest: state.requests.teams.getTeams,
-        teams: getJoinableTeams(state),
+        teams: getSortedJoinableTeams(state, currentUser.locale),
         theme: getTheme(state),
     };
 }
@@ -36,7 +35,6 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getTeams,
             handleTeamChange,
-            joinTeam,
             addUserToTeam,
             logout,
         }, dispatch),
