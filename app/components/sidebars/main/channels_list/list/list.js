@@ -233,14 +233,8 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        const options = Platform.select({
-            ios: {
-                modalPresentationStyle: 'pageSheet',
-            },
-        });
-
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-        showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps);
     });
 
     goToCreatePrivateChannel = preventDoubleTap(() => {
@@ -252,14 +246,8 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        const options = Platform.select({
-            ios: {
-                modalPresentationStyle: 'pageSheet',
-            },
-        });
-
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-        showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps);
     });
 
     goToDirectMessages = preventDoubleTap(() => {
@@ -274,11 +262,6 @@ export default class List extends PureComponent {
                     icon: this.closeButton,
                 }],
             },
-            ...Platform.select({
-                ios: {
-                    modalPresentationStyle: 'pageSheet',
-                },
-            }),
         };
 
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
@@ -293,14 +276,8 @@ export default class List extends PureComponent {
             closeButton: this.closeButton,
         };
 
-        const options = Platform.select({
-            ios: {
-                modalPresentationStyle: 'pageSheet',
-            },
-        });
-
         EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
-        showModal(screen, title, passProps, options);
+        showModal(screen, title, passProps);
     });
 
     keyExtractor = (item) => item.id || item;

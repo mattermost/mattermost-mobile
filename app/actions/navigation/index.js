@@ -225,7 +225,7 @@ export async function popToRoot() {
 export function showModal(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
-        modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+        modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
