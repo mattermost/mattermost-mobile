@@ -594,7 +594,7 @@
   "user.settings.general.field_handled_externally": "Dit veld word gebruikt door jouw login provider. Als je het wilt veranderen, moet je dat via de login provider doen. ",
   "user.settings.general.firstName": "Voornaam",
   "user.settings.general.lastName": "Achternaam",
-  "user.settings.general.nickname": "Bijnaam",
+  "user.settings.general.nickname": "Roepnaam",
   "user.settings.general.position": "Positie",
   "user.settings.general.username": "Gebruikersnaam",
   "user.settings.modal.display": "Weergave",
