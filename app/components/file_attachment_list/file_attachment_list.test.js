@@ -11,8 +11,6 @@ jest.mock('react-native-file-viewer', () => ({
 }));
 
 describe('FileAttachmentList', () => {
-    const loadFilesForPostIfNecessary = jest.fn().mockImplementationOnce(() => Promise.resolve({data: {}}));
-
     const files = [{
         create_at: 1546893090093,
         delete_at: 0,
@@ -55,9 +53,6 @@ describe('FileAttachmentList', () => {
     };
 
     const baseProps = {
-        actions: {
-            loadFilesForPostIfNecessary,
-        },
         canDownloadFiles: true,
         deviceHeight: 680,
         deviceWidth: 660,
@@ -162,45 +157,9 @@ describe('FileAttachmentList', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call loadFilesForPostIfNecessary when files does not exist', async () => {
-        const props = {
-            ...baseProps,
-            files: undefined,
-        };
-
-        shallow(
-            <FileAttachment {...props}/>,
-        );
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
-    });
-
-    test('should call loadFilesForPostIfNecessary on componentUpdate and when files does not exist', async () => {
-        const loadFilesForPostIfNecessaryMock = jest.fn().mockImplementationOnce(() => Promise.resolve({data: {}}));
-        const props = {
-            ...baseProps,
-            files: [],
-            actions: {
-                loadFilesForPostIfNecessary: loadFilesForPostIfNecessaryMock,
-            },
-        };
-
-        shallow(
-            <FileAttachment {...props}/>,
-        );
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
-        await loadFilesForPostIfNecessaryMock();
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(2);
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
-    });
-
     test('should call getFilesForGallery on props change', async () => {
-        const loadFilesForPostIfNecessaryMock = jest.fn().mockImplementationOnce(() => Promise.resolve({data: {}}));
         const props = {
             ...baseProps,
-            actions: {
-                loadFilesForPostIfNecessary: loadFilesForPostIfNecessaryMock,
-            },
         };
 
         const wrapper = shallow(
@@ -210,24 +169,5 @@ describe('FileAttachmentList', () => {
         wrapper.instance().getFilesForGallery = jest.fn().mockImplementationOnce(() => []);
         wrapper.setProps({files: [files[0], files[1]]});
         expect(wrapper.instance().getFilesForGallery).toHaveBeenCalled();
-    });
-
-    test('should call loadFilesForPostIfNecessary when files object empty', async () => {
-        const loadFilesForPostIfNecessaryMock = jest.fn().mockImplementationOnce(() => Promise.resolve({data: {}}));
-        const props = {
-            ...baseProps,
-            actions: {
-                loadFilesForPostIfNecessary: loadFilesForPostIfNecessaryMock,
-            },
-        };
-
-        const wrapper = shallow(
-            <FileAttachment {...props}/>,
-        );
-        wrapper.setProps({files: []});
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledWith(props.postId);
-        wrapper.setProps({test: 'test'});
-        expect(props.actions.loadFilesForPostIfNecessary).toHaveBeenCalledTimes(1);
     });
 });

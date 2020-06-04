@@ -17,9 +17,6 @@ const MAX_VISIBLE_ROW_IMAGES = 4;
 
 export default class FileAttachmentList extends ImageViewPort {
     static propTypes = {
-        actions: PropTypes.shape({
-            loadFilesForPostIfNecessary: PropTypes.func.isRequired,
-        }).isRequired,
         canDownloadFiles: PropTypes.bool.isRequired,
         fileIds: PropTypes.array.isRequired,
         files: PropTypes.array,
@@ -45,22 +42,12 @@ export default class FileAttachmentList extends ImageViewPort {
         });
     }
 
-    componentDidMount() {
-        super.componentDidMount();
-        const {files} = this.props;
-
-        if (files.length === 0) {
-            this.loadFilesForPost();
-        }
-    }
-
     componentDidUpdate(prevProps) {
         if (prevProps.files.length !== this.props.files.length) {
             this.filesForGallery = this.getFilesForGallery(this.props);
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
-            this.loadFilesForPost();
         }
     }
 
@@ -138,10 +125,6 @@ export default class FileAttachmentList extends ImageViewPort {
     isImage = (file) => (file.has_preview_image || isGif(file));
 
     isSingleImage = (files) => (files.length === 1 && this.isImage(files[0]));
-
-    loadFilesForPost = async () => {
-        await this.props.actions.loadFilesForPostIfNecessary(this.props.postId);
-    }
 
     renderItems = (items, moreImagesCount, includeGutter = false) => {
         const {canDownloadFiles, isReplyPost, onLongPress, theme} = this.props;

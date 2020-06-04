@@ -111,6 +111,7 @@ export default class MessageAttachment extends PureComponent {
                         actions={attachment.actions}
                         postId={postId}
                     />
+                    {Boolean(metadata?.images?.[attachment.image_url]) &&
                     <AttachmentImage
                         deviceHeight={deviceHeight}
                         deviceWidth={deviceWidth}
@@ -118,6 +119,7 @@ export default class MessageAttachment extends PureComponent {
                         imageMetadata={metadata?.images?.[attachment.image_url]}
                         theme={theme}
                     />
+                    }
                 </View>
             </React.Fragment>
         );

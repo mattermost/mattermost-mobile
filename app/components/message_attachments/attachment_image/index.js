@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, View} from 'react-native';
+import {View} from 'react-native';
 
 import ProgressiveImage from 'app/components/progressive_image';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
@@ -110,13 +110,7 @@ export default class AttachmentImage extends PureComponent {
 
         if (imageMetadata) {
             this.setImageDimensionsFromMeta(imageURL, imageMetadata);
-            return;
         }
-
-        Image.getSize(imageURL, (width, height) => {
-            const dimensions = calculateDimensions(height, width, this.maxImageWidth);
-            this.setImageDimensions(imageURL, dimensions, width, height);
-        }, () => null);
     };
 
     setViewPortMaxWidth = () => {

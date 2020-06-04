@@ -11,7 +11,6 @@ import {
     getChannelByNameAndTeamName,
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
-import {getFilesForPost} from '@mm-redux/actions/files';
 import {savePreferences} from '@mm-redux/actions/preferences';
 import {selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
@@ -107,17 +106,6 @@ export function fetchPostActionWithRetry(action, maxTries = MAX_RETRIES) {
         dispatch(setChannelRetryFailed(true));
 
         return null;
-    };
-}
-
-export function loadFilesForPostIfNecessary(postId) {
-    return async (dispatch, getState) => {
-        const {files} = getState().entities;
-        const fileIdsForPost = files.fileIdsByPostId[postId];
-
-        if (!fileIdsForPost?.length) {
-            await dispatch(getFilesForPost(postId));
-        }
     };
 }
 
