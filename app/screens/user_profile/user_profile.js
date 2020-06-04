@@ -300,8 +300,8 @@ export default class UserProfile extends PureComponent {
 
         return (
             <View style={style.content}>
-                {this.buildDisplayBlock('first_name')}
-                {this.buildDisplayBlock('last_name')}
+                {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('first_name')}
+                {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}
