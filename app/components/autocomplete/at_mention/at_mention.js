@@ -57,70 +57,46 @@ export default class AtMention extends PureComponent {
 
     componentWillReceiveProps(nextProps) {
         const {inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
-        if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
-            // if the term changes but is null or the mention has been completed we render this component as null
+
+        // Not invoked, render nothing.
+        if (matchTerm === null) {
             this.setState({
                 mentionComplete: false,
                 sections: [],
             });
 
-            this.props.onResultCountChange(0);
-
             return;
-        } else if (matchTerm === null) {
-            // if the terms did not change but is null then we don't need to do anything
+        }
+
+        if (this.state.mentionComplete) {
+            // Mention has been completed. Hide autocomplete.
+            this.setState({
+                sections: [],
+            });
+
+            this.props.onResultCountChange(0);
             return;
         }
 
         if (matchTerm !== this.props.matchTerm) {
-            // if the term changed and we haven't made the request do that first
+            const sections = this.buildSections(nextProps);
+            this.setState({
+                sections,
+            });
+
+            this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
+
+            // Update user autocomplete list with results of server request
             const {currentTeamId, currentChannelId} = this.props;
             const channelId = isSearch ? '' : currentChannelId;
             this.props.actions.autocompleteUsers(matchTerm, currentTeamId, channelId);
             return;
         }
 
+        // Server request is complete
         if (requestStatus !== RequestStatus.STARTED &&
             (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)) {
-            // if the request is complete and the term is not null we show the autocomplete
-            const sections = [];
-            if (isSearch) {
-                sections.push({
-                    id: t('mobile.suggestion.members'),
-                    defaultMessage: 'Members',
-                    data: teamMembers,
-                    key: 'teamMembers',
-                });
-            } else {
-                if (inChannel.length) {
-                    sections.push({
-                        id: t('suggestion.mention.members'),
-                        defaultMessage: 'Channel Members',
-                        data: inChannel,
-                        key: 'inChannel',
-                    });
-                }
-
-                if (this.props.useChannelMentions && this.checkSpecialMentions(matchTerm)) {
-                    sections.push({
-                        id: t('suggestion.mention.special'),
-                        defaultMessage: 'Special Mentions',
-                        data: this.getSpecialMentions(),
-                        key: 'special',
-                        renderItem: this.renderSpecialMentions,
-                    });
-                }
-
-                if (outChannel.length) {
-                    sections.push({
-                        id: t('suggestion.mention.nonmembers'),
-                        defaultMessage: 'Not in Channel',
-                        data: outChannel,
-                        key: 'outChannel',
-                    });
-                }
-            }
-
+            const sections = this.buildSections(nextProps);
             this.setState({
                 sections,
             });
@@ -128,6 +104,50 @@ export default class AtMention extends PureComponent {
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
         }
     }
+
+    buildSections = (props) => {
+        const {isSearch, inChannel, outChannel, teamMembers, matchTerm} = props;
+        const sections = [];
+
+        if (isSearch) {
+            sections.push({
+                id: t('mobile.suggestion.members'),
+                defaultMessage: 'Members',
+                data: teamMembers,
+                key: 'teamMembers',
+            });
+        } else {
+            if (inChannel.length) {
+                sections.push({
+                    id: t('suggestion.mention.members'),
+                    defaultMessage: 'Channel Members',
+                    data: inChannel,
+                    key: 'inChannel',
+                });
+            }
+
+            if (this.props.useChannelMentions && this.checkSpecialMentions(matchTerm)) {
+                sections.push({
+                    id: t('suggestion.mention.special'),
+                    defaultMessage: 'Special Mentions',
+                    data: this.getSpecialMentions(),
+                    key: 'special',
+                    renderItem: this.renderSpecialMentions,
+                });
+            }
+
+            if (outChannel.length) {
+                sections.push({
+                    id: t('suggestion.mention.nonmembers'),
+                    defaultMessage: 'Not in Channel',
+                    data: outChannel,
+                    key: 'outChannel',
+                });
+            }
+        }
+
+        return sections;
+    };
 
     keyExtractor = (item) => {
         return item.id || item;
