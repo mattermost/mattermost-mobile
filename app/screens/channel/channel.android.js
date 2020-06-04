@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
 import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
 import LocalConfig from '@assets/config';
@@ -18,6 +18,8 @@ import ChannelPostList from './channel_post_list';
 
 import ChannelBase, {ClientUpgradeListener} from './channel_base';
 
+let backPressedCount = 0;
+
 export default class ChannelAndroid extends ChannelBase {
     openMainSidebar = () => {
         EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
@@ -28,6 +30,29 @@ export default class ChannelAndroid extends ChannelBase {
         EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
         openSettingsSideMenu();
     };
+
+    componentDidMount() {
+        BackHandler.addEventListener('hardwareBackPress', this.handleBackPress.bind(this));
+    }
+
+    handleBackPress() {
+        if (backPressedCount > 0) {
+            BackHandler.exitApp();
+            backPressedCount = 0;
+        } else {
+            backPressedCount++;
+            ToastAndroid.show('Press Again To Exit', ToastAndroid.SHORT);
+            setTimeout(() => {
+                backPressedCount = 0;
+            }, 2000);
+            return true;
+        }
+        return false;
+    }
+
+    componentWillUnmount() {
+        BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+    }
 
     render() {
         const {theme} = this.props;
