@@ -145,7 +145,7 @@ export function purgeOfflineStore() {
 
         dispatch({
             type: General.OFFLINE_STORE_PURGE,
-            state: getStateForReset(initialState, currentState),
+            data: getStateForReset(initialState, currentState),
         });
 
         EventEmitter.emit(NavigationTypes.RESTART_APP);
