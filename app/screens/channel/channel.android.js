@@ -12,6 +12,7 @@ import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
 import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import EphemeralStore from '@store/ephemeral_store';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
@@ -32,16 +33,20 @@ export default class ChannelAndroid extends ChannelBase {
     };
 
     componentDidMount() {
-        BackHandler.addEventListener('hardwareBackPress', this.handleBackPress.bind(this));
+        super.componentDidMount();
+        BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
     }
 
-    handleBackPress() {
-        if (backPressedCount > 0) {
-            BackHandler.exitApp();
+    handleBackPress = () => {
+        const {formatMessage} = this.context.intl;
+        if (backPressedCount > 0 && EphemeralStore.getNavigationTopComponentId() === 'Channel') {
             backPressedCount = 0;
         } else {
             backPressedCount++;
-            ToastAndroid.show('Press Again To Exit', ToastAndroid.SHORT);
+            ToastAndroid.show(formatMessage({
+                id: 'mobile.android.back_handler_exit',
+                defaultMessage: 'Press again to exit',
+            }), ToastAndroid.SHORT);
             setTimeout(() => {
                 backPressedCount = 0;
             }, 2000);
@@ -51,6 +56,7 @@ export default class ChannelAndroid extends ChannelBase {
     }
 
     componentWillUnmount() {
+        super.componentWillUnmount();
         BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
     }
 
