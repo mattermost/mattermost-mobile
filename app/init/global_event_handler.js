@@ -166,7 +166,6 @@ class GlobalEventHandler {
 
         removeAppCredentials();
         deleteFileCache();
-        await this.resetState();
         resetMomentLocale();
 
         // TODO: Handle when multi-server support is added
@@ -325,7 +324,7 @@ class GlobalEventHandler {
 
             return Store.redux.dispatch({
                 type: General.OFFLINE_STORE_PURGE,
-                state: newState,
+                data: newState,
             });
         } catch (e) {
             // clear error

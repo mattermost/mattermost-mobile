@@ -825,7 +825,6 @@ module.exports = [
     './node_modules/node_modules/redux-persist/lib/persistStore.js',
     './node_modules/node_modules/redux-persist/lib/purgeStoredState.js',
     './node_modules/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel1.js',
-    './node_modules/node_modules/redux-reset/lib/index.js',
     './node_modules/node_modules/redux/lib/redux.js',
     './node_modules/node_modules/requires-port/index.js',
     './node_modules/node_modules/reselect/lib/index.js',
