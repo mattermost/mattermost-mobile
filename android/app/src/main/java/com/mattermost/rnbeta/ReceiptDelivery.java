@@ -105,7 +105,7 @@ public class ReceiptDelivery {
         try {
             Response response = client.newCall(request).execute();
             String responseBody = response.body().string();
-            if (response.code() != 200 || !isIdLoaded) {
+            if (response.code() != 200) {
                 throw new Exception(responseBody);
             }
             JSONObject jsonResponse = new JSONObject(responseBody);
@@ -120,14 +120,16 @@ public class ReceiptDelivery {
             promise.resolve(bundle);
         } catch (Exception e) {
             Log.e("ReactNative", "Receipt delivery failed to send");
-            try {
-                reRequestCount++;
-                if (reRequestCount < FIBONACCI_BACKOFFS.length) {
-                    Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFFS[reRequestCount] + " seconds");
-                    Thread.sleep(FIBONACCI_BACKOFFS[reRequestCount] * 1000);
-                    makeServerRequest(client, request, isIdLoaded, reRequestCount, promise);
-                }
-            } catch(InterruptedException ie) {}
+            if (isIdLoaded) {
+                try {
+                    reRequestCount++;
+                    if (reRequestCount < FIBONACCI_BACKOFFS.length) {
+                        Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFFS[reRequestCount] + " seconds");
+                        Thread.sleep(FIBONACCI_BACKOFFS[reRequestCount] * 1000);
+                        makeServerRequest(client, request, isIdLoaded, reRequestCount, promise);
+                    }
+                } catch(InterruptedException ie) {}    
+            }
 
             promise.reject("Receipt delivery failure", e.toString());
         }
