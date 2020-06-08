@@ -302,13 +302,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 10,
             flexDirection: 'row',
             justifyContent: 'space-between',
-            alignItems: 'center',
         },
         errorWrapper: {
             alignItems: 'center',
         },
         errorWrap: {
             flexShrink: 1,
+            paddingRight: 20,
         },
         inputContainer: {
             borderTopWidth: 1,
