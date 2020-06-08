@@ -7,7 +7,7 @@ let activeKey: string|null = null;
 let activeSecret: string | null = null;
 
 let instance: any = null;
-export default function(key: string, secret: string): any {
+export default function gifycat(key: string, secret: string): any {
     if (instance && activeKey === key && activeSecret === secret) {
         return instance;
     }

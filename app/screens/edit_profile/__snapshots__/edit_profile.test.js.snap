@@ -10,92 +10,12 @@ exports[`edit_profile should match snapshot 1`] = `
     }
   }
 >
-  <ProfilePictureButton
-    blurTextBox={[Function]}
-    browseFileTypes="public.image"
-    canBrowseVideoLibrary={false}
-    canTakeVideo={false}
-    currentUser={
-      Object {
-        "email": "dwight@schrutefarms.com",
-        "first_name": "Dwight",
-        "last_name": "Schrute",
-        "nickname": "Dragon",
-        "position": "position",
-        "username": "ieatbeets",
-      }
-    }
-    maxFileSize={20971520}
-    onShowFileSizeWarning={[Function]}
-    onShowUnsupportedMimeTypeWarning={[Function]}
-    removeProfileImage={[Function]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-    uploadFiles={[Function]}
-    validMimeTypes={
-      Array [
-        "image/jpeg",
-        "image/jpeg",
-        "image/jpg",
-        "image/jp_",
-        "application/jpg",
-        "application/x-jpg",
-        "image/pjpeg",
-        "image/pipeg",
-        "image/vnd.swiftview-jpeg",
-        "image/x-xbitmap",
-        "image/png",
-        "application/png",
-        "application/x-png",
-        "image/bmp",
-        "image/x-bmp",
-        "image/x-bitmap",
-        "image/x-xbitmap",
-        "image/x-win-bitmap",
-        "image/x-windows-bmp",
-        "image/ms-bmp",
-        "image/x-ms-bmp",
-        "application/bmp",
-        "application/x-bmp",
-        "application/x-win-bitmap",
-      ]
-    }
-    wrapper={true}
-  >
-    <Connect(ProfilePicture)
-      edit={true}
-      imageUri={null}
-      size={150}
-      statusBorderWidth={6}
-      statusSize={40}
-    />
-  </ProfilePictureButton>
+  <Connect(ProfilePicture)
+    edit={false}
+    imageUri={null}
+    size={150}
+    statusBorderWidth={6}
+    statusSize={40}
+  />
 </View>
 `;

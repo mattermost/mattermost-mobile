@@ -10,7 +10,7 @@ import {
     Platform,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import CookieManager from 'react-native-cookies';
+import CookieManager from '@react-native-community/cookies';
 import urlParse from 'url-parse';
 
 import {Client4} from '@mm-redux/client';
@@ -27,7 +27,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = "window.postMessage(document.body.innerText, '*');";
+const postMessageJS = "window.ReactNativeWebView.postMessage(document.body.innerText, '*');";
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -87,15 +87,15 @@ class SSO extends PureComponent {
         switch (props.ssoType) {
         case ViewTypes.GITLAB:
             this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login`;
-            this.completedUrl = '/signup/gitlab/complete';
+            this.completeUrlPath = '/signup/gitlab/complete';
             break;
         case ViewTypes.SAML:
             this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile`;
-            this.completedUrl = '/login/sso/saml';
+            this.completeUrlPath = '/login/sso/saml';
             break;
         case ViewTypes.OFFICE365:
             this.loginUrl = `${props.serverUrl}/oauth/office365/mobile_login`;
-            this.completedUrl = '/signup/office365/complete';
+            this.completeUrlPath = '/signup/office365/complete';
             break;
         }
 
@@ -139,7 +139,7 @@ class SSO extends PureComponent {
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
-        } else if (parsed.pathname === this.completedUrl) {
+        } else if (parsed.pathname === this.completeUrlPath) {
             // To avoid `window.postMessage` conflicts in any of the SSO flows
             // we enable the onMessage handler only When the webView navigates to the final SSO URL.
             nextState.messagingEnabled = true;
@@ -150,9 +150,17 @@ class SSO extends PureComponent {
 
     onLoadEnd = (event) => {
         const url = event.nativeEvent.url;
-        if (url.includes(this.completedUrl)) {
-            CookieManager.get(this.props.serverUrl, this.useWebkit).then((res) => {
-                const token = res.MMAUTHTOKEN;
+        const parsed = urlParse(url);
+
+        let isLastRedirect = url.includes(this.completeUrlPath);
+        if (this.props.ssoType === ViewTypes.SAML) {
+            isLastRedirect = isLastRedirect && !parsed.query;
+        }
+
+        if (isLastRedirect) {
+            CookieManager.get(parsed.origin, this.useWebkit).then((res) => {
+                const mmtoken = res.MMAUTHTOKEN;
+                const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
 
                 if (token) {
                     this.setState({renderWebView: false});
@@ -161,6 +169,13 @@ class SSO extends PureComponent {
                     } = this.props.actions;
 
                     Client4.setToken(token);
+                    if (this.props.serverUrl !== parsed.origin) {
+                        const original = urlParse(this.props.serverUrl);
+
+                        // Check whether we need to set a sub-path
+                        parsed.set('pathname', original.pathname || '');
+                        Client4.setUrl(parsed.href);
+                    }
                     ssoLogin(token).then((result) => {
                         if (result.error) {
                             this.onLoadEndError(result.error);
@@ -213,7 +228,7 @@ class SSO extends PureComponent {
                 <WebView
                     ref={this.webViewRef}
                     source={{uri: this.loginUrl, headers: HEADERS}}
-                    javaScriptEnabledAndroid={true}
+                    javaScriptEnabled={true}
                     automaticallyAdjustContentInsets={false}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
@@ -221,7 +236,7 @@ class SSO extends PureComponent {
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                     onMessage={messagingEnabled ? this.onMessage : null}
-                    useSharedProcessPool={true}
+                    sharedCookiesEnabled={Platform.OS === 'android'}
                     cacheEnabled={false}
                 />
             );

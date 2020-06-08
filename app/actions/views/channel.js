@@ -26,12 +26,12 @@ import {
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getTeamByName} from '@mm-redux/selectors/entities/teams';
 
-import {getChannelByName as selectChannelByName} from '@mm-redux/utils/channel_utils';
+import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
+import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';
-import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_textbox';
+import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
@@ -136,29 +136,9 @@ export function loadThreadIfNecessary(rootId) {
 export function selectInitialChannel(teamId) {
     return (dispatch, getState) => {
         const state = getState();
-        const {channels, myMembers} = state.entities.channels;
-        const {currentUserId} = state.entities.users;
-        const {myPreferences} = state.entities.preferences;
-        const lastChannelForTeam = state.views.team.lastChannelForTeam[teamId];
-        const lastChannelId = lastChannelForTeam && lastChannelForTeam.length ? lastChannelForTeam[0] : '';
-        const lastChannel = channels[lastChannelId];
+        const channelId = lastChannelIdForTeam(state, teamId);
 
-        const isDMVisible = lastChannel && lastChannel.type === General.DM_CHANNEL &&
-            isDirectChannelVisible(currentUserId, myPreferences, lastChannel);
-
-        const isGMVisible = lastChannel && lastChannel.type === General.GM_CHANNEL &&
-            isGroupChannelVisible(myPreferences, lastChannel);
-
-        if (
-            myMembers[lastChannelId] &&
-            lastChannel &&
-            (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
-        ) {
-            dispatch(handleSelectChannel(lastChannelId));
-            return;
-        }
-
-        dispatch(selectDefaultChannel(teamId));
+        dispatch(handleSelectChannel(channelId));
     };
 }
 
@@ -224,10 +204,15 @@ export function handleSelectChannel(channelId) {
         const channel = channels[channelId];
         const member = myMembers[channelId];
 
-        dispatch(loadPostsIfNecessaryWithRetry(channelId));
+        if (channel) {
+            dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
-        if (channel && currentChannelId !== channelId) {
-            const actions = markAsViewedAndReadBatch(state, channelId, currentChannelId);
+            let previousChannelId = null;
+            if (currentChannelId !== channelId) {
+                previousChannelId = currentChannelId;
+            }
+
+            const actions = markAsViewedAndReadBatch(state, channelId, previousChannelId);
             actions.push({
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
@@ -237,10 +222,11 @@ export function handleSelectChannel(channelId) {
                     teamId: channel.team_id || currentTeamId,
                 },
             });
-            dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
-        }
 
-        console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+            dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
+
+            console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+        }
     };
 }
 
@@ -321,7 +307,9 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
     const prevChannel = (!prevChanManuallyUnread && prevChannelId) ? channels[prevChannelId] : null; // May be null since prevChannelId is optional
 
     if (markOnServer) {
-        Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId);
+        Client4.viewMyChannel(channelId, prevChanManuallyUnread ? '' : prevChannelId).catch(() => {
+            // do nothing just adding the handler to avoid the warning
+        });
     }
 
     if (member) {
@@ -600,7 +588,12 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
     return async (dispatch, getState) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
-        const data = {sync: true, teamId};
+        const data = {
+            sync: true,
+            teamId,
+            teamChannels: getChannelsIdForTeam(state, teamId),
+        };
+
         const actions = [];
 
         if (currentUserId) {
@@ -639,12 +632,17 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                     }
 
                     if (rolesToLoad.size > 0) {
-                        data.roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
-                        if (data.roles.length) {
-                            actions.push({
-                                type: RoleTypes.RECEIVED_ROLES,
-                                data: data.roles,
-                            });
+                        try {
+                            data.roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
+                            if (data.roles.length) {
+                                actions.push({
+                                    type: RoleTypes.RECEIVED_ROLES,
+                                    data: data.roles,
+                                });
+                            }
+                        } catch {
+                            //eslint-disable-next-line no-console
+                            console.log('Could not retrieve channel members roles for the user');
                         }
                     }
 

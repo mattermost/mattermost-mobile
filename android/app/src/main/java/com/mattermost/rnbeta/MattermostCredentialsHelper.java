@@ -5,8 +5,9 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
-
+import com.facebook.react.bridge.WritableMap;
 import com.oblador.keychain.KeychainModule;
 
 import com.mattermost.react_native_interface.ResolvePromise;
@@ -35,7 +36,12 @@ public class MattermostCredentialsHelper {
 
         HashMap<String, String> asyncStorageResults = asyncStorage.multiGet(asyncStorageKeys);
         String serverUrl = asyncStorageResults.get(CURRENT_SERVER_URL);
+        final WritableMap options = Arguments.createMap();
+        final WritableMap authPrompt = Arguments.createMap();
+        authPrompt.putString("title", "Authenticate to retrieve secret");
+        authPrompt.putString("cancel", "Cancel");
+        options.putMap("authenticationPrompt", authPrompt);
 
-        keychainModule.getGenericPasswordForOptions(serverUrl, promise);
+        keychainModule.getInternetCredentialsForServer(serverUrl, options, promise);
     }
 }

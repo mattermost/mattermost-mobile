@@ -7,12 +7,10 @@ import {Platform, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
+import placeholder from '@assets/images/profile.jpg';
+import UserStatus from '@components/user_status';
 import {Client4} from '@mm-redux/client';
-
-import UserStatus from 'app/components/user_status';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import placeholder from 'assets/images/profile.jpg';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const STATUS_BUFFER = Platform.select({
     ios: 3,
@@ -63,7 +61,6 @@ export default class ProfilePicture extends PureComponent {
             this.setImageURL(imageUri);
         } else if (user) {
             const uri = Client4.getProfilePictureUrl(user.id, user.last_picture_update);
-            FastImage.preload([{uri, headers: Client4.getOptions({}).headers}]);
 
             this.setImageURL(uri);
             this.clearProfileImageUri();
@@ -104,7 +101,6 @@ export default class ProfilePicture extends PureComponent {
 
             if (nextUrl && url !== nextUrl) {
                 // empty function is so that promise unhandled is not triggered in dev mode
-                FastImage.preload([{uri: nextUrl, headers: Client4.getOptions({}).headers}]);
                 this.setImageURL(nextUrl);
                 this.clearProfileImageUri();
             }

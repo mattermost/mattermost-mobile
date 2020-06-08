@@ -411,7 +411,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                         type={'opacity'}
                     >
                         <Image
-                            source={require('assets/images/icons/youtube-play-icon.png')}
+                            source={require('@assets/images/icons/youtube-play-icon.png')}
                             onPress={this.playYouTubeVideo}
                         />
                     </TouchableWithFeedback>

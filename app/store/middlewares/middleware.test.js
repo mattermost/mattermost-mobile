@@ -7,8 +7,10 @@ import DeviceInfo from 'react-native-device-info';
 
 import assert from 'assert';
 import {REHYDRATE} from 'redux-persist';
+import merge from 'deepmerge';
 
 import {ViewTypes} from '@constants';
+import initialState from '@store/initial_state';
 import {
     cleanUpPostsInChannel,
     cleanUpState,
@@ -347,6 +349,62 @@ describe('cleanUpState', () => {
 
         expect(result.entities.posts.pendingPostIds).toEqual([]);
         expect(result.entities.posts.postsInChannel.channel1).toEqual([{order: ['post1', 'post2'], recent: true}]);
+    });
+
+    test('should always set _persist.rehydrated to true', () => {
+        const persistValues = [
+            null,
+            {},
+            {rehydrated: false},
+            {rehydrated: true},
+        ];
+
+        for (let i = 0; i < persistValues.length; i++) {
+            const _persist = persistValues[i]; // eslint-disable-line no-underscore-dangle
+            const state = merge(initialState, {
+                // eslint-disable-next-line no-underscore-dangle
+                _persist,
+            });
+
+            const result = cleanUpState(state);
+            expect(result._persist.rehydrated).toBe(true); // eslint-disable-line no-underscore-dangle
+        }
+    });
+
+    test('should set views.root.hydrationComplete to true when previous views.root.hydrationComplete is true', () => {
+        const state = merge(initialState, {
+            views: {
+                root: {
+                    hydrationComplete: true,
+                },
+            },
+        });
+
+        const result = cleanUpState(state);
+        expect(result.views.root.hydrationComplete).toBe(true);
+    });
+
+    test('should set views.root.hydrationComplete to !_persist when previous views.root.hydrationComplete is falsy', () => {
+        const persistValues = [true, false];
+        const viewsValues = [
+            {},
+            {root: {}},
+            {root: {hydrationComplete: false}},
+        ];
+
+        for (let i = 0; i < persistValues.length; i++) {
+            const _persist = persistValues[i]; // eslint-disable-line no-underscore-dangle
+            for (let j = 0; j < viewsValues.length; j++) {
+                const views = viewsValues[j];
+                const state = merge(initialState, {
+                    _persist,
+                    views,
+                });
+
+                const result = cleanUpState(state);
+                expect(result.views.root.hydrationComplete).toBe(!_persist); // eslint-disable-line no-underscore-dangle
+            }
+        }
     });
 });
 

@@ -3,14 +3,14 @@
 
 import {batchActions} from 'redux-batched-actions';
 
+import {lastChannelIdForTeam} from '@actions/helpers/channels';
+import {NavigationTypes} from '@constants';
 import {ChannelTypes, TeamTypes} from '@mm-redux/action_types';
 import {getMyTeams} from '@mm-redux/actions/teams';
 import {RequestStatus} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {NavigationTypes} from 'app/constants';
-import {selectFirstAvailableTeam} from 'app/utils/teams';
+import {selectFirstAvailableTeam} from '@utils/teams';
 
 export function handleTeamChange(teamId) {
     return async (dispatch, getState) => {
@@ -20,10 +20,28 @@ export function handleTeamChange(teamId) {
             return;
         }
 
-        dispatch(batchActions([
-            {type: TeamTypes.SELECT_TEAM, data: teamId},
-            {type: ChannelTypes.SELECT_CHANNEL, data: '', extra: {}},
-        ], 'BATCH_SWITCH_TEAM'));
+        const actions = [{type: TeamTypes.SELECT_TEAM, data: teamId}];
+        const {channels, myMembers} = state.entities.channels;
+        const channelId = lastChannelIdForTeam(state, teamId);
+
+        if (channelId) {
+            const channel = channels[channelId];
+            const member = myMembers[channelId];
+
+            actions.push({
+                type: ChannelTypes.SELECT_CHANNEL,
+                data: channelId,
+                extra: {
+                    channel,
+                    member,
+                    teamId,
+                },
+            });
+        } else {
+            actions.push({type: ChannelTypes.SELECT_CHANNEL, data: '', extra: {}});
+        }
+
+        dispatch(batchActions(actions, 'BATCH_SWITCH_TEAM'));
     };
 }
 
@@ -32,10 +50,16 @@ export function selectDefaultTeam() {
         const state = getState();
 
         const {ExperimentalPrimaryTeam} = getConfig(state);
-        const {teams: allTeams, myMembers} = state.entities.teams;
-        const teams = Object.keys(myMembers).map((key) => allTeams[key]);
+        const {teams, myMembers} = state.entities.teams;
+        const myTeams = Object.keys(teams).reduce((result, id) => {
+            if (myMembers[id]) {
+                result.push(teams[id]);
+            }
 
-        let defaultTeam = selectFirstAvailableTeam(teams, ExperimentalPrimaryTeam);
+            return result;
+        }, []);
+
+        let defaultTeam = selectFirstAvailableTeam(myTeams, ExperimentalPrimaryTeam);
 
         if (defaultTeam) {
             dispatch(handleTeamChange(defaultTeam.id));

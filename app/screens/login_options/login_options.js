@@ -13,17 +13,17 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {GlobalStyles} from 'app/styles';
-import {preventDoubleTap} from 'app/utils/tap';
-import {ViewTypes} from 'app/constants';
-import {goToScreen} from 'app/actions/navigation';
+import {goToScreen} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import gitlab from '@assets/images/gitlab.png';
+import logo from '@assets/images/logo.png';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {ViewTypes} from '@constants';
+import {preventDoubleTap} from '@utils/tap';
 
-import LocalConfig from 'assets/config';
-import gitlab from 'assets/images/gitlab.png';
-import logo from 'assets/images/logo.png';
+import {GlobalStyles} from 'app/styles';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {
@@ -106,6 +106,8 @@ export default class LoginOptions extends PureComponent {
             const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
             const additionalStyle = {
                 backgroundColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
             };
 
             if (config.LDAPLoginButtonBorderColor) {
@@ -155,7 +157,7 @@ export default class LoginOptions extends PureComponent {
                 <Button
                     key='gitlab'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
+                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548', borderColor: 'transparent', borderWidth: 0}]}
                 >
                     <Image
                         source={gitlab}
@@ -179,16 +181,14 @@ export default class LoginOptions extends PureComponent {
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
 
         if (!forceHideFromLocal && o365Enabled) {
-            const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
+            const backgroundColor = '#2389d7';
             const additionalStyle = {
                 backgroundColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
             };
 
-            if (config.EmailLoginButtonBorderColor) {
-                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
-            }
-
-            const textColor = config.EmailLoginButtonTextColor || 'white';
+            const textColor = 'white';
 
             return (
                 <Button
@@ -217,6 +217,8 @@ export default class LoginOptions extends PureComponent {
 
             const additionalStyle = {
                 backgroundColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
             };
 
             if (config.SamlLoginButtonBorderColor) {

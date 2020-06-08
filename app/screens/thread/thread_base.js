@@ -10,7 +10,7 @@ import {General, RequestStatus} from '@mm-redux/constants';
 
 import Loading from 'app/components/loading';
 import DeletedPost from 'app/components/deleted_post';
-import {resetToChannel, popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
+import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {
@@ -50,7 +50,7 @@ export default class ThreadBase extends PureComponent {
             title = formatMessage({id: 'mobile.routes.thread', defaultMessage: '{channelName} Thread'}, {channelName: displayName});
         }
 
-        this.postTextbox = React.createRef();
+        this.postDraft = React.createRef();
 
         const options = {
             topBar: {
@@ -86,12 +86,6 @@ export default class ThreadBase extends PureComponent {
         popTopScreen(componentId);
     };
 
-    handleAutoComplete = (value) => {
-        if (this.postTextbox?.current) {
-            this.postTextbox.current.handleTextChange(value, true);
-        }
-    };
-
     hasRootPost = () => {
         return this.props.postIds.includes(this.props.rootId);
     };
@@ -114,12 +108,5 @@ export default class ThreadBase extends PureComponent {
         }
 
         return null;
-    };
-
-    onCloseChannel = () => {
-        const passProps = {
-            disableTermsModal: true,
-        };
-        resetToChannel(passProps);
     };
 }

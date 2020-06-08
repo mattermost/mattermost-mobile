@@ -713,14 +713,13 @@ export default class Search extends PureComponent {
             paddingRes.paddingLeft = null;
 
             if (isLandscape) {
-                paddingRes.paddingTop = 10;
+                paddingRes.paddingTop = 5;
             }
         }
 
         return (
             <SafeAreaView
                 excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_WITH_INSETS}
-                forceTop={44}
             >
                 <KeyboardLayout>
                     <StatusBar/>

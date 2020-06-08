@@ -8,7 +8,7 @@ import nock from 'nock';
 import * as Actions from '@mm-redux/actions/posts';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {login} from '@mm-redux/actions/users';
-import {setSystemEmojis, createCustomEmoji} from '@mm-redux/actions/emojis';
+import {createCustomEmoji} from '@mm-redux/actions/emojis';
 import {Client4} from '@mm-redux/client';
 import {Preferences, Posts, RequestStatus} from '../constants';
 import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
@@ -296,7 +296,7 @@ describe('Actions.Posts', () => {
 
         const state = store.getState();
         const {stats} = state.entities.channels;
-        const pinned_post_count = stats.channel1.pinnedpost_count;
+        const pinnedPostCount = stats.channel1.pinnedpost_count;
 
         expect(state.entities.posts.posts).toEqual({
             post1,
@@ -310,7 +310,7 @@ describe('Actions.Posts', () => {
         expect(state.entities.posts.postsInThread).toEqual({
             post1: ['post4'],
         });
-        expect(pinned_post_count).toEqual(1);
+        expect(pinnedPostCount).toEqual(1);
     });
 
     it('removePostWithReaction', async () => {
@@ -555,8 +555,6 @@ describe('Actions.Posts', () => {
             },
         };
 
-        setSystemEmojis(new Map([['systemEmoji1', {}]]));
-
         it('no emojis in post', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
@@ -578,7 +576,7 @@ describe('Actions.Posts', () => {
         it('system emoji in post', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
-                    {message: ':systemEmoji1:'},
+                    {message: ':mattermost:'},
                 ]),
                 new Set(),
             );
@@ -587,7 +585,7 @@ describe('Actions.Posts', () => {
         it('mixed emojis in post', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
-                    {message: ':systemEmoji1: :name1: :name2: :name3:'},
+                    {message: ':mattermost: :name1: :name2: :name3:'},
                 ]),
                 new Set(['name3']),
             );
@@ -659,7 +657,7 @@ describe('Actions.Posts', () => {
         it('mixed emojis in message attachment', () => {
             assert.deepEqual(
                 Actions.getNeededCustomEmojis(state, [
-                    {message: '', props: {attachments: [{text: ':name4: :name1:', pretext: ':name3: :systemEmoji1:', fields: [{value: ':name3:'}]}]}},
+                    {message: '', props: {attachments: [{text: ':name4: :name1:', pretext: ':name3: :mattermost:', fields: [{value: ':name3:'}]}]}},
                 ]),
                 new Set(['name3', 'name4']),
             );
@@ -1176,11 +1174,11 @@ describe('Actions.Posts', () => {
         const state = getState();
         const {stats} = state.entities.channels;
         const post = state.entities.posts.posts[post1.id];
-        const pinned_post_count = stats[TestHelper.basicChannel.id].pinnedpost_count;
+        const pinnedPostCount = stats[TestHelper.basicChannel.id].pinnedpost_count;
 
         assert.ok(post);
         assert.ok(post.is_pinned === true);
-        assert.ok(pinned_post_count === 1);
+        assert.ok(pinnedPostCount === 1);
     });
 
     it('unpinPost', async () => {
@@ -1220,11 +1218,11 @@ describe('Actions.Posts', () => {
         const state = getState();
         const {stats} = state.entities.channels;
         const post = state.entities.posts.posts[post1.id];
-        const pinned_post_count = stats[TestHelper.basicChannel.id].pinnedpost_count;
+        const pinnedPostCount = stats[TestHelper.basicChannel.id].pinnedpost_count;
 
         assert.ok(post);
         assert.ok(post.is_pinned === false);
-        assert.ok(pinned_post_count === 0);
+        assert.ok(pinnedPostCount === 0);
     });
 
     it('addReaction', async () => {

@@ -1,0 +1,188 @@
+diff --git a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManager.java b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManager.java
+index 1995d87..33bd83c 100644
+--- a/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManager.java
++++ b/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManager.java
+@@ -2,8 +2,12 @@ package com.reactnativecommunity.webview;
+ 
+ import android.annotation.SuppressLint;
+ import android.annotation.TargetApi;
++import android.app.Activity;
++import android.app.AlertDialog;
+ import android.app.DownloadManager;
++import android.content.ActivityNotFoundException;
+ import android.content.Context;
++import android.content.DialogInterface;
+ import android.content.Intent;
+ import android.content.pm.ActivityInfo;
+ import android.content.pm.PackageManager;
+@@ -15,6 +19,7 @@ import android.os.Build;
+ import android.os.Environment;
+ import androidx.annotation.RequiresApi;
+ import androidx.core.content.ContextCompat;
++import android.text.InputType;
+ import android.text.TextUtils;
+ import android.view.Gravity;
+ import android.view.View;
+@@ -25,7 +30,9 @@ import android.webkit.ConsoleMessage;
+ import android.webkit.CookieManager;
+ import android.webkit.DownloadListener;
+ import android.webkit.GeolocationPermissions;
++import android.webkit.HttpAuthHandler;
+ import android.webkit.JavascriptInterface;
++import android.widget.LinearLayout;
+ import android.webkit.PermissionRequest;
+ import android.webkit.URLUtil;
+ import android.webkit.ValueCallback;
+@@ -35,6 +42,7 @@ import android.webkit.WebResourceResponse;
+ import android.webkit.WebSettings;
+ import android.webkit.WebView;
+ import android.webkit.WebViewClient;
++import android.widget.EditText;
+ import android.widget.FrameLayout;
+ 
+ import com.facebook.react.views.scroll.ScrollEvent;
+@@ -720,6 +728,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
+ 
+   protected static class RNCWebViewClient extends WebViewClient {
+ 
++    protected Activity mCurrentActivity;
+     protected boolean mLastLoadFailed = false;
+     protected @Nullable
+     ReadableArray mUrlPrefixesForDefaultIntent;
+@@ -729,6 +738,10 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
+       ignoreErrFailedForThisURL = url;
+     }
+ 
++    public void setCurrentActivity(Activity mCurrentActivity) {
++      this.mCurrentActivity = mCurrentActivity;
++    }
++
+     @Override
+     public void onPageFinished(WebView webView, String url) {
+       super.onPageFinished(webView, url);
+@@ -810,6 +823,49 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
+         new TopLoadingErrorEvent(webView.getId(), eventData));
+     }
+ 
++    @Override
++    public void onReceivedHttpAuthRequest(WebView view,
++                                          final HttpAuthHandler handler, String host, String realm)
++    {
++      if (this.mCurrentActivity != null) {
++        final EditText usernameInput = new EditText(this.mCurrentActivity);
++        usernameInput.setHint("Username");
++
++        final EditText passwordInput = new EditText(this.mCurrentActivity);
++        passwordInput.setHint("Password");
++        passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
++
++        LinearLayout layout = new LinearLayout(this.mCurrentActivity);
++        layout.setOrientation(LinearLayout.VERTICAL);
++        layout.addView(usernameInput);
++        layout.addView(passwordInput);
++
++        AlertDialog.Builder authDialog = new AlertDialog.Builder(this.mCurrentActivity)
++          .setTitle("Authentication Challenge")
++          .setMessage(host + " requires user name and password ")
++          .setView(layout)
++          .setCancelable(false)
++          .setPositiveButton("OK", new DialogInterface.OnClickListener() {
++            public void onClick(DialogInterface dialogInterface, int i) {
++              handler.proceed(usernameInput.getText().toString(), passwordInput.getText().toString());
++              dialogInterface.dismiss();
++            }
++          })
++          .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
++            public void onClick(DialogInterface dialogInterface, int i) {
++              dialogInterface.dismiss();
++              handler.cancel();
++            }
++          });
++
++        if (view != null) {
++          authDialog.show();
++        }
++      } else {
++        handler.cancel();
++      }
++    }
++
+     @RequiresApi(api = Build.VERSION_CODES.M)
+     @Override
+     public void onReceivedHttpError(
+@@ -1010,6 +1066,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
+     protected boolean sendContentSizeChangeEvents = false;
+     private OnScrollDispatchHelper mOnScrollDispatchHelper;
+     protected boolean hasScrollEvent = false;
++    protected ReactContext reactContext;
+ 
+     /**
+      * WebView must be created with an context of the current activity
+@@ -1019,6 +1076,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
+      */
+     public RNCWebView(ThemedReactContext reactContext) {
+       super(reactContext);
++      this.reactContext = reactContext;
+     }
+ 
+     public void setIgnoreErrFailedForThisURL(String url) {
+@@ -1069,6 +1127,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
+       super.setWebViewClient(client);
+       if (client instanceof RNCWebViewClient) {
+         mRNCWebViewClient = (RNCWebViewClient) client;
++        if (this.reactContext != null && this.reactContext.getCurrentActivity() != null && mRNCWebViewClient != null) {
++          mRNCWebViewClient.setCurrentActivity(this.reactContext.getCurrentActivity());
++        }
+       }
+     }
+ 
+diff --git a/node_modules/react-native-webview/apple/RNCWebView.m b/node_modules/react-native-webview/apple/RNCWebView.m
+index d2f9956..4b8d0fe 100644
+--- a/node_modules/react-native-webview/apple/RNCWebView.m
++++ b/node_modules/react-native-webview/apple/RNCWebView.m
+@@ -737,7 +737,44 @@ - (void)                    webView:(WKWebView *)webView
+     if (webView.URL != nil) {
+         host = webView.URL.host;
+     }
+-    if ([[challenge protectionSpace] authenticationMethod] == NSURLAuthenticationMethodClientCertificate) {
++
++    NSString *authenticationMethod = [[challenge protectionSpace] authenticationMethod];
++
++    if (authenticationMethod == NSURLAuthenticationMethodNTLM || authenticationMethod == NSURLAuthenticationMethodNegotiate) {
++      NSString *title = @"Authentication Challenge";
++      NSString *message = [NSString stringWithFormat:@"%@ requires user name and password", host];
++      UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
++      [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
++        textField.placeholder = @"User";
++      }];
++
++      [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
++        textField.placeholder = @"Password";
++        textField.secureTextEntry = YES;
++      }];
++
++      [alertController addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
++        NSString *userName = ((UITextField *)alertController.textFields[0]).text;
++        NSString *password = ((UITextField *)alertController.textFields[1]).text;
++        NSURLCredential *credential = [[NSURLCredential alloc] initWithUser:userName password:password persistence:NSURLCredentialPersistenceNone];
++
++        completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
++      }]];
++
++      [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
++        completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
++      }]];
++
++      dispatch_async(dispatch_get_main_queue(), ^{
++          UIViewController *rootVC = UIApplication.sharedApplication.delegate.window.rootViewController;
++
++          while (rootVC.presentedViewController != nil) {
++              rootVC = rootVC.presentedViewController;
++          }
++          [rootVC presentViewController:alertController animated:YES completion:^{}];
++      });
++      return;
++    } else if (authenticationMethod == NSURLAuthenticationMethodClientCertificate) {
+         completionHandler(NSURLSessionAuthChallengeUseCredential, clientAuthenticationCredential);
+         return;
+     }

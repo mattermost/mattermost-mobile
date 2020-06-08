@@ -23,7 +23,7 @@ export default class ChannelMention extends PureComponent {
             autocompleteChannelsForSearch: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        cursorPosition: PropTypes.number.isRequired,
+        cursorPosition: PropTypes.number,
         isSearch: PropTypes.bool,
         matchTerm: PropTypes.string,
         maxListHeight: PropTypes.number,

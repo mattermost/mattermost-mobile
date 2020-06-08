@@ -1,59 +1,86 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
-import {shallow} from 'enzyme';
+import Fuse from 'fuse.js';
+
+import Preferences from '@mm-redux/constants/preferences';
+import {selectEmojisByName} from '@selectors/emojis';
+import initialState from '@store/initial_state';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import EmojiSuggestion from './emoji_suggestion';
 
-describe('EmojiSuggestion', () => {
+jest.useFakeTimers();
+
+describe('components/autocomplete/emoji_suggestion', () => {
+    const state = {
+        ...initialState,
+        views: {
+            recentEmojis: [],
+        },
+    };
+    const emojis = selectEmojisByName(state);
+    const options = {
+        shouldSort: false,
+        threshold: 0.3,
+        location: 0,
+        distance: 10,
+        includeMatches: true,
+        findAllMatches: true,
+    };
+    const fuse = new Fuse(emojis, options);
     const baseProps = {
         actions: {
             addReactionToLatestPost: jest.fn(),
             autocompleteCustomEmojis: jest.fn(),
         },
-        emojis: [],
-        fuse: {},
-        theme: {},
+        cursorPosition: 0,
+        customEmojisEnabled: false,
+        emojis,
+        fuse,
+        isSearch: false,
+        theme: Preferences.THEMES.default,
         onChangeText: jest.fn(),
         onResultCountChange: jest.fn(),
+        rootId: '',
+        value: '',
+        nestedScrollEnabled: false,
     };
 
-    test('should render component without error', () => {
-        const wrapper = shallow(
-            <EmojiSuggestion {...baseProps}/>,
-        );
-        expect(wrapper.type()).toEqual(null);
+    test('should match snapshot', () => {
+        const wrapper = shallowWithIntl(<EmojiSuggestion {...baseProps}/>);
+        expect(wrapper.getElement()).toMatchSnapshot();
+
+        wrapper.setProps({cursorPosition: 1, value: ':1'});
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('fire onResultCountChange when emoji was not found', () => {
-        const wrapper = shallow(
-            <EmojiSuggestion {...baseProps}/>,
-        );
-        const props2 = {
-            value: 'A🇺🇸Z',
-        };
-        wrapper.setProps(props2);
-        expect(baseProps.onResultCountChange).toHaveBeenCalled();
-        expect(baseProps.onResultCountChange).toHaveBeenLastCalledWith(0);
-    });
+    test('searchEmojis should return the right values on fuse', () => {
+        const output1 = ['100', '1234', '1st_place_medal', '+1', '-1', 'u7121'];
+        const output2 = ['+1'];
+        const output3 = ['-1'];
 
-    test('fire appropriate function when emoji was found', () => {
-        const wrapper = shallow(
-            <EmojiSuggestion {...baseProps}/>,
-        );
-        wrapper.instance().handleFuzzySearch = jest.fn();
-        const props2 = {
-            value: ':sweat',
-        };
-        wrapper.setProps(props2);
-        expect(baseProps.actions.autocompleteCustomEmojis).toHaveBeenCalledTimes(1);
-        expect(baseProps.actions.autocompleteCustomEmojis).toHaveBeenLastCalledWith('sweat');
+        const wrapper = shallowWithIntl(<EmojiSuggestion {...baseProps}/>);
+        wrapper.instance().searchEmojis('');
+        expect(wrapper.state('dataSource')).toEqual(baseProps.emojis);
 
-        const props3 = {
-            value: ':sweat',
-            emojis: ['sweat'],
-        };
-        wrapper.setProps(props3);
-        expect(wrapper.instance().handleFuzzySearch).toHaveBeenCalledTimes(1);
+        wrapper.instance().searchEmojis('1');
+        jest.runAllTimers();
+        setTimeout(() => {
+            expect(wrapper.state('dataSource')).toEqual(output1);
+        }, 100);
+
+        wrapper.instance().searchEmojis('+');
+        jest.runAllTimers();
+        setTimeout(() => {
+            expect(wrapper.state('dataSource')).toEqual(output2);
+        }, 100);
+
+        wrapper.instance().searchEmojis('-');
+        jest.runAllTimers();
+        setTimeout(() => {
+            expect(wrapper.state('dataSource')).toEqual(output3);
+        }, 100);
     });
 });

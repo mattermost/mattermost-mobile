@@ -6,6 +6,7 @@ import * as redux from 'redux';
 import {createPersistoid, createTransform, persistReducer, persistStore, Persistor, PersistConfig} from 'redux-persist';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
 import reduxReset from 'redux-reset';
+import DeviceInfo from 'react-native-device-info';
 
 import {General} from '@mm-redux/constants';
 import serviceReducer from '@mm-redux/reducers';
@@ -177,6 +178,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             emojiBlackListFilter,
         ],
         throttle: 100,
+        timeout: 60000,
     };
 
     const persistConfig: PersistConfig<GlobalState> = Object.assign({}, defaultConfig, optionalConfig);
@@ -200,12 +202,20 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
 
     getStoredState().then(({storeKeys, restoredState}: V4Store) => {
         if (Object.keys(restoredState).length) {
+            const {app} = restoredState;
+            app.previousVersion = app.version;
+            app.build = DeviceInfo.getBuildNumber();
+            app.version = DeviceInfo.getVersion();
+
             const state = {
                 ...restoredState,
+                app: {
+                    ...app,
+                },
                 views: {
                     ...restoredState.views,
                     root: {
-                        hydrationComplete: true,
+                        hydrationComplete: false,
                     },
                 },
                 _persist: persistor.getState(),

@@ -47,25 +47,27 @@ export default class EmojiPicker extends EmojiPickerBase {
                     keyboardVerticalOffset={keyboardOffset}
                     style={styles.flex}
                 >
-                    <View style={[styles.searchBar, padding(isLandscape)]}>
-                        <SearchBar
-                            ref={this.setSearchBarRef}
-                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                            backgroundColor='transparent'
-                            inputHeight={33}
-                            inputStyle={searchBarInput}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
-                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                            titleCancelColor={theme.centerChannelColor}
-                            onChangeText={this.changeSearchTerm}
-                            onCancelButtonPress={this.cancelSearch}
-                            autoCapitalize='none'
-                            value={searchTerm}
-                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                            onAnimationComplete={this.setRebuiltEmojis}
-                        />
+                    <View style={styles.searchBar}>
+                        <View style={padding(isLandscape)}>
+                            <SearchBar
+                                ref={this.setSearchBarRef}
+                                placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                                cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                                backgroundColor='transparent'
+                                inputHeight={33}
+                                inputStyle={searchBarInput}
+                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                                tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                                tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                                titleCancelColor={theme.centerChannelColor}
+                                onChangeText={this.changeSearchTerm}
+                                onCancelButtonPress={this.cancelSearch}
+                                autoCapitalize='none'
+                                value={searchTerm}
+                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                                onAnimationComplete={this.setRebuiltEmojis}
+                            />
+                        </View>
                     </View>
                     <View style={[styles.container]}>
                         {this.renderListComponent(shorten)}

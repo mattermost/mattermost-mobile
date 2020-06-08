@@ -8,8 +8,8 @@ import {General} from '@mm-redux/constants';
 
 import ChannelInfoHeader from './channel_info_header.js';
 
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
+jest.mock('@utils/theme', () => {
+    const original = jest.requireActual('../../utils/theme');
     return {
         ...original,
         changeOpacity: jest.fn(),

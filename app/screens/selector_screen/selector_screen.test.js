@@ -8,22 +8,6 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import SelectorScreen from './selector_screen.js';
 
-jest.mock('rn-fetch-blob', () => ({
-    fs: {
-        dirs: {
-            DocumentDir: () => jest.fn(),
-            CacheDir: () => jest.fn(),
-        },
-    },
-}));
-
-jest.mock('rn-fetch-blob/fs', () => ({
-    dirs: {
-        DocumentDir: () => jest.fn(),
-        CacheDir: () => jest.fn(),
-    },
-}));
-
 const user1 = {id: 'id', username: 'username'};
 const user2 = {id: 'id2', username: 'username2'};
 
@@ -78,6 +62,10 @@ describe('SelectorScreen', () => {
         theme: Preferences.THEMES.default,
         isLandscape: false,
     };
+
+    beforeAll(() => {
+        jest.useFakeTimers();
+    });
 
     test('should match snapshot for explicit options', async () => {
         const wrapper = shallow(

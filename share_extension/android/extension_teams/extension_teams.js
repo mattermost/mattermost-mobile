@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {NavigationActions} from 'react-navigation';
+import {CommonActions as NavigationActions} from '@react-navigation/native';
 import {
     ActivityIndicator,
     FlatList,
@@ -26,6 +26,7 @@ export default class ExtensionTeam extends PureComponent {
             getTeamChannels: PropTypes.func.isRequired,
         }).isRequired,
         navigation: PropTypes.object.isRequired,
+        route: PropTypes.object.isRequired,
         teamIds: PropTypes.array,
     };
 
@@ -37,26 +38,22 @@ export default class ExtensionTeam extends PureComponent {
         intl: intlShape,
     };
 
-    static navigationOptions = ({navigation}) => ({
-        title: navigation.state.params.title,
-    });
-
     state = {
         loading: false,
     };
 
     handleSelectTeam = async (teamId) => {
-        const {state} = this.props.navigation;
-        const backAction = NavigationActions.back();
+        const {actions, navigation, route} = this.props;
+        const backAction = NavigationActions.goBack();
 
-        if (state.params && state.params.onSelectTeam) {
+        if (route?.params?.onSelectTeam) {
             this.setState({loading: true});
-            const channelId = await this.props.actions.getTeamChannels(teamId);
-            this.props.actions.extensionSelectTeamId(teamId);
-            state.params.onSelectTeam(teamId, channelId);
+            const channelId = await actions.getTeamChannels(teamId);
+            actions.extensionSelectTeamId(teamId);
+            route.params.onSelectTeam(teamId, channelId);
         }
 
-        this.props.navigation.dispatch(backAction);
+        navigation.dispatch(backAction);
     };
 
     keyExtractor = (item) => item;
@@ -70,8 +67,7 @@ export default class ExtensionTeam extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {navigation} = this.props;
-        const {params} = navigation.state;
+        const {params} = this.props.route;
 
         return (
             <TeamItem

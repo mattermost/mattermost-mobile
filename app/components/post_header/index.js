@@ -25,7 +25,7 @@ function makeMapStateToProps() {
         const config = getConfig(state);
         const post = ownProps.post;
         const commentedOnPost = ownProps.commentedOnPost;
-        const commentedOnUserId = commentedOnPost?.user_id;
+        const commentedOnUserId = commentedOnPost?.user_id; // eslint-disable-line camelcase
         const commentedOnUser = commentedOnUserId ? getUser(state, commentedOnUserId) : null;
         const user = getUser(state, post.user_id) || {};
         const currentUser = getCurrentUser(state);

@@ -58,7 +58,7 @@ export default class SettingsDrawer extends SettingsSidebarBase {
     };
 
     open = () => {
-        EventEmitter.emit(NavigationTypes.BLUR_POST_TEXTBOX);
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
 
         if (this.drawerRef && !this.drawerOpened) {
             this.drawerRef.openDrawer();

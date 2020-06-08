@@ -398,7 +398,6 @@ export default class Permalink extends PureComponent {
                 backgroundColor='transparent'
                 excludeHeader={true}
                 footerColor='transparent'
-                forceTop={44}
             >
                 <View
                     style={[style.container, margin(isLandscape)]}

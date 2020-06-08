@@ -5,30 +5,32 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
-    Easing,
     View,
     Dimensions,
 } from 'react-native';
-import {ImageContent} from 'rn-placeholder';
-
-import EventEmitter from '@mm-redux/utils/event_emitter';
+import * as RNPlaceholder from 'rn-placeholder';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
-const {View: AnimatedView} = Animated;
-
 function calculateMaxRows(height) {
     return Math.round(height / 100);
 }
 
+function Media(color) {
+    return (
+        <RNPlaceholder.PlaceholderMedia
+            color={changeOpacity(color, 0.15)}
+            isRound={true}
+            size={32}
+            style={{marginRight: 10}}
+        />
+    );
+}
+
 export default class ChannelLoader extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            handleSelectChannel: PropTypes.func.isRequired,
-            setChannelLoading: PropTypes.func.isRequired,
-        }).isRequired,
         backgroundColor: PropTypes.string,
         channelIsLoading: PropTypes.bool.isRequired,
         style: CustomPropTypes.Style,
@@ -64,88 +66,35 @@ export default class ChannelLoader extends PureComponent {
         return Object.keys(state) ? state : null;
     }
 
-    componentDidMount() {
-        EventEmitter.on('switch_channel', this.handleChannelSwitch);
-    }
-
-    componentWillUnmount() {
-        EventEmitter.off('switch_channel', this.handleChannelSwitch);
-    }
-
-    startLoadingAnimation = () => {
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(this.state.barsOpacity, {
-                    toValue: 1,
-                    duration: 750,
-                    easing: Easing.quad,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(this.state.barsOpacity, {
-                    toValue: 0.6,
-                    duration: 750,
-                    easing: Easing.quad,
-                    useNativeDriver: true,
-                }),
-            ]),
-        ).start();
-    };
-
-    stopLoadingAnimation = () => {
-        Animated.timing(
-            this.state.barsOpacity,
-        ).stop();
-    }
-
-    componentDidUpdate(prevProps) {
-        if (prevProps.channelIsLoading === false && this.props.channelIsLoading === true) {
-            this.startLoadingAnimation();
-        } else if (prevProps.channelIsLoading === true && this.props.channelIsLoading === false) {
-            this.stopLoadingAnimation();
-        }
-
-        if (this.state.switch) {
-            const {
-                handleSelectChannel,
-                setChannelLoading,
-            } = this.props.actions;
-
-            const {channel} = this.state;
-
-            setTimeout(() => {
-                handleSelectChannel(channel.id);
-                setChannelLoading(false);
-            }, 250);
-        }
-    }
-
     buildSections({key, style, bg, color}) {
         return (
-            <AnimatedView
+            <View
                 key={key}
-                style={[style.section, {backgroundColor: bg}, {opacity: this.state.barsOpacity}]}
+                style={[style.section, {backgroundColor: bg}]}
             >
-                <ImageContent
-                    size={32}
-                    animate='fade'
-                    lineNumber={3}
-                    lineSpacing={5}
-                    firstLineWidth='80%'
-                    hasRadius={true}
-                    textSize={14}
-                    color={changeOpacity(color, 0.15)}
-                />
-            </AnimatedView>
+                <RNPlaceholder.Placeholder
+                    Animation={(props) => (
+                        <RNPlaceholder.Fade
+                            {...props}
+                            style={{backgroundColor: changeOpacity(bg, 0.9)}}
+                        />
+                    )}
+                    Left={Media.bind(undefined, color)}
+                    styles={{left: {color: changeOpacity(color, 0.15)}}}
+                >
+                    <RNPlaceholder.PlaceholderLine color={changeOpacity(color, 0.15)}/>
+                    <RNPlaceholder.PlaceholderLine
+                        color={changeOpacity(color, 0.15)}
+                        width={80}
+                    />
+                    <RNPlaceholder.PlaceholderLine
+                        color={changeOpacity(color, 0.15)}
+                        width={60}
+                    />
+                </RNPlaceholder.Placeholder>
+            </View>
         );
     }
-
-    handleChannelSwitch = (channel, currentChannelId) => {
-        if (channel.id === currentChannelId) {
-            this.props.actions.setChannelLoading(false);
-        } else {
-            this.setState({switch: true, channel});
-        }
-    };
 
     handleLayout = (e) => {
         const {height} = e.nativeEvent.layout;
@@ -192,7 +141,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         section: {
             backgroundColor: theme.centerChannelBg,
-            flexDirection: 'row',
             flex: 1,
             paddingLeft: 12,
             paddingRight: 20,
