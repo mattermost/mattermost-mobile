@@ -75,7 +75,7 @@ export default class ChannelMention extends PureComponent {
         if ((matchTerm !== prevProps.matchTerm && matchTerm === null) || this.state.mentionComplete) {
             // if the term changes but is null or the mention has been completed we render this component as null
             this.resetComponent();
-            prevProps.onResultCountChange(0);
+            this.props.onResultCountChange(0);
             return;
         } else if (matchTerm === null) {
             // if the terms did not change but is null then we don't need to do anything
@@ -83,7 +83,7 @@ export default class ChannelMention extends PureComponent {
         }
 
         if (matchTerm !== prevProps.matchTerm) {
-            const {currentTeamId} = prevProps;
+            const {currentTeamId} = this.props;
             this.runSearch(currentTeamId, matchTerm);
         }
 
@@ -113,7 +113,7 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
 
-                if (directAndGroupMessages.length && isMinimumServerVersion(prevProps.serverVersion, 5, 4)) {
+                if (directAndGroupMessages.length && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
                     sections.push({
                         id: t('suggestion.search.direct'),
                         defaultMessage: 'Direct Messages',
@@ -143,7 +143,7 @@ export default class ChannelMention extends PureComponent {
             }
             if (!_.isEqual(sections, this.state.sections)) {
                 this.setSections(sections);
-                prevProps.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
+                this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
             }
         }
     }
@@ -160,91 +160,6 @@ export default class ChannelMention extends PureComponent {
             sections,
         });
     }
-
-    // componentWillReceiveProps(nextProps) {
-    //     const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers} = nextProps;
-    //
-    //     if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
-    //         // if the term changes but is null or the mention has been completed we render this component as null
-    //         this.setState({
-    //             mentionComplete: false,
-    //             sections: [],
-    //         });
-    //
-    //         this.props.onResultCountChange(0);
-    //
-    //         return;
-    //     } else if (matchTerm === null) {
-    //         // if the terms did not change but is null then we don't need to do anything
-    //         return;
-    //     }
-    //
-    //     if (matchTerm !== this.props.matchTerm) {
-    //         const {currentTeamId} = this.props;
-    //         this.runSearch(currentTeamId, matchTerm);
-    //     }
-    //
-    //     if (matchTerm === '' || (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
-    //         privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
-    //         directAndGroupMessages !== this.props.directAndGroupMessages ||
-    //         myMembers !== this.props.myMembers)) {
-    //         const sections = [];
-    //         if (isSearch) {
-    //             if (publicChannels.length) {
-    //                 sections.push({
-    //                     id: t('suggestion.search.public'),
-    //                     defaultMessage: 'Public Channels',
-    //                     data: publicChannels.filter((cId) => myMembers[cId]),
-    //                     key: 'publicChannels',
-    //                     hideLoadingIndicator: true,
-    //                 });
-    //             }
-    //
-    //             if (privateChannels.length) {
-    //                 sections.push({
-    //                     id: t('suggestion.search.private'),
-    //                     defaultMessage: 'Private Channels',
-    //                     data: privateChannels,
-    //                     key: 'privateChannels',
-    //                     hideLoadingIndicator: true,
-    //                 });
-    //             }
-    //
-    //             if (directAndGroupMessages.length && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-    //                 sections.push({
-    //                     id: t('suggestion.search.direct'),
-    //                     defaultMessage: 'Direct Messages',
-    //                     data: directAndGroupMessages,
-    //                     key: 'directAndGroupMessages',
-    //                 });
-    //             }
-    //         } else {
-    //             if (myChannels.length) {
-    //                 sections.push({
-    //                     id: t('suggestion.mention.channels'),
-    //                     defaultMessage: 'My Channels',
-    //                     data: myChannels,
-    //                     key: 'myChannels',
-    //                     hideLoadingIndicator: true,
-    //                 });
-    //             }
-    //
-    //             if (otherChannels.length || requestStatus === RequestStatus.STARTED) {
-    //                 sections.push({
-    //                     id: t('suggestion.mention.morechannels'),
-    //                     defaultMessage: 'Other Channels',
-    //                     data: otherChannels,
-    //                     key: 'otherChannels',
-    //                 });
-    //             }
-    //         }
-    //
-    //         this.setState({
-    //             sections,
-    //         });
-    //         this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
-    //     }
-    // }
 
     completeMention = (mention) => {
         const {cursorPosition, isSearch, onChangeText, value} = this.props;

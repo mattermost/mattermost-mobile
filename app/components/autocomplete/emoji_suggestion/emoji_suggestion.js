@@ -58,7 +58,7 @@ export default class EmojiSuggestion extends PureComponent {
         this.matchTerm = '';
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
         if (this.props.isSearch) {
             return;
         }
@@ -69,7 +69,7 @@ export default class EmojiSuggestion extends PureComponent {
         if (!match || this.state.emojiComplete) {
             this.resetComponent();
 
-            prevProps.onResultCountChange(0);
+            this.props.onResultCountChange(0);
 
             return;
         }
@@ -78,12 +78,12 @@ export default class EmojiSuggestion extends PureComponent {
         this.matchTerm = match[3] || '';
 
         if (this.matchTerm !== oldMatchTerm && this.matchTerm.length) {
-            prevProps.actions.autocompleteCustomEmojis(this.matchTerm);
+            this.props.actions.autocompleteCustomEmojis(this.matchTerm);
             return;
         }
 
         if (this.matchTerm.length) {
-            this.handleFuzzySearch(this.matchTerm, this.props);
+            this.handleFuzzySearch(this.matchTerm);
         } else {
             this.setEmojiData(this.props.emojis);
         }
@@ -96,8 +96,8 @@ export default class EmojiSuggestion extends PureComponent {
         });
     }
 
-    handleFuzzySearch = async (matchTerm, props) => {
-        const {emojis, fuse} = props;
+    handleFuzzySearch = async (matchTerm) => {
+        const {emojis, fuse} = this.props;
 
         const results = await fuse.search(matchTerm.toLowerCase());
         const data = results.map((index) => emojis[index]);
@@ -109,10 +109,11 @@ export default class EmojiSuggestion extends PureComponent {
         if (matchTerm) {
             sorter = (a, b) => compareEmojis(a, b, matchTerm);
         }
-        if (!_.isEqual(data.sort(sorter), this.state.dataSource)) {
+        const sortedData = data.sort(sorter);
+        if (!_.isEqual(sortedData, this.state.dataSource)) {
             this.setState({
                 active: data.length > 0,
-                dataSource: data.sort(sorter),
+                dataSource: sortedData,
             });
         }
         this.props.onResultCountChange(data.length);

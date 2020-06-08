@@ -51,7 +51,7 @@ export default class SlashSuggestion extends PureComponent {
             return;
         }
 
-        const {currentTeamId} = this.props;
+        const {currentTeamId} = prevProps;
         const {
             commands: nextCommands,
             currentTeamId: nextTeamId,
@@ -66,14 +66,14 @@ export default class SlashSuggestion extends PureComponent {
 
         if (!match || this.state.suggestionComplete) {
             this.resetComponent();
-            prevProps.onResultCountChange(0);
+            this.props.onResultCountChange(0);
             return;
         }
 
         const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
 
         if ((!nextCommands.length || dataIsStale)) {
-            prevProps.actions.getAutocompleteCommands(this.props.currentTeamId);
+            this.props.actions.getAutocompleteCommands(this.props.currentTeamId);
             this.setLastCommandRequest();
         }
 
@@ -85,7 +85,7 @@ export default class SlashSuggestion extends PureComponent {
             this.setActive(data);
         }
 
-        prevProps.onResultCountChange(data.length);
+        this.props.onResultCountChange(data.length);
     }
 
     resetComponent() {
