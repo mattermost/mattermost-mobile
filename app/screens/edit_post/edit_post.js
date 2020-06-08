@@ -299,7 +299,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 10,
         },
         errorContainerSplit: {
-            paddingHorizontal: 10,
+            paddingHorizontal: 15,
             flexDirection: 'row',
             justifyContent: 'space-between',
         },
