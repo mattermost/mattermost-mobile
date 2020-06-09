@@ -11,11 +11,9 @@
 
 ### Breaking Changes
  - On mobile apps, users will not be able to see group mentions (E20 feature) in the autocomplete dropdown. Users will still receive notifications if they are part of an LDAP group. However, the group mention keyword will not be highlighted.
- - **Upcoming breaking change** Starting with mobile app v1.33.0 (to be released on July 16th), users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed.
+ - **Upcoming breaking change** Starting with mobile app v1.33.0 (to be released on July 16th), users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed. Updating your server to v5.19 or later is required.
  
 ### Highlights
-
-#### Upgrade to React Native 0.62
 
 #### Quick access to emoji reactions 
  - Long press on a post and add recently used reactions in a single tap.
