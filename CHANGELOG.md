@@ -11,7 +11,7 @@
 
 ### Breaking Changes
  - On mobile apps, users will not be able to see group mentions (E20 feature) in the autocomplete dropdown. Users will still receive notifications if they are part of an LDAP group. However, the group mention keyword will not be highlighted.
- - **Upcoming breaking change** Starting with mobile app v1.33.0 (to be released on July 16th), users on server versions below v5.19 may experience issues with displaying attachments, link previews, reactions and embed data.
+ - **Upcoming breaking change** Starting with mobile app v1.33.0 (to be released on July 16th), users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed.
  
 ### Highlights
 
