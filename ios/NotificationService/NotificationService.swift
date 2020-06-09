@@ -14,17 +14,17 @@ class NotificationService: UNNotificationServiceExtension {
       let ackId = bestAttemptContent.userInfo["ack_id"]
       let type = bestAttemptContent.userInfo["type"]
       let postId = bestAttemptContent.userInfo["post_id"]
-      let idLoaded = bestAttemptContent.userInfo["id_loaded"] ?? false
+      let idLoaded = (bestAttemptContent.userInfo["id_loaded"] ?? false) as! Bool
 
       UploadSession.shared.notificationReceipt(
         notificationId: ackId,
         receivedAt: Date().millisecondsSince1970,
         type: type,
         postId: postId,
-        idLoaded: idLoaded as! Bool
+        idLoaded: idLoaded
       ) { data, error in
-        if (idLoaded as! Bool) {
-          guard let data = data, error == nil else {
+        guard let data = data, error == nil else {
+          if (idLoaded) {
             self.sendFailed = true;
             let fibonacciBackoffsInSeconds = [1.0, 2.0, 3.0, 5.0, 8.0]
             for backoffInSeconds in fibonacciBackoffsInSeconds {
@@ -34,7 +34,7 @@ class NotificationService: UNNotificationServiceExtension {
                   receivedAt: Date().millisecondsSince1970,
                   type: type,
                   postId: postId,
-                  idLoaded: idLoaded as! Bool
+                  idLoaded: idLoaded
                 ) { data, error in
                   guard let data = data, error == nil else {
                     self.sendFailed = true;
@@ -51,10 +51,10 @@ class NotificationService: UNNotificationServiceExtension {
                 break
               }
             }
-            return
           }
-          self.processResponse(data: data, bestAttemptContent: bestAttemptContent, contentHandler: contentHandler)
+          return
         }
+        self.processResponse(data: data, bestAttemptContent: bestAttemptContent, contentHandler: contentHandler)
       }
     }
   }
