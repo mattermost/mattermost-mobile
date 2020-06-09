@@ -11,7 +11,7 @@
 
 ### Breaking Changes
  - On mobile apps, users will not be able to see group mentions (E20 feature) in the autocomplete dropdown. Users will still receive notifications if they are part of an LDAP group. However, the group mention keyword will not be highlighted.
- - **Upcoming breaking change** Starting with mobile app v1.33.0 (to be released on July 16th), users will no longer be able to join new teams if they are on server versions below v5.19.
+ - **Upcoming breaking change** Starting with mobile app v1.33.0 (to be released on July 16th), users on server versions below v5.19 may experience issues with displaying attachments, link previews, reactions and embed data.
  
 ### Highlights
 
@@ -32,16 +32,13 @@
 #### All apps
  - Fixed an issue with an infinite skeleton channel screen on app relaunch when ``ExperimentalPrimaryTeam setting`` was enabled.
  - Fixed an issue where users were scrolled to old messages when switching to a channel with unread messages.
- - Fixed an issue where a logout message for session timeout was missing.
+ - Fixed an issue where a logout message for session expiration was missing.
  - Fixed an issue where the app did not properly handle server URL and SSO redirects.
  - Fixed an issue where Direct and Group Messages disappeared from the left-hand side after opening them on webapp.
  - Fixed an issue where a crash occurred instead of showing proper error on entering invalid MFA token.
  - Fixed an issue where a user could not interact with the app until in-app notifications were dismissed.
- - Fixed an issue where using emoji on an instance with the custom emoji feature disabled triggered an error "Custom emoji have been disabled by the system admin".
+ - Fixed an issue where using emoji on an instance with the custom emoji feature disabled triggered a "Custom emoji have been disabled by the system admin" error in the server logs.
  - Fixed an issue where the replay icon was cut off on full screen video preview.
-
-#### iOS specific
- - 
 
 #### Android specific
  - Fixed an issue where dropdowns in the channel modal were hard to read.
