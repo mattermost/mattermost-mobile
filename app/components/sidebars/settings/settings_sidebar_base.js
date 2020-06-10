@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View, Platform} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from '@mm-redux/constants';
@@ -89,11 +89,6 @@ export default class SettingsSidebarBase extends PureComponent {
             'EditProfile',
             intl.formatMessage({id: 'mobile.routes.edit_profile', defaultMessage: 'Edit Profile'}),
             {currentUser, commandType},
-            Platform.select({
-                ios: {
-                    modalPresentationStyle: 'pageSheet',
-                },
-            }),
         );
     };
 
@@ -101,12 +96,6 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'FlaggedPosts',
             intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Flagged Posts'}),
-            {},
-            Platform.select({
-                ios: {
-                    modalPresentationStyle: 'pageSheet',
-                },
-            }),
         );
     };
 
@@ -114,12 +103,6 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'RecentMentions',
             intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
-            {},
-            Platform.select({
-                ios: {
-                    modalPresentationStyle: 'pageSheet',
-                },
-            }),
         );
     };
 
@@ -130,11 +113,6 @@ export default class SettingsSidebarBase extends PureComponent {
             'UserProfile',
             intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
             {userId, fromSettings: true},
-            Platform.select({
-                ios: {
-                    modalPresentationStyle: 'pageSheet',
-                },
-            }),
         );
     };
 
@@ -142,12 +120,6 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'Settings',
             intl.formatMessage({id: 'mobile.routes.settings', defaultMessage: 'Settings'}),
-            {},
-            Platform.select({
-                ios: {
-                    modalPresentationStyle: 'pageSheet',
-                },
-            }),
         );
     };
 
@@ -157,7 +129,7 @@ export default class SettingsSidebarBase extends PureComponent {
         logout();
     });
 
-    openModal = async (screen, title, passProps, passOptions) => {
+    openModal = async (screen, title, passProps = {}) => {
         this.closeSettingsSidebar();
 
         if (!this.closeButton) {
@@ -165,7 +137,6 @@ export default class SettingsSidebarBase extends PureComponent {
         }
 
         const options = {
-            ...passOptions,
             topBar: {
                 leftButtons: [{
                     id: 'close-settings',
