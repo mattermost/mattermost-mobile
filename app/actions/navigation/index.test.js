@@ -229,7 +229,7 @@ describe('@actions/navigation', () => {
         const showModal = jest.spyOn(Navigation, 'showModal');
 
         const defaultOptions = {
-            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+            modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },
@@ -366,7 +366,7 @@ describe('@actions/navigation', () => {
             },
         };
         const defaultOptions = {
-            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+            modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },
