@@ -370,12 +370,15 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
 
         // Remove existing channel memberships when the user is no longer a member
         if (sync) {
-            current.forEach((member: ChannelMembership) => {
-                const id = member.channel_id;
-                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id !== id && teamChannels.includes(id))) {
-                    delete nextState[id];
-                    hasNewValues = true;
-                }
+            const memberIds = channelMembers.map((cm: ChannelMembership) => cm.channel_id);
+            const removedMembers = current.filter((cm: ChannelMembership) => {
+                const id = cm.channel_id;
+                return !memberIds.includes(id) && teamChannels.includes(id);
+            });
+
+            removedMembers.forEach((member: ChannelMembership) => {
+                delete nextState[member.channel_id];
+                hasNewValues = true;
             });
         }
 

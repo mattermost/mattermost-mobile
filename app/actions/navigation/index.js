@@ -225,7 +225,7 @@ export async function popToRoot() {
 export function showModal(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
-        modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+        modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
@@ -312,6 +312,11 @@ export function showSearchModal(initialValue = '') {
             visible: false,
             height: 0,
         },
+        ...Platform.select({
+            ios: {
+                modalPresentationStyle: 'pageSheet',
+            },
+        }),
     };
 
     showModal(name, title, passProps, options);
