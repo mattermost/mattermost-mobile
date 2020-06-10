@@ -27,7 +27,7 @@ function selectOpenGraphData(metadata, url) {
 
 function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
-    const link = ownProps.metadata.embeds[0]?.url;
+    const link = ownProps.metadata.embeds[0]?.url || '';
     let expandedLink;
     if (link) {
         expandedLink = selectExpandedLink(state, link);
