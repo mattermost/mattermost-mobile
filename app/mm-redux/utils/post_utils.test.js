@@ -135,7 +135,7 @@ describe('PostUtils', () => {
             const newVersionState = {
                 entities: {
                     general: {
-                        serverVersion: '4.9.0',
+                        serverVersion: '5.26.0',
                     },
                     users: {
                         currentUserId: userId,

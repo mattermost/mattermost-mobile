@@ -11,6 +11,7 @@ import {UserProfile} from '@mm-redux/types/users';
 import {Team} from '@mm-redux/types/teams';
 import {Channel} from '@mm-redux/types/channels';
 import {$ID} from '@mm-redux/types/utilities';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {getPreferenceKey} from './preference_utils';
 
@@ -86,8 +87,17 @@ export function canEditPost(state: GlobalState, config: any, license: any, teamI
     let canEdit = true;
 
     if (hasNewPermissions(state)) {
-        const permission = isOwner ? Permissions.EDIT_POST : Permissions.EDIT_OTHERS_POSTS;
-        canEdit = haveIChannelPermission(state, {team: teamId, channel: channelId, permission, default: false});
+        const {serverVersion} = state.entities.general;
+        let permissions = [];
+        if (isOwner) {
+            permissions = [Permissions.EDIT_POST];
+        } else {
+            // prior to v5.26, the server used to require edit_own_posts and
+            // edit_others_posts permissions to be able to edit a post by a
+            // different author.
+            permissions = isMinimumServerVersion(serverVersion, 5, 26) ? [Permissions.EDIT_OTHERS_POSTS] : [Permissions.EDIT_POST, Permissions.EDIT_OTHERS_POSTS];
+        }
+        canEdit = permissions.every((permission) => haveIChannelPermission(state, {team: teamId, channel: channelId, permission, default: false}));
         if (license.IsLicensed === 'true' && config.PostEditTimeLimit !== '-1' && config.PostEditTimeLimit !== -1) {
             const timeLeft = (post.create_at + (config.PostEditTimeLimit * 1000)) - Date.now();
             if (timeLeft <= 0) {
