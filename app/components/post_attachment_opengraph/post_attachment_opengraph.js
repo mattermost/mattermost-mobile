@@ -157,8 +157,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     setImageSize = (imageUrl, originalWidth, originalHeight) => {
         if (this.mounted) {
-            const dimensions = calculateDimensions(originalHeight, originalWidth,
-                this.getViewPostWidth(this.props));
+            const dimensions = calculateDimensions(originalHeight, originalWidth, this.getViewPostWidth());
 
             this.setState({
                 imageUrl,
