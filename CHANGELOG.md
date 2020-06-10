@@ -43,6 +43,9 @@
 
 #### Android specific
  - Fixed an issue where dropdowns in the channel modal were hard to read.
+ 
+#### Known issues
+ - Signing in with supported SSO methods (OKTA, OneLogin, GitLab and Office365) may fail to redirect on iOS 12. It is recommended to use iOS 13 if any issues are encountered.
 
 ## 1.31.2 Release
 - Release Date: May 27, 2020
