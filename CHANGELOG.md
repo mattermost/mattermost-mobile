@@ -19,7 +19,7 @@
  - Long press on a post and add recently used reactions in a single tap.
  
 #### Upgrade to React Native 0.62
- - BlueCedar and Appdome fully support React Native 0.62 for combining the app with Google Play EMM SDK.
+ - React Native 0.62 introduces performance and stability improvements to the core app platform.
 
 ### Improvements
  - Automatic retry when id-loaded push notification fails to fetch on receipt.
