@@ -17,6 +17,9 @@
 
 #### Quick access to emoji reactions 
  - Long press on a post and add recently used reactions in a single tap.
+ 
+#### Upgrade to React Native 0.62
+ - BlueCedar and Appdome fully support React Native 0.62 for combining the app with Google Play EMM SDK.
 
 ### Improvements
  - Automatic retry when id-loaded push notification fails to fetch on receipt.
