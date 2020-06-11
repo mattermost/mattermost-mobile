@@ -13,7 +13,7 @@ class NotificationService: UNNotificationServiceExtension {
     if let bestAttemptContent = bestAttemptContent {
       let ackId = bestAttemptContent.userInfo["ack_id"]
       let type = bestAttemptContent.userInfo["type"]
-      let postId = bestAttemptContent.userInfo["post_id"]
+      let postId = bestAttemptContent.userInfo["post_id"] ?? ""
       let idLoaded = (bestAttemptContent.userInfo["id_loaded"] ?? false) as! Bool
 
       UploadSession.shared.notificationReceipt(
