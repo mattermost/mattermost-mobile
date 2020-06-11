@@ -1,208 +1,355 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PostList setting channel deep link 1`] = `
-<FlatList
-  ListFooterComponent={[Function]}
-  contentContainerStyle={
-    Object {
-      "paddingTop": 5,
+<React.Fragment>
+  <Connect(MoreMessageButton)
+    channelId="channel-id"
+    deepLinkURL="mattermost://server-url.fake/team-name/channels/channel-name"
+    postIds={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
     }
-  }
-  data={
-    Array [
-      "post-id-1",
-      "post-id-2",
-    ]
-  }
-  disableVirtualization={false}
-  extraData={
-    Array [
-      "channel-id",
-      undefined,
-      undefined,
-      undefined,
-    ]
-  }
-  horizontal={false}
-  initialNumToRender={10}
-  inverted={true}
-  keyExtractor={[Function]}
-  keyboardDismissMode="interactive"
-  keyboardShouldPersistTaps="handled"
-  listKey="recyclerFor-channel-id"
-  maintainVisibleContentPosition={
-    Object {
-      "autoscrollToTopThreshold": 60,
-      "minIndexForVisible": 0,
-    }
-  }
-  maxToRenderPerBatch={10}
-  numColumns={1}
-  onContentSizeChange={[Function]}
-  onEndReachedThreshold={2}
-  onLayout={[Function]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollToIndexFailed={[Function]}
-  refreshControl={
-    <RefreshControl
-      colors={
-        Array [
-          "#3d3c40",
-        ]
+    registerViewableItemsListener={[Function]}
+    scrollToIndex={[Function]}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-      onRefresh={[Function]}
-      refreshing={false}
-      tintColor="#3d3c40"
-    />
-  }
-  removeClippedSubviews={false}
-  renderItem={[Function]}
-  scrollEventThrottle={60}
-  style={
-    Object {
-      "flex": 1,
     }
-  }
-  updateCellsBatchingPeriod={50}
-  windowSize={50}
-/>
+  />
+  <FlatList
+    ListFooterComponent={[Function]}
+    contentContainerStyle={
+      Object {
+        "paddingTop": 5,
+      }
+    }
+    data={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
+    }
+    disableVirtualization={false}
+    extraData={
+      Array [
+        "channel-id",
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+    horizontal={false}
+    initialNumToRender={10}
+    inverted={true}
+    keyExtractor={[Function]}
+    keyboardDismissMode="interactive"
+    keyboardShouldPersistTaps="handled"
+    listKey="recyclerFor-channel-id"
+    maintainVisibleContentPosition={
+      Object {
+        "autoscrollToTopThreshold": 60,
+        "minIndexForVisible": 0,
+      }
+    }
+    maxToRenderPerBatch={10}
+    numColumns={1}
+    onContentSizeChange={[Function]}
+    onEndReachedThreshold={2}
+    onLayout={[Function]}
+    onScroll={[Function]}
+    onScrollToIndexFailed={[Function]}
+    onViewableItemsChanged={[Function]}
+    refreshControl={
+      <RefreshControl
+        colors={
+          Array [
+            "#3d3c40",
+          ]
+        }
+        onRefresh={[Function]}
+        refreshing={false}
+        tintColor="#3d3c40"
+      />
+    }
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={60}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    updateCellsBatchingPeriod={50}
+    viewabilityConfig={
+      Object {
+        "itemVisiblePercentThreshold": 95,
+        "minimumViewTime": 100,
+      }
+    }
+    windowSize={50}
+  />
+</React.Fragment>
 `;
 
 exports[`PostList setting permalink deep link 1`] = `
-<FlatList
-  ListFooterComponent={[Function]}
-  contentContainerStyle={
-    Object {
-      "paddingTop": 5,
+<React.Fragment>
+  <Connect(MoreMessageButton)
+    channelId="channel-id"
+    deepLinkURL="mattermost://server-url.fake/team-name/pl/pl-id"
+    postIds={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
     }
-  }
-  data={
-    Array [
-      "post-id-1",
-      "post-id-2",
-    ]
-  }
-  disableVirtualization={false}
-  extraData={
-    Array [
-      "channel-id",
-      undefined,
-      undefined,
-      undefined,
-    ]
-  }
-  horizontal={false}
-  initialNumToRender={10}
-  inverted={true}
-  keyExtractor={[Function]}
-  keyboardDismissMode="interactive"
-  keyboardShouldPersistTaps="handled"
-  listKey="recyclerFor-channel-id"
-  maintainVisibleContentPosition={
-    Object {
-      "autoscrollToTopThreshold": 60,
-      "minIndexForVisible": 0,
-    }
-  }
-  maxToRenderPerBatch={10}
-  numColumns={1}
-  onContentSizeChange={[Function]}
-  onEndReachedThreshold={2}
-  onLayout={[Function]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollToIndexFailed={[Function]}
-  refreshControl={
-    <RefreshControl
-      colors={
-        Array [
-          "#3d3c40",
-        ]
+    registerViewableItemsListener={[Function]}
+    scrollToIndex={[Function]}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-      onRefresh={[Function]}
-      refreshing={false}
-      tintColor="#3d3c40"
-    />
-  }
-  removeClippedSubviews={false}
-  renderItem={[Function]}
-  scrollEventThrottle={60}
-  style={
-    Object {
-      "flex": 1,
     }
-  }
-  updateCellsBatchingPeriod={50}
-  windowSize={50}
-/>
+  />
+  <FlatList
+    ListFooterComponent={[Function]}
+    contentContainerStyle={
+      Object {
+        "paddingTop": 5,
+      }
+    }
+    data={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
+    }
+    disableVirtualization={false}
+    extraData={
+      Array [
+        "channel-id",
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+    horizontal={false}
+    initialNumToRender={10}
+    inverted={true}
+    keyExtractor={[Function]}
+    keyboardDismissMode="interactive"
+    keyboardShouldPersistTaps="handled"
+    listKey="recyclerFor-channel-id"
+    maintainVisibleContentPosition={
+      Object {
+        "autoscrollToTopThreshold": 60,
+        "minIndexForVisible": 0,
+      }
+    }
+    maxToRenderPerBatch={10}
+    numColumns={1}
+    onContentSizeChange={[Function]}
+    onEndReachedThreshold={2}
+    onLayout={[Function]}
+    onScroll={[Function]}
+    onScrollToIndexFailed={[Function]}
+    onViewableItemsChanged={[Function]}
+    refreshControl={
+      <RefreshControl
+        colors={
+          Array [
+            "#3d3c40",
+          ]
+        }
+        onRefresh={[Function]}
+        refreshing={false}
+        tintColor="#3d3c40"
+      />
+    }
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={60}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    updateCellsBatchingPeriod={50}
+    viewabilityConfig={
+      Object {
+        "itemVisiblePercentThreshold": 95,
+        "minimumViewTime": 100,
+      }
+    }
+    windowSize={50}
+  />
+</React.Fragment>
 `;
 
 exports[`PostList should match snapshot 1`] = `
-<FlatList
-  ListFooterComponent={[Function]}
-  contentContainerStyle={
-    Object {
-      "paddingTop": 5,
+<React.Fragment>
+  <Connect(MoreMessageButton)
+    channelId="channel-id"
+    deepLinkURL=""
+    postIds={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
     }
-  }
-  data={
-    Array [
-      "post-id-1",
-      "post-id-2",
-    ]
-  }
-  disableVirtualization={false}
-  extraData={
-    Array [
-      "channel-id",
-      undefined,
-      undefined,
-      undefined,
-    ]
-  }
-  horizontal={false}
-  initialNumToRender={10}
-  inverted={true}
-  keyExtractor={[Function]}
-  keyboardDismissMode="interactive"
-  keyboardShouldPersistTaps="handled"
-  listKey="recyclerFor-channel-id"
-  maintainVisibleContentPosition={
-    Object {
-      "autoscrollToTopThreshold": 60,
-      "minIndexForVisible": 0,
-    }
-  }
-  maxToRenderPerBatch={10}
-  numColumns={1}
-  onContentSizeChange={[Function]}
-  onEndReachedThreshold={2}
-  onLayout={[Function]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollToIndexFailed={[Function]}
-  refreshControl={
-    <RefreshControl
-      colors={
-        Array [
-          "#3d3c40",
-        ]
+    registerViewableItemsListener={[Function]}
+    scrollToIndex={[Function]}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
-      onRefresh={[Function]}
-      refreshing={false}
-      tintColor="#3d3c40"
-    />
-  }
-  removeClippedSubviews={false}
-  renderItem={[Function]}
-  scrollEventThrottle={60}
-  style={
-    Object {
-      "flex": 1,
     }
-  }
-  updateCellsBatchingPeriod={50}
-  windowSize={50}
-/>
+  />
+  <FlatList
+    ListFooterComponent={[Function]}
+    contentContainerStyle={
+      Object {
+        "paddingTop": 5,
+      }
+    }
+    data={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
+    }
+    disableVirtualization={false}
+    extraData={
+      Array [
+        "channel-id",
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+    horizontal={false}
+    initialNumToRender={10}
+    inverted={true}
+    keyExtractor={[Function]}
+    keyboardDismissMode="interactive"
+    keyboardShouldPersistTaps="handled"
+    listKey="recyclerFor-channel-id"
+    maintainVisibleContentPosition={
+      Object {
+        "autoscrollToTopThreshold": 60,
+        "minIndexForVisible": 0,
+      }
+    }
+    maxToRenderPerBatch={10}
+    numColumns={1}
+    onContentSizeChange={[Function]}
+    onEndReachedThreshold={2}
+    onLayout={[Function]}
+    onScroll={[Function]}
+    onScrollToIndexFailed={[Function]}
+    onViewableItemsChanged={[Function]}
+    refreshControl={
+      <RefreshControl
+        colors={
+          Array [
+            "#3d3c40",
+          ]
+        }
+        onRefresh={[Function]}
+        refreshing={false}
+        tintColor="#3d3c40"
+      />
+    }
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={60}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    updateCellsBatchingPeriod={50}
+    viewabilityConfig={
+      Object {
+        "itemVisiblePercentThreshold": 95,
+        "minimumViewTime": 100,
+      }
+    }
+    windowSize={50}
+  />
+</React.Fragment>
 `;
