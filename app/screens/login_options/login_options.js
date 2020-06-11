@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     Dimensions,
     Image,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -45,19 +46,19 @@ export default class LoginOptions extends PureComponent {
         Dimensions.removeEventListener('change', this.orientationDidChange);
     }
 
-    goToLogin = preventDoubleTap(() => {
+    goToLogin = preventDoubleTap(async () => {
         const {intl} = this.context;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-        CookieManager.clearAll(true);
+        await CookieManager.clearAll(Platform.OS === 'ios');
         goToScreen(screen, title);
     });
 
-    goToSSO = (ssoType) => {
+    goToSSO = async (ssoType) => {
         const {intl} = this.context;
         const screen = 'SSO';
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
-        CookieManager.clearAll(true);
+        await CookieManager.clearAll(Platform.OS === 'ios');
         goToScreen(screen, title, {ssoType});
     };
 
