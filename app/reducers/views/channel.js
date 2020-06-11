@@ -359,6 +359,20 @@ function keepChannelIdAsUnread(state = null, action) {
     }
 }
 
+function unreadMessageCount(state = {}, action) {
+    switch (action.type) {
+    case ChannelTypes.SET_UNREAD_MSG_COUNT: {
+        const {channelId, count} = action.data;
+        return {
+            ...state,
+            [channelId]: count,
+        };
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
@@ -370,4 +384,5 @@ export default combineReducers({
     loadMorePostsVisible,
     lastChannelViewTime,
     keepChannelIdAsUnread,
+    unreadMessageCount,
 });

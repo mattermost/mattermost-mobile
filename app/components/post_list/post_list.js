@@ -23,6 +23,7 @@ import {t} from 'app/utils/i18n';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
+import MoreMessagesButton from './more_messages_button';
 
 const INITIAL_BATCH_TO_RENDER = 10;
 const SCROLL_UP_MULTIPLIER = 3.5;
@@ -89,12 +90,10 @@ export default class PostList extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.cancelScrollToIndex = false;
         this.contentOffsetY = 0;
         this.contentHeight = 0;
         this.hasDoneInitialScroll = false;
         this.shouldScrollToBottom = false;
-        this.cancelScrollToIndex = false;
         this.makeExtraData = makeExtraData();
         this.flatListRef = React.createRef();
     }
@@ -111,7 +110,7 @@ export default class PostList extends PureComponent {
         }
 
         // Scroll to highlighted post for permalinks
-        if (!this.hasDoneInitialScroll && initialIndex > 0 && !this.cancelScrollToIndex && highlightPostId) {
+        if (!this.hasDoneInitialScroll && initialIndex > 0 && highlightPostId) {
             this.scrollToInitialIndexIfNeeded(initialIndex);
         }
     }
@@ -134,10 +133,6 @@ export default class PostList extends PureComponent {
             this.shouldScrollToBottom = false;
         }
 
-        if (!this.hasDoneInitialScroll && this.props.initialIndex > 0 && !this.cancelScrollToIndex) {
-            this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
-        }
-
         if (
             this.props.channelId === prevProps.channelId &&
             this.props.postIds.length &&
@@ -157,14 +152,12 @@ export default class PostList extends PureComponent {
 
     flatListScrollToIndex = (index) => {
         this.animationFrameInitialIndex = requestAnimationFrame(() => {
-            if (!this.cancelScrollToIndex) {
-                this.flatListRef.current.scrollToIndex({
-                    animated: false,
-                    index,
-                    viewOffset: 0,
-                    viewPosition: 1, // 0 is at bottom
-                });
-            }
+            this.flatListRef.current.scrollToIndex({
+                animated: true,
+                index,
+                viewOffset: 0,
+                viewPosition: 1, // 0 is at bottom
+            });
         });
     }
 
@@ -264,10 +257,6 @@ export default class PostList extends PureComponent {
         }
     };
 
-    handleScrollBeginDrag = () => {
-        this.cancelScrollToIndex = true;
-    }
-
     handleScrollToIndexFailed = (info) => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
             if (this.props.initialIndex > 0 && this.contentHeight > 0) {
@@ -281,10 +270,6 @@ export default class PostList extends PureComponent {
                 }
             }
         });
-    };
-
-    handleScrollBeginDrag = () => {
-        this.cancelScrollToIndex = true;
     };
 
     handleSetScrollToBottom = () => {
@@ -408,7 +393,6 @@ export default class PostList extends PureComponent {
     resetPostList = () => {
         this.contentOffsetY = 0;
         this.hasDoneInitialScroll = false;
-        this.cancelScrollToIndex = false;
 
         if (this.scrollAfterInteraction) {
             this.scrollAfterInteraction.cancel();
@@ -460,12 +444,11 @@ export default class PostList extends PureComponent {
             if (index > 0 && index <= this.getItemCount()) {
                 this.hasDoneInitialScroll = true;
                 this.scrollToIndex(index);
-
                 if (index !== this.props.initialIndex) {
                     this.hasDoneInitialScroll = false;
                     this.scrollToInitialTimer = setTimeout(() => {
                         this.scrollToInitialIndexIfNeeded(this.props.initialIndex);
-                    });
+                    }, 10);
                 }
             }
         }
@@ -494,6 +477,23 @@ export default class PostList extends PureComponent {
         }
     };
 
+    registerViewableItemsListener = (listener) => {
+        this.onViewableItemsChangedListener = listener;
+        const removeListener = () => {
+            this.onViewableItemsChangedListener = null;
+        };
+
+        return removeListener;
+    }
+
+    onViewableItemsChanged = ({viewableItems}) => {
+        if (!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) {
+            return;
+        }
+
+        this.onViewableItemsChangedListener(viewableItems);
+    }
+
     render() {
         const {
             channelId,
@@ -504,6 +504,8 @@ export default class PostList extends PureComponent {
             refreshing,
             scrollViewNativeID,
             theme,
+            initialIndex,
+            deepLinkURL,
         } = this.props;
 
         const refreshControl = (
@@ -515,35 +517,52 @@ export default class PostList extends PureComponent {
             />);
 
         const hasPostsKey = postIds.length ? 'true' : 'false';
+
         return (
-            <FlatList
-                contentContainerStyle={styles.postListContent}
-                data={postIds}
-                extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                inverted={true}
-                key={`recyclerFor-${channelId}-${hasPostsKey}`}
-                keyboardDismissMode={'interactive'}
-                keyboardShouldPersistTaps={'handled'}
-                keyExtractor={this.keyExtractor}
-                ListFooterComponent={this.props.renderFooter}
-                listKey={`recyclerFor-${channelId}`}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={Platform.select({android: 5})}
-                nativeID={scrollViewNativeID}
-                onContentSizeChange={this.handleContentSizeChange}
-                onLayout={this.handleLayout}
-                onScroll={this.handleScroll}
-                onScrollBeginDrag={this.handleScrollBeginDrag}
-                onScrollToIndexFailed={this.handleScrollToIndexFailed}
-                ref={this.flatListRef}
-                refreshControl={refreshControl}
-                removeClippedSubviews={false}
-                renderItem={this.renderItem}
-                scrollEventThrottle={60}
-                style={styles.flex}
-                windowSize={Platform.select({android: 11, ios: 50})}
-            />
+            <>
+                <MoreMessagesButton
+                    theme={theme}
+                    postIds={postIds}
+                    channelId={channelId}
+                    deepLinkURL={deepLinkURL}
+                    initialIndex={initialIndex}
+                    scrollToIndex={this.scrollToIndex}
+                    registerViewableItemsListener={this.registerViewableItemsListener}
+                />
+                <FlatList
+                    contentContainerStyle={styles.postListContent}
+                    data={postIds}
+                    extraData={this.makeExtraData(channelId, highlightPostId, extraData, loadMorePostsVisible)}
+                    initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                    inverted={true}
+                    key={`recyclerFor-${channelId}-${hasPostsKey}`}
+                    keyboardDismissMode={'interactive'}
+                    keyboardShouldPersistTaps={'handled'}
+                    keyExtractor={this.keyExtractor}
+                    ListFooterComponent={this.props.renderFooter}
+                    listKey={`recyclerFor-${channelId}`}
+                    maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                    maxToRenderPerBatch={Platform.select({android: 5})}
+                    nativeID={scrollViewNativeID}
+                    onContentSizeChange={this.handleContentSizeChange}
+                    onLayout={this.handleLayout}
+                    onScroll={this.handleScroll}
+                    onScrollBeginDrag={this.handleScrollBeginDrag}
+                    onScrollToIndexFailed={this.handleScrollToIndexFailed}
+                    ref={this.flatListRef}
+                    refreshControl={refreshControl}
+                    removeClippedSubviews={false}
+                    renderItem={this.renderItem}
+                    scrollEventThrottle={60}
+                    style={styles.flex}
+                    windowSize={Platform.select({android: 11, ios: 50})}
+                    viewabilityConfig={{
+                        itemVisiblePercentThreshold: 95,
+                        minimumViewTime: 100,
+                    }}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
+                />
+            </>
         );
     }
 }
