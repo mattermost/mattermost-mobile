@@ -169,7 +169,7 @@ class GlobalEventHandler {
         resetMomentLocale();
 
         // TODO: Handle when multi-server support is added
-        CookieManager.clearAll(Platform.OS === 'ios');
+        await CookieManager.clearAll(Platform.OS === 'ios');
         PushNotifications.clearNotifications();
         const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
         const mainPath = cacheDir.split('/').slice(0, -1).join('/');
