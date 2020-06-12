@@ -109,8 +109,8 @@ exports[`PostList setting channel deep link 1`] = `
     updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
-        "itemVisiblePercentThreshold": 95,
         "minimumViewTime": 100,
+        "viewAreaCoveragePercentThreshold": 0,
       }
     }
     windowSize={50}
@@ -227,8 +227,8 @@ exports[`PostList setting permalink deep link 1`] = `
     updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
-        "itemVisiblePercentThreshold": 95,
         "minimumViewTime": 100,
+        "viewAreaCoveragePercentThreshold": 0,
       }
     }
     windowSize={50}
@@ -345,8 +345,8 @@ exports[`PostList should match snapshot 1`] = `
     updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
-        "itemVisiblePercentThreshold": 95,
         "minimumViewTime": 100,
+        "viewAreaCoveragePercentThreshold": 0,
       }
     }
     windowSize={50}
