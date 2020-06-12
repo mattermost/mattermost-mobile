@@ -171,7 +171,7 @@ class GlobalEventHandler {
         // TODO: Handle when multi-server support is added
         try {
             await CookieManager.clearAll(Platform.OS === 'ios');
-        } catch(error) {
+        } catch (error) {
             // Nothing to clear
         }
         PushNotifications.clearNotifications();

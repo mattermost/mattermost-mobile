@@ -50,9 +50,9 @@ export default class LoginOptions extends PureComponent {
         const {intl} = this.context;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-        try{
+        try {
             await CookieManager.clearAll(Platform.OS === 'ios');
-        } catch(error) {
+        } catch (error) {
             // Nothing to clear
         }
         goToScreen(screen, title);
@@ -64,7 +64,7 @@ export default class LoginOptions extends PureComponent {
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
         try {
             await CookieManager.clearAll(Platform.OS === 'ios');
-        } catch(error) {
+        } catch (error) {
             // Nothing to clear
         }
         goToScreen(screen, title, {ssoType});
