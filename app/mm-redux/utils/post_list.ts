@@ -101,7 +101,6 @@ export function makeFilterPostsAndAddSeparators() {
                 if (
                     lastViewedAt &&
                     post.create_at > lastViewedAt &&
-                    post.user_id !== currentUser.id &&
                     !addedNewMessagesIndicator &&
                     indicateNewMessages
                 ) {

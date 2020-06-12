@@ -346,18 +346,19 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
         }
 
         if (channel) {
+            const unreadMessageCount = channel.total_msg_count - member.msg_count;
             actions.push({
                 type: ChannelTypes.SET_UNREAD_MSG_COUNT,
                 data: {
                     channelId,
-                    count: channel.total_msg_count - member.msg_count,
+                    count: unreadMessageCount,
                 },
             }, {
                 type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
                 data: {
                     teamId: channel.team_id,
                     channelId,
-                    amount: channel.total_msg_count - member.msg_count,
+                    amount: unreadMessageCount,
                 },
             }, {
                 type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,

@@ -16,7 +16,7 @@ export default class MoreMessageButton extends React.PureComponent {
         channelId: PropTypes.string.isRequired,
         unreadCount: PropTypes.number.isRequired,
         initialIndex: PropTypes.number.isRequired,
-        scrollToIndex: PropTypes.number.isRequired,
+        scrollToIndex: PropTypes.func.isRequired,
         registerViewableItemsListener: PropTypes.func.isRequired,
         deepLinkURL: PropTypes.string,
     };
@@ -25,19 +25,18 @@ export default class MoreMessageButton extends React.PureComponent {
         moreCount: 0,
     };
     top = new Animated.Value(-100);
-    prevInitialIndex = 0;
 
     componentDidMount() {
         this.removeListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
-
-        this.show();
-        setTimeout(this.hide, 1000);
+        this.reset();
     }
 
     componentWillUnmount() {
         if (this.removeListener) {
             this.removeListener();
-            this.reset();
+        }
+        if (this.viewableItemsChangedTimer) {
+            clearTimeout(this.viewableItemsChangedTimer);
         }
     }
 
@@ -94,7 +93,7 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     onViewableItemsChanged = (viewableItems) => {
-        const {initialIndex, unreadCount} = this.props;
+        const {initialIndex, unreadCount, scrollToIndex} = this.props;
         if (initialIndex <= 0 || viewableItems.length === 0) {
             return;
         }
@@ -103,16 +102,24 @@ export default class MoreMessageButton extends React.PureComponent {
             clearTimeout(this.viewableItemsChangedTimer);
         }
 
-        const viewableIndexes = viewableItems.map((item) => item.index);
-
-        // Hide More Messages button when New Messages line is in view
-        if (initialIndex >= unreadCount && viewableIndexes[viewableIndexes.length - 1] >= initialIndex) {
-            this.hide();
-            this.disableViewableItemsHandler = true;
-            return;
-        }
-
         if (!this.disableViewableItemsHandler) {
+            const viewableIndexes = viewableItems.map((item) => item.index);
+
+            // Hide More Messages button when New Messages line is viewable
+            if (initialIndex >= unreadCount && viewableIndexes[viewableIndexes.length - 1] >= initialIndex) {
+                this.hide();
+                this.disableViewableItemsHandler = true;
+
+                // If the first post is viewable as well, this means that the channel
+                // was just loaded. In this case let's auto scroll to the New Messages line
+                // in case it's partially hidden behind the top bar.
+                if (viewableIndexes[0] === 0) {
+                    scrollToIndex(initialIndex);
+                }
+
+                return;
+            }
+
             let delay = 0;
             if (this.viewableItemsChangedTimer) {
                 clearTimeout(this.viewableItemsChangedTimer);
@@ -127,7 +134,7 @@ export default class MoreMessageButton extends React.PureComponent {
     viewableItemsChangedHandler = (viewableIndexes) => {
         const {initialIndex, unreadCount, scrollToIndex} = this.props;
         if (!viewableIndexes.includes(initialIndex)) {
-            const readCount = viewableIndexes[viewableIndexes.length - 1];
+            const readCount = viewableIndexes.pop() || 0;
             const moreCount = unreadCount - readCount;
 
             if (moreCount === 0) {

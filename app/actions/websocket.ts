@@ -351,7 +351,13 @@ function handleNewPostEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
-        const post = JSON.parse(msg.data.post);
+        const currentUserId = getCurrentUserId(state);
+        const data = JSON.parse(msg.data.post);
+        const post = {
+            ...data,
+            ownPost: data.user_id === currentUserId,
+        };
+
         const actions: Array<GenericAction> = [];
 
         const exists = selectPost(state, post.pending_post_id);
@@ -421,7 +427,6 @@ function handleNewPostEvent(msg: WebSocketMessage) {
             }
 
             if (msg.data.channel_type === General.DM_CHANNEL) {
-                const currentUserId = getCurrentUserId(state);
                 const otherUserId = getUserIdFromChannelName(currentUserId, msg.data.channel_name);
                 const dmAction = makeDirectChannelVisibleIfNecessary(state, otherUserId);
                 if (dmAction) {
@@ -469,11 +474,17 @@ function handleNewPostEvent(msg: WebSocketMessage) {
 }
 
 function handlePostEdited(msg: WebSocketMessage) {
-    return async (dispatch: DispatchFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
         const data = JSON.parse(msg.data.post);
-        const actions = [receivedPost(data)];
+        const post = {
+            ...data,
+            ownPost: data.user_id === currentUserId,
+        };
+        const actions = [receivedPost(post)];
 
-        const additional: any = await dispatch(getPostsAdditionalDataBatch([data]));
+        const additional: any = await dispatch(getPostsAdditionalDataBatch([post]));
         if (additional.data.length) {
             actions.push(...additional.data);
         }

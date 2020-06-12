@@ -313,6 +313,16 @@ function lastChannelViewTime(state = {}, action) {
         return {...state, [data.channelId]: data.lastViewedAt};
     }
 
+    case PostTypes.RECEIVED_POST:
+    case PostTypes.RECEIVED_NEW_POST: {
+        const data = action.data;
+        if (!data.ownPost) {
+            return state;
+        }
+
+        return {...state, [data.channel_id]: data.create_at + 1};
+    }
+
     default:
         return state;
     }

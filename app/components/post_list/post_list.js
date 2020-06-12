@@ -557,7 +557,7 @@ export default class PostList extends PureComponent {
                     style={styles.flex}
                     windowSize={Platform.select({android: 11, ios: 50})}
                     viewabilityConfig={{
-                        itemVisiblePercentThreshold: 95,
+                        viewAreaCoveragePercentThreshold: 0,
                         minimumViewTime: 100,
                     }}
                     onViewableItemsChanged={this.onViewableItemsChanged}
