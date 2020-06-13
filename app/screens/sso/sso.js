@@ -27,7 +27,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = "window.ReactNativeWebView.postMessage(document.body.innerText, '*');";
+const postMessageJS = 'window.ReactNativeWebView.postMessage(document.body.innerText);';
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -104,6 +104,44 @@ class SSO extends PureComponent {
         }
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.cookiesTimeout);
+    }
+
+    extractCookie = (parsedUrl) => {
+        CookieManager.get(parsedUrl.origin, true).then((res) => {
+            const mmtoken = res.MMAUTHTOKEN;
+            const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+
+            if (token) {
+                clearTimeout(this.cookiesTimeout);
+                this.setState({renderWebView: false});
+                const {
+                    ssoLogin,
+                } = this.props.actions;
+
+                Client4.setToken(token);
+                if (this.props.serverUrl !== parsedUrl.origin) {
+                    const original = urlParse(this.props.serverUrl);
+
+                    // Check whether we need to set a sub-path
+                    parsedUrl.set('pathname', original.pathname || '');
+                    Client4.setUrl(parsedUrl.href);
+                }
+                ssoLogin(token).then((result) => {
+                    if (result.error) {
+                        this.onLoadEndError(result.error);
+                        return;
+                    }
+                    this.goToChannel();
+                });
+            } else if (this.webView && !this.state.error) {
+                this.webView.injectJavaScript(postMessageJS);
+                this.cookiesTimeout = setTimeout(this.extractCookie.bind(null, parsedUrl), 250);
+            }
+        });
+    }
+
     goToChannel = () => {
         tracker.initialLoad = Date.now();
 
@@ -122,6 +160,7 @@ class SSO extends PureComponent {
                     status_code: statusCode,
                 } = response;
                 if (id && message && statusCode !== 200) {
+                    clearTimeout(this.cookiesTimeout);
                     this.setState({error: message});
                 }
             }
@@ -158,35 +197,7 @@ class SSO extends PureComponent {
         }
 
         if (isLastRedirect) {
-            CookieManager.get(parsed.origin, this.useWebkit).then((res) => {
-                const mmtoken = res.MMAUTHTOKEN;
-                const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
-
-                if (token) {
-                    this.setState({renderWebView: false});
-                    const {
-                        ssoLogin,
-                    } = this.props.actions;
-
-                    Client4.setToken(token);
-                    if (this.props.serverUrl !== parsed.origin) {
-                        const original = urlParse(this.props.serverUrl);
-
-                        // Check whether we need to set a sub-path
-                        parsed.set('pathname', original.pathname || '');
-                        Client4.setUrl(parsed.href);
-                    }
-                    ssoLogin(token).then((result) => {
-                        if (result.error) {
-                            this.onLoadEndError(result.error);
-                            return;
-                        }
-                        this.goToChannel();
-                    });
-                } else if (this.webView && !this.state.error) {
-                    this.webView.injectJavaScript(postMessageJS);
-                }
-            });
+            this.extractCookie(parsed, 0);
         }
     };
 
@@ -235,9 +246,10 @@ class SSO extends PureComponent {
                     onShouldStartLoadWithRequest={() => true}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
-                    onMessage={messagingEnabled ? this.onMessage : null}
+                    onMessage={(messagingEnabled || Platform.OS === 'android') ? this.onMessage : null}
                     sharedCookiesEnabled={Platform.OS === 'android'}
                     cacheEnabled={false}
+                    useSharedProcessPool={false}
                 />
             );
         }

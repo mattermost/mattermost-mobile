@@ -5,6 +5,7 @@ import {Keyboard, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import merge from 'deepmerge';
 
+import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import EphemeralStore from '@store/ephemeral_store';
@@ -83,7 +84,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    const theme = getThemeFromState();
+    const theme = Preferences.THEMES.default;
 
     Navigation.setRoot({
         root: {
