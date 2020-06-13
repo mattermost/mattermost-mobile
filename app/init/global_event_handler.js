@@ -157,33 +157,35 @@ class GlobalEventHandler {
         emmProvider.handleManagedConfig(true);
     };
 
-    onLogout = async () => {
-        Store.redux.dispatch(closeWebSocket(false));
-        Store.redux.dispatch(setServerVersion(''));
-
-        if (analytics) {
-            await analytics.reset();
-        }
-
-        removeAppCredentials();
-        deleteFileCache();
-        resetMomentLocale();
-
-        // TODO: Handle when multi-server support is added
+    clearCookiesAndWebData = async () => {
         try {
             await CookieManager.clearAll(Platform.OS === 'ios');
         } catch (error) {
             // Nothing to clear
         }
-        PushNotifications.clearNotifications();
-        const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
-        const mainPath = cacheDir.split('/').slice(0, -1).join('/');
 
-        mattermostBucket.removePreference('cert');
-        mattermostBucket.removePreference('emm');
-        if (Platform.OS === 'ios') {
-            mattermostBucket.removeFile('entities');
-        } else {
+        switch (Platform.OS) {
+        case 'ios': {
+            const mainPath = RNFetchBlob.fs.dirs.DocumentDir.split('/').slice(0, -1).join('/');
+            const libraryDir = `${mainPath}/Library`;
+            const cookiesDir = `${libraryDir}/Cookies`;
+            const cookies = await RNFetchBlob.fs.exists(cookiesDir);
+            const webkitDir = `${libraryDir}/WebKit`;
+            const webkit = await RNFetchBlob.fs.exists(webkitDir);
+
+            if (cookies) {
+                RNFetchBlob.fs.unlink(cookiesDir);
+            }
+
+            if (webkit) {
+                RNFetchBlob.fs.unlink(webkitDir);
+            }
+            break;
+        }
+
+        case 'android': {
+            const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
+            const mainPath = cacheDir.split('/').slice(0, -1).join('/');
             const cookies = await RNFetchBlob.fs.exists(`${mainPath}/app_webview/Cookies`);
             const cookiesJ = await RNFetchBlob.fs.exists(`${mainPath}/app_webview/Cookies-journal`);
             if (cookies) {
@@ -193,7 +195,31 @@ class GlobalEventHandler {
             if (cookiesJ) {
                 RNFetchBlob.fs.unlink(`${mainPath}/app_webview/Cookies-journal`);
             }
+            break;
         }
+        }
+    };
+
+    onLogout = async () => {
+        Store.redux.dispatch(closeWebSocket(false));
+        Store.redux.dispatch(setServerVersion(''));
+
+        if (analytics) {
+            await analytics.reset();
+        }
+
+        mattermostBucket.removePreference('cert');
+        mattermostBucket.removePreference('emm');
+        if (Platform.OS === 'ios') {
+            mattermostBucket.removeFile('entities');
+        }
+
+        removeAppCredentials();
+        deleteFileCache();
+        resetMomentLocale();
+
+        await this.clearCookiesAndWebData();
+        PushNotifications.clearNotifications();
 
         if (this.launchApp) {
             this.launchApp();
