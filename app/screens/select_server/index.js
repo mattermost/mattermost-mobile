@@ -10,7 +10,7 @@ import {handleServerUrlChanged} from '@actions/views/select_server';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {getPing, resetPing, setServerVersion} from '@mm-redux/actions/general';
 import {login} from '@mm-redux/actions/users';
-import {getConfig, getLicense, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import getClientUpgrade from '@selectors/client_upgrade';
 
 import SelectServer from './select_server';
@@ -21,7 +21,7 @@ function mapStateToProps(state) {
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
 
     return {
-        serverUrl: getCurrentUrl(state),
+        ...state.views.SelectServer,
         config,
         currentVersion,
         deepLinkURL: state.views.root.deepLinkURL,

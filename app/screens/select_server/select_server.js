@@ -88,7 +88,7 @@ export default class SelectServer extends PureComponent {
     }
 
     static getDerivedStateFromProps(props, state) {
-        if (!state.url && props.allowOtherServers && props.deepLinkURL) {
+        if (state.url === undefined && props.allowOtherServers && props.deepLinkURL) {
             const url = urlParse(props.deepLinkURL).host;
             return {url};
         }
