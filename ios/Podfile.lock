@@ -207,7 +207,7 @@ PODS:
   - React-jsinspector (0.62.2)
   - react-native-cameraroll (1.6.2):
     - React
-  - react-native-cookies (2.0.9):
+  - react-native-cookies (3.0.0):
     - React
   - react-native-document-picker (3.4.0):
     - React
@@ -597,7 +597,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 1540d1c01bb493ae3124ed83351b1b6a155db7da
   React-jsinspector: 512e560d0e985d0e8c479a54a4e5c147a9c83493
   react-native-cameraroll: 94bec91c68b94ac946c61b497b594bb38692c41b
-  react-native-cookies: bc1f91a504ee091f1998a1b6c7ff4b7a9ed5b80e
+  react-native-cookies: 6fe6a70d3b2fd8e81ddcd94d60a87727010d9b2e
   react-native-document-picker: d694111879537cec2c258a1dcd2243d9df746824
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
