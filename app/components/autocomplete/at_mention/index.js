@@ -35,6 +35,7 @@ function mapStateToProps(state, ownProps) {
             {
                 channel: currentChannelId,
                 permission: Permissions.USE_CHANNEL_MENTIONS,
+                default: true,
             },
         );
     }

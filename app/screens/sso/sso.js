@@ -10,7 +10,7 @@ import {
     Platform,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import CookieManager from 'react-native-cookies';
+import CookieManager from '@react-native-community/cookies';
 import urlParse from 'url-parse';
 
 import {Client4} from '@mm-redux/client';
@@ -27,7 +27,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = "window.postMessage(document.body.innerText, '*');";
+const postMessageJS = 'window.ReactNativeWebView.postMessage(document.body.innerText);';
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -87,21 +87,59 @@ class SSO extends PureComponent {
         switch (props.ssoType) {
         case ViewTypes.GITLAB:
             this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login`;
-            this.completedUrl = '/signup/gitlab/complete';
+            this.completeUrlPath = '/signup/gitlab/complete';
             break;
         case ViewTypes.SAML:
             this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile`;
-            this.completedUrl = '/login/sso/saml';
+            this.completeUrlPath = '/login/sso/saml';
             break;
         case ViewTypes.OFFICE365:
             this.loginUrl = `${props.serverUrl}/oauth/office365/mobile_login`;
-            this.completedUrl = '/signup/office365/complete';
+            this.completeUrlPath = '/signup/office365/complete';
             break;
         }
 
         if (Platform.OS === 'ios') {
             this.useWebkit = parseInt(Platform.Version, 10) >= 11;
         }
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.cookiesTimeout);
+    }
+
+    extractCookie = (parsedUrl) => {
+        CookieManager.get(parsedUrl.origin, true).then((res) => {
+            const mmtoken = res.MMAUTHTOKEN;
+            const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+
+            if (token) {
+                clearTimeout(this.cookiesTimeout);
+                this.setState({renderWebView: false});
+                const {
+                    ssoLogin,
+                } = this.props.actions;
+
+                Client4.setToken(token);
+                if (this.props.serverUrl !== parsedUrl.origin) {
+                    const original = urlParse(this.props.serverUrl);
+
+                    // Check whether we need to set a sub-path
+                    parsedUrl.set('pathname', original.pathname || '');
+                    Client4.setUrl(parsedUrl.href);
+                }
+                ssoLogin(token).then((result) => {
+                    if (result.error) {
+                        this.onLoadEndError(result.error);
+                        return;
+                    }
+                    this.goToChannel();
+                });
+            } else if (this.webView && !this.state.error) {
+                this.webView.injectJavaScript(postMessageJS);
+                this.cookiesTimeout = setTimeout(this.extractCookie.bind(null, parsedUrl), 250);
+            }
+        });
     }
 
     goToChannel = () => {
@@ -122,6 +160,7 @@ class SSO extends PureComponent {
                     status_code: statusCode,
                 } = response;
                 if (id && message && statusCode !== 200) {
+                    clearTimeout(this.cookiesTimeout);
                     this.setState({error: message});
                 }
             }
@@ -139,7 +178,7 @@ class SSO extends PureComponent {
 
         if (parsed.host.includes('.onelogin.com')) {
             nextState.jsCode = oneLoginFormScalingJS;
-        } else if (parsed.pathname === this.completedUrl) {
+        } else if (parsed.pathname === this.completeUrlPath) {
             // To avoid `window.postMessage` conflicts in any of the SSO flows
             // we enable the onMessage handler only When the webView navigates to the final SSO URL.
             nextState.messagingEnabled = true;
@@ -150,28 +189,15 @@ class SSO extends PureComponent {
 
     onLoadEnd = (event) => {
         const url = event.nativeEvent.url;
-        if (url.includes(this.completedUrl)) {
-            CookieManager.get(this.props.serverUrl, this.useWebkit).then((res) => {
-                const token = res.MMAUTHTOKEN;
+        const parsed = urlParse(url);
 
-                if (token) {
-                    this.setState({renderWebView: false});
-                    const {
-                        ssoLogin,
-                    } = this.props.actions;
+        let isLastRedirect = url.includes(this.completeUrlPath);
+        if (this.props.ssoType === ViewTypes.SAML) {
+            isLastRedirect = isLastRedirect && !parsed.query;
+        }
 
-                    Client4.setToken(token);
-                    ssoLogin(token).then((result) => {
-                        if (result.error) {
-                            this.onLoadEndError(result.error);
-                            return;
-                        }
-                        this.goToChannel();
-                    });
-                } else if (this.webView && !this.state.error) {
-                    this.webView.injectJavaScript(postMessageJS);
-                }
-            });
+        if (isLastRedirect) {
+            this.extractCookie(parsed);
         }
     };
 
@@ -213,16 +239,17 @@ class SSO extends PureComponent {
                 <WebView
                     ref={this.webViewRef}
                     source={{uri: this.loginUrl, headers: HEADERS}}
-                    javaScriptEnabledAndroid={true}
+                    javaScriptEnabled={true}
                     automaticallyAdjustContentInsets={false}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
-                    onMessage={messagingEnabled ? this.onMessage : null}
-                    useSharedProcessPool={true}
+                    onMessage={(messagingEnabled || Platform.OS === 'android') ? this.onMessage : null}
+                    sharedCookiesEnabled={Platform.OS === 'android'}
                     cacheEnabled={false}
+                    useSharedProcessPool={false}
                 />
             );
         }

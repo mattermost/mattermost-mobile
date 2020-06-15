@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-import-assign */
+
 import assert from 'assert';
 import nock from 'nock';
 import {Server, WebSocket as MockWebSocket} from 'mock-socket';
@@ -19,7 +21,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';
-import initial_state from '@store/initial_state';
+import globalInitialState from '@store/initial_state';
 
 import TestHelper from 'test/test_helper';
 import configureStore from 'test/test_store';
@@ -36,6 +38,12 @@ const mockChanelsRequest = (teamId, channels = []) => {
     nock(Client4.getUserRoute('me')).
         get(`/teams/${teamId}/channels?include_deleted=true`).
         reply(200, channels);
+};
+
+const mockGetKnownUsersRequest = (userIds = []) => {
+    nock(Client4.getBaseRoute()).
+        get('/users/known').
+        reply(200, userIds);
 };
 
 const mockRolesRequest = (rolesToLoad = []) => {
@@ -407,7 +415,7 @@ describe('Actions.Websocket', () => {
     it('Websocket Handle Channel Member Updated', async () => {
         const channelMember = TestHelper.basicChannelMember;
         const mockStore = configureMockStore([thunk]);
-        const st = mockStore(initial_state);
+        const st = mockStore(globalInitialState);
         await st.dispatch(Actions.init({websocketUrl: Client4.getUrl().replace(/^http:/, 'ws:')}));
         channelMember.roles = 'channel_user channel_admin';
         const rolesToLoad = channelMember.roles.split(' ');
@@ -903,9 +911,6 @@ describe('Actions.Websocket doReconnect', () => {
 describe('Actions.Websocket notVisibleUsersActions', () => {
     configureMockStore([thunk]);
 
-    const channel1 = TestHelper.fakeChannelWithId('');
-    const channel2 = TestHelper.fakeChannelWithId('');
-
     const me = TestHelper.fakeUserWithId();
     const user = TestHelper.fakeUserWithId();
     const user2 = TestHelper.fakeUserWithId();
@@ -913,29 +918,17 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
     const user4 = TestHelper.fakeUserWithId();
     const user5 = TestHelper.fakeUserWithId();
 
-    it('should do nothing if the known users and the profiles list are the same', () => {
-        const membersInChannel = {
-            [channel1.id]: {
-                [user.id]: {channel_id: channel1.id, user_id: user.id},
-                [user2.id]: {channel_id: channel1.id, user_id: user2.id},
-            },
-            [channel2.id]: {
-                [user3.id]: {channel_id: channel2.id, user_id: user3.id},
-            },
-        };
-
+    it('should do nothing if the known users and the profiles list are the same', async () => {
         const profiles = {
             [me.id]: me,
             [user.id]: user,
             [user2.id]: user2,
             [user3.id]: user3,
         };
+        Client4.serverVersion = '5.23.0';
 
         const state = {
             entities: {
-                channels: {
-                    membersInChannel,
-                },
                 users: {
                     currentUserId: me.id,
                     profiles,
@@ -943,31 +936,21 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
             },
         };
 
-        const actions = Actions.notVisibleUsersActions(state);
+        mockGetKnownUsersRequest([user.id, user2.id, user3.id]);
+
+        const actions = await Actions.notVisibleUsersActions(state);
         expect(actions.length).toEqual(0);
     });
 
-    it('should do nothing if there are known users in my memberships but not in the profiles list', () => {
-        const membersInChannel = {
-            [channel1.id]: {
-                [user.id]: {channel_id: channel1.id, user_id: user.id},
-                [user2.id]: {channel_id: channel1.id, user_id: user2.id},
-            },
-            [channel2.id]: {
-                [user3.id]: {channel_id: channel2.id, user_id: user3.id},
-            },
-        };
-
+    it('should do nothing if there are known users in my memberships but not in the profiles list', async () => {
         const profiles = {
             [me.id]: me,
             [user3.id]: user3,
         };
+        Client4.serverVersion = '5.23.0';
 
         const state = {
             entities: {
-                channels: {
-                    membersInChannel,
-                },
                 users: {
                     currentUserId: me.id,
                     profiles,
@@ -975,20 +958,13 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
             },
         };
 
-        const actions = Actions.notVisibleUsersActions(state);
+        mockGetKnownUsersRequest([user.id, user2.id, user3.id]);
+
+        const actions = await Actions.notVisibleUsersActions(state);
         expect(actions.length).toEqual(0);
     });
 
     it('should remove the users if there are unknown users in the profiles list', async () => {
-        const membersInChannel = {
-            [channel1.id]: {
-                [user.id]: {channel_id: channel1.id, user_id: user.id},
-            },
-            [channel2.id]: {
-                [user3.id]: {channel_id: channel2.id, user_id: user3.id},
-            },
-        };
-
         const profiles = {
             [me.id]: me,
             [user.id]: user,
@@ -997,12 +973,10 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
             [user4.id]: user4,
             [user5.id]: user5,
         };
+        Client4.serverVersion = '5.23.0';
 
         const state = {
             entities: {
-                channels: {
-                    membersInChannel,
-                },
                 users: {
                     currentUserId: me.id,
                     profiles,
@@ -1010,14 +984,42 @@ describe('Actions.Websocket notVisibleUsersActions', () => {
             },
         };
 
+        mockGetKnownUsersRequest([user.id, user3.id]);
+
         const expectedAction = [
             {type: UserTypes.PROFILE_NO_LONGER_VISIBLE, data: {user_id: user2.id}},
             {type: UserTypes.PROFILE_NO_LONGER_VISIBLE, data: {user_id: user4.id}},
             {type: UserTypes.PROFILE_NO_LONGER_VISIBLE, data: {user_id: user5.id}},
         ];
-        const actions = Actions.notVisibleUsersActions(state);
+        const actions = await Actions.notVisibleUsersActions(state);
         expect(actions.length).toEqual(3);
         expect(actions).toEqual(expectedAction);
+    });
+
+    it('should do nothing if the server version is less than 5.23', async () => {
+        const profiles = {
+            [me.id]: me,
+            [user.id]: user,
+            [user2.id]: user2,
+            [user3.id]: user3,
+            [user4.id]: user4,
+            [user5.id]: user5,
+        };
+        Client4.serverVersion = '5.22.0';
+
+        const state = {
+            entities: {
+                users: {
+                    currentUserId: me.id,
+                    profiles,
+                },
+            },
+        };
+
+        mockGetKnownUsersRequest([user.id, user3.id]);
+
+        const actions = await Actions.notVisibleUsersActions(state);
+        expect(actions.length).toEqual(0);
     });
 });
 

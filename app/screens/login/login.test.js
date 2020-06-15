@@ -23,7 +23,6 @@ describe('Login', () => {
         },
         loginRequest: {},
         actions: {
-            handleSuccessfulLogin: jest.fn(),
             scheduleExpiredNotification: jest.fn(),
             login: jest.fn(),
         },
@@ -94,7 +93,7 @@ describe('Login', () => {
                 'MFA',
                 'Multi-factor Authentication',
                 {
-                    onMfaComplete: wrapper.instance().checkLoginResponse,
+                    goToChannel: wrapper.instance().goToChannel,
                     loginId,
                     password,
                 },

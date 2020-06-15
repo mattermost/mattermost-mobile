@@ -16,10 +16,10 @@ export function registerScreens(store, Provider) {
         Root = require('app/components/root').default;
     }
 
-    const wrapper = (Comp) => (props) => ( // eslint-disable-line react/display-name
+    const wrapper = (Comp, excludeEvents = true) => (props) => ( // eslint-disable-line react/display-name
         <Provider store={store}>
             <ThemeProvider>
-                <Root>
+                <Root excludeEvents={excludeEvents}>
                     <Comp {...props}/>
                 </Root>
             </ThemeProvider>
@@ -29,7 +29,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('About', () => wrapper(require('app/screens/about').default), () => require('app/screens/about').default);
     Navigation.registerComponent('AddReaction', () => wrapper(require('app/screens/add_reaction').default), () => require('app/screens/add_reaction').default);
     Navigation.registerComponent('AdvancedSettings', () => wrapper(require('app/screens/settings/advanced_settings').default), () => require('app/screens/settings/advanced_settings').default);
-    Navigation.registerComponent('Channel', () => wrapper(require('app/screens/channel').default), () => require('app/screens/channel').default);
+    Navigation.registerComponent('Channel', () => wrapper(require('app/screens/channel').default, false), () => require('app/screens/channel').default);
     Navigation.registerComponent('ChannelAddMembers', () => wrapper(require('app/screens/channel_add_members').default), () => require('app/screens/channel_add_members').default);
     Navigation.registerComponent('ChannelInfo', () => wrapper(require('app/screens/channel_info').default), () => require('app/screens/channel_info').default);
     Navigation.registerComponent('ChannelMembers', () => wrapper(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
@@ -52,7 +52,11 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('MFA', () => wrapper(require('app/screens/mfa').default), () => require('app/screens/mfa').default);
     Navigation.registerComponent('MoreChannels', () => wrapper(require('app/screens/more_channels').default), () => require('app/screens/more_channels').default);
     Navigation.registerComponent('MoreDirectMessages', () => wrapper(require('app/screens/more_dms').default), () => require('app/screens/more_dms').default);
-    Navigation.registerComponent('Notification', () => gestureHandlerRootHOC(wrapper(require('app/screens/notification').default)), () => require('app/screens/notification').default);
+    if (Platform.OS === 'android') {
+        Navigation.registerComponent('Notification', () => gestureHandlerRootHOC(wrapper(require('app/screens/notification').default), {flex: undefined, height: 100}), () => require('app/screens/notification').default);
+    } else {
+        Navigation.registerComponent('Notification', () => wrapper(require('app/screens/notification').default), () => require('app/screens/notification').default);
+    }
     Navigation.registerComponent('NotificationSettings', () => wrapper(require('app/screens/settings/notification_settings').default), () => require('app/screens/settings/notification_settings').default);
     Navigation.registerComponent('NotificationSettingsAutoResponder', () => wrapper(require('app/screens/settings/notification_settings_auto_responder').default), () => require('app/screens/settings/notification_settings_auto_responder').default);
     Navigation.registerComponent('NotificationSettingsEmail', () => wrapper(require('app/screens/settings/notification_settings_email').default), () => require('app/screens/settings/notification_settings_email').default);
@@ -67,7 +71,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('RecentMentions', () => wrapper(require('app/screens/recent_mentions').default), () => require('app/screens/recent_mentions').default);
     Navigation.registerComponent('Search', () => wrapper(require('app/screens/search').default), () => require('app/screens/search').default);
     Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
-    Navigation.registerComponent('SelectServer', () => wrapper(require('app/screens/select_server').default), () => require('app/screens/select_server').default);
+    Navigation.registerComponent('SelectServer', () => wrapper(require('app/screens/select_server').default, false), () => require('app/screens/select_server').default);
     Navigation.registerComponent('SelectTeam', () => wrapper(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
     Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/settings/timezone/select_timezone').default), () => require('app/screens/settings/timezone/select_timezone').default);
     Navigation.registerComponent('Settings', () => wrapper(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);

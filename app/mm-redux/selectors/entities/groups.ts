@@ -94,15 +94,9 @@ export function getAssociatedGroupsForReference(state: GlobalState, teamId: stri
     return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
 }
 
-const teamGroupIDs = (state: GlobalState, teamID: string) => {
-    const {groupsAssociatedToTeam} = state.entities.teams;
-    return groupsAssociatedToTeam[teamID]?.ids || [];
-};
+const teamGroupIDs = (state: GlobalState, teamID: string) => state.entities.teams.groupsAssociatedToTeam[teamID]?.ids || [];
 
-const channelGroupIDs = (state: GlobalState, channelID: string) => {
-    const {groupsAssociatedToChannel} = state.entities.channels;
-    return groupsAssociatedToChannel[channelID]?.ids || [];
-};
+const channelGroupIDs = (state: GlobalState, channelID: string) => state.entities.channels.groupsAssociatedToChannel[channelID]?.ids || [];
 
 const getTeamGroupIDSet = reselect.createSelector(
     teamGroupIDs,

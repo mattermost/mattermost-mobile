@@ -11,6 +11,7 @@ import {Team} from '@mm-redux/types/teams';
 function removeMemberFromChannels(state: RelationOneToOne<Channel, UserIDMappedObjects<ChannelMembership>>, action: GenericAction) {
     const nextState = {...state};
     Object.keys(state).forEach((channel) => {
+        nextState[channel] = {...nextState[channel]};
         delete nextState[channel][action.data.user_id];
     });
     return nextState;
@@ -364,17 +365,20 @@ function myMembers(state: RelationOneToOne<Channel, ChannelMembership> = {}, act
     case ChannelTypes.RECEIVED_MY_CHANNELS_WITH_MEMBERS: { // Used by the mobile app
         const nextState: any = {...state};
         const current = Object.values(nextState);
-        const {sync, channelMembers} = action.data;
+        const {sync, teamChannels, channelMembers} = action.data;
         let hasNewValues = channelMembers && channelMembers.length > 0;
 
         // Remove existing channel memberships when the user is no longer a member
         if (sync) {
-            current.forEach((member: ChannelMembership) => {
-                const id = member.channel_id;
-                if (channelMembers.find((cm: ChannelMembership) => cm.channel_id === id)) {
-                    delete nextState[id];
-                    hasNewValues = true;
-                }
+            const memberIds = channelMembers.map((cm: ChannelMembership) => cm.channel_id);
+            const removedMembers = current.filter((cm: ChannelMembership) => {
+                const id = cm.channel_id;
+                return !memberIds.includes(id) && teamChannels.includes(id);
+            });
+
+            removedMembers.forEach((member: ChannelMembership) => {
+                delete nextState[member.channel_id];
+                hasNewValues = true;
             });
         }
 

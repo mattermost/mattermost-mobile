@@ -71,7 +71,7 @@ export default class MainSidebarBase extends Component {
 
         const condition = nextProps.currentTeamId !== currentTeamId ||
             nextProps.teamsCount !== teamsCount ||
-            nextProps.theme !== theme;
+            nextProps.theme !== theme || this.props.children !== nextProps.children;
 
         if (Platform.OS === 'ios') {
             return condition ||
@@ -166,7 +166,7 @@ export default class MainSidebarBase extends Component {
     };
 
     showTeams = () => {
-        if (this.drawerSwiper && this.props.teamsCount > 1) {
+        if (this.drawerSwiper) {
             this.drawerSwiper.showTeamsPage();
         }
     };
@@ -196,7 +196,7 @@ export default class MainSidebarBase extends Component {
             searching,
         } = this.state;
 
-        const offset = Platform.select({android: 60, ios: 0});
+        const offset = Platform.select({android: 64, ios: 0});
         const multipleTeams = teamsCount > 1;
         const showTeams = !searching && multipleTeams;
         if (this.drawerSwiper) {
@@ -232,7 +232,7 @@ export default class MainSidebarBase extends Component {
                     ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}
-                    onShowTeams={this.showTeams}
+                    onShowTeams={multipleTeams ? this.showTeams : undefined}
                     onSearchStart={this.onSearchStart}
                     onSearchEnds={this.onSearchEnds}
                     theme={theme}
@@ -262,6 +262,10 @@ export default class MainSidebarBase extends Component {
 
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
         const {logChannelSwitch, handleSelectChannel} = this.props.actions;
+
+        if (channel.id === currentChannelId) {
+            return;
+        }
 
         logChannelSwitch(channel.id, currentChannelId);
 

@@ -65,6 +65,7 @@ export function makeMapStateToProps() {
                     channel: post.channel_id,
                     team: channel.team_id,
                     permission: Permissions.CREATE_POST,
+                    default: true,
                 },
             );
         }
@@ -74,6 +75,7 @@ export function makeMapStateToProps() {
                 team: currentTeamId,
                 channel: post.channel_id,
                 permission: Permissions.ADD_REACTION,
+                default: true,
             });
         }
 

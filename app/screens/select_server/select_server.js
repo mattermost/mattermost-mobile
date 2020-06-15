@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
+    Alert,
     DeviceEventEmitter,
     Image,
     Keyboard,
@@ -22,34 +23,31 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
-
 import merge from 'deepmerge';
 
+import {resetToChannel, goToScreen} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import ErrorText from '@components/error_text';
+import FormattedText from '@components/formatted_text';
+import fetchConfig from '@init/fetch';
+import globalEventHandler from '@init/global_event_handler';
 import {Client4} from '@mm-redux/client';
+import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
+import tracker from '@utils/time_tracker';
+import {isValidUrl, stripTrailingSlashes} from '@utils/url';
 
-import ErrorText from 'app/components/error_text';
-import FormattedText from 'app/components/formatted_text';
-import fetchConfig from 'app/init/fetch';
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
-import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
-import {isValidUrl, stripTrailingSlashes} from 'app/utils/url';
-import {preventDoubleTap} from 'app/utils/tap';
-import tracker from 'app/utils/time_tracker';
-import {t} from 'app/utils/i18n';
-import {changeOpacity} from 'app/utils/theme';
-import {resetToChannel, goToScreen} from 'app/actions/navigation';
-
 import telemetry from 'app/telemetry';
-
-import LocalConfig from 'assets/config';
 
 export default class SelectServer extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getPing: PropTypes.func.isRequired,
             handleServerUrlChanged: PropTypes.func.isRequired,
-            handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             loadConfigAndLicense: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
@@ -103,6 +101,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener = DeviceEventEmitter.addListener('RNFetchBlobCertificate', this.selectCertificate);
+        this.sslProblemListener = DeviceEventEmitter.addListener('RNFetchBlobSslProblem', this.handleSslProblem);
 
         telemetry.end(['start:select_server_screen']);
         telemetry.save();
@@ -131,6 +130,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.certificateListener.remove();
+        this.sslProblemListener.remove();
 
         this.navigationEventListener.remove();
     }
@@ -147,19 +147,19 @@ export default class SelectServer extends PureComponent {
         }
     };
 
-    getUrl = () => {
-        const urlParse = require('url-parse');
-        let preUrl = urlParse(this.state.url, true);
+    getUrl = async (serverUrl, useHttp = false) => {
+        let url = this.sanitizeUrl(serverUrl, useHttp);
 
-        if (!preUrl.host || preUrl.protocol === 'file:') {
-            preUrl = urlParse('https://' + stripTrailingSlashes(this.state.url), true);
+        try {
+            const resp = await fetch(url, {method: 'HEAD'});
+            if (resp?.rnfbRespInfo?.redirects?.length) {
+                url = resp.rnfbRespInfo.redirects[resp.rnfbRespInfo.redirects.length - 1];
+            }
+        } catch {
+            // do nothing
         }
 
-        if (preUrl.protocol === 'http:') {
-            preUrl.protocol = 'https:';
-        }
-
-        return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
+        return this.sanitizeUrl(url, useHttp);
     };
 
     goToNextScreen = (screen, title, passProps = {}, navOptions = {}) => {
@@ -187,8 +187,6 @@ export default class SelectServer extends PureComponent {
     };
 
     handleConnect = preventDoubleTap(async () => {
-        const url = this.getUrl();
-
         Keyboard.dismiss();
 
         if (this.state.connecting || this.state.connected) {
@@ -197,7 +195,7 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
-        if (!isValidUrl(url)) {
+        if (!isValidUrl(this.sanitizeUrl(this.state.url))) {
             this.setState({
                 error: {
                     intl: {
@@ -210,6 +208,7 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
+        await globalEventHandler.resetState();
         if (LocalConfig.ExperimentalClientSideCertEnable && Platform.OS === 'ios') {
             RNFetchBlob.cba.selectCertificate((certificate) => {
                 if (certificate) {
@@ -218,15 +217,15 @@ export default class SelectServer extends PureComponent {
                         auto: true,
                         certificate,
                     }).build();
-                    this.pingServer(url);
+                    this.pingServer(this.state.url);
                 }
             });
         } else {
-            this.pingServer(url);
+            this.pingServer(this.state.url);
         }
     });
 
-    handleLoginOptions = (props = this.props) => {
+    handleLoginOptions = async (props = this.props) => {
         const {formatMessage} = this.context.intl;
         const {config, license} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
@@ -249,6 +248,7 @@ export default class SelectServer extends PureComponent {
         }
 
         this.props.actions.resetPing();
+        await globalEventHandler.configureAnalytics();
 
         if (Platform.OS === 'ios') {
             if (config.ExperimentalClientSideCertEnable === 'true' && config.ExperimentalClientSideCertCheck === 'primary') {
@@ -294,13 +294,12 @@ export default class SelectServer extends PureComponent {
         tracker.initialLoad = Date.now();
 
         await this.props.actions.login('credential', 'password');
-        await this.props.actions.handleSuccessfulLogin();
         this.scheduleSessionExpiredNotification();
 
         resetToChannel();
     };
 
-    pingServer = (url, retryWithHttp = true) => {
+    pingServer = async (url, retryWithHttp = true) => {
         const {
             getPing,
             handleServerUrlChanged,
@@ -314,9 +313,6 @@ export default class SelectServer extends PureComponent {
             error: null,
         });
 
-        Client4.setUrl(url);
-        handleServerUrlChanged(url);
-
         let cancel = false;
         this.cancelPing = () => {
             cancel = true;
@@ -329,13 +325,20 @@ export default class SelectServer extends PureComponent {
             this.cancelPing = null;
         };
 
-        getPing().then((result) => {
+        const serverUrl = await this.getUrl(url, !retryWithHttp);
+        Client4.setUrl(serverUrl);
+        handleServerUrlChanged(serverUrl);
+
+        try {
+            const result = await getPing();
+
             if (cancel) {
                 return;
             }
 
             if (result.error && retryWithHttp) {
-                this.pingServer(url.replace('https:', 'http:'), false);
+                const nurl = serverUrl.replace('https:', 'http:');
+                this.pingServer(nurl, false);
                 return;
             }
 
@@ -349,7 +352,7 @@ export default class SelectServer extends PureComponent {
                 connecting: false,
                 error: result.error,
             });
-        }).catch(() => {
+        } catch {
             if (cancel) {
                 return;
             }
@@ -357,14 +360,60 @@ export default class SelectServer extends PureComponent {
             this.setState({
                 connecting: false,
             });
-        });
+        }
     };
+
+    sanitizeUrl = (url, useHttp = false) => {
+        const urlParse = require('url-parse');
+        let preUrl = urlParse(url, true);
+
+        if (!preUrl.host || preUrl.protocol === 'file:') {
+            preUrl = urlParse('https://' + stripTrailingSlashes(url), true);
+        }
+
+        if (preUrl.protocol === 'http:' && !useHttp) {
+            preUrl.protocol = 'https:';
+        }
+        return stripTrailingSlashes(preUrl.protocol + '//' + preUrl.host + preUrl.pathname);
+    }
 
     scheduleSessionExpiredNotification = () => {
         const {intl} = this.context;
         const {actions} = this.props;
 
         actions.scheduleExpiredNotification(intl);
+    };
+
+    handleSslProblem = () => {
+        if (!this.state.connecting && !this.state.connected) {
+            return null;
+        }
+
+        this.cancelPing();
+
+        const urlParse = require('url-parse');
+        const host = urlParse(this.state.url, true).host || this.state.url;
+
+        const {formatMessage} = this.context.intl;
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.server_ssl.error.title',
+                defaultMessage: 'Untrusted Certificate',
+            }),
+
+            formatMessage({
+                id: 'mobile.server_ssl.error.text',
+                defaultMessage: 'The certificate from {host} is not trusted.\n\nPlease contact your System Administrator to resolve the certificate issues and allow connections to this server.',
+            },
+            {
+                host,
+            }),
+            [
+                {text: 'OK'},
+            ],
+            {cancelable: false},
+        );
+        return null;
     };
 
     selectCertificate = () => {
@@ -442,7 +491,7 @@ export default class SelectServer extends PureComponent {
                     >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
                             <Image
-                                source={require('assets/images/logo.png')}
+                                source={require('@assets/images/logo.png')}
                             />
 
                             <View>
@@ -480,7 +529,9 @@ export default class SelectServer extends PureComponent {
                                     {buttonText}
                                 </Text>
                             </Button>
-                            <ErrorText error={error}/>
+                            <View>
+                                <ErrorText error={error}/>
+                            </View>
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>

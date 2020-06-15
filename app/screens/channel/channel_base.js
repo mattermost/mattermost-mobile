@@ -7,43 +7,40 @@ import {intlShape} from 'react-intl';
 import {
     Keyboard,
     StyleSheet,
-    View,
+    Platform,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {showModal, showModalOverCurrentContext} from '@actions/navigation';
+import LocalConfig from '@assets/config';
+import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import EphemeralStore from '@store/ephemeral_store';
+import {preventDoubleTap} from '@utils/tap';
+import {setNavigatorStyles} from '@utils/theme';
+import tracker from '@utils/time_tracker';
 
-import {showModal, showModalOverCurrentContext} from 'app/actions/navigation';
-import SafeAreaView from 'app/components/safe_area_view';
-import EmptyToolbar from 'app/components/start/empty_toolbar';
-import {NavigationTypes} from 'app/constants';
 import PushNotifications from 'app/push_notifications';
-import EphemeralStore from 'app/store/ephemeral_store';
 import telemetry from 'app/telemetry';
-import {preventDoubleTap} from 'app/utils/tap';
-import {setNavigatorStyles} from 'app/utils/theme';
-import tracker from 'app/utils/time_tracker';
-
-import LocalConfig from 'assets/config';
 
 export let ClientUpgradeListener;
 
 export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            getChannelStats: PropTypes.func.isRequired,
             loadChannelsForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
-            getChannelStats: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string,
-        isLandscape: PropTypes.bool,
+        disableTermsModal: PropTypes.bool,
+        teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
-        disableTermsModal: PropTypes.bool,
         skipMetrics: PropTypes.bool,
     };
 
@@ -182,6 +179,11 @@ export default class ChannelBase extends PureComponent {
                         icon: source,
                     }],
                 },
+                ...Platform.select({
+                    ios: {
+                        modalPresentationStyle: 'pageSheet',
+                    },
+                }),
             };
 
             Keyboard.dismiss();
@@ -214,9 +216,10 @@ export default class ChannelBase extends PureComponent {
     };
 
     renderLoadingOrFailedChannel() {
+        const {formatMessage} = this.context.intl;
         const {
             currentChannelId,
-            isLandscape,
+            teamName,
             theme,
         } = this.props;
 
@@ -224,37 +227,28 @@ export default class ChannelBase extends PureComponent {
         if (!currentChannelId) {
             if (channelsRequestFailed) {
                 const FailedNetworkAction = require('app/components/failed_network_action').default;
+                const title = formatMessage({id: 'mobile.failed_network_action.teams_title', defaultMessage: 'Something went wrong'});
+                const message = formatMessage({
+                    id: 'mobile.failed_network_action.teams_channel_description',
+                    defaultMessage: 'Channels could not be loaded for {teamName}.',
+                }, {teamName});
 
                 return (
-                    <SafeAreaView>
-                        <View style={style.flex}>
-                            <EmptyToolbar
-                                theme={theme}
-                                isLandscape={isLandscape}
-                            />
-                            <FailedNetworkAction
-                                onRetry={this.retryLoadChannels}
-                                theme={theme}
-                            />
-                        </View>
-                    </SafeAreaView>
+                    <FailedNetworkAction
+                        errorMessage={message}
+                        errorTitle={title}
+                        onRetry={this.retryLoadChannels}
+                        theme={theme}
+                    />
                 );
             }
 
             const Loading = require('app/components/channel_loader').default;
             return (
-                <SafeAreaView>
-                    <View style={style.flex}>
-                        <EmptyToolbar
-                            theme={theme}
-                            isLandscape={isLandscape}
-                        />
-                        <Loading
-                            channelIsLoading={true}
-                            color={theme.centerChannelColor}
-                        />
-                    </View>
-                </SafeAreaView>
+                <Loading
+                    channelIsLoading={true}
+                    color={theme.centerChannelColor}
+                />
             );
         }
 

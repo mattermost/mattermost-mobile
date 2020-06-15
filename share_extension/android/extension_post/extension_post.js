@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {NavigationActions} from 'react-navigation';
-import TouchableItem from 'react-navigation-stack/lib/module/views/TouchableItem';
+import {CommonActions as NavigationActions} from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 
@@ -14,6 +13,7 @@ import {
     ScrollView,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
@@ -26,16 +26,15 @@ import {Client4} from '@mm-redux/client';
 import {Preferences} from '@mm-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
 
-import Loading from 'app/components/loading';
-import PaperPlane from 'app/components/post_draft/quick_actions/send_action/paper_plane';
-import {MAX_FILE_COUNT} from 'app/constants/post_draft';
-import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
+import Loading from '@components/loading';
+import PaperPlane from '@components/post_draft/quick_actions/send_action/paper_plane';
+import {MAX_FILE_COUNT, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {getCurrentServerUrl, getAppCredentials} from '@init/credentials';
+import {getExtensionFromMime} from '@utils/file';
+import {setCSRFFromCookie} from '@utils/security';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
-import {getExtensionFromMime} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
-import {setCSRFFromCookie} from 'app/utils/security';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {
     ExcelSvg,
@@ -60,16 +59,13 @@ const extensionSvg = {
 };
 const ShareExtension = NativeModules.MattermostShare;
 const INPUT_HEIGHT = 150;
-const MAX_MESSAGE_LENGTH = 4000;
 
 export default class ExtensionPost extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            getTeamChannels: PropTypes.func.isRequired,
-        }).isRequired,
         channelId: PropTypes.string,
         channels: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
+        getTeamChannels: PropTypes.func.isRequired,
         maxFileSize: PropTypes.number.isRequired,
         navigation: PropTypes.object.isRequired,
         teamId: PropTypes.string.isRequired,
@@ -79,57 +75,10 @@ export default class ExtensionPost extends PureComponent {
         intl: intlShape,
     };
 
-    static navigationOptions = ({navigation}) => {
-        const {params = {}} = navigation.state;
-        const title = params.title || '';
-        const headerLeft = (
-            <TouchableItem
-                accessibilityComponentType='button'
-                accessibilityTraits='button'
-                borderless={true}
-                delayPressIn={0}
-                pressColorAndroid='rgba(0, 0, 0, .32)'
-                onPress={params.close ? params.close : emptyFunction}
-            >
-                <View style={styles.left}>
-                    <MaterialIcon
-                        name='close'
-                        style={styles.closeButton}
-                    />
-                </View>
-            </TouchableItem>
-        );
-
-        let headerRight = null;
-
-        if (params.post) {
-            headerRight = (
-                <TouchableItem
-                    accessibilityComponentType='button'
-                    accessibilityTraits='button'
-                    borderless={true}
-                    delayPressIn={0}
-                    pressColorAndroid='rgba(0, 0, 0, .32)'
-                    onPress={params.post}
-                >
-                    <View style={styles.left}>
-                        <PaperPlane
-                            color={defaultTheme.sidebarHeaderTextColor}
-                            height={20}
-                            width={20}
-                        />
-                    </View>
-                </TouchableItem>
-            );
-        }
-
-        return {headerLeft, headerRight, title};
-    };
-
     constructor(props, context) {
         super(props, context);
 
-        props.navigation.setParams({
+        props.navigation.setOptions({
             title: context.intl.formatMessage({
                 id: 'mobile.extension.title',
                 defaultMessage: 'Share in Mattermost',
@@ -147,8 +96,8 @@ export default class ExtensionPost extends PureComponent {
     }
 
     componentDidMount() {
-        this.props.navigation.setParams({
-            close: this.onClose,
+        this.props.navigation.setOptions({
+            headerLeft: this.leftHeader,
         });
         this.auth();
     }
@@ -190,6 +139,20 @@ export default class ExtensionPost extends PureComponent {
 
         return this.initialize();
     };
+
+    canPost = (error, text, extensionFiles, calculatedSize) => {
+        const {maxFileSize} = this.props;
+        const files = extensionFiles || this.state.files;
+        const totalSize = calculatedSize || this.state.totalSize;
+        const filesOK = files.length ? files.length <= MAX_FILE_COUNT : false;
+        const sizeOK = totalSize ? totalSize <= maxFileSize : false;
+
+        if (!error && ((filesOK && sizeOK) || text.length)) {
+            this.props.navigation.setOptions({headerRight: this.rightHeader});
+        } else {
+            this.props.navigation.setOptions({headerRight: null});
+        }
+    }
 
     showNotSecuredAlert(vendor) {
         const {formatMessage} = this.context.intl;
@@ -259,7 +222,7 @@ export default class ExtensionPost extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {navigation} = this.props;
         const navigateAction = NavigationActions.navigate({
-            routeName: 'Channels',
+            name: 'Channels',
             params: {
                 title: formatMessage({
                     id: 'mobile.routes.selectChannel',
@@ -276,7 +239,7 @@ export default class ExtensionPost extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {navigation} = this.props;
         const navigateAction = NavigationActions.navigate({
-            routeName: 'Teams',
+            name: 'Teams',
             params: {
                 title: formatMessage({
                     id: 'mobile.routes.selectTeam',
@@ -314,6 +277,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     handleTextChange = (value) => {
+        this.canPost(null, value);
         this.setState({value});
     };
 
@@ -336,15 +300,33 @@ export default class ExtensionPost extends PureComponent {
         return this.setState({hasPermission: false});
     };
 
+    leftHeader = () => (
+        <TouchableOpacity
+            accessibilityComponentType='button'
+            accessibilityTraits='button'
+            borderless={true}
+            delayPressIn={0}
+            pressColorAndroid='rgba(0, 0, 0, .32)'
+            onPress={this.onClose}
+        >
+            <View style={styles.left}>
+                <MaterialIcon
+                    name='close'
+                    style={styles.closeButton}
+                />
+            </View>
+        </TouchableOpacity>
+    );
+
     loadData = async (items) => {
-        const {actions, maxFileSize, teamId} = this.props;
+        const {getTeamChannels, teamId} = this.props;
         if (this.token && this.url) {
             const text = [];
             const files = [];
             let totalSize = 0;
             let error;
 
-            actions.getTeamChannels(teamId);
+            getTeamChannels(teamId);
 
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
@@ -387,12 +369,7 @@ export default class ExtensionPost extends PureComponent {
             }
 
             const value = text.join('\n');
-
-            if (!error && files.length <= MAX_FILE_COUNT && totalSize <= maxFileSize) {
-                this.props.navigation.setParams({
-                    post: this.onPost,
-                });
-            }
+            this.canPost(error, value, files, totalSize);
 
             this.setState({error, files, value, hasPermission: true, totalSize});
         }
@@ -408,7 +385,7 @@ export default class ExtensionPost extends PureComponent {
         const {currentUserId} = this.props;
         const {formatMessage} = this.context.intl;
 
-        if (value.length > MAX_MESSAGE_LENGTH) {
+        if (value.length > MAX_MESSAGE_LENGTH_FALLBACK) {
             Alert.alert(
                 formatMessage({
                     id: 'mobile.share_extension.too_long_title',
@@ -419,7 +396,7 @@ export default class ExtensionPost extends PureComponent {
                     defaultMessage: 'Character count: {count}/{max}',
                 }, {
                     count: value.length,
-                    max: MAX_MESSAGE_LENGTH,
+                    max: MAX_MESSAGE_LENGTH_FALLBACK,
                 }),
             );
         } else {
@@ -570,6 +547,25 @@ export default class ExtensionPost extends PureComponent {
         });
     };
 
+    rightHeader = () => (
+        <TouchableOpacity
+            accessibilityComponentType='button'
+            accessibilityTraits='button'
+            borderless={true}
+            delayPressIn={0}
+            pressColorAndroid='rgba(0, 0, 0, .32)'
+            onPress={this.onPost}
+        >
+            <View style={styles.left}>
+                <PaperPlane
+                    color={defaultTheme.sidebarHeaderTextColor}
+                    height={20}
+                    width={20}
+                />
+            </View>
+        </TouchableOpacity>
+    );
+
     renderTeamButton = () => {
         const {teamId} = this.state;
 
@@ -591,7 +587,7 @@ export default class ExtensionPost extends PureComponent {
 
     renderMessageLengthRemaining = () => {
         const {value} = this.state;
-        const messageLengthRemaining = MAX_MESSAGE_LENGTH - value.length;
+        const messageLengthRemaining = MAX_MESSAGE_LENGTH_FALLBACK - value.length;
 
         if (value.length === 0) {
             return null;

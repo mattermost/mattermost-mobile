@@ -411,7 +411,7 @@ function updateTeamMemberSchemeRoles(state: RelationOneToOne<Team, RelationOneTo
 }
 
 function updateMyTeamMemberSchemeRoles(state: RelationOneToOne<Team, TeamMembership>, action: GenericAction) {
-    const {teamId, userId, isSchemeUser, isSchemeAdmin} = action.data;
+    const {teamId, isSchemeUser, isSchemeAdmin} = action.data;
     const member = state[teamId];
     if (member) {
         return {

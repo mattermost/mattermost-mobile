@@ -5,6 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
+import LocalConfig from '@assets/config';
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
@@ -15,8 +16,6 @@ import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import LocalConfig from 'assets/config';
 
 import ChannelBase, {ClientUpgradeListener} from './channel_base';
 import ChannelNavBar from './channel_nav_bar';
@@ -55,10 +54,27 @@ export default class ChannelIOS extends ChannelBase {
 
     render() {
         const {currentChannelId, theme} = this.props;
+        let component = this.renderLoadingOrFailedChannel();
+        let renderDraftArea = false;
 
-        const channelLoadingOrFailed = this.renderLoadingOrFailedChannel();
-        if (channelLoadingOrFailed) {
-            return channelLoadingOrFailed;
+        if (!component) {
+            renderDraftArea = true;
+            component = (
+                <>
+                    <ChannelPostList
+                        updateNativeScrollView={this.updateNativeScrollView}
+                    />
+                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                        <Autocomplete
+                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                            onChangeText={this.handleAutoComplete}
+                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                        />
+                    </View>
+                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                </>
+            );
         }
 
         const style = getStyle(theme);
@@ -72,19 +88,9 @@ export default class ChannelIOS extends ChannelBase {
                         openSettingsSidebar={this.openSettingsSidebar}
                         onPress={this.goToChannelInfo}
                     />
-                    <ChannelPostList
-                        updateNativeScrollView={this.updateNativeScrollView}
-                    />
-                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <Autocomplete
-                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                            onChangeText={this.handleAutoComplete}
-                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        />
-                    </View>
-                    {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
+                    {component}
                 </SafeAreaView>
+                {renderDraftArea &&
                 <KeyboardTrackingView
                     ref={this.keyboardTracker}
                     scrollViewNativeID={currentChannelId}
@@ -97,6 +103,7 @@ export default class ChannelIOS extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardTrackingView>
+                }
             </>
         );
 

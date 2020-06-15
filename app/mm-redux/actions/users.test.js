@@ -917,14 +917,14 @@ describe('Actions.Users', () => {
             post('/users').
             reply(200, TestHelper.fakeUserWithId());
 
-        const {data: user} = await Actions.createUser(TestHelper.fakeUser())(store.dispatch, store.getState);
+        const {data: user} = await store.dispatch(Actions.createUser(TestHelper.fakeUser()));
 
         const beforeTime = new Date().getTime();
 
         nock(Client4.getBaseRoute()).
             put(`/users/${user.id}/active`).
             reply(200, OK_RESPONSE);
-        await Actions.updateUserActive(user.id, false)(store.dispatch, store.getState);
+        await store.dispatch(Actions.updateUserActive(user.id, false));
 
         const {profiles} = store.getState().entities.users;
 

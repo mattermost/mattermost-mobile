@@ -34,7 +34,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.state = this.getBestImageUrl(props.openGraphData);
+        this.state = this.getBestImageUrlAndDimensions(props.openGraphData);
     }
 
     componentDidMount() {
@@ -47,16 +47,13 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.link !== this.props.link) {
-            this.setState({hasImage: false});
-            this.fetchData(nextProps.link, nextProps.openGraphData);
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.link !== this.props.link) {
+            this.fetchData(this.props.link, this.props.openGraphData);
         }
 
-        if (this.props.openGraphData !== nextProps.openGraphData) {
-            this.setState(this.getBestImageUrl(nextProps.openGraphData), () => {
-                this.getImageSize(this.state.openGraphImageUrl);
-            });
+        if (prevState.openGraphImageUrl !== this.state.openGraphImageUrl) {
+            this.getImageSize(this.state.openGraphImageUrl);
         }
     }
 
@@ -66,7 +63,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     setItemRef = (ref) => {
         this.itemRef = ref;
-    }
+    };
 
     fetchData = (url, openGraphData) => {
         if (!openGraphData) {
@@ -74,7 +71,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
     };
 
-    getBestImageUrl = (data) => {
+    getBestImageUrlAndDimensions = (data) => {
         if (!data || !data.images) {
             return {
                 hasImage: false,
@@ -109,8 +106,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         if (ogImage?.width && ogImage?.height) {
             dimensions = calculateDimensions(ogImage.height, ogImage.width, this.getViewPostWidth());
         }
-
-        FastImage.preload([{uri: imageUrl}]);
 
         return {
             hasImage: true,

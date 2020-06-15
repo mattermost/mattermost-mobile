@@ -59,7 +59,7 @@ export default class InputQuickAction extends PureComponent {
 
         return (
             <Image
-                source={require('assets/images/icons/slash-forward-box.png')}
+                source={require('@assets/images/icons/slash-forward-box.png')}
                 style={[style.slash, disabled ? style.disabled : null]}
             />
         );

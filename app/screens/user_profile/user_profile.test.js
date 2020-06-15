@@ -11,8 +11,8 @@ import UserProfile from './user_profile.js';
 import {BotTag, GuestTag} from 'app/components/tag';
 
 jest.mock('react-intl');
-jest.mock('app/utils/theme', () => {
-    const original = require.requireActual('app/utils/theme');
+jest.mock('@utils/theme', () => {
+    const original = jest.requireActual('../../utils/theme');
     return {
         ...original,
         changeOpacity: jest.fn(),

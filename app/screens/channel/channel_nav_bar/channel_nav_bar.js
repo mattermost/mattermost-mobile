@@ -70,6 +70,14 @@ export default class ChannelNavBar extends PureComponent {
         }
     };
 
+    drawerButtonVisible = () => {
+        if (Platform.OS === 'android') {
+            return true;
+        }
+
+        return (!DeviceTypes.IS_TABLET || this.state.isSplitView || !this.state.permanentSidebar);
+    };
+
     render() {
         const {isLandscape, onPress, theme} = this.props;
         const {openMainSidebar, openSettingsSidebar} = this.props;
@@ -99,16 +107,11 @@ export default class ChannelNavBar extends PureComponent {
             break;
         }
 
-        let drawerButtonVisible = false;
-        if (!DeviceTypes.IS_TABLET || this.state.isSplitView || !this.state.permanentSidebar) {
-            drawerButtonVisible = true;
-        }
-
         return (
             <View style={[style.header, padding(isLandscape), {height}]}>
                 <ChannelDrawerButton
                     openSidebar={openMainSidebar}
-                    visible={drawerButtonVisible}
+                    visible={this.drawerButtonVisible()}
                 />
                 <ChannelTitle
                     onPress={onPress}

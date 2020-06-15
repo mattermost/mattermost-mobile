@@ -7,15 +7,12 @@ import {
     View,
     StyleSheet,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
 
-import {Client4} from '@mm-redux/client';
-
+import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ProgressiveImage from '@components/progressive_image';
+import {Client4} from '@mm-redux/client';
 import {isGif} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
-
-import brokenImageIcon from 'assets/images/icons/brokenimage.png';
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
 const SMALL_IMAGE_MAX_WIDTH = 48;
@@ -51,29 +48,9 @@ export default class FileAttachmentImage extends PureComponent {
         resizeMethod: 'resize',
     };
 
-    constructor(props) {
-        super(props);
-
-        const {file} = props;
-        if (file && file.id && !file.localPath) {
-            const headers = Client4.getOptions({}).headers;
-
-            const preloadImages = [
-                {uri: Client4.getFileThumbnailUrl(file.id), headers},
-                {uri: Client4.getFileUrl(file.id), headers},
-            ];
-
-            if (isGif(file)) {
-                preloadImages.push({uri: Client4.getFilePreviewUrl(file.id), headers});
-            }
-
-            FastImage.preload(preloadImages);
-        }
-
-        this.state = {
-            failed: false,
-        };
-    }
+    state = {
+        failed: false,
+    };
 
     boxPlaceholder = () => {
         if (this.props.isSingleImage) {

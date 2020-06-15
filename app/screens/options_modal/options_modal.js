@@ -110,7 +110,7 @@ export default class OptionsModal extends PureComponent {
 
 const style = StyleSheet.create({
     wrapper: {
-        backgroundColor: Platform.select({ios: 'rgba(0, 0, 0, 0.5)'}),
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         flex: 1,
     },
 });

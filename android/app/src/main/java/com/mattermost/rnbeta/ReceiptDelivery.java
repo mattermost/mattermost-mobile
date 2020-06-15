@@ -26,6 +26,8 @@ import com.mattermost.react_native_interface.ResolvePromise;
 public class ReceiptDelivery {
     static final String CURRENT_SERVER_URL = "@currentServerUrl";
 
+    private static final int[] FIBONACCI_BACKOFFS = new int[] { 0, 1, 2, 3, 5, 8 };
+
     public static void send(Context context, final String ackId, final String postId, final String type, final boolean isIdLoaded, ResolvePromise promise) {
         final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
 
@@ -95,26 +97,41 @@ public class ReceiptDelivery {
                     .post(body)
                     .build();
 
-            try {
-                Response response = client.newCall(request).execute();
-                String responseBody = response.body().string();
-                if (response.code() != 200 || !isIdLoaded) {
-                    throw new Exception(responseBody);
-                }
-                JSONObject jsonResponse = new JSONObject(responseBody);
-                Bundle bundle = new Bundle();
-                String keys[] = new String[] {"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
-                for (int i = 0; i < keys.length; i++) {
-                    String key = keys[i];
-                    if (jsonResponse.has(key)) {
-                        bundle.putString(key, jsonResponse.getString(key));
-                    }
-                }
-                promise.resolve(bundle);
-            } catch (Exception e) {
-                Log.e("ReactNative", "Receipt delivery failed to send");
-                promise.reject("Receipt delivery failure", e.toString());
+            makeServerRequest(client, request, isIdLoaded, 0, promise);
+        }
+    }
+
+    private static void makeServerRequest(OkHttpClient client, Request request, Boolean isIdLoaded, int reRequestCount, ResolvePromise promise) {
+        try {
+            Response response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            if (response.code() != 200) {
+                throw new Exception(responseBody);
             }
+            JSONObject jsonResponse = new JSONObject(responseBody);
+            Bundle bundle = new Bundle();
+            String keys[] = new String[]{"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
+            for (int i = 0; i < keys.length; i++) {
+                String key = keys[i];
+                if (jsonResponse.has(key)) {
+                    bundle.putString(key, jsonResponse.getString(key));
+                }
+            }
+            promise.resolve(bundle);
+        } catch (Exception e) {
+            Log.e("ReactNative", "Receipt delivery failed to send");
+            if (isIdLoaded) {
+                try {
+                    reRequestCount++;
+                    if (reRequestCount < FIBONACCI_BACKOFFS.length) {
+                        Log.i("ReactNative", "Retry attempt " + reRequestCount + " with backoff delay: " + FIBONACCI_BACKOFFS[reRequestCount] + " seconds");
+                        Thread.sleep(FIBONACCI_BACKOFFS[reRequestCount] * 1000);
+                        makeServerRequest(client, request, isIdLoaded, reRequestCount, promise);
+                    }
+                } catch(InterruptedException ie) {}    
+            }
+
+            promise.reject("Receipt delivery failure", e.toString());
         }
     }
 }

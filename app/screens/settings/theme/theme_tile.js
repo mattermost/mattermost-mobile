@@ -10,9 +10,9 @@ import {
     View,
 } from 'react-native';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
-const checkmark = require('assets/images/themes/check.png');
+const checkmark = require('@assets/images/themes/check.png');
 
 const tilePadding = 8;
 

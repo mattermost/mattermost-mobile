@@ -5,10 +5,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import * as redux from 'redux';
 import {createPersistoid, createTransform, persistReducer, persistStore, Persistor, PersistConfig} from 'redux-persist';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
-import reduxReset from 'redux-reset';
+import DeviceInfo from 'react-native-device-info';
 
 import {General} from '@mm-redux/constants';
 import serviceReducer from '@mm-redux/reducers';
+import {GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
 
 import initialState from '@store/initial_state';
@@ -177,11 +178,20 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             emojiBlackListFilter,
         ],
         throttle: 100,
+        timeout: 60000,
     };
 
     const persistConfig: PersistConfig<GlobalState> = Object.assign({}, defaultConfig, optionalConfig);
     const baseState: any = Object.assign({}, initialState, preloadedState);
-    const rootReducer: any = createReducer(serviceReducer as any, appReducer as any);
+    const baseReducer: any = createReducer(serviceReducer as any, appReducer as any);
+    const rootReducer: any = (state: GlobalState, action: GenericAction) => {
+        if (action.type === General.OFFLINE_STORE_PURGE) {
+            // eslint-disable-next-line no-underscore-dangle
+            delete action.data._persist;
+            return baseReducer(action.data, action as any);
+        }
+        return baseReducer(state as any, action as any);
+    };
     const persistedReducer = persistReducer({...persistConfig}, rootReducer);
     const options: ClientOptions = Object.assign({}, defaultOptions, optionalOptions);
 
@@ -192,7 +202,6 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             redux.applyMiddleware(
                 ...createMiddlewares(options),
             ),
-            reduxReset(General.OFFLINE_STORE_PURGE),
         ),
     );
 
@@ -200,12 +209,20 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
 
     getStoredState().then(({storeKeys, restoredState}: V4Store) => {
         if (Object.keys(restoredState).length) {
+            const {app} = restoredState;
+            app.previousVersion = app.version;
+            app.build = DeviceInfo.getBuildNumber();
+            app.version = DeviceInfo.getVersion();
+
             const state = {
                 ...restoredState,
+                app: {
+                    ...app,
+                },
                 views: {
                     ...restoredState.views,
                     root: {
-                        hydrationComplete: true,
+                        hydrationComplete: false,
                     },
                 },
                 _persist: persistor.getState(),

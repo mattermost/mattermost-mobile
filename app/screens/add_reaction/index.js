@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Keyboard,
     StyleSheet,
     View,
 } from 'react-native';
@@ -47,6 +48,7 @@ export default class AddReaction extends PureComponent {
     }
 
     close = () => {
+        Keyboard.dismiss();
         dismissModal();
     };
 

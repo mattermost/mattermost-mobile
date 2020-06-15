@@ -5,14 +5,13 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
+import LocalConfig from '@assets/config';
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
 import {NavigationTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import LocalConfig from 'assets/config';
 
 import ChannelNavBar from './channel_nav_bar';
 import ChannelPostList from './channel_post_list';
@@ -32,18 +31,10 @@ export default class ChannelAndroid extends ChannelBase {
 
     render() {
         const {theme} = this.props;
-        const channelLoadingOrFailed = this.renderLoadingOrFailedChannel();
-        if (channelLoadingOrFailed) {
-            return channelLoadingOrFailed;
-        }
+        let component = this.renderLoadingOrFailedChannel();
 
-        const drawerContent = (
-            <>
-                <ChannelNavBar
-                    openMainSidebar={this.openMainSidebar}
-                    openSettingsSidebar={this.openSettingsSidebar}
-                    onPress={this.goToChannelInfo}
-                />
+        if (!component) {
+            component = (
                 <KeyboardLayout>
                     <View style={style.flex}>
                         <ChannelPostList/>
@@ -53,6 +44,17 @@ export default class ChannelAndroid extends ChannelBase {
                         screenId={this.props.componentId}
                     />
                 </KeyboardLayout>
+            );
+        }
+
+        const drawerContent = (
+            <>
+                <ChannelNavBar
+                    openMainSidebar={this.openMainSidebar}
+                    openSettingsSidebar={this.openSettingsSidebar}
+                    onPress={this.goToChannelInfo}
+                />
+                {component}
                 <NetworkIndicator/>
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>

@@ -24,6 +24,10 @@ describe('ChannelMembers', () => {
         isLandscape: false,
     };
 
+    beforeAll(() => {
+        jest.useFakeTimers();
+    });
+
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
             <ChannelMembers {...baseProps}/>,
