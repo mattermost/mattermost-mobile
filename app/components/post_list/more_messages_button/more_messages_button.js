@@ -9,6 +9,9 @@ import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import VectorIcon from 'app/components/vector_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+const HIDDEN_TOP = -100;
+const SHOWN_TOP = 10;
+
 export default class MoreMessageButton extends React.PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
@@ -24,7 +27,7 @@ export default class MoreMessageButton extends React.PureComponent {
     state = {
         moreCount: 0,
     };
-    top = new Animated.Value(-100);
+    top = new Animated.Value(HIDDEN_TOP);
 
     componentDidMount() {
         this.removeListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
@@ -59,7 +62,7 @@ export default class MoreMessageButton extends React.PureComponent {
         if (!this.visible && this.state.moreCount > 0 && !this.props.deepLinkURL) {
             this.visible = true;
             Animated.spring(this.top, {
-                toValue: 10,
+                toValue: SHOWN_TOP,
                 useNativeDriver: false,
             }).start();
         }
@@ -69,7 +72,7 @@ export default class MoreMessageButton extends React.PureComponent {
         if (this.visible) {
             this.visible = false;
             Animated.spring(this.top, {
-                toValue: -50,
+                toValue: HIDDEN_TOP,
                 useNativeDriver: false,
             }).start();
         }
@@ -205,6 +208,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             position: 'absolute',
             zIndex: 1,
+            elevation: 1,
             marginRight: 10,
             marginLeft: 10,
         },

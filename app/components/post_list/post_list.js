@@ -523,17 +523,6 @@ export default class PostList extends PureComponent {
 
         return (
             <>
-                {showMoreMessagesButton &&
-                    <MoreMessagesButton
-                        theme={theme}
-                        postIds={postIds}
-                        channelId={channelId}
-                        deepLinkURL={deepLinkURL}
-                        initialIndex={initialIndex}
-                        scrollToIndex={this.scrollToIndex}
-                        registerViewableItemsListener={this.registerViewableItemsListener}
-                    />
-                }
                 <FlatList
                     contentContainerStyle={styles.postListContent}
                     data={postIds}
@@ -567,6 +556,17 @@ export default class PostList extends PureComponent {
                     }}
                     onViewableItemsChanged={showMoreMessagesButton ? this.onViewableItemsChanged : null}
                 />
+                {showMoreMessagesButton &&
+                    <MoreMessagesButton
+                        theme={theme}
+                        postIds={postIds}
+                        channelId={channelId}
+                        deepLinkURL={deepLinkURL}
+                        initialIndex={initialIndex}
+                        scrollToIndex={this.scrollToIndex}
+                        registerViewableItemsListener={this.registerViewableItemsListener}
+                    />
+                }
             </>
         );
     }
