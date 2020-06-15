@@ -89,6 +89,10 @@ export default class ChannelInfo extends PureComponent {
     }
 
     static getDerivedStateFromProps(nextProps, state) {
+        if (state.ownUpdate) {
+            return {ownUpdate: false};
+        }
+
         if (state.isFavorite !== nextProps.isFavorite ||
             state.isMuted !== nextProps.isChannelMuted ||
             state.ignoreChannelMentions !== nextProps.ignoreChannelMentions) {
@@ -348,7 +352,7 @@ export default class ChannelInfo extends PureComponent {
         const {isFavorite, actions, currentChannel} = this.props;
         const {favoriteChannel, unfavoriteChannel} = actions;
         const toggleFavorite = isFavorite ? unfavoriteChannel : favoriteChannel;
-        this.setState({isFavorite: !isFavorite});
+        this.setState({isFavorite: !isFavorite, ownUpdate: true});
         toggleFavorite(currentChannel.id);
     });
 
@@ -370,7 +374,7 @@ export default class ChannelInfo extends PureComponent {
             mark_unread: isChannelMuted ? 'all' : 'mention',
         };
 
-        this.setState({isMuted: !isChannelMuted});
+        this.setState({isMuted: !isChannelMuted, ownUpdate: true});
         updateChannelNotifyProps(currentUserId, currentChannel.id, opts);
     });
 
@@ -382,7 +386,7 @@ export default class ChannelInfo extends PureComponent {
             ignore_channel_mentions: ignoreChannelMentions ? Users.IGNORE_CHANNEL_MENTIONS_OFF : Users.IGNORE_CHANNEL_MENTIONS_ON,
         };
 
-        this.setState({ignoreChannelMentions: !ignoreChannelMentions});
+        this.setState({ignoreChannelMentions: !ignoreChannelMentions, ownUpdate: true});
         updateChannelNotifyProps(currentUserId, currentChannel.id, opts);
     });
 

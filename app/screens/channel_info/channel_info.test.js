@@ -201,4 +201,25 @@ describe('channel_info', () => {
         const render = instance.renderUnarchiveChannel();
         expect(render).toBeFalsy();
     });
+
+    test('handleFavorite, handleMuteChannel and handleIgnoreChannelMentions should persist state changes', async () => {
+        const props = Object.assign({}, baseProps);
+        const wrapper = shallow(
+            <ChannelInfo
+                {...props}
+            />,
+            {context: {intl: intlMock}},
+        );
+
+        const instance = wrapper.instance();
+
+        instance.handleFavorite();
+        expect(wrapper.state('isFavorite')).toBe(true);
+
+        instance.handleMuteChannel();
+        expect(wrapper.state('isMuted')).toBe(true);
+
+        instance.handleIgnoreChannelMentions();
+        expect(wrapper.state('ignoreChannelMentions')).toBe(true);
+    });
 });
