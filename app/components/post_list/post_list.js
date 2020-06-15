@@ -72,6 +72,7 @@ export default class PostList extends PureComponent {
         theme: PropTypes.object.isRequired,
         location: PropTypes.string,
         scrollViewNativeID: PropTypes.string,
+        showMoreMessagesButton: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -81,6 +82,7 @@ export default class PostList extends PureComponent {
         serverURL: '',
         siteURL: '',
         postIds: [],
+        showMoreMessagesButton: false,
     };
 
     static contextTypes = {
@@ -506,6 +508,7 @@ export default class PostList extends PureComponent {
             theme,
             initialIndex,
             deepLinkURL,
+            showMoreMessagesButton,
         } = this.props;
 
         const refreshControl = (
@@ -520,15 +523,17 @@ export default class PostList extends PureComponent {
 
         return (
             <>
-                <MoreMessagesButton
-                    theme={theme}
-                    postIds={postIds}
-                    channelId={channelId}
-                    deepLinkURL={deepLinkURL}
-                    initialIndex={initialIndex}
-                    scrollToIndex={this.scrollToIndex}
-                    registerViewableItemsListener={this.registerViewableItemsListener}
-                />
+                {showMoreMessagesButton &&
+                    <MoreMessagesButton
+                        theme={theme}
+                        postIds={postIds}
+                        channelId={channelId}
+                        deepLinkURL={deepLinkURL}
+                        initialIndex={initialIndex}
+                        scrollToIndex={this.scrollToIndex}
+                        registerViewableItemsListener={this.registerViewableItemsListener}
+                    />
+                }
                 <FlatList
                     contentContainerStyle={styles.postListContent}
                     data={postIds}
@@ -560,7 +565,7 @@ export default class PostList extends PureComponent {
                         viewAreaCoveragePercentThreshold: 0,
                         minimumViewTime: 100,
                     }}
-                    onViewableItemsChanged={this.onViewableItemsChanged}
+                    onViewableItemsChanged={showMoreMessagesButton ? this.onViewableItemsChanged : null}
                 />
             </>
         );
