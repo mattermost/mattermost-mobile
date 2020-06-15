@@ -197,7 +197,7 @@ class SSO extends PureComponent {
         }
 
         if (isLastRedirect) {
-            this.extractCookie(parsed, 0);
+            this.extractCookie(parsed);
         }
     };
 
