@@ -9,6 +9,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
 
 export const HIDDEN_TOP = -100;
 export const SHOWN_TOP = 10;
@@ -145,14 +146,14 @@ export default class MoreMessageButton extends React.PureComponent {
         if (firstPage) {
             if (singular) {
                 return {
-                    id: 'mobile.more_messages.firstPageSingular',
+                    id: t('mobile.more_messages.firstPageSingular'),
                     defaultMessage: '{countText} new message',
                     values: {countText},
                 };
             }
 
             return {
-                id: 'mobile.more_messages.firstPagePlural',
+                id: t('mobile.more_messages.firstPagePlural'),
                 defaultMessage: '{countText} new messages',
                 values: {countText},
             };
@@ -160,14 +161,14 @@ export default class MoreMessageButton extends React.PureComponent {
 
         if (singular) {
             return {
-                id: 'mobile.more_messages.nextPageSingular',
+                id: t('mobile.more_messages.nextPageSingular'),
                 defaultMessage: '{countText} more new message',
                 values: {countText},
             };
         }
 
         return {
-            id: 'mobile.more_messages.nextPagePlural',
+            id: t('mobile.more_messages.nextPagePlural'),
             defaultMessage: '{countText} more new messages',
             values: {countText},
         };
@@ -205,9 +206,7 @@ export default class MoreMessageButton extends React.PureComponent {
                                 style={styles.icon}
                             />
                             <FormattedText
-                                id={moreMessage.id}
-                                defaultMessage={moreMessage.defaultMessage}
-                                values={moreMessage.values}
+                                {...moreMessage}
                                 style={styles.text}
                             />
                         </View>
