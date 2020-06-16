@@ -22,12 +22,13 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
     style={
       Object {
         "alignItems": "center",
-        "backgroundColor": "#1153ab",
-        "borderRadius": 5,
+        "backgroundColor": "#166de0",
+        "borderRadius": 4,
         "flex": 1,
         "flexDirection": "row",
+        "height": 40,
         "justifyContent": "space-evenly",
-        "padding": 10,
+        "padding": 8,
         "width": "100%",
       }
     }
@@ -49,7 +50,9 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           size={14}
           style={
             Object {
-              "color": "white",
+              "color": "#ffffff",
+              "fontSize": 16,
+              "fontWeight": "bold",
               "paddingHorizontal": 5,
             }
           }
@@ -58,13 +61,13 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
         <Text
           style={
             Object {
-              "color": "white",
+              "color": "#ffffff",
               "fontWeight": "bold",
               "paddingHorizontal": 5,
             }
           }
         >
-          0 new messages
+          0 more new messages
         </Text>
       </View>
     </TouchableWithFeedbackIOS>
@@ -85,7 +88,9 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           size={14}
           style={
             Object {
-              "color": "white",
+              "color": "#ffffff",
+              "fontSize": 16,
+              "fontWeight": "bold",
               "paddingHorizontal": 5,
             }
           }

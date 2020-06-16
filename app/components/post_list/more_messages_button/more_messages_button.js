@@ -4,9 +4,10 @@
 import React from 'react';
 import {Animated, Text, View} from 'react-native';
 import PropTypes from 'prop-types';
+import {intlShape} from 'react-intl';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import VectorIcon from 'app/components/vector_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import VectorIcon from '@components/vector_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export const HIDDEN_TOP = -100;
@@ -26,6 +27,10 @@ export default class MoreMessageButton extends React.PureComponent {
 
     state = {moreCount: 0};
     top = new Animated.Value(HIDDEN_TOP);
+
+    static contextTypes = {
+        intl: intlShape,
+    };
 
     componentDidMount() {
         this.removeListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
@@ -140,20 +145,48 @@ export default class MoreMessageButton extends React.PureComponent {
         }
     }
 
+    intlMoreMessagesText = (firstPage, singular) => {
+        if (firstPage) {
+            if (singular) {
+                return {
+                    id: 'mobile.more_messages.firstPageSingular',
+                    defaultMessage: '{countText} new message',
+                };
+            }
+
+            return {
+                id: 'mobile.more_messages.firstPagePlural',
+                defaultMessage: '{countText} new messages',
+            };
+        }
+
+        if (singular) {
+            return {
+                id: 'mobile.more_messages.nextPageSingular',
+                defaultMessage: '{countText} more new message',
+            };
+        }
+
+        return {
+            id: 'mobile.more_messages.nextPagePlural',
+            defaultMessage: '{countText} more new messages',
+        };
+    };
+
     moreMessagesText = () => {
-        const moreCount = Math.max(this.state.moreCount, 0);
+        const {moreCount} = this.state;
+        const {intl} = this.context;
 
-        let moreText = Math.min(60, moreCount);
+        let countText = Math.min(60, moreCount);
         if (moreCount > 60) {
-            moreText += '+';
-        }
-        if (this.prevInitialIndex > 0) {
-            moreText += ' more';
+            countText += '+';
         }
 
-        moreText += moreCount === 1 ? ' new message' : ' new messages';
+        const firstPage = this.prevInitialIndex === 0;
+        const singular = moreCount === 1;
+        const intlMessage = this.intlMoreMessagesText(firstPage, singular);
 
-        return moreText;
+        return intl.formatMessage(intlMessage, {countText});
     }
 
     render() {
@@ -208,10 +241,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'space-evenly',
             alignItems: 'center',
-            backgroundColor: theme.sidebarHeaderBg,
-            padding: 10,
-            borderRadius: 5,
+            backgroundColor: theme.buttonBg,
+            padding: 8,
+            borderRadius: 4,
             width: '100%',
+            height: 40,
         },
         moreContainer: {
             flex: 11,
@@ -223,11 +257,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         text: {
             fontWeight: 'bold',
-            color: 'white',
+            color: theme.buttonColor,
             paddingHorizontal: 5,
         },
         icon: {
-            color: 'white',
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: theme.buttonColor,
             paddingHorizontal: 5,
         },
     };

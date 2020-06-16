@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Animated} from 'react-native';
-import {shallow} from 'enzyme';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -23,7 +23,7 @@ describe('MoreMessagesButton', () => {
     };
 
     it('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
 
@@ -32,13 +32,13 @@ describe('MoreMessagesButton', () => {
 
     describe('lifecycle methods', () => {
         it('should register the viewable items listener and call reset on componentDidMount', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             instance.reset = jest.fn();
 
-            // While componentDidMount is called when the component is mounted with `shallow()` above,
+            // While componentDidMount is called when the component is mounted with `shallowWithIntl()` above,
             // instance.reset has not yet been mocked so we call componentDidMount again.
             instance.componentDidMount();
             expect(instance.removeListener).toBeDefined();
@@ -47,7 +47,7 @@ describe('MoreMessagesButton', () => {
 
         it('should remove the viewable items listener and cancel the timer on componentWillUnmount', () => {
             jest.useFakeTimers();
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -60,7 +60,7 @@ describe('MoreMessagesButton', () => {
         });
 
         it('should call reset when the channelId changes on componentDidUpdate', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -76,7 +76,7 @@ describe('MoreMessagesButton', () => {
 
     describe('reset', () => {
         it('should reset values and call hide', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -97,7 +97,7 @@ describe('MoreMessagesButton', () => {
         Animated.spring = jest.fn(() => ({
             start: jest.fn(),
         }));
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -150,7 +150,7 @@ describe('MoreMessagesButton', () => {
         Animated.spring = jest.fn(() => ({
             start: jest.fn(),
         }));
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -176,7 +176,7 @@ describe('MoreMessagesButton', () => {
 
     describe('cancel', () => {
         it('should hide button and disable viewable items handler', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -190,7 +190,7 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('onMoreMessagesPress', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -216,7 +216,7 @@ describe('MoreMessagesButton', () => {
 
     describe('onViewableItemsChanged', () => {
         jest.useFakeTimers();
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -354,7 +354,7 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('viewableItemsChangedHandler', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -395,7 +395,7 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('moreMessagesText', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
