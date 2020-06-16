@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MoreMessagesButton should match snapshot 1`] = `
+<ForwardRef(AnimatedComponentWrapper)
+  style={
+    Array [
+      Object {
+        "elevation": 1,
+        "flex": 1,
+        "marginLeft": 10,
+        "marginRight": 10,
+        "position": "absolute",
+        "zIndex": 1,
+      },
+      Object {
+        "top": -100,
+      },
+    ]
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#1153ab",
+        "borderRadius": 5,
+        "flex": 1,
+        "flexDirection": "row",
+        "justifyContent": "space-evenly",
+        "padding": 10,
+        "width": "100%",
+      }
+    }
+  >
+    <TouchableWithFeedbackIOS
+      onPress={[Function]}
+      type="none"
+    >
+      <View
+        style={
+          Object {
+            "flex": 11,
+            "flexDirection": "row",
+          }
+        }
+      >
+        <VectorIcon
+          name="md-arrow-up"
+          size={14}
+          style={
+            Object {
+              "color": "white",
+              "paddingHorizontal": 5,
+            }
+          }
+          type="ion"
+        />
+        <Text
+          style={
+            Object {
+              "color": "white",
+              "fontWeight": "bold",
+              "paddingHorizontal": 5,
+            }
+          }
+        >
+          0 new messages
+        </Text>
+      </View>
+    </TouchableWithFeedbackIOS>
+    <TouchableWithFeedbackIOS
+      onPress={[Function]}
+      type="none"
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "flex-end",
+            "flex": 1,
+          }
+        }
+      >
+        <VectorIcon
+          name="md-close"
+          size={14}
+          style={
+            Object {
+              "color": "white",
+              "paddingHorizontal": 5,
+            }
+          }
+          type="ion"
+        />
+      </View>
+    </TouchableWithFeedbackIOS>
+  </View>
+</ForwardRef(AnimatedComponentWrapper)>
+`;

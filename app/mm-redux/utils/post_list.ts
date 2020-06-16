@@ -432,3 +432,11 @@ export function combineUserActivitySystemPost(systemPosts: Array<types.posts.Pos
 
     return extractUserActivityData(userActivities);
 }
+
+export function nonMessageCount(postIds: string[]) {
+    const nonMessagePostIds = postIds.filter((postId) => {
+        return isStartOfNewMessages(postId) || isDateLine(postId) || isCombinedUserActivityPost(postId);
+    });
+
+    return nonMessagePostIds.length;
+}

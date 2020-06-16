@@ -9,8 +9,8 @@ import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import VectorIcon from 'app/components/vector_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-const HIDDEN_TOP = -100;
-const SHOWN_TOP = 10;
+export const HIDDEN_TOP = -100;
+export const SHOWN_TOP = 10;
 
 export default class MoreMessageButton extends React.PureComponent {
     static propTypes = {
@@ -24,9 +24,7 @@ export default class MoreMessageButton extends React.PureComponent {
         deepLinkURL: PropTypes.string,
     };
 
-    state = {
-        moreCount: 0,
-    };
+    state = {moreCount: 0};
     top = new Animated.Value(HIDDEN_TOP);
 
     componentDidMount() {
@@ -106,43 +104,37 @@ export default class MoreMessageButton extends React.PureComponent {
         }
 
         if (!this.disableViewableItemsHandler) {
-            const viewableIndexes = viewableItems.map((item) => item.index);
+            const viewableIndeces = viewableItems.map((item) => item.index);
 
             // Hide More Messages button when New Messages line is viewable
-            if (initialIndex >= unreadCount && viewableIndexes[viewableIndexes.length - 1] >= initialIndex) {
+            if (initialIndex >= unreadCount && viewableIndeces[viewableIndeces.length - 1] >= initialIndex) {
                 this.hide();
                 this.disableViewableItemsHandler = true;
 
                 // If the first post is viewable as well, this means that the channel
                 // was just loaded. In this case let's auto scroll to the New Messages line
                 // in case it's partially hidden behind the top bar.
-                if (viewableIndexes[0] === 0) {
+                if (viewableIndeces[0] === 0) {
                     scrollToIndex(initialIndex);
                 }
 
                 return;
             }
 
-            let delay = 0;
-            if (this.viewableItemsChangedTimer) {
-                clearTimeout(this.viewableItemsChangedTimer);
-                delay = 100;
-            }
+            const delay = this.viewableItemsChangedTimer ? 100 : 0;
             this.viewableItemsChangedTimer = setTimeout(() => {
-                this.viewableItemsChangedHandler(viewableIndexes);
+                this.viewableItemsChangedHandler(viewableIndeces);
             }, delay);
         }
     }
 
-    viewableItemsChangedHandler = (viewableIndexes) => {
-        const {initialIndex, unreadCount, scrollToIndex} = this.props;
-        if (!viewableIndexes.includes(initialIndex)) {
-            const readCount = viewableIndexes.pop() || 0;
+    viewableItemsChangedHandler = (viewableIndeces) => {
+        const {initialIndex, unreadCount} = this.props;
+        if (!viewableIndeces.includes(initialIndex)) {
+            const readCount = viewableIndeces.pop() || 0;
             const moreCount = unreadCount - readCount;
 
-            if (moreCount === 0) {
-                scrollToIndex(initialIndex);
-            } else if (moreCount > 0) {
+            if (moreCount > 0) {
                 this.setState({moreCount}, this.show);
             }
         }
@@ -152,11 +144,10 @@ export default class MoreMessageButton extends React.PureComponent {
         const moreCount = Math.max(this.state.moreCount, 0);
 
         let moreText = Math.min(60, moreCount);
-        if (this.prevInitialIndex === 0) {
-            if (moreCount > 60) {
-                moreText += '+';
-            }
-        } else {
+        if (moreCount > 60) {
+            moreText += '+';
+        }
+        if (this.prevInitialIndex > 0) {
             moreText += ' more';
         }
 

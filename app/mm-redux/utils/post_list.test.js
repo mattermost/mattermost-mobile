@@ -7,11 +7,11 @@ import {Posts, Preferences} from '../constants';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
+import TestHelper from 'test/test_helper';
+
 import {
-    COMBINED_USER_ACTIVITY,
     combineUserActivitySystemPost,
     comparePostTypes,
-    DATE_LINE,
     getDateForDateLine,
     getFirstPostId,
     getLastPostId,
@@ -23,7 +23,10 @@ import {
     makeFilterPostsAndAddSeparators,
     makeGenerateCombinedPost,
     postTypePriority,
+    nonMessageCount,
     START_OF_NEW_MESSAGES,
+    COMBINED_USER_ACTIVITY,
+    DATE_LINE,
 } from './post_list';
 
 describe('makeFilterPostsAndAddSeparators', () => {
@@ -1700,5 +1703,24 @@ describe('comparePostTypes', () => {
                 previousType = sortedTestCase.postType;
             });
         }
+    });
+});
+
+describe('nonMessageCount', () => {
+    it('should return the count of non-message post IDs', () => {
+        const postIds = [];
+        expect(nonMessageCount(postIds)).toEqual(0);
+
+        postIds.push(TestHelper.generateId());
+        expect(nonMessageCount(postIds)).toEqual(0);
+
+        postIds.push(START_OF_NEW_MESSAGES);
+        expect(nonMessageCount(postIds)).toEqual(1);
+
+        postIds.push(DATE_LINE);
+        expect(nonMessageCount(postIds)).toEqual(2);
+
+        postIds.push(COMBINED_USER_ACTIVITY + TestHelper.generateId());
+        expect(nonMessageCount(postIds)).toEqual(3);
     });
 });
