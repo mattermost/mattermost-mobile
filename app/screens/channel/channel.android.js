@@ -38,10 +38,8 @@ export default class ChannelAndroid extends ChannelBase {
     }
 
     handleBackPress = () => {
-        const {formatMessage} = this.context.intl;
-        if (backPressedCount > 0 && EphemeralStore.getNavigationTopComponentId() === 'Channel') {
-            backPressedCount = 0;
-        } else {
+        if (!backPressedCount && EphemeralStore.getNavigationTopComponentId() === 'Channel') {
+            const {formatMessage} = this.context.intl;
             backPressedCount++;
             ToastAndroid.show(formatMessage({
                 id: 'mobile.android.back_handler_exit',
@@ -52,8 +50,9 @@ export default class ChannelAndroid extends ChannelBase {
             }, 2000);
             return true;
         }
+        backPressedCount = 0;
         return false;
-    }
+    };
 
     componentWillUnmount() {
         super.componentWillUnmount();
