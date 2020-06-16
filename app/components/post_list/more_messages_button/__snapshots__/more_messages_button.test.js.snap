@@ -58,7 +58,9 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           }
           type="ion"
         />
-        <Text
+        <FormattedText
+          defaultMessage="{countText} more new messages"
+          id="mobile.more_messages.nextPagePlural"
           style={
             Object {
               "color": "#ffffff",
@@ -66,9 +68,12 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
               "paddingHorizontal": 5,
             }
           }
-        >
-          0 more new messages
-        </Text>
+          values={
+            Object {
+              "countText": 0,
+            }
+          }
+        />
       </View>
     </TouchableWithFeedbackIOS>
     <TouchableWithFeedbackIOS

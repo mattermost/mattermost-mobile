@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Animated, Text, View} from 'react-native';
+import {Animated, View} from 'react-native';
 import PropTypes from 'prop-types';
-import {intlShape} from 'react-intl';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
+import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export const HIDDEN_TOP = -100;
@@ -27,10 +27,6 @@ export default class MoreMessageButton extends React.PureComponent {
 
     state = {moreCount: 0};
     top = new Animated.Value(HIDDEN_TOP);
-
-    static contextTypes = {
-        intl: intlShape,
-    };
 
     componentDidMount() {
         this.removeListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
@@ -145,18 +141,20 @@ export default class MoreMessageButton extends React.PureComponent {
         }
     }
 
-    intlMoreMessagesText = (firstPage, singular) => {
+    intlMoreMessage = (firstPage, singular, countText) => {
         if (firstPage) {
             if (singular) {
                 return {
                     id: 'mobile.more_messages.firstPageSingular',
                     defaultMessage: '{countText} new message',
+                    values: {countText},
                 };
             }
 
             return {
                 id: 'mobile.more_messages.firstPagePlural',
                 defaultMessage: '{countText} new messages',
+                values: {countText},
             };
         }
 
@@ -164,18 +162,19 @@ export default class MoreMessageButton extends React.PureComponent {
             return {
                 id: 'mobile.more_messages.nextPageSingular',
                 defaultMessage: '{countText} more new message',
+                values: {countText},
             };
         }
 
         return {
             id: 'mobile.more_messages.nextPagePlural',
             defaultMessage: '{countText} more new messages',
+            values: {countText},
         };
     };
 
-    moreMessagesText = () => {
+    moreMessage = () => {
         const {moreCount} = this.state;
-        const {intl} = this.context;
 
         let countText = Math.min(60, moreCount);
         if (moreCount > 60) {
@@ -184,13 +183,13 @@ export default class MoreMessageButton extends React.PureComponent {
 
         const firstPage = this.prevInitialIndex === 0;
         const singular = moreCount === 1;
-        const intlMessage = this.intlMoreMessagesText(firstPage, singular);
 
-        return intl.formatMessage(intlMessage, {countText});
+        return this.intlMoreMessage(firstPage, singular, countText);
     }
 
     render() {
         const styles = getStyleSheet(this.props.theme);
+        const moreMessage = this.moreMessage();
 
         return (
             <Animated.View style={[styles.animatedContainer, {top: this.top}]}>
@@ -205,7 +204,12 @@ export default class MoreMessageButton extends React.PureComponent {
                                 type='ion'
                                 style={styles.icon}
                             />
-                            <Text style={styles.text}>{this.moreMessagesText()}</Text>
+                            <FormattedText
+                                id={moreMessage.id}
+                                defaultMessage={moreMessage.defaultMessage}
+                                values={moreMessage.values}
+                                style={styles.text}
+                            />
                         </View>
                     </TouchableWithFeedback>
                     <TouchableWithFeedback
