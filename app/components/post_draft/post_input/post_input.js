@@ -10,6 +10,7 @@ import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import PasteableTextInput from '@components/pasteable_text_input';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import EphemeralStore from '@store/ephemeral_store';
 import {t} from '@utils/i18n';
 import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -17,6 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} 
 const {RNTextInputReset} = NativeModules;
 const INPUT_LINE_HEIGHT = 20;
 const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
+const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
 export default class PostInput extends PureComponent {
     static contextTypes = {
@@ -160,13 +162,15 @@ export default class PostInput extends PureComponent {
     };
 
     handleHardwareEnterPress = (keyEvent) => {
-        switch (keyEvent.pressedKey) {
-        case 'enter':
-            this.props.onSend();
-            break;
-        case 'shift-enter':
-            this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
-            break;
+        if (HW_EVENT_IN_SCREEN.includes(EphemeralStore.getNavigationTopComponentId())) {
+            switch (keyEvent.pressedKey) {
+            case 'enter':
+                this.props.onSend();
+                break;
+            case 'shift-enter':
+                this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
+                break;
+            }
         }
     }
 
