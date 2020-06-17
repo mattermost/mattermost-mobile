@@ -12,7 +12,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
 
 export const HIDDEN_TOP = -100;
-export const SHOWN_TOP = 10;
+export const SHOWN_TOP = 0;
 
 export default class MoreMessageButton extends React.PureComponent {
     static propTypes = {
@@ -236,8 +236,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'absolute',
             zIndex: 1,
             elevation: 1,
-            marginRight: 10,
-            marginLeft: 10,
+            margin: 8,
         },
         container: {
             flex: 1,
@@ -245,10 +244,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'space-evenly',
             alignItems: 'center',
             backgroundColor: theme.buttonBg,
-            padding: 8,
+            paddingLeft: 18,
+            paddingRight: 14,
+            paddingVertical: 1,
             borderRadius: 4,
             width: '100%',
             height: 40,
+            shadowColor: theme.centerChannelColor,
+            shadowOffset: {
+                width: 0,
+                height: 6,
+            },
+            shadowOpacity: 0.12,
+            shadowRadius: 4,
         },
         moreContainer: {
             flex: 11,
@@ -261,13 +269,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         text: {
             fontWeight: 'bold',
             color: theme.buttonColor,
-            paddingHorizontal: 5,
+            paddingLeft: 9,
+            alignSelf: 'center',
         },
         icon: {
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: 'bold',
             color: theme.buttonColor,
-            paddingHorizontal: 5,
         },
     };
 });

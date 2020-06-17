@@ -7,8 +7,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
       Object {
         "elevation": 1,
         "flex": 1,
-        "marginLeft": 10,
-        "marginRight": 10,
+        "margin": 8,
         "position": "absolute",
         "zIndex": 1,
       },
@@ -28,7 +27,16 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
         "flexDirection": "row",
         "height": 40,
         "justifyContent": "space-evenly",
-        "padding": 8,
+        "paddingLeft": 18,
+        "paddingRight": 14,
+        "paddingVertical": 1,
+        "shadowColor": "#3d3c40",
+        "shadowOffset": Object {
+          "height": 6,
+          "width": 0,
+        },
+        "shadowOpacity": 0.12,
+        "shadowRadius": 4,
         "width": "100%",
       }
     }
@@ -51,9 +59,8 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           style={
             Object {
               "color": "#ffffff",
-              "fontSize": 16,
+              "fontSize": 18,
               "fontWeight": "bold",
-              "paddingHorizontal": 5,
             }
           }
           type="ion"
@@ -63,9 +70,10 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           id="mobile.more_messages.nextPagePlural"
           style={
             Object {
+              "alignSelf": "center",
               "color": "#ffffff",
               "fontWeight": "bold",
-              "paddingHorizontal": 5,
+              "paddingLeft": 9,
             }
           }
           values={
@@ -94,9 +102,8 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           style={
             Object {
               "color": "#ffffff",
-              "fontSize": 16,
+              "fontSize": 18,
               "fontWeight": "bold",
-              "paddingHorizontal": 5,
             }
           }
           type="ion"
