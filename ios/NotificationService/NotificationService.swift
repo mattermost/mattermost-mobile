@@ -15,6 +15,7 @@ class NotificationService: UNNotificationServiceExtension {
 
     func fetchReceipt(notificationId: String, receivedAt: Int, type: String, postId: String, idLoaded: Bool ) -> Void {
       if (self.retryIndex >= fibonacciBackoffsInSeconds.count) {
+        contentHandler(self.bestAttemptContent!)
         return
       }
 
