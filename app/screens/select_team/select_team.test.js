@@ -28,7 +28,6 @@ describe('SelectTeam', () => {
         getTeams,
         handleTeamChange: jest.fn(),
         addUserToTeam: jest.fn(),
-        joinTeam: jest.fn(),
         logout: jest.fn(),
     };
 
@@ -104,10 +103,9 @@ describe('SelectTeam', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should call joinTeam versions prior to 5.18', async () => {
+    test('should call addUserToTeam', async () => {
         const props = {
             ...baseProps,
-            serverVersion: '5.17',
         };
 
         const wrapper = shallow(
@@ -115,22 +113,6 @@ describe('SelectTeam', () => {
         );
         wrapper.instance().onSelectTeam({id: 'test_id', invite_id: 'test_invite_id'});
 
-        expect(props.actions.joinTeam).toBeCalledWith('test_invite_id', 'test_id');
-        expect(props.actions.addUserToTeam).not.toBeCalled();
-    });
-
-    test('should call joinTeam versions posterior to 5.18', async () => {
-        const props = {
-            ...baseProps,
-            serverVersion: '5.18',
-        };
-
-        const wrapper = shallow(
-            <SelectTeam {...props}/>,
-        );
-        wrapper.instance().onSelectTeam({id: 'test_id', invite_id: 'test_invite_id'});
-
-        expect(props.actions.joinTeam).not.toBeCalled();
         expect(props.actions.addUserToTeam).toBeCalledWith('test_id', 'fakeid');
     });
 });
