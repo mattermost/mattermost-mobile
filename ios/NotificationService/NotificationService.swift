@@ -49,9 +49,9 @@ class NotificationService: UNNotificationServiceExtension {
 
     bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
     if let bestAttemptContent = bestAttemptContent {
-      let ackId = bestAttemptContent.userInfo["ack_id"] as! String
-      let type = bestAttemptContent.userInfo["type"] as! String
-      let postId = bestAttemptContent.userInfo["post_id"] as! String
+      let ackId = (bestAttemptContent.userInfo["ack_id"] ?? "") as! String
+      let type = (bestAttemptContent.userInfo["type"] ?? "") as! String
+      let postId = (bestAttemptContent.userInfo["post_id"] ?? "") as! String
       let idLoaded = (bestAttemptContent.userInfo["id_loaded"] ?? false) as! Bool
 
       fetchReceipt(
