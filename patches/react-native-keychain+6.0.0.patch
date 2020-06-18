@@ -1,0 +1,17 @@
+diff --git a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
+index 00ffcda..25fa8fb 100644
+--- a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
++++ b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainModule.java
+@@ -151,9 +151,9 @@ public class KeychainModule extends ReactContextBaseJavaModule {
+     final KeychainModule instance = new KeychainModule(reactContext);
+ 
+     // force initialization of the crypto api in background thread
+-    final Thread warmingUp = new Thread(instance::internalWarmingBestCipher, "keychain-warming-up");
+-    warmingUp.setDaemon(true);
+-    warmingUp.start();
++    // final Thread warmingUp = new Thread(instance::internalWarmingBestCipher, "keychain-warming-up");
++    // warmingUp.setDaemon(true);
++    // warmingUp.start();
+ 
+     return instance;
+   }
