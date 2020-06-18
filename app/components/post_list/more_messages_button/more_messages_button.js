@@ -5,9 +5,12 @@ import React from 'react';
 import {Animated, View} from 'react-native';
 import PropTypes from 'prop-types';
 
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
 import FormattedText from '@components/formatted_text';
+import ViewTypes, {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
 
@@ -30,11 +33,13 @@ export default class MoreMessageButton extends React.PureComponent {
     top = new Animated.Value(HIDDEN_TOP);
 
     componentDidMount() {
+        EventEmitter.on(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
         this.removeListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
         this.reset();
     }
 
     componentWillUnmount() {
+        EventEmitter.off(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
         if (this.removeListener) {
             this.removeListener();
         }
@@ -46,6 +51,16 @@ export default class MoreMessageButton extends React.PureComponent {
     componentDidUpdate(prevProps) {
         if (this.props.channelId !== prevProps.channelId) {
             this.reset();
+        }
+    }
+
+    onNetworkIndicatorVisible = (indicatorVisible) => {
+        this.networkIndicatorVisible = indicatorVisible;
+        if (this.visible && indicatorVisible) {
+            Animated.spring(this.top, {
+                toValue: SHOWN_TOP + NETWORK_INDICATOR_HEIGHT,
+                useNativeDriver: false,
+            }).start();
         }
     }
 
@@ -61,8 +76,9 @@ export default class MoreMessageButton extends React.PureComponent {
     show = () => {
         if (!this.visible && this.state.moreCount > 0 && !this.props.deepLinkURL) {
             this.visible = true;
+            const indicatorHeight = this.networkIndicatorVisible ? NETWORK_INDICATOR_HEIGHT : 0;
             Animated.spring(this.top, {
-                toValue: SHOWN_TOP,
+                toValue: SHOWN_TOP + indicatorHeight,
                 useNativeDriver: false,
             }).start();
         }
@@ -71,8 +87,9 @@ export default class MoreMessageButton extends React.PureComponent {
     hide = () => {
         if (this.visible) {
             this.visible = false;
+            const indicatorHeight = this.networkIndicatorVisible ? NETWORK_INDICATOR_HEIGHT : 0;
             Animated.spring(this.top, {
-                toValue: HIDDEN_TOP,
+                toValue: HIDDEN_TOP - indicatorHeight,
                 useNativeDriver: false,
             }).start();
         }

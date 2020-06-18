@@ -32,6 +32,7 @@ export const NotificationLevels = {
 };
 
 export const NOTIFY_ALL_MEMBERS = 5;
+export const NETWORK_INDICATOR_HEIGHT = 38;
 
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
@@ -93,6 +94,8 @@ const ViewTypes = keyMirror({
 
     PORTRAIT: null,
     LANDSCAPE: null,
+
+    NETWORK_INDICATOR_VISIBLE: null,
 });
 
 export default {

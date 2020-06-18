@@ -5,7 +5,10 @@ import React from 'react';
 import {Animated} from 'react-native';
 import {shallow} from 'enzyme';
 
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import Preferences from '@mm-redux/constants/preferences';
+
+import ViewTypes, {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
 
 import MoreMessagesButton, {SHOWN_TOP, HIDDEN_TOP} from './more_messages_button.js';
 
@@ -31,30 +34,36 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('lifecycle methods', () => {
-        it('should register the viewable items listener and call reset on componentDidMount', () => {
+        it('should register NETWORK_INDICATOR_VISIBLE listener, register the viewable items listener, and call reset on componentDidMount', () => {
+            EventEmitter.on = jest.fn();
             const wrapper = shallow(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.onNetworkIndicatorVisible = jest.fn();
             instance.reset = jest.fn();
 
             // While componentDidMount is called when the component is mounted with `shallow()` above,
             // instance.reset has not yet been mocked so we call componentDidMount again.
             instance.componentDidMount();
+            expect(EventEmitter.on).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, instance.onNetworkIndicatorVisible);
             expect(instance.removeListener).toBeDefined();
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        it('should remove the viewable items listener and cancel the timer on componentWillUnmount', () => {
+        it('should remove the NETWORK_INDICATOR_VISIBLE listener, remove the viewable items listener, and cancel the timer on componentWillUnmount', () => {
             jest.useFakeTimers();
+            EventEmitter.off = jest.fn();
             const wrapper = shallow(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.onNetworkIndicatorVisible = jest.fn();
             instance.removeListener = jest.fn();
             instance.viewableItemsChangedTimer = jest.fn();
 
             instance.componentWillUnmount();
+            expect(EventEmitter.off).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, instance.onNetworkIndicatorVisible);
             expect(instance.removeListener).toHaveBeenCalled();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
         });
@@ -71,6 +80,44 @@ describe('MoreMessagesButton', () => {
 
             wrapper.setProps({channelId: `not-${baseProps.channelId}`});
             expect(instance.reset).toHaveBeenCalled();
+        });
+    });
+
+    describe('onNetworkIndicatorVisible', () => {
+        Animated.spring = jest.fn(() => ({
+            start: jest.fn(),
+        }));
+        const wrapper = shallow(
+            <MoreMessagesButton {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+
+        it('should set networkIndicatorVisible but not animate if not visible', () => {
+            instance.visible = false;
+            expect(instance.networkIndicatorVisible).not.toBeDefined();
+
+            instance.onNetworkIndicatorVisible(true);
+            expect(instance.networkIndicatorVisible).toBe(true);
+            expect(Animated.spring).not.toHaveBeenCalled();
+
+            instance.onNetworkIndicatorVisible(false);
+            expect(instance.networkIndicatorVisible).toBe(false);
+            expect(Animated.spring).not.toHaveBeenCalled();
+        });
+
+        it('should not animate if visible but network indicator is not visible', () => {
+            instance.visible = true;
+            instance.onNetworkIndicatorVisible(false);
+            expect(Animated.spring).not.toHaveBeenCalled();
+        });
+
+        it('should animate and account for network indicator height if visible and indicator is visible', () => {
+            instance.visible = true;
+            instance.onNetworkIndicatorVisible(true);
+            expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
+                toValue: SHOWN_TOP + NETWORK_INDICATOR_HEIGHT,
+                useNativeDriver: false,
+            });
         });
     });
 
@@ -144,6 +191,20 @@ describe('MoreMessagesButton', () => {
                 useNativeDriver: false,
             });
         });
+
+        it('should account for the network indicator height when the indicator is visible', () => {
+            instance.networkIndicatorVisible = true;
+            instance.visible = false;
+            wrapper.setState({moreCount: 10});
+            wrapper.setProps({deepLinkURL: null});
+
+            instance.show();
+            expect(instance.visible).toBe(true);
+            expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
+                toValue: SHOWN_TOP + NETWORK_INDICATOR_HEIGHT,
+                useNativeDriver: false,
+            });
+        });
     });
 
     describe('hide', () => {
@@ -169,6 +230,18 @@ describe('MoreMessagesButton', () => {
             expect(instance.visible).toBe(false);
             expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
                 toValue: HIDDEN_TOP,
+                useNativeDriver: false,
+            });
+        });
+
+        it('should account for the network indicator height when the indicator is visible', () => {
+            instance.networkIndicatorVisible = true;
+            instance.visible = true;
+
+            instance.hide();
+            expect(instance.visible).toBe(false);
+            expect(Animated.spring).toHaveBeenCalledWith(instance.top, {
+                toValue: HIDDEN_TOP - NETWORK_INDICATOR_HEIGHT,
                 useNativeDriver: false,
             });
         });
