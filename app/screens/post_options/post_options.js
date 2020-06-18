@@ -7,19 +7,18 @@ import {Alert, Clipboard, StyleSheet, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {showModal, dismissModal} from '@actions/navigation';
+import ReactionPicker from '@components/reaction_picker';
+import SlideUpPanel from '@components/slide_up_panel';
+import {BOTTOM_MARGIN} from '@components/slide_up_panel/slide_up_panel';
+import {REACTION_PICKER_HEIGHT} from '@constants/reaction_picker';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import SlideUpPanel from 'app/components/slide_up_panel';
-import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
-import {t} from 'app/utils/i18n';
-import {showModal, dismissModal} from 'app/actions/navigation';
-
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
-import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
-import {REACTION_PICKER_HEIGHT} from 'app/constants/reaction_picker';
-import ReactionPicker from 'app/components/reaction_picker';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
 
 import PostOption from './post_option';
+import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 
 export default class PostOptions extends PureComponent {
     static propTypes = {
@@ -274,11 +273,11 @@ export default class PostOptions extends PureComponent {
         });
     };
 
-    handleAddReaction = (emoji) => {
+    handleAddReaction = preventDoubleTap((emoji) => {
         this.closeWithAnimation(() => {
             this.handleAddReactionToPost(emoji);
         });
-    }
+    }, 500);
 
     handleAddReactionToPost = (emoji) => {
         const {actions, post} = this.props;
