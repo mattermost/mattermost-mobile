@@ -109,6 +109,8 @@ export default class LoginOptions extends PureComponent {
             const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
             const additionalStyle = {
                 backgroundColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
             };
 
             if (config.LDAPLoginButtonBorderColor) {
@@ -158,7 +160,7 @@ export default class LoginOptions extends PureComponent {
                 <Button
                     key='gitlab'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548'}]}
+                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548', borderColor: 'transparent', borderWidth: 0}]}
                 >
                     <Image
                         source={gitlab}
@@ -182,16 +184,14 @@ export default class LoginOptions extends PureComponent {
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
 
         if (!forceHideFromLocal && o365Enabled) {
-            const backgroundColor = config.EmailLoginButtonColor || '#2389d7';
+            const backgroundColor = '#2389d7';
             const additionalStyle = {
                 backgroundColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
             };
 
-            if (config.EmailLoginButtonBorderColor) {
-                additionalStyle.borderColor = config.EmailLoginButtonBorderColor;
-            }
-
-            const textColor = config.EmailLoginButtonTextColor || 'white';
+            const textColor = 'white';
 
             return (
                 <Button
@@ -220,6 +220,8 @@ export default class LoginOptions extends PureComponent {
 
             const additionalStyle = {
                 backgroundColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
             };
 
             if (config.SamlLoginButtonBorderColor) {
