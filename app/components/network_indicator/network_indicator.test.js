@@ -12,6 +12,13 @@ import {ViewTypes} from '@constants';
 import NetworkIndicator from './network_indicator';
 
 describe('AttachmentFooter', () => {
+    Animated.sequence = jest.fn(() => ({
+        start: jest.fn((cb) => cb()),
+    }));
+    Animated.timing = jest.fn(() => ({
+        start: jest.fn(),
+    }));
+
     const baseProps = {
         actions: {
             closeWebSocket: jest.fn(),
@@ -50,9 +57,6 @@ describe('AttachmentFooter', () => {
 
     describe('connected', () => {
         EventEmitter.emit = jest.fn();
-        Animated.sequence = jest.fn(() => ({
-            start: jest.fn((cb) => cb()),
-        }));
         const wrapper = shallow(<NetworkIndicator {...baseProps}/>);
         const instance = wrapper.instance();
 
