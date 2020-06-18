@@ -132,7 +132,7 @@ export function getTeams(page = 0, perPage: number = General.TEAMS_CHUNK_SIZE, i
             });
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_GET_TEAMS'));
 
         return {data};
     };
@@ -164,7 +164,7 @@ export function searchTeams(term: string, page?: number, perPage?: number): Acti
             {
                 type: TeamTypes.GET_TEAMS_SUCCESS,
             },
-        ]));
+        ], 'BATCH_SEARCH_TEAMS'));
 
         return {data: response};
     };
@@ -203,7 +203,7 @@ export function createTeam(team: Team): ActionFunc {
                 type: TeamTypes.SELECT_TEAM,
                 data: created.id,
             },
-        ]));
+        ], 'BATCH_CREATE_TEAM'));
         dispatch(loadRolesIfNeeded(member.roles.split(' ')));
 
         return {data: created};
@@ -237,7 +237,7 @@ export function deleteTeam(teamId: string): ActionFunc {
             },
         );
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_DELETE_TEAM'));
 
         return {data: true};
     };
@@ -482,7 +482,7 @@ export function addUsersToTeam(teamId: string, userIds: Array<string>): ActionFu
                 type: TeamTypes.RECEIVED_MEMBERS_IN_TEAM,
                 data: members,
             },
-        ]));
+        ], 'BATCH_ADD_USERS_TO_TEAM'));
 
         return {data: members};
     };
@@ -512,7 +512,7 @@ export function addUsersToTeamGracefully(teamId: string, userIds: Array<string>)
                 type: TeamTypes.RECEIVED_MEMBERS_IN_TEAM,
                 data: members,
             },
-        ]));
+        ], 'BATCH_ADD_USERS_TO_TEAM_GRACEFULLY'));
 
         return {data: result};
     };
@@ -566,7 +566,7 @@ export function removeUserFromTeam(teamId: string, userId: string): ActionFunc {
             }
         }
 
-        dispatch(batchActions(actions));
+        dispatch(batchActions(actions, 'BATCH_REMOVE_USER_FROM_TEAM'));
 
         return {data: true};
     };
