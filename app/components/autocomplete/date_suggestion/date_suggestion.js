@@ -60,13 +60,21 @@ export default class DateSuggestion extends PureComponent {
     completeMention = (day) => {
         const mention = day.dateString;
         const {cursorPosition, onChangeText, value} = this.props;
-        const mentionPart = value.substring(0, cursorPosition);
+
+        // Substring to first space after current cursor position.
+        // If there is none, cursor is at the end of the date segment already.
+        let dateSegmentEnd = value.indexOf(' ', cursorPosition);
+        if (dateSegmentEnd === -1) {
+            dateSegmentEnd = cursorPosition;
+        }
+        const mentionPart = value.substring(0, dateSegmentEnd);
+
         const flags = mentionPart.match(ALL_SEARCH_FLAGS_REGEX);
         const currentFlag = flags[flags.length - 1];
         let completedDraft = mentionPart.replace(DATE_MENTION_SEARCH_REGEX, `${currentFlag} ${mention} `);
 
-        if (value.length > cursorPosition) {
-            completedDraft += value.substring(cursorPosition);
+        if (value.length > dateSegmentEnd) {
+            completedDraft += value.substring(dateSegmentEnd + 1); // accounting for extra space character
         }
 
         onChangeText(completedDraft, true);
