@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Dimensions, Keyboard, NativeModules, View} from 'react-native';
+import {Animated, Dimensions, Keyboard, NativeModules, View} from 'react-native';
 import SafeArea from 'react-native-safe-area';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -23,7 +23,6 @@ export default class SafeAreaIos extends PureComponent {
         excludeFooter: PropTypes.bool,
         footerColor: PropTypes.string,
         footerComponent: PropTypes.node,
-        forceTop: PropTypes.number,
         keyboardOffset: PropTypes.number.isRequired,
         navBarBackgroundColor: PropTypes.string,
         headerComponent: PropTypes.node,
@@ -39,6 +38,7 @@ export default class SafeAreaIos extends PureComponent {
     constructor(props) {
         super(props);
 
+        const insetTop = DeviceTypes.IS_IPHONE_WITH_INSETS ? 44 : 20;
         let insetBottom = 0;
         if ((DeviceTypes.IS_IPHONE_WITH_INSETS || mattermostManaged.hasSafeAreaInsets) && props.excludeFooter) {
             insetBottom = 20;
@@ -47,13 +47,14 @@ export default class SafeAreaIos extends PureComponent {
         this.state = {
             keyboard: false,
             safeAreaInsets: {
-                top: DeviceTypes.IS_IPHONE_WITH_INSETS ? 44 : 20,
+                top: insetTop,
                 left: 0,
                 bottom: insetBottom,
                 right: 0,
             },
-            statusBarHeight: 20,
         };
+
+        this.topBarHeight = new Animated.Value(insetTop);
     }
 
     componentDidMount() {
@@ -109,7 +110,11 @@ export default class SafeAreaIos extends PureComponent {
             StatusBarManager.getHeight(
                 (statusBarFrameData) => {
                     if (this.mounted) {
-                        this.setState({statusBarHeight: statusBarFrameData.height});
+                        if (statusBarFrameData.height === 0) {
+                            this.hideTopBar();
+                        } else {
+                            this.showTopBar();
+                        }
                     }
                 },
             );
@@ -141,12 +146,26 @@ export default class SafeAreaIos extends PureComponent {
         this.setState({keyboard: true});
     };
 
-    renderTopBar = () => {
-        const {safeAreaInsets, statusBarHeight} = this.state;
-        const {headerComponent, excludeHeader, forceTop, navBarBackgroundColor, theme} = this.props;
-        const hideTopBar = excludeHeader || !statusBarHeight;
+    hideTopBar = () => {
+        Animated.timing(this.topBarHeight, {
+            toValue: 10,
+            duration: 350,
+            useNativeDriver: false,
+        }).start();
+    }
 
-        if (hideTopBar) {
+    showTopBar = () => {
+        Animated.timing(this.topBarHeight, {
+            toValue: this.state.safeAreaInsets.top,
+            duration: 350,
+            useNativeDriver: false,
+        }).start();
+    }
+
+    renderTopBar = () => {
+        const {headerComponent, excludeHeader, navBarBackgroundColor, theme} = this.props;
+
+        if (excludeHeader) {
             return null;
         }
 
@@ -155,30 +174,25 @@ export default class SafeAreaIos extends PureComponent {
             topColor = navBarBackgroundColor;
         }
 
-        let top = safeAreaInsets.top;
-        if (forceTop && DeviceTypes.IS_IPHONE_WITH_INSETS && !hideTopBar) {
-            top = forceTop;
-        }
-
         if (headerComponent) {
             return (
-                <View
+                <Animated.View
                     style={{
                         backgroundColor: topColor,
-                        height: top,
+                        height: this.topBarHeight,
                         zIndex: 10,
                     }}
                 >
                     {headerComponent}
-                </View>
+                </Animated.View>
             );
         }
 
         return (
-            <View
+            <Animated.View
                 style={{
                     backgroundColor: topColor,
-                    paddingTop: top,
+                    paddingTop: this.topBarHeight,
                     zIndex: 10,
                 }}
             />
