@@ -10,7 +10,7 @@
     "@babel/runtime": "7.9.6",
     "@react-native-community/async-storage": "1.10.1",
     "@react-native-community/cameraroll": "1.6.2",
-    "@react-native-community/cookies": "2.0.9",
+    "@react-native-community/cookies": "3.0.0",
     "@react-native-community/masked-view": "0.1.10",
     "@react-native-community/netinfo": "5.8.1",
     "@react-navigation/native": "5.3.2",

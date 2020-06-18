@@ -12,7 +12,6 @@ import {
     Text,
 } from 'react-native';
 import Button from 'react-native-button';
-import CookieManager from '@react-native-community/cookies';
 
 import {goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
@@ -22,6 +21,7 @@ import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {ViewTypes} from '@constants';
+import globalEventHandler from '@init/global_event_handler';
 import {preventDoubleTap} from '@utils/tap';
 
 import {GlobalStyles} from 'app/styles';
@@ -45,19 +45,21 @@ export default class LoginOptions extends PureComponent {
         Dimensions.removeEventListener('change', this.orientationDidChange);
     }
 
-    goToLogin = preventDoubleTap(() => {
+    goToLogin = preventDoubleTap(async () => {
         const {intl} = this.context;
         const screen = 'Login';
         const title = intl.formatMessage({id: 'mobile.routes.login', defaultMessage: 'Login'});
-        CookieManager.clearAll(true);
+
+        globalEventHandler.clearCookiesAndWebData();
         goToScreen(screen, title);
     });
 
-    goToSSO = (ssoType) => {
+    goToSSO = async (ssoType) => {
         const {intl} = this.context;
         const screen = 'SSO';
         const title = intl.formatMessage({id: 'mobile.routes.sso', defaultMessage: 'Single Sign-On'});
-        CookieManager.clearAll(true);
+
+        globalEventHandler.clearCookiesAndWebData();
         goToScreen(screen, title, {ssoType});
     };
 
