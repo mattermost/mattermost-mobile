@@ -252,17 +252,16 @@ export default class PostOptions extends PureComponent {
         const {theme} = this.props;
         const {formatMessage} = this.context.intl;
 
-        this.close(() => {
-            MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
-                const screen = 'AddReaction';
-                const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
-                const passProps = {
-                    closeButton: source,
-                    onEmojiPress: this.handleAddReactionToPost,
-                };
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+            const screen = 'AddReaction';
+            const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
+            const passProps = {
+                closeButton: source,
+                onEmojiPress: this.handleAddReactionToPost,
+            };
 
-                showModal(screen, title, passProps);
-            });
+            showModal(screen, title, passProps);
+            this.close();
         });
     };
 
@@ -274,9 +273,8 @@ export default class PostOptions extends PureComponent {
     };
 
     handleAddReaction = preventDoubleTap((emoji) => {
-        this.closeWithAnimation(() => {
-            this.handleAddReactionToPost(emoji);
-        });
+        this.handleAddReactionToPost(emoji);
+        this.closeWithAnimation();
     }, 500);
 
     handleAddReactionToPost = (emoji) => {
@@ -357,17 +355,16 @@ export default class PostOptions extends PureComponent {
         const {theme, post} = this.props;
         const {intl} = this.context;
 
-        this.close(() => {
-            MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
-                const screen = 'EditPost';
-                const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
-                const passProps = {
-                    post,
-                    closeButton: source,
-                };
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+            const screen = 'EditPost';
+            const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
+            const passProps = {
+                post,
+                closeButton: source,
+            };
 
-                showModal(screen, title, passProps);
-            });
+            showModal(screen, title, passProps);
+            this.close();
         });
     };
 
