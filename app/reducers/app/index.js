@@ -6,9 +6,11 @@ import {combineReducers} from 'redux';
 import build from './build';
 import version from './version';
 import previousVersion from './previousVersion';
+import plugins from './plugins';
 
 export default combineReducers({
     build,
     version,
     previousVersion,
+    plugins,
 });

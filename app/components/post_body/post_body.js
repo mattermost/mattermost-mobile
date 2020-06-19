@@ -71,6 +71,7 @@ export default class PostBody extends PureComponent {
         shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
         location: PropTypes.string,
+        pluginPostTypes: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
@@ -270,6 +271,13 @@ export default class PostBody extends PureComponent {
             postProps,
         } = this.props;
 
+        const hasPlugin = (post.type && this.props.pluginPostTypes.hasOwnProperty(post.type)) ||
+            (post.props && post.props.type && this.props.pluginPostTypes.hasOwnProperty(post.props.type));
+
+        if (hasPlugin) {
+            return null;
+        }
+
         if (isSystemMessage && !isPostEphemeral) {
             return null;
         }
@@ -345,6 +353,8 @@ export default class PostBody extends PureComponent {
             shouldRenderJumboEmoji,
             showLongPost,
             theme,
+            post,
+            pluginPostTypes,
         } = this.props;
         const {isLongPost, maxHeight} = this.state;
         const style = getStyleSheet(theme);
@@ -359,6 +369,8 @@ export default class PostBody extends PureComponent {
         if (systemMessage) {
             return systemMessage;
         }
+        const hasPlugin = (postType && pluginPostTypes.hasOwnProperty(postType)) ||
+            (postProps && postProps.type && pluginPostTypes.hasOwnProperty(postProps.type));
 
         let body;
         let messageComponent;
@@ -368,6 +380,15 @@ export default class PostBody extends PureComponent {
                     style={messageStyle}
                     id='post_body.deleted'
                     defaultMessage='(message deleted)'
+                />
+            );
+        } else if (hasPlugin) {
+            messageComponent = this.renderAddChannelMember(messageStyle, textStyles);
+            const PluginComponent = pluginPostTypes[postType].component;
+            messageComponent = (
+                <PluginComponent
+                    post={post}
+                    theme={theme}
                 />
             );
         } else if (isPostAddChannelMember) {

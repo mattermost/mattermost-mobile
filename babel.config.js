@@ -25,6 +25,7 @@ module.exports = {
                 '@telemetry': './app/telemetry',
                 '@utils': './app/utils',
                 '@websocket': './app/client/websocket',
+                '@plugins': './plugins',
             },
         }],
     ],

@@ -22,6 +22,7 @@ import {
 import {isAdmin as checkIsAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 
 import {getDimensions} from 'app/selectors/device';
+import {getPluginPostTypes} from 'app/selectors/plugins';
 
 import {hasEmojisOnly} from 'app/utils/emoji_utils';
 
@@ -37,6 +38,7 @@ export function makeMapStateToProps() {
         const post = ownProps.post;
         const channel = getChannel(state, post.channel_id) || {};
         const reactions = getReactionsForPost(state, post.id);
+        const pluginPostTypes = getPluginPostTypes(state);
 
         let isFailed = post.failed;
         let isPending = post.id === post.pending_post_id;
@@ -104,6 +106,7 @@ export function makeMapStateToProps() {
             shouldRenderJumboEmoji,
             theme: getTheme(state),
             canDelete,
+            pluginPostTypes,
             ...getDimensions(state),
         };
     };

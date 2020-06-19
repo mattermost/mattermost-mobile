@@ -26,6 +26,7 @@ import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 import {validatePreviousVersion} from '@utils/general';
 import {captureJSException} from '@utils/sentry';
+import {initializePlugins} from '@plugins';
 
 const init = async () => {
     const credentials = await getAppCredentials();
@@ -41,6 +42,8 @@ const init = async () => {
     globalEventHandler.configure({
         launchApp,
     });
+
+    initializePlugins();
 
     registerScreens(store, Provider);
 
