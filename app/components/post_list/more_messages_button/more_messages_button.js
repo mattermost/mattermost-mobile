@@ -33,6 +33,7 @@ export default class MoreMessageButton extends React.PureComponent {
     top = new Animated.Value(HIDDEN_TOP);
     prevNewMessageLineIndex = 0;
     disableViewableItemsHandler = false;
+    viewableItems = [];
 
     componentDidMount() {
         EventEmitter.on(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
@@ -63,6 +64,13 @@ export default class MoreMessageButton extends React.PureComponent {
         if (unreadCount < prevProps.unreadCount || newMessageLineIndex === -1) {
             this.hide();
         }
+
+        // The unreadCount might not be set until after all the viewable items are rendered.
+        // In this case we want to manually call onViewableItemsChanged with the stored
+        // viewableItems.
+        if (unreadCount > prevProps.unreadCount && prevProps.unreadCount === 0) {
+            this.onViewableItemsChanged(this.viewableItems);
+        }
     }
 
     onNetworkIndicatorVisible = (indicatorVisible) => {
@@ -82,6 +90,7 @@ export default class MoreMessageButton extends React.PureComponent {
         this.hide();
         this.prevNewMessageLineIndex = 0;
         this.disableViewableItemsHandler = false;
+        this.viewableItems = [];
     }
 
     show = () => {
@@ -124,6 +133,8 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     onViewableItemsChanged = (viewableItems) => {
+        this.viewableItems = viewableItems;
+
         const {newMessageLineIndex, unreadCount, scrollToIndex} = this.props;
         if (newMessageLineIndex <= 0 || viewableItems.length === 0) {
             return;

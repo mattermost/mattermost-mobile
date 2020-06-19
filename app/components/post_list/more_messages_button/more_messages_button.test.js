@@ -114,6 +114,25 @@ describe('MoreMessagesButton', () => {
             wrapper.setProps({newMessageLineIndex: -1});
             expect(instance.hide).toHaveBeenCalled();
         });
+
+        test('componentDidUpdate should call onViewableItemsChanged when the unreadCount increases from 0', () => {
+            const wrapper = shallow(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.onViewableItemsChanged = jest.fn();
+            instance.viewableItems = [{index: 1}];
+
+            wrapper.setProps({unreadCount: 0});
+            expect(instance.onViewableItemsChanged).not.toHaveBeenCalled();
+
+            wrapper.setProps({unreadCount: 1});
+            expect(instance.onViewableItemsChanged).toHaveBeenCalledTimes(1);
+            expect(instance.onViewableItemsChanged).toHaveBeenCalledWith(instance.viewableItems);
+
+            wrapper.setProps({unreadCount: 2});
+            expect(instance.onViewableItemsChanged).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe('onNetworkIndicatorVisible', () => {
@@ -164,12 +183,14 @@ describe('MoreMessagesButton', () => {
             instance.hide = jest.fn();
             instance.prevNewMessageLineIndex = 100;
             instance.disableViewableItemsHandler = true;
+            instance.viewableItems = [{index: 1}];
 
             instance.reset();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
             expect(instance.hide).toHaveBeenCalled();
             expect(instance.prevNewMessageLineIndex).toEqual(0);
             expect(instance.disableViewableItemsHandler).toEqual(false);
+            expect(instance.viewableItems).toStrictEqual([]);
         });
     });
 
