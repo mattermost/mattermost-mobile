@@ -58,7 +58,7 @@ export default class ShareApp extends PureComponent {
     initTeamAndChannel = async ({dispatch, getState}) => {
         await dispatch(getMyTeams());
         await dispatch(getMyTeamMembers());
-        
+
         const {myMembers} = getState().entities.teams;
         if (Object.keys(myMembers).length === 0) {
             dispatch(selectTeam(''));
