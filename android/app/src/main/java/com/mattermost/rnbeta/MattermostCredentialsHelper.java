@@ -36,12 +36,7 @@ public class MattermostCredentialsHelper {
 
         HashMap<String, String> asyncStorageResults = asyncStorage.multiGet(asyncStorageKeys);
         String serverUrl = asyncStorageResults.get(CURRENT_SERVER_URL);
-        final WritableMap options = Arguments.createMap();
-        final WritableMap authPrompt = Arguments.createMap();
-        authPrompt.putString("title", "Authenticate to retrieve secret");
-        authPrompt.putString("cancel", "Cancel");
-        options.putMap("authenticationPrompt", authPrompt);
 
-        keychainModule.getInternetCredentialsForServer(serverUrl, options, promise);
+        keychainModule.getGenericPasswordForOptions(serverUrl, promise);
     }
 }
