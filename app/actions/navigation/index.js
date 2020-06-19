@@ -5,6 +5,7 @@ import {Keyboard, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import merge from 'deepmerge';
 
+import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import EphemeralStore from '@store/ephemeral_store';
@@ -83,7 +84,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    const theme = getThemeFromState();
+    const theme = Preferences.THEMES.default;
 
     Navigation.setRoot({
         root: {
@@ -225,7 +226,7 @@ export async function popToRoot() {
 export function showModal(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
-        modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+        modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
@@ -312,6 +313,11 @@ export function showSearchModal(initialValue = '') {
             visible: false,
             height: 0,
         },
+        ...Platform.select({
+            ios: {
+                modalPresentationStyle: 'pageSheet',
+            },
+        }),
     };
 
     showModal(name, title, passProps, options);

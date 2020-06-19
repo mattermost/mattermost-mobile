@@ -71,24 +71,18 @@ NSString* const NOTIFICATION_UPDATE_BADGE_ACTION = @"update_badge";
   NSString* action = [userInfo objectForKey:@"type"];
   NSString* channelId = [userInfo objectForKey:@"channel_id"];
   NSString* ackId = [userInfo objectForKey:@"ack_id"];
+  RuntimeUtils *utils = [[RuntimeUtils alloc] init];
 
-  if (action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) {
+  if ((action && [action isEqualToString: NOTIFICATION_CLEAR_ACTION]) || (state == UIApplicationStateInactive)) {
     // If received a notification that a channel was read, remove all notifications from that channel (only with app in foreground/background)
-    [self cleanNotificationsFromChannel:channelId];
-    RuntimeUtils *utils = [[RuntimeUtils alloc] init];
-    [[UploadSession shared] notificationReceiptWithNotificationId:ackId receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
-    [utils delayWithSeconds:0.2 closure:^(void) {
-      // This is to notify the NotificationCenter that something has changed.
-      completionHandler(UIBackgroundFetchResultNewData);
-    }];
-
-    return;
-  } else if (state == UIApplicationStateInactive) {
-    // When the notification is opened
     [self cleanNotificationsFromChannel:channelId];
   }
 
-  completionHandler(UIBackgroundFetchResultNoData);
+  [[UploadSession shared] notificationReceiptWithNotificationId:ackId receivedAt:round([[NSDate date] timeIntervalSince1970] * 1000.0) type:action];
+  [utils delayWithSeconds:0.2 closure:^(void) {
+    // This is to notify the NotificationCenter that something has changed.
+    completionHandler(UIBackgroundFetchResultNewData);
+  }];
 }
 
 -(void)cleanNotificationsFromChannel:(NSString *)channelId {
