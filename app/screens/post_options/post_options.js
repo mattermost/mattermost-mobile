@@ -59,7 +59,7 @@ export default class PostOptions extends PureComponent {
         dismissModal();
 
         if (typeof cb === 'function') {
-            setTimeout(cb, 300);
+            requestAnimationFrame(cb);
         }
     };
 
@@ -260,8 +260,7 @@ export default class PostOptions extends PureComponent {
                 onEmojiPress: this.handleAddReactionToPost,
             };
 
-            showModal(screen, title, passProps);
-            this.close();
+            this.close(() => showModal(screen, title, passProps));
         });
     };
 
@@ -363,8 +362,7 @@ export default class PostOptions extends PureComponent {
                 closeButton: source,
             };
 
-            showModal(screen, title, passProps);
-            this.close();
+            this.close(() => showModal(screen, title, passProps));
         });
     };
 
