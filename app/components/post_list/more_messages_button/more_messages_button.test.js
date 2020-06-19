@@ -18,7 +18,7 @@ describe('MoreMessagesButton', () => {
         postIds: [],
         channelId: 'channel-id',
         unreadCount: 0,
-        initialIndex: 0,
+        newMessageLineIndex: 0,
         scrollToIndex: jest.fn(),
         registerViewableItemsListener: jest.fn(() => {
             return jest.fn();
@@ -34,7 +34,7 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('lifecycle methods', () => {
-        it('should register NETWORK_INDICATOR_VISIBLE listener, register the viewable items listener, and call reset on componentDidMount', () => {
+        test('componentDidMount should register NETWORK_INDICATOR_VISIBLE listener and register the viewable items listener', () => {
             EventEmitter.on = jest.fn();
             const wrapper = shallow(
                 <MoreMessagesButton {...baseProps}/>,
@@ -48,10 +48,9 @@ describe('MoreMessagesButton', () => {
             instance.componentDidMount();
             expect(EventEmitter.on).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, instance.onNetworkIndicatorVisible);
             expect(instance.removeListener).toBeDefined();
-            expect(instance.reset).toHaveBeenCalled();
         });
 
-        it('should remove the NETWORK_INDICATOR_VISIBLE listener, remove the viewable items listener, and cancel the timer on componentWillUnmount', () => {
+        test('componentWillUnmount should remove the NETWORK_INDICATOR_VISIBLE listener, remove the viewable items listener, and cancel the timer', () => {
             jest.useFakeTimers();
             EventEmitter.off = jest.fn();
             const wrapper = shallow(
@@ -68,7 +67,7 @@ describe('MoreMessagesButton', () => {
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
         });
 
-        it('should call reset when the channelId changes on componentDidUpdate', () => {
+        test('componentDidUpdate should call reset when the channelId changes', () => {
             const wrapper = shallow(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -80,6 +79,40 @@ describe('MoreMessagesButton', () => {
 
             wrapper.setProps({channelId: `not-${baseProps.channelId}`});
             expect(instance.reset).toHaveBeenCalled();
+        });
+
+        test('componentDidUpdate should call hide when the unreadCount decreases', () => {
+            const wrapper = shallow(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.hide = jest.fn();
+
+            wrapper.setProps({unreadCount: baseProps.unreadCount});
+            expect(instance.hide).not.toHaveBeenCalled();
+
+            wrapper.setProps({unreadCount: baseProps.unreadCount + 10});
+            expect(instance.hide).not.toHaveBeenCalled();
+
+            wrapper.setProps({unreadCount: 1});
+            expect(instance.hide).toHaveBeenCalled();
+        });
+
+        test('componentDidUpdate should call hide when the newMessageLineIndex changes to -1', () => {
+            const wrapper = shallow(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.hide = jest.fn();
+
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
+            expect(instance.hide).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 10});
+            expect(instance.hide).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: -1});
+            expect(instance.hide).toHaveBeenCalled();
         });
     });
 
@@ -129,13 +162,13 @@ describe('MoreMessagesButton', () => {
             const instance = wrapper.instance();
             instance.viewableItemsChangedTimer = jest.fn();
             instance.hide = jest.fn();
-            instance.prevInitialIndex = 100;
+            instance.prevNewMessageLineIndex = 100;
             instance.disableViewableItemsHandler = true;
 
             instance.reset();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
             expect(instance.hide).toHaveBeenCalled();
-            expect(instance.prevInitialIndex).toEqual(0);
+            expect(instance.prevNewMessageLineIndex).toEqual(0);
             expect(instance.disableViewableItemsHandler).toEqual(false);
         });
     });
@@ -268,21 +301,21 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
 
-        it('should return early when the initialIndex equals prevInitialIndex', () => {
-            instance.prevInitialIndex = 1;
-            wrapper.setProps({initialIndex: 1});
+        it('should return early when the newMessageLineIndex equals prevNewMessageLineIndex', () => {
+            instance.prevNewMessageLineIndex = 1;
+            wrapper.setProps({newMessageLineIndex: 1});
             instance.onMoreMessagesPress();
 
-            expect(instance.prevInitialIndex).toEqual(1);
+            expect(instance.prevNewMessageLineIndex).toEqual(1);
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
         });
 
-        it('should set prevInitialIndex and scroll to the initial index', () => {
-            instance.prevInitialIndex = null;
-            wrapper.setProps({initialIndex: 1});
+        it('should set prevNewMessageLineIndex and scroll to the initial index', () => {
+            instance.prevNewMessageLineIndex = null;
+            wrapper.setProps({newMessageLineIndex: 1});
             instance.onMoreMessagesPress();
 
-            expect(instance.prevInitialIndex).toEqual(1);
+            expect(instance.prevNewMessageLineIndex).toEqual(1);
             expect(baseProps.scrollToIndex).toHaveBeenCalledWith(1);
         });
     });
@@ -294,9 +327,9 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
 
-        it('should return early when initial when initialIndex <= 0', () => {
+        it('should return early when initial when newMessageLineIndex <= 0', () => {
             const viewableItems = [{index: 0}, {index: 1}];
-            wrapper.setProps({initialIndex: 0});
+            wrapper.setProps({newMessageLineIndex: 0});
 
             instance.viewableItemsChangedTimer = setTimeout(jest.fn());
             instance.disableViewableItemsHandler = false;
@@ -309,7 +342,7 @@ describe('MoreMessagesButton', () => {
 
         it('should return early when viewableItems length is 0', () => {
             const viewableItems = [];
-            wrapper.setProps({initialIndex: 1});
+            wrapper.setProps({newMessageLineIndex: 1});
 
             instance.viewableItemsChangedTimer = setTimeout(jest.fn());
             instance.disableViewableItemsHandler = false;
@@ -322,7 +355,7 @@ describe('MoreMessagesButton', () => {
 
         it('should clear viewableItemsChangedTimer when set', () => {
             const viewableItems = [{index: 0}, {index: 1}];
-            wrapper.setProps({initialIndex: 1});
+            wrapper.setProps({newMessageLineIndex: 1});
 
             instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = false;
@@ -338,7 +371,7 @@ describe('MoreMessagesButton', () => {
 
         it('should not call viewableItemsChangedHandler when disabled', () => {
             const viewableItems = [{index: 0}, {index: 1}];
-            wrapper.setProps({initialIndex: 1});
+            wrapper.setProps({newMessageLineIndex: 1});
 
             instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = true;
@@ -349,9 +382,9 @@ describe('MoreMessagesButton', () => {
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
 
-        it('should hide button when the initialIndex is viewable and >= to the unreadCount', () => {
+        it('should hide button when the newMessageLineIndex is viewable and >= to the unreadCount', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
-            wrapper.setProps({initialIndex: 3, unreadCount: 3});
+            wrapper.setProps({newMessageLineIndex: 3, unreadCount: 3});
 
             instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = false;
@@ -365,11 +398,11 @@ describe('MoreMessagesButton', () => {
             expect(instance.viewableItemsChangedTimer).toBe(null);
         });
 
-        it('should hide button and also scroll to initialIndex when the channel is first loaded and the initialIndex is viewable', () => {
+        it('should hide button and also scroll to newMessageLineIndex when the channel is first loaded and the newMessageLineIndex is viewable', () => {
             // When the channel is first loaded index 0 will be viewable
             const viewableItems = [{index: 0}, {index: 1}, {index: 2}];
-            const initialIndex = 2;
-            wrapper.setProps({initialIndex, unreadCount: 1});
+            const newMessageLineIndex = 2;
+            wrapper.setProps({newMessageLineIndex, unreadCount: 1});
 
             instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = false;
@@ -379,7 +412,7 @@ describe('MoreMessagesButton', () => {
 
             expect(instance.hide).toHaveBeenCalled();
             expect(instance.disableViewableItemsHandler).toBe(true);
-            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(initialIndex);
+            expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedTimer).toBe(null);
         });
@@ -387,7 +420,7 @@ describe('MoreMessagesButton', () => {
         it('should call viewableItemsChangedHandler with a delay of 0 when first called', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const viewableIndeces = viewableItems.map((item) => item.index);
-            wrapper.setProps({initialIndex: 10, unreadCount: 20});
+            wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
 
             instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = false;
@@ -407,7 +440,7 @@ describe('MoreMessagesButton', () => {
         it('should call viewableItemsChangedHandler with a delay of 100 for subsequent calls', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const viewableIndeces = viewableItems.map((item) => item.index);
-            wrapper.setProps({initialIndex: 10, unreadCount: 20});
+            wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
 
             // viewableItemsChangedTimer is non-null after the first viewableItemsChangedHandler call
             instance.viewableItemsChangedTimer = jest.fn();
@@ -433,8 +466,8 @@ describe('MoreMessagesButton', () => {
         const instance = wrapper.instance();
         instance.show = jest.fn();
 
-        it('should do nothing when viewableIndeces includes initialIndex', () => {
-            wrapper.setProps({initialIndex: 2});
+        it('should do nothing when viewableIndeces includes newMessageLineIndex', () => {
+            wrapper.setProps({newMessageLineIndex: 2});
             const viewableIndeces = [0, 1, 2];
 
             instance.viewableItemsChangedHandler(viewableIndeces);
@@ -445,7 +478,7 @@ describe('MoreMessagesButton', () => {
         it('should set moreCount and call show when unreadCount minus last index > 0', () => {
             const unreadCount = 10;
             const initialMoreCount = 0;
-            wrapper.setProps({initialIndex: 10, unreadCount});
+            wrapper.setProps({newMessageLineIndex: 10, unreadCount});
             wrapper.setState({moreCount: initialMoreCount});
 
             let viewableIndeces = [11, 12, 13];
@@ -473,8 +506,8 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
 
-        it('should return defaultMessage of `{count} new messages` on first initialIndex when count <= 60', () => {
-            instance.prevInitialIndex = 0;
+        it('should return defaultMessage of `{count} new messages` on first newMessageLineIndex when count <= 60', () => {
+            instance.prevNewMessageLineIndex = 0;
 
             let moreCount = 60;
             wrapper.setState({moreCount});
@@ -495,8 +528,8 @@ describe('MoreMessagesButton', () => {
             });
         });
 
-        it('should return defaultMessage of `{count} more new messages` on subsequent initialIndex when count <= 60', () => {
-            instance.prevInitialIndex = 1;
+        it('should return defaultMessage of `{count} more new messages` on subsequent newMessageLineIndex when count <= 60', () => {
+            instance.prevNewMessageLineIndex = 1;
 
             let moreCount = 60;
             wrapper.setState({moreCount});
@@ -517,8 +550,8 @@ describe('MoreMessagesButton', () => {
             });
         });
 
-        it('should return defaultMessage of `60+ new messages` on first initialIndex when count > 60', () => {
-            instance.prevInitialIndex = 0;
+        it('should return defaultMessage of `60+ new messages` on first newMessageLineIndex when count > 60', () => {
+            instance.prevNewMessageLineIndex = 0;
 
             let moreCount = 61;
             wrapper.setState({moreCount});
@@ -539,8 +572,8 @@ describe('MoreMessagesButton', () => {
             });
         });
 
-        it('should return defaultMessage of `60+ more new messages` on subsequent initialIndex when count > 60', () => {
-            instance.prevInitialIndex = 1;
+        it('should return defaultMessage of `60+ more new messages` on subsequent newMessageLineIndex when count > 60', () => {
+            instance.prevNewMessageLineIndex = 1;
 
             let moreCount = 61;
             wrapper.setState({moreCount});
@@ -561,8 +594,8 @@ describe('MoreMessagesButton', () => {
             });
         });
 
-        it('should return defaultMessage of `1 new message` on first initialIndex when count === 1', () => {
-            instance.prevInitialIndex = 0;
+        it('should return defaultMessage of `1 new message` on first newMessageLineIndex when count === 1', () => {
+            instance.prevNewMessageLineIndex = 0;
 
             const moreCount = 1;
             wrapper.setState({moreCount});
@@ -574,8 +607,8 @@ describe('MoreMessagesButton', () => {
             });
         });
 
-        it('should return defaultMessage of `1 more new message` on subsequent initialIndex when count === 1', () => {
-            instance.prevInitialIndex = 1;
+        it('should return defaultMessage of `1 more new message` on subsequent newMessageLineIndex when count === 1', () => {
+            instance.prevNewMessageLineIndex = 1;
 
             const moreCount = 1;
             wrapper.setState({moreCount});

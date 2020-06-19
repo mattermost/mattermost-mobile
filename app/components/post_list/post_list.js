@@ -562,7 +562,7 @@ export default class PostList extends PureComponent {
                         postIds={postIds}
                         channelId={channelId}
                         deepLinkURL={deepLinkURL}
-                        initialIndex={initialIndex}
+                        newMessageLineIndex={initialIndex}
                         scrollToIndex={this.scrollToIndex}
                         registerViewableItemsListener={this.registerViewableItemsListener}
                     />

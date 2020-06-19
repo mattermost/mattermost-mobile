@@ -23,7 +23,7 @@ export default class MoreMessageButton extends React.PureComponent {
         postIds: PropTypes.array.isRequired,
         channelId: PropTypes.string.isRequired,
         unreadCount: PropTypes.number.isRequired,
-        initialIndex: PropTypes.number.isRequired,
+        newMessageLineIndex: PropTypes.number.isRequired,
         scrollToIndex: PropTypes.func.isRequired,
         registerViewableItemsListener: PropTypes.func.isRequired,
         deepLinkURL: PropTypes.string,
@@ -31,11 +31,12 @@ export default class MoreMessageButton extends React.PureComponent {
 
     state = {moreCount: 0};
     top = new Animated.Value(HIDDEN_TOP);
+    prevNewMessageLineIndex = 0;
+    disableViewableItemsHandler = false;
 
     componentDidMount() {
         EventEmitter.on(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
         this.removeListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
-        this.reset();
     }
 
     componentWillUnmount() {
@@ -49,8 +50,18 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.channelId !== prevProps.channelId) {
+        const {channelId, unreadCount, newMessageLineIndex} = this.props;
+
+        if (channelId !== prevProps.channelId) {
             this.reset();
+        }
+
+        // Hide the more messages button if the unread count decreases due to the user
+        // marking a post below the new message line as unread or if the new message line
+        // index changes due to the channel loading with a new message line that is removed
+        // shortly after.
+        if (unreadCount < prevProps.unreadCount || newMessageLineIndex === -1) {
+            this.hide();
         }
     }
 
@@ -69,7 +80,7 @@ export default class MoreMessageButton extends React.PureComponent {
             clearTimeout(this.viewableItemsChangedTimer);
         }
         this.hide();
-        this.prevInitialIndex = 0;
+        this.prevNewMessageLineIndex = 0;
         this.disableViewableItemsHandler = false;
     }
 
@@ -101,20 +112,20 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     onMoreMessagesPress = () => {
-        const {initialIndex, scrollToIndex} = this.props;
-        if (initialIndex === this.prevInitialIndex) {
+        const {newMessageLineIndex, scrollToIndex} = this.props;
+        if (newMessageLineIndex === this.prevNewMessageLineIndex) {
             // Prevent multiple taps on the more messages button from calling
-            // scrollToIndex if the initialIndex has not yet changed.
+            // scrollToIndex if the newMessageLineIndex has not yet changed.
             return;
         }
 
-        this.prevInitialIndex = initialIndex;
-        scrollToIndex(initialIndex);
+        this.prevNewMessageLineIndex = newMessageLineIndex;
+        scrollToIndex(newMessageLineIndex);
     }
 
     onViewableItemsChanged = (viewableItems) => {
-        const {initialIndex, unreadCount, scrollToIndex} = this.props;
-        if (initialIndex <= 0 || viewableItems.length === 0) {
+        const {newMessageLineIndex, unreadCount, scrollToIndex} = this.props;
+        if (newMessageLineIndex <= 0 || viewableItems.length === 0) {
             return;
         }
 
@@ -126,7 +137,7 @@ export default class MoreMessageButton extends React.PureComponent {
             const viewableIndeces = viewableItems.map((item) => item.index);
 
             // Hide More Messages button when New Messages line is viewable
-            if (initialIndex >= unreadCount && viewableIndeces[viewableIndeces.length - 1] >= initialIndex) {
+            if (newMessageLineIndex >= unreadCount && viewableIndeces[viewableIndeces.length - 1] >= newMessageLineIndex) {
                 this.hide();
                 this.disableViewableItemsHandler = true;
 
@@ -134,7 +145,7 @@ export default class MoreMessageButton extends React.PureComponent {
                 // was just loaded. In this case let's auto scroll to the New Messages line
                 // in case it's partially hidden behind the top bar.
                 if (viewableIndeces[0] === 0) {
-                    scrollToIndex(initialIndex);
+                    scrollToIndex(newMessageLineIndex);
                 }
 
                 return;
@@ -148,8 +159,8 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     viewableItemsChangedHandler = (viewableIndeces) => {
-        const {initialIndex, unreadCount} = this.props;
-        if (!viewableIndeces.includes(initialIndex)) {
+        const {newMessageLineIndex, unreadCount} = this.props;
+        if (!viewableIndeces.includes(newMessageLineIndex)) {
             const readCount = viewableIndeces.pop() || 0;
             const moreCount = unreadCount - readCount;
 
@@ -199,7 +210,7 @@ export default class MoreMessageButton extends React.PureComponent {
             countText += '+';
         }
 
-        const firstPage = this.prevInitialIndex === 0;
+        const firstPage = this.prevNewMessageLineIndex === 0;
         const singular = moreCount === 1;
 
         return this.intlMoreMessage(firstPage, singular, countText);

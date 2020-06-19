@@ -66,8 +66,8 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           type="ion"
         />
         <FormattedText
-          defaultMessage="{countText} more new messages"
-          id="mobile.more_messages.nextPagePlural"
+          defaultMessage="{countText} new messages"
+          id="mobile.more_messages.firstPagePlural"
           style={
             Object {
               "alignSelf": "center",

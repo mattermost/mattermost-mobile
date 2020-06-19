@@ -378,6 +378,17 @@ function unreadMessageCount(state = {}, action) {
             [channelId]: count,
         };
     }
+    case ChannelTypes.POST_UNREAD_SUCCESS: {
+        const {channelId, deltaMsgs} = action.data;
+        if (deltaMsgs > 0) {
+            return {
+                ...state,
+                [channelId]: deltaMsgs,
+            };
+        }
+
+        return state;
+    }
     default:
         return state;
     }
