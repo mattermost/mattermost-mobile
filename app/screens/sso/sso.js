@@ -70,6 +70,7 @@ class SSO extends PureComponent {
         serverUrl: PropTypes.string.isRequired,
         ssoType: PropTypes.string.isRequired,
         theme: PropTypes.object,
+        deviceId: PropTypes.string.isRequired,
     };
 
     useWebkit = true;
@@ -86,15 +87,15 @@ class SSO extends PureComponent {
 
         switch (props.ssoType) {
         case ViewTypes.GITLAB:
-            this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login`;
+            this.loginUrl = `${props.serverUrl}/oauth/gitlab/mobile_login?deviceId=${props.deviceId}`;
             this.completeUrlPath = '/signup/gitlab/complete';
             break;
         case ViewTypes.SAML:
-            this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile`;
+            this.loginUrl = `${props.serverUrl}/login/sso/saml?action=mobile&deviceId=${props.deviceId}`;
             this.completeUrlPath = '/login/sso/saml';
             break;
         case ViewTypes.OFFICE365:
-            this.loginUrl = `${props.serverUrl}/oauth/office365/mobile_login`;
+            this.loginUrl = `${props.serverUrl}/oauth/office365/mobile_login?deviceId=${props.deviceId}`;
             this.completeUrlPath = '/signup/office365/complete';
             break;
         }

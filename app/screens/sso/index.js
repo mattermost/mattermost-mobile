@@ -16,6 +16,7 @@ function mapStateToProps(state) {
         ...state.views.selectServer,
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        deviceId: state.entities?.general?.deviceToken,
     };
 }
 
