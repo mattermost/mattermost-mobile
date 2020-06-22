@@ -698,3 +698,15 @@ function loadSidebar(data) {
         }
     };
 }
+
+export function resetUnreadMessageCount(channelId) {
+    return async (dispatch) => {
+        dispatch({
+            type: ChannelTypes.SET_UNREAD_MSG_COUNT,
+            data: {
+                channelId,
+                count: 0,
+            },
+        });
+    };
+}
