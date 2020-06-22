@@ -240,6 +240,8 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             });
             store.dispatch({type: General.REHYDRATED});
             AsyncStorage.multiRemove(storeKeys);
+        } else if (store.getState()._persist?.rehydrated) { // eslint-disable-line no-underscore-dangle
+            store.dispatch({type: General.REHYDRATED});
         } else {
             let executed = false;
             const unsubscribe = store.subscribe(() => {
