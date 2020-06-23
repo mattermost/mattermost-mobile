@@ -31,9 +31,9 @@ export function cleanUpState(payload, keepCurrent = false) {
             postsInChannel: {},
             postsInThread: {},
             reactions: {},
-            openGraph: payload.entities.posts.openGraph,
-            selectedPostId: payload.entities.posts.selectedPostId,
-            currentFocusedPostId: payload.entities.posts.currentFocusedPostId,
+            openGraph: payload.entities?.posts?.openGraph,
+            selectedPostId: payload.entities?.posts?.selectedPostId,
+            currentFocusedPostId: payload.entities?.posts?.currentFocusedPostId,
         },
         files: {
             files: {},
@@ -42,21 +42,20 @@ export function cleanUpState(payload, keepCurrent = false) {
     };
 
     let retentionPeriod = 0;
-    if (payload.entities.general && payload.entities.general.dataRetentionPolicy &&
-        payload.entities.general.dataRetentionPolicy.message_deletion_enabled) {
+    if (payload.entities?.general?.dataRetentionPolicy?.message_deletion_enabled) {
         retentionPeriod = payload.entities.general.dataRetentionPolicy.message_retention_cutoff;
     }
 
     const postIdsToKeep = [];
 
     // Keep the last 60 posts in each recently viewed channel
-    nextEntities.posts.postsInChannel = cleanUpPostsInChannel(payload.entities.posts.postsInChannel, lastChannelForTeam, keepCurrent ? currentChannelId : '');
+    nextEntities.posts.postsInChannel = cleanUpPostsInChannel(payload.entities.posts?.postsInChannel, lastChannelForTeam, keepCurrent ? currentChannelId : '');
     postIdsToKeep.push(...getAllFromPostsInChannel(nextEntities.posts.postsInChannel));
 
     // Keep any posts that appear in search results
     let searchResults = [];
     let flaggedPosts = [];
-    if (payload.entities.search) {
+    if (payload.entities?.search) {
         if (payload.entities.search.results?.length) {
             const {results} = payload.entities.search;
             searchResults = results;
@@ -71,50 +70,57 @@ export function cleanUpState(payload, keepCurrent = false) {
     }
 
     const nextSearch = {
-        ...payload.entities.search,
+        ...(payload.entities.search || {}),
         results: searchResults,
         flagged: flaggedPosts,
     };
 
-    postIdsToKeep.forEach((postId) => {
-        const post = payload.entities.posts.posts[postId];
+    if (payload.entities.posts?.posts) {
+        const reactions = payload.entities.posts.reactions || {};
+        const fileIdsByPostId = payload.entities.files?.fileIdsByPostId || {};
+        const files = payload.entities.files?.files || {};
+        const postsInThread = payload.entities.posts.postsInThread || {};
 
-        if (post) {
-            if (retentionPeriod && post.create_at < retentionPeriod) {
-                // This post has been removed by data retention, so don't keep it
-                removeFromPostsInChannel(nextEntities.posts.postsInChannel, post.channel_id, postId);
+        postIdsToKeep.forEach((postId) => {
+            const post = payload.entities.posts.posts[postId];
 
-                return;
+            if (post) {
+                if (retentionPeriod && post.create_at < retentionPeriod) {
+                    // This post has been removed by data retention, so don't keep it
+                    removeFromPostsInChannel(nextEntities.posts.postsInChannel, post.channel_id, postId);
+
+                    return;
+                }
+
+                // Keep the post
+                nextEntities.posts.posts[postId] = post;
+
+                // And its reactions
+                const reaction = reactions[postId];
+                if (reaction) {
+                    nextEntities.posts.reactions[postId] = reaction;
+                }
+
+                // And its files
+                const fileIds = fileIdsByPostId[postId];
+                if (fileIds) {
+                    nextEntities.files.fileIdsByPostId[postId] = fileIds;
+                    fileIds.forEach((fileId) => {
+                        nextEntities.files.files[fileId] = files[fileId];
+                    });
+                }
+
+                // And its comments
+                const threadPosts = postsInThread[postId];
+                if (threadPosts) {
+                    nextEntities.posts.postsInThread[postId] = threadPosts;
+                }
             }
-
-            // Keep the post
-            nextEntities.posts.posts[postId] = post;
-
-            // And its reactions
-            const reaction = payload.entities.posts.reactions[postId];
-            if (reaction) {
-                nextEntities.posts.reactions[postId] = reaction;
-            }
-
-            // And its files
-            const fileIds = payload.entities.files.fileIdsByPostId[postId];
-            if (fileIds) {
-                nextEntities.files.fileIdsByPostId[postId] = fileIds;
-                fileIds.forEach((fileId) => {
-                    nextEntities.files.files[fileId] = payload.entities.files.files[fileId];
-                });
-            }
-
-            // And its comments
-            const postsInThread = payload.entities.posts.postsInThread[postId];
-            if (postsInThread) {
-                nextEntities.posts.postsInThread[postId] = postsInThread;
-            }
-        }
-    });
+        });
+    }
 
     // Remove any pending posts that haven't failed
-    if (payload.entities.posts && payload.entities.posts.pendingPostIds && payload.entities.posts.pendingPostIds.length) {
+    if (payload.entities.posts?.pendingPostIds?.length) {
         const nextPendingPostIds = [...payload.entities.posts.pendingPostIds];
         payload.entities.posts.pendingPostIds.forEach((id) => {
             const posts = nextEntities.posts.posts;
@@ -135,9 +141,9 @@ export function cleanUpState(payload, keepCurrent = false) {
     }
 
     nextState.views = {
-        ...nextState.views,
+        ...(nextState.views || {}),
         root: {
-            ...nextState.views?.root,
+            ...(nextState.views?.root || {}),
             // eslint-disable-next-line no-underscore-dangle
             hydrationComplete: nextState.views?.root?.hydrationComplete || !nextState._persist,
         },
@@ -161,41 +167,43 @@ export function cleanUpState(payload, keepCurrent = false) {
 export function cleanUpPostsInChannel(postsInChannel, lastChannelForTeam, currentChannelId, recentPostCount = 60) {
     const nextPostsInChannel = {};
 
-    for (const channelIds of Object.values(lastChannelForTeam)) {
-        for (const channelId of channelIds) {
-            if (nextPostsInChannel[channelId]) {
-                // This is a DM or GM channel that we've already seen on another team
-                continue;
-            }
-
-            const postsForChannel = postsInChannel[channelId];
-
-            if (!postsForChannel) {
-                // We don't have anything to keep for this channel
-                continue;
-            }
-
-            let nextPostsForChannel;
-
-            if (channelId === currentChannelId) {
-                // Keep all of the posts for this channel
-                nextPostsForChannel = postsForChannel;
-            } else {
-                // Only keep the most recent posts for this channel
-                const recentBlock = postsForChannel.find((block) => block.recent);
-
-                if (!recentBlock) {
-                    // We don't have recent posts for this channel
+    if (postsInChannel && lastChannelForTeam) {
+        for (const channelIds of Object.values(lastChannelForTeam)) {
+            for (const channelId of channelIds) {
+                if (nextPostsInChannel[channelId]) {
+                    // This is a DM or GM channel that we've already seen on another team
                     continue;
                 }
 
-                nextPostsForChannel = [{
-                    ...recentBlock,
-                    order: recentBlock.order.slice(0, recentPostCount),
-                }];
-            }
+                const postsForChannel = postsInChannel[channelId];
 
-            nextPostsInChannel[channelId] = nextPostsForChannel;
+                if (!postsForChannel) {
+                    // We don't have anything to keep for this channel
+                    continue;
+                }
+
+                let nextPostsForChannel;
+
+                if (channelId === currentChannelId) {
+                    // Keep all of the posts for this channel
+                    nextPostsForChannel = postsForChannel;
+                } else {
+                    // Only keep the most recent posts for this channel
+                    const recentBlock = postsForChannel.find((block) => block.recent);
+
+                    if (!recentBlock) {
+                        // We don't have recent posts for this channel
+                        continue;
+                    }
+
+                    nextPostsForChannel = [{
+                        ...recentBlock,
+                        order: recentBlock.order.slice(0, recentPostCount),
+                    }];
+                }
+
+                nextPostsInChannel[channelId] = nextPostsForChannel;
+            }
         }
     }
 
@@ -206,9 +214,11 @@ export function cleanUpPostsInChannel(postsInChannel, lastChannelForTeam, curren
 export function getAllFromPostsInChannel(postsInChannel) {
     const postIds = [];
 
-    for (const postsForChannel of Object.values(postsInChannel)) {
-        for (const block of postsForChannel) {
-            postIds.push(...block.order);
+    if (postsInChannel) {
+        for (const postsForChannel of Object.values(postsInChannel)) {
+            for (const block of postsForChannel) {
+                postIds.push(...block.order);
+            }
         }
     }
 
