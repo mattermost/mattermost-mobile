@@ -55,7 +55,7 @@ export function getEmojisInPosts(posts) {
         const emojisToLoad = getNeededCustomEmojis(state, posts);
 
         if (emojisToLoad?.size > 0) {
-            const promises = emojisToLoad.map((name) => getCustomEmojiByName(name));
+            const promises = Array.from(emojisToLoad).map((name) => getCustomEmojiByName(name));
             const result = await Promise.all(promises);
             const actions = [];
             const data = [];
