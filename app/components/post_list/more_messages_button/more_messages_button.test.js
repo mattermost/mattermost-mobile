@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Animated} from 'react-native';
-import {shallow} from 'enzyme';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import Preferences from '@mm-redux/constants/preferences';
@@ -23,10 +23,13 @@ describe('MoreMessagesButton', () => {
         registerViewableItemsListener: jest.fn(() => {
             return jest.fn();
         }),
+        registerScrollEndListener: jest.fn(() => {
+            return jest.fn();
+        }),
     };
 
     it('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
 
@@ -34,41 +37,51 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('lifecycle methods', () => {
-        test('componentDidMount should register NETWORK_INDICATOR_VISIBLE listener and register the viewable items listener', () => {
+        test('componentDidMount should register network indicator visible listener, viewable items listener, and scroll end listener', () => {
             EventEmitter.on = jest.fn();
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             instance.onNetworkIndicatorVisible = jest.fn();
-            instance.reset = jest.fn();
+            instance.onViewableItemsChanged = jest.fn();
+            instance.onScrollEnd = jest.fn();
 
             // While componentDidMount is called when the component is mounted with `shallow()` above,
-            // instance.reset has not yet been mocked so we call componentDidMount again.
+            // instance.onNetworkIndicatorVisible, instance.onViewableItemsChanged, and instance.onScrollEnd
+            // have not yet been mocked so we call componentDidMount again.
             instance.componentDidMount();
+
             expect(EventEmitter.on).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, instance.onNetworkIndicatorVisible);
-            expect(instance.removeListener).toBeDefined();
+            expect(baseProps.registerViewableItemsListener).toHaveBeenCalledWith(instance.onViewableItemsChanged);
+            expect(instance.removeViewableItemsListener).toBeDefined();
+            expect(baseProps.registerScrollEndListener).toHaveBeenCalledWith(instance.onScrollEnd);
+            expect(instance.removeScrollEndListener).toBeDefined();
         });
 
-        test('componentWillUnmount should remove the NETWORK_INDICATOR_VISIBLE listener, remove the viewable items listener, and cancel the timer', () => {
+        test('componentWillUnmount should remove the network indicator visible listener, the viewable items listener, the scroll end listener, and cancel all timers', () => {
             jest.useFakeTimers();
             EventEmitter.off = jest.fn();
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             instance.onNetworkIndicatorVisible = jest.fn();
-            instance.removeListener = jest.fn();
+            instance.removeViewableItemsListener = jest.fn();
+            instance.removeScrollEndListener = jest.fn();
             instance.viewableItemsChangedTimer = jest.fn();
+            instance.opacityAnimationTimer = jest.fn();
 
             instance.componentWillUnmount();
             expect(EventEmitter.off).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, instance.onNetworkIndicatorVisible);
-            expect(instance.removeListener).toHaveBeenCalled();
+            expect(instance.removeViewableItemsListener).toHaveBeenCalled();
+            expect(instance.removeScrollEndListener).toHaveBeenCalled();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
+            expect(clearTimeout).toHaveBeenCalledWith(instance.opacityAnimationTimer);
         });
 
         test('componentDidUpdate should call reset when the channelId changes', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -81,8 +94,28 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
+        test('componentDidUpdate should set moreTextChanged', () => {
+            jest.useFakeTimers();
+
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            expect(instance.moreTextChanged).toBe(undefined);
+
+            const newMoreText = instance.state.moreText + '1';
+            wrapper.setState({moreText: newMoreText});
+            expect(instance.moreTextChanged).toBe(true);
+
+            wrapper.setState({other: 'test', moreText: newMoreText});
+            expect(wrapper.instance().moreTextChanged).toBe(false);
+
+            wrapper.setState({moreText: newMoreText + '1'});
+            expect(instance.moreTextChanged).toBe(true);
+        });
+
         test('componentDidUpdate should call hide when the unreadCount decreases', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -99,7 +132,7 @@ describe('MoreMessagesButton', () => {
         });
 
         test('componentDidUpdate should call hide when the newMessageLineIndex changes to -1', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -116,7 +149,7 @@ describe('MoreMessagesButton', () => {
         });
 
         test('componentDidUpdate should call onViewableItemsChanged when the unreadCount increases from 0', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -139,7 +172,7 @@ describe('MoreMessagesButton', () => {
         Animated.spring = jest.fn(() => ({
             start: jest.fn(),
         }));
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -175,11 +208,12 @@ describe('MoreMessagesButton', () => {
 
     describe('reset', () => {
         it('should reset values and call hide', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             instance.viewableItemsChangedTimer = jest.fn();
+            instance.opacityAnimationTimer = jest.fn();
             instance.hide = jest.fn();
             instance.prevNewMessageLineIndex = 100;
             instance.disableViewableItemsHandler = true;
@@ -187,6 +221,7 @@ describe('MoreMessagesButton', () => {
 
             instance.reset();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
+            expect(clearTimeout).toHaveBeenCalledWith(instance.opacityAnimationTimer);
             expect(instance.hide).toHaveBeenCalled();
             expect(instance.prevNewMessageLineIndex).toEqual(0);
             expect(instance.disableViewableItemsHandler).toEqual(false);
@@ -198,7 +233,7 @@ describe('MoreMessagesButton', () => {
         Animated.spring = jest.fn(() => ({
             start: jest.fn(),
         }));
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -265,7 +300,7 @@ describe('MoreMessagesButton', () => {
         Animated.spring = jest.fn(() => ({
             start: jest.fn(),
         }));
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -303,7 +338,7 @@ describe('MoreMessagesButton', () => {
 
     describe('cancel', () => {
         it('should hide button and disable viewable items handler', () => {
-            const wrapper = shallow(
+            const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
@@ -317,33 +352,37 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('onMoreMessagesPress', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
 
         it('should return early when the newMessageLineIndex equals prevNewMessageLineIndex', () => {
             instance.prevNewMessageLineIndex = 1;
+            instance.pressed = false;
             wrapper.setProps({newMessageLineIndex: 1});
             instance.onMoreMessagesPress();
 
             expect(instance.prevNewMessageLineIndex).toEqual(1);
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
+            expect(instance.pressed).toBe(false);
         });
 
-        it('should set prevNewMessageLineIndex and scroll to the initial index', () => {
+        it('should set prevNewMessageLineIndex, scroll to the initial index, and set pressed to true', () => {
             instance.prevNewMessageLineIndex = null;
+            instance.pressed = false;
             wrapper.setProps({newMessageLineIndex: 1});
             instance.onMoreMessagesPress();
 
             expect(instance.prevNewMessageLineIndex).toEqual(1);
             expect(baseProps.scrollToIndex).toHaveBeenCalledWith(1);
+            expect(instance.pressed).toBe(true);
         });
     });
 
     describe('onViewableItemsChanged', () => {
         jest.useFakeTimers();
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -481,7 +520,7 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('viewableItemsChangedHandler', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -521,8 +560,56 @@ describe('MoreMessagesButton', () => {
         });
     });
 
-    describe('moreMessage', () => {
-        const wrapper = shallow(
+    describe('onScrollEnd', () => {
+        const wrapper = shallowWithIntl(
+            <MoreMessagesButton {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+
+        it('should clear opacityAnimationTimer if set', () => {
+            instance.onScrollEnd();
+            expect(clearTimeout).not.toHaveBeenCalled();
+
+            instance.onScrollEnd();
+            expect(clearTimeout).toHaveBeenCalled();
+        });
+
+        it('should reset pressed to false and call opacityAnimation only when moreText has not changed and pressed is true', () => {
+            jest.useFakeTimers();
+            instance.opacityAnimation = jest.fn();
+
+            instance.moreTextChanged = true;
+            instance.pressed = false;
+            instance.onScrollEnd();
+            jest.runAllTimers();
+            expect(instance.pressed).toBe(false);
+            expect(instance.opacityAnimation).not.toHaveBeenCalled();
+
+            instance.moreTextChanged = true;
+            instance.pressed = true;
+            instance.onScrollEnd();
+            jest.runAllTimers();
+            expect(instance.pressed).toBe(true);
+            expect(instance.opacityAnimation).not.toHaveBeenCalled();
+
+            instance.moreTextChanged = false;
+            instance.pressed = false;
+            instance.onScrollEnd();
+            jest.runAllTimers();
+            expect(instance.pressed).toBe(false);
+            expect(instance.opacityAnimation).not.toHaveBeenCalled();
+
+            instance.moreTextChanged = false;
+            instance.pressed = true;
+            instance.onScrollEnd();
+            jest.runAllTimers();
+            expect(instance.pressed).toBe(false);
+            expect(instance.opacityAnimation).toHaveBeenCalled();
+        });
+    });
+
+    describe('moreText', () => {
+        const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
@@ -532,21 +619,13 @@ describe('MoreMessagesButton', () => {
 
             let moreCount = 60;
             wrapper.setState({moreCount});
-            let message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.firstPagePlural',
-                defaultMessage: '{countText} new messages',
-                values: {countText: moreCount},
-            });
+            let message = instance.moreText(moreCount);
+            expect(message).toEqual('60 new messages');
 
             moreCount = 59;
             wrapper.setState({moreCount});
-            message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.firstPagePlural',
-                defaultMessage: '{countText} new messages',
-                values: {countText: moreCount},
-            });
+            message = instance.moreText(moreCount);
+            expect(message).toEqual('59 new messages');
         });
 
         it('should return defaultMessage of `{count} more new messages` on subsequent newMessageLineIndex when count <= 60', () => {
@@ -554,21 +633,13 @@ describe('MoreMessagesButton', () => {
 
             let moreCount = 60;
             wrapper.setState({moreCount});
-            let message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.nextPagePlural',
-                defaultMessage: '{countText} more new messages',
-                values: {countText: moreCount},
-            });
+            let message = instance.moreText(moreCount);
+            expect(message).toEqual('60 more new messages');
 
             moreCount = 59;
             wrapper.setState({moreCount});
-            message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.nextPagePlural',
-                defaultMessage: '{countText} more new messages',
-                values: {countText: moreCount},
-            });
+            message = instance.moreText(moreCount);
+            expect(message).toEqual('59 more new messages');
         });
 
         it('should return defaultMessage of `60+ new messages` on first newMessageLineIndex when count > 60', () => {
@@ -576,21 +647,13 @@ describe('MoreMessagesButton', () => {
 
             let moreCount = 61;
             wrapper.setState({moreCount});
-            let message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.firstPagePlural',
-                defaultMessage: '{countText} new messages',
-                values: {countText: '60+'},
-            });
+            let message = instance.moreText(moreCount);
+            expect(message).toEqual('60+ new messages');
 
             moreCount = 62;
             wrapper.setState({moreCount});
-            message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.firstPagePlural',
-                defaultMessage: '{countText} new messages',
-                values: {countText: '60+'},
-            });
+            message = instance.moreText(moreCount);
+            expect(message).toEqual('60+ new messages');
         });
 
         it('should return defaultMessage of `60+ more new messages` on subsequent newMessageLineIndex when count > 60', () => {
@@ -598,21 +661,13 @@ describe('MoreMessagesButton', () => {
 
             let moreCount = 61;
             wrapper.setState({moreCount});
-            let message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.nextPagePlural',
-                defaultMessage: '{countText} more new messages',
-                values: {countText: '60+'},
-            });
+            let message = instance.moreText(moreCount);
+            expect(message).toEqual('60+ more new messages');
 
             moreCount = 62;
             wrapper.setState({moreCount});
-            message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.nextPagePlural',
-                defaultMessage: '{countText} more new messages',
-                values: {countText: '60+'},
-            });
+            message = instance.moreText(moreCount);
+            expect(message).toEqual('60+ more new messages');
         });
 
         it('should return defaultMessage of `1 new message` on first newMessageLineIndex when count === 1', () => {
@@ -620,12 +675,8 @@ describe('MoreMessagesButton', () => {
 
             const moreCount = 1;
             wrapper.setState({moreCount});
-            const message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.firstPageSingular',
-                defaultMessage: '{countText} new message',
-                values: {countText: moreCount},
-            });
+            const message = instance.moreText(moreCount);
+            expect(message).toEqual('1 new message');
         });
 
         it('should return defaultMessage of `1 more new message` on subsequent newMessageLineIndex when count === 1', () => {
@@ -633,12 +684,8 @@ describe('MoreMessagesButton', () => {
 
             const moreCount = 1;
             wrapper.setState({moreCount});
-            const message = instance.moreMessage();
-            expect(message).toEqual({
-                id: 'mobile.more_messages.nextPageSingular',
-                defaultMessage: '{countText} more new message',
-                values: {countText: moreCount},
-            });
+            const message = instance.moreText(moreCount);
+            expect(message).toEqual('1 more new message');
         });
     });
 });

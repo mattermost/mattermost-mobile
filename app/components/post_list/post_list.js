@@ -488,12 +488,29 @@ export default class PostList extends PureComponent {
         return removeListener;
     }
 
+    registerScrollEndListener = (listener) => {
+        this.onScrollEndListener = listener;
+        const removeListener = () => {
+            this.onScrollEndListener = null;
+        };
+
+        return removeListener;
+    }
+
     onViewableItemsChanged = ({viewableItems}) => {
         if (!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) {
             return;
         }
 
         this.onViewableItemsChangedListener(viewableItems);
+    }
+
+    onMomentumScrollEnd = (e) => {
+        if (!this.onScrollEndListener) {
+            return;
+        }
+
+        this.onScrollEndListener(e);
     }
 
     render() {
@@ -541,7 +558,6 @@ export default class PostList extends PureComponent {
                     onContentSizeChange={this.handleContentSizeChange}
                     onLayout={this.handleLayout}
                     onScroll={this.handleScroll}
-                    onScrollBeginDrag={this.handleScrollBeginDrag}
                     onScrollToIndexFailed={this.handleScrollToIndexFailed}
                     ref={this.flatListRef}
                     refreshControl={refreshControl}
@@ -555,6 +571,7 @@ export default class PostList extends PureComponent {
                         minimumViewTime: 100,
                     }}
                     onViewableItemsChanged={showMoreMessagesButton ? this.onViewableItemsChanged : null}
+                    onMomentumScrollEnd={showMoreMessagesButton ? this.onMomentumScrollEnd : null}
                 />
                 {showMoreMessagesButton &&
                     <MoreMessagesButton
@@ -565,6 +582,7 @@ export default class PostList extends PureComponent {
                         newMessageLineIndex={initialIndex}
                         scrollToIndex={this.scrollToIndex}
                         registerViewableItemsListener={this.registerViewableItemsListener}
+                        registerScrollEndListener={this.registerScrollEndListener}
                     />
                 }
             </>

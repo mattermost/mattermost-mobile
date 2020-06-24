@@ -65,23 +65,26 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           }
           type="ion"
         />
-        <FormattedText
-          defaultMessage="{countText} new messages"
-          id="mobile.more_messages.firstPagePlural"
+        <ForwardRef(AnimatedComponentWrapper)
           style={
             Object {
-              "alignSelf": "center",
-              "color": "#ffffff",
-              "fontWeight": "bold",
-              "paddingLeft": 9,
+              "opacity": 1,
             }
           }
-          values={
-            Object {
-              "countText": 0,
+        >
+          <Text
+            style={
+              Object {
+                "alignSelf": "center",
+                "color": "#ffffff",
+                "fontWeight": "bold",
+                "paddingLeft": 9,
+              }
             }
-          }
-        />
+          >
+            
+          </Text>
+        </ForwardRef(AnimatedComponentWrapper)>
       </View>
     </TouchableWithFeedbackIOS>
     <TouchableWithFeedbackIOS

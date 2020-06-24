@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Animated, View} from 'react-native';
+import {Animated, Text, View} from 'react-native';
+import {intlShape} from 'react-intl';
 import PropTypes from 'prop-types';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
-import FormattedText from '@components/formatted_text';
 import ViewTypes, {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
@@ -26,36 +26,52 @@ export default class MoreMessageButton extends React.PureComponent {
         newMessageLineIndex: PropTypes.number.isRequired,
         scrollToIndex: PropTypes.func.isRequired,
         registerViewableItemsListener: PropTypes.func.isRequired,
+        registerScrollEndListener: PropTypes.func.isRequired,
         deepLinkURL: PropTypes.string,
     };
 
-    state = {moreCount: 0};
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
+    state = {moreCount: 0, moreText: ''};
     top = new Animated.Value(HIDDEN_TOP);
+    opacity = new Animated.Value(1);
     prevNewMessageLineIndex = 0;
     disableViewableItemsHandler = false;
     viewableItems = [];
 
     componentDidMount() {
         EventEmitter.on(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
-        this.removeListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
+        this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
+        this.removeScrollEndListener = this.props.registerScrollEndListener(this.onScrollEnd);
     }
 
     componentWillUnmount() {
         EventEmitter.off(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
-        if (this.removeListener) {
-            this.removeListener();
+        if (this.removeViewableItemsListener) {
+            this.removeViewableItemsListener();
+        }
+        if (this.removeScrollEndListener) {
+            this.removeScrollEndListener();
         }
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
         }
+        if (this.opacityAnimationTimer) {
+            clearTimeout(this.opacityAnimationTimer);
+        }
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         const {channelId, unreadCount, newMessageLineIndex} = this.props;
+        const {moreText} = this.state;
 
         if (channelId !== prevProps.channelId) {
             this.reset();
         }
+
+        this.moreTextChanged = moreText !== prevState.moreText;
 
         // Hide the more messages button if the unread count decreases due to the user
         // marking a post below the new message line as unread or if the new message line
@@ -86,6 +102,9 @@ export default class MoreMessageButton extends React.PureComponent {
     reset = () => {
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
+        }
+        if (this.opacityAnimationTimer) {
+            clearTimeout(this.opacityAnimationTimer);
         }
         this.hide();
         this.prevNewMessageLineIndex = 0;
@@ -130,6 +149,7 @@ export default class MoreMessageButton extends React.PureComponent {
 
         this.prevNewMessageLineIndex = newMessageLineIndex;
         scrollToIndex(newMessageLineIndex);
+        this.pressed = true;
     }
 
     onViewableItemsChanged = (viewableItems) => {
@@ -176,46 +196,69 @@ export default class MoreMessageButton extends React.PureComponent {
             const moreCount = unreadCount - readCount;
 
             if (moreCount > 0) {
-                this.setState({moreCount}, this.show);
+                const moreText = this.moreText(moreCount);
+                this.setState({moreCount, moreText}, this.show);
             }
         }
     }
 
-    intlMoreMessage = (firstPage, singular, countText) => {
-        if (firstPage) {
-            if (singular) {
-                return {
-                    id: t('mobile.more_messages.firstPageSingular'),
-                    defaultMessage: '{countText} new message',
-                    values: {countText},
-                };
+    onScrollEnd = () => {
+        if (this.opacityAnimationTimer) {
+            clearTimeout(this.opacityAnimationTimer);
+        }
+
+        this.opacityAnimationTimer = setTimeout(() => {
+            if (!this.moreTextChanged && this.pressed) {
+                this.pressed = false;
+                this.opacityAnimation();
             }
+        }, 400);
+    }
 
-            return {
-                id: t('mobile.more_messages.firstPagePlural'),
-                defaultMessage: '{countText} new messages',
-                values: {countText},
-            };
+    opacityAnimation = () => {
+        Animated.timing(this.opacity, {
+            toValue: 0,
+            useNativeDriver: false,
+            duration: 200,
+        }).start(() => {
+            Animated.timing(this.opacity, {
+                toValue: 1,
+                useNativeDriver: false,
+                duration: 200,
+            }).start();
+        });
+    }
+
+    intlMoreText = (firstPage, singular, countText) => {
+        const {formatMessage} = this.context.intl;
+        let id;
+        let defaultMessage;
+
+        switch (true) {
+        case (firstPage && singular):
+            id = t('mobile.more_messages.firstPageSingular');
+            defaultMessage = '{countText} new message';
+            break;
+        case (firstPage && !singular):
+            id = t('mobile.more_messages.firstPagePlural');
+            defaultMessage = '{countText} new messages';
+            break;
+        case (!firstPage && singular):
+            id = t('mobile.more_messages.nextPageSingular');
+            defaultMessage = '{countText} more new message';
+            break;
+        case (!firstPage && !singular):
+            id = t('mobile.more_messages.nextPagePlural');
+            defaultMessage = '{countText} more new messages';
+            break;
+        default:
+            break;
         }
 
-        if (singular) {
-            return {
-                id: t('mobile.more_messages.nextPageSingular'),
-                defaultMessage: '{countText} more new message',
-                values: {countText},
-            };
-        }
-
-        return {
-            id: t('mobile.more_messages.nextPagePlural'),
-            defaultMessage: '{countText} more new messages',
-            values: {countText},
-        };
+        return formatMessage({id, defaultMessage}, {countText});
     };
 
-    moreMessage = () => {
-        const {moreCount} = this.state;
-
+    moreText = (moreCount) => {
         let countText = Math.min(60, moreCount);
         if (moreCount > 60) {
             countText += '+';
@@ -224,12 +267,12 @@ export default class MoreMessageButton extends React.PureComponent {
         const firstPage = this.prevNewMessageLineIndex === 0;
         const singular = moreCount === 1;
 
-        return this.intlMoreMessage(firstPage, singular, countText);
+        return this.intlMoreText(firstPage, singular, countText);
     }
 
     render() {
         const styles = getStyleSheet(this.props.theme);
-        const moreMessage = this.moreMessage();
+        const {moreText} = this.state;
 
         return (
             <Animated.View style={[styles.animatedContainer, {top: this.top}]}>
@@ -244,10 +287,9 @@ export default class MoreMessageButton extends React.PureComponent {
                                 type='ion'
                                 style={styles.icon}
                             />
-                            <FormattedText
-                                {...moreMessage}
-                                style={styles.text}
-                            />
+                            <Animated.View style={{opacity: this.opacity}}>
+                                <Text style={styles.text}>{moreText}</Text>
+                            </Animated.View>
                         </View>
                     </TouchableWithFeedback>
                     <TouchableWithFeedback
