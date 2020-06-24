@@ -12,7 +12,7 @@ import {
 import {Navigation} from 'react-native-navigation';
 
 import {dismissModal, goToScreen, showModalOverCurrentContext} from '@actions/navigation';
-import {doPluginAction} from '@actions/plugins'
+import {doPluginAction} from '@actions/plugins';
 import pinIcon from '@assets/images/channel_info/pin.png';
 import StatusBar from '@components/status_bar';
 import {General, Users} from '@mm-redux/constants';
@@ -461,16 +461,16 @@ export default class ChannelInfo extends PureComponent {
             currentChannel,
         } = this.props;
 
-        channelHeaderPlugins = this.props.mobilePlugins.filter((plugin) => plugin.location == 'CHANNEL_HEADER')
-        return this.props.mobilePlugins.map((plugin) => (
-            <React.Fragment>
+        const channelHeaderPlugins = this.props.mobilePlugins.filter((plugin) => plugin.location === 'CHANNEL_HEADER');
+        return channelHeaderPlugins.map((plugin) => (
+            <React.Fragment key={plugin.id + plugin.trigger}>
                 <ChannelInfoRow
                     action={() => doPluginAction(plugin.id, plugin.trigger, {channel_id: currentChannel.id})}
                     defaultMessage={plugin.extra} // in future version should use plugin.extra.defaultMessage
                     theme={theme}
                     isLandscape={isLandscape}
                     textId={plugin.id + plugin.trigger}
-                    />
+                />
             </React.Fragment>
         ));
     }

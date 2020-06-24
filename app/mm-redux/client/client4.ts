@@ -270,7 +270,7 @@ export default class Client4 {
     }
 
     getPluginMobileTriggerRoute(pluginId: string, trigger: string) {
-        return `${this.getPluginMobileRoute(pluginId)}/${trigger}`
+        return `${this.getPluginMobileRoute(pluginId)}/${trigger}`;
     }
 
     getPluginsMarketplaceRoute() {
@@ -2822,10 +2822,10 @@ export default class Client4 {
         return this.doFetch(
             this.getPluginMobileTriggerRoute(pluginId, trigger),
             {method: 'post', body: JSON.stringify(body)},
-        )
+        );
     }
 
-    getMobilePluginTriggers = async() => {
+    getMobilePluginTriggers = async () => {
         return this.doFetch(
             this.getBaseRoute() + '/mobilePlugins',
             {method: 'get'},

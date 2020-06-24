@@ -116,7 +116,7 @@ function mapStateToProps(state) {
         });
     }
 
-    const mobilePlugins = getAllPlugins(state)
+    const mobilePlugins = getAllPlugins(state);
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),

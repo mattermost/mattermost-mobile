@@ -1,12 +1,13 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 import {Client4} from '@mm-redux/client';
-import {resetToChannel, dismissModal, dismissOverlay} from '@actions/navigation'
+import {resetToChannel} from '@actions/navigation';
 
-const RESET_TO_CHANNEL = "RESET_TO_CHANNEL"
+const RESET_TO_CHANNEL = 'RESET_TO_CHANNEL';
 
 export async function doPluginAction(pluginId, trigger, body) {
-    response = await Client4.executePluginTrigger(pluginId, trigger, body)
-    console.log(response)
-    if (response.action == RESET_TO_CHANNEL) {
+    const response = await Client4.executePluginTrigger(pluginId, trigger, body);
+    if (response.action === RESET_TO_CHANNEL) {
         resetToChannel();
     }
 }

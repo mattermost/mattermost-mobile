@@ -8,7 +8,7 @@ import {GenericAction} from '@mm-redux/types/actions';
 function mobilePlugins(state: PluginTrigger[] = [], action: GenericAction): PluginTrigger[] {
     switch (action.type) {
     case PluginTypes.RECEIVED_MOBILE_PLUGINS: {
-        return action.data
+        return action.data;
     }
     default:
         return state;
