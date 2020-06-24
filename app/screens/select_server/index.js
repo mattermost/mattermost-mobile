@@ -21,7 +21,7 @@ function mapStateToProps(state) {
     const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
 
     return {
-        ...state.views.SelectServer,
+        ...state.views.selectServer,
         config,
         currentVersion,
         deepLinkURL: state.views.root.deepLinkURL,
