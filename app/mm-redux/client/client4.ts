@@ -265,6 +265,14 @@ export default class Client4 {
         return `${this.getPluginsRoute()}/${pluginId}`;
     }
 
+    getPluginMobileRoute(pluginId: string) {
+        return `${this.url}/plugins/${pluginId}/mobile`;
+    }
+
+    getPluginMobileTriggerRoute(pluginId: string, trigger: string) {
+        return `${this.getPluginMobileRoute(pluginId)}/${trigger}`
+    }
+
     getPluginsMarketplaceRoute() {
         return `${this.getPluginsRoute()}/marketplace`;
     }
@@ -2809,6 +2817,20 @@ export default class Client4 {
             {method: 'post'},
         );
     };
+
+    executePluginTrigger = async (pluginId: string, trigger: string, body?: any) => {
+        return this.doFetch(
+            this.getPluginMobileTriggerRoute(pluginId, trigger),
+            {method: 'post', body: JSON.stringify(body)},
+        )
+    }
+
+    getMobilePluginTriggers = async() => {
+        return this.doFetch(
+            this.getBaseRoute() + '/mobilePlugins',
+            {method: 'get'},
+        );
+    }
 
     // Groups
 

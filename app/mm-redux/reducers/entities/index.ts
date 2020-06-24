@@ -15,6 +15,7 @@ import integrations from './integrations';
 import emojis from './emojis';
 import gifs from './gifs';
 import jobs from './jobs';
+import plugins from './plugins';
 import search from './search';
 import roles from './roles';
 import schemes from './schemes';
@@ -35,6 +36,7 @@ export default combineReducers({
     emojis,
     gifs,
     jobs,
+    plugins,
     search,
     roles,
     schemes,

@@ -20,6 +20,7 @@ import {PreferenceType} from './preferences';
 import {Bot} from './bots';
 import {ChannelCategoriesState} from './channel_categories';
 import {Dictionary} from './utilities';
+import {PluginsState} from './plugins';
 
 export type GlobalState = {
     entities: {
@@ -42,6 +43,7 @@ export type GlobalState = {
         files: FilesState;
         emojis: EmojisState;
         typing: Typing;
+        plugins: PluginsState;
         roles: {
             roles: {
                 [x: string]: Role;

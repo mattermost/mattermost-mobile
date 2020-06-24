@@ -12,6 +12,7 @@ import {
 import {Navigation} from 'react-native-navigation';
 
 import {dismissModal, goToScreen, showModalOverCurrentContext} from '@actions/navigation';
+import {doPluginAction} from '@actions/plugins'
 import pinIcon from '@assets/images/channel_info/pin.png';
 import StatusBar from '@components/status_bar';
 import {General, Users} from '@mm-redux/constants';
@@ -44,6 +45,7 @@ export default class ChannelInfo extends PureComponent {
             selectPenultimateChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            getMobilePlugins: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         viewArchivedChannels: PropTypes.bool.isRequired,
@@ -68,6 +70,7 @@ export default class ChannelInfo extends PureComponent {
         isBot: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        mobilePlugins: PropTypes.array,
     };
 
     static defaultProps = {
@@ -106,6 +109,7 @@ export default class ChannelInfo extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
         this.props.actions.getChannelStats(this.props.currentChannel.id);
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
+        this.props.actions.getMobilePlugins();
     }
 
     navigationButtonPressed({buttonId}) {
@@ -450,6 +454,27 @@ export default class ChannelInfo extends PureComponent {
         return !isDefaultChannel && isPublicChannel && canConvertChannel;
     }
 
+    pluginRows = () => {
+        const {
+            theme,
+            isLandscape,
+            currentChannel,
+        } = this.props;
+
+        channelHeaderPlugins = this.props.mobilePlugins.filter((plugin) => plugin.location == 'CHANNEL_HEADER')
+        return this.props.mobilePlugins.map((plugin) => (
+            <React.Fragment>
+                <ChannelInfoRow
+                    action={() => doPluginAction(plugin.id, plugin.trigger, {channel_id: currentChannel.id})}
+                    defaultMessage={plugin.extra} // in future version should use plugin.extra.defaultMessage
+                    theme={theme}
+                    isLandscape={isLandscape}
+                    textId={plugin.id + plugin.trigger}
+                    />
+            </React.Fragment>
+        ));
+    }
+
     actionsRows = (style, channelIsArchived) => {
         const {
             currentChannelMemberCount,
@@ -675,6 +700,7 @@ export default class ChannelInfo extends PureComponent {
                         </React.Fragment>
                         }
                     </View>
+                    {this.pluginRows()}
                     {this.renderLeaveOrDeleteChannelRow() && canDeleteChannel && !channelIsArchived &&
                     <View style={[style.rowsContainer, style.footer]}>
                         <ChannelInfoRow
