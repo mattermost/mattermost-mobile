@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Animated, Text, View} from 'react-native';
+import {Animated, Platform, Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import PropTypes from 'prop-types';
 
@@ -26,7 +26,6 @@ export default class MoreMessageButton extends React.PureComponent {
         newMessageLineIndex: PropTypes.number.isRequired,
         scrollToIndex: PropTypes.func.isRequired,
         registerViewableItemsListener: PropTypes.func.isRequired,
-        registerScrollEndListener: PropTypes.func.isRequired,
         deepLinkURL: PropTypes.string,
     };
 
@@ -44,7 +43,6 @@ export default class MoreMessageButton extends React.PureComponent {
     componentDidMount() {
         EventEmitter.on(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
-        this.removeScrollEndListener = this.props.registerScrollEndListener(this.onScrollEnd);
     }
 
     componentWillUnmount() {
@@ -77,7 +75,7 @@ export default class MoreMessageButton extends React.PureComponent {
         // marking a post below the new message line as unread or if the new message line
         // index changes due to the channel loading with a new message line that is removed
         // shortly after.
-        if (unreadCount < prevProps.unreadCount || newMessageLineIndex === -1) {
+        if ((unreadCount !== 0 && unreadCount < prevProps.unreadCount) || newMessageLineIndex === -1) {
             this.hide();
         }
 
@@ -182,6 +180,10 @@ export default class MoreMessageButton extends React.PureComponent {
                 return;
             }
 
+            if (viewableIndeces[viewableIndeces.length - 1] === newMessageLineIndex) {
+                this.onScrollEnd();
+            }
+
             const delay = this.viewableItemsChangedTimer ? 100 : 0;
             this.viewableItemsChangedTimer = setTimeout(() => {
                 this.viewableItemsChangedHandler(viewableIndeces);
@@ -207,12 +209,13 @@ export default class MoreMessageButton extends React.PureComponent {
             clearTimeout(this.opacityAnimationTimer);
         }
 
+        const delay = Platform.OS === 'android' ? 100 : 400;
         this.opacityAnimationTimer = setTimeout(() => {
             if (!this.moreTextChanged && this.pressed) {
                 this.pressed = false;
                 this.opacityAnimation();
             }
-        }, 400);
+        }, delay);
     }
 
     opacityAnimation = () => {

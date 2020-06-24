@@ -23,9 +23,6 @@ describe('MoreMessagesButton', () => {
         registerViewableItemsListener: jest.fn(() => {
             return jest.fn();
         }),
-        registerScrollEndListener: jest.fn(() => {
-            return jest.fn();
-        }),
     };
 
     it('should match snapshot', () => {
@@ -37,7 +34,7 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('lifecycle methods', () => {
-        test('componentDidMount should register network indicator visible listener, viewable items listener, and scroll end listener', () => {
+        test('componentDidMount should register network indicator visible listener and viewable items listener', () => {
             EventEmitter.on = jest.fn();
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
@@ -45,18 +42,15 @@ describe('MoreMessagesButton', () => {
             const instance = wrapper.instance();
             instance.onNetworkIndicatorVisible = jest.fn();
             instance.onViewableItemsChanged = jest.fn();
-            instance.onScrollEnd = jest.fn();
 
             // While componentDidMount is called when the component is mounted with `shallow()` above,
-            // instance.onNetworkIndicatorVisible, instance.onViewableItemsChanged, and instance.onScrollEnd
-            // have not yet been mocked so we call componentDidMount again.
+            // instance.onNetworkIndicatorVisible and instance.onViewableItemsChanged have not yet been
+            // mocked so we call componentDidMount again.
             instance.componentDidMount();
 
             expect(EventEmitter.on).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, instance.onNetworkIndicatorVisible);
             expect(baseProps.registerViewableItemsListener).toHaveBeenCalledWith(instance.onViewableItemsChanged);
             expect(instance.removeViewableItemsListener).toBeDefined();
-            expect(baseProps.registerScrollEndListener).toHaveBeenCalledWith(instance.onScrollEnd);
-            expect(instance.removeScrollEndListener).toBeDefined();
         });
 
         test('componentWillUnmount should remove the network indicator visible listener, the viewable items listener, the scroll end listener, and cancel all timers', () => {
@@ -114,7 +108,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.moreTextChanged).toBe(true);
         });
 
-        test('componentDidUpdate should call hide when the unreadCount decreases', () => {
+        test('componentDidUpdate should call hide when the unreadCount decreases but is not 0', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -128,7 +122,10 @@ describe('MoreMessagesButton', () => {
             expect(instance.hide).not.toHaveBeenCalled();
 
             wrapper.setProps({unreadCount: 1});
-            expect(instance.hide).toHaveBeenCalled();
+            expect(instance.hide).toHaveBeenCalledTimes(1);
+
+            wrapper.setProps({unreadCount: 0});
+            expect(instance.hide).toHaveBeenCalledTimes(1);
         });
 
         test('componentDidUpdate should call hide when the newMessageLineIndex changes to -1', () => {
@@ -475,6 +472,25 @@ describe('MoreMessagesButton', () => {
             expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedTimer).toBe(null);
+        });
+
+        it('should call onScrollEnd when the newMessageLineIndex is the last viewable index', () => {
+            const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
+            const viewableIndeces = viewableItems.map((item) => item.index);
+            wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
+
+            instance.viewableItemsChangedTimer = null;
+            instance.disableViewableItemsHandler = false;
+            instance.hide = jest.fn();
+            instance.viewableItemsChangedHandler = jest.fn();
+            instance.onScrollEnd = jest.fn();
+
+            instance.onViewableItemsChanged(viewableItems);
+            expect(instance.onScrollEnd).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: viewableIndeces[viewableIndeces.length - 1]});
+            instance.onViewableItemsChanged(viewableItems);
+            expect(instance.onScrollEnd).toHaveBeenCalled();
         });
 
         it('should call viewableItemsChangedHandler with a delay of 0 when first called', () => {

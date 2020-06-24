@@ -381,9 +381,8 @@ export default class PostList extends PureComponent {
         }
 
         const postId = item;
-
         return (
-            <Post
+            <MemoizedPost
                 postId={postId}
                 highlight={highlightPostId === postId}
                 isLastPost={lastPostIndex === index}
@@ -488,29 +487,12 @@ export default class PostList extends PureComponent {
         return removeListener;
     }
 
-    registerScrollEndListener = (listener) => {
-        this.onScrollEndListener = listener;
-        const removeListener = () => {
-            this.onScrollEndListener = null;
-        };
-
-        return removeListener;
-    }
-
     onViewableItemsChanged = ({viewableItems}) => {
         if (!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) {
             return;
         }
 
         this.onViewableItemsChangedListener(viewableItems);
-    }
-
-    onMomentumScrollEnd = (e) => {
-        if (!this.onScrollEndListener) {
-            return;
-        }
-
-        this.onScrollEndListener(e);
     }
 
     render() {
@@ -565,13 +547,12 @@ export default class PostList extends PureComponent {
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}
-                    windowSize={Platform.select({android: 11, ios: 50})}
+                    windowSize={Platform.select({android: 31, ios: 50})}
                     viewabilityConfig={{
                         viewAreaCoveragePercentThreshold: 0,
                         minimumViewTime: 100,
                     }}
                     onViewableItemsChanged={showMoreMessagesButton ? this.onViewableItemsChanged : null}
-                    onMomentumScrollEnd={showMoreMessagesButton ? this.onMomentumScrollEnd : null}
                 />
                 {showMoreMessagesButton &&
                     <MoreMessagesButton
@@ -582,13 +563,32 @@ export default class PostList extends PureComponent {
                         newMessageLineIndex={initialIndex}
                         scrollToIndex={this.scrollToIndex}
                         registerViewableItemsListener={this.registerViewableItemsListener}
-                        registerScrollEndListener={this.registerScrollEndListener}
                     />
                 }
             </>
         );
     }
 }
+
+function PostComponent({postId, highlightPostId, lastPostIndex, index, ...postProps}) {
+    return (
+        <Post
+            postId={postId}
+            highlight={highlightPostId === postId}
+            isLastPost={lastPostIndex === index}
+            {...postProps}
+        />
+    );
+}
+
+PostComponent.propTypes = {
+    postId: PropTypes.string.isRequired,
+    highlightPostId: PropTypes.string.isRequired,
+    lastPostIndex: PropTypes.number.isRequired,
+    index: PropTypes.number.isRequired,
+};
+
+const MemoizedPost = React.memo(PostComponent);
 
 const styles = StyleSheet.create({
     flex: {
