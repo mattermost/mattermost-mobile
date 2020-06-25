@@ -25,7 +25,7 @@ class NotificationService: UNNotificationServiceExtension {
         type: type,
         postId: postId,
         idLoaded: idLoaded) { data, response, error in
-          if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 401 {
+          if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
             contentHandler(self.bestAttemptContent!)
             return
           }
