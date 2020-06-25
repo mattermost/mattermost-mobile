@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Animated, Platform, Text, View} from 'react-native';
+import {Animated, Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import PropTypes from 'prop-types';
 
@@ -69,7 +69,10 @@ export default class MoreMessageButton extends React.PureComponent {
             this.reset();
         }
 
-        this.moreTextChanged = moreText !== prevState.moreText;
+        this.moreTextSame = moreText === prevState.moreText;
+        if (this.moreTextSame) {
+            this.onScrollEnd();
+        }
 
         // Hide the more messages button if the unread count decreases due to the user
         // marking a post below the new message line as unread or if the new message line
@@ -145,13 +148,14 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
+        this.pressed = true;
         this.prevNewMessageLineIndex = newMessageLineIndex;
         scrollToIndex(newMessageLineIndex);
-        this.pressed = true;
     }
 
     onViewableItemsChanged = (viewableItems) => {
         this.viewableItems = viewableItems;
+        this.newMessageLineReached = false;
 
         const {newMessageLineIndex, unreadCount, scrollToIndex} = this.props;
         if (newMessageLineIndex <= 0 || viewableItems.length === 0) {
@@ -180,7 +184,8 @@ export default class MoreMessageButton extends React.PureComponent {
                 return;
             }
 
-            if (viewableIndeces[viewableIndeces.length - 1] === newMessageLineIndex) {
+            if (viewableIndeces[viewableIndeces.length - 1] >= newMessageLineIndex) {
+                this.newMessageLineReached = true;
                 this.onScrollEnd();
             }
 
@@ -205,29 +210,23 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     onScrollEnd = () => {
-        if (this.opacityAnimationTimer) {
-            clearTimeout(this.opacityAnimationTimer);
+        if (this.moreTextSame && this.newMessageLineReached && this.pressed) {
+            this.pressed = false;
+            this.newMessageLineReached = false;
+            this.opacityAnimation();
         }
-
-        const delay = Platform.OS === 'android' ? 100 : 400;
-        this.opacityAnimationTimer = setTimeout(() => {
-            if (!this.moreTextChanged && this.pressed) {
-                this.pressed = false;
-                this.opacityAnimation();
-            }
-        }, delay);
     }
 
     opacityAnimation = () => {
         Animated.timing(this.opacity, {
             toValue: 0,
             useNativeDriver: false,
-            duration: 200,
+            duration: 100,
         }).start(() => {
             Animated.timing(this.opacity, {
                 toValue: 1,
                 useNativeDriver: false,
-                duration: 200,
+                duration: 100,
             }).start();
         });
     }

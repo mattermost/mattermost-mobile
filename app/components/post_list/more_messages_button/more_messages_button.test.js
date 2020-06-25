@@ -88,24 +88,27 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should set moreTextChanged', () => {
-            jest.useFakeTimers();
-
+        test('componentDidUpdate should set moreTextSame and call onScrollEnd when moreTextSame is true', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
-            expect(instance.moreTextChanged).toBe(undefined);
+            instance.onScrollEnd = jest.fn();
+            expect(instance.moreTextSame).toBe(undefined);
+            expect(instance.onScrollEnd).not.toHaveBeenCalled();
 
             const newMoreText = instance.state.moreText + '1';
             wrapper.setState({moreText: newMoreText});
-            expect(instance.moreTextChanged).toBe(true);
+            expect(instance.moreTextSame).toBe(false);
+            expect(instance.onScrollEnd).not.toHaveBeenCalled();
 
             wrapper.setState({other: 'test', moreText: newMoreText});
-            expect(wrapper.instance().moreTextChanged).toBe(false);
+            expect(instance.moreTextSame).toBe(true);
+            expect(instance.onScrollEnd).toHaveBeenCalledTimes(1);
 
             wrapper.setState({moreText: newMoreText + '1'});
-            expect(instance.moreTextChanged).toBe(true);
+            expect(instance.moreTextSame).toBe(false);
+            expect(instance.onScrollEnd).toHaveBeenCalledTimes(1);
         });
 
         test('componentDidUpdate should call hide when the unreadCount decreases but is not 0', () => {
@@ -474,7 +477,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.viewableItemsChangedTimer).toBe(null);
         });
 
-        it('should call onScrollEnd when the newMessageLineIndex is the last viewable index', () => {
+        it('should call onScrollEnd and set newMessageLineReached to true when the newMessageLineIndex is the last viewable index', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const viewableIndeces = viewableItems.map((item) => item.index);
             wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
@@ -484,13 +487,16 @@ describe('MoreMessagesButton', () => {
             instance.hide = jest.fn();
             instance.viewableItemsChangedHandler = jest.fn();
             instance.onScrollEnd = jest.fn();
+            instance.newMessageLineReached = false;
 
             instance.onViewableItemsChanged(viewableItems);
             expect(instance.onScrollEnd).not.toHaveBeenCalled();
+            expect(instance.newMessageLineReached).toBe(false);
 
             wrapper.setProps({newMessageLineIndex: viewableIndeces[viewableIndeces.length - 1]});
             instance.onViewableItemsChanged(viewableItems);
             expect(instance.onScrollEnd).toHaveBeenCalled();
+            expect(instance.newMessageLineReached).toBe(true);
         });
 
         it('should call viewableItemsChangedHandler with a delay of 0 when first called', () => {
@@ -582,43 +588,62 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
 
-        it('should clear opacityAnimationTimer if set', () => {
-            instance.onScrollEnd();
-            expect(clearTimeout).not.toHaveBeenCalled();
-
-            instance.onScrollEnd();
-            expect(clearTimeout).toHaveBeenCalled();
-        });
-
-        it('should reset pressed to false and call opacityAnimation only when moreText has not changed and pressed is true', () => {
-            jest.useFakeTimers();
+        it('should reset pressed and newMessageLineReached to false and call opacityAnimation only when moreText has not changed, the new message line has been reached, and pressed is true', () => {
             instance.opacityAnimation = jest.fn();
 
-            instance.moreTextChanged = true;
+            instance.moreTextSame = false;
+            instance.newMessageLineReached = false;
             instance.pressed = false;
             instance.onScrollEnd();
-            jest.runAllTimers();
+            expect(instance.newMessageLineReached).toBe(false);
             expect(instance.pressed).toBe(false);
             expect(instance.opacityAnimation).not.toHaveBeenCalled();
 
-            instance.moreTextChanged = true;
+            instance.moreTextSame = true;
+            instance.newMessageLineReached = false;
+            instance.pressed = false;
+            instance.onScrollEnd();
+            expect(instance.newMessageLineReached).toBe(false);
+            expect(instance.pressed).toBe(false);
+            expect(instance.opacityAnimation).not.toHaveBeenCalled();
+
+            instance.moreTextSame = true;
+            instance.newMessageLineReached = true;
+            instance.pressed = false;
+            instance.onScrollEnd();
+            expect(instance.newMessageLineReached).toBe(true);
+            expect(instance.pressed).toBe(false);
+            expect(instance.opacityAnimation).not.toHaveBeenCalled();
+
+            instance.moreTextSame = true;
+            instance.newMessageLineReached = false;
             instance.pressed = true;
             instance.onScrollEnd();
-            jest.runAllTimers();
+            expect(instance.newMessageLineReached).toBe(false);
             expect(instance.pressed).toBe(true);
             expect(instance.opacityAnimation).not.toHaveBeenCalled();
 
-            instance.moreTextChanged = false;
-            instance.pressed = false;
-            instance.onScrollEnd();
-            jest.runAllTimers();
-            expect(instance.pressed).toBe(false);
-            expect(instance.opacityAnimation).not.toHaveBeenCalled();
-
-            instance.moreTextChanged = false;
+            instance.moreTextSame = false;
+            instance.newMessageLineReached = false;
             instance.pressed = true;
             instance.onScrollEnd();
-            jest.runAllTimers();
+            expect(instance.newMessageLineReached).toBe(false);
+            expect(instance.pressed).toBe(true);
+            expect(instance.opacityAnimation).not.toHaveBeenCalled();
+
+            instance.moreTextSame = false;
+            instance.newMessageLineReached = true;
+            instance.pressed = true;
+            instance.onScrollEnd();
+            expect(instance.newMessageLineReached).toBe(true);
+            expect(instance.pressed).toBe(true);
+            expect(instance.opacityAnimation).not.toHaveBeenCalled();
+
+            instance.moreTextSame = true;
+            instance.newMessageLineReached = true;
+            instance.pressed = true;
+            instance.onScrollEnd();
+            expect(instance.newMessageLineReached).toBe(false);
             expect(instance.pressed).toBe(false);
             expect(instance.opacityAnimation).toHaveBeenCalled();
         });
