@@ -56,7 +56,6 @@ export default class MoreMessageButton extends React.PureComponent {
     state = {moreText: ''};
     top = new Animated.Value(0);
     opacity = new Animated.Value(1);
-    prevNewMessageLineIndex = 0;
     disableViewableItemsHandler = false;
     viewableItems = [];
 
@@ -88,10 +87,6 @@ export default class MoreMessageButton extends React.PureComponent {
 
         if (channelId !== prevProps.channelId) {
             this.reset();
-        }
-
-        if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
-            this.prevNewMessageLineIndex = prevProps.newMessageLineIndex;
         }
 
         this.moreTextSame = moreText === prevState.moreText;
@@ -131,7 +126,6 @@ export default class MoreMessageButton extends React.PureComponent {
             clearTimeout(this.viewableItemsChangedTimer);
         }
         this.hide();
-        this.prevNewMessageLineIndex = 0;
         this.disableViewableItemsHandler = false;
         this.viewableItems = [];
         this.pressed = false;
@@ -315,7 +309,7 @@ export default class MoreMessageButton extends React.PureComponent {
             countText += '+';
         }
 
-        const firstPage = this.prevNewMessageLineIndex === 0;
+        const firstPage = this.state.moreText === '';
         const singular = moreCount === 1;
 
         return this.intlMoreText(firstPage, singular, countText);

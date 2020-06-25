@@ -94,26 +94,6 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should set prevNewMessageLineIndex when the new message line index changes', () => {
-            const wrapper = shallowWithIntl(
-                <MoreMessagesButton {...baseProps}/>,
-            );
-            const instance = wrapper.instance();
-            expect(instance.prevNewMessageLineIndex).toEqual(0);
-
-            wrapper.setProps({newMessageLineIndex: 1});
-            expect(instance.prevNewMessageLineIndex).toEqual(0);
-
-            wrapper.setProps({newMessageLineIndex: 2});
-            expect(instance.prevNewMessageLineIndex).toEqual(1);
-
-            wrapper.setProps({newMessageLineIndex: 3});
-            expect(instance.prevNewMessageLineIndex).toEqual(2);
-
-            wrapper.setProps({newMessageLineIndex: 3});
-            expect(instance.prevNewMessageLineIndex).toEqual(2);
-        });
-
         test('componentDidUpdate should set moreTextSame and call onScrollEnd when moreTextSame is true and more count >= 60', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
@@ -249,7 +229,6 @@ describe('MoreMessagesButton', () => {
             instance.setState({moreText: '60+ new messages'});
             instance.viewableItemsChangedTimer = jest.fn();
             instance.hide = jest.fn();
-            instance.prevNewMessageLineIndex = 100;
             instance.disableViewableItemsHandler = true;
             instance.viewableItems = [{index: 1}];
             instance.pressed = true;
@@ -259,7 +238,6 @@ describe('MoreMessagesButton', () => {
             instance.reset();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
             expect(instance.hide).toHaveBeenCalled();
-            expect(instance.prevNewMessageLineIndex).toEqual(0);
             expect(instance.disableViewableItemsHandler).toEqual(false);
             expect(instance.viewableItems).toStrictEqual([]);
             expect(instance.pressed).toEqual(false);
@@ -762,53 +740,45 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
 
-        it('should return defaultMessage of `{count} new messages` on first newMessageLineIndex when count <= 60', () => {
-            instance.prevNewMessageLineIndex = 0;
-
+        it('should return defaultMessage of `{count} new messages` when moreText is empty and count <= 60', () => {
             let moreCount = 60;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: ''});
             let message = instance.moreText(moreCount);
             expect(message).toEqual('60 new messages');
 
             moreCount = 59;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: ''});
             message = instance.moreText(moreCount);
             expect(message).toEqual('59 new messages');
         });
 
-        it('should return defaultMessage of `{count} more new messages` on subsequent newMessageLineIndex when count <= 60', () => {
-            instance.prevNewMessageLineIndex = 1;
-
+        it('should return defaultMessage of `{count} more new messages` on subsequent moreText changes when count <= 60', () => {
             let moreCount = 60;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: '1 new message'});
             let message = instance.moreText(moreCount);
             expect(message).toEqual('60 more new messages');
 
             moreCount = 59;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: '1 new message'});
             message = instance.moreText(moreCount);
             expect(message).toEqual('59 more new messages');
         });
 
-        it('should return defaultMessage of `60+ new messages` on first newMessageLineIndex when count > 60', () => {
-            instance.prevNewMessageLineIndex = 0;
-
+        it('should return defaultMessage of `60+ new messages` when moreText is empty and count > 60', () => {
             let moreCount = 61;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: ''});
             let message = instance.moreText(moreCount);
             expect(message).toEqual('60+ new messages');
 
             moreCount = 62;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: ''});
             message = instance.moreText(moreCount);
             expect(message).toEqual('60+ new messages');
         });
 
-        it('should return defaultMessage of `60+ more new messages` on subsequent newMessageLineIndex when count > 60', () => {
-            instance.prevNewMessageLineIndex = 1;
-
+        it('should return defaultMessage of `60+ more new messages` on subsequent moreText changes when count > 60', () => {
             let moreCount = 61;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: '1 new message'});
             let message = instance.moreText(moreCount);
             expect(message).toEqual('60+ more new messages');
 
@@ -818,20 +788,16 @@ describe('MoreMessagesButton', () => {
             expect(message).toEqual('60+ more new messages');
         });
 
-        it('should return defaultMessage of `1 new message` on first newMessageLineIndex when count === 1', () => {
-            instance.prevNewMessageLineIndex = 0;
-
+        it('should return defaultMessage of `1 new message` when moreText is empty and count === 1', () => {
             const moreCount = 1;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: ''});
             const message = instance.moreText(moreCount);
             expect(message).toEqual('1 new message');
         });
 
-        it('should return defaultMessage of `1 more new message` on subsequent newMessageLineIndex when count === 1', () => {
-            instance.prevNewMessageLineIndex = 1;
-
+        it('should return defaultMessage of `1 more new message` on subsequent moreText changes when count === 1', () => {
             const moreCount = 1;
-            wrapper.setState({moreCount});
+            wrapper.setState({moreText: '1 new message'});
             const message = instance.moreText(moreCount);
             expect(message).toEqual('1 more new message');
         });
