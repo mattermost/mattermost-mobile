@@ -15,6 +15,7 @@ class NotificationService: UNNotificationServiceExtension {
 
     func fetchReceipt(notificationId: String, receivedAt: Int, type: String, postId: String, idLoaded: Bool ) -> Void {
       if (self.retryIndex >= fibonacciBackoffsInSeconds.count) {
+        contentHandler(self.bestAttemptContent!)
         return
       }
 
@@ -23,7 +24,12 @@ class NotificationService: UNNotificationServiceExtension {
         receivedAt: receivedAt,
         type: type,
         postId: postId,
-        idLoaded: idLoaded) { data, error in
+        idLoaded: idLoaded) { data, response, error in
+          if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            contentHandler(self.bestAttemptContent!)
+            return
+          }
+
           guard let data = data, error == nil else {
             if (idLoaded) {
               // Receipt retrieval failed. Kick off retries.
