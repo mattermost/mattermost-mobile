@@ -106,8 +106,27 @@ public class ReceiptDelivery {
             Response response = client.newCall(request).execute();
             String responseBody = response.body().string();
             if (response.code() != 200) {
+                switch (response.code()) {
+                    case 302:
+                    promise.reject("Receipt delivery failure", "StatusFound");
+                    return;
+                    case 400:
+                    promise.reject("Receipt delivery failure", "StatusBadRequest");
+                    return;
+                    case 401:
+                    promise.reject("Receipt delivery failure", "Unauthorized");
+                    return;
+                    case 500:
+                    promise.reject("Receipt delivery failure", "StatusInternalServerError");
+                    return;
+                    case 501:
+                    promise.reject("Receipt delivery failure", "StatusNotImplemented");
+                    return;
+                }
+
                 throw new Exception(responseBody);
             }
+
             JSONObject jsonResponse = new JSONObject(responseBody);
             Bundle bundle = new Bundle();
             String keys[] = new String[]{"post_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
