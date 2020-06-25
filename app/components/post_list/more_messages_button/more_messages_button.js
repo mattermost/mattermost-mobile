@@ -14,8 +14,27 @@ import ViewTypes, {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
 
-export const HIDDEN_TOP = -100;
-export const SHOWN_TOP = 0;
+const HIDDEN_TOP = -100;
+const SHOWN_TOP = 0;
+export const INDICATOR_FACTOR = Math.abs(NETWORK_INDICATOR_HEIGHT / (HIDDEN_TOP - SHOWN_TOP));
+export const MIN_INPUT = 0;
+export const MAX_INPUT = 1;
+
+const TOP_INTERPOL_CONFIG = {
+    inputRange: [
+        MIN_INPUT,
+        MIN_INPUT + INDICATOR_FACTOR,
+        MAX_INPUT - INDICATOR_FACTOR,
+        MAX_INPUT,
+    ],
+    outputRange: [
+        HIDDEN_TOP - NETWORK_INDICATOR_HEIGHT,
+        HIDDEN_TOP,
+        SHOWN_TOP,
+        SHOWN_TOP + NETWORK_INDICATOR_HEIGHT,
+    ],
+    extrapolate: 'clamp',
+};
 
 export default class MoreMessageButton extends React.PureComponent {
     static propTypes = {
@@ -35,7 +54,7 @@ export default class MoreMessageButton extends React.PureComponent {
     };
 
     state = {moreCount: 0, moreText: ''};
-    top = new Animated.Value(HIDDEN_TOP);
+    top = new Animated.Value(0);
     opacity = new Animated.Value(1);
     prevNewMessageLineIndex = 0;
     disableViewableItemsHandler = false;
@@ -58,14 +77,14 @@ export default class MoreMessageButton extends React.PureComponent {
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
         }
-        if (this.opacityAnimationTimer) {
-            clearTimeout(this.opacityAnimationTimer);
+        if (this.animateOpacityTimer) {
+            clearTimeout(this.animateOpacityTimer);
         }
     }
 
     componentDidUpdate(prevProps, prevState) {
         const {channelId, unreadCount, newMessageLineIndex} = this.props;
-        const {moreText} = this.state;
+        const {moreText, moreCount} = this.state;
 
         if (channelId !== prevProps.channelId) {
             this.reset();
@@ -76,8 +95,8 @@ export default class MoreMessageButton extends React.PureComponent {
         }
 
         this.moreTextSame = moreText === prevState.moreText;
-        if (this.moreTextSame) {
-            this.onScrollEnd();
+        if (this.moreTextSame && moreCount >= 60) {
+            this.animateOpacity();
         }
 
         // Hide the more messages button if the unread count decreases due to the user
@@ -99,9 +118,10 @@ export default class MoreMessageButton extends React.PureComponent {
     onNetworkIndicatorVisible = (indicatorVisible) => {
         this.networkIndicatorVisible = indicatorVisible;
         if (this.visible) {
+            const toValue = indicatorVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_FACTOR;
             Animated.spring(this.top, {
-                toValue: indicatorVisible ? (SHOWN_TOP + NETWORK_INDICATOR_HEIGHT) : SHOWN_TOP,
-                useNativeDriver: false,
+                toValue,
+                useNativeDriver: true,
             }).start();
         }
     }
@@ -110,22 +130,22 @@ export default class MoreMessageButton extends React.PureComponent {
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
         }
-        if (this.opacityAnimationTimer) {
-            clearTimeout(this.opacityAnimationTimer);
-        }
         this.hide();
         this.prevNewMessageLineIndex = 0;
         this.disableViewableItemsHandler = false;
         this.viewableItems = [];
+        this.pressed = false;
+        this.opacityIsAnimating = false;
+        this.scrolledToLastIndex = false;
     }
 
     show = () => {
         if (!this.visible && this.state.moreCount > 0 && !this.props.deepLinkURL) {
             this.visible = true;
-            const indicatorHeight = this.networkIndicatorVisible ? NETWORK_INDICATOR_HEIGHT : 0;
+            const toValue = this.networkIndicatorVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_FACTOR;
             Animated.spring(this.top, {
-                toValue: SHOWN_TOP + indicatorHeight,
-                useNativeDriver: false,
+                toValue,
+                useNativeDriver: true,
             }).start();
         }
     }
@@ -133,10 +153,10 @@ export default class MoreMessageButton extends React.PureComponent {
     hide = () => {
         if (this.visible) {
             this.visible = false;
-            const indicatorHeight = this.networkIndicatorVisible ? NETWORK_INDICATOR_HEIGHT : 0;
+            const toValue = this.networkIndicatorVisible ? MIN_INPUT : MIN_INPUT + INDICATOR_FACTOR;
             Animated.spring(this.top, {
-                toValue: HIDDEN_TOP - indicatorHeight,
-                useNativeDriver: false,
+                toValue,
+                useNativeDriver: true,
             }).start();
         }
     }
@@ -192,7 +212,7 @@ export default class MoreMessageButton extends React.PureComponent {
             const lastViewableIndex = viewableIndeces[viewableIndeces.length - 1];
             if (lastViewableIndex >= newMessageLineIndex || lastViewableIndex === this.endIndex) {
                 this.scrolledToLastIndex = true;
-                this.onScrollEnd();
+                this.animateOpacity();
             }
 
             const delay = this.viewableItemsChangedTimer ? 100 : 0;
@@ -219,25 +239,43 @@ export default class MoreMessageButton extends React.PureComponent {
         this.endIndex = endIndex;
     }
 
-    onScrollEnd = () => {
-        if (this.moreTextSame && this.scrolledToLastIndex && this.pressed) {
+    animateOpacity = () => {
+        if (this.animateOpacityTimer) {
+            clearTimeout(this.animateOpacityTimer);
+        }
+
+        if (this.scrolledToLastIndex) {
             this.pressed = false;
-            this.scrolledToLastIndex = false;
-            this.opacityAnimation();
+
+            this.animateOpacityTimer = setTimeout(() => {
+                if (this.moreTextSame) {
+                    this.moreTextSame = false;
+                    this.scrolledToLastIndex = false;
+                    this.opacityAnimation();
+                }
+            }, 400);
         }
     }
 
     opacityAnimation = () => {
-        Animated.timing(this.opacity, {
-            toValue: 0,
-            useNativeDriver: false,
-            duration: 100,
-        }).start(() => {
+        if (this.opacityIsAnimating) {
+            return;
+        }
+
+        this.opacityIsAnimating = true;
+        Animated.sequence([
+            Animated.timing(this.opacity, {
+                toValue: 0,
+                duration: 100,
+                useNativeDriver: true,
+            }),
             Animated.timing(this.opacity, {
                 toValue: 1,
-                useNativeDriver: false,
                 duration: 100,
-            }).start();
+                useNativeDriver: true,
+            }),
+        ]).start(() => {
+            this.opacityIsAnimating = false;
         });
     }
 
@@ -285,9 +323,10 @@ export default class MoreMessageButton extends React.PureComponent {
     render() {
         const styles = getStyleSheet(this.props.theme);
         const {moreText} = this.state;
+        const translateY = this.top.interpolate(TOP_INTERPOL_CONFIG);
 
         return (
-            <Animated.View style={[styles.animatedContainer, {top: this.top}]}>
+            <Animated.View style={[styles.animatedContainer, {transform: [{translateY}]}]}>
                 <View style={styles.container}>
                     <TouchableWithFeedback
                         type={'none'}

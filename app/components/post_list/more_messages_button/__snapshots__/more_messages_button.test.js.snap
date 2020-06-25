@@ -12,7 +12,11 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
         "zIndex": 1,
       },
       Object {
-        "top": -100,
+        "transform": Array [
+          Object {
+            "translateY": -138,
+          },
+        ],
       },
     ]
   }
