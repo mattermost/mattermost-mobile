@@ -261,17 +261,10 @@ export default class PostList extends PureComponent {
 
     handleScrollToIndexFailed = (info) => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
-        //     if (this.props.initialIndex > 0 && this.contentHeight > 0) {
-        //         this.hasDoneInitialScroll = false;
-        //         if (info.highestMeasuredFrameIndex) {
+            if (this.onScrollEndIndexListener) {
+                this.onScrollEndIndexListener(info.highestMeasuredFrameIndex);
+            }
             this.flatListScrollToIndex(info.highestMeasuredFrameIndex);
-
-        //         } else {
-        //             this.scrollAfterInteraction = InteractionManager.runAfterInteractions(() => {
-        //                 this.scrollToInitialIndexIfNeeded(info.index);
-        //             });
-        //         }
-        //     }
         });
     };
 
@@ -488,6 +481,15 @@ export default class PostList extends PureComponent {
         return removeListener;
     }
 
+    registerScrollEndIndexListener = (listener) => {
+        this.onScrollEndIndexListener = listener;
+        const removeListener = () => {
+            this.onScrollEndIndexListener = null;
+        };
+
+        return removeListener;
+    }
+
     onViewableItemsChanged = ({viewableItems}) => {
         if (!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) {
             return;
@@ -564,6 +566,7 @@ export default class PostList extends PureComponent {
                         newMessageLineIndex={initialIndex}
                         scrollToIndex={this.scrollToIndex}
                         registerViewableItemsListener={this.registerViewableItemsListener}
+                        registerScrollEndIndexListener={this.registerScrollEndIndexListener}
                     />
                 }
             </>
@@ -584,9 +587,9 @@ function PostComponent({postId, highlightPostId, lastPostIndex, index, ...postPr
 
 PostComponent.propTypes = {
     postId: PropTypes.string.isRequired,
-    highlightPostId: PropTypes.string.isRequired,
-    lastPostIndex: PropTypes.number.isRequired,
-    index: PropTypes.number.isRequired,
+    highlightPostId: PropTypes.string,
+    lastPostIndex: PropTypes.number,
+    index: PropTypes.number,
 };
 
 const MemoizedPost = React.memo(PostComponent);

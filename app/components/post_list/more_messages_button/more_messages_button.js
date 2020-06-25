@@ -26,6 +26,7 @@ export default class MoreMessageButton extends React.PureComponent {
         newMessageLineIndex: PropTypes.number.isRequired,
         scrollToIndex: PropTypes.func.isRequired,
         registerViewableItemsListener: PropTypes.func.isRequired,
+        registerScrollEndIndexListener: PropTypes.func.isRequired,
         deepLinkURL: PropTypes.string,
     };
 
@@ -43,6 +44,7 @@ export default class MoreMessageButton extends React.PureComponent {
     componentDidMount() {
         EventEmitter.on(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
+        this.removeScrollEndIndexListener = this.props.registerScrollEndIndexListener(this.onScrollEndIndex);
     }
 
     componentWillUnmount() {
@@ -50,8 +52,8 @@ export default class MoreMessageButton extends React.PureComponent {
         if (this.removeViewableItemsListener) {
             this.removeViewableItemsListener();
         }
-        if (this.removeScrollEndListener) {
-            this.removeScrollEndListener();
+        if (this.removeScrollEndIndexListener) {
+            this.removeScrollEndIndexListener();
         }
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
@@ -67,6 +69,10 @@ export default class MoreMessageButton extends React.PureComponent {
 
         if (channelId !== prevProps.channelId) {
             this.reset();
+        }
+
+        if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
+            this.prevNewMessageLineIndex = prevProps.newMessageLineIndex;
         }
 
         this.moreTextSame = moreText === prevState.moreText;
@@ -141,22 +147,20 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     onMoreMessagesPress = () => {
-        const {newMessageLineIndex, scrollToIndex} = this.props;
-        if (newMessageLineIndex === this.prevNewMessageLineIndex) {
-            // Prevent multiple taps on the more messages button from calling
-            // scrollToIndex if the newMessageLineIndex has not yet changed.
+        if (this.pressed) {
+            // Prevent multiple taps on the more messages button
+            // from calling scrollToIndex.
             return;
         }
 
+        const {newMessageLineIndex, scrollToIndex} = this.props;
         this.pressed = true;
-
-        // this.prevNewMessageLineIndex = newMessageLineIndex;
         scrollToIndex(newMessageLineIndex);
     }
 
     onViewableItemsChanged = (viewableItems) => {
         this.viewableItems = viewableItems;
-        this.newMessageLineReached = false;
+        this.scrolledToLastIndex = false;
 
         const {newMessageLineIndex, unreadCount, scrollToIndex} = this.props;
         if (newMessageLineIndex <= 0 || viewableItems.length === 0) {
@@ -185,8 +189,9 @@ export default class MoreMessageButton extends React.PureComponent {
                 return;
             }
 
-            if (viewableIndeces[viewableIndeces.length - 1] >= newMessageLineIndex) {
-                this.newMessageLineReached = true;
+            const lastViewableIndex = viewableIndeces[viewableIndeces.length - 1];
+            if (lastViewableIndex >= newMessageLineIndex || lastViewableIndex === this.endIndex) {
+                this.scrolledToLastIndex = true;
                 this.onScrollEnd();
             }
 
@@ -210,10 +215,14 @@ export default class MoreMessageButton extends React.PureComponent {
         }
     }
 
+    onScrollEndIndex = (endIndex) => {
+        this.endIndex = endIndex;
+    }
+
     onScrollEnd = () => {
-        if (this.moreTextSame && this.newMessageLineReached && this.pressed) {
+        if (this.moreTextSame && this.scrolledToLastIndex && this.pressed) {
             this.pressed = false;
-            this.newMessageLineReached = false;
+            this.scrolledToLastIndex = false;
             this.opacityAnimation();
         }
     }
