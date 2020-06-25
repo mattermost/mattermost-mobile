@@ -2810,6 +2810,14 @@ export default class Client4 {
         );
     };
 
+    dynamicAutocompleteSuggestions = (url: string, parsed: string, toBeParsed: string, teamId: string) => {
+        const encodedURL = encodeURIComponent(url);
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/commands/dynamic_autocomplete_suggestions${buildQueryString({url: encodedURL, parsed, toBeParsed})}`,
+            {method: 'get'},
+        );
+    }
+
     // Groups
 
     linkGroupSyncable = async (groupID: string, syncableID: string, syncableType: string, patch: SyncablePatch) => {

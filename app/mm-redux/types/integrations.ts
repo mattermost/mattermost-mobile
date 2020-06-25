@@ -52,6 +52,20 @@ export type Command = {
     'description': string;
     'url': string;
 };
+
+// AutocompleteListItem represents plugin slash command dynamic argument's single suggestion
+export type AutocompleteListItem = {
+    'Item': string;
+    'Hint': string;
+    'HelpText': string;
+};
+
+// AutocompleteListItems represents plugin slash command dynamic argument's all suggestions.
+// Relative url of the dynamic argument(including the plugin id) is stored in the id field.
+export type AutocompleteListItems = {
+    'id': string;
+    'items': AutocompleteListItem[];
+}
 export type OAuthApp = {
     'id': string;
     'creator_id': string;
@@ -71,6 +85,10 @@ export type IntegrationsState = {
     oauthApps: IDMappedObjects<OAuthApp>;
     systemCommands: IDMappedObjects<Command>;
     commands: IDMappedObjects<Command>;
+
+    // dynamicArguments is a map saving slash commands' dynamic argument suggestions.
+    // Arguments are fetched from the plugins, cached and updated lazily(on demand) after x seconds.
+    dynamicArguments: IDMappedObjects<AutocompleteListItems>;
 };
 export type DialogSubmission = {
     url: string;

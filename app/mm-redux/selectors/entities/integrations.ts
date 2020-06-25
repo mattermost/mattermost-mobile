@@ -26,6 +26,10 @@ export function getSystemCommands(state: types.store.GlobalState) {
     return state.entities.integrations.systemCommands;
 }
 
+export function getDynamicArguments(state: types.store.GlobalState) {
+    return state.entities.integrations.dynamicArguments;
+}
+
 /**
  * get outgoing hooks in current team
  */

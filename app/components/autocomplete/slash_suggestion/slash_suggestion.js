@@ -12,17 +12,20 @@ import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divide
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import SlashSuggestionItem from './slash_suggestion_item';
+import CommandAutocomplete from './command_autocomplete/command_autocomplete';
 
-const SLASH_REGEX = /(^\/)([a-zA-Z-]*)$/;
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
+const TIME_BEFORE_NEXT_DYNAMIC_ARGUMENTS_REQUEST = 100 * 60 * 1;
 
 export default class SlashSuggestion extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getAutocompleteCommands: PropTypes.func.isRequired,
+            getDynamicAutocompleteSuggestions: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         commands: PropTypes.array,
+        dynamicArguments: PropTypes.object,
         isSearch: PropTypes.bool,
         maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
@@ -40,9 +43,9 @@ export default class SlashSuggestion extends PureComponent {
 
     state = {
         active: false,
-        suggestionComplete: false,
         dataSource: [],
         lastCommandRequest: 0,
+        dynamicArgumentsLastFetch: {},
     };
 
     componentWillReceiveProps(nextProps) {
@@ -55,6 +58,7 @@ export default class SlashSuggestion extends PureComponent {
             commands: nextCommands,
             currentTeamId: nextTeamId,
             value: nextValue,
+            dynamicArguments: nextDynamicArguments,
         } = nextProps;
 
         if (currentTeamId !== nextTeamId) {
@@ -63,13 +67,10 @@ export default class SlashSuggestion extends PureComponent {
             });
         }
 
-        const match = nextValue.match(SLASH_REGEX);
-
-        if (!match || this.state.suggestionComplete) {
+        if (nextValue[0] !== '/') {
             this.setState({
                 active: false,
                 matchTerm: null,
-                suggestionComplete: false,
             });
             this.props.onResultCountChange(0);
             return;
@@ -77,17 +78,14 @@ export default class SlashSuggestion extends PureComponent {
 
         const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
 
-        if ((!nextCommands.length || dataIsStale)) {
+        if (!nextCommands.length || dataIsStale) {
             this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
             this.setState({
                 lastCommandRequest: Date.now(),
             });
         }
 
-        const matchTerm = match[2];
-
-        const data = this.filterSlashSuggestions(matchTerm, nextCommands);
-
+        const data = this.filterSlashSuggestions(nextValue.substring(1), nextCommands, nextDynamicArguments);
         this.setState({
             active: data.length,
             dataSource: data,
@@ -96,16 +94,31 @@ export default class SlashSuggestion extends PureComponent {
         this.props.onResultCountChange(data.length);
     }
 
-    filterSlashSuggestions = (matchTerm, commands) => {
-        return commands.filter((command) => {
-            if (!command.auto_complete) {
-                return false;
-            } else if (!matchTerm) {
-                return true;
+    filterSlashSuggestions = (matchTerm, commands, dynamicArguments) => {
+        const autocompleteData = commands.map((command) => {
+            if (command.autocomplete_data) {
+                return command.autocomplete_data;
             }
-
-            return command.display_name.startsWith(matchTerm) || command.trigger.startsWith(matchTerm);
+            return {
+                Trigger: command.trigger,
+                HelpText: command.auto_complete_desc,
+                Hint: command.auto_complete_hint,
+            };
         });
+        const commandAutocomplete = new CommandAutocomplete(this.updateDynamicAutocompleteSuggestions);
+        return commandAutocomplete.getSuggestions(autocompleteData, dynamicArguments, '', matchTerm);
+    }
+
+    updateDynamicAutocompleteSuggestions = (url, parsed, toBeParsed) => {
+        if (!this.state.dynamicArgumentsLastFetch[url] ||
+            Date.now() - this.state.dynamicArgumentsLastFetch[url] > TIME_BEFORE_NEXT_DYNAMIC_ARGUMENTS_REQUEST) {
+            this.props.actions.getDynamicAutocompleteSuggestions(url, parsed, toBeParsed, this.props.currentTeamId);
+            const nextDynamicArgumentsLastFetch = {...this.state.dynamicArgumentsLastFetch};
+            nextDynamicArgumentsLastFetch[url] = Date.now();
+            this.setState({
+                dynamicArgumentsLastFetch: nextDynamicArgumentsLastFetch,
+            });
+        }
     }
 
     completeSuggestion = (command) => {
@@ -127,22 +140,18 @@ export default class SlashSuggestion extends PureComponent {
                 onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
             });
         }
-
-        this.setState({
-            active: false,
-            suggestionComplete: true,
-        });
     };
 
-    keyExtractor = (item) => item.id || item.trigger;
+    keyExtractor = (item) => item.id || item.Suggestion;
 
     renderItem = ({item}) => (
         <SlashSuggestionItem
-            description={item.auto_complete_desc}
-            hint={item.auto_complete_hint}
+            description={item.Description}
+            hint={item.Hint}
             onPress={this.completeSuggestion}
             theme={this.props.theme}
-            trigger={item.trigger}
+            suggestion={item.Suggestion}
+            complete={item.Complete}
             isLandscape={this.props.isLandscape}
         />
     )

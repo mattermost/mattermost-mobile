@@ -4,7 +4,7 @@
 import {combineReducers} from 'redux';
 import {IntegrationTypes, ChannelTypes} from '@mm-redux/action_types';
 import {GenericAction} from '@mm-redux/types/actions';
-import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp} from '@mm-redux/types/integrations';
+import {Command, IncomingWebhook, OutgoingWebhook, OAuthApp, AutocompleteListItems} from '@mm-redux/types/integrations';
 import {Dictionary, IDMappedObjects} from '@mm-redux/types/utilities';
 
 function incomingHooks(state: IDMappedObjects<IncomingWebhook> = {}, action: GenericAction) {
@@ -159,6 +159,20 @@ function systemCommands(state: IDMappedObjects<Command> = {}, action: GenericAct
     }
 }
 
+function dynamicArguments(state: IDMappedObjects<AutocompleteListItems> = {}, action: GenericAction) {
+    switch (action.type) {
+    case IntegrationTypes.RECEIVED_DYNAMIC_SUGGESTIONS: {
+        const nextState = {...state};
+        if (action.data) {
+            nextState[action.id] = action.data;
+        }
+        return nextState;
+    }
+    default:
+        return state;
+    }
+}
+
 function oauthApps(state: IDMappedObjects<OAuthApp> = {}, action: GenericAction) {
     switch (action.type) {
     case IntegrationTypes.RECEIVED_OAUTH_APPS: {
@@ -218,6 +232,9 @@ export default combineReducers({
 
     // object to represent built-in slash commands
     systemCommands,
+
+    // object to represent slash commands' dynamic arguments
+    dynamicArguments,
 
     // trigger ID for interactive dialogs
     dialogTriggerId,

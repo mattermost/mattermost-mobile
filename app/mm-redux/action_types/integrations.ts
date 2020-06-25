@@ -15,6 +15,7 @@ export default keyMirror({
     RECEIVED_COMMANDS: null,
     RECEIVED_COMMAND_TOKEN: null,
     DELETED_COMMAND: null,
+    RECEIVED_DYNAMIC_SUGGESTIONS: null,
     RECEIVED_OAUTH_APP: null,
     RECEIVED_OAUTH_APPS: null,
     DELETED_OAUTH_APP: null,

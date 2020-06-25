@@ -381,3 +381,22 @@ export function submitInteractiveDialog(submission: DialogSubmission): ActionFun
         return {data};
     };
 }
+
+export function getDynamicAutocompleteSuggestions(url: string, parsed: string, toBeParsed: string, teamId: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        let data: any = null;
+        try {
+            data = await Client4.dynamicAutocompleteSuggestions(url, parsed, toBeParsed, teamId);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {error};
+        }
+        dispatch({
+            type: IntegrationTypes.RECEIVED_DYNAMIC_SUGGESTIONS,
+            data,
+            id: url,
+        });
+        return {data};
+    };
+}
