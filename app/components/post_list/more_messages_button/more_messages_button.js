@@ -53,7 +53,7 @@ export default class MoreMessageButton extends React.PureComponent {
         intl: intlShape.isRequired,
     };
 
-    state = {moreCount: 0, moreText: ''};
+    state = {moreText: ''};
     top = new Animated.Value(0);
     opacity = new Animated.Value(1);
     prevNewMessageLineIndex = 0;
@@ -84,7 +84,7 @@ export default class MoreMessageButton extends React.PureComponent {
 
     componentDidUpdate(prevProps, prevState) {
         const {channelId, unreadCount, newMessageLineIndex} = this.props;
-        const {moreText, moreCount} = this.state;
+        const {moreText} = this.state;
 
         if (channelId !== prevProps.channelId) {
             this.reset();
@@ -95,7 +95,7 @@ export default class MoreMessageButton extends React.PureComponent {
         }
 
         this.moreTextSame = moreText === prevState.moreText;
-        if (this.moreTextSame && moreCount >= 60) {
+        if (this.moreTextSame && moreText.startsWith('60')) {
             this.animateOpacity();
         }
 
@@ -137,10 +137,11 @@ export default class MoreMessageButton extends React.PureComponent {
         this.pressed = false;
         this.opacityIsAnimating = false;
         this.scrolledToLastIndex = false;
+        this.setState({moreText: ''});
     }
 
     show = () => {
-        if (!this.visible && this.state.moreCount > 0 && !this.props.deepLinkURL) {
+        if (!this.visible && this.state.moreText && !this.props.deepLinkURL) {
             this.visible = true;
             const toValue = this.networkIndicatorVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_FACTOR;
             Animated.spring(this.top, {
@@ -230,7 +231,7 @@ export default class MoreMessageButton extends React.PureComponent {
 
             if (moreCount > 0) {
                 const moreText = this.moreText(moreCount);
-                this.setState({moreCount, moreText}, this.show);
+                this.setState({moreText}, this.show);
             }
         }
     }

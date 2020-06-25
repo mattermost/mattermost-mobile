@@ -114,7 +114,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.prevNewMessageLineIndex).toEqual(2);
         });
 
-        test('componentDidUpdate should set moreTextSame and call onScrollEnd when moreTextSame is true and moreCount >= 60', () => {
+        test('componentDidUpdate should set moreTextSame and call onScrollEnd when moreTextSame is true and more count >= 60', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -123,26 +123,23 @@ describe('MoreMessagesButton', () => {
             expect(instance.moreTextSame).toBeUndefined();
             expect(instance.animateOpacity).not.toHaveBeenCalled();
 
-            const newMoreText = instance.state.moreText + '1';
+            let newMoreText = '1 new message';
             wrapper.setState({moreText: newMoreText});
             expect(instance.moreTextSame).toBe(false);
             expect(instance.animateOpacity).not.toHaveBeenCalled();
 
-            wrapper.setState({other: 'test', moreText: newMoreText, moreCount: 59});
+            wrapper.setState({other: 'test 1', moreText: newMoreText});
             expect(instance.moreTextSame).toBe(true);
             expect(instance.animateOpacity).not.toHaveBeenCalled();
 
-            wrapper.setState({other: 'test', moreText: newMoreText, moreCount: 60});
+            newMoreText = '60 new messages';
+            wrapper.setState({moreText: newMoreText});
+            expect(instance.moreTextSame).toBe(false);
+            expect(instance.animateOpacity).not.toHaveBeenCalled();
+
+            wrapper.setState({other: 'test 2', moreText: newMoreText});
             expect(instance.moreTextSame).toBe(true);
             expect(instance.animateOpacity).toHaveBeenCalledTimes(1);
-
-            wrapper.setState({other: 'test', moreText: newMoreText, moreCount: 61});
-            expect(instance.moreTextSame).toBe(true);
-            expect(instance.animateOpacity).toHaveBeenCalledTimes(2);
-
-            wrapper.setState({moreText: newMoreText + '1', moreCount: 61});
-            expect(instance.moreTextSame).toBe(false);
-            expect(instance.animateOpacity).toHaveBeenCalledTimes(2);
         });
 
         test('componentDidUpdate should call hide when the unreadCount decreases but is not 0', () => {
@@ -249,6 +246,7 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.setState({moreText: '60+ new messages'});
             instance.viewableItemsChangedTimer = jest.fn();
             instance.hide = jest.fn();
             instance.prevNewMessageLineIndex = 100;
@@ -267,6 +265,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.pressed).toEqual(false);
             expect(instance.opacityIsAnimating).toEqual(false);
             expect(instance.scrolledToLastIndex).toEqual(false);
+            expect(instance.state.moreText).toEqual('');
         });
     });
 
@@ -288,30 +287,30 @@ describe('MoreMessagesButton', () => {
             expect(Animated.spring).not.toHaveBeenCalled();
         });
 
-        it('should not animate when not visible but state.moreCount <= 0', () => {
+        it('should not animate when not visible but state.moreText is empty', () => {
             instance.visible = false;
-            wrapper.setState({moreCount: 0});
+            wrapper.setState({moreText: ''});
             wrapper.setProps({deepLinkURL: null});
 
             instance.show();
             expect(Animated.spring).not.toHaveBeenCalled();
 
-            wrapper.setState({moreCount: -1});
+            wrapper.setState({moreText: '1 new message'});
             expect(Animated.spring).not.toHaveBeenCalled();
         });
 
-        it('should not animate when not visible and state.moreCount > 0 but props.deepLinkURL is set', () => {
+        it('should not animate when not visible and state.moreText is not empty but props.deepLinkURL is set', () => {
             instance.visible = false;
-            wrapper.setState({moreCount: 10});
+            wrapper.setState({moreText: '1 new message'});
             wrapper.setProps({deepLinkURL: 'deeplink-url'});
 
             instance.show();
             expect(Animated.spring).not.toHaveBeenCalled();
         });
 
-        it('should animate when not visible, state.moreCount > 0, and props.deepLinkURL is not set', () => {
+        it('should animate when not visible, state.moreText is not empty, and props.deepLinkURL is not set', () => {
             instance.visible = false;
-            wrapper.setState({moreCount: 10});
+            wrapper.setState({moreText: '1 new message'});
             wrapper.setProps({deepLinkURL: null});
 
             instance.show();
@@ -325,7 +324,7 @@ describe('MoreMessagesButton', () => {
         it('should account for the network indicator height when the indicator is visible', () => {
             instance.networkIndicatorVisible = true;
             instance.visible = false;
-            wrapper.setState({moreCount: 10});
+            wrapper.setState({moreText: '1 new message'});
             wrapper.setProps({deepLinkURL: null});
 
             instance.show();
@@ -615,18 +614,18 @@ describe('MoreMessagesButton', () => {
             expect(instance.show).not.toHaveBeenCalled();
         });
 
-        it('should set moreCount and call show when unreadCount minus last index > 0', () => {
+        it('should set moreText and call show when unreadCount minus last index > 0', () => {
             const unreadCount = 10;
-            const initialMoreCount = 0;
+            const initialMoreText = '';
             wrapper.setProps({newMessageLineIndex: 10, unreadCount});
-            wrapper.setState({moreCount: initialMoreCount});
+            wrapper.setState({moreText: initialMoreText});
 
             let viewableIndeces = [11, 12, 13];
             let nextMoreCount = unreadCount - viewableIndeces[viewableIndeces.length - 1];
             expect(nextMoreCount).toEqual(-3);
 
             instance.viewableItemsChangedHandler(viewableIndeces);
-            expect(instance.state.moreCount).toEqual(initialMoreCount);
+            expect(instance.state.moreText).toEqual(initialMoreText);
             expect(instance.show).not.toHaveBeenCalled();
 
             viewableIndeces = [0, 1, 2];
@@ -635,7 +634,7 @@ describe('MoreMessagesButton', () => {
 
             instance.viewableItemsChangedHandler(viewableIndeces);
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
-            expect(instance.state.moreCount).toEqual(nextMoreCount);
+            expect(instance.state.moreText.startsWith('8')).toBe(true);
             expect(instance.show).toHaveBeenCalled();
         });
     });
