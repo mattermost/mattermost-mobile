@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.32.1 Release
-- Release Date: , 2020
+- Release Date: June 25, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Compatibility
@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixing an issue where app startup and channel switching is slow.
+ - Fixed an issue where Android app cold start and channel switching were slow.
  
 ## 1.32.0 Release
 - Release Date: June 16, 2020
