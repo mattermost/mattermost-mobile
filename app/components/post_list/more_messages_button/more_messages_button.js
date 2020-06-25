@@ -92,9 +92,9 @@ export default class MoreMessageButton extends React.PureComponent {
 
     onNetworkIndicatorVisible = (indicatorVisible) => {
         this.networkIndicatorVisible = indicatorVisible;
-        if (this.visible && indicatorVisible) {
+        if (this.visible) {
             Animated.spring(this.top, {
-                toValue: SHOWN_TOP + NETWORK_INDICATOR_HEIGHT,
+                toValue: indicatorVisible ? (SHOWN_TOP + NETWORK_INDICATOR_HEIGHT) : SHOWN_TOP,
                 useNativeDriver: false,
             }).start();
         }
@@ -149,7 +149,8 @@ export default class MoreMessageButton extends React.PureComponent {
         }
 
         this.pressed = true;
-        this.prevNewMessageLineIndex = newMessageLineIndex;
+
+        // this.prevNewMessageLineIndex = newMessageLineIndex;
         scrollToIndex(newMessageLineIndex);
     }
 

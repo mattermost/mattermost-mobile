@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, FlatList, InteractionManager, Platform, RefreshControl, StyleSheet} from 'react-native';
+import {Alert, FlatList, Platform, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -261,16 +261,17 @@ export default class PostList extends PureComponent {
 
     handleScrollToIndexFailed = (info) => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
-            if (this.props.initialIndex > 0 && this.contentHeight > 0) {
-                this.hasDoneInitialScroll = false;
-                if (info.highestMeasuredFrameIndex) {
-                    this.scrollToInitialIndexIfNeeded(info.highestMeasuredFrameIndex);
-                } else {
-                    this.scrollAfterInteraction = InteractionManager.runAfterInteractions(() => {
-                        this.scrollToInitialIndexIfNeeded(info.index);
-                    });
-                }
-            }
+        //     if (this.props.initialIndex > 0 && this.contentHeight > 0) {
+        //         this.hasDoneInitialScroll = false;
+        //         if (info.highestMeasuredFrameIndex) {
+            this.flatListScrollToIndex(info.highestMeasuredFrameIndex);
+
+        //         } else {
+        //             this.scrollAfterInteraction = InteractionManager.runAfterInteractions(() => {
+        //                 this.scrollToInitialIndexIfNeeded(info.index);
+        //             });
+        //         }
+        //     }
         });
     };
 
@@ -547,7 +548,7 @@ export default class PostList extends PureComponent {
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}
-                    windowSize={Platform.select({android: 31, ios: 50})}
+                    windowSize={Platform.select({android: 21, ios: 50})}
                     viewabilityConfig={{
                         viewAreaCoveragePercentThreshold: 0,
                         minimumViewTime: 100,

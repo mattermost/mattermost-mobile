@@ -179,7 +179,7 @@ export default class NetworkIndicator extends PureComponent {
                 ),
                 Animated.timing(
                     this.top, {
-                        toValue: (this.getNavBarHeight() - ViewTypes),
+                        toValue: (this.getNavBarHeight() - NETWORK_INDICATOR_HEIGHT),
                         duration: 300,
                         delay: 500,
                         useNativeDriver: false,
