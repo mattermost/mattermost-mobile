@@ -30,6 +30,8 @@ export default class TermsOfService extends PureComponent {
         }).isRequired,
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
+        isSupportedServer: PropTypes.bool,
+        showUnsupportedServer: PropTypes.func,
         siteName: PropTypes.string,
         theme: PropTypes.object,
     };
@@ -145,11 +147,18 @@ export default class TermsOfService extends PureComponent {
     };
 
     handleAcceptTerms = () => {
+        const onSuccess = () => {
+            const {isSupportedServer, showUnsupportedServer} = this.props;
+            dismissModal();
+
+            if (!isSupportedServer) {
+                showUnsupportedServer();
+            }
+        };
+
         this.registerUserAction(
             true,
-            () => {
-                dismissModal();
-            },
+            onSuccess,
             this.handleAcceptTerms,
         );
     };
@@ -189,7 +198,6 @@ export default class TermsOfService extends PureComponent {
         });
 
         const {data} = await actions.updateMyTermsOfServiceStatus(this.state.termsId, accepted);
-
         this.setState({
             loading: false,
         });
