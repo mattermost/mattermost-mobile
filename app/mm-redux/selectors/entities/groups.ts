@@ -4,10 +4,8 @@ import * as reselect from 'reselect';
 import {GlobalState} from '@mm-redux/types/store';
 import {Group} from '@mm-redux/types/groups';
 import {filterGroupsMatchingTerm} from '@mm-redux/utils/group_utils';
-import {getUserLocale} from '@mm-redux/utils/channel_utils';
+import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
-import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getUsers} from '@mm-redux/selectors/entities/common';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTeam} from '@mm-redux/selectors/entities/teams';
 import {Permissions} from '@mm-redux/constants';
@@ -67,14 +65,13 @@ export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term
 export function getAssociatedGroupsForReference(state: GlobalState, teamId: string, channelId: string): Array<Group> {
     const team = getTeam(state, teamId);
     const channel = getChannel(state, channelId);
-    const currentUserId = getCurrentUserId(state);
-    const profiles = getUsers(state);
-    const locale = getUserLocale(currentUserId, profiles);
+    const locale = getCurrentUserLocale(state);
 
     if (!haveIChannelPermission(state, {
         permission: Permissions.USE_GROUP_MENTIONS,
         channel: channelId,
         team: teamId,
+        default: true,
     })) {
         return emptyList;
     }

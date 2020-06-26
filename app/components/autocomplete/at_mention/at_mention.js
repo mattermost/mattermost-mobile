@@ -242,6 +242,7 @@ export default class AtMention extends PureComponent {
     renderGroupMentions = ({item}) => {
         return (
             <GroupMentionItem
+                key={`autocomplete-group-${item.name}`}
                 completeHandle={item.name}
                 onPress={this.completeMention}
                 theme={this.props.theme}

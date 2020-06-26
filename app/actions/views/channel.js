@@ -596,7 +596,7 @@ function loadGroupData() {
         const license = getLicense(state);
         const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
 
-        if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 22)) {
+        if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 26)) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
                     if (team.group_constrained) {

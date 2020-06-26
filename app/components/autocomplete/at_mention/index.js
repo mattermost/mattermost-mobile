@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {autocompleteUsers} from '@mm-redux/actions/users';
+import {getLicense} from '@mm-redux/selectors/entities/general';
 import {getCurrentChannelId, getDefaultChannel} from '@mm-redux/selectors/entities/channels';
 import {getAssociatedGroupsForReference, searchAssociatedGroupsForReferenceLocal} from '@mm-redux/selectors/entities/groups';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
@@ -28,6 +29,8 @@ function mapStateToProps(state, ownProps) {
     const {cursorPosition, isSearch} = ownProps;
     const currentChannelId = getCurrentChannelId(state);
     const currentTeamId = getCurrentTeamId(state);
+    const license = getLicense(state);
+    const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
     let useChannelMentions = true;
     if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
         useChannelMentions = haveIChannelPermission(
@@ -46,7 +49,7 @@ function mapStateToProps(state, ownProps) {
     let teamMembers;
     let inChannel;
     let outChannel;
-    let groups;
+    let groups = [];
     if (isSearch) {
         teamMembers = filterMembersInCurrentTeam(state, matchTerm);
     } else {
@@ -54,10 +57,12 @@ function mapStateToProps(state, ownProps) {
         outChannel = filterMembersNotInChannel(state, matchTerm);
     }
 
-    if (matchTerm) {
-        groups = searchAssociatedGroupsForReferenceLocal(state, matchTerm, currentTeamId, currentChannelId);
-    } else {
-        groups = getAssociatedGroupsForReference(state, currentTeamId, currentChannelId);
+    if (hasLicense && isMinimumServerVersion(state.entities.general.serverVersion, 5, 26)) {
+        if (matchTerm) {
+            groups = searchAssociatedGroupsForReferenceLocal(state, matchTerm, currentTeamId, currentChannelId);
+        } else {
+            groups = getAssociatedGroupsForReference(state, currentTeamId, currentChannelId);
+        }
     }
 
     return {

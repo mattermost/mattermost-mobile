@@ -713,7 +713,7 @@ function buildUnreadChannels(channels: Array<Channel>, members: RelationOneToOne
         sort(sortChannelsByDisplayName.bind(null, locale));
 }
 
-export function getUserLocale(userId: string, profiles: IDMappedObjects<UserProfile>) {
+function getUserLocale(userId: string, profiles: IDMappedObjects<UserProfile>) {
     let locale = General.DEFAULT_LOCALE;
     if (profiles && profiles[userId] && profiles[userId].locale) {
         locale = profiles[userId].locale;
