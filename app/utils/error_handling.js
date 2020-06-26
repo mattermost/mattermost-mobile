@@ -55,7 +55,7 @@ class JavascriptAndNativeErrorHandler {
 
             Alert.alert(
                 translations[t('mobile.error_handler.title')],
-                translations[t('mobile.error_handler.description')],
+                translations[t('mobile.error_handler.description')] + `\n\n${e.message}\n\n${e.stack}`,
                 [{
                     text: translations[t('mobile.error_handler.button')],
                     onPress: async () => {
