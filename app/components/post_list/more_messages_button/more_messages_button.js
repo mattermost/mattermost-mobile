@@ -85,6 +85,7 @@ export default class MoreMessageButton extends React.PureComponent {
 
         if (channelId !== prevProps.channelId) {
             this.reset();
+            return;
         }
 
         // Cancel the more messages button if the unread count decreases due to the user
@@ -123,7 +124,6 @@ export default class MoreMessageButton extends React.PureComponent {
         this.viewableItems = [];
         this.pressed = false;
         this.scrolledToLastIndex = false;
-        this.setState({moreText: ''});
         this.canceled = false;
     }
 
