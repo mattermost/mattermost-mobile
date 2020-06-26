@@ -282,11 +282,12 @@ export default class ChannelBase extends PureComponent {
             defaultMessage: 'This server version is unsupported and users will be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Upgrading to server version {serverVersion} or later is required.',
         }, {serverVersion: ViewTypes.RequiredServer.FULL_VERSION});
         const cancel = {
-            text: formatMessage({id: 'mobile.server_upgrade.cancel', defaultMessage: 'Cancel'}),
-            style: 'cancel',
+            text: formatMessage({id: 'mobile.server_upgrade.dismiss', defaultMessage: 'Dismiss'}),
+            style: 'default',
         };
         const learnMore = {
             text: formatMessage({id: 'mobile.server_upgrade.learn_more', defaultMessage: 'Learn More'}),
+            style: 'cancel',
             onPress: () => {
                 const url = 'https://mattermost.com/blog/support-for-esr-5-9-has-ended/';
                 if (Linking.canOpenURL(url)) {
