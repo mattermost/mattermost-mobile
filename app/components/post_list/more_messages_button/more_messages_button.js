@@ -125,6 +125,7 @@ export default class MoreMessageButton extends React.PureComponent {
         this.pressed = false;
         this.scrolledToLastIndex = false;
         this.canceled = false;
+        this.setState({moreText: ''});
     }
 
     show = () => {
