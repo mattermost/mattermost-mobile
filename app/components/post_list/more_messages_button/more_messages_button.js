@@ -12,6 +12,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
 import ViewTypes, {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
 
 const HIDDEN_TOP = -100;
 const SHOWN_TOP = 0;
@@ -273,13 +274,13 @@ export default class MoreMessageButton extends React.PureComponent {
         });
     }
 
-    intlMoreText = (page, count, countText) => {
+    intlMoreText = (isInitialMessage, count, countText) => {
         const {formatMessage} = this.context.intl;
 
         return formatMessage({
-            id: 'mobile.more_messages_button.text',
-            defaultMessage: '{countText} {page, plural, one {new} other {more new}} {count, plural, one {message} other {messages}}',
-        }, {page, count, countText});
+            id: t('mobile.more_messages_button.text'),
+            defaultMessage: '{countText} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}',
+        }, {isInitialMessage, count, countText});
     };
 
     moreText = (moreCount) => {
@@ -288,9 +289,9 @@ export default class MoreMessageButton extends React.PureComponent {
             countText += '+';
         }
 
-        const page = this.state.moreText === '' ? 1 : 2;
+        const isInitialMessage = this.state.moreText === '';
 
-        return this.intlMoreText(page, moreCount, countText);
+        return this.intlMoreText(isInitialMessage, moreCount, countText);
     }
 
     render() {
