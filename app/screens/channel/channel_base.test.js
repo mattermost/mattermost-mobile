@@ -62,6 +62,7 @@ describe('ChannelBase', () => {
 
         const wrapper = shallow(
             <ChannelBase {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         expect(mergeNavigationOptions.mock.calls).toEqual([]);
