@@ -12,7 +12,6 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
 import ViewTypes, {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {t} from '@utils/i18n';
 
 const HIDDEN_TOP = -100;
 const SHOWN_TOP = 0;
@@ -94,12 +93,12 @@ export default class MoreMessageButton extends React.PureComponent {
             this.animateOpacity();
         }
 
-        // Hide the more messages button if the unread count decreases due to the user
+        // Cancel the more messages button if the unread count decreases due to the user
         // marking a post below the new message line as unread or if the new message line
         // index changes due to the channel loading with a new message line that is removed
         // shortly after.
         if ((unreadCount !== 0 && unreadCount < prevProps.unreadCount) || newMessageLineIndex === -1) {
-            this.hide();
+            this.cancel();
         }
 
         // The unreadCount might not be set until after all the viewable items are rendered.
@@ -274,33 +273,13 @@ export default class MoreMessageButton extends React.PureComponent {
         });
     }
 
-    intlMoreText = (firstPage, singular, countText) => {
+    intlMoreText = (page, count, countText) => {
         const {formatMessage} = this.context.intl;
-        let id;
-        let defaultMessage;
 
-        switch (true) {
-        case (firstPage && singular):
-            id = t('mobile.more_messages.firstPageSingular');
-            defaultMessage = '{countText} new message';
-            break;
-        case (firstPage && !singular):
-            id = t('mobile.more_messages.firstPagePlural');
-            defaultMessage = '{countText} new messages';
-            break;
-        case (!firstPage && singular):
-            id = t('mobile.more_messages.nextPageSingular');
-            defaultMessage = '{countText} more new message';
-            break;
-        case (!firstPage && !singular):
-            id = t('mobile.more_messages.nextPagePlural');
-            defaultMessage = '{countText} more new messages';
-            break;
-        default:
-            break;
-        }
-
-        return formatMessage({id, defaultMessage}, {countText});
+        return formatMessage({
+            id: 'mobile.more_messages_button.text',
+            defaultMessage: '{countText} {page, plural, one {new} other {more new}} {count, plural, one {message} other {messages}}',
+        }, {page, count, countText});
     };
 
     moreText = (moreCount) => {
@@ -309,10 +288,9 @@ export default class MoreMessageButton extends React.PureComponent {
             countText += '+';
         }
 
-        const firstPage = this.state.moreText === '';
-        const singular = moreCount === 1;
+        const page = this.state.moreText === '' ? 1 : 2;
 
-        return this.intlMoreText(firstPage, singular, countText);
+        return this.intlMoreText(page, moreCount, countText);
     }
 
     render() {
