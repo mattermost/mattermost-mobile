@@ -12,9 +12,9 @@
 ### Highlights
 
 ### Improvements
- - The server will send a push notification to the client when the session has expired.
- - Removed 'Select Team' title in cases where teams aren't loading.
- - The at-mention and search autocompletes now render if there is a server request or network problem/outage.
+ - The server will now send a push notification to the client when the session has expired.
+ - Removed **Select Team** title in cases where teams aren't loading.
+ - The at-mention and search autocompletes now render even if there is a server request or a network outage.
  
 ### Bug Fixes
 
