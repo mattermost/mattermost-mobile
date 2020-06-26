@@ -19,22 +19,25 @@
 ### Bug Fixes
 
 #### All apps
- - Fixed an issue where, when hitting the 'Delete Documents & Data' button, the button to join the team disappeared.
+ - Fixed an issue where **Invalid or expired session, please login again** notifications were sent when ID-loaded Sessions Lengths on Mobile was enabled.
+ - Fixed an issue where leaving a team in a browser while the mobile app was open caused the app to be stuck in the team.
+ - Fixed an issue where, when hitting the **Delete Documents & Data** button, the button to join the team disappeared.
  - Fixed an issue where the channel header transition to landscape mode was slow.
- - Fixed an issue where teams were not listed alphabetically on "Select Team" page.
- - Fixed an issue where a currently active/highlighted unread channel was not bolded.
+ - Fixed an issue where teams were not listed alphabetically on the **Select Team** screen.
+ - Fixed an issue where a currently active unread channel was not bolded.
  - Fixed an issue where user was unable to create channels directly after joining a team.
- - Fixed an issue where the ":" search date picker on edit replaced the date and left old date info.
- - Fixed an issue where a confusing `Invalid Message` banner was present on Edit Message modal when over the character limit.
- - Fixed an issue with an unhandled error when logging out from the Select Team screen.
+ - Fixed an issue where the **:** search date picker on edit replaced the date and left old date info.
+ - Fixed an issue where a confusing **Invalid Message** banner was present on Edit Message modal when typing a message that was over the character limit.
+ - Fixed an issue with an unhandled error when logging out from the **Select Team** screen.
  - Fixed an issue where an error message on Server URL screen moved strangely when the keyboard slid on.
- - Fixed an issue with an uneven horizontal margins around "Jump to" box.
+ - Fixed an issue with an uneven horizontal margins around **Jump to** box.
  - Fixed an issue where the OneLogin button had a blue outline, but a green fill.
 
 #### Android specific
+ - Fixed an issue where hitting edit multiple times opened the edit window without a save button.
 
 #### iOS specific
- - Fixing an issue where the Enter key did not work in search when using an iPad with an external keyboard.
+ - Fixed an issue where the Enter key did not work in search when using an iPad with an external keyboard.
  
 #### Known issues
 
