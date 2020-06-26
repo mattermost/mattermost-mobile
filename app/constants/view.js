@@ -98,8 +98,16 @@ const ViewTypes = keyMirror({
     NETWORK_INDICATOR_VISIBLE: null,
 });
 
+const RequiredServer = {
+    FULL_VERSION: 5.19,
+    MAJOR_VERSION: 5,
+    MIN_VERSION: 19,
+    PATCH_VERSION: 0,
+};
+
 export default {
     ...ViewTypes,
+    RequiredServer,
     POST_VISIBILITY_CHUNK_SIZE: 60,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',

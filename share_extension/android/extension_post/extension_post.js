@@ -26,15 +26,15 @@ import {Client4} from '@mm-redux/client';
 import {Preferences} from '@mm-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
 
-import Loading from 'app/components/loading';
-import PaperPlane from 'app/components/post_draft/quick_actions/send_action/paper_plane';
-import {MAX_FILE_COUNT} from 'app/constants/post_draft';
-import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
+import Loading from '@components/loading';
+import PaperPlane from '@components/post_draft/quick_actions/send_action/paper_plane';
+import {MAX_FILE_COUNT, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {getCurrentServerUrl, getAppCredentials} from '@init/credentials';
+import {getExtensionFromMime} from '@utils/file';
+import {setCSRFFromCookie} from '@utils/security';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
-import {getExtensionFromMime} from 'app/utils/file';
-import {setCSRFFromCookie} from 'app/utils/security';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {
     ExcelSvg,
@@ -59,7 +59,6 @@ const extensionSvg = {
 };
 const ShareExtension = NativeModules.MattermostShare;
 const INPUT_HEIGHT = 150;
-const MAX_MESSAGE_LENGTH = 4000;
 
 export default class ExtensionPost extends PureComponent {
     static propTypes = {
@@ -386,7 +385,7 @@ export default class ExtensionPost extends PureComponent {
         const {currentUserId} = this.props;
         const {formatMessage} = this.context.intl;
 
-        if (value.length > MAX_MESSAGE_LENGTH) {
+        if (value.length > MAX_MESSAGE_LENGTH_FALLBACK) {
             Alert.alert(
                 formatMessage({
                     id: 'mobile.share_extension.too_long_title',
@@ -397,7 +396,7 @@ export default class ExtensionPost extends PureComponent {
                     defaultMessage: 'Character count: {count}/{max}',
                 }, {
                     count: value.length,
-                    max: MAX_MESSAGE_LENGTH,
+                    max: MAX_MESSAGE_LENGTH_FALLBACK,
                 }),
             );
         } else {
@@ -588,7 +587,7 @@ export default class ExtensionPost extends PureComponent {
 
     renderMessageLengthRemaining = () => {
         const {value} = this.state;
-        const messageLengthRemaining = MAX_MESSAGE_LENGTH - value.length;
+        const messageLengthRemaining = MAX_MESSAGE_LENGTH_FALLBACK - value.length;
 
         if (value.length === 0) {
             return null;

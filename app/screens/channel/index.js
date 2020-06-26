@@ -7,20 +7,37 @@ import {connect} from 'react-redux';
 import {loadChannelsForTeam, selectInitialChannel, resetUnreadMessageCount} from '@actions/views/channel';
 import {recordLoadTime} from '@actions/views/root';
 import {selectDefaultTeam} from '@actions/views/select_team';
-import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
-import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
+import {ViewTypes} from '@constants';
 import {getChannelStats} from '@mm-redux/actions/channels';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getServerVersion} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
+import {getCurrentUserId, getCurrentUserRoles, shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
 
 import Channel from './channel';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
+    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const isSystemAdmin = checkIsSystemAdmin(roles);
+    let isSupportedServer = true;
+
+    if (isSystemAdmin) {
+        isSupportedServer = isMinimumServerVersion(
+            getServerVersion(state),
+            ViewTypes.RequiredServer.MAJOR_VERSION,
+            ViewTypes.RequiredServer.MIN_VERSION,
+            ViewTypes.RequiredServer.PATCH_VERSION,
+        );
+    }
 
     return {
         currentTeamId: currentTeam?.id,
         currentChannelId: getCurrentChannelId(state),
+        isSupportedServer,
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
         showTermsOfService: shouldShowTermsOfService(state),

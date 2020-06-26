@@ -31,7 +31,6 @@ export default async function getStorage(identifier = 'default') {
     const MMKV = await new MMKVStorage.Loader().
         withInstanceID(identifier).
         setProcessingMode(MMKVStorage.MODES.MULTI_PROCESS).
-        withEncryption().
         initialize();
 
     return {

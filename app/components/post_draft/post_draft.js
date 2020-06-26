@@ -141,7 +141,7 @@ export default class PostDraft extends PureComponent {
                 channel_id: channelId,
                 root_id: rootId,
                 parent_id: rootId,
-                message: value.trim(),
+                message: value,
             };
 
             createPost(post, postFiles);

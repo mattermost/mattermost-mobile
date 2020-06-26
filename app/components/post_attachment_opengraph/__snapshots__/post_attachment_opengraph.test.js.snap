@@ -96,6 +96,11 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
     >
       <FastImage
         resizeMode="contain"
+        source={
+          Object {
+            "uri": "https://www.mattermost.org/wp-content/uploads/2016/03/logoHorizontal_WS.png",
+          }
+        }
         style={
           Array [
             Object {
@@ -259,7 +264,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
         "marginTop": 5,
       },
       Object {
-        "height": 69.83261802575107,
+        "height": 112.56666666666666,
         "width": 307,
       },
     ]
@@ -271,13 +276,18 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
   >
     <FastImage
       resizeMode="contain"
+      source={
+        Object {
+          "uri": "https://mattermost.com/logo.png",
+        }
+      }
       style={
         Array [
           Object {
             "borderRadius": 3,
           },
           Object {
-            "height": 69.83261802575107,
+            "height": 112.56666666666666,
             "width": 307,
           },
         ]

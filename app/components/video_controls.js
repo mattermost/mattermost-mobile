@@ -62,9 +62,9 @@ export default class VideoControls extends PureComponent {
         AppState.addEventListener('change', this.handleAppStateChange);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.playerState === PLAYER_STATE.ENDED || nextProps.isLoading ||
-            (nextProps.playerState === PLAYER_STATE.PAUSED && this.props.playerState === PLAYER_STATE.PLAYING)) {
+    componentDidUpdate(prevProps) {
+        if (this.props.playerState === PLAYER_STATE.ENDED || this.props.isLoading ||
+            (this.props.playerState === PLAYER_STATE.PAUSED && prevProps.playerState === PLAYER_STATE.PLAYING)) {
             this.fadeInControls(false);
         }
     }

@@ -29,7 +29,7 @@ import {getTeamByName} from '@mm-redux/selectors/entities/teams';
 import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
+import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
 import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
@@ -136,29 +136,9 @@ export function loadThreadIfNecessary(rootId) {
 export function selectInitialChannel(teamId) {
     return (dispatch, getState) => {
         const state = getState();
-        const {channels, myMembers} = state.entities.channels;
-        const {currentUserId} = state.entities.users;
-        const {myPreferences} = state.entities.preferences;
-        const lastChannelForTeam = state.views.team.lastChannelForTeam[teamId];
-        const lastChannelId = lastChannelForTeam && lastChannelForTeam.length ? lastChannelForTeam[0] : '';
-        const lastChannel = channels[lastChannelId];
+        const channelId = lastChannelIdForTeam(state, teamId);
 
-        const isDMVisible = lastChannel && lastChannel.type === General.DM_CHANNEL &&
-            isDirectChannelVisible(currentUserId, myPreferences, lastChannel);
-
-        const isGMVisible = lastChannel && lastChannel.type === General.GM_CHANNEL &&
-            isGroupChannelVisible(myPreferences, lastChannel);
-
-        if (
-            myMembers[lastChannelId] &&
-            lastChannel &&
-            (lastChannel.team_id === teamId || isDMVisible || isGMVisible)
-        ) {
-            dispatch(handleSelectChannel(lastChannelId));
-            return;
-        }
-
-        dispatch(selectDefaultChannel(teamId));
+        dispatch(handleSelectChannel(channelId));
     };
 }
 

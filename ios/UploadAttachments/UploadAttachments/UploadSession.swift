@@ -130,10 +130,10 @@ import os.log
     }
 
     public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?) {
-        notificationReceipt(notificationId:notificationId, receivedAt:receivedAt, type:type, postId:nil, idLoaded: false, completion:{_, _ in})
+        notificationReceipt(notificationId:notificationId, receivedAt:receivedAt, type:type, postId:nil, idLoaded:false, completion:{_, _, _ in})
     }
 
-    public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?, postId: Any? = nil, idLoaded: Bool, completion: @escaping (Data?, Error?) -> Void) {
+    public func notificationReceipt(notificationId: Any?, receivedAt: Int, type: Any?, postId: Any? = nil, idLoaded: Bool, completion: @escaping (Data?, URLResponse?, Error?) -> Void) {
         if (notificationId != nil) {
             let store = StoreManager.shared() as StoreManager
             let entities = store.getEntities(true)
@@ -162,8 +162,8 @@ import os.log
                     request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
                     request.httpBody = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted)
 
-                    let task = URLSession(configuration: .ephemeral).dataTask(with: request) { data, _, error in
-                        completion(data, error)
+                    let task = URLSession(configuration: .ephemeral).dataTask(with: request) { data, response, error in
+                        completion(data, response, error)
                     }
                     task.resume()
                 }

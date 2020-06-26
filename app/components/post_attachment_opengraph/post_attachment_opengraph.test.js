@@ -37,14 +37,19 @@ describe('PostAttachmentOpenGraph', () => {
     };
 
     test('should match snapshot, without image and description', () => {
-        const wrapper = shallow(
+        let wrapper = shallow(
             <PostAttachmentOpenGraph {...baseProps}/>,
         );
 
         // should return null
         expect(wrapper.getElement()).toMatchSnapshot();
 
-        wrapper.setProps({openGraphData});
+        wrapper = shallow(
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={openGraphData}
+            />,
+        );
         expect(wrapper.getElement()).toMatchSnapshot();
         expect(wrapper.find(TouchableWithFeedback).exists()).toEqual(true);
     });
@@ -74,7 +79,7 @@ describe('PostAttachmentOpenGraph', () => {
     });
 
     test('should match state and snapshot, on renderImage', () => {
-        const wrapper = shallow(
+        let wrapper = shallow(
             <PostAttachmentOpenGraph {...baseProps}/>,
         );
 
@@ -86,7 +91,12 @@ describe('PostAttachmentOpenGraph', () => {
 
         const images = [{height: 440, width: 1200, url: 'https://mattermost.com/logo.png'}];
         const openGraphDataWithImage = {...openGraphData, images};
-        wrapper.setProps({openGraphData: openGraphDataWithImage});
+        wrapper = shallow(
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={openGraphDataWithImage}
+            />,
+        );
 
         expect(wrapper.instance().renderImage()).toMatchSnapshot();
         expect(wrapper.state('hasImage')).toEqual(true);
