@@ -94,6 +94,20 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
+        test('componentDidUpdate should set pressed to false when the newMessageLineIndex changes', () => {
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.pressed = true;
+
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
+            expect(instance.pressed).toBe(true);
+
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 1});
+            expect(instance.pressed).toBe(false);
+        });
+
         test('componentDidUpdate should call cancel when the unreadCount decreases but is not 0', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,

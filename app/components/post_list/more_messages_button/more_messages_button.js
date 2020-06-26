@@ -88,6 +88,10 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
+        if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
+            this.pressed = false;
+        }
+
         // Cancel the more messages button if the unread count decreases due to the user
         // marking a post below the new message line as unread or if the new message line
         // index changes due to the channel loading with a new message line that is removed
