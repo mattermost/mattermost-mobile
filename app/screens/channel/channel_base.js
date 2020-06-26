@@ -279,7 +279,7 @@ export default class ChannelBase extends PureComponent {
         const title = formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});
         const message = formatMessage({
             id: 'mobile.server_upgrade.alert_description',
-            defaultMessage: 'This server version is unsupported and users can be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Upgrading to server version {serverVersion} or later is required.',
+            defaultMessage: 'This server version is unsupported and users will be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Upgrading to server version {serverVersion} or later is required.',
         }, {serverVersion: ViewTypes.RequiredServer.FULL_VERSION});
         const cancel = {
             text: formatMessage({id: 'mobile.server_upgrade.cancel', defaultMessage: 'Cancel'}),
