@@ -233,19 +233,14 @@ export default class MoreMessageButton extends React.PureComponent {
         this.pressed = false;
     }
 
-    intlMoreText = (isInitialMessage, count) => {
+    moreText = (count) => {
         const {formatMessage} = this.context.intl;
+        const isInitialMessage = this.state.moreText === '';
 
         return formatMessage({
             id: t('mobile.more_messages_button.text'),
             defaultMessage: '{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}',
         }, {isInitialMessage, count});
-    };
-
-    moreText = (moreCount) => {
-        const isInitialMessage = this.state.moreText === '';
-
-        return this.intlMoreText(isInitialMessage, moreCount);
     }
 
     render() {
