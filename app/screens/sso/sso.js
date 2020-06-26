@@ -109,7 +109,15 @@ class SSO extends PureComponent {
     }
 
     extractCookie = (parsedUrl) => {
-        CookieManager.get(parsedUrl.origin, true).then((res) => {
+        const original = urlParse(this.props.serverUrl);
+
+        // Check whether we need to set a sub-path
+        parsedUrl.set('pathname', original.pathname || '');
+
+        parsedUrl.set('query', '');
+        Client4.setUrl(parsedUrl.href);
+
+        CookieManager.get(parsedUrl.href, true).then((res) => {
             const mmtoken = res.MMAUTHTOKEN;
             const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
 
@@ -121,13 +129,6 @@ class SSO extends PureComponent {
                 } = this.props.actions;
 
                 Client4.setToken(token);
-                if (this.props.serverUrl !== parsedUrl.origin) {
-                    const original = urlParse(this.props.serverUrl);
-
-                    // Check whether we need to set a sub-path
-                    parsedUrl.set('pathname', original.pathname || '');
-                    Client4.setUrl(parsedUrl.href);
-                }
                 ssoLogin(token).then((result) => {
                     if (result.error) {
                         this.onLoadEndError(result.error);
