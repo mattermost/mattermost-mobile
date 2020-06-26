@@ -55,7 +55,6 @@ export default class MoreMessageButton extends React.PureComponent {
 
     state = {moreText: ''};
     top = new Animated.Value(0);
-    opacity = new Animated.Value(1);
     disableViewableItemsHandler = false;
     viewableItems = [];
 
@@ -76,22 +75,16 @@ export default class MoreMessageButton extends React.PureComponent {
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
         }
-        if (this.animateOpacityTimer) {
-            clearTimeout(this.animateOpacityTimer);
+        if (this.moreTextTimer) {
+            clearTimeout(this.moreTextTimer);
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         const {channelId, unreadCount, newMessageLineIndex} = this.props;
-        const {moreText} = this.state;
 
         if (channelId !== prevProps.channelId) {
             this.reset();
-        }
-
-        this.moreTextSame = moreText === prevState.moreText;
-        if (this.moreTextSame && moreText.startsWith('60')) {
-            this.animateOpacity();
         }
 
         // Cancel the more messages button if the unread count decreases due to the user
@@ -129,7 +122,6 @@ export default class MoreMessageButton extends React.PureComponent {
         this.disableViewableItemsHandler = false;
         this.viewableItems = [];
         this.pressed = false;
-        this.opacityIsAnimating = false;
         this.scrolledToLastIndex = false;
         this.setState({moreText: ''});
     }
@@ -189,10 +181,9 @@ export default class MoreMessageButton extends React.PureComponent {
         if (!this.disableViewableItemsHandler) {
             const viewableIndeces = viewableItems.map((item) => item.index);
 
-            // Hide More Messages button when New Messages line is viewable
+            // Cancel More Messages button when New Messages line is viewable
             if (newMessageLineIndex >= unreadCount && viewableIndeces[viewableIndeces.length - 1] >= newMessageLineIndex) {
-                this.hide();
-                this.disableViewableItemsHandler = true;
+                this.cancel();
 
                 // If the first post is viewable as well, this means that the channel
                 // was just loaded. In this case let's auto scroll to the New Messages line
@@ -202,12 +193,6 @@ export default class MoreMessageButton extends React.PureComponent {
                 }
 
                 return;
-            }
-
-            const lastViewableIndex = viewableIndeces[viewableIndeces.length - 1];
-            if (lastViewableIndex >= newMessageLineIndex || lastViewableIndex === this.endIndex) {
-                this.scrolledToLastIndex = true;
-                this.animateOpacity();
             }
 
             const delay = this.viewableItemsChangedTimer ? 100 : 0;
@@ -223,75 +208,37 @@ export default class MoreMessageButton extends React.PureComponent {
             const readCount = viewableIndeces.pop() || 0;
             const moreCount = unreadCount - readCount;
 
+            if (this.moreTextTimer) {
+                clearTimeout(this.moreTextTimer);
+            }
+
             if (moreCount > 0) {
                 const moreText = this.moreText(moreCount);
-                this.setState({moreText}, this.show);
+                this.moreTextTimer = setTimeout(() => {
+                    this.setState({moreText}, this.show);
+                }, 200);
             }
         }
     }
 
     onScrollEndIndex = (endIndex) => {
         this.endIndex = endIndex;
+        this.pressed = false;
     }
 
-    animateOpacity = () => {
-        if (this.animateOpacityTimer) {
-            clearTimeout(this.animateOpacityTimer);
-        }
-
-        if (this.scrolledToLastIndex) {
-            this.pressed = false;
-
-            this.animateOpacityTimer = setTimeout(() => {
-                if (this.moreTextSame) {
-                    this.moreTextSame = false;
-                    this.scrolledToLastIndex = false;
-                    this.opacityAnimation();
-                }
-            }, 400);
-        }
-    }
-
-    opacityAnimation = () => {
-        if (this.opacityIsAnimating) {
-            return;
-        }
-
-        this.opacityIsAnimating = true;
-        Animated.sequence([
-            Animated.timing(this.opacity, {
-                toValue: 0,
-                duration: 100,
-                useNativeDriver: true,
-            }),
-            Animated.timing(this.opacity, {
-                toValue: 1,
-                duration: 100,
-                useNativeDriver: true,
-            }),
-        ]).start(() => {
-            this.opacityIsAnimating = false;
-        });
-    }
-
-    intlMoreText = (isInitialMessage, count, countText) => {
+    intlMoreText = (isInitialMessage, count) => {
         const {formatMessage} = this.context.intl;
 
         return formatMessage({
             id: t('mobile.more_messages_button.text'),
-            defaultMessage: '{countText} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}',
-        }, {isInitialMessage, count, countText});
+            defaultMessage: '{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}',
+        }, {isInitialMessage, count});
     };
 
     moreText = (moreCount) => {
-        let countText = Math.min(60, moreCount);
-        if (moreCount > 60) {
-            countText += '+';
-        }
-
         const isInitialMessage = this.state.moreText === '';
 
-        return this.intlMoreText(isInitialMessage, moreCount, countText);
+        return this.intlMoreText(isInitialMessage, moreCount);
     }
 
     render() {
@@ -312,9 +259,7 @@ export default class MoreMessageButton extends React.PureComponent {
                                 type='ion'
                                 style={styles.icon}
                             />
-                            <Animated.View style={{opacity: this.opacity}}>
-                                <Text style={styles.text}>{moreText}</Text>
-                            </Animated.View>
+                            <Text style={styles.text}>{moreText}</Text>
                         </View>
                     </TouchableWithFeedback>
                     <TouchableWithFeedback

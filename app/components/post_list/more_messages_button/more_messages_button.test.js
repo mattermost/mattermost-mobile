@@ -70,14 +70,14 @@ describe('MoreMessagesButton', () => {
             instance.removeViewableItemsListener = jest.fn();
             instance.removeScrollEndIndexListener = jest.fn();
             instance.viewableItemsChangedTimer = jest.fn();
-            instance.animateOpacityTimer = jest.fn();
+            instance.moreTextTimer = jest.fn();
 
             instance.componentWillUnmount();
             expect(EventEmitter.off).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, instance.onNetworkIndicatorVisible);
             expect(instance.removeViewableItemsListener).toHaveBeenCalled();
             expect(instance.removeScrollEndIndexListener).toHaveBeenCalled();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
-            expect(clearTimeout).toHaveBeenCalledWith(instance.animateOpacityTimer);
+            expect(clearTimeout).toHaveBeenCalledWith(instance.moreTextTimer);
         });
 
         test('componentDidUpdate should call reset when the channelId changes', () => {
@@ -92,34 +92,6 @@ describe('MoreMessagesButton', () => {
 
             wrapper.setProps({channelId: `not-${baseProps.channelId}`});
             expect(instance.reset).toHaveBeenCalled();
-        });
-
-        test('componentDidUpdate should set moreTextSame and call onScrollEnd when moreTextSame is true and more count >= 60', () => {
-            const wrapper = shallowWithIntl(
-                <MoreMessagesButton {...baseProps}/>,
-            );
-            const instance = wrapper.instance();
-            instance.animateOpacity = jest.fn();
-            expect(instance.moreTextSame).toBeUndefined();
-            expect(instance.animateOpacity).not.toHaveBeenCalled();
-
-            let newMoreText = '1 new message';
-            wrapper.setState({moreText: newMoreText});
-            expect(instance.moreTextSame).toBe(false);
-            expect(instance.animateOpacity).not.toHaveBeenCalled();
-
-            wrapper.setState({other: 'test 1', moreText: newMoreText});
-            expect(instance.moreTextSame).toBe(true);
-            expect(instance.animateOpacity).not.toHaveBeenCalled();
-
-            newMoreText = '60 new messages';
-            wrapper.setState({moreText: newMoreText});
-            expect(instance.moreTextSame).toBe(false);
-            expect(instance.animateOpacity).not.toHaveBeenCalled();
-
-            wrapper.setState({other: 'test 2', moreText: newMoreText});
-            expect(instance.moreTextSame).toBe(true);
-            expect(instance.animateOpacity).toHaveBeenCalledTimes(1);
         });
 
         test('componentDidUpdate should call cancel when the unreadCount decreases but is not 0', () => {
@@ -233,7 +205,6 @@ describe('MoreMessagesButton', () => {
             instance.disableViewableItemsHandler = true;
             instance.viewableItems = [{index: 1}];
             instance.pressed = true;
-            instance.opacityIsAnimating = true;
             instance.scrolledToLastIndex = true;
 
             instance.reset();
@@ -242,7 +213,6 @@ describe('MoreMessagesButton', () => {
             expect(instance.disableViewableItemsHandler).toEqual(false);
             expect(instance.viewableItems).toStrictEqual([]);
             expect(instance.pressed).toEqual(false);
-            expect(instance.opacityIsAnimating).toEqual(false);
             expect(instance.scrolledToLastIndex).toEqual(false);
             expect(instance.state.moreText).toEqual('');
         });
@@ -400,16 +370,15 @@ describe('MoreMessagesButton', () => {
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
+        instance.viewableItemsChangedTimer = null;
+        instance.viewableItemsChangedHandler = jest.fn();
+        instance.cancel = jest.fn();
 
-        it('should return early when initial when newMessageLineIndex <= 0', () => {
+        it('should return early when newMessageLineIndex <= 0', () => {
             const viewableItems = [{index: 0}, {index: 1}];
             wrapper.setProps({newMessageLineIndex: 0});
 
-            instance.viewableItemsChangedTimer = setTimeout(jest.fn());
-            instance.disableViewableItemsHandler = false;
-            instance.viewableItemsChangedHandler = jest.fn();
             instance.onViewableItemsChanged(viewableItems);
-
             expect(clearTimeout).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
@@ -418,11 +387,7 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [];
             wrapper.setProps({newMessageLineIndex: 1});
 
-            instance.viewableItemsChangedTimer = setTimeout(jest.fn());
-            instance.disableViewableItemsHandler = false;
-            instance.viewableItemsChangedHandler = jest.fn();
             instance.onViewableItemsChanged(viewableItems);
-
             expect(clearTimeout).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
@@ -430,15 +395,8 @@ describe('MoreMessagesButton', () => {
         it('should clear viewableItemsChangedTimer when set', () => {
             const viewableItems = [{index: 0}, {index: 1}];
             wrapper.setProps({newMessageLineIndex: 1});
-
-            instance.viewableItemsChangedTimer = null;
-            instance.disableViewableItemsHandler = false;
-            instance.viewableItemsChangedHandler = jest.fn();
-            instance.onViewableItemsChanged(viewableItems);
-
-            expect(clearTimeout).not.toHaveBeenCalled();
-
             instance.viewableItemsChangedTimer = jest.fn();
+
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
         });
@@ -447,111 +405,52 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [{index: 0}, {index: 1}];
             wrapper.setProps({newMessageLineIndex: 1});
 
-            instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = true;
-            instance.viewableItemsChangedHandler = jest.fn();
             instance.onViewableItemsChanged(viewableItems);
+            jest.runAllTimers();
 
-            expect(instance.viewableItemsChangedTimer).toBe(null);
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
 
-        it('should hide button when the newMessageLineIndex is viewable and >= to the unreadCount', () => {
+        it('should cancel button when the newMessageLineIndex is viewable and >= to the unreadCount', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             wrapper.setProps({newMessageLineIndex: 3, unreadCount: 3});
-
-            instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = false;
-            instance.hide = jest.fn();
-            instance.viewableItemsChangedHandler = jest.fn();
-            instance.onViewableItemsChanged(viewableItems);
 
-            expect(instance.hide).toHaveBeenCalled();
-            expect(instance.disableViewableItemsHandler).toBe(true);
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runAllTimers();
+
+            expect(instance.cancel).toHaveBeenCalled();
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedTimer).toBe(null);
         });
 
-        it('should hide button and also scroll to newMessageLineIndex when the channel is first loaded and the newMessageLineIndex is viewable', () => {
+        it('should cancel button and also scroll to newMessageLineIndex when the channel is first loaded and the newMessageLineIndex is viewable', () => {
             // When the channel is first loaded index 0 will be viewable
             const viewableItems = [{index: 0}, {index: 1}, {index: 2}];
             const newMessageLineIndex = 2;
             wrapper.setProps({newMessageLineIndex, unreadCount: 1});
-
-            instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = false;
-            instance.hide = jest.fn();
-            instance.viewableItemsChangedHandler = jest.fn();
-            instance.onViewableItemsChanged(viewableItems);
 
-            expect(instance.hide).toHaveBeenCalled();
-            expect(instance.disableViewableItemsHandler).toBe(true);
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runAllTimers();
+
+            expect(instance.cancel).toHaveBeenCalled();
             expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedTimer).toBe(null);
-        });
-
-        it('should call animateOpacity and set scrolledToLastIndex to true when the newMessageLineIndex is the last viewable index', () => {
-            const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
-            const viewableIndeces = viewableItems.map((item) => item.index);
-            wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
-
-            instance.viewableItemsChangedTimer = null;
-            instance.disableViewableItemsHandler = false;
-            instance.hide = jest.fn();
-            instance.viewableItemsChangedHandler = jest.fn();
-            instance.animateOpacity = jest.fn();
-            instance.scrolledToLastIndex = false;
-
-            instance.onViewableItemsChanged(viewableItems);
-            expect(instance.animateOpacity).not.toHaveBeenCalled();
-            expect(instance.scrolledToLastIndex).toBe(false);
-
-            wrapper.setProps({newMessageLineIndex: viewableIndeces[viewableIndeces.length - 1]});
-            instance.onViewableItemsChanged(viewableItems);
-            expect(instance.animateOpacity).toHaveBeenCalled();
-            expect(instance.scrolledToLastIndex).toBe(true);
-        });
-
-        it('should call animateOpacity and set scrolledToLastIndex to true when the newMessageLineIndex is not the last viewable index but endIndex is', () => {
-            const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
-            const viewableIndeces = viewableItems.map((item) => item.index);
-            wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
-
-            instance.viewableItemsChangedTimer = null;
-            instance.disableViewableItemsHandler = false;
-            instance.hide = jest.fn();
-            instance.viewableItemsChangedHandler = jest.fn();
-            instance.animateOpacity = jest.fn();
-            instance.scrolledToLastIndex = false;
-
-            instance.onViewableItemsChanged(viewableItems);
-            expect(instance.animateOpacity).not.toHaveBeenCalled();
-            expect(instance.scrolledToLastIndex).toBe(false);
-
-            instance.endIndex = viewableIndeces[viewableIndeces.length - 1];
-            instance.onViewableItemsChanged(viewableItems);
-            expect(instance.animateOpacity).toHaveBeenCalled();
-            expect(instance.scrolledToLastIndex).toBe(true);
         });
 
         it('should call viewableItemsChangedHandler with a delay of 0 when first called', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const viewableIndeces = viewableItems.map((item) => item.index);
             wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
-
-            instance.viewableItemsChangedTimer = null;
             instance.disableViewableItemsHandler = false;
-            instance.hide = jest.fn();
-            instance.viewableItemsChangedHandler = jest.fn();
-            instance.onViewableItemsChanged(viewableItems);
 
-            expect(instance.hide).not.toHaveBeenCalled();
-            expect(instance.disableViewableItemsHandler).toBe(false);
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runAllTimers();
+
+            expect(instance.cancel).not.toHaveBeenCalled();
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedTimer).not.toBe(null);
-            expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 0);
-            jest.advanceTimersByTime(0);
             expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(viewableIndeces);
         });
 
@@ -559,16 +458,15 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const viewableIndeces = viewableItems.map((item) => item.index);
             wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
+            instance.disableViewableItemsHandler = false;
 
             // viewableItemsChangedTimer is non-null after the first viewableItemsChangedHandler call
             instance.viewableItemsChangedTimer = jest.fn();
-            instance.disableViewableItemsHandler = false;
-            instance.hide = jest.fn();
+            instance.cancel = jest.fn();
             instance.viewableItemsChangedHandler = jest.fn();
             instance.onViewableItemsChanged(viewableItems);
 
-            expect(instance.hide).not.toHaveBeenCalled();
-            expect(instance.disableViewableItemsHandler).toBe(false);
+            expect(instance.cancel).not.toHaveBeenCalled();
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedTimer).not.toBe(null);
             expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
@@ -578,10 +476,13 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('viewableItemsChangedHandler', () => {
+        jest.useFakeTimers();
+
         const wrapper = shallowWithIntl(
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
+        instance.moreTextTimer = jest.fn();
         instance.show = jest.fn();
 
         it('should do nothing when viewableIndeces includes newMessageLineIndex', () => {
@@ -589,8 +490,17 @@ describe('MoreMessagesButton', () => {
             const viewableIndeces = [0, 1, 2];
 
             instance.viewableItemsChangedHandler(viewableIndeces);
-            expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
+            expect(clearTimeout).not.toHaveBeenCalledWith();
+            expect(setTimeout).not.toHaveBeenCalled();
             expect(instance.show).not.toHaveBeenCalled();
+        });
+
+        it('should clear timer when viewableIndeces does not include newMessageLineIndex', () => {
+            wrapper.setProps({newMessageLineIndex: 3});
+            const viewableIndeces = [0, 1, 2];
+
+            instance.viewableItemsChangedHandler(viewableIndeces);
+            expect(clearTimeout).toHaveBeenCalledWith(instance.moreTextTimer);
         });
 
         it('should set moreText and call show when unreadCount minus last index > 0', () => {
@@ -604,6 +514,7 @@ describe('MoreMessagesButton', () => {
             expect(nextMoreCount).toEqual(-3);
 
             instance.viewableItemsChangedHandler(viewableIndeces);
+            jest.runAllTimers();
             expect(instance.state.moreText).toEqual(initialMoreText);
             expect(instance.show).not.toHaveBeenCalled();
 
@@ -612,6 +523,7 @@ describe('MoreMessagesButton', () => {
             expect(nextMoreCount).toEqual(8);
 
             instance.viewableItemsChangedHandler(viewableIndeces);
+            jest.runAllTimers();
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
             expect(instance.state.moreText.startsWith('8')).toBe(true);
             expect(instance.show).toHaveBeenCalled();
@@ -619,119 +531,22 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('onScrollEndIndex', () => {
-        it('should set endIndex', () => {
+        it('should set endIndex and set pressed to false', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             expect(instance.endIndex).toBeUndefined();
 
+            instance.pressed = true;
             instance.onScrollEndIndex(1);
             expect(instance.endIndex).toEqual(1);
+            expect(instance.pressed).toBe(false);
 
+            instance.pressed = true;
             instance.onScrollEndIndex(5);
             expect(instance.endIndex).toEqual(5);
-        });
-    });
-
-    describe('animateOpacity', () => {
-        jest.useFakeTimers();
-
-        const wrapper = shallowWithIntl(
-            <MoreMessagesButton {...baseProps}/>,
-        );
-        const instance = wrapper.instance();
-        instance.opacityAnimation = jest.fn();
-
-        it('should clear animateOpacityTimer when set', () => {
-            instance.animateOpacity();
-            expect(clearTimeout).not.toHaveBeenCalled();
-
-            instance.animateOpacityTimer = jest.fn();
-            instance.animateOpacity();
-            expect(clearTimeout).toHaveBeenCalledWith(instance.animateOpacityTimer);
-        });
-
-        it('should do nothing if scrolledToLastIndex is false', () => {
-            instance.scrolledToLastIndex = false;
-            instance.pressed = true;
-            instance.moreTextSame = true;
-
-            instance.animateOpacity();
-            jest.runAllTimers();
-            expect(instance.pressed).toBe(true);
-            expect(instance.moreTextSame).toBe(true);
-            expect(instance.scrolledToLastIndex).toBe(false);
-            expect(instance.opacityAnimation).not.toHaveBeenCalled();
-        });
-
-        it('should set press to false if scrolledToLastIndex is true', () => {
-            instance.scrolledToLastIndex = true;
-            instance.pressed = true;
-
-            instance.animateOpacity();
-            jest.runAllTimers();
             expect(instance.pressed).toBe(false);
-        });
-
-        it('should not animate if scrolledToLastIndex is true but moreTextSame is false', () => {
-            instance.scrolledToLastIndex = true;
-            instance.moreTextSame = false;
-
-            instance.animateOpacity();
-            jest.runAllTimers();
-            expect(instance.scrolledToLastIndex).toBe(true);
-            expect(instance.opacityAnimation).not.toHaveBeenCalled();
-        });
-
-        it('should animate and set values to false if scrolledToLastIndex is true and moreTextSame is true', () => {
-            instance.scrolledToLastIndex = true;
-            instance.moreTextSame = true;
-
-            instance.animateOpacity();
-            jest.runAllTimers();
-            expect(instance.scrolledToLastIndex).toBe(false);
-            expect(instance.moreTextSame).toBe(false);
-            expect(instance.opacityAnimation).toHaveBeenCalled();
-        });
-    });
-
-    describe('opacityAnimation', () => {
-        Animated.sequence = jest.fn(() => ({
-            start: jest.fn((cb) => cb()),
-        }));
-        Animated.timing = jest.fn();
-
-        const wrapper = shallowWithIntl(
-            <MoreMessagesButton {...baseProps}/>,
-        );
-        const instance = wrapper.instance();
-
-        it('should do nothing if opacityIsAnimating is true', () => {
-            instance.opacityIsAnimating = true;
-
-            instance.opacityAnimation();
-            expect(Animated.sequence).not.toHaveBeenCalled();
-            expect(Animated.timing).not.toHaveBeenCalled();
-        });
-
-        it('should animate if opacityIsAnimating is false', () => {
-            instance.opacityIsAnimating = false;
-
-            instance.opacityAnimation();
-            expect(Animated.sequence).toHaveBeenCalled();
-            expect(Animated.timing).toHaveBeenCalledTimes(2);
-            expect(Animated.timing).toHaveBeenCalledWith(instance.opacity, {
-                toValue: 0,
-                duration: 100,
-                useNativeDriver: true,
-            });
-            expect(Animated.timing).toHaveBeenCalledWith(instance.opacity, {
-                toValue: 1,
-                duration: 100,
-                useNativeDriver: true,
-            });
-            expect(instance.opacityIsAnimating).toBe(false);
         });
     });
 
@@ -741,52 +556,28 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
 
-        it('should return defaultMessage of `{count} new messages` when moreText is empty and count <= 60', () => {
-            let moreCount = 60;
+        it('should return defaultMessage of `{count} new messages` when moreText is empty and count is > 1', () => {
+            let moreCount = 2;
             wrapper.setState({moreText: ''});
             let message = instance.moreText(moreCount);
-            expect(message).toEqual('60 new messages');
+            expect(message).toEqual('2 new messages');
 
-            moreCount = 59;
+            moreCount = 3;
             wrapper.setState({moreText: ''});
             message = instance.moreText(moreCount);
-            expect(message).toEqual('59 new messages');
+            expect(message).toEqual('3 new messages');
         });
 
-        it('should return defaultMessage of `{count} more new messages` on subsequent moreText changes when count <= 60', () => {
-            let moreCount = 60;
+        it('should return defaultMessage of `{count} more new messages` on subsequent moreText changes with count > 1', () => {
+            let moreCount = 2;
             wrapper.setState({moreText: '1 new message'});
             let message = instance.moreText(moreCount);
-            expect(message).toEqual('60 more new messages');
+            expect(message).toEqual('2 more new messages');
 
-            moreCount = 59;
+            moreCount = 3;
             wrapper.setState({moreText: '1 new message'});
             message = instance.moreText(moreCount);
-            expect(message).toEqual('59 more new messages');
-        });
-
-        it('should return defaultMessage of `60+ new messages` when moreText is empty and count > 60', () => {
-            let moreCount = 61;
-            wrapper.setState({moreText: ''});
-            let message = instance.moreText(moreCount);
-            expect(message).toEqual('60+ new messages');
-
-            moreCount = 62;
-            wrapper.setState({moreText: ''});
-            message = instance.moreText(moreCount);
-            expect(message).toEqual('60+ new messages');
-        });
-
-        it('should return defaultMessage of `60+ more new messages` on subsequent moreText changes when count > 60', () => {
-            let moreCount = 61;
-            wrapper.setState({moreText: '1 new message'});
-            let message = instance.moreText(moreCount);
-            expect(message).toEqual('60+ more new messages');
-
-            moreCount = 62;
-            wrapper.setState({moreCount});
-            message = instance.moreText(moreCount);
-            expect(message).toEqual('60+ more new messages');
+            expect(message).toEqual('3 more new messages');
         });
 
         it('should return defaultMessage of `1 new message` when moreText is empty and count === 1', () => {

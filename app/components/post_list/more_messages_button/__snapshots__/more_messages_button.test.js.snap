@@ -69,26 +69,18 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           }
           type="ion"
         />
-        <ForwardRef(AnimatedComponentWrapper)
+        <Text
           style={
             Object {
-              "opacity": 1,
+              "alignSelf": "center",
+              "color": "#ffffff",
+              "fontWeight": "bold",
+              "paddingLeft": 9,
             }
           }
         >
-          <Text
-            style={
-              Object {
-                "alignSelf": "center",
-                "color": "#ffffff",
-                "fontWeight": "bold",
-                "paddingLeft": 9,
-              }
-            }
-          >
-            
-          </Text>
-        </ForwardRef(AnimatedComponentWrapper)>
+          
+        </Text>
       </View>
     </TouchableWithFeedbackIOS>
     <TouchableWithFeedbackIOS
