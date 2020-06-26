@@ -1,5 +1,64 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.32.1 Release
+- Release Date: June 25, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Bug Fixes
+ - Fixed an issue where Android app cold start and channel switching were slow.
+ 
+## 1.32.0 Release
+- Release Date: June 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+
+### Breaking Changes
+ - On mobile apps, users will not be able to see group mentions (E20 feature) in the autocomplete dropdown. Users will still receive notifications if they are part of an LDAP group. However, the group mention keyword will not be highlighted.
+ - **Upcoming breaking change** Starting with mobile app v1.33.0 (to be released on July 16th), users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed. Updating your server to v5.19 or later is required.
+ 
+### Highlights
+
+#### Quick access to emoji reactions 
+ - Long press on a post and add recently used reactions in a single tap.
+ 
+#### Upgrade to React Native 0.62
+ - React Native 0.62 introduces performance and stability improvements to the core app platform.
+
+### Improvements
+ - Automatic retry when id-loaded push notification fails to fetch on receipt.
+ - An appropriate error message is now shown when connecting to the server on the mobile app with an invalid SSL certificate.
+ - Added the ability to find users by nickname when searching using ``@``.
+ - Added the ability to view first and last name in profile view.
+ - Improved the search bar to have smoother animations.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue with an infinite skeleton channel screen on app relaunch when ``ExperimentalPrimaryTeam setting`` was enabled.
+ - Fixed an issue where users were scrolled to old messages when switching to a channel with unread messages.
+ - Fixed an issue where a logout message for session expiration was missing.
+ - Fixed an issue where the app did not properly handle server URL and SSO redirects.
+ - Fixed an issue where Direct and Group Messages disappeared from the left-hand side after opening them on webapp.
+ - Fixed an issue where a crash occurred instead of showing proper error on entering invalid MFA token.
+ - Fixed an issue where a user could not interact with the app until in-app notifications were dismissed.
+ - Fixed an issue where using emoji on an instance with the custom emoji feature disabled triggered a "Custom emoji have been disabled by the system admin" error in the server logs.
+ - Fixed an issue where the replay icon was cut off on full screen video preview.
+
+#### Android specific
+ - Fixed an issue where dropdowns in the channel modal were hard to read.
+ 
+#### Known issues
+ - Signing in with supported SSO methods (OKTA, OneLogin, GitLab and Office365) may fail to redirect on iOS 12. It is recommended to use iOS 13 if any issues are encountered.
+
 ## 1.31.2 Release
 - Release Date: May 27, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

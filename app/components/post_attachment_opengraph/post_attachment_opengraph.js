@@ -31,7 +31,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     constructor(props) {
         super(props);
 
-        this.state = this.getBestImageUrl(props.openGraphData);
+        this.state = this.getBestImageUrlAndDimensions(props.openGraphData);
     }
 
     componentDidMount() {
@@ -42,27 +42,15 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.link !== this.props.link) {
-            this.setState({hasImage: false});
-        }
-
-        if (this.props.openGraphData !== nextProps.openGraphData) {
-            this.setState(this.getBestImageUrl(nextProps.openGraphData), () => {
-                this.getImageSize(this.state.openGraphImageUrl);
-            });
-        }
-    }
-
     componentWillUnmount() {
         this.mounted = false;
     }
 
     setItemRef = (ref) => {
         this.itemRef = ref;
-    }
+    };
 
-    getBestImageUrl = (data) => {
+    getBestImageUrlAndDimensions = (data) => {
         if (!data || !data.images) {
             return {
                 hasImage: false,

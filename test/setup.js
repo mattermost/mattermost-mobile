@@ -122,7 +122,7 @@ jest.mock('react-native-device-info', () => {
 jest.mock('rn-fetch-blob', () => ({
     fs: {
         dirs: {
-            DocumentDir: () => jest.fn(),
+            DocumentDir: '/data/com.mattermost.beta/documents',
             CacheDir: '/data/com.mattermost.beta/cache',
         },
         exists: jest.fn(),
