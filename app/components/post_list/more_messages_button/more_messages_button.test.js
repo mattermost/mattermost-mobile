@@ -206,6 +206,7 @@ describe('MoreMessagesButton', () => {
             instance.viewableItems = [{index: 1}];
             instance.pressed = true;
             instance.scrolledToLastIndex = true;
+            instance.canceled = true;
 
             instance.reset();
             expect(clearTimeout).toHaveBeenCalledWith(instance.viewableItemsChangedTimer);
@@ -215,6 +216,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.pressed).toEqual(false);
             expect(instance.scrolledToLastIndex).toEqual(false);
             expect(instance.state.moreText).toEqual('');
+            expect(instance.canceled).toEqual(false);
         });
     });
 
@@ -257,10 +259,21 @@ describe('MoreMessagesButton', () => {
             expect(Animated.spring).not.toHaveBeenCalled();
         });
 
-        it('should animate when not visible, state.moreText is not empty, and props.deepLinkURL is not set', () => {
+        it('should not animate when not visible, state.moreText is not empty and props.deepLinkURL is not set but canceled is true', () => {
+            instance.visible = false;
+            wrapper.setState({moreText: '1 new message'});
+            wrapper.setProps({deepLinkURL: 'null'});
+            instance.canceled = true;
+
+            instance.show();
+            expect(Animated.spring).not.toHaveBeenCalled();
+        });
+
+        it('should animate when not visible, state.moreText is not empty, props.deepLinkURL is not set, and canceled is false', () => {
             instance.visible = false;
             wrapper.setState({moreText: '1 new message'});
             wrapper.setProps({deepLinkURL: null});
+            instance.canceled = false;
 
             instance.show();
             expect(instance.visible).toBe(true);
@@ -326,15 +339,17 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('cancel', () => {
-        it('should hide button and disable viewable items handler', () => {
+        it('should set canceled, hide button, and disable viewable items handler', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.canceled = false;
             instance.hide = jest.fn();
             instance.disableViewableItemsHandler = false;
 
             instance.cancel();
+            expect(instance.canceled).toBe(true);
             expect(instance.hide).toHaveBeenCalled();
             expect(instance.disableViewableItemsHandler).toBe(true);
         });
@@ -485,11 +500,13 @@ describe('MoreMessagesButton', () => {
         instance.moreTextTimer = jest.fn();
         instance.show = jest.fn();
 
-        it('should do nothing when viewableIndeces includes newMessageLineIndex', () => {
+        it('should only set pressed to false when viewableIndeces includes newMessageLineIndex', () => {
+            instance.pressed = true;
             wrapper.setProps({newMessageLineIndex: 2});
             const viewableIndeces = [0, 1, 2];
 
             instance.viewableItemsChangedHandler(viewableIndeces);
+            expect(instance.pressed).toBe(false);
             expect(clearTimeout).not.toHaveBeenCalledWith();
             expect(setTimeout).not.toHaveBeenCalled();
             expect(instance.show).not.toHaveBeenCalled();

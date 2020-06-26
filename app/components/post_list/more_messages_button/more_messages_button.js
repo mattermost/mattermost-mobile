@@ -124,10 +124,11 @@ export default class MoreMessageButton extends React.PureComponent {
         this.pressed = false;
         this.scrolledToLastIndex = false;
         this.setState({moreText: ''});
+        this.canceled = false;
     }
 
     show = () => {
-        if (!this.visible && this.state.moreText && !this.props.deepLinkURL) {
+        if (!this.visible && this.state.moreText && !this.props.deepLinkURL && !this.canceled) {
             this.visible = true;
             const toValue = this.networkIndicatorVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_FACTOR;
             Animated.spring(this.top, {
@@ -149,6 +150,7 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     cancel = () => {
+        this.canceled = true;
         this.hide();
         this.disableViewableItemsHandler = true;
     }
@@ -204,20 +206,25 @@ export default class MoreMessageButton extends React.PureComponent {
 
     viewableItemsChangedHandler = (viewableIndeces) => {
         const {newMessageLineIndex, unreadCount} = this.props;
-        if (!viewableIndeces.includes(newMessageLineIndex)) {
-            const readCount = viewableIndeces.pop() || 0;
-            const moreCount = unreadCount - readCount;
+        if (viewableIndeces.includes(newMessageLineIndex)) {
+            // We've reached the current new message line index so let's
+            // re-enable the button
+            this.pressed = false;
+            return;
+        }
 
-            if (this.moreTextTimer) {
-                clearTimeout(this.moreTextTimer);
-            }
+        const readCount = viewableIndeces.pop() || 0;
+        const moreCount = unreadCount - readCount;
 
-            if (moreCount > 0) {
-                const moreText = this.moreText(moreCount);
-                this.moreTextTimer = setTimeout(() => {
-                    this.setState({moreText}, this.show);
-                }, 200);
-            }
+        if (this.moreTextTimer) {
+            clearTimeout(this.moreTextTimer);
+        }
+
+        if (moreCount > 0) {
+            const moreText = this.moreText(moreCount);
+            this.moreTextTimer = setTimeout(() => {
+                this.setState({moreText}, this.show);
+            }, 200);
         }
     }
 
