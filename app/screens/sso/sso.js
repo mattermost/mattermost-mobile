@@ -10,7 +10,7 @@ import {
     Platform,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import CookieManager from '@react-native-community/cookies';
+import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
 import {Client4} from '@mm-redux/client';
@@ -27,7 +27,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = 'window.ReactNativeWebView.postMessage(document.body.innerText);';
+const postMessageJS = "window.postMessage(document.body.innerText, '*');";
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -240,17 +240,16 @@ class SSO extends PureComponent {
                 <WebView
                     ref={this.webViewRef}
                     source={{uri: this.loginUrl, headers: HEADERS}}
-                    javaScriptEnabled={true}
+                    javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
-                    onMessage={(messagingEnabled || Platform.OS === 'android') ? this.onMessage : null}
-                    sharedCookiesEnabled={Platform.OS === 'android'}
+                    onMessage={messagingEnabled ? this.onMessage : null}
+                    useSharedProcessPool={true}
                     cacheEnabled={false}
-                    useSharedProcessPool={false}
                 />
             );
         }
