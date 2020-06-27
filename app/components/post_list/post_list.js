@@ -550,7 +550,6 @@ export default class PostList extends PureComponent {
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}
-                    windowSize={Platform.select({android: 21, ios: 50})}
                     viewabilityConfig={{
                         viewAreaCoveragePercentThreshold: 0,
                         minimumViewTime: 100,

@@ -202,7 +202,7 @@ export default class MoreMessageButton extends React.PureComponent {
                 return;
             }
 
-            const delay = this.viewableItemsChangedTimer ? 100 : 0;
+            const delay = this.viewableItemsChangedTimer ? 400 : 0;
             this.viewableItemsChangedTimer = setTimeout(() => {
                 this.viewableItemsChangedHandler(viewableIndeces);
             }, delay);
@@ -229,7 +229,7 @@ export default class MoreMessageButton extends React.PureComponent {
             const moreText = this.moreText(moreCount);
             this.moreTextTimer = setTimeout(() => {
                 this.setState({moreText}, this.show);
-            }, 200);
+            }, 10);
         }
     }
 

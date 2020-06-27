@@ -483,7 +483,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(viewableIndeces);
         });
 
-        it('should call viewableItemsChangedHandler with a delay of 100 for subsequent calls', () => {
+        it('should call viewableItemsChangedHandler with a delay of 400 for subsequent calls', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const viewableIndeces = viewableItems.map((item) => item.index);
             wrapper.setProps({newMessageLineIndex: 10, unreadCount: 20});
@@ -498,8 +498,8 @@ describe('MoreMessagesButton', () => {
             expect(instance.cancel).not.toHaveBeenCalled();
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedTimer).not.toBe(null);
-            expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
-            jest.advanceTimersByTime(100);
+            expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 400);
+            jest.advanceTimersByTime(400);
             expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(viewableIndeces);
         });
     });

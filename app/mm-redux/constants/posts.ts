@@ -31,7 +31,7 @@ export const PostTypes = {
 };
 
 export default {
-    POST_CHUNK_SIZE: 60,
+    POST_CHUNK_SIZE: 25,
     POST_DELETED: 'DELETED',
     SYSTEM_MESSAGE_PREFIX: 'system_',
     SYSTEM_AUTO_RESPONDER: 'system_auto_responder',
