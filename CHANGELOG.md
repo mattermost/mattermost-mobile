@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixed an issue where SSO login with subpaths failed.
+ - Fixed an issue where users on the v1.32.0 or v1.32.1 mobile apps authenticating with GitLab or Office365 SSO to a Mattermost server using a subpath were unable to login to the app.
  - Fixed an issue where opening the app was causing an "Unexpected Error" due to a failed migration.
 
 ## 1.32.1 Release
