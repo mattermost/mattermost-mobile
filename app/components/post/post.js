@@ -10,23 +10,27 @@ import {
     ViewPropTypes,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
 
-import PostBody from 'app/components/post_body';
-import PostHeader from 'app/components/post_header';
-import PostPreHeader from 'app/components/post_header/post_pre_header';
-import PostProfilePicture from 'app/components/post_profile_picture';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {NavigationTypes} from 'app/constants';
-import {fromAutoResponder} from 'app/utils/general';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
+import {showModalOverCurrentContext, showModal} from '@actions/navigation';
+
+import PostBody from '@components/post_body';
+import PostHeader from '@components/post_header';
+import PostProfilePicture from '@components/post_profile_picture';
+import PostPreHeader from '@components/post_header/post_pre_header';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+
+import {NavigationTypes} from '@constants';
+
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {fromAutoResponder} from '@utils/general';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Post extends PureComponent {
     static propTypes = {
@@ -88,19 +92,30 @@ export default class Post extends PureComponent {
         this.postBodyRef = React.createRef();
     }
 
-    goToUserProfile = () => {
+    goToUserProfile = async () => {
         const {intl} = this.context;
-        const {post} = this.props;
+        const {post, theme} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId: post.user_id,
         };
 
+        if (!this.closeButton) {
+            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+        }
+
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
         Keyboard.dismiss();
-        requestAnimationFrame(() => {
-            goToScreen(screen, title, passProps);
-        });
+        showModal(screen, title, passProps, options);
     };
 
     autofillUserMention = (username) => {
