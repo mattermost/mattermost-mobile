@@ -1,1 +1,15 @@
-{}
+{
+  "mobile.notification_settings_mentions.keywords": "Nyckelord",
+  "channel_info.purpose": "Beskrivning:",
+  "password_send.checkInbox": "Kontrollera din inkorg.",
+  "mobile.suggestion.members": "Medlemmar",
+  "mobile.rename_channel.name_maxLength": "Namnet på kanalen måste innehålla färre än {maxLength, number} tecken",
+  "mobile.rename_channel.display_name_maxLength": "Namnet på kanalen måste innehålla färre än {maxLength, number} tecken",
+  "mobile.photo_library_permission_denied_description": "För att ladda upp videor från ditt bibliotek, ändra inställningarna för behörighet.",
+  "mobile.file_upload.unsupportedMimeType": "Endast bilder med formatet BMP, JPG eller PNG kan användas för profilbilder.",
+  "mobile.downloader.android_permission": "Vi behöver åtkomst till mappen för nedladdning för att kunna spara filen.",
+  "mobile.client_upgrade.must_upgrade_subtitle": "Vänligen uppdatera appen för att fortsätta.",
+  "login.noUsername": "Vänligen ange ditt användarnamn",
+  "login.noEmail": "Vänligen ange ditt användarnamn",
+  "channel_header.manageMembers": "Hantera medlemmar"
+}
