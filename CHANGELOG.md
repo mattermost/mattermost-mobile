@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixed an issue where some users on the v1.32.0 or v1.32.1 mobile apps authenticating with Single Sign-On (SSO) to a Mattermost server using a subpath were unable to login to the app.
+ - Fixed an issue where some users on the v1.32.0 or v1.32.1 mobile apps authenticating with GitLab or Office365 Single Sign-On (SSO) to a Mattermost server using a subpath were unable to login to the app. Some users authenticating to Mattermost using SAML SSO with two-factor authentication or authenticating to Mattermost with an SSO provider that utilizes query strings as part of the authentication URLs were also impacted.
  - Fixed an issue where opening the app was causing an "Unexpected Error" due to a failed migration.
 
 ## 1.32.1 Release
