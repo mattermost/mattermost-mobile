@@ -20,9 +20,6 @@ describe('PostAttachmentOpenGraph', () => {
         }],
     };
     const baseProps = {
-        actions: {
-            getOpenGraphMetadata: jest.fn(),
-        },
         deviceHeight: 600,
         deviceWidth: 400,
         imagesMetadata: {
@@ -74,19 +71,14 @@ describe('PostAttachmentOpenGraph', () => {
     });
 
     test('should match state and snapshot, on renderImage', () => {
-        const wrapper = shallow(
-            <PostAttachmentOpenGraph {...baseProps}/>,
-        );
-
-        // should return null
-        expect(wrapper.instance().renderImage()).toMatchSnapshot();
-        expect(wrapper.state('hasImage')).toEqual(false);
-        expect(wrapper.find(FastImage).exists()).toEqual(false);
-        expect(wrapper.find(TouchableWithFeedback).exists()).toEqual(false);
-
         const images = [{height: 440, width: 1200, url: 'https://mattermost.com/logo.png'}];
         const openGraphDataWithImage = {...openGraphData, images};
-        wrapper.setProps({openGraphData: openGraphDataWithImage});
+        const wrapper = shallow(
+            <PostAttachmentOpenGraph
+                {...baseProps}
+                openGraphData={openGraphDataWithImage}
+            />,
+        );
 
         expect(wrapper.instance().renderImage()).toMatchSnapshot();
         expect(wrapper.state('hasImage')).toEqual(true);

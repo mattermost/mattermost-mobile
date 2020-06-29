@@ -179,10 +179,15 @@ export default class Markdown extends PureComponent {
     };
 
     renderImage = ({linkDestination, reactChildren, context, src}) => {
+        if (!this.props.imagesMetadata) {
+            return null;
+        }
+
         if (context.indexOf('table') !== -1) {
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
+                    imagesMetadata={this.props.imagesMetadata}
                     source={src}
                     textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.link]}
                 >

@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {getReactionsForPost, removeReaction} from '@mm-redux/actions/posts';
+import {removeReaction} from '@mm-redux/actions/posts';
 import {makeGetReactionsForPost, getPost} from '@mm-redux/selectors/entities/posts';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {hasNewPermissions} from '@mm-redux/selectors/entities/general';
@@ -74,7 +74,6 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             addReaction,
-            getReactionsForPost,
             removeReaction,
         }, dispatch),
     };

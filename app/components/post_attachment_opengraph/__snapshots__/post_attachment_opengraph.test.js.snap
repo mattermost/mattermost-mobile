@@ -73,43 +73,6 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       </Text>
     </TouchableWithFeedbackIOS>
   </View>
-  <View
-    style={
-      Array [
-        Object {
-          "alignItems": "center",
-          "borderColor": "rgba(61,60,64,0.2)",
-          "borderRadius": 3,
-          "borderWidth": 1,
-          "marginTop": 5,
-        },
-        Object {
-          "height": 69.83261802575107,
-          "width": 307,
-        },
-      ]
-    }
-  >
-    <TouchableWithFeedbackIOS
-      onPress={[Function]}
-      type="none"
-    >
-      <FastImage
-        resizeMode="contain"
-        style={
-          Array [
-            Object {
-              "borderRadius": 3,
-            },
-            Object {
-              "height": 69.83261802575107,
-              "width": 307,
-            },
-          ]
-        }
-      />
-    </TouchableWithFeedbackIOS>
-  </View>
 </View>
 `;
 
@@ -245,9 +208,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderDescr
 </View>
 `;
 
-exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 1`] = `null`;
-
-exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 2`] = `
+exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage 1`] = `
 <View
   style={
     Array [
@@ -259,7 +220,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
         "marginTop": 5,
       },
       Object {
-        "height": 69.83261802575107,
+        "height": 112.56666666666666,
         "width": 307,
       },
     ]
@@ -271,13 +232,18 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
   >
     <FastImage
       resizeMode="contain"
+      source={
+        Object {
+          "uri": "https://mattermost.com/logo.png",
+        }
+      }
       style={
         Array [
           Object {
             "borderRadius": 3,
           },
           Object {
-            "height": 69.83261802575107,
+            "height": 112.56666666666666,
             "width": 307,
           },
         ]
