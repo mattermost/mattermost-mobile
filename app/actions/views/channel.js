@@ -713,6 +713,8 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                             console.log('Could not retrieve channel members roles for the user');
                         }
                     }
+
+                    dispatch(batchActions(actions, 'BATCH_LOAD_CHANNELS_FOR_TEAM'));
                 }
 
                 // Fetch needed profiles from channel creators and direct channels
@@ -722,10 +724,6 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
             }
 
             dispatch(loadGroupData());
-        }
-
-        if (actions.length) {
-            dispatch(batchActions(actions, 'BATCH_LOAD_CHANNELS_FOR_TEAM'));
         }
 
         return {data};
