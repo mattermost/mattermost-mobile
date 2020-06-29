@@ -5,7 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    Alert,
     Keyboard,
+    Linking,
     StyleSheet,
     Platform,
 } from 'react-native';
@@ -13,7 +15,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
-import {NavigationTypes} from '@constants';
+import {NavigationTypes, ViewTypes} from '@constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import {preventDoubleTap} from '@utils/tap';
@@ -38,6 +40,7 @@ export default class ChannelBase extends PureComponent {
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string,
         disableTermsModal: PropTypes.bool,
+        isSupportedServer: PropTypes.bool,
         teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
@@ -68,31 +71,43 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentDidMount() {
+        const {
+            actions,
+            currentChannelId,
+            currentTeamId,
+            disableTermsModal,
+            isSupportedServer,
+            showTermsOfService,
+            skipMetrics,
+        } = this.props;
         EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
 
-        if (this.props.currentTeamId) {
-            this.loadChannels(this.props.currentTeamId);
+        if (currentTeamId) {
+            this.loadChannels(currentTeamId);
         } else {
-            this.props.actions.selectDefaultTeam();
+            actions.selectDefaultTeam();
         }
 
-        if (this.props.currentChannelId) {
-            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+        if (currentChannelId) {
+            PushNotifications.clearChannelNotifications(currentChannelId);
             requestAnimationFrame(() => {
-                this.props.actions.getChannelStats(this.props.currentChannelId);
+                actions.getChannelStats(currentChannelId);
             });
         }
 
-        if (tracker.initialLoad && !this.props.skipMetrics) {
-            this.props.actions.recordLoadTime('Start time', 'initialLoad');
+        if (tracker.initialLoad && !skipMetrics) {
+            actions.recordLoadTime('Start time', 'initialLoad');
         }
 
-        if (this.props.showTermsOfService && !this.props.disableTermsModal) {
+        if (showTermsOfService && !disableTermsModal) {
             this.showTermsOfServiceModal();
+        } else if (!isSupportedServer) {
+            // Only display the Alert if the TOS does not need to show first
+            this.showUnsupportedServer();
         }
 
-        if (!this.props.skipMetrics) {
+        if (!skipMetrics) {
             telemetry.end(['start:channel_screen']);
         }
     }
@@ -139,31 +154,6 @@ export default class ChannelBase extends PureComponent {
         if (this.postDraft?.current) {
             this.postDraft.current.blurTextBox();
         }
-    };
-
-    showTermsOfServiceModal = async () => {
-        const {intl} = this.context;
-        const {theme} = this.props;
-        const screen = 'TermsOfService';
-        const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((closeButton) => {
-            const passProps = {closeButton};
-            const options = {
-                layout: {
-                    componentBackgroundColor: theme.centerChannelBg,
-                },
-                topBar: {
-                    visible: true,
-                    height: null,
-                    title: {
-                        color: theme.sidebarHeaderTextColor,
-                        text: title,
-                    },
-                },
-            };
-
-            showModalOverCurrentContext(screen, passProps, options);
-        });
     };
 
     goToChannelInfo = preventDoubleTap(() => {
@@ -254,6 +244,62 @@ export default class ChannelBase extends PureComponent {
 
         return null;
     }
+
+    showTermsOfServiceModal = async () => {
+        const {intl} = this.context;
+        const {isSupportedServer, theme} = this.props;
+        const screen = 'TermsOfService';
+        const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((closeButton) => {
+            const passProps = {
+                closeButton,
+                isSupportedServer,
+                showUnsupportedServer: this.showUnsupportedServer,
+            };
+            const options = {
+                layout: {
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                topBar: {
+                    visible: true,
+                    height: null,
+                    title: {
+                        color: theme.sidebarHeaderTextColor,
+                        text: title,
+                    },
+                },
+            };
+
+            showModalOverCurrentContext(screen, passProps, options);
+        });
+    };
+
+    showUnsupportedServer = () => {
+        const {formatMessage} = this.context.intl;
+        const title = formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});
+        const message = formatMessage({
+            id: 'mobile.server_upgrade.alert_description',
+            defaultMessage: 'This server version is unsupported and users will be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Upgrading to server version {serverVersion} or later is required.',
+        }, {serverVersion: ViewTypes.RequiredServer.FULL_VERSION});
+        const cancel = {
+            text: formatMessage({id: 'mobile.server_upgrade.dismiss', defaultMessage: 'Dismiss'}),
+            style: 'default',
+        };
+        const learnMore = {
+            text: formatMessage({id: 'mobile.server_upgrade.learn_more', defaultMessage: 'Learn More'}),
+            style: 'cancel',
+            onPress: () => {
+                const url = 'https://mattermost.com/blog/support-for-esr-5-9-has-ended/';
+                if (Linking.canOpenURL(url)) {
+                    Linking.openURL(url);
+                }
+            },
+        };
+        const buttons = [cancel, learnMore];
+        const options = {cancelable: false};
+
+        Alert.alert(title, message, buttons, options);
+    };
 
     updateNativeScrollView = () => {
         if (this.keyboardTracker?.current) {

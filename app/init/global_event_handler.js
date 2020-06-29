@@ -3,7 +3,7 @@
 
 import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import CookieManager from '@react-native-community/cookies';
+import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
 import RNFetchBlob from 'rn-fetch-blob';

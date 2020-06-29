@@ -7,6 +7,7 @@ import {shallow} from 'enzyme';
 import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from '@actions/navigation';
+import TestHelper from 'test/test_helper';
 
 import TermsOfService from './terms_of_service.js';
 
@@ -23,16 +24,18 @@ jest.mock('@utils/theme', () => {
 describe('TermsOfService', () => {
     const actions = {
         getTermsOfService: jest.fn(),
-        updateMyTermsOfServiceStatus: jest.fn(),
+        updateMyTermsOfServiceStatus: jest.fn().mockResolvedValue({data: true}),
         logout: jest.fn(),
     };
 
     const baseProps = {
         actions,
-        theme: Preferences.THEMES.default,
         closeButton: {},
-        siteName: 'Mattermost',
         componentId: 'component-id',
+        isSupportedServer: true,
+        siteName: 'Mattermost',
+        showUnsupportedServer: jest.fn(),
+        theme: Preferences.THEMES.default,
     };
 
     test('should match snapshot', () => {
@@ -129,5 +132,36 @@ describe('TermsOfService', () => {
         wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
         wrapper.instance().closeTermsAndLogout();
         expect(baseProps.actions.logout).toHaveBeenCalledTimes(1);
+    });
+
+    test('should NOT call showUnsupportedServer on acceptTerms if server is supported', async () => {
+        const wrapper = shallow(
+            <TermsOfService
+                {...baseProps}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
+        wrapper.instance().handleAcceptTerms();
+        TestHelper.wait(100).then(() => {
+            expect(baseProps.showUnsupportedServer).not.toHaveBeenCalled();
+        });
+    });
+
+    test('should call showUnsupportedServer on acceptTerms if server not supported', async () => {
+        const wrapper = shallow(
+            <TermsOfService
+                {...baseProps}
+                isSupportedServer={false}
+            />,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        wrapper.setState({loading: false, termsId: 1, termsText: 'Terms Text'});
+        wrapper.instance().handleAcceptTerms();
+        TestHelper.wait(100).then(() => {
+            expect(baseProps.showUnsupportedServer).toHaveBeenCalledTimes(1);
+        });
     });
 });
