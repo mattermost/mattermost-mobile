@@ -49,9 +49,25 @@ describe('PostBody', () => {
     };
 
     test('should mount additional content for non-system messages', () => {
+        const metadata = {
+            embeds: [{
+                type: 'opengraph',
+                url: 'https://youtu.be/g-EXttb1C9A',
+            }],
+            images: {
+                'https://i.ytimg.com/vi/g-EXttb1C9A/maxresdefault.jpg': {
+                    format: 'jpeg',
+                    frame_count: 0,
+                    height: 720,
+                    width: 1280,
+                },
+            },
+        };
+
         const props = {
             ...baseProps,
             isSystemMessage: false,
+            metadata,
         };
 
         const wrapper = shallowWithIntl(<PostBody {...props}/>);

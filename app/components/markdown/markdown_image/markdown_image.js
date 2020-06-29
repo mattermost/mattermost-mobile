@@ -6,7 +6,6 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     Clipboard,
-    Image,
     Linking,
     Platform,
     StyleSheet,
@@ -55,11 +54,6 @@ export default class MarkdownImage extends ImageViewPort {
             failed: false,
             uri: null,
         };
-    }
-
-    componentDidMount() {
-        super.componentDidMount();
-        this.loadImageSize(this.getSource());
     }
 
     setImageRef = (ref) => {
@@ -167,12 +161,6 @@ export default class MarkdownImage extends ImageViewPort {
         }];
 
         previewImageAtIndex([this.itemRef], 0, files);
-    };
-
-    loadImageSize = (source) => {
-        if (!this.state.originalWidth) {
-            Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
-        }
     };
 
     render() {
