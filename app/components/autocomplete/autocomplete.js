@@ -188,7 +188,7 @@ export default class Autocomplete extends PureComponent {
         const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
         if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount > 0) {
             if (this.props.isSearch) {
-                wrapperStyles.push(style.bordersSearch);
+                wrapperStyles.push(style.borders);
             } else {
                 containerStyles.push(style.borders);
             }
@@ -255,25 +255,27 @@ export default class Autocomplete extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         base: {
-            left: 0,
-            overflow: 'hidden',
+            left: 8,
             position: 'absolute',
-            right: 0,
+            right: 8,
+            borderRadius: 4,
+            shadowColor: '#000',
+            shadowOpacity: 0.12,
+            shadowRadius: 8,
+            shadowOffset: {
+                width: 0,
+                height: 8,
+            },
         },
         borders: {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 0,
-        },
-        bordersSearch: {
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         container: {
-            bottom: 0,
+            bottom: 50,
         },
         containerExpandDown: {
-            top: 0,
+            top: -30,
         },
         content: {
             flex: 1,

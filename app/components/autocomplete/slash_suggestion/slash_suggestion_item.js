@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
@@ -38,11 +38,16 @@ export default class SlashSuggestionItem extends PureComponent {
         return (
             <TouchableWithFeedback
                 onPress={this.completeSuggestion}
-                style={[style.row, padding(isLandscape)]}
+                style={[style.container, padding(isLandscape)]}
                 type={'opacity'}
             >
-                <Text style={style.suggestionName}>{`/${trigger} ${hint}`}</Text>
-                <Text style={style.suggestionDescription}>{description}</Text>
+                <View style={style.icon}>
+                    <Text>{'/'}</Text>
+                </View>
+                <View style={style.suggestionContainer}>
+                    <Text style={style.suggestionName}>{`${trigger} ${hint}`}</Text>
+                    <Text style={style.suggestionDescription}>{description}</Text>
+                </View>
             </TouchableWithFeedback>
         );
     }
@@ -50,30 +55,31 @@ export default class SlashSuggestionItem extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        row: {
-            paddingVertical: 8,
+        icon: {
+            fontSize: 24,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            width: 32,
+            height: 32,
+            marginRight: 12,
+            borderRadius: 4,
             justifyContent: 'center',
-            paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg,
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
+            alignItems: 'center',
         },
-        rowDisplayName: {
-            fontSize: 13,
-            color: theme.centerChannelColor,
+        container: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 8,
+            paddingHorizontal: 16,
         },
-        rowName: {
-            color: theme.centerChannelColor,
-            opacity: 0.6,
+        suggestionContainer: {
+
         },
         suggestionDescription: {
-            fontSize: 11,
-            color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
         },
         suggestionName: {
-            fontSize: 13,
+            fontSize: 15,
             color: theme.centerChannelColor,
             marginBottom: 5,
         },
