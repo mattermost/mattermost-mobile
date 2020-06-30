@@ -14,21 +14,19 @@ import FastImage from 'react-native-fast-image';
 export default class TableImage extends React.PureComponent {
     static propTypes = {
         deviceWidth: PropTypes.number.isRequired,
+        imagesMetadata: PropTypes.object,
         imageSource: PropTypes.string.isRequired,
     };
 
     constructor(props) {
         super(props);
 
+        const dimensions = props.imagesMetadata?.[props.imageSource];
         this.state = {
             imageSource: '',
-            width: -1,
-            height: -1,
+            width: dimensions?.width || -1,
+            height: dimensions?.height || -1,
         };
-    }
-
-    componentDidMount() {
-        this.getImageSize(this.props.imageSource);
     }
 
     static getDerivedStateFromProps(nextProps, state) {
@@ -44,16 +42,16 @@ export default class TableImage extends React.PureComponent {
 
     componentDidUpdate(prevProps) {
         if (prevProps.imageSource !== this.props.imageSource) {
-            this.getImageSize(this.props.imageSource);
+            this.getImageSize();
         }
     }
 
-    getImageSize = (imageSource) => {
-        Image.getSize(imageSource, (width, height) => {
-            this.setState({
-                width,
-                height,
-            });
+    getImageSize = () => {
+        const {imageSource, imagesMetadata} = this.props;
+        const dimensions = imagesMetadata?.[imageSource];
+        this.setState({
+            width: dimensions?.width || -1,
+            height: dimensions?.height || -1,
         });
     }
 

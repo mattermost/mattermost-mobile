@@ -274,7 +274,7 @@ export default class PostBody extends PureComponent {
             return null;
         }
 
-        if (metadata && !metadata.embeds) {
+        if (!metadata?.embeds?.length) {
             return null;
         }
 
