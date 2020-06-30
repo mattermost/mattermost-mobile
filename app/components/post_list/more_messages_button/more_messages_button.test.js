@@ -94,21 +94,24 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should set pressed to false and clear the cancel timer when the newMessageLineIndex changes', () => {
+        test('componentDidUpdate should clear the cancel timer, set pressed to false, and call uncancel when the newMessageLineIndex changes', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             instance.pressed = true;
             instance.cancelTimer = jest.fn();
+            instance.uncancel = jest.fn();
 
             wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
             expect(instance.pressed).toBe(true);
             expect(clearTimeout).not.toHaveBeenCalled();
+            expect(instance.uncancel).not.toHaveBeenCalled();
 
             wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 1});
             expect(instance.pressed).toBe(false);
             expect(clearTimeout).toHaveBeenCalledWith(instance.cancelTimer);
+            expect(instance.uncancel).toHaveBeenCalled();
         });
 
         test('componentDidUpdate should call cancel when the unreadCount decreases but is not 0', () => {
@@ -367,6 +370,21 @@ describe('MoreMessagesButton', () => {
             expect(instance.canceled).toBe(true);
             expect(instance.hide).toHaveBeenCalled();
             expect(instance.disableViewableItemsHandler).toBe(true);
+        });
+    });
+
+    describe('uncancel', () => {
+        it('should set canceled and disableViewableItemsHandler to false', () => {
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.canceled = true;
+            instance.disableViewableItemsHandler = true;
+
+            instance.uncancel();
+            expect(instance.canceled).toBe(false);
+            expect(instance.disableViewableItemsHandler).toBe(false);
         });
     });
 

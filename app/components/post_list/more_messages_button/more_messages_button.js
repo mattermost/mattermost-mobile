@@ -89,10 +89,11 @@ export default class MoreMessageButton extends React.PureComponent {
         }
 
         if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
-            this.pressed = false;
             if (this.cancelTimer) {
                 clearTimeout(this.cancelTimer);
             }
+            this.pressed = false;
+            this.uncancel();
         }
 
         // Cancel the more messages button if the unread count decreases due to the user
@@ -160,6 +161,11 @@ export default class MoreMessageButton extends React.PureComponent {
         this.canceled = true;
         this.disableViewableItemsHandler = true;
         this.hide();
+    }
+
+    uncancel = () => {
+        this.canceled = false;
+        this.disableViewableItemsHandler = false;
     }
 
     onMoreMessagesPress = () => {
