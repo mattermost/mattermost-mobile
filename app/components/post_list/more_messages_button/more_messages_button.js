@@ -204,7 +204,7 @@ export default class MoreMessageButton extends React.PureComponent {
                     if (this.cancelTimer) {
                         clearTimeout(this.cancelTimer);
                     }
-                    this.cancelTimer = setTimeout(this.cancel, 400);
+                    this.cancelTimer = setTimeout(this.cancel, 800);
                 }
 
                 // If the first post is viewable as well, this means that the channel

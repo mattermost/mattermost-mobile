@@ -482,7 +482,7 @@ describe('MoreMessagesButton', () => {
 
             expect(instance.cancel).not.toHaveBeenCalled();
             expect(clearTimeout).toHaveBeenCalled();
-            expect(setTimeout).toHaveBeenCalledWith(instance.cancel, 400);
+            expect(setTimeout).toHaveBeenCalledWith(instance.cancel, 800);
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
 
             jest.runAllTimers();
