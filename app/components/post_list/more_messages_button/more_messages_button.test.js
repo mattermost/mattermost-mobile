@@ -94,18 +94,21 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should set pressed to false when the newMessageLineIndex changes', () => {
+        test('componentDidUpdate should set pressed to false and clear the cancel timer when the newMessageLineIndex changes', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             instance.pressed = true;
+            instance.cancelTimer = jest.fn();
 
             wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
             expect(instance.pressed).toBe(true);
+            expect(clearTimeout).not.toHaveBeenCalled();
 
             wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 1});
             expect(instance.pressed).toBe(false);
+            expect(clearTimeout).toHaveBeenCalledWith(instance.cancelTimer);
         });
 
         test('componentDidUpdate should call cancel when the unreadCount decreases but is not 0', () => {
@@ -219,7 +222,6 @@ describe('MoreMessagesButton', () => {
             instance.disableViewableItemsHandler = true;
             instance.viewableItems = [{index: 1}];
             instance.pressed = true;
-            instance.scrolledToLastIndex = true;
             instance.canceled = true;
 
             instance.reset();
@@ -228,7 +230,6 @@ describe('MoreMessagesButton', () => {
             expect(instance.disableViewableItemsHandler).toEqual(false);
             expect(instance.viewableItems).toStrictEqual([]);
             expect(instance.pressed).toEqual(false);
-            expect(instance.scrolledToLastIndex).toEqual(false);
             expect(instance.state.moreText).toEqual('');
             expect(instance.canceled).toEqual(false);
         });
@@ -451,6 +452,23 @@ describe('MoreMessagesButton', () => {
 
             expect(instance.cancel).toHaveBeenCalled();
             expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
+        });
+
+        it('should set the cancel timer when newMessageLineIndex is viewable and < to the unreadCount', () => {
+            const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
+            wrapper.setProps({newMessageLineIndex: 3, unreadCount: 4});
+            instance.disableViewableItemsHandler = false;
+            instance.cancelTimer = jest.fn();
+
+            instance.onViewableItemsChanged(viewableItems);
+
+            expect(instance.cancel).not.toHaveBeenCalled();
+            expect(clearTimeout).toHaveBeenCalled();
+            expect(setTimeout).toHaveBeenCalledWith(instance.cancel, 400);
+            expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
+
+            jest.runAllTimers();
+            expect(instance.cancel).toHaveBeenCalled();
         });
 
         it('should cancel button and also scroll to newMessageLineIndex when the channel is first loaded and the newMessageLineIndex is viewable', () => {

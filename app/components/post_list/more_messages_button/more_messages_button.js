@@ -90,6 +90,9 @@ export default class MoreMessageButton extends React.PureComponent {
 
         if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
             this.pressed = false;
+            if (this.cancelTimer) {
+                clearTimeout(this.cancelTimer);
+            }
         }
 
         // Cancel the more messages button if the unread count decreases due to the user
@@ -127,7 +130,6 @@ export default class MoreMessageButton extends React.PureComponent {
         this.disableViewableItemsHandler = false;
         this.viewableItems = [];
         this.pressed = false;
-        this.scrolledToLastIndex = false;
         this.canceled = false;
         this.setState({moreText: ''});
     }
@@ -156,8 +158,8 @@ export default class MoreMessageButton extends React.PureComponent {
 
     cancel = () => {
         this.canceled = true;
-        this.hide();
         this.disableViewableItemsHandler = true;
+        this.hide();
     }
 
     onMoreMessagesPress = () => {
@@ -174,7 +176,6 @@ export default class MoreMessageButton extends React.PureComponent {
 
     onViewableItemsChanged = (viewableItems) => {
         this.viewableItems = viewableItems;
-        this.scrolledToLastIndex = false;
 
         const {newMessageLineIndex, unreadCount, scrollToIndex} = this.props;
         if (newMessageLineIndex <= 0 || viewableItems.length === 0) {
@@ -188,9 +189,17 @@ export default class MoreMessageButton extends React.PureComponent {
         if (!this.disableViewableItemsHandler) {
             const viewableIndeces = viewableItems.map((item) => item.index);
 
-            // Cancel More Messages button when New Messages line is viewable
-            if (newMessageLineIndex >= unreadCount && viewableIndeces[viewableIndeces.length - 1] >= newMessageLineIndex) {
-                this.cancel();
+            if (viewableIndeces[viewableIndeces.length - 1] >= newMessageLineIndex) {
+                // Cancel More Messages button when the last New Messages line is viewable
+                if (newMessageLineIndex >= unreadCount) {
+                    this.cancel();
+                } else {
+                    // Queue a cancel that will get cleared only if the newMessageLineIndex changes
+                    if (this.cancelTimer) {
+                        clearTimeout(this.cancelTimer);
+                    }
+                    this.cancelTimer = setTimeout(this.cancel, 400);
+                }
 
                 // If the first post is viewable as well, this means that the channel
                 // was just loaded. In this case let's auto scroll to the New Messages line
