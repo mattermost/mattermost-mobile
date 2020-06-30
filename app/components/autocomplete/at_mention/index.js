@@ -57,7 +57,7 @@ function mapStateToProps(state, ownProps) {
         outChannel = filterMembersNotInChannel(state, matchTerm);
     }
 
-    if (hasLicense && isMinimumServerVersion(state.entities.general.serverVersion, 5, 26)) {
+    if (hasLicense && isMinimumServerVersion(state.entities.general.serverVersion, 5, 24)) {
         if (matchTerm) {
             groups = searchAssociatedGroupsForReferenceLocal(state, matchTerm, currentTeamId, currentChannelId);
         } else {
