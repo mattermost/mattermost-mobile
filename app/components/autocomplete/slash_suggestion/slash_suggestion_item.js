@@ -46,7 +46,13 @@ export default class SlashSuggestionItem extends PureComponent {
                 </View>
                 <View style={style.suggestionContainer}>
                     <Text style={style.suggestionName}>{`${trigger} ${hint}`}</Text>
-                    <Text style={style.suggestionDescription}>{description}</Text>
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={style.suggestionDescription}
+                    >
+                        {description}
+                    </Text>
                 </View>
             </TouchableWithFeedback>
         );
@@ -70,9 +76,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             paddingVertical: 8,
             paddingHorizontal: 16,
+            overflow: 'hidden',
         },
         suggestionContainer: {
-
+            flex: 1,
         },
         suggestionDescription: {
             fontSize: 12,

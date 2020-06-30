@@ -8,7 +8,6 @@ import {
     Platform,
 } from 'react-native';
 
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import SlashSuggestionItem from './slash_suggestion_item';
@@ -166,7 +165,6 @@ export default class SlashSuggestion extends PureComponent {
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
                 renderItem={this.renderItem}
-                ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
                 nestedScrollEnabled={nestedScrollEnabled}
