@@ -248,7 +248,7 @@ class SSO extends PureComponent {
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                     onMessage={messagingEnabled ? this.onMessage : null}
-                    useSharedProcessPool={true}
+                    useSharedProcessPool={false}
                     cacheEnabled={false}
                 />
             );
