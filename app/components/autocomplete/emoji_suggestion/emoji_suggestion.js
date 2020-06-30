@@ -10,7 +10,6 @@ import {
     View,
 } from 'react-native';
 
-import AutocompleteDivider from '@components/autocomplete/autocomplete_divider';
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {BuiltInEmojis} from '@utils/emojis';
@@ -214,7 +213,6 @@ export default class EmojiSuggestion extends PureComponent {
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
                 renderItem={this.renderItem}
-                ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
                 nestedScrollEnabled={nestedScrollEnabled}

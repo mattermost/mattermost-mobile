@@ -25,13 +25,12 @@ export default class AutocompleteSectionHeader extends PureComponent {
     render() {
         const {defaultMessage, id, loading, theme, isLandscape} = this.props;
         const style = getStyleFromTheme(theme);
-
         return (
             <View style={style.sectionWrapper}>
                 <View style={[style.section, padding(isLandscape)]}>
                     <FormattedText
-                        id={id}
-                        defaultMessage={defaultMessage}
+                        id={id.toUpperCase()}
+                        defaultMessage={defaultMessage.toUpperCase()}
                         style={style.sectionText}
                     />
                     {loading &&
@@ -51,14 +50,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         section: {
             justifyContent: 'center',
             paddingHorizontal: 8,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
             flexDirection: 'row',
         },
         sectionText: {
             fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.7),
+            fontWeight: '600',
+            color: changeOpacity(theme.centerChannelColor, 0.56),
             paddingVertical: 7,
             flex: 1,
         },

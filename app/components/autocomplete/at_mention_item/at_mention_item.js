@@ -69,11 +69,10 @@ export default class AtMentionItem extends PureComponent {
                     <ProfilePicture
                         userId={userId}
                         theme={theme}
-                        size={20}
+                        size={24}
                         status={null}
                     />
                 </View>
-                <Text style={style.rowUsername}>{`@${username}`}</Text>
                 <BotTag
                     show={isBot}
                     theme={theme}
@@ -82,7 +81,6 @@ export default class AtMentionItem extends PureComponent {
                     show={isGuest}
                     theme={theme}
                 />
-                {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
                 <Text
                     style={style.rowFullname}
                     numberOfLines={1}
@@ -95,6 +93,8 @@ export default class AtMentionItem extends PureComponent {
                         defaultMessage='(you)'
                     />}
                 </Text>
+                {hasFullName && <Text style={style.rowFullname}>{' - '}</Text>}
+                <Text style={style.rowUsername}>{`@${username}`}</Text>
             </TouchableWithFeedback>
         );
     }
@@ -110,17 +110,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         rowPicture: {
             marginHorizontal: 8,
-            width: 20,
+            width: 24,
             alignItems: 'center',
             justifyContent: 'center',
         },
-        rowUsername: {
-            fontSize: 13,
+        rowFullname: {
+            fontSize: 15,
             color: theme.centerChannelColor,
         },
-        rowFullname: {
+        rowUsername: {
             color: theme.centerChannelColor,
-            opacity: 0.6,
+            fontSize: 15,
+            opacity: 0.56,
             flex: 1,
         },
     };

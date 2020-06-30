@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 
 import {General} from '@mm-redux/constants';
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import {BotTag, GuestTag} from 'app/components/tag';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
@@ -91,7 +90,6 @@ export default class ChannelMentionItem extends PureComponent {
         return (
             <React.Fragment>
                 {component}
-                <AutocompleteDivider/>
             </React.Fragment>
         );
     }

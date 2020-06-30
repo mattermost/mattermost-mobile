@@ -9,7 +9,6 @@ import {RequestStatus} from '@mm-redux/constants';
 
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AtMentionItem from 'app/components/autocomplete/at_mention_item';
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -248,7 +247,6 @@ export default class AtMention extends PureComponent {
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
-                ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
             />
