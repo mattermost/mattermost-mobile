@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, Linking, Text, View} from 'react-native';
+import {Linking, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {TABLET_WIDTH} from '@components/sidebars/drawer_layout';
@@ -19,9 +19,6 @@ const VIEWPORT_IMAGE_REPLY_OFFSET = 13;
 
 export default class PostAttachmentOpenGraph extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            getOpenGraphMetadata: PropTypes.func.isRequired,
-        }).isRequired,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         imagesMetadata: PropTypes.object,
@@ -40,19 +37,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     componentDidMount() {
         this.mounted = true;
 
-        this.fetchData(this.props.link, this.props.openGraphData);
-
         if (this.state.openGraphImageUrl) {
-            this.getImageSize(this.state.openGraphImageUrl);
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.link !== this.props.link) {
-            this.fetchData(this.props.link, this.props.openGraphData);
-        }
-
-        if (prevState.openGraphImageUrl !== this.state.openGraphImageUrl) {
             this.getImageSize(this.state.openGraphImageUrl);
         }
     }
@@ -63,12 +48,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
     setItemRef = (ref) => {
         this.itemRef = ref;
-    };
-
-    fetchData = (url, openGraphData) => {
-        if (!openGraphData) {
-            this.props.actions.getOpenGraphMetadata(url);
-        }
     };
 
     getBestImageUrlAndDimensions = (data) => {
@@ -147,11 +126,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
 
         if (ogImage?.width && ogImage?.height) {
             this.setImageSize(imageUrl, ogImage.width, ogImage.height);
-        } else {
-            // if we get to this point there can be a scroll pop
-            Image.getSize(imageUrl, (width, height) => {
-                this.setImageSize(imageUrl, width, height);
-            }, () => null);
         }
     };
 

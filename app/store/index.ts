@@ -187,7 +187,9 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
     const rootReducer: any = (state: GlobalState, action: GenericAction) => {
         if (action.type === General.OFFLINE_STORE_PURGE) {
             // eslint-disable-next-line no-underscore-dangle
-            delete action.data._persist;
+            if (action.data?._persist) {
+                delete action?.data?._persist;
+            }
             return baseReducer(action.data, action as any);
         }
         return baseReducer(state as any, action as any);
@@ -230,7 +232,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
 
             store.dispatch({
                 type: General.OFFLINE_STORE_PURGE,
-                state,
+                data: state,
             });
 
             console.log('HYDRATED FROM v4', storeKeys); // eslint-disable-line no-console
@@ -240,6 +242,8 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             });
             store.dispatch({type: General.REHYDRATED});
             AsyncStorage.multiRemove(storeKeys);
+        } else if (store.getState()._persist?.rehydrated) { // eslint-disable-line no-underscore-dangle
+            store.dispatch({type: General.REHYDRATED});
         } else {
             let executed = false;
             const unsubscribe = store.subscribe(() => {

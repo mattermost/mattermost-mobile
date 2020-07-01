@@ -1,11 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'react-native';
 import {shallow} from 'enzyme';
 import React from 'react';
-
-const originalGetSizeFn = Image.getSize;
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -19,10 +16,6 @@ describe('AttachmentImage', () => {
         imageUrl: 'https://images.com/image.png',
         theme: Preferences.THEMES.default,
     };
-
-    afterEach(() => {
-        Image.getSize = originalGetSizeFn;
-    });
 
     test('it matches snapshot', () => {
         const wrapper = shallow(<AttachmentImage {...baseProps}/>);
@@ -45,22 +38,6 @@ describe('AttachmentImage', () => {
         const state = wrapper.state();
         expect(state.hasImage).toBe(false);
         expect(state.imageUri).toBe(null);
-    });
-
-    test('it calls Image.getSize if metadata is not present', () => {
-        const getSizeFn = jest.fn((_, callback) => {
-            callback(64, 64);
-        });
-        Image.getSize = getSizeFn;
-
-        const props = {...baseProps, imageMetadata: null};
-        const wrapper = shallow(<AttachmentImage {...props}/>);
-
-        const state = wrapper.state();
-        expect(state.hasImage).toBe(true);
-        expect(state.imageUri).toBe('https://images.com/image.png');
-        expect(state.originalWidth).toBe(64);
-        expect(getSizeFn).toHaveBeenCalled();
     });
 
     test('it updates image when imageUrl prop changes', () => {

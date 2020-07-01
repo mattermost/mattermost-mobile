@@ -2,9 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-
-import {getOpenGraphMetadata} from '@mm-redux/actions/posts';
 
 import {getDimensions} from 'app/selectors/device';
 
@@ -16,12 +13,4 @@ function mapStateToProps(state) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        actions: bindActionCreators({
-            getOpenGraphMetadata,
-        }, dispatch),
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(PostAttachmentOpenGraph);
+export default connect(mapStateToProps)(PostAttachmentOpenGraph);
