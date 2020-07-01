@@ -3086,7 +3086,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
         "flex": 1,
       },
       Object {
-        "height": null,
+        "height": undefined,
         "maxHeight": undefined,
       },
     ]
