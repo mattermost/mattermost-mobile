@@ -102,26 +102,29 @@ const launchAppAndAuthenticateIfNeeded = async (credentials) => {
 Navigation.events().registerAppLaunchedListener(() => {
     init();
 
-    // Keep track of the latest componentId to appear
-    Navigation.events().registerComponentDidAppearListener(({componentId}) => {
-        EphemeralStore.addNavigationComponentId(componentId);
-
-        switch (componentId) {
-        case 'MainSidebar':
-            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
-            EventEmitter.emit(Navigation.BLUR_POST_DRAFT);
-            break;
-        case 'SettingsSidebar':
-            EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
-            break;
-        }
-    });
-
-    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
-        EphemeralStore.removeNavigationComponentId(componentId);
-
-        if (componentId === 'MainSidebar') {
-            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
-        }
-    });
+    // Keep track of the latest componentId to appear/disappear
+    Navigation.events().registerComponentDidAppearListener(componentDidAppearListener);
+    Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
 });
+
+export function componentDidAppearListener({componentId}) {
+    EphemeralStore.addNavigationComponentId(componentId);
+
+    switch (componentId) {
+    case 'MainSidebar':
+        EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
+        break;
+    case 'SettingsSidebar':
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
+        break;
+    }
+}
+
+export function componentDidDisappearListener({componentId}) {
+    EphemeralStore.removeNavigationComponentId(componentId);
+
+    if (componentId === 'MainSidebar') {
+        EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
+    }
+}
