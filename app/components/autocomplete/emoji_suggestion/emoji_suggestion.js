@@ -70,15 +70,16 @@ export default class EmojiSuggestion extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.isSearch) {
+        const {isSearch, emojis, cursorPosition, value} = this.props;
+
+        if (isSearch) {
             return;
         }
 
-        if (this.props.emojis.join('') !== prevProps.emojis.join('')) {
-            fuse = new Fuse(this.props.emojis, FUSE_OPTIONS);
+        if (emojis.join('') !== prevProps.emojis.join('')) {
+            fuse = new Fuse(emojis, FUSE_OPTIONS);
         }
 
-        const {cursorPosition, value} = this.props;
         const match = value.substring(0, cursorPosition).match(EMOJI_REGEX);
 
         if (!match || this.state.emojiComplete) {
