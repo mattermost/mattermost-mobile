@@ -9,6 +9,9 @@
  - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
  - iPhone 5s devices and later with iOS 11+ is required.
  
+### Breaking Changes
+ - Starting with mobile app v1.33.0, users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed. Updating your server to v5.19 or later is required.
+ 
 ### Highlights
 
 ### Improvements
