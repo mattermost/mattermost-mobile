@@ -216,7 +216,7 @@ export default class EmojiSuggestion extends PureComponent {
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
 
-        let height = null;
+        let height = undefined;
         if (!this.state.active) {
             // If we are not in an active state set a height of 0 so nothing is rendered
             // and other components are not blocked.
