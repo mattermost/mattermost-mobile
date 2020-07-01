@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import Fuse from 'fuse.js';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {selectEmojisByName} from '@selectors/emojis';
@@ -21,15 +20,6 @@ describe('components/autocomplete/emoji_suggestion', () => {
         },
     };
     const emojis = selectEmojisByName(state);
-    const options = {
-        shouldSort: false,
-        threshold: 0.3,
-        location: 0,
-        distance: 10,
-        includeMatches: true,
-        findAllMatches: true,
-    };
-    const fuse = new Fuse(emojis, options);
     const baseProps = {
         actions: {
             addReactionToLatestPost: jest.fn(),
@@ -38,7 +28,6 @@ describe('components/autocomplete/emoji_suggestion', () => {
         cursorPosition: 0,
         customEmojisEnabled: false,
         emojis,
-        fuse,
         isSearch: false,
         theme: Preferences.THEMES.default,
         onChangeText: jest.fn(),
