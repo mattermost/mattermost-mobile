@@ -3,8 +3,7 @@
 
 import {Client4} from '@mm-redux/client';
 import websocketClient from '@websocket';
-
-import {ChannelTypes, GeneralTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes} from '@mm-redux/action_types';
+import {ChannelTypes, GeneralTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes, GroupTypes} from '@mm-redux/action_types';
 import {General, Preferences} from '@mm-redux/constants';
 import {
     getAllChannels,
@@ -344,6 +343,8 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleConfigChangedEvent(msg));
         case WebsocketEvents.OPEN_DIALOG:
             return dispatch(handleOpenDialogEvent(msg));
+        case WebsocketEvents.RECEIVED_GROUP:
+            return dispatch(handleGroupUpdatedEvent(msg));
         }
 
         return {data: true};
@@ -1156,6 +1157,23 @@ function handleOpenDialogEvent(msg: WebSocketMessage) {
     return (dispatch: DispatchFunc) => {
         const data = (msg.data && msg.data.dialog) || {};
         dispatch({type: IntegrationTypes.RECEIVED_DIALOG, data: JSON.parse(data)});
+        return {data: true};
+    };
+}
+
+function handleGroupUpdatedEvent(msg: WebSocketMessage) {
+    return (dispatch: DispatchFunc) => {
+        const data = JSON.parse(msg.data.group);
+        dispatch(batchActions([
+            {
+                type: GroupTypes.RECEIVED_GROUP,
+                data,
+            },
+            {
+                type: GroupTypes.RECEIVED_MY_GROUPS,
+                data: [data],
+            },
+        ]));
         return {data: true};
     };
 }

@@ -11,6 +11,7 @@ export default keyMirror({
 
     RECEIVED_GROUP_TEAMS: null,
     RECEIVED_GROUP_CHANNELS: null,
+    RECEIVED_MY_GROUPS: null,
 
     RECEIVED_GROUP_MEMBERS: null,
 
