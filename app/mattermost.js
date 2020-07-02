@@ -56,8 +56,8 @@ const launchApp = (credentials) => {
     ]);
 
     const store = Store.redux;
-    if (credentials) {
-        waitForHydration(store, async () => {
+    waitForHydration(store, async () => {
+        if (credentials) {
             const {previousVersion} = store.getState().app;
             const valid = validatePreviousVersion(previousVersion);
             if (valid) {
@@ -69,10 +69,10 @@ const launchApp = (credentials) => {
                 captureJSException(error, false, store);
                 store.dispatch(logout());
             }
-        });
-    } else {
-        resetToSelectServer(emmProvider.allowOtherServers);
-    }
+        } else {
+            resetToSelectServer(emmProvider.allowOtherServers);
+        }
+    });
 
     telemetry.startSinceLaunch(['start:splash_screen']);
     EphemeralStore.appStarted = true;
