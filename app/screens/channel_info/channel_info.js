@@ -463,13 +463,13 @@ export default class ChannelInfo extends PureComponent {
 
         const channelHeaderPlugins = this.props.mobilePlugins.filter((plugin) => plugin.location === 'CHANNEL_HEADER');
         return channelHeaderPlugins.map((plugin) => (
-            <React.Fragment key={plugin.id + plugin.trigger}>
+            <React.Fragment key={plugin.id + plugin.requestURL}>
                 <ChannelInfoRow
-                    action={() => doPluginAction(plugin.id, plugin.trigger, {channel_id: currentChannel.id})}
+                    action={() => doPluginAction(plugin.id, plugin.requestURL, {channel_id: currentChannel.id})}
                     defaultMessage={plugin.extra} // in future version should use plugin.extra.defaultMessage
                     theme={theme}
                     isLandscape={isLandscape}
-                    textId={plugin.id + plugin.trigger}
+                    textId={plugin.id + plugin.requestURL}
                 />
             </React.Fragment>
         ));

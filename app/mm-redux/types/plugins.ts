@@ -23,13 +23,13 @@ export type MarketplacePlugin = {
     installed_version: string;
 }
 
-export type PluginTrigger = {
+export type PluginIntegration = {
     id: string;
     location: string;
-    trigger: string;
+    requestURL: string;
     extra: any;
 }
 
 export type PluginsState = {
-    mobilePlugins: PluginTrigger[];
+    mobilePluginIntegrations: PluginIntegration[];
 }

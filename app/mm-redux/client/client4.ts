@@ -265,14 +265,6 @@ export default class Client4 {
         return `${this.getPluginsRoute()}/${pluginId}`;
     }
 
-    getPluginMobileRoute(pluginId: string) {
-        return `${this.url}/plugins/${pluginId}/mobile`;
-    }
-
-    getPluginMobileTriggerRoute(pluginId: string, trigger: string) {
-        return `${this.getPluginMobileRoute(pluginId)}/${trigger}`;
-    }
-
     getPluginsMarketplaceRoute() {
         return `${this.getPluginsRoute()}/marketplace`;
     }
@@ -2818,16 +2810,16 @@ export default class Client4 {
         );
     };
 
-    executePluginTrigger = async (pluginId: string, trigger: string, body?: any) => {
+    executePluginIntegration = async (pluginId: string, requestURL: string, body?: any) => {
         return this.doFetch(
-            this.getPluginMobileTriggerRoute(pluginId, trigger),
+            requestURL,
             {method: 'post', body: JSON.stringify(body)},
         );
     }
 
-    getMobilePluginTriggers = async () => {
+    getMobilePluginIntegrations = async () => {
         return this.doFetch(
-            this.getBaseRoute() + '/mobilePlugins',
+            this.getBaseRoute() + '/pluginIntegrations?scope=mobile',
             {method: 'get'},
         );
     }

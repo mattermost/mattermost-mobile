@@ -6,9 +6,9 @@ import {Client4} from '@mm-redux/client';
 import {ActionFunc} from '@mm-redux/types/actions';
 
 import {bindClientFunc} from './helpers';
-export function getMobilePlugins(): ActionFunc {
+export function fetchMobilePluginIntegrations(): ActionFunc {
     return bindClientFunc({
-        clientFunc: Client4.getMobilePluginTriggers,
-        onSuccess: PluginTypes.RECEIVED_MOBILE_PLUGINS,
+        clientFunc: Client4.getMobilePluginIntegrations,
+        onSuccess: PluginTypes.RECEIVED_PLUGIN_INTEGRATIONS,
     });
 }

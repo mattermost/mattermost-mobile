@@ -5,8 +5,8 @@ import {resetToChannel} from '@actions/navigation';
 
 const RESET_TO_CHANNEL = 'RESET_TO_CHANNEL';
 
-export async function doPluginAction(pluginId, trigger, body) {
-    const response = await Client4.executePluginTrigger(pluginId, trigger, body);
+export async function doPluginAction(pluginId, requestURL, body) {
+    const response = await Client4.executePluginIntegration(pluginId, requestURL, body);
     if (response.action === RESET_TO_CHANNEL) {
         resetToChannel();
     }

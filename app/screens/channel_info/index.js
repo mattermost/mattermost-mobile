@@ -27,8 +27,8 @@ import {
     getMyCurrentChannelMembership,
     isCurrentChannelReadOnly,
 } from '@mm-redux/selectors/entities/channels';
-import {getAllPlugins} from '@mm-redux/selectors/entities/plugins';
-import {getMobilePlugins} from '@mm-redux/actions/plugins';
+import {getPluginIntegrations} from '@mm-redux/selectors/entities/plugins';
+import {fetchMobilePluginIntegrations} from '@mm-redux/actions/plugins';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from '@mm-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
@@ -116,7 +116,7 @@ function mapStateToProps(state) {
         });
     }
 
-    const mobilePlugins = getAllPlugins(state);
+    const mobilePlugins = getPluginIntegrations(state);
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
@@ -167,7 +167,7 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
-            getMobilePlugins,
+            fetchMobilePluginIntegrations,
         }, dispatch),
     };
 }

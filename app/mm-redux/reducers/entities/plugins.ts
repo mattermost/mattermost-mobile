@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 import {combineReducers} from 'redux';
 import {PluginTypes} from '@mm-redux/action_types';
-import {PluginTrigger, PluginsState} from '@mm-redux/types/plugins';
+import {PluginIntegration, PluginsState} from '@mm-redux/types/plugins';
 import {GenericAction} from '@mm-redux/types/actions';
 
-function mobilePlugins(state: PluginTrigger[] = [], action: GenericAction): PluginTrigger[] {
+function mobilePluginIntegrations(state: PluginIntegration[] = [], action: GenericAction): PluginIntegration[] {
     switch (action.type) {
-    case PluginTypes.RECEIVED_MOBILE_PLUGINS: {
+    case PluginTypes.RECEIVED_PLUGIN_INTEGRATIONS: {
         return action.data;
     }
     default:
@@ -16,5 +16,5 @@ function mobilePlugins(state: PluginTrigger[] = [], action: GenericAction): Plug
 }
 
 export default (combineReducers({
-    mobilePlugins,
+    mobilePluginIntegrations,
 }) as (b: PluginsState, a: GenericAction) => PluginsState);
