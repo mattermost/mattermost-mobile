@@ -603,7 +603,7 @@ function loadGroupData() {
                         if (getAllGroupsAssociatedToTeam) {
                             actions.push({
                                 type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
-                                data: getAllGroupsAssociatedToTeam,
+                                data: {...getAllGroupsAssociatedToTeam, teamID},
                             });
                         }
                     } else {
