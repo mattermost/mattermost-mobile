@@ -56,7 +56,7 @@ export default class PostOptions extends PureComponent {
     };
 
     close = async (cb) => {
-        dismissModal();
+        await dismissModal();
 
         if (typeof cb === 'function') {
             requestAnimationFrame(cb);
@@ -260,7 +260,7 @@ export default class PostOptions extends PureComponent {
                 onEmojiPress: this.handleAddReactionToPost,
             };
 
-            this.close(() => showModal(screen, title, passProps));
+            this.closeWithAnimation(() => showModal(screen, title, passProps));
         });
     };
 
@@ -362,7 +362,7 @@ export default class PostOptions extends PureComponent {
                 closeButton: source,
             };
 
-            this.close(() => showModal(screen, title, passProps));
+            this.closeWithAnimation(() => showModal(screen, title, passProps));
         });
     };
 
