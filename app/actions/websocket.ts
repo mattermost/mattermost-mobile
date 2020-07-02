@@ -50,7 +50,6 @@ import {loadChannelsForTeam, markAsViewedAndReadBatch} from '@actions/views/chan
 import {getPost, getPosts, getPostsAdditionalDataBatch, getPostThread} from '@actions/views/post';
 import {getMe, loadMe} from '@actions/views/user';
 import {GlobalState} from '@mm-redux/types/store';
-import {loadRolesIfNeeded} from '@mm-redux/actions/roles';
 
 export type WebsocketBroadcast = {
     omit_users: Dictionary<boolean>;
@@ -965,14 +964,23 @@ function handleChannelSchemeUpdatedEvent(msg: WebSocketMessage) {
 function handleUpdateMemberRoleEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc) => {
         const memberData = JSON.parse(msg.data.member);
-        const newRoles = memberData.roles.split(' ');
+        const roles = memberData.roles.split(' ');
+        const actions = [];
 
-        dispatch(loadRolesIfNeeded(newRoles));
+        const newRoles = await Client4.getRolesByNames(roles);
+        if (newRoles.length) {
+            actions.push({
+                type: RoleTypes.RECEIVED_ROLES,
+                data: newRoles,
+            });
+        }
 
-        dispatch({
+        actions.push({
             type: TeamTypes.RECEIVED_MY_TEAM_MEMBER,
             data: memberData,
         });
+
+        dispatch(batchActions(actions));
         return {data: true};
     };
 }
