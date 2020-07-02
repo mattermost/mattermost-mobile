@@ -967,12 +967,16 @@ function handleUpdateMemberRoleEvent(msg: WebSocketMessage) {
         const roles = memberData.roles.split(' ');
         const actions = [];
 
-        const newRoles = await Client4.getRolesByNames(roles);
-        if (newRoles.length) {
-            actions.push({
-                type: RoleTypes.RECEIVED_ROLES,
-                data: newRoles,
-            });
+        try {
+            const newRoles = await Client4.getRolesByNames(roles);
+            if (newRoles.length) {
+                actions.push({
+                    type: RoleTypes.RECEIVED_ROLES,
+                    data: newRoles,
+                });
+            }
+        } catch (error) {
+            return {error};
         }
 
         actions.push({
