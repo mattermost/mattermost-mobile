@@ -51,6 +51,7 @@ import {loadChannelsForTeam, markAsViewedAndReadBatch} from '@actions/views/chan
 import {getPost, getPosts, getPostsAdditionalDataBatch, getPostThread} from '@actions/views/post';
 import {getMe, loadMe} from '@actions/views/user';
 import {GlobalState} from '@mm-redux/types/store';
+import {loadRolesIfNeeded} from '@mm-redux/actions/roles';
 
 export type WebsocketBroadcast = {
     omit_users: Dictionary<boolean>;
@@ -298,6 +299,8 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleRoleUpdatedEvent(msg));
         case WebsocketEvents.USER_ROLE_UPDATED:
             return dispatch(handleUserRoleUpdated(msg));
+        case WebsocketEvents.MEMBERROLE_UPDATED:
+            return dispatch(handleUpdateMemberRoleEvent(msg));
         case WebsocketEvents.CHANNEL_CREATED:
             return dispatch(handleChannelCreatedEvent(msg));
         case WebsocketEvents.CHANNEL_DELETED:
@@ -954,6 +957,21 @@ function handleChannelSchemeUpdatedEvent(msg: WebSocketMessage) {
         if (channelActions.length) {
             dispatch(batchActions(channelActions, 'BATCH_WS_SCHEME_UPDATE'));
         }
+        return {data: true};
+    };
+}
+
+function handleUpdateMemberRoleEvent(msg: WebSocketMessage) {
+    return async (dispatch: DispatchFunc) => {
+        const memberData = JSON.parse(msg.data.member);
+        const newRoles = memberData.roles.split(' ');
+
+        dispatch(loadRolesIfNeeded(newRoles));
+
+        dispatch({
+            type: TeamTypes.RECEIVED_MY_TEAM_MEMBER,
+            data: memberData,
+        });
         return {data: true};
     };
 }
