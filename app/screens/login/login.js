@@ -297,7 +297,8 @@ export default class Login extends PureComponent {
     setEmmUsernameIfAvailable = async () => {
         const managedConfig = await mattermostManaged.getConfig();
         if (managedConfig?.username && this.loginRef.current) {
-            this.loginRef.current.setNativeProps({text: managedConfig?.username});
+            this.loginRef.current.setNativeProps({text: managedConfig.username});
+            this.loginId = managedConfig.username;
         }
     }
 
