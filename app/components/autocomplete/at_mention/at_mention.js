@@ -128,16 +128,6 @@ export default class AtMention extends PureComponent {
                 });
             }
 
-            if (this.props.useChannelMentions && this.checkSpecialMentions(matchTerm)) {
-                sections.push({
-                    id: t('suggestion.mention.special'),
-                    defaultMessage: 'Special Mentions',
-                    data: this.getSpecialMentions(),
-                    key: 'special',
-                    renderItem: this.renderSpecialMentions,
-                });
-            }
-
             if (groups.length) {
                 sections.push({
                     id: t('suggestion.mention.groups'),
@@ -145,6 +135,16 @@ export default class AtMention extends PureComponent {
                     data: groups,
                     key: 'groups',
                     renderItem: this.renderGroupMentions,
+                });
+            }
+
+            if (this.props.useChannelMentions && this.checkSpecialMentions(matchTerm)) {
+                sections.push({
+                    id: t('suggestion.mention.special'),
+                    defaultMessage: 'Special Mentions',
+                    data: this.getSpecialMentions(),
+                    key: 'special',
+                    renderItem: this.renderSpecialMentions,
                 });
             }
 
