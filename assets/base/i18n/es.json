@@ -615,5 +615,5 @@
   "user.settings.push_notification.offline": "Desconectado",
   "user.settings.push_notification.online": "En línea, ausente o desconectado",
   "web.root.signup_info": "Todas las comunicaciones del equipo en un sólo lugar, con búsquedas y accesible desde cualquier parte",
-  "mobile.message_length.message_split_left": ""
+  "mobile.message_length.message_split_left": "El mensaje excede el límite de caracteres"
 }
