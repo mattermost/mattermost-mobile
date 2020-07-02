@@ -3103,37 +3103,6 @@ export default class Client4 {
             return;
         }
 
-        // Temporary change to allow only certain events to reduce data rate - see MM-13062
-        // All events in 'admin' category are allowed, since they are low-volume
-        if (category !== 'admin' && ![
-            'api_posts_create',
-            'api_interactive_messages_button_clicked',
-            'api_interactive_messages_menu_selected',
-            'api_interactive_messages_dialog_submitted',
-            'ui_marketplace_download',
-            'ui_marketplace_download_update',
-            'ui_marketplace_configure',
-            'ui_marketplace_opened',
-            'ui_marketplace_closed',
-            'ui_marketplace_search',
-            'signup_user_01_welcome',
-            'signup_select_team',
-            'signup_team_01_name',
-            'signup_team_02_url',
-            'click_back',
-            'click_signin_account',
-            'click_create_account',
-            'click_create_team',
-            'click_system_console',
-            'click_logout',
-            'click_next',
-            'click_finish',
-            'click_dismiss_bar',
-            'diagnostics_disabled',
-        ].includes(event)) {
-            return;
-        }
-
         const properties = Object.assign({
             category,
             type: event,
