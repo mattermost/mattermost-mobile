@@ -94,9 +94,11 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
-        if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
+        if (newMessageLineIndex === -1) {
+            this.cancel(true);
+        } else if (newMessageLineIndex !== prevProps.newMessageLineIndex && prevProps.newMessageLineIndex > 0) {
             const newMessageLineIsViewable = this.viewableItems.find((item) => item.index === newMessageLineIndex);
-            if (newMessageLineIsViewable || newMessageLineIndex === -1) {
+            if (newMessageLineIsViewable) {
                 this.cancel(true);
             } else {
                 if (this.autoCancelTimer) {
@@ -241,9 +243,10 @@ export default class MoreMessageButton extends React.PureComponent {
             // 1. give enough time for the initial viewable posts to fill up the screen
             // 2. throttle handling by allowing cancellation of the timer when the viewable
             //    items are changing quickly, ie rapid scrolling
+            const delay = this.state.moreText.includes('more') ? 100 : 250;
             this.viewableItemsChangedTimer = setTimeout(() => {
                 this.viewableItemsChangedHandler(lastViewableIndex);
-            }, 100);
+            }, delay);
         }
     }
 

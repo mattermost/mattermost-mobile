@@ -110,32 +110,6 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should force cancel when the newMessageLineIndex changes and is viewable', () => {
-            const wrapper = shallowWithIntl(
-                <MoreMessagesButton {...baseProps}/>,
-            );
-            const instance = wrapper.instance();
-            instance.cancel = jest.fn();
-            instance.viewableItems = [{index: 100}, {index: 101}];
-
-            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
-            expect(instance.cancel).not.toHaveBeenCalled();
-
-            wrapper.setProps({newMessageLineIndex: 99});
-            expect(instance.cancel).not.toHaveBeenCalled();
-
-            wrapper.setProps({newMessageLineIndex: 100});
-            expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel).toHaveBeenCalledWith(true);
-
-            wrapper.setProps({newMessageLineIndex: 101});
-            expect(instance.cancel).toHaveBeenCalledTimes(2);
-            expect(instance.cancel).toHaveBeenCalledWith(true);
-
-            wrapper.setProps({newMessageLineIndex: 102});
-            expect(instance.cancel).toHaveBeenCalledTimes(2);
-        });
-
         test('componentDidUpdate should force cancel when the newMessageLineIndex changes to -1', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
@@ -152,6 +126,34 @@ describe('MoreMessagesButton', () => {
             wrapper.setProps({newMessageLineIndex: -1});
             expect(instance.cancel).toHaveBeenCalledTimes(1);
             expect(instance.cancel).toHaveBeenCalledWith(true);
+        });
+
+        test('componentDidUpdate should force cancel when the newMessageLineIndex changes from a non-zero value and is viewable', () => {
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.cancel = jest.fn();
+            instance.viewableItems = [{index: 100}, {index: 101}];
+
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
+            expect(instance.cancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: 0});
+            wrapper.setProps({newMessageLineIndex: 100});
+            expect(instance.cancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: 99});
+            wrapper.setProps({newMessageLineIndex: 100});
+            expect(instance.cancel).toHaveBeenCalledTimes(1);
+            expect(instance.cancel).toHaveBeenCalledWith(true);
+
+            wrapper.setProps({newMessageLineIndex: 101});
+            expect(instance.cancel).toHaveBeenCalledTimes(2);
+            expect(instance.cancel).toHaveBeenCalledWith(true);
+
+            wrapper.setProps({newMessageLineIndex: 102});
+            expect(instance.cancel).toHaveBeenCalledTimes(2);
         });
 
         test('componentDidUpdate should set pressed to false and call uncancel when the newMessageLineIndex changes but is not viewable and is not -1', () => {
@@ -527,6 +529,7 @@ describe('MoreMessagesButton', () => {
 
         beforeEach(() => {
             jest.clearAllMocks();
+            jest.clearAllTimers();
         });
 
         it('should return early when newMessageLineIndex <= 0', () => {
@@ -621,10 +624,11 @@ describe('MoreMessagesButton', () => {
             expect(setTimeout).toHaveBeenCalledWith(instance.cancel, CANCEL_TIMER_DELAY);
         });
 
-        it('should call viewableItemsChangedHandler with a delay of 100', () => {
+        it('should call viewableItemsChangedHandler with a delay of 100 when state.moreText includes `more`', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const lastViewableIndex = viewableItems[viewableItems.length - 1].index;
             wrapper.setProps({newMessageLineIndex: 10});
+            wrapper.setState({moreText: '50 more new messages'});
             instance.disableViewableItemsHandler = false;
 
             instance.onViewableItemsChanged(viewableItems);
@@ -634,6 +638,35 @@ describe('MoreMessagesButton', () => {
             expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
             expect(instance.viewableItemsChangedTimer).not.toBe(null);
             expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
+            expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(lastViewableIndex);
+        });
+
+        it('should call viewableItemsChangedHandler with a delay of 250 when state.moreText does not include `more`', () => {
+            const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
+            const lastViewableIndex = viewableItems[viewableItems.length - 1].index;
+            wrapper.setProps({newMessageLineIndex: 10});
+            wrapper.setState({moreText: ''});
+            instance.disableViewableItemsHandler = false;
+
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runOnlyPendingTimers();
+
+            expect(instance.cancel).not.toHaveBeenCalled();
+            expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
+            expect(instance.viewableItemsChangedTimer).not.toBe(null);
+            expect(setTimeout).toHaveBeenCalledTimes(1);
+            expect(setTimeout.mock.calls[0][1]).toEqual(250);
+            expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(lastViewableIndex);
+
+            wrapper.setState({moreText: '50 new messages'});
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runOnlyPendingTimers();
+
+            expect(instance.cancel).not.toHaveBeenCalled();
+            expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
+            expect(instance.viewableItemsChangedTimer).not.toBe(null);
+            expect(setTimeout).toHaveBeenCalledTimes(2);
+            expect(setTimeout.mock.calls[1][1]).toEqual(250);
             expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(lastViewableIndex);
         });
     });
