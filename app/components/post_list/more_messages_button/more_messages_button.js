@@ -64,7 +64,6 @@ export default class MoreMessageButton extends React.PureComponent {
         this.top = new Animated.Value(0);
         this.disableViewableItemsHandler = false;
         this.viewableItems = [];
-        this.unreadCount = props.unreadCount;
     }
 
     componentDidMount() {
@@ -95,7 +94,7 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
-        if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
+        if (newMessageLineIndex !== prevProps.newMessageLineIndex && unreadCount === prevProps.unreadCount) {
             if (this.autoCancelTimer) {
                 clearTimeout(this.autoCancelTimer);
                 this.autoCancelTimer = null;
@@ -104,19 +103,16 @@ export default class MoreMessageButton extends React.PureComponent {
             this.uncancel();
         }
 
-        // If the channel has not changed but the unreadCount became 0 then the app
-        // was placed in the background and returned to the foreground. In this case
-        // we don't want to set this.unreadCount since that will cause the button to
-        // be hidden.
-        if (unreadCount !== 0) {
-            this.unreadCount = unreadCount;
+        // Cancel the more messages button if the unread changes due to the user marking a
+        // post below/above the new message line as unread or if the app returns from the
+        // foreground.
+        if (unreadCount !== prevProps.unreadCount) {
+            this.cancel(true);
         }
 
-        // Cancel the more messages button if the unread count decreases due to the user
-        // marking a post below the new message line as unread or if the new message line
-        // index changes due to the channel loading with a new message line that is removed
-        // shortly after.
-        if ((unreadCount !== 0 && unreadCount < prevProps.unreadCount) || newMessageLineIndex === -1) {
+        // Cancel the more messages buttonif the new message line index changes due to the
+        // channel loading with a new message line that is removed shortly after.
+        if (newMessageLineIndex === -1) {
             this.cancel(true);
         }
 
@@ -154,7 +150,6 @@ export default class MoreMessageButton extends React.PureComponent {
         this.pressed = false;
         this.canceled = false;
         this.disableViewableItemsHandler = false;
-        this.unreadCount = 0;
     }
 
     show = () => {
@@ -261,8 +256,9 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     viewableItemsChangedHandler = (lastViewableIndex) => {
+        const {unreadCount} = this.props;
         const readCount = this.getReadCount(lastViewableIndex);
-        const moreCount = this.unreadCount - readCount;
+        const moreCount = unreadCount - readCount;
 
         if (moreCount <= 0) {
             this.cancel(true);

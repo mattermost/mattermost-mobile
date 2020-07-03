@@ -45,17 +45,10 @@ describe('MoreMessagesButton', () => {
 
     describe('constructor', () => {
         it('should set state and instance values', () => {
-            const props = {
-                ...baseProps,
-                unreadCount: 10,
-            };
-
-            const instance = new MoreMessagesButton({...props});
+            const instance = new MoreMessagesButton({...baseProps});
             expect(instance.state).toStrictEqual({moreText: ''});
             expect(instance.top).toEqual(new Animated.Value(0));
             expect(instance.disableViewableItemsHandler).toBe(false);
-            expect(instance.viewableItems).toStrictEqual([]);
-            expect(instance.unreadCount).toEqual(props.unreadCount);
         });
     });
 
@@ -117,7 +110,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should set pressed to false and call uncancel when the newMessageLineIndex changes', () => {
+        test('componentDidUpdate should set pressed to false and call uncancel when the newMessageLineIndex changes but the unreadCount remains the same', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -129,29 +122,16 @@ describe('MoreMessagesButton', () => {
             expect(instance.pressed).toBe(true);
             expect(instance.uncancel).not.toHaveBeenCalled();
 
-            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 1});
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 1, unreadCount: baseProps.unreadCount + 1});
+            expect(instance.pressed).toBe(true);
+            expect(instance.uncancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 2, unreadCount: baseProps.unreadCount + 1});
             expect(instance.pressed).toBe(false);
             expect(instance.uncancel).toHaveBeenCalledTimes(1);
         });
 
-        test('componentDidUpdate only set unreadCount when props.unreadCount is not 0', () => {
-            const wrapper = shallowWithIntl(
-                <MoreMessagesButton {...baseProps}/>,
-            );
-            const instance = wrapper.instance();
-            instance.unreadCount = 10;
-
-            wrapper.setProps({unreadCount: 0});
-            expect(instance.unreadCount).toEqual(10);
-
-            wrapper.setProps({unreadCount: 1});
-            expect(instance.unreadCount).toEqual(1);
-
-            wrapper.setProps({unreadCount: 2});
-            expect(instance.unreadCount).toEqual(2);
-        });
-
-        test('componentDidUpdate should force cancel when the unreadCount decreases but is not 0', () => {
+        test('componentDidUpdate should force cancel when the unreadCount changes', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -161,15 +141,17 @@ describe('MoreMessagesButton', () => {
             wrapper.setProps({unreadCount: baseProps.unreadCount});
             expect(instance.cancel).not.toHaveBeenCalled();
 
-            wrapper.setProps({unreadCount: baseProps.unreadCount + 10});
-            expect(instance.cancel).not.toHaveBeenCalled();
-
-            wrapper.setProps({unreadCount: 1});
+            wrapper.setProps({unreadCount: baseProps.unreadCount + 20});
             expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel).toHaveBeenCalledWith(true);
+            expect(instance.cancel.mock.calls[0][0]).toBe(true);
+
+            wrapper.setProps({unreadCount: baseProps.unreadCount + 10});
+            expect(instance.cancel).toHaveBeenCalledTimes(2);
+            expect(instance.cancel.mock.calls[1][0]).toBe(true);
 
             wrapper.setProps({unreadCount: 0});
-            expect(instance.cancel).toHaveBeenCalledTimes(1);
+            expect(instance.cancel).toHaveBeenCalledTimes(3);
+            expect(instance.cancel.mock.calls[2][0]).toBe(true);
         });
 
         test('componentDidUpdate should force cancel when the newMessageLineIndex changes to -1', () => {
@@ -257,6 +239,7 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            wrapper.setProps({unreadCount: 10});
             instance.setState({moreText: '60+ new messages'});
             const viewableItemsChangedTimer = jest.fn();
             instance.viewableItemsChangedTimer = viewableItemsChangedTimer;
@@ -267,7 +250,6 @@ describe('MoreMessagesButton', () => {
             instance.viewableItems = [{index: 1}];
             instance.pressed = true;
             instance.canceled = true;
-            instance.unreadCount = 10;
 
             instance.reset();
             expect(clearTimeout).toHaveBeenCalledWith(viewableItemsChangedTimer);
@@ -658,13 +640,15 @@ describe('MoreMessagesButton', () => {
         instance.cancel = jest.fn();
         instance.getReadCount = jest.fn();
         instance.show = jest.fn();
+        instance.componentDidUpdate = jest.fn();
 
         it('should force cancel and return early when unreadCount - readCount <= 0', () => {
+            const unreadCount = 10;
             const emptyMoreText = '';
+            wrapper.setProps({unreadCount});
             wrapper.setState({moreText: emptyMoreText});
-            instance.unreadCount = 10;
 
-            instance.getReadCount.mockReturnValueOnce(instance.unreadCount);
+            instance.getReadCount.mockReturnValueOnce(unreadCount);
             instance.viewableItemsChangedHandler();
             jest.runOnlyPendingTimers();
             expect(instance.cancel).toHaveBeenCalledTimes(1);
@@ -672,7 +656,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.show).not.toHaveBeenCalled();
             expect(instance.state.moreText).toEqual(emptyMoreText);
 
-            instance.getReadCount.mockReturnValueOnce(instance.unreadCount + 1);
+            instance.getReadCount.mockReturnValueOnce(unreadCount + 1);
             instance.viewableItemsChangedHandler();
             jest.runOnlyPendingTimers();
             expect(instance.cancel).toHaveBeenCalledTimes(2);
@@ -681,18 +665,19 @@ describe('MoreMessagesButton', () => {
         });
 
         it('should set moreText and call show when unreadCount - readCount > 0', () => {
+            const unreadCount = 10;
             const emptyMoreText = '';
+            wrapper.setProps({unreadCount});
             wrapper.setState({moreText: emptyMoreText});
-            instance.unreadCount = 10;
 
-            instance.getReadCount.mockReturnValueOnce(instance.unreadCount - 1);
+            instance.getReadCount.mockReturnValueOnce(unreadCount - 1);
             instance.viewableItemsChangedHandler();
             jest.runOnlyPendingTimers();
             expect(instance.cancel).not.toHaveBeenCalled();
             expect(instance.show).toHaveBeenCalledTimes(1);
             expect(instance.state.moreText.startsWith('1')).toBe(true);
 
-            instance.getReadCount.mockReturnValueOnce(instance.unreadCount - 2);
+            instance.getReadCount.mockReturnValueOnce(unreadCount - 2);
             instance.viewableItemsChangedHandler();
             jest.runOnlyPendingTimers();
             expect(instance.cancel).not.toHaveBeenCalled();
