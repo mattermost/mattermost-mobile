@@ -68,11 +68,11 @@ exports[`PostList setting channel deep link 1`] = `
     updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
+        "itemVisiblePercentThreshold": 1,
         "minimumViewTime": 100,
-        "viewAreaCoveragePercentThreshold": 0,
       }
     }
-    windowSize={21}
+    windowSize={50}
   />
 </React.Fragment>
 `;
@@ -145,11 +145,11 @@ exports[`PostList setting permalink deep link 1`] = `
     updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
+        "itemVisiblePercentThreshold": 1,
         "minimumViewTime": 100,
-        "viewAreaCoveragePercentThreshold": 0,
       }
     }
-    windowSize={21}
+    windowSize={50}
   />
 </React.Fragment>
 `;
@@ -222,11 +222,11 @@ exports[`PostList should match snapshot 1`] = `
     updateCellsBatchingPeriod={50}
     viewabilityConfig={
       Object {
+        "itemVisiblePercentThreshold": 1,
         "minimumViewTime": 100,
-        "viewAreaCoveragePercentThreshold": 0,
       }
     }
-    windowSize={21}
+    windowSize={50}
   />
 </React.Fragment>
 `;

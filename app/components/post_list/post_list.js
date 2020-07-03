@@ -262,7 +262,7 @@ export default class PostList extends PureComponent {
     handleScrollToIndexFailed = (info) => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
             if (this.onScrollEndIndexListener) {
-                this.onScrollEndIndexListener(info.highestMeasuredFrameIndex);
+                this.onScrollEndIndexListener();
             }
             this.flatListScrollToIndex(info.highestMeasuredFrameIndex);
         });
@@ -550,8 +550,9 @@ export default class PostList extends PureComponent {
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}
+                    windowSize={Platform.select({android: 21, ios: 50})}
                     viewabilityConfig={{
-                        viewAreaCoveragePercentThreshold: 0,
+                        itemVisiblePercentThreshold: 1,
                         minimumViewTime: 100,
                     }}
                     onViewableItemsChanged={showMoreMessagesButton ? this.onViewableItemsChanged : null}

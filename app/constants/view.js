@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import keyMirror from '@mm-redux/utils/key_mirror';
+import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+
+import keyMirror from '@mm-redux/utils/key_mirror';
 
 // The iPhone 11 and iPhone 11 Pro Max have a navbar height of 44 and iPhone 11 Pro has 32
 const IPHONE_11_LANDSCAPE_HEIGHT = ['iPhone 11', 'iPhone 11 Pro Max'];
@@ -32,7 +34,7 @@ export const NotificationLevels = {
 };
 
 export const NOTIFY_ALL_MEMBERS = 5;
-export const NETWORK_INDICATOR_HEIGHT = 38;
+export const INDICATOR_BAR_HEIGHT = 38;
 
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
@@ -95,7 +97,7 @@ const ViewTypes = keyMirror({
     PORTRAIT: null,
     LANDSCAPE: null,
 
-    NETWORK_INDICATOR_VISIBLE: null,
+    INDICATOR_BAR_VISIBLE: null,
 });
 
 const RequiredServer = {
@@ -108,7 +110,7 @@ const RequiredServer = {
 export default {
     ...ViewTypes,
     RequiredServer,
-    POST_VISIBILITY_CHUNK_SIZE: 60,
+    POST_VISIBILITY_CHUNK_SIZE: Platform.OS === 'android' ? 30 : 60,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',

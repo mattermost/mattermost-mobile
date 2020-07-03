@@ -3,23 +3,16 @@
 
 import {connect} from 'react-redux';
 
-import {nonMessageCount} from '@mm-redux/utils/post_list';
-
 import MoreMessagesButton from './more_messages_button';
 
 function mapStateToProps(state, ownProps) {
-    const {channelId, newMessageLineIndex, postIds} = ownProps;
-    let unreadCount = state.views.channel.unreadMessageCount[channelId] || 0;
-
-    // The channel unread count in state does not account for the addition of
-    // non-message posts like date lines, combined user activity, etc., so
-    // we include them up to the new message line.
-    if (unreadCount) {
-        unreadCount += nonMessageCount(postIds.slice(0, newMessageLineIndex));
-    }
+    const {channelId} = ownProps;
+    const unreadCount = (state.views.channel.unreadMessageCount[channelId] || 0);
+    const loadingPosts = Boolean(state.views.channel.loadingPosts[channelId]);
 
     return {
         unreadCount,
+        loadingPosts,
     };
 }
 

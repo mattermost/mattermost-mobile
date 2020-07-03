@@ -19,7 +19,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import FormattedText from 'app/components/formatted_text';
 import {DeviceTypes, ViewTypes} from '@constants';
-import {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
+import {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import mattermostBucket from 'app/mattermost_bucket';
 import PushNotifications from 'app/push_notifications';
 import networkConnectionListener, {checkConnection} from 'app/utils/network';
@@ -68,7 +68,7 @@ export default class NetworkIndicator extends PureComponent {
         };
 
         const navBar = this.getNavBarHeight(props.isLandscape);
-        this.top = new Animated.Value(navBar - NETWORK_INDICATOR_HEIGHT);
+        this.top = new Animated.Value(navBar - INDICATOR_BAR_HEIGHT);
         this.clearNotificationTimeout = null;
 
         this.backgroundColor = new Animated.Value(0);
@@ -103,7 +103,7 @@ export default class NetworkIndicator extends PureComponent {
 
         if (isLandscape !== prevIsLandscape) {
             const navBar = this.getNavBarHeight(isLandscape);
-            const initialTop = websocketErrorCount || previousWebsocketStatus === RequestStatus.FAILURE || previousWebsocketStatus === RequestStatus.NOT_STARTED ? 0 : NETWORK_INDICATOR_HEIGHT;
+            const initialTop = websocketErrorCount || previousWebsocketStatus === RequestStatus.FAILURE || previousWebsocketStatus === RequestStatus.NOT_STARTED ? 0 : INDICATOR_BAR_HEIGHT;
             this.top.setValue(navBar - initialTop);
         }
 
@@ -179,14 +179,14 @@ export default class NetworkIndicator extends PureComponent {
                 ),
                 Animated.timing(
                     this.top, {
-                        toValue: (this.getNavBarHeight() - NETWORK_INDICATOR_HEIGHT),
+                        toValue: (this.getNavBarHeight() - INDICATOR_BAR_HEIGHT),
                         duration: 300,
                         delay: 500,
                         useNativeDriver: false,
                     },
                 ),
             ]).start(() => {
-                EventEmitter.emit(ViewTypes.NETWORK_INDICATOR_VISIBLE, false);
+                EventEmitter.emit(ViewTypes.INDICATOR_BAR_VISIBLE, false);
                 this.backgroundColor.setValue(0);
                 this.setState({
                     opacity: 0,
@@ -321,7 +321,7 @@ export default class NetworkIndicator extends PureComponent {
     show = () => {
         if (!this.visible) {
             this.visible = true;
-            EventEmitter.emit(ViewTypes.NETWORK_INDICATOR_VISIBLE, true);
+            EventEmitter.emit(ViewTypes.INDICATOR_BAR_VISIBLE, true);
             this.setState({
                 opacity: 1,
             });
@@ -405,7 +405,7 @@ export default class NetworkIndicator extends PureComponent {
 
 const styles = StyleSheet.create({
     container: {
-        height: NETWORK_INDICATOR_HEIGHT,
+        height: INDICATOR_BAR_HEIGHT,
         width: '100%',
         position: 'absolute',
         ...Platform.select({
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     wrapper: {
         alignItems: 'center',
         flex: 1,
-        height: NETWORK_INDICATOR_HEIGHT,
+        height: INDICATOR_BAR_HEIGHT,
         flexDirection: 'row',
         paddingLeft: 12,
         paddingRight: 5,

@@ -2,45 +2,49 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Animated, Text, View} from 'react-native';
+import {ActivityIndicator, Animated, Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import PropTypes from 'prop-types';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {messageCount} from '@mm-redux/utils/post_list';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
-import ViewTypes, {NETWORK_INDICATOR_HEIGHT} from '@constants/view';
+import ViewTypes, {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
 
 const HIDDEN_TOP = -100;
 const SHOWN_TOP = 0;
-export const INDICATOR_FACTOR = Math.abs(NETWORK_INDICATOR_HEIGHT / (HIDDEN_TOP - SHOWN_TOP));
+export const INDICATOR_BAR_FACTOR = Math.abs(INDICATOR_BAR_HEIGHT / (HIDDEN_TOP - SHOWN_TOP));
 export const MIN_INPUT = 0;
 export const MAX_INPUT = 1;
 
 const TOP_INTERPOL_CONFIG = {
     inputRange: [
         MIN_INPUT,
-        MIN_INPUT + INDICATOR_FACTOR,
-        MAX_INPUT - INDICATOR_FACTOR,
+        MIN_INPUT + INDICATOR_BAR_FACTOR,
+        MAX_INPUT - INDICATOR_BAR_FACTOR,
         MAX_INPUT,
     ],
     outputRange: [
-        HIDDEN_TOP - NETWORK_INDICATOR_HEIGHT,
+        HIDDEN_TOP - INDICATOR_BAR_HEIGHT,
         HIDDEN_TOP,
         SHOWN_TOP,
-        SHOWN_TOP + NETWORK_INDICATOR_HEIGHT,
+        SHOWN_TOP + INDICATOR_BAR_HEIGHT,
     ],
     extrapolate: 'clamp',
 };
+
+export const CANCEL_TIMER_DELAY = 400;
 
 export default class MoreMessageButton extends React.PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
         channelId: PropTypes.string.isRequired,
+        loadingPosts: PropTypes.bool.isRequired,
         unreadCount: PropTypes.number.isRequired,
         newMessageLineIndex: PropTypes.number.isRequired,
         scrollToIndex: PropTypes.func.isRequired,
@@ -53,19 +57,24 @@ export default class MoreMessageButton extends React.PureComponent {
         intl: intlShape.isRequired,
     };
 
-    state = {moreText: ''};
-    top = new Animated.Value(0);
-    disableViewableItemsHandler = false;
-    viewableItems = [];
+    constructor(props) {
+        super(props);
+
+        this.state = {moreText: ''};
+        this.top = new Animated.Value(0);
+        this.disableViewableItemsHandler = false;
+        this.viewableItems = [];
+        this.unreadCount = props.unreadCount;
+    }
 
     componentDidMount() {
-        EventEmitter.on(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
+        EventEmitter.on(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
         this.removeScrollEndIndexListener = this.props.registerScrollEndIndexListener(this.onScrollEndIndex);
     }
 
     componentWillUnmount() {
-        EventEmitter.off(ViewTypes.NETWORK_INDICATOR_VISIBLE, this.onNetworkIndicatorVisible);
+        EventEmitter.off(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         if (this.removeViewableItemsListener) {
             this.removeViewableItemsListener();
         }
@@ -74,9 +83,7 @@ export default class MoreMessageButton extends React.PureComponent {
         }
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
-        }
-        if (this.moreTextTimer) {
-            clearTimeout(this.moreTextTimer);
+            this.viewableItemsChangedTimer = null;
         }
     }
 
@@ -89,11 +96,20 @@ export default class MoreMessageButton extends React.PureComponent {
         }
 
         if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
-            if (this.cancelTimer) {
-                clearTimeout(this.cancelTimer);
+            if (this.autoCancelTimer) {
+                clearTimeout(this.autoCancelTimer);
+                this.autoCancelTimer = null;
             }
             this.pressed = false;
             this.uncancel();
+        }
+
+        // If the channel has not changed but the unreadCount became 0 then the app
+        // was placed in the background and returned to the foreground. In this case
+        // we don't want to set this.unreadCount since that will cause the button to
+        // be hidden.
+        if (unreadCount !== 0) {
+            this.unreadCount = unreadCount;
         }
 
         // Cancel the more messages button if the unread count decreases due to the user
@@ -101,7 +117,7 @@ export default class MoreMessageButton extends React.PureComponent {
         // index changes due to the channel loading with a new message line that is removed
         // shortly after.
         if ((unreadCount !== 0 && unreadCount < prevProps.unreadCount) || newMessageLineIndex === -1) {
-            this.cancel();
+            this.cancel(true);
         }
 
         // The unreadCount might not be set until after all the viewable items are rendered.
@@ -112,10 +128,10 @@ export default class MoreMessageButton extends React.PureComponent {
         }
     }
 
-    onNetworkIndicatorVisible = (indicatorVisible) => {
-        this.networkIndicatorVisible = indicatorVisible;
-        if (this.visible) {
-            const toValue = indicatorVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_FACTOR;
+    onIndicatorBarVisible = (indicatorVisible) => {
+        this.indicatorBarVisible = indicatorVisible;
+        if (this.buttonVisible) {
+            const toValue = this.indicatorBarVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_BAR_FACTOR;
             Animated.spring(this.top, {
                 toValue,
                 useNativeDriver: true,
@@ -126,19 +142,25 @@ export default class MoreMessageButton extends React.PureComponent {
     reset = () => {
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
+            this.viewableItemsChangedTimer = null;
+        }
+        if (this.autoCancelTimer) {
+            clearTimeout(this.autoCancelTimer);
+            this.autoCancelTimer = null;
         }
         this.hide();
-        this.disableViewableItemsHandler = false;
+        this.setState({moreText: ''});
         this.viewableItems = [];
         this.pressed = false;
         this.canceled = false;
-        this.setState({moreText: ''});
+        this.disableViewableItemsHandler = false;
+        this.unreadCount = 0;
     }
 
     show = () => {
-        if (!this.visible && this.state.moreText && !this.props.deepLinkURL && !this.canceled) {
-            this.visible = true;
-            const toValue = this.networkIndicatorVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_FACTOR;
+        if (!this.buttonVisible && this.state.moreText && !this.props.deepLinkURL && !this.canceled) {
+            this.buttonVisible = true;
+            const toValue = this.indicatorBarVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_BAR_FACTOR;
             Animated.spring(this.top, {
                 toValue,
                 useNativeDriver: true,
@@ -147,9 +169,9 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     hide = () => {
-        if (this.visible) {
-            this.visible = false;
-            const toValue = this.networkIndicatorVisible ? MIN_INPUT : MIN_INPUT + INDICATOR_FACTOR;
+        if (this.buttonVisible) {
+            this.buttonVisible = false;
+            const toValue = this.indicatorBarVisible ? MIN_INPUT : MIN_INPUT + INDICATOR_BAR_FACTOR;
             Animated.spring(this.top, {
                 toValue,
                 useNativeDriver: true,
@@ -157,13 +179,27 @@ export default class MoreMessageButton extends React.PureComponent {
         }
     }
 
-    cancel = () => {
+    cancel = (force = false) => {
+        if (!force && (this.indicatorBarVisible || this.props.loadingPosts)) {
+            // If we haven't forced cancel and the indicator bar is visible or
+            // we're still loading posts, then to avoid the autoCancelTimer from
+            // hiding the button we continue delaying the cancel call.
+            clearTimeout(this.autoCancelTimer);
+            this.autoCancelTimer = setTimeout(this.cancel, CANCEL_TIMER_DELAY);
+
+            return;
+        }
+
         this.canceled = true;
         this.disableViewableItemsHandler = true;
         this.hide();
     }
 
     uncancel = () => {
+        if (this.autoCancelTimer) {
+            clearTimeout(this.autoCancelTimer);
+            this.autoCancelTimer = null;
+        }
         this.canceled = false;
         this.disableViewableItemsHandler = false;
     }
@@ -183,73 +219,70 @@ export default class MoreMessageButton extends React.PureComponent {
     onViewableItemsChanged = (viewableItems) => {
         this.viewableItems = viewableItems;
 
-        const {newMessageLineIndex, unreadCount, scrollToIndex} = this.props;
+        const {newMessageLineIndex, scrollToIndex} = this.props;
         if (newMessageLineIndex <= 0 || viewableItems.length === 0) {
             return;
         }
 
         if (this.viewableItemsChangedTimer) {
             clearTimeout(this.viewableItemsChangedTimer);
+            this.viewableItemsChangedTimer = null;
         }
 
         if (!this.disableViewableItemsHandler) {
-            const viewableIndeces = viewableItems.map((item) => item.index);
-
-            if (viewableIndeces[viewableIndeces.length - 1] >= newMessageLineIndex) {
-                // Cancel More Messages button when the last New Messages line is viewable
-                if (newMessageLineIndex >= unreadCount) {
-                    this.cancel();
-                } else {
-                    // Queue a cancel that will get cleared only if the newMessageLineIndex changes
-                    if (this.cancelTimer) {
-                        clearTimeout(this.cancelTimer);
-                    }
-                    this.cancelTimer = setTimeout(this.cancel, 800);
-                }
-
-                // If the first post is viewable as well, this means that the channel
-                // was just loaded. In this case let's auto scroll to the New Messages line
-                // in case it's partially hidden behind the top bar.
-                if (viewableIndeces[0] === 0) {
-                    scrollToIndex(newMessageLineIndex);
-                }
+            const lastViewableIndex = viewableItems[viewableItems.length - 1].index;
+            const nextViewableIndex = lastViewableIndex + 1;
+            if (viewableItems[0].index === 0 && nextViewableIndex >= newMessageLineIndex) {
+                // Auto scroll if the first post is viewable and
+                // * the new message line is viewable OR
+                // * the new message line will be the first next viewable item
+                scrollToIndex(newMessageLineIndex);
+                this.cancel(true);
 
                 return;
             }
 
-            const delay = this.viewableItemsChangedTimer ? 400 : 0;
+            if (lastViewableIndex >= newMessageLineIndex) {
+                // In some cases the last New Message line is reached but, since the
+                // unreadCount is off, the button will never hide. We call cancel with
+                // a delay for this case and cancel the timer in componentDidUpdate if
+                // and when the newMessageLineIndex changes.
+                this.autoCancelTimer = setTimeout(this.cancel, CANCEL_TIMER_DELAY);
+            }
+
+            // The delay here serves to both
+            // 1. give enough time for the initial viewable posts to fill up the screen
+            // 2. throttle handling by allowing cancellation of the timer when the viewable
+            //    items are changing quickly, ie rapid scrolling
             this.viewableItemsChangedTimer = setTimeout(() => {
-                this.viewableItemsChangedHandler(viewableIndeces);
-            }, delay);
+                this.viewableItemsChangedHandler(lastViewableIndex);
+            }, 100);
         }
     }
 
-    viewableItemsChangedHandler = (viewableIndeces) => {
-        const {newMessageLineIndex, unreadCount} = this.props;
-        if (viewableIndeces.includes(newMessageLineIndex)) {
-            // We've reached the current new message line index so let's
-            // re-enable the button
-            this.pressed = false;
+    viewableItemsChangedHandler = (lastViewableIndex) => {
+        const readCount = this.getReadCount(lastViewableIndex);
+        const moreCount = this.unreadCount - readCount;
+
+        if (moreCount <= 0) {
+            this.cancel(true);
             return;
         }
 
-        const readCount = viewableIndeces.pop() || 0;
-        const moreCount = unreadCount - readCount;
-
-        if (this.moreTextTimer) {
-            clearTimeout(this.moreTextTimer);
-        }
-
-        if (moreCount > 0) {
-            const moreText = this.moreText(moreCount);
-            this.moreTextTimer = setTimeout(() => {
-                this.setState({moreText}, this.show);
-            }, 10);
-        }
+        const moreText = this.moreText(moreCount);
+        this.setState({moreText}, this.show);
     }
 
-    onScrollEndIndex = (endIndex) => {
-        this.endIndex = endIndex;
+    getReadCount = (lastViewableIndex) => {
+        const {postIds} = this.props;
+
+        const viewedPostIds = postIds.slice(0, lastViewableIndex + 1);
+        const readCount = messageCount(viewedPostIds);
+
+        return readCount;
+    }
+
+    onScrollEndIndex = () => {
         this.pressed = false;
     }
 
@@ -264,7 +297,9 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     render() {
-        const styles = getStyleSheet(this.props.theme);
+        const {theme, loadingPosts} = this.props;
+
+        const styles = getStyleSheet(theme);
         const {moreText} = this.state;
         const translateY = this.top.interpolate(TOP_INTERPOL_CONFIG);
 
@@ -275,12 +310,28 @@ export default class MoreMessageButton extends React.PureComponent {
                         type={'none'}
                         onPress={this.onMoreMessagesPress}
                     >
-                        <View style={styles.moreContainer}>
-                            <VectorIcon
-                                name='md-arrow-up'
-                                type='ion'
-                                style={styles.icon}
-                            />
+                        <View style={styles.iconContainer}>
+                            {loadingPosts &&
+                                <ActivityIndicator
+                                    animating={true}
+                                    size='small'
+                                    color={theme.buttonColor}
+                                />
+                            }
+                            {!loadingPosts &&
+                                <VectorIcon
+                                    name='md-arrow-up'
+                                    type='ion'
+                                    style={styles.icon}
+                                />
+                            }
+                        </View>
+                    </TouchableWithFeedback>
+                    <TouchableWithFeedback
+                        type={'none'}
+                        onPress={this.onMoreMessagesPress}
+                    >
+                        <View style={styles.textContainer}>
                             <Text style={styles.text}>{moreText}</Text>
                         </View>
                     </TouchableWithFeedback>
@@ -317,8 +368,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'space-evenly',
             alignItems: 'center',
             backgroundColor: theme.buttonBg,
-            paddingLeft: 18,
-            paddingRight: 14,
+            paddingLeft: 11,
+            paddingRight: 5,
             paddingVertical: 1,
             borderRadius: 4,
             width: '100%',
@@ -331,9 +382,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             shadowOpacity: 0.12,
             shadowRadius: 4,
         },
-        moreContainer: {
-            flex: 11,
+        iconContainer: {
+            width: 22,
+        },
+        textContainer: {
+            flex: 10,
             flexDirection: 'row',
+            alignItems: 'flex-start',
+            paddingLeft: 4,
         },
         cancelContainer: {
             flex: 1,
@@ -342,13 +398,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         text: {
             fontWeight: 'bold',
             color: theme.buttonColor,
-            paddingLeft: 9,
+            paddingLeft: 0,
             alignSelf: 'center',
         },
         icon: {
             fontSize: 18,
             fontWeight: 'bold',
             color: theme.buttonColor,
+            alignSelf: 'center',
         },
     };
 });

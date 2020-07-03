@@ -31,8 +31,8 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
         "flexDirection": "row",
         "height": 40,
         "justifyContent": "space-evenly",
-        "paddingLeft": 18,
-        "paddingRight": 14,
+        "paddingLeft": 11,
+        "paddingRight": 5,
         "paddingVertical": 1,
         "shadowColor": "#3d3c40",
         "shadowOffset": Object {
@@ -52,8 +52,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
       <View
         style={
           Object {
-            "flex": 11,
-            "flexDirection": "row",
+            "width": 22,
           }
         }
       >
@@ -62,6 +61,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           size={14}
           style={
             Object {
+              "alignSelf": "center",
               "color": "#ffffff",
               "fontSize": 18,
               "fontWeight": "bold",
@@ -69,13 +69,29 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           }
           type="ion"
         />
+      </View>
+    </TouchableWithFeedbackIOS>
+    <TouchableWithFeedbackIOS
+      onPress={[Function]}
+      type="none"
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "flex-start",
+            "flex": 10,
+            "flexDirection": "row",
+            "paddingLeft": 4,
+          }
+        }
+      >
         <Text
           style={
             Object {
               "alignSelf": "center",
               "color": "#ffffff",
               "fontWeight": "bold",
-              "paddingLeft": 9,
+              "paddingLeft": 0,
             }
           }
         >
@@ -100,6 +116,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           size={14}
           style={
             Object {
+              "alignSelf": "center",
               "color": "#ffffff",
               "fontSize": 18,
               "fontWeight": "bold",

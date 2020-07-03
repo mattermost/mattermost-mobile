@@ -23,7 +23,7 @@ import {
     makeFilterPostsAndAddSeparators,
     makeGenerateCombinedPost,
     postTypePriority,
-    nonMessageCount,
+    messageCount,
     START_OF_NEW_MESSAGES,
     COMBINED_USER_ACTIVITY,
     DATE_LINE,
@@ -1706,21 +1706,24 @@ describe('comparePostTypes', () => {
     });
 });
 
-describe('nonMessageCount', () => {
-    it('should return the count of non-message post IDs', () => {
+describe('messageCount', () => {
+    it('should return the count of message post IDs', () => {
         const postIds = [];
-        expect(nonMessageCount(postIds)).toEqual(0);
-
-        postIds.push(TestHelper.generateId());
-        expect(nonMessageCount(postIds)).toEqual(0);
+        expect(messageCount(postIds)).toEqual(0);
 
         postIds.push(START_OF_NEW_MESSAGES);
-        expect(nonMessageCount(postIds)).toEqual(1);
+        expect(messageCount(postIds)).toEqual(0);
 
         postIds.push(DATE_LINE);
-        expect(nonMessageCount(postIds)).toEqual(2);
+        expect(messageCount(postIds)).toEqual(0);
 
         postIds.push(COMBINED_USER_ACTIVITY + TestHelper.generateId());
-        expect(nonMessageCount(postIds)).toEqual(3);
+        expect(messageCount(postIds)).toEqual(0);
+
+        postIds.push(TestHelper.generateId());
+        expect(messageCount(postIds)).toEqual(1);
+
+        postIds.push(TestHelper.generateId());
+        expect(messageCount(postIds)).toEqual(2);
     });
 });

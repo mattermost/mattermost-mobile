@@ -43,14 +43,14 @@ describe('AttachmentFooter', () => {
         const wrapper = shallow(<NetworkIndicator {...baseProps}/>);
         const instance = wrapper.instance();
 
-        it('emits NETWORK_INDICATOR_VISIBLE with true only if not already visible', () => {
+        it('emits INDICATOR_BAR_VISIBLE with true only if not already visible', () => {
             instance.visible = true;
             instance.show();
             expect(EventEmitter.emit).not.toHaveBeenCalled();
 
             instance.visible = false;
             instance.show();
-            expect(EventEmitter.emit).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, true);
+            expect(EventEmitter.emit).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, true);
             expect(instance.visible).toBe(true);
         });
     });
@@ -60,14 +60,14 @@ describe('AttachmentFooter', () => {
         const wrapper = shallow(<NetworkIndicator {...baseProps}/>);
         const instance = wrapper.instance();
 
-        it('emits NETWORK_INDICATOR_VISIBLE with false only if visible', () => {
+        it('emits INDICATOR_BAR_VISIBLE with false only if visible', () => {
             instance.visible = false;
             instance.connected();
             expect(EventEmitter.emit).not.toHaveBeenCalled();
 
             instance.visible = true;
             instance.connected();
-            expect(EventEmitter.emit).toHaveBeenCalledWith(ViewTypes.NETWORK_INDICATOR_VISIBLE, false);
+            expect(EventEmitter.emit).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, false);
             expect(instance.visible).toBe(false);
         });
     });

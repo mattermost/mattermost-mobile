@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
+
 export const PostTypes = {
     CHANNEL_DELETED: 'system_channel_deleted',
     CHANNEL_UNARCHIVED: 'system_channel_restored',
@@ -31,7 +33,7 @@ export const PostTypes = {
 };
 
 export default {
-    POST_CHUNK_SIZE: 25,
+    POST_CHUNK_SIZE: Platform.OS === 'android' ? 30 : 60,
     POST_DELETED: 'DELETED',
     SYSTEM_MESSAGE_PREFIX: 'system_',
     SYSTEM_AUTO_RESPONDER: 'system_auto_responder',
