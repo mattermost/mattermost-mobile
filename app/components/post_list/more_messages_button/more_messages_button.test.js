@@ -23,7 +23,7 @@ describe('MoreMessagesButton', () => {
         theme: Preferences.THEMES.default,
         postIds: [],
         channelId: 'channel-id',
-        unreadCount: 0,
+        unreadCount: 10,
         loadingPosts: false,
         newMessageLineIndex: 0,
         scrollToIndex: jest.fn(),
@@ -110,25 +110,27 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should force cancel when the newMessageLineIndex changes to -1', () => {
+        test('componentDidUpdate should force cancel when the component updates and the unreadCount is 0', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
+            wrapper.setProps({unreadCount: 1});
             const instance = wrapper.instance();
             instance.cancel = jest.fn();
 
-            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
+            wrapper.setProps({test: 1});
             expect(instance.cancel).not.toHaveBeenCalled();
 
-            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 10});
-            expect(instance.cancel).not.toHaveBeenCalled();
-
-            wrapper.setProps({newMessageLineIndex: -1});
+            wrapper.setProps({unreadCount: 0});
             expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel).toHaveBeenCalledWith(true);
+            expect(instance.cancel.mock.calls[0][0]).toBe(true);
+
+            wrapper.setProps({test: 2});
+            expect(instance.cancel).toHaveBeenCalledTimes(2);
+            expect(instance.cancel.mock.calls[1][0]).toBe(true);
         });
 
-        test('componentDidUpdate should force cancel when the newMessageLineIndex changes from a non-zero value and is viewable', () => {
+        test('componentDidUpdate should force cancel when the newMessageLineIndex is viewable', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -139,11 +141,9 @@ describe('MoreMessagesButton', () => {
             wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
             expect(instance.cancel).not.toHaveBeenCalled();
 
-            wrapper.setProps({newMessageLineIndex: 0});
-            wrapper.setProps({newMessageLineIndex: 100});
+            wrapper.setProps({newMessageLineIndex: 99});
             expect(instance.cancel).not.toHaveBeenCalled();
 
-            wrapper.setProps({newMessageLineIndex: 99});
             wrapper.setProps({newMessageLineIndex: 100});
             expect(instance.cancel).toHaveBeenCalledTimes(1);
             expect(instance.cancel).toHaveBeenCalledWith(true);
@@ -283,6 +283,7 @@ describe('MoreMessagesButton', () => {
             <MoreMessagesButton {...baseProps}/>,
         );
         const instance = wrapper.instance();
+        instance.componentDidUpdate = jest.fn();
 
         it('should not animate when already visible', () => {
             instance.buttonVisible = true;
@@ -402,6 +403,7 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
             instance.disableViewableItemsHandler = false;
@@ -417,6 +419,7 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
             instance.disableViewableItemsHandler = false;
@@ -434,6 +437,7 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
             instance.disableViewableItemsHandler = false;
@@ -455,6 +459,7 @@ describe('MoreMessagesButton', () => {
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
             instance.disableViewableItemsHandler = false;

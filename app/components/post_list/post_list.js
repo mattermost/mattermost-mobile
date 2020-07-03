@@ -11,7 +11,7 @@ import * as PostListUtils from '@mm-redux/utils/post_list';
 
 import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
 import Post from 'app/components/post';
-import {DeepLinkTypes, ListTypes} from 'app/constants';
+import {DeepLinkTypes, ListTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
@@ -550,7 +550,7 @@ export default class PostList extends PureComponent {
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}
-                    windowSize={Platform.select({android: 21, ios: 50})}
+                    windowSize={ViewTypes.POST_VISIBILITY_CHUNK_SIZE / 2}
                     viewabilityConfig={{
                         itemVisiblePercentThreshold: 1,
                         minimumViewTime: 100,

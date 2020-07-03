@@ -94,20 +94,21 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
-        if (newMessageLineIndex === -1) {
+        if (unreadCount === 0) {
             this.cancel(true);
-        } else if (newMessageLineIndex !== prevProps.newMessageLineIndex && prevProps.newMessageLineIndex > 0) {
-            const newMessageLineIsViewable = this.viewableItems.find((item) => item.index === newMessageLineIndex);
-            if (newMessageLineIsViewable) {
-                this.cancel(true);
-            } else {
-                if (this.autoCancelTimer) {
-                    clearTimeout(this.autoCancelTimer);
-                    this.autoCancelTimer = null;
-                }
-                this.pressed = false;
-                this.uncancel();
+            return;
+        }
+
+        const newMessageLineIsViewable = this.viewableItems.find((item) => item.index === newMessageLineIndex);
+        if (newMessageLineIsViewable) {
+            this.cancel(true);
+        } else if (newMessageLineIndex !== -1 && newMessageLineIndex !== prevProps.newMessageLineIndex) {
+            if (this.autoCancelTimer) {
+                clearTimeout(this.autoCancelTimer);
+                this.autoCancelTimer = null;
             }
+            this.pressed = false;
+            this.uncancel();
         }
 
         // The unreadCount might not be set until after all the viewable items are rendered.
