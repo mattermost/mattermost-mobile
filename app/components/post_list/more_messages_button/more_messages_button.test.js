@@ -110,48 +110,30 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should set pressed to false and call uncancel when the newMessageLineIndex changes but the unreadCount remains the same', () => {
-            const wrapper = shallowWithIntl(
-                <MoreMessagesButton {...baseProps}/>,
-            );
-            const instance = wrapper.instance();
-            instance.pressed = true;
-            instance.uncancel = jest.fn();
-
-            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
-            expect(instance.pressed).toBe(true);
-            expect(instance.uncancel).not.toHaveBeenCalled();
-
-            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 1, unreadCount: baseProps.unreadCount + 1});
-            expect(instance.pressed).toBe(true);
-            expect(instance.uncancel).not.toHaveBeenCalled();
-
-            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex + 2, unreadCount: baseProps.unreadCount + 1});
-            expect(instance.pressed).toBe(false);
-            expect(instance.uncancel).toHaveBeenCalledTimes(1);
-        });
-
-        test('componentDidUpdate should force cancel when the unreadCount changes', () => {
+        test('componentDidUpdate should force cancel when the newMessageLineIndex changes and is viewable', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
             instance.cancel = jest.fn();
+            instance.viewableItems = [{index: 100}, {index: 101}];
 
-            wrapper.setProps({unreadCount: baseProps.unreadCount});
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
             expect(instance.cancel).not.toHaveBeenCalled();
 
-            wrapper.setProps({unreadCount: baseProps.unreadCount + 20});
+            wrapper.setProps({newMessageLineIndex: 99});
+            expect(instance.cancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: 100});
             expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel.mock.calls[0][0]).toBe(true);
+            expect(instance.cancel).toHaveBeenCalledWith(true);
 
-            wrapper.setProps({unreadCount: baseProps.unreadCount + 10});
+            wrapper.setProps({newMessageLineIndex: 101});
             expect(instance.cancel).toHaveBeenCalledTimes(2);
-            expect(instance.cancel.mock.calls[1][0]).toBe(true);
+            expect(instance.cancel).toHaveBeenCalledWith(true);
 
-            wrapper.setProps({unreadCount: 0});
-            expect(instance.cancel).toHaveBeenCalledTimes(3);
-            expect(instance.cancel.mock.calls[2][0]).toBe(true);
+            wrapper.setProps({newMessageLineIndex: 102});
+            expect(instance.cancel).toHaveBeenCalledTimes(2);
         });
 
         test('componentDidUpdate should force cancel when the newMessageLineIndex changes to -1', () => {
@@ -170,6 +152,32 @@ describe('MoreMessagesButton', () => {
             wrapper.setProps({newMessageLineIndex: -1});
             expect(instance.cancel).toHaveBeenCalledTimes(1);
             expect(instance.cancel).toHaveBeenCalledWith(true);
+        });
+
+        test('componentDidUpdate should set pressed to false and call uncancel when the newMessageLineIndex changes but is not viewable and is not -1', () => {
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.pressed = true;
+            instance.uncancel = jest.fn();
+            instance.viewableItems = [{index: 100}];
+
+            wrapper.setProps({newMessageLineIndex: baseProps.newMessageLineIndex});
+            expect(instance.pressed).toBe(true);
+            expect(instance.uncancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: -1});
+            expect(instance.pressed).toBe(true);
+            expect(instance.uncancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: 100});
+            expect(instance.pressed).toBe(true);
+            expect(instance.uncancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: 101});
+            expect(instance.pressed).toBe(false);
+            expect(instance.uncancel).toHaveBeenCalledTimes(1);
         });
 
         test('componentDidUpdate should call onViewableItemsChanged when the unreadCount increases from 0', () => {

@@ -94,26 +94,18 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
-        if (newMessageLineIndex !== prevProps.newMessageLineIndex && unreadCount === prevProps.unreadCount) {
-            if (this.autoCancelTimer) {
-                clearTimeout(this.autoCancelTimer);
-                this.autoCancelTimer = null;
+        if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
+            const newMessageLineIsViewable = this.viewableItems.find((item) => item.index === newMessageLineIndex);
+            if (newMessageLineIsViewable || newMessageLineIndex === -1) {
+                this.cancel(true);
+            } else {
+                if (this.autoCancelTimer) {
+                    clearTimeout(this.autoCancelTimer);
+                    this.autoCancelTimer = null;
+                }
+                this.pressed = false;
+                this.uncancel();
             }
-            this.pressed = false;
-            this.uncancel();
-        }
-
-        // Cancel the more messages button if the unread changes due to the user marking a
-        // post below/above the new message line as unread or if the app returns from the
-        // foreground.
-        if (unreadCount !== prevProps.unreadCount) {
-            this.cancel(true);
-        }
-
-        // Cancel the more messages buttonif the new message line index changes due to the
-        // channel loading with a new message line that is removed shortly after.
-        if (newMessageLineIndex === -1) {
-            this.cancel(true);
         }
 
         // The unreadCount might not be set until after all the viewable items are rendered.
