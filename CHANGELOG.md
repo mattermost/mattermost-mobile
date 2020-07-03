@@ -23,6 +23,8 @@
 
 #### All apps
  - Fixed an issue where **Invalid or expired session, please login again** notifications were sent when ID-loaded Sessions Lengths on Mobile was enabled.
+ - Fixed an issue where Enterprise mobility management (EMM) filled username field was not accepted as a valid username.
+ - Fixed an issue where the app did not open on server url screen with previous server url filled in after logging out.
  - Fixed an issue where leaving a team in a browser while the mobile app was open caused the app to be stuck in the team.
  - Fixed an issue where, when hitting the **Delete Documents & Data** button, the button to join the team disappeared.
  - Fixed an issue where the channel header transition to landscape mode was slow.
@@ -41,6 +43,7 @@
 
 #### iOS specific
  - Fixed an issue where the Enter key did not work in search when using an iPad with an external keyboard.
+ - Fixed an issue where OAuth and SAML single sign-on (SSO) no longer required re-entering credentials after logging out and logging back in.
  
 #### Known issues
 
