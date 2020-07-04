@@ -33,7 +33,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
       }
     }
     type="native"
-    underlayColor="hsl(214, 100%, 42%)"
+    underlayColor="hsl(214, 50%, 38%)"
   >
     <View
       style={

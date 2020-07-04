@@ -297,7 +297,7 @@ export default class MoreMessageButton extends React.PureComponent {
         const styles = getStyleSheet(theme);
         const {moreText} = this.state;
         const translateY = this.top.interpolate(TOP_INTERPOL_CONFIG);
-        const underlayColor = `hsl(${hexToHue(theme.buttonBg)}, 100%, 42%)`;
+        const underlayColor = `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`;
 
         return (
             <Animated.View style={[styles.animatedContainer, styles.roundBorder, {transform: [{translateY}]}]}>
