@@ -6,12 +6,13 @@ import PropTypes from 'prop-types';
 import {Alert, FlatList, Platform, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
+import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import * as PostListUtils from '@mm-redux/utils/post_list';
 
 import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
 import Post from 'app/components/post';
-import {DeepLinkTypes, ListTypes, ViewTypes} from 'app/constants';
+import {DeepLinkTypes, ListTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
@@ -550,7 +551,7 @@ export default class PostList extends PureComponent {
                     renderItem={this.renderItem}
                     scrollEventThrottle={60}
                     style={styles.flex}
-                    windowSize={ViewTypes.POST_VISIBILITY_CHUNK_SIZE / 2}
+                    windowSize={Posts.POST_CHUNK_SIZE / 2}
                     viewabilityConfig={{
                         itemVisiblePercentThreshold: 1,
                         minimumViewTime: 100,

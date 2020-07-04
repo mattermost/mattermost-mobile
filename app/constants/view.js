@@ -110,7 +110,7 @@ const RequiredServer = {
 export default {
     ...ViewTypes,
     RequiredServer,
-    POST_VISIBILITY_CHUNK_SIZE: Platform.OS === 'android' ? 30 : 60,
+    POST_VISIBILITY_CHUNK_SIZE: Platform.OS === 'android' ? 15 : 60,
     FEATURE_TOGGLE_PREFIX: 'feature_enabled_',
     EMBED_PREVIEW: 'embed_preview',
     LINK_PREVIEW_DISPLAY: 'link_previews',
