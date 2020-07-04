@@ -9,10 +9,12 @@ function mapStateToProps(state, ownProps) {
     const {channelId} = ownProps;
     const unreadCount = state.views.channel.unreadMessageCount[channelId] || 0;
     const loadingPosts = Boolean(state.views.channel.loadingPosts[channelId]);
+    const manuallyUnread = Boolean(state.entities.channels.manuallyUnread[channelId]);
 
     return {
         unreadCount,
         loadingPosts,
+        manuallyUnread,
     };
 }
 

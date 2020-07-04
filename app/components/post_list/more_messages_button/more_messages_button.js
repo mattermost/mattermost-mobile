@@ -46,6 +46,7 @@ export default class MoreMessageButton extends React.PureComponent {
         channelId: PropTypes.string.isRequired,
         loadingPosts: PropTypes.bool.isRequired,
         unreadCount: PropTypes.number.isRequired,
+        manuallyUnread: PropTypes.bool.isRequired,
         newMessageLineIndex: PropTypes.number.isRequired,
         scrollToIndex: PropTypes.func.isRequired,
         registerViewableItemsListener: PropTypes.func.isRequired,
@@ -87,7 +88,7 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {channelId, unreadCount, newMessageLineIndex} = this.props;
+        const {channelId, unreadCount, newMessageLineIndex, manuallyUnread} = this.props;
 
         if (channelId !== prevProps.channelId) {
             this.reset();
@@ -99,10 +100,12 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
-        const newMessageLineIsViewable = this.viewableItems.find((item) => item.index === newMessageLineIndex);
-        if (newMessageLineIsViewable) {
+        if (manuallyUnread) {
             this.cancel(true);
-        } else if (newMessageLineIndex !== -1 && newMessageLineIndex !== prevProps.newMessageLineIndex) {
+            return;
+        }
+
+        if (newMessageLineIndex !== -1 && newMessageLineIndex !== prevProps.newMessageLineIndex) {
             if (this.autoCancelTimer) {
                 clearTimeout(this.autoCancelTimer);
                 this.autoCancelTimer = null;
