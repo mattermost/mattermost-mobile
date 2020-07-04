@@ -5,11 +5,15 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
   style={
     Array [
       Object {
+        "backgroundColor": "#166de0",
         "elevation": 1,
         "flex": 1,
         "margin": 8,
         "position": "absolute",
         "zIndex": 1,
+      },
+      Object {
+        "borderRadius": 4,
       },
       Object {
         "transform": Array [
@@ -21,33 +25,42 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
     ]
   }
 >
-  <View
+  <TouchableWithFeedbackIOS
+    onPress={[Function]}
     style={
       Object {
-        "alignItems": "center",
-        "backgroundColor": "#166de0",
         "borderRadius": 4,
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 40,
-        "justifyContent": "space-evenly",
-        "paddingLeft": 11,
-        "paddingRight": 5,
-        "paddingVertical": 1,
-        "shadowColor": "#3d3c40",
-        "shadowOffset": Object {
-          "height": 6,
-          "width": 0,
-        },
-        "shadowOpacity": 0.12,
-        "shadowRadius": 4,
-        "width": "100%",
       }
     }
+    type="native"
+    underlayColor="hsl(214, 100%, 42%)"
   >
-    <TouchableWithFeedbackIOS
-      onPress={[Function]}
-      type="none"
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "height": 40,
+            "justifyContent": "space-evenly",
+            "paddingLeft": 11,
+            "paddingRight": 5,
+            "paddingVertical": 1,
+            "shadowColor": "#3d3c40",
+            "shadowOffset": Object {
+              "height": 6,
+              "width": 0,
+            },
+            "shadowOpacity": 0.12,
+            "shadowRadius": 4,
+            "width": "100%",
+          },
+          Object {
+            "borderRadius": 4,
+          },
+        ]
+      }
     >
       <View
         style={
@@ -70,11 +83,6 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           type="ion"
         />
       </View>
-    </TouchableWithFeedbackIOS>
-    <TouchableWithFeedbackIOS
-      onPress={[Function]}
-      type="none"
-    >
       <View
         style={
           Object {
@@ -98,34 +106,34 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           
         </Text>
       </View>
-    </TouchableWithFeedbackIOS>
-    <TouchableWithFeedbackIOS
-      onPress={[Function]}
-      type="none"
-    >
-      <View
-        style={
-          Object {
-            "alignItems": "flex-end",
-            "flex": 1,
-          }
-        }
+      <TouchableWithFeedbackIOS
+        onPress={[Function]}
+        type="none"
       >
-        <VectorIcon
-          name="md-close"
-          size={14}
+        <View
           style={
             Object {
-              "alignSelf": "center",
-              "color": "#ffffff",
-              "fontSize": 18,
-              "fontWeight": "bold",
+              "alignItems": "flex-end",
+              "flex": 1,
             }
           }
-          type="ion"
-        />
-      </View>
-    </TouchableWithFeedbackIOS>
-  </View>
+        >
+          <VectorIcon
+            name="md-close"
+            size={14}
+            style={
+              Object {
+                "alignSelf": "center",
+                "color": "#ffffff",
+                "fontSize": 18,
+                "fontWeight": "bold",
+              }
+            }
+            type="ion"
+          />
+        </View>
+      </TouchableWithFeedbackIOS>
+    </View>
+  </TouchableWithFeedbackIOS>
 </ForwardRef(AnimatedComponentWrapper)>
 `;

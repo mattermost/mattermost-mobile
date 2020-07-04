@@ -72,7 +72,7 @@ exports[`PostList setting channel deep link 1`] = `
         "minimumViewTime": 100,
       }
     }
-    windowSize={50}
+    windowSize={30}
   />
 </React.Fragment>
 `;
@@ -149,7 +149,7 @@ exports[`PostList setting permalink deep link 1`] = `
         "minimumViewTime": 100,
       }
     }
-    windowSize={50}
+    windowSize={30}
   />
 </React.Fragment>
 `;
@@ -226,7 +226,7 @@ exports[`PostList should match snapshot 1`] = `
         "minimumViewTime": 100,
       }
     }
-    windowSize={50}
+    windowSize={30}
   />
 </React.Fragment>
 `;

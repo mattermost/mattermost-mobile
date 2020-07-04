@@ -12,7 +12,7 @@ import {messageCount} from '@mm-redux/utils/post_list';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import VectorIcon from '@components/vector_icon';
 import ViewTypes, {INDICATOR_BAR_HEIGHT} from '@constants/view';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {t} from '@utils/i18n';
 
 const HIDDEN_TOP = -100;
@@ -294,14 +294,17 @@ export default class MoreMessageButton extends React.PureComponent {
         const styles = getStyleSheet(theme);
         const {moreText} = this.state;
         const translateY = this.top.interpolate(TOP_INTERPOL_CONFIG);
+        const underlayColor = `hsl(${hexToHue(theme.buttonBg)}, 100%, 42%)`;
 
         return (
-            <Animated.View style={[styles.animatedContainer, {transform: [{translateY}]}]}>
-                <View style={styles.container}>
-                    <TouchableWithFeedback
-                        type={'none'}
-                        onPress={this.onMoreMessagesPress}
-                    >
+            <Animated.View style={[styles.animatedContainer, styles.roundBorder, {transform: [{translateY}]}]}>
+                <TouchableWithFeedback
+                    type={'native'}
+                    onPress={this.onMoreMessagesPress}
+                    underlayColor={underlayColor}
+                    style={styles.roundBorder}
+                >
+                    <View style={[styles.container, styles.roundBorder]}>
                         <View style={styles.iconContainer}>
                             {loadingPosts &&
                                 <ActivityIndicator
@@ -318,28 +321,23 @@ export default class MoreMessageButton extends React.PureComponent {
                                 />
                             }
                         </View>
-                    </TouchableWithFeedback>
-                    <TouchableWithFeedback
-                        type={'none'}
-                        onPress={this.onMoreMessagesPress}
-                    >
                         <View style={styles.textContainer}>
                             <Text style={styles.text}>{moreText}</Text>
                         </View>
-                    </TouchableWithFeedback>
-                    <TouchableWithFeedback
-                        type={'none'}
-                        onPress={this.cancel}
-                    >
-                        <View style={styles.cancelContainer}>
-                            <VectorIcon
-                                name='md-close'
-                                type='ion'
-                                style={styles.icon}
-                            />
-                        </View>
-                    </TouchableWithFeedback>
-                </View>
+                        <TouchableWithFeedback
+                            type={'none'}
+                            onPress={this.cancel}
+                        >
+                            <View style={styles.cancelContainer}>
+                                <VectorIcon
+                                    name='md-close'
+                                    type='ion'
+                                    style={styles.icon}
+                                />
+                            </View>
+                        </TouchableWithFeedback>
+                    </View>
+                </TouchableWithFeedback>
             </Animated.View>
         );
     }
@@ -353,17 +351,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             zIndex: 1,
             elevation: 1,
             margin: 8,
+            backgroundColor: theme.buttonBg,
         },
         container: {
             flex: 1,
             flexDirection: 'row',
             justifyContent: 'space-evenly',
             alignItems: 'center',
-            backgroundColor: theme.buttonBg,
             paddingLeft: 11,
             paddingRight: 5,
             paddingVertical: 1,
-            borderRadius: 4,
             width: '100%',
             height: 40,
             shadowColor: theme.centerChannelColor,
@@ -373,6 +370,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             },
             shadowOpacity: 0.12,
             shadowRadius: 4,
+        },
+        roundBorder: {
+            borderRadius: 4,
         },
         iconContainer: {
             width: 22,
