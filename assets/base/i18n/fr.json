@@ -614,5 +614,7 @@
   "user.settings.push_notification.disabled_long": "Les notifications push n'ont pas été activées par votre administrateur système.",
   "user.settings.push_notification.offline": "Hors ligne",
   "user.settings.push_notification.online": "En ligne, absent(e) ou hors ligne",
-  "web.root.signup_info": "Toute la communication de votre équipe au même endroit, accessible de partout"
+  "web.root.signup_info": "Toute la communication de votre équipe au même endroit, accessible de partout",
+  "mobile.server_upgrade.learn_more": "En savoir plus",
+  "mobile.server_upgrade.dismiss": "Rejeter"
 }

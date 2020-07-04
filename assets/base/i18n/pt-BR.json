@@ -614,5 +614,7 @@
   "user.settings.push_notification.disabled_long": "As notificações de push não foram ativadas pelo Administrador do Sistema.",
   "user.settings.push_notification.offline": "Desconectado",
   "user.settings.push_notification.online": "Conectado, ausente ou desconectado",
-  "web.root.signup_info": "Toda comunicação em um só lugar, pesquisável e acessível em qualquer lugar"
+  "web.root.signup_info": "Toda comunicação em um só lugar, pesquisável e acessível em qualquer lugar",
+  "mobile.server_upgrade.learn_more": "Saiba Mais",
+  "mobile.server_upgrade.dismiss": "Ignorar"
 }

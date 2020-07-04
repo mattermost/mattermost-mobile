@@ -614,5 +614,7 @@
   "user.settings.push_notification.disabled_long": "Системний адміністратор не активував сповіщення електронною поштою. ",
   "user.settings.push_notification.offline": "Offline ",
   "user.settings.push_notification.online": "У мережі, немає на місці або не в мережі",
-  "web.root.signup_info": "Всі спілкування вашої команди в одному місці, з миттєвим пошуком та доступом звідусюди. "
+  "web.root.signup_info": "Всі спілкування вашої команди в одному місці, з миттєвим пошуком та доступом звідусюди. ",
+  "mobile.server_upgrade.learn_more": "Вчи більше",
+  "mobile.server_upgrade.dismiss": "Відхилити"
 }

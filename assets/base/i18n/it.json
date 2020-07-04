@@ -615,5 +615,8 @@
   "user.settings.push_notification.offline": "Offline",
   "user.settings.push_notification.online": "Online, lontano o offline",
   "web.root.signup_info": "Tutte le tue comunicazioni in un posto, instantaneamente ricercabili e accessibili ovunque",
-  "mobile.message_length.message_split_left": "Il messaggio supera il limite massimo di caratteri"
+  "mobile.message_length.message_split_left": "Il messaggio supera il limite massimo di caratteri",
+  "mobile.server_upgrade.learn_more": "Scopri di più",
+  "mobile.server_upgrade.dismiss": "Chiudi",
+  "mobile.server_upgrade.alert_description": "Questa versione del server non è supportata e gli utenti saranno esposti a problemi di compatibilità che potrebbero causare crash o seri problemi alle funzionalità principali dellìapp. Aggiornare il server alla versione {serverVersion} o successive."
 }
