@@ -4,7 +4,6 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 1`] = `n
 
 exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
 <FlatList
-  ItemSeparatorComponent={[Function]}
   data={
     Array [
       "+1",
@@ -3044,7 +3043,6 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
     Array [
       Object {
         "backgroundColor": "#ffffff",
-        "flex": 1,
       },
       Object {
         "maxHeight": undefined,
