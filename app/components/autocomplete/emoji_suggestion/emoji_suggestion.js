@@ -14,7 +14,7 @@ import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {BuiltInEmojis} from '@utils/emojis';
 import {getEmojiByName, compareEmojis} from '@utils/emoji_utils';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
@@ -137,16 +137,19 @@ export default class EmojiSuggestion extends PureComponent {
             <TouchableWithFeedback
                 onPress={() => this.completeSuggestion(item)}
                 style={style.row}
-                type={'opacity'}
+                underlayColor={changeOpacity(this.props.theme.buttonBg, 0.08)}
+                type={'native'}
             >
-                <View style={style.emoji}>
-                    <Emoji
-                        emojiName={item}
-                        textStyle={style.emojiText}
-                        size={20}
-                    />
-                </View>
-                <Text style={style.emojiName}>{`:${item}:`}</Text>
+                <>
+                    <View style={style.emoji}>
+                        <Emoji
+                            emojiName={item}
+                            textStyle={style.emojiText}
+                            size={24}
+                        />
+                    </View>
+                    <Text style={style.emojiName}>{`:${item}:`}</Text>
+                </>
             </TouchableWithFeedback>
         );
     };
@@ -227,7 +230,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginRight: 5,
         },
         emojiName: {
-            fontSize: 13,
+            fontSize: 15,
             color: theme.centerChannelColor,
         },
         emojiText: {
@@ -235,7 +238,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold',
         },
         listView: {
-            flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
         row: {

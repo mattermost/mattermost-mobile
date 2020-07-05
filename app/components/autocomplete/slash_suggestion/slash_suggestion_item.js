@@ -39,21 +39,24 @@ export default class SlashSuggestionItem extends PureComponent {
             <TouchableWithFeedback
                 onPress={this.completeSuggestion}
                 style={[style.container, padding(isLandscape)]}
-                type={'opacity'}
+                underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                type={'native'}
             >
-                <View style={style.icon}>
-                    <Text>{'/'}</Text>
-                </View>
-                <View style={style.suggestionContainer}>
-                    <Text style={style.suggestionName}>{`${trigger} ${hint}`}</Text>
-                    <Text
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        style={style.suggestionDescription}
-                    >
-                        {description}
-                    </Text>
-                </View>
+                <>
+                    <View style={style.icon}>
+                        <Text>{'/'}</Text>
+                    </View>
+                    <View style={style.suggestionContainer}>
+                        <Text style={style.suggestionName}>{`${trigger} ${hint}`}</Text>
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={style.suggestionDescription}
+                        >
+                            {description}
+                        </Text>
+                    </View>
+                </>
             </TouchableWithFeedback>
         );
     }

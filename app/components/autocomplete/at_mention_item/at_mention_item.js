@@ -12,7 +12,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {BotTag, GuestTag} from 'app/components/tag';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
 
 export default class AtMentionItem extends PureComponent {
@@ -63,38 +63,41 @@ export default class AtMentionItem extends PureComponent {
                 key={userId}
                 onPress={this.completeMention}
                 style={[style.row, padding(isLandscape)]}
-                type={'opacity'}
+                underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                type={'native'}
             >
-                <View style={style.rowPicture}>
-                    <ProfilePicture
-                        userId={userId}
+                <>
+                    <View style={style.rowPicture}>
+                        <ProfilePicture
+                            userId={userId}
+                            theme={theme}
+                            size={24}
+                            status={null}
+                        />
+                    </View>
+                    <BotTag
+                        show={isBot}
                         theme={theme}
-                        size={24}
-                        status={null}
                     />
-                </View>
-                <BotTag
-                    show={isBot}
-                    theme={theme}
-                />
-                <GuestTag
-                    show={isGuest}
-                    theme={theme}
-                />
-                <Text
-                    style={style.rowFullname}
-                    numberOfLines={1}
-                >
-                    {hasFullName && `${firstName} ${lastName}`}
-                    {hasNickname && ` (${nickname}) `}
-                    {isCurrentUser &&
-                    <FormattedText
-                        id='suggestion.mention.you'
-                        defaultMessage='(you)'
-                    />}
-                </Text>
-                {hasFullName && <Text style={style.rowFullname}>{' - '}</Text>}
-                <Text style={style.rowUsername}>{`@${username}`}</Text>
+                    <GuestTag
+                        show={isGuest}
+                        theme={theme}
+                    />
+                    <Text
+                        style={style.rowFullname}
+                        numberOfLines={1}
+                    >
+                        {hasFullName && `${firstName} ${lastName}`}
+                        {hasNickname && ` (${nickname}) `}
+                        {isCurrentUser &&
+                        <FormattedText
+                            id='suggestion.mention.you'
+                            defaultMessage='(you)'
+                        />}
+                    </Text>
+                    {hasFullName && <Text style={style.rowFullname}>{' - '}</Text>}
+                    <Text style={style.rowUsername}>{`@${username}`}</Text>
+                </>
             </TouchableWithFeedback>
         );
     }
@@ -103,6 +106,7 @@ export default class AtMentionItem extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
+            height: 40,
             paddingVertical: 8,
             flexDirection: 'row',
             alignItems: 'center',

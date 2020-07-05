@@ -272,10 +272,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         container: {
-            bottom: 50,
+            bottom: 0,
         },
         containerExpandDown: {
-            top: -30,
+            top: 0,
         },
         content: {
             flex: 1,
