@@ -302,6 +302,7 @@ export default class PostInput extends PureComponent {
                 disableFullscreenUI={true}
                 editable={!readonly}
                 onPaste={onPasteFiles}
+                maxHeight={100}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
             />
         );
