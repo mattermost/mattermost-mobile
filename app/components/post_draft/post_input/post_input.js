@@ -280,7 +280,7 @@ export default class PostInput extends PureComponent {
         const {channelDisplayName, isLandscape, onPasteFiles, readonly, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
-        let maxHeight = 150;
+        let maxHeight = 100;
 
         if (isLandscape) {
             maxHeight = 88;
@@ -302,7 +302,6 @@ export default class PostInput extends PureComponent {
                 disableFullscreenUI={true}
                 editable={!readonly}
                 onPaste={onPasteFiles}
-                maxHeight={100}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
             />
         );
