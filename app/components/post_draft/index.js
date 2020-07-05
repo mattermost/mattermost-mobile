@@ -68,12 +68,19 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
+    const channelId = ownProps.channelId || (currentChannel ? currentChannel.id : '');
+
+    let channelIsReadOnly = false;
+    if (currentUserId && channelId) {
+        channelIsReadOnly = isCurrentChannelReadOnly(state) || false;
+    }
+
     return {
         canPost,
         channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
-        channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
+        channelId,
         channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
-        channelIsReadOnly: isCurrentChannelReadOnly(state) || false,
+        channelIsReadOnly,
         currentUserId,
         deactivatedChannel,
         enableConfirmNotificationsToChannel,
