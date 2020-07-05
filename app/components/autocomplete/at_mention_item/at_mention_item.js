@@ -62,11 +62,11 @@ export default class AtMentionItem extends PureComponent {
             <TouchableWithFeedback
                 key={userId}
                 onPress={this.completeMention}
-                style={[style.row, padding(isLandscape)]}
+                style={padding(isLandscape)}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                 type={'native'}
             >
-                <>
+                <View style={style.row}>
                     <View style={style.rowPicture}>
                         <ProfilePicture
                             userId={userId}
@@ -97,7 +97,7 @@ export default class AtMentionItem extends PureComponent {
                     </Text>
                     {hasFullName && <Text style={style.rowFullname}>{' - '}</Text>}
                     <Text style={style.rowUsername}>{`@${username}`}</Text>
-                </>
+                </View>
             </TouchableWithFeedback>
         );
     }

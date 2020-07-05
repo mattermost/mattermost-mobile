@@ -136,11 +136,10 @@ export default class EmojiSuggestion extends PureComponent {
         return (
             <TouchableWithFeedback
                 onPress={() => this.completeSuggestion(item)}
-                style={style.row}
                 underlayColor={changeOpacity(this.props.theme.buttonBg, 0.08)}
                 type={'native'}
             >
-                <>
+                <View style={style.row}>
                     <View style={style.emoji}>
                         <Emoji
                             emojiName={item}
@@ -149,7 +148,7 @@ export default class EmojiSuggestion extends PureComponent {
                         />
                     </View>
                     <Text style={style.emojiName}>{`:${item}:`}</Text>
-                </>
+                </View>
             </TouchableWithFeedback>
         );
     };
@@ -184,12 +183,14 @@ export default class EmojiSuggestion extends PureComponent {
                     return values;
                 }, []);
                 const data = results.sort(sorter);
+                this.props.onResultCountChange(data.length);
                 this.setState({
                     active: data.length > 0,
                     dataSource: data,
                 });
             }, 100);
         } else {
+            this.props.onResultCountChange(emojis.length);
             this.setState({
                 active: emojis.length > 0,
                 dataSource: emojis.sort(sorter),
@@ -244,7 +245,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 40,
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 8,
+            padding: 16,
             backgroundColor: theme.centerChannelBg,
         },
     };

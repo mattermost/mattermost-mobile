@@ -63,7 +63,7 @@ export default class AtMention extends PureComponent {
                 mentionComplete: false,
                 sections: [],
             });
-
+            this.props.onResultCountChange(0);
             return;
         }
 

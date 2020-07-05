@@ -42,11 +42,10 @@ export default class SpecialMentionItem extends PureComponent {
         return (
             <TouchableWithFeedback
                 onPress={this.completeMention}
-                style={style.row}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                 type={'native'}
             >
-                <>
+                <View style={style.row}>
                     <View style={style.rowPicture}>
                         <Icon
                             name='users'
@@ -63,7 +62,7 @@ export default class SpecialMentionItem extends PureComponent {
                             style={style.rowFullname}
                         />
                     </Text>
-                </>
+                </View>
             </TouchableWithFeedback>
         );
     }

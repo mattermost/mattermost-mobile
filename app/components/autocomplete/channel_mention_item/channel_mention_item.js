@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
+    View,
 } from 'react-native';
 import VectorIcon from 'app/components/vector_icon.js';
 
@@ -83,11 +84,11 @@ export default class ChannelMentionItem extends PureComponent {
                 <TouchableWithFeedback
                     key={channelId}
                     onPress={this.completeMention}
-                    style={[style.row, padding(isLandscape)]}
+                    style={padding(isLandscape)}
                     underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                     type={'native'}
                 >
-                    <>
+                    <View style={style.row}>
                         <VectorIcon
                             name={iconName}
                             type={'mattermost'}
@@ -95,7 +96,7 @@ export default class ChannelMentionItem extends PureComponent {
                         />
                         <Text style={style.rowDisplayName}>{displayName}</Text>
                         <Text style={style.rowName}>{` (~${name})`}</Text>
-                    </>
+                    </View>
                 </TouchableWithFeedback>
             );
         }
