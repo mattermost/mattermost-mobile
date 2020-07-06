@@ -476,6 +476,7 @@ export default class SelectServer extends PureComponent {
 
         return (
             <SafeAreaView
+                testID='select_server_screen'
                 style={style.container}
             >
                 <KeyboardAvoidingView
@@ -502,6 +503,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
+                                testID='server_url_input'
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!inputDisabled}
@@ -521,6 +523,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
+                                testID='connect_button'
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >

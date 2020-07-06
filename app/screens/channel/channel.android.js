@@ -36,7 +36,10 @@ export default class ChannelAndroid extends ChannelBase {
         if (!component) {
             component = (
                 <KeyboardLayout>
-                    <View style={style.flex}>
+                    <View
+                        testID='channel_screen'
+                        style={style.flex}
+                    >
                         <ChannelPostList/>
                     </View>
                     <PostDraft

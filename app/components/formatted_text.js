@@ -11,6 +11,7 @@ export default class FormattedText extends React.PureComponent {
         id: PropTypes.string.isRequired,
         defaultMessage: PropTypes.string,
         values: PropTypes.object,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {

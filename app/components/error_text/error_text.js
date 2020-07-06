@@ -29,6 +29,7 @@ export default class ErrorText extends PureComponent {
         if (intl) {
             return (
                 <FormattedText
+                    testID='error_text'
                     id={intl.id}
                     defaultMessage={intl.defaultMessage}
                     values={intl.values}
@@ -38,7 +39,10 @@ export default class ErrorText extends PureComponent {
         }
 
         return (
-            <Text style={[GlobalStyles.errorLabel, style.errorLabel, textStyle]}>
+            <Text
+                testID='error_text'
+                style={[GlobalStyles.errorLabel, style.errorLabel, textStyle]}
+            >
                 {error.message || error}
             </Text>
         );

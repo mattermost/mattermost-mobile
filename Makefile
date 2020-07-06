@@ -186,16 +186,8 @@ unsigned-ios: stop pre-build check-style ## Build an unsigned version of the iOS
 	$(call stop_packager)
 
 ios-sim-x86_64: stop pre-build check-style ## Build an unsigned x86_64 version of the iOS app for iPhone simulator
-	$(call start_packager)
 	@echo "Building unsigned x86_64 iOS app for iPhone simulator"
-	@cd fastlane && NODE_ENV=production bundle exec fastlane ios unsigned
-	@mkdir -p build-ios
-	@cd ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO
-	@cd build-ios/Build/Products/Release-iphonesimulator/ && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app/
-	@mv build-ios/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip .
-	@rm -rf build-ios/
-	@cd fastlane && bundle exec fastlane upload_file_to_s3 file:Mattermost-simulator-x86_64.app.zip os_type:iOS
-	$(call stop_packager)
+	@cd fastlane && NODE_ENV=production bundle exec fastlane ios simulator
 
 unsigned-android: stop pre-build check-style prepare-android-build ## Build an unsigned version of the Android app
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned

@@ -264,6 +264,7 @@ export default class DrawerLayout extends Component {
 
         return (
             <View
+                testID={this.props.testID}
                 style={containerStyles}
                 {...panHandlers}
             >

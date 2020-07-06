@@ -124,6 +124,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
 
         return (
             <DrawerLayout
+                testID={this.props.testID}
                 ref={this.drawerRef}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}
