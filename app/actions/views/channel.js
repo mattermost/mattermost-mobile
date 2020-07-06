@@ -579,7 +579,6 @@ function loadGroupData() {
         const state = getState();
         const actions = [];
         const team = getCurrentTeam(state);
-        const teamID = team.id;
         const serverVersion = state.entities.general.serverVersion;
         const license = getLicense(state);
         const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
@@ -589,8 +588,8 @@ function loadGroupData() {
                 try {
                     if (team.group_constrained) {
                         const [getAllGroupsAssociatedToChannelsInTeam, getAllGroupsAssociatedToTeam] = await Promise.all([ //eslint-disable-line no-await-in-loop
-                            Client4.getAllGroupsAssociatedToChannelsInTeam(teamID, true),
-                            Client4.getAllGroupsAssociatedToTeam(teamID, true),
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
+                            Client4.getAllGroupsAssociatedToTeam(team.id, true),
                         ]);
 
                         if (getAllGroupsAssociatedToChannelsInTeam.groups) {
@@ -603,12 +602,12 @@ function loadGroupData() {
                         if (getAllGroupsAssociatedToTeam) {
                             actions.push({
                                 type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
-                                data: {...getAllGroupsAssociatedToTeam, teamID},
+                                data: {...getAllGroupsAssociatedToTeam, teamID: team.id},
                             });
                         }
                     } else {
                         const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
-                            Client4.getAllGroupsAssociatedToChannelsInTeam(teamID, true),
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
                             Client4.getGroups(true),
                         ]);
 
