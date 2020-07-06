@@ -138,7 +138,7 @@
   "mobile.android.videos_permission_denied_description": "Laden Sie Videos auf ihre Mattermost-Instanz hoch oder speichern Sie sie auf Ihrem Gerät. Öffnen Sie die Einstellungen, um Mattermost Lese- und Schreibzugriff auf ihre Videobibliothek zu gewähren.",
   "mobile.android.videos_permission_denied_title": "{applicationName} möchte auf Ihre Videos zugreifen",
   "mobile.announcement_banner.title": "Ankündigung",
-  "mobile.calendar.dayNames": "Sonntag,Montag,Dienstag,Mittwoch,Donnerstag,Freitag, Samstag",
+  "mobile.calendar.dayNames": "Sonntag,Montag,Dienstag,Mittwoch,Donnerstag,Freitag,Samstag",
   "mobile.calendar.dayNamesShort": "So,Mo,Di,Mi,Do,Fr,Sa",
   "mobile.calendar.monthNames": "Januar,Februar,März,April,Mai,Juni,July,August,September,Oktober,November,Dezember",
   "mobile.calendar.monthNamesShort": "Jan,Feb,Mär,Apr,Mai,Jun,Jul,Aug,Sep,Okt,Nov,Dez",
