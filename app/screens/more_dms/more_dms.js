@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {debounce} from '@mm-redux/actions/helpers';
@@ -114,6 +114,7 @@ export default class MoreDirectMessages extends PureComponent {
     }
 
     close = () => {
+        Keyboard.dismiss();
         dismissModal();
     };
 
