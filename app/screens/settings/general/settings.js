@@ -32,7 +32,7 @@ class Settings extends PureComponent {
         currentTeamId: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
-        errors: PropTypes.object.isRequired,
+        errors: PropTypes.array.isRequired,
         intl: intlShape.isRequired,
         joinableTeams: PropTypes.array.isRequired,
         theme: PropTypes.object,
