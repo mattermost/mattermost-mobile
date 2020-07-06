@@ -9,6 +9,7 @@ import {intlShape} from 'react-intl';
 import {
     Keyboard,
     Platform,
+    SafeAreaView,
     SectionList,
     Text,
     View,
@@ -734,61 +735,66 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <KeyboardLayout>
-                <StatusBar/>
-                <View style={[style.header, paddingRes]}>
-                    <SearchBar
-                        ref={this.setSearchBarRef}
-                        placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        backgroundColor='transparent'
-                        inputHeight={Platform.OS === 'ios' ? 33 : 46}
-                        inputStyle={searchBarInput}
-                        placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        titleCancelColor={theme.sidebarHeaderTextColor}
-                        onChangeText={this.handleTextChanged}
-                        onSearchButtonPress={this.handleSearchButtonPress}
-                        onCancelButtonPress={this.cancelSearch}
-                        onSelectionChange={this.handleSelectionChange}
-                        autoCapitalize='none'
-                        showArrow={true}
-                        value={value}
-                        containerStyle={style.searchBarContainer}
-                        backArrowSize={28}
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        containerHeight={33}
+            <SafeAreaView style={style.flex}>
+                <KeyboardLayout>
+                    <StatusBar/>
+                    <View style={[style.header, paddingRes]}>
+                        <SearchBar
+                            ref={this.setSearchBarRef}
+                            placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={Platform.OS === 'ios' ? 33 : 46}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            selectionColor={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            tintColorDelete={changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                            titleCancelColor={theme.sidebarHeaderTextColor}
+                            onChangeText={this.handleTextChanged}
+                            onSearchButtonPress={this.handleSearchButtonPress}
+                            onCancelButtonPress={this.cancelSearch}
+                            onSelectionChange={this.handleSelectionChange}
+                            autoCapitalize='none'
+                            showArrow={true}
+                            value={value}
+                            containerStyle={style.searchBarContainer}
+                            backArrowSize={28}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            containerHeight={33}
+                        />
+                    </View>
+                    <SectionList
+                        ref={this.setListRef}
+                        style={style.sectionList}
+                        renderSectionHeader={this.renderSectionHeader}
+                        sections={sections}
+                        keyboardShouldPersistTaps='always'
+                        keyboardDismissMode='interactive'
+                        stickySectionHeadersEnabled={Platform.OS === 'ios'}
+                        onLayout={this.handleLayout}
+                        onScroll={this.handleScroll}
+                        scrollEventThrottle={60}
+                        ListFooterComponent={this.renderFooter}
                     />
-                </View>
-                <SectionList
-                    ref={this.setListRef}
-                    style={style.sectionList}
-                    renderSectionHeader={this.renderSectionHeader}
-                    sections={sections}
-                    keyboardShouldPersistTaps='always'
-                    keyboardDismissMode='interactive'
-                    stickySectionHeadersEnabled={Platform.OS === 'ios'}
-                    onLayout={this.handleLayout}
-                    onScroll={this.handleScroll}
-                    scrollEventThrottle={60}
-                    ListFooterComponent={this.renderFooter}
-                />
-                <Autocomplete
-                    cursorPosition={cursorPosition}
-                    onChangeText={this.handleTextChanged}
-                    isSearch={true}
-                    value={value}
-                    enableDateSuggestion={this.props.enableDateSuggestion}
-                />
-            </KeyboardLayout>
+                    <Autocomplete
+                        cursorPosition={cursorPosition}
+                        onChangeText={this.handleTextChanged}
+                        isSearch={true}
+                        value={value}
+                        enableDateSuggestion={this.props.enableDateSuggestion}
+                    />
+                </KeyboardLayout>
+            </SafeAreaView>
         );
     }
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: '100%',
