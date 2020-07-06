@@ -616,5 +616,7 @@
   "user.settings.push_notification.online": "オンライン、離席中もしくはオフライン",
   "web.root.signup_info": "チームの全てのコミュニケーションを一箇所で、検索可能で、どこからでもアクセスできるものにします",
   "mobile.server_upgrade.learn_more": "詳しく知る",
-  "mobile.server_upgrade.dismiss": "破棄"
+  "mobile.server_upgrade.dismiss": "破棄",
+  "mobile.server_upgrade.alert_description": "このサーバーのバージョンはサポートされておらず、ユーザーはアプリのクラッシュやアプリのコア機能を破壊する深刻なバグのような整合性の問題を受ける可能性があります。サーバーのバージョンを {serverVersion} 以降にアップグレードする必要があります。",
+  "mobile.message_length.message_split_left": "メッセージが文字数制限を超えています"
 }
