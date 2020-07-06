@@ -614,5 +614,7 @@
   "user.settings.push_notification.disabled_long": "プッシュ通知はシステム管理者によって有効化されていません。",
   "user.settings.push_notification.offline": "オフライン",
   "user.settings.push_notification.online": "オンライン、離席中もしくはオフライン",
-  "web.root.signup_info": "チームの全てのコミュニケーションを一箇所で、検索可能で、どこからでもアクセスできるものにします"
+  "web.root.signup_info": "チームの全てのコミュニケーションを一箇所で、検索可能で、どこからでもアクセスできるものにします",
+  "mobile.server_upgrade.learn_more": "詳しく知る",
+  "mobile.server_upgrade.dismiss": "破棄"
 }

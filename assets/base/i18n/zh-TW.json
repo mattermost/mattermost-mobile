@@ -614,5 +614,7 @@
   "user.settings.push_notification.disabled_long": "電子郵件通知已被系統管理員停用。",
   "user.settings.push_notification.offline": "離線",
   "user.settings.push_notification.online": "線上、離開或離線",
-  "web.root.signup_info": "團隊溝通皆在同處，隨時隨地皆可搜尋與存取。"
+  "web.root.signup_info": "團隊溝通皆在同處，隨時隨地皆可搜尋與存取。",
+  "mobile.server_upgrade.learn_more": "了解更多",
+  "mobile.server_upgrade.dismiss": "解除"
 }

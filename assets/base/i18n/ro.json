@@ -615,5 +615,7 @@
   "user.settings.push_notification.offline": "Deconectat",
   "user.settings.push_notification.online": "Online, departe sau offline",
   "web.root.signup_info": "Toate comunicările echipei într-un singur loc, cautari instante și accesibile oriunde",
-  "mobile.message_length.message_split_left": "Mesajul depășește limita de caractere"
+  "mobile.message_length.message_split_left": "Mesajul depășește limita de caractere",
+  "mobile.server_upgrade.learn_more": "Aflați Mai Multe",
+  "mobile.server_upgrade.dismiss": "Elimină"
 }

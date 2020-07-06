@@ -614,5 +614,7 @@
   "user.settings.push_notification.disabled_long": "시스템 관리자가 메일알림을 비활성화하였습니다.",
   "user.settings.push_notification.offline": "오프라인",
   "user.settings.push_notification.online": "온라인, 오프라인, 자리비움",
-  "web.root.signup_info": "모든 팀 커뮤니케이션 활동을 한 곳에 모아 빠르게 찾고 공유할 수 있습니다."
+  "web.root.signup_info": "모든 팀 커뮤니케이션 활동을 한 곳에 모아 빠르게 찾고 공유할 수 있습니다.",
+  "mobile.server_upgrade.learn_more": "Learn More",
+  "mobile.server_upgrade.dismiss": "Dismiss"
 }

@@ -614,5 +614,7 @@
   "user.settings.push_notification.disabled_long": "Powiadomienia Push nie zostały włączone przez twojego Administratora systemu.",
   "user.settings.push_notification.offline": "Offline",
   "user.settings.push_notification.online": "Tryb online, offline lub zaraz wracam",
-  "web.root.signup_info": "Cała komunikacja Twojego zespołu w jednym miejscu, z natychmiastowym przeszukiwaniem i dostępna z każdego miejsca."
+  "web.root.signup_info": "Cała komunikacja Twojego zespołu w jednym miejscu, z natychmiastowym przeszukiwaniem i dostępna z każdego miejsca.",
+  "mobile.server_upgrade.learn_more": "Dowiedz się więcej",
+  "mobile.server_upgrade.dismiss": "Odrzuć"
 }

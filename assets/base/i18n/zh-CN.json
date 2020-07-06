@@ -615,5 +615,8 @@
   "user.settings.push_notification.offline": "离线",
   "user.settings.push_notification.online": "在线，离开或离线",
   "web.root.signup_info": "所有团队的通讯一站式解决，随时随地可访问和搜索",
-  "mobile.message_length.message_split_left": "消息超过字数限制"
+  "mobile.message_length.message_split_left": "消息超过字数限制",
+  "mobile.server_upgrade.learn_more": "了解更多",
+  "mobile.server_upgrade.dismiss": "解除",
+  "mobile.server_upgrade.alert_description": "此服务器版本不受支持，用户将面临兼容性问题，这些问题会导致崩溃或严重的错误影响应用程序的核心功能。 需要升级到服务器版本 {serverVersion} 或更高。"
 }

@@ -615,5 +615,8 @@
   "user.settings.push_notification.offline": "Не в сети",
   "user.settings.push_notification.online": "В сети, отошёл или не в сети",
   "web.root.signup_info": "Все способы общения команды собраны в одном месте, с возможностью мгновенного поиска и доступом отовсюду",
-  "mobile.message_length.message_split_left": "Сообщение превышает лимит символов"
+  "mobile.message_length.message_split_left": "Сообщение превышает лимит символов",
+  "mobile.server_upgrade.learn_more": "Узнать больше",
+  "mobile.server_upgrade.dismiss": "Отмена",
+  "mobile.server_upgrade.alert_description": "Эта версия сервера не поддерживается, и пользователи будут сталкиваться с проблемами совместимости, которые вызывают сбои или серьезные ошибки, нарушающие основные функции приложения. Требуется обновление до версии сервера {serverVersion} или новее."
 }
