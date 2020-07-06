@@ -524,7 +524,7 @@
   "user.settings.push_notification.offline": "Desconectado",
   "user.settings.push_notification.online": "En línea, ausente o desconectado",
   "web.root.signup_info": "Todas las comunicaciones del equipo en un sólo lugar, con búsquedas y accesible desde cualquier parte",
-  "mobile.message_length.message_split_left": "",
+  "mobile.message_length.message_split_left": "El mensaje excede el límite de caracteres",
   "user.settings.display.custom_theme": "Tema Personalizado",
   "suggestion.mention.you": "(tú)",
   "post_info.guest": "HUÉSPEDES",
@@ -615,5 +615,8 @@
   "date_separator.today": "Hoy",
   "channel.isGuest": "Esta persona es un huésped",
   "channel.hasGuests": "Este grupo tiene huéspedes",
-  "channel.channelHasGuests": "Este canal tiene huéspedes"
+  "channel.channelHasGuests": "Este canal tiene huéspedes",
+  "mobile.server_upgrade.learn_more": "Conocer más",
+  "mobile.server_upgrade.dismiss": "Descartar",
+  "mobile.server_upgrade.alert_description": "Esta versión del servidor no es compatible y los usuarios estarán expuestos a problemas de compatibilidad que causan bloqueos o errores graves que rompen la funcionalidad principal de la aplicación. Se requiere actualizar a la versión del servidor {serverVersion} o posterior."
 }
