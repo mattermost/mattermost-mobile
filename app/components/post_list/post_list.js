@@ -263,7 +263,7 @@ export default class PostList extends PureComponent {
     handleScrollToIndexFailed = (info) => {
         this.animationFrameIndexFailed = requestAnimationFrame(() => {
             if (this.onScrollEndIndexListener) {
-                this.onScrollEndIndexListener();
+                this.onScrollEndIndexListener(info.highestMeasuredFrameIndex);
             }
             this.flatListScrollToIndex(info.highestMeasuredFrameIndex);
         });

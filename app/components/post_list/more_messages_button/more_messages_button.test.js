@@ -49,7 +49,7 @@ describe('MoreMessagesButton', () => {
             const instance = new MoreMessagesButton({...baseProps});
             expect(instance.state).toStrictEqual({moreText: ''});
             expect(instance.top).toEqual(new Animated.Value(0));
-            expect(instance.disableViewableItemsHandler).toBe(false);
+            expect(instance.disableViewableItems).toBe(false);
         });
     });
 
@@ -76,6 +76,32 @@ describe('MoreMessagesButton', () => {
             expect(instance.removeScrollEndIndexListener).toBeDefined();
         });
 
+        test('componentDidMount should call showMoreText when the unreadCount > 0', () => {
+            let props = {
+                ...baseProps,
+                unreadCount: 0,
+            };
+            let wrapper = shallowWithIntl(
+                <MoreMessagesButton {...props}/>,
+            );
+            let instance = wrapper.instance();
+            instance.showMoreText = jest.fn();
+            instance.componentDidMount();
+            expect(instance.showMoreText).not.toHaveBeenCalled();
+
+            props = {
+                ...baseProps,
+                unreadCount: 1,
+            };
+            wrapper = shallowWithIntl(
+                <MoreMessagesButton {...props}/>,
+            );
+            instance = wrapper.instance();
+            instance.showMoreText = jest.fn();
+            instance.componentDidMount();
+            expect(instance.showMoreText).toHaveBeenCalledWith(0);
+        });
+
         test('componentWillUnmount should remove the indicator bar visible listener, the viewable items listener, the scroll end index listener, and clear all timers', () => {
             jest.useFakeTimers();
             EventEmitter.off = jest.fn();
@@ -86,15 +112,11 @@ describe('MoreMessagesButton', () => {
             instance.onIndicatorBarVisible = jest.fn();
             instance.removeViewableItemsListener = jest.fn();
             instance.removeScrollEndIndexListener = jest.fn();
-            const viewableItemsChangedTimer = jest.fn();
-            instance.viewableItemsChangedTimer = viewableItemsChangedTimer;
 
             instance.componentWillUnmount();
             expect(EventEmitter.off).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, instance.onIndicatorBarVisible);
             expect(instance.removeViewableItemsListener).toHaveBeenCalled();
             expect(instance.removeScrollEndIndexListener).toHaveBeenCalled();
-            expect(clearTimeout).toHaveBeenCalledWith(viewableItemsChangedTimer);
-            expect(instance.viewableItemsChangedTimer).toBeNull();
         });
 
         test('componentDidUpdate should call reset when the channelId changes', () => {
@@ -176,6 +198,26 @@ describe('MoreMessagesButton', () => {
             expect(instance.uncancel).toHaveBeenCalledTimes(2);
         });
 
+        test('componentDidUpdate should call showMoreText with the read count derived from the previous new message line', () => {
+            const prevNewMessageLineIndex = 10;
+            const props = {
+                ...baseProps,
+                newMessageLineIndex: prevNewMessageLineIndex,
+            };
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...props}/>,
+            );
+            const instance = wrapper.instance();
+            instance.getReadCount = jest.fn((count) => {
+                return count;
+            });
+            instance.showMoreText = jest.fn();
+
+            wrapper.setProps({newMessageLineIndex: prevNewMessageLineIndex + 1});
+            expect(instance.getReadCount).toHaveBeenCalledWith(prevNewMessageLineIndex);
+            expect(instance.showMoreText).toHaveBeenCalledWith(10);
+        });
+
         test('componentDidUpdate should call onViewableItemsChanged when the unreadCount increases from 0', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
@@ -245,23 +287,19 @@ describe('MoreMessagesButton', () => {
             const instance = wrapper.instance();
             wrapper.setProps({unreadCount: 10});
             instance.setState({moreText: '60+ new messages'});
-            const viewableItemsChangedTimer = jest.fn();
-            instance.viewableItemsChangedTimer = viewableItemsChangedTimer;
             const autoCancelTimer = jest.fn();
             instance.autoCancelTimer = autoCancelTimer;
             instance.hide = jest.fn();
-            instance.disableViewableItemsHandler = true;
+            instance.disableViewableItems = true;
             instance.viewableItems = [{index: 1}];
             instance.pressed = true;
             instance.canceled = true;
 
             instance.reset();
-            expect(clearTimeout).toHaveBeenCalledWith(viewableItemsChangedTimer);
-            expect(instance.viewableItemsChangedTimer).toBeNull();
             expect(clearTimeout).toHaveBeenCalledWith(autoCancelTimer);
             expect(instance.autoCancelTimer).toBeNull();
             expect(instance.hide).toHaveBeenCalled();
-            expect(instance.disableViewableItemsHandler).toBe(false);
+            expect(instance.disableViewableItems).toBe(false);
             expect(instance.viewableItems).toStrictEqual([]);
             expect(instance.pressed).toBe(false);
             expect(instance.state.moreText).toEqual('');
@@ -400,12 +438,12 @@ describe('MoreMessagesButton', () => {
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
-            instance.disableViewableItemsHandler = false;
+            instance.disableViewableItems = false;
 
             instance.cancel(true);
             expect(instance.canceled).toBe(true);
             expect(instance.hide).toHaveBeenCalledTimes(1);
-            expect(instance.disableViewableItemsHandler).toBe(true);
+            expect(instance.disableViewableItems).toBe(true);
         });
 
         it('should set canceled, hide button, and disable viewable items handler when not forced but indicator bar is not visible and posts are not loading', () => {
@@ -416,14 +454,14 @@ describe('MoreMessagesButton', () => {
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
-            instance.disableViewableItemsHandler = false;
+            instance.disableViewableItems = false;
             instance.indicatorBarVisible = false;
             wrapper.setProps({loadingPosts: false});
 
             instance.cancel(false);
             expect(instance.canceled).toBe(true);
             expect(instance.hide).toHaveBeenCalledTimes(1);
-            expect(instance.disableViewableItemsHandler).toBe(true);
+            expect(instance.disableViewableItems).toBe(true);
         });
 
         it('should delay cancel when not forced but indicator bar is visible', () => {
@@ -434,14 +472,14 @@ describe('MoreMessagesButton', () => {
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
-            instance.disableViewableItemsHandler = false;
+            instance.disableViewableItems = false;
             instance.indicatorBarVisible = true;
             instance.autoCancelTimer = null;
 
             instance.cancel(false);
             expect(instance.canceled).toBe(false);
             expect(instance.hide).not.toHaveBeenCalled();
-            expect(instance.disableViewableItemsHandler).toBe(false);
+            expect(instance.disableViewableItems).toBe(false);
             expect(instance.autoCancelTimer).toBeDefined();
             expect(setTimeout).toHaveBeenCalledWith(instance.cancel, CANCEL_TIMER_DELAY);
 
@@ -456,7 +494,7 @@ describe('MoreMessagesButton', () => {
             instance.componentDidUpdate = jest.fn();
             instance.canceled = false;
             instance.hide = jest.fn();
-            instance.disableViewableItemsHandler = false;
+            instance.disableViewableItems = false;
             instance.indicatorBarVisible = false;
             instance.autoCancelTimer = null;
             wrapper.setProps({loadingPosts: true});
@@ -464,7 +502,7 @@ describe('MoreMessagesButton', () => {
             instance.cancel(false);
             expect(instance.canceled).toBe(false);
             expect(instance.hide).not.toHaveBeenCalled();
-            expect(instance.disableViewableItemsHandler).toBe(false);
+            expect(instance.disableViewableItems).toBe(false);
             expect(instance.autoCancelTimer).toBeDefined();
             expect(setTimeout).toHaveBeenCalledWith(instance.cancel, CANCEL_TIMER_DELAY);
 
@@ -473,7 +511,7 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('uncancel', () => {
-        it('should set canceled and disableViewableItemsHandler to false and clear autoCancelTimer', () => {
+        it('should set canceled and disableViewableItems to false and clear autoCancelTimer', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -481,13 +519,13 @@ describe('MoreMessagesButton', () => {
             const autoCancelTimer = jest.fn();
             instance.autoCancelTimer = autoCancelTimer;
             instance.canceled = true;
-            instance.disableViewableItemsHandler = true;
+            instance.disableViewableItems = true;
 
             instance.uncancel();
             expect(clearTimeout).toHaveBeenCalledWith(autoCancelTimer);
             expect(instance.autoCancelTimer).toBeNull();
             expect(instance.canceled).toBe(false);
-            expect(instance.disableViewableItemsHandler).toBe(false);
+            expect(instance.disableViewableItems).toBe(false);
         });
     });
 
@@ -522,9 +560,11 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
         instance.componentDidUpdate = jest.fn();
-        instance.viewableItemsChangedTimer = null;
-        instance.viewableItemsChangedHandler = jest.fn();
         instance.cancel = jest.fn();
+        instance.getReadCount = jest.fn((count) => {
+            return count;
+        });
+        instance.showMoreText = jest.fn();
 
         beforeEach(() => {
             jest.clearAllMocks();
@@ -537,12 +577,10 @@ describe('MoreMessagesButton', () => {
             wrapper.setProps({newMessageLineIndex: 0});
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
 
             wrapper.setProps({newMessageLineIndex: -1});
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
 
         it('should return early when viewableItems length is 0', () => {
@@ -551,29 +589,15 @@ describe('MoreMessagesButton', () => {
 
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
 
-        it('should clear viewableItemsChangedTimer when set', () => {
-            const viewableItems = [{index: 0}, {index: 1}];
+        it('should return early when disableViewableItems is true', () => {
+            const viewableItems = [{index: 0}];
             wrapper.setProps({newMessageLineIndex: 1});
-            const viewableItemsChangedTimer = jest.fn();
-            instance.viewableItemsChangedTimer = viewableItemsChangedTimer;
+            instance.disableViewableItems = true;
 
             instance.onViewableItemsChanged(viewableItems);
-            expect(clearTimeout).toHaveBeenCalledWith(viewableItemsChangedTimer);
-            expect(instance.viewableItemsChangedTimer).toBeNull();
-        });
-
-        it('should not call viewableItemsChangedHandler when disabled', () => {
-            const viewableItems = [{index: 0}, {index: 1}];
-            wrapper.setProps({newMessageLineIndex: 100});
-
-            instance.disableViewableItemsHandler = true;
-            instance.onViewableItemsChanged(viewableItems);
-            jest.runOnlyPendingTimers();
-
-            expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
+            expect(clearTimeout).not.toHaveBeenCalled();
         });
 
         it('should force cancel and also scroll to newMessageLineIndex when the channel is first loaded and the newMessageLineIndex is viewable', () => {
@@ -581,7 +605,7 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [{index: 0}, {index: 1}, {index: 2}];
             const newMessageLineIndex = 2;
             wrapper.setProps({newMessageLineIndex});
-            instance.disableViewableItemsHandler = false;
+            instance.disableViewableItems = false;
 
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();
@@ -589,7 +613,6 @@ describe('MoreMessagesButton', () => {
             expect(instance.cancel).toHaveBeenCalledTimes(1);
             expect(instance.cancel).toHaveBeenCalledWith(true);
             expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
-            expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
 
         it('should force cancel and also scroll to newMessageLineIndex when the channel is first loaded and the newMessageLineIndex will be the next viewable item', () => {
@@ -597,7 +620,7 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [{index: 0}, {index: 1}, {index: 2}];
             const newMessageLineIndex = 3;
             wrapper.setProps({newMessageLineIndex});
-            instance.disableViewableItemsHandler = false;
+            instance.disableViewableItems = false;
 
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();
@@ -605,14 +628,13 @@ describe('MoreMessagesButton', () => {
             expect(instance.cancel).toHaveBeenCalledTimes(1);
             expect(instance.cancel).toHaveBeenCalledWith(true);
             expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
-            expect(instance.viewableItemsChangedHandler).not.toHaveBeenCalled();
         });
 
         it('should set autoCancelTimer when the New Message line has been reached', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const newMessageLineIndex = 3;
             wrapper.setProps({newMessageLineIndex});
-            instance.disableViewableItemsHandler = false;
+            instance.disableViewableItems = false;
             instance.autoCancelTimer = null;
             instance.cancel = jest.fn();
 
@@ -623,106 +645,95 @@ describe('MoreMessagesButton', () => {
             expect(setTimeout).toHaveBeenCalledWith(instance.cancel, CANCEL_TIMER_DELAY);
         });
 
-        it('should call viewableItemsChangedHandler with a delay of 100 when state.moreText includes `more`', () => {
+        it('should call showMoreText with the read count derived from endIndex when endIndex is reached', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
-            const lastViewableIndex = viewableItems[viewableItems.length - 1].index;
-            wrapper.setProps({newMessageLineIndex: 10});
-            wrapper.setState({moreText: '50 more new messages'});
-            instance.disableViewableItemsHandler = false;
+            const newMessageLineIndex = 10;
+            wrapper.setProps({newMessageLineIndex});
+            wrapper.setProps({moreText: '10 new messages'});
+            instance.disableViewableItems = false;
 
+            instance.endIndex = null;
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();
+            expect(instance.getReadCount).not.toHaveBeenCalled();
+            expect(instance.showMoreText).not.toHaveBeenCalled();
+            expect(instance.endIndex).toBeNull();
 
-            expect(instance.cancel).not.toHaveBeenCalled();
-            expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedTimer).not.toBe(null);
-            expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
-            expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(lastViewableIndex);
+            instance.endIndex = 4;
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runOnlyPendingTimers();
+            expect(instance.getReadCount).not.toHaveBeenCalled();
+            expect(instance.showMoreText).not.toHaveBeenCalled();
+            expect(instance.endIndex).toEqual(4);
+
+            instance.endIndex = 3;
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runOnlyPendingTimers();
+            expect(instance.getReadCount).toHaveBeenCalledWith(3);
+            expect(instance.showMoreText).toHaveBeenCalledWith(3);
+            expect(instance.endIndex).toBeNull();
         });
 
-        it('should call viewableItemsChangedHandler with a delay of 250 when state.moreText does not include `more`', () => {
+        it('should call showMoreText with 0 when moreText is empty', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
-            const lastViewableIndex = viewableItems[viewableItems.length - 1].index;
-            wrapper.setProps({newMessageLineIndex: 10});
+            const newMessageLineIndex = 10;
+            wrapper.setProps({newMessageLineIndex});
+            instance.disableViewableItems = false;
+            instance.endIndex = null;
+
+            wrapper.setState({moreText: '1 new message'});
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runOnlyPendingTimers();
+            expect(instance.showMoreText).not.toHaveBeenCalled();
+
             wrapper.setState({moreText: ''});
-            instance.disableViewableItemsHandler = false;
-
             instance.onViewableItemsChanged(viewableItems);
             jest.runOnlyPendingTimers();
-
-            expect(instance.cancel).not.toHaveBeenCalled();
-            expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedTimer).not.toBe(null);
-            expect(setTimeout).toHaveBeenCalledTimes(1);
-            expect(setTimeout.mock.calls[0][1]).toEqual(250);
-            expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(lastViewableIndex);
-
-            wrapper.setState({moreText: '50 new messages'});
-            instance.onViewableItemsChanged(viewableItems);
-            jest.runOnlyPendingTimers();
-
-            expect(instance.cancel).not.toHaveBeenCalled();
-            expect(baseProps.scrollToIndex).not.toHaveBeenCalled();
-            expect(instance.viewableItemsChangedTimer).not.toBe(null);
-            expect(setTimeout).toHaveBeenCalledTimes(2);
-            expect(setTimeout.mock.calls[1][1]).toEqual(250);
-            expect(instance.viewableItemsChangedHandler).toHaveBeenCalledWith(lastViewableIndex);
+            expect(instance.showMoreText).toHaveBeenCalledWith(0);
         });
     });
 
-    describe('viewableItemsChangedHandler', () => {
-        jest.useFakeTimers();
-
+    describe('showMoreText', () => {
+        const props = {
+            ...baseProps,
+            unreadCount: 10,
+        };
         const wrapper = shallowWithIntl(
-            <MoreMessagesButton {...baseProps}/>,
+            <MoreMessagesButton {...props}/>,
         );
         const instance = wrapper.instance();
         instance.cancel = jest.fn();
-        instance.getReadCount = jest.fn();
+        instance.moreText = jest.fn((text) => {
+            return text;
+        });
+        instance.setState = jest.fn();
         instance.show = jest.fn();
-        instance.componentDidUpdate = jest.fn();
 
-        it('should force cancel and return early when unreadCount - readCount <= 0', () => {
-            const unreadCount = 10;
-            const emptyMoreText = '';
-            wrapper.setProps({unreadCount});
-            wrapper.setState({moreText: emptyMoreText});
-
-            instance.getReadCount.mockReturnValueOnce(unreadCount);
-            instance.viewableItemsChangedHandler();
-            jest.runOnlyPendingTimers();
-            expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel).toHaveBeenCalledWith(true);
-            expect(instance.show).not.toHaveBeenCalled();
-            expect(instance.state.moreText).toEqual(emptyMoreText);
-
-            instance.getReadCount.mockReturnValueOnce(unreadCount + 1);
-            instance.viewableItemsChangedHandler();
-            jest.runOnlyPendingTimers();
-            expect(instance.cancel).toHaveBeenCalledTimes(2);
-            expect(instance.show).not.toHaveBeenCalled();
-            expect(instance.state.moreText).toEqual(emptyMoreText);
+        beforeEach(() => {
+            jest.clearAllMocks();
         });
 
-        it('should set moreText and call show when unreadCount - readCount > 0', () => {
-            const unreadCount = 10;
-            const emptyMoreText = '';
-            wrapper.setProps({unreadCount});
-            wrapper.setState({moreText: emptyMoreText});
+        it('should force cancel when props.unreadCount - readCount is <= 0', () => {
+            let readCount = props.unreadCount + 1;
+            instance.showMoreText(readCount);
+            expect(instance.cancel).toHaveBeenCalledTimes(1);
+            expect(instance.cancel.mock.calls[0][0]).toBe(true);
+            expect(instance.moreText).not.toHaveBeenCalled();
+            expect(instance.setState).not.toHaveBeenCalled();
 
-            instance.getReadCount.mockReturnValueOnce(unreadCount - 1);
-            instance.viewableItemsChangedHandler();
-            jest.runOnlyPendingTimers();
-            expect(instance.cancel).not.toHaveBeenCalled();
-            expect(instance.show).toHaveBeenCalledTimes(1);
-            expect(instance.state.moreText.startsWith('1')).toBe(true);
+            readCount = props.unreadCount;
+            instance.showMoreText(readCount);
+            expect(instance.cancel).toHaveBeenCalledTimes(2);
+            expect(instance.cancel.mock.calls[1][0]).toBe(true);
+        });
 
-            instance.getReadCount.mockReturnValueOnce(unreadCount - 2);
-            instance.viewableItemsChangedHandler();
-            jest.runOnlyPendingTimers();
+        it('should set moreTextd when props.unreadCount - readCount is > 0', () => {
+            const moreCount = 1;
+            const readCount = props.unreadCount - moreCount;
+            instance.showMoreText(readCount);
             expect(instance.cancel).not.toHaveBeenCalled();
-            expect(instance.show).toHaveBeenCalledTimes(2);
-            expect(instance.state.moreText.startsWith('2')).toBe(true);
+            expect(instance.moreText).toHaveBeenCalledWith(moreCount);
+            expect(instance.setState).toHaveBeenCalledWith({moreText: moreCount}, instance.show);
         });
     });
 
@@ -775,40 +786,39 @@ describe('MoreMessagesButton', () => {
         );
         const instance = wrapper.instance();
 
-        it('should return defaultMessage of `{count} new messages` when moreText is empty and count is > 1', () => {
+        it('should return defaultMessage of `{count} new messages` when count is > 1 and count equals unreadCount', () => {
             let moreCount = 2;
-            wrapper.setState({moreText: ''});
+            wrapper.setProps({unreadCount: moreCount});
             let message = instance.moreText(moreCount);
             expect(message).toEqual('2 new messages');
 
             moreCount = 3;
-            wrapper.setState({moreText: ''});
+            wrapper.setProps({unreadCount: moreCount});
             message = instance.moreText(moreCount);
             expect(message).toEqual('3 new messages');
         });
 
-        it('should return defaultMessage of `{count} more new messages` on subsequent moreText changes with count > 1', () => {
+        it('should return defaultMessage of `{count} more new messages` when count > 1 and count does not equal unreadCount', () => {
             let moreCount = 2;
-            wrapper.setState({moreText: '1 new message'});
+            wrapper.setProps({unreadCount: 10});
             let message = instance.moreText(moreCount);
             expect(message).toEqual('2 more new messages');
 
             moreCount = 3;
-            wrapper.setState({moreText: '1 new message'});
             message = instance.moreText(moreCount);
             expect(message).toEqual('3 more new messages');
         });
 
-        it('should return defaultMessage of `1 new message` when moreText is empty and count === 1', () => {
+        it('should return defaultMessage of `1 new message` when count === 1 and count equals unreadCount', () => {
             const moreCount = 1;
-            wrapper.setState({moreText: ''});
+            wrapper.setProps({unreadCount: 1});
             const message = instance.moreText(moreCount);
             expect(message).toEqual('1 new message');
         });
 
-        it('should return defaultMessage of `1 more new message` on subsequent moreText changes when count === 1', () => {
+        it('should return defaultMessage of `1 more new message` when count === 1 and count does not equal unreadCount', () => {
             const moreCount = 1;
-            wrapper.setState({moreText: '1 new message'});
+            wrapper.setProps({unreadCount: 10});
             const message = instance.moreText(moreCount);
             expect(message).toEqual('1 more new message');
         });

@@ -63,7 +63,7 @@ export default class MoreMessageButton extends React.PureComponent {
 
         this.state = {moreText: ''};
         this.top = new Animated.Value(0);
-        this.disableViewableItemsHandler = false;
+        this.disableViewableItems = false;
         this.viewableItems = [];
     }
 
@@ -71,6 +71,10 @@ export default class MoreMessageButton extends React.PureComponent {
         EventEmitter.on(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
         this.removeScrollEndIndexListener = this.props.registerScrollEndIndexListener(this.onScrollEndIndex);
+
+        if (this.props.unreadCount > 0) {
+            this.showMoreText(0);
+        }
     }
 
     componentWillUnmount() {
@@ -80,10 +84,6 @@ export default class MoreMessageButton extends React.PureComponent {
         }
         if (this.removeScrollEndIndexListener) {
             this.removeScrollEndIndexListener();
-        }
-        if (this.viewableItemsChangedTimer) {
-            clearTimeout(this.viewableItemsChangedTimer);
-            this.viewableItemsChangedTimer = null;
         }
     }
 
@@ -112,6 +112,9 @@ export default class MoreMessageButton extends React.PureComponent {
             }
             this.pressed = false;
             this.uncancel();
+
+            const readCount = this.getReadCount(prevProps.newMessageLineIndex);
+            this.showMoreText(readCount);
         }
 
         // The unreadCount might not be set until after all the viewable items are rendered.
@@ -134,10 +137,6 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     reset = () => {
-        if (this.viewableItemsChangedTimer) {
-            clearTimeout(this.viewableItemsChangedTimer);
-            this.viewableItemsChangedTimer = null;
-        }
         if (this.autoCancelTimer) {
             clearTimeout(this.autoCancelTimer);
             this.autoCancelTimer = null;
@@ -147,7 +146,7 @@ export default class MoreMessageButton extends React.PureComponent {
         this.viewableItems = [];
         this.pressed = false;
         this.canceled = false;
-        this.disableViewableItemsHandler = false;
+        this.disableViewableItems = false;
     }
 
     show = () => {
@@ -184,7 +183,7 @@ export default class MoreMessageButton extends React.PureComponent {
         }
 
         this.canceled = true;
-        this.disableViewableItemsHandler = true;
+        this.disableViewableItems = true;
         this.hide();
     }
 
@@ -194,7 +193,7 @@ export default class MoreMessageButton extends React.PureComponent {
             this.autoCancelTimer = null;
         }
         this.canceled = false;
-        this.disableViewableItemsHandler = false;
+        this.disableViewableItems = false;
     }
 
     onMoreMessagesPress = () => {
@@ -213,51 +212,42 @@ export default class MoreMessageButton extends React.PureComponent {
         this.viewableItems = viewableItems;
 
         const {newMessageLineIndex, scrollToIndex} = this.props;
-        if (newMessageLineIndex <= 0 || viewableItems.length === 0) {
+        if (newMessageLineIndex <= 0 || viewableItems.length === 0 || this.disableViewableItems) {
             return;
         }
 
-        if (this.viewableItemsChangedTimer) {
-            clearTimeout(this.viewableItemsChangedTimer);
-            this.viewableItemsChangedTimer = null;
+        const lastViewableIndex = viewableItems[viewableItems.length - 1].index;
+        const nextViewableIndex = lastViewableIndex + 1;
+        if (viewableItems[0].index === 0 && nextViewableIndex >= newMessageLineIndex) {
+            // Auto scroll if the first post is viewable and
+            // * the new message line is viewable OR
+            // * the new message line will be the first next viewable item
+            scrollToIndex(newMessageLineIndex);
+            this.cancel(true);
+
+            return;
         }
 
-        if (!this.disableViewableItemsHandler) {
-            const lastViewableIndex = viewableItems[viewableItems.length - 1].index;
-            const nextViewableIndex = lastViewableIndex + 1;
-            if (viewableItems[0].index === 0 && nextViewableIndex >= newMessageLineIndex) {
-                // Auto scroll if the first post is viewable and
-                // * the new message line is viewable OR
-                // * the new message line will be the first next viewable item
-                scrollToIndex(newMessageLineIndex);
-                this.cancel(true);
-
-                return;
-            }
-
-            if (lastViewableIndex >= newMessageLineIndex) {
-                // In some cases the last New Message line is reached but, since the
-                // unreadCount is off, the button will never hide. We call cancel with
-                // a delay for this case and cancel the timer in componentDidUpdate if
-                // and when the newMessageLineIndex changes.
-                this.autoCancelTimer = setTimeout(this.cancel, CANCEL_TIMER_DELAY);
-            }
-
-            // The delay here serves to both
-            // 1. give enough time for the initial viewable posts to fill up the screen
-            // 2. throttle handling by allowing cancellation of the timer when the viewable
-            //    items are changing quickly, ie rapid scrolling
-            const delay = this.state.moreText.includes('more') ? 100 : 250;
-            this.viewableItemsChangedTimer = setTimeout(() => {
-                this.viewableItemsChangedHandler(lastViewableIndex);
-            }, delay);
+        if (lastViewableIndex >= newMessageLineIndex) {
+            // In some cases the last New Message line is reached but, since the
+            // unreadCount is off, the button will never hide. We call cancel with
+            // a delay for this case and clear the timer in componentDidUpdate if
+            // and when the newMessageLineIndex changes.
+            this.autoCancelTimer = setTimeout(this.cancel, CANCEL_TIMER_DELAY);
+        } else if (this.endIndex && lastViewableIndex >= this.endIndex) {
+            // If auto-scrolling failed ot reach the New Message line, update
+            // the button text to reflect the read count up to the item that
+            // was auto-scrolled to.
+            const readCount = this.getReadCount(this.endIndex);
+            this.endIndex = null;
+            this.showMoreText(readCount);
+        } else if (this.state.moreText === '') {
+            this.showMoreText(0);
         }
     }
 
-    viewableItemsChangedHandler = (lastViewableIndex) => {
-        const {unreadCount} = this.props;
-        const readCount = this.getReadCount(lastViewableIndex);
-        const moreCount = unreadCount - readCount;
+    showMoreText = (readCount) => {
+        const moreCount = this.props.unreadCount - readCount;
 
         if (moreCount <= 0) {
             this.cancel(true);
@@ -277,18 +267,20 @@ export default class MoreMessageButton extends React.PureComponent {
         return readCount;
     }
 
-    onScrollEndIndex = () => {
-        this.pressed = false;
-    }
-
     moreText = (count) => {
+        const {unreadCount} = this.props;
         const {formatMessage} = this.context.intl;
-        const isInitialMessage = this.state.moreText === '';
+        const isInitialMessage = unreadCount === count;
 
         return formatMessage({
             id: t('mobile.more_messages_button.text'),
             defaultMessage: '{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}',
         }, {isInitialMessage, count});
+    }
+
+    onScrollEndIndex = (endIndex) => {
+        this.pressed = false;
+        this.endIndex = endIndex;
     }
 
     render() {
