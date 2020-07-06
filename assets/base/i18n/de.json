@@ -269,7 +269,7 @@
   "mobile.files_paste.error_description": "Fehler beim Einfügen der Datei(en). Bitte erneut versuchen.",
   "mobile.files_paste.error_dismiss": "Verwerfen",
   "mobile.files_paste.error_title": "Einfügen fehlgeschlagen",
-  "mobile.flagged_posts.empty_description": "Markierungen dienen als Möglichkeit Nachrichten für eine Wiedervorlage zu markieren. Ihre Markierungen sind persönlich und können nicht von anderen Benutzern gesehen werden.",
+  "mobile.flagged_posts.empty_description": "Markierungen dienen als Möglichkeit, Nachrichten für eine Wiedervorlage zu markieren. Ihre Markierungen sind persönlich und können nicht von anderen Benutzern gesehen werden.",
   "mobile.flagged_posts.empty_title": "Keine markierte Nachrichten",
   "mobile.help.title": "Hilfe",
   "mobile.image_preview.save": "Bild speichern",
