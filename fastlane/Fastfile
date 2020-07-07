@@ -294,7 +294,7 @@ lane :github do
       name: "Mobile Version #{version}",
       tag_name: tag,
       description: changelog,
-      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk"],
+      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk", "./Mattermost-simulator-x86_64.app.zip],
       is_draft: true
     )
   end
@@ -344,6 +344,26 @@ platform :ios do
     sh 'cd ../build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/'
     sh 'mv ../build-ios/Mattermost-unsigned.ipa ../'
     sh 'rm -rf ../build-ios/'
+  end
+
+  lane :iphonesimulator do
+    UI.success('Building iOS app for simulator')
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost-mobile'
+
+    update_identifiers
+    replace_assets
+
+    sh 'cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../build-ios ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO'
+    sh 'cd ../ios/Build/Products/Release-iphonesimulator && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app'
+    upload_file_to_s3({
+      :os_type => "iOS",
+      :file => "Mattermost-simulator-x86_64.app.zip"
+    })
+	  sh 'mv ../ios/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip ../'
   end
 
   lane :update_identifiers do
