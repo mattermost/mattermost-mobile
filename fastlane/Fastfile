@@ -294,7 +294,7 @@ lane :github do
       name: "Mobile Version #{version}",
       tag_name: tag,
       description: changelog,
-      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk", "./Mattermost-simulator-x86_64.app.zip],
+      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk", "./Mattermost-simulator-x86_64.app.zip"],
       is_draft: true
     )
   end
