@@ -95,17 +95,12 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
-        if (unreadCount === 0) {
+        if ((manuallyUnread && !prevProps.manuallyUnread) || newMessageLineIndex === -1) {
             this.cancel(true);
             return;
         }
 
-        if (manuallyUnread) {
-            this.cancel(true);
-            return;
-        }
-
-        if (newMessageLineIndex !== -1 && newMessageLineIndex !== prevProps.newMessageLineIndex) {
+        if (newMessageLineIndex !== prevProps.newMessageLineIndex) {
             if (this.autoCancelTimer) {
                 clearTimeout(this.autoCancelTimer);
                 this.autoCancelTimer = null;

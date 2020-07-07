@@ -133,27 +133,7 @@ describe('MoreMessagesButton', () => {
             expect(instance.reset).toHaveBeenCalled();
         });
 
-        test('componentDidUpdate should force cancel when the component updates and the unreadCount is 0', () => {
-            const wrapper = shallowWithIntl(
-                <MoreMessagesButton {...baseProps}/>,
-            );
-            wrapper.setProps({unreadCount: 1});
-            const instance = wrapper.instance();
-            instance.cancel = jest.fn();
-
-            wrapper.setProps({test: 1});
-            expect(instance.cancel).not.toHaveBeenCalled();
-
-            wrapper.setProps({unreadCount: 0});
-            expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel.mock.calls[0][0]).toBe(true);
-
-            wrapper.setProps({test: 2});
-            expect(instance.cancel).toHaveBeenCalledTimes(2);
-            expect(instance.cancel.mock.calls[1][0]).toBe(true);
-        });
-
-        test('componentDidUpdate should force cancel when the component updates and manuallyUnread is true', () => {
+        test('componentDidUpdate should force cancel when the component updates and manuallyUnread changes from falsy to true', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
@@ -168,8 +148,35 @@ describe('MoreMessagesButton', () => {
             expect(instance.cancel.mock.calls[0][0]).toBe(true);
 
             wrapper.setProps({test: 2});
+            expect(instance.cancel).toHaveBeenCalledTimes(1);
+
+            wrapper.setProps({manuallyUnread: false});
+            expect(instance.cancel).toHaveBeenCalledTimes(1);
+
+            wrapper.setProps({test: 3});
+            expect(instance.cancel).toHaveBeenCalledTimes(1);
+
+            wrapper.setProps({manuallyUnread: true});
             expect(instance.cancel).toHaveBeenCalledTimes(2);
             expect(instance.cancel.mock.calls[1][0]).toBe(true);
+        });
+
+        test('componentDidUpdate should force cancel when the component updates and newMessageLineIndex is -1', () => {
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.cancel = jest.fn();
+
+            wrapper.setProps({test: 1});
+            expect(instance.cancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: 2});
+            expect(instance.cancel).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: -1});
+            expect(instance.cancel).toHaveBeenCalledTimes(1);
+            expect(instance.cancel.mock.calls[0][0]).toBe(true);
         });
 
         test('componentDidUpdate should set pressed to false and call uncancel when the newMessageLineIndex changes but is not -1', () => {
