@@ -228,21 +228,29 @@ export default class MoreMessageButton extends React.PureComponent {
             return;
         }
 
+        let readCount;
         if (lastViewableIndex >= newMessageLineIndex) {
-            // In some cases the last New Message line is reached but, since the
-            // unreadCount is off, the button will never hide. We call cancel with
-            // a delay for this case and clear the timer in componentDidUpdate if
-            // and when the newMessageLineIndex changes.
-            this.autoCancelTimer = setTimeout(this.cancel, CANCEL_TIMER_DELAY);
+            readCount = this.getReadCount(lastViewableIndex);
+            const moreCount = this.props.unreadCount - readCount;
+            if (moreCount <= 0) {
+                this.cancel(true);
+            } else {
+                // In some cases the last New Message line is reached but, since the
+                // unreadCount is off, the button will never hide. We call cancel with
+                // a delay for this case and clear the timer in componentDidUpdate if
+                // and when the newMessageLineIndex changes.
+                this.autoCancelTimer = setTimeout(this.cancel, CANCEL_TIMER_DELAY);
+            }
         } else if (this.endIndex && lastViewableIndex >= this.endIndex) {
             // If auto-scrolling failed ot reach the New Message line, update
             // the button text to reflect the read count up to the item that
             // was auto-scrolled to.
-            const readCount = this.getReadCount(this.endIndex);
+            readCount = this.getReadCount(this.endIndex);
             this.endIndex = null;
             this.showMoreText(readCount);
         } else if (this.state.moreText === '') {
-            this.showMoreText(0);
+            readCount = 0;
+            this.showMoreText(readCount);
         }
     }
 

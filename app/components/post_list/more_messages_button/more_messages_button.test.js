@@ -630,10 +630,26 @@ describe('MoreMessagesButton', () => {
             expect(baseProps.scrollToIndex).toHaveBeenCalledWith(newMessageLineIndex);
         });
 
-        it('should set autoCancelTimer when the New Message line has been reached', () => {
+        it('should force cancel when the New Message line has been reached and there are no more unread messages', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const newMessageLineIndex = 3;
-            wrapper.setProps({newMessageLineIndex});
+            wrapper.setProps({newMessageLineIndex, unreadCount: newMessageLineIndex});
+            instance.disableViewableItems = false;
+            instance.autoCancelTimer = null;
+            instance.cancel = jest.fn();
+
+            instance.onViewableItemsChanged(viewableItems);
+            jest.runOnlyPendingTimers();
+
+            expect(instance.cancel).toHaveBeenCalledWith(true);
+            expect(instance.autoCancelTimer).toBeNull();
+            expect(setTimeout).not.toHaveBeenCalled();
+        });
+
+        it('should set autoCancelTimer when the New Message line has been reached but there are still unread messages', () => {
+            const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
+            const newMessageLineIndex = 3;
+            wrapper.setProps({newMessageLineIndex, unreadCount: newMessageLineIndex + 1});
             instance.disableViewableItems = false;
             instance.autoCancelTimer = null;
             instance.cancel = jest.fn();
