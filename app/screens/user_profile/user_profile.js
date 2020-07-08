@@ -14,7 +14,6 @@ import {Navigation} from 'react-native-navigation';
 
 import {
     goToScreen,
-    popToRoot,
     dismissModal,
     setButtons,
 } from '@actions/navigation';
@@ -51,7 +50,6 @@ export default class UserProfile extends PureComponent {
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
-        fromSettings: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -99,14 +97,7 @@ export default class UserProfile extends PureComponent {
     }
 
     close = async () => {
-        const {fromSettings} = this.props;
-
-        if (fromSettings) {
-            dismissModal();
-            return;
-        }
-
-        await popToRoot();
+        dismissModal();
     };
 
     getDisplayName = () => {

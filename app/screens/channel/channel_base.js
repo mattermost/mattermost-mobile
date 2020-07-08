@@ -9,7 +9,6 @@ import {
     Keyboard,
     Linking,
     StyleSheet,
-    Platform,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
@@ -169,11 +168,6 @@ export default class ChannelBase extends PureComponent {
                         icon: source,
                     }],
                 },
-                ...Platform.select({
-                    ios: {
-                        modalPresentationStyle: 'pageSheet',
-                    },
-                }),
             };
 
             Keyboard.dismiss();
