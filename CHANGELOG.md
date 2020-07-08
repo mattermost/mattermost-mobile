@@ -44,8 +44,6 @@
 #### iOS specific
  - Fixed an issue where the Enter key did not work in search when using an iPad with an external keyboard.
  - Fixed an issue where OAuth and SAML single sign-on (SSO) no longer required re-entering credentials after logging out and logging back in.
- 
-#### Known issues
 
 ## 1.32.2 Release
 - Release Date: June 26, 2020
