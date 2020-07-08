@@ -44,7 +44,7 @@ export function mapStateToProps(state, ownProps) {
     let useChannelMentions = true;
     let deactivatedChannel = false;
     let useGroupMentions = false;
-    const channelMemberCountsByGroup = selectChannelMemberCountsByGroup(state, currentChannel.id);
+    const channelMemberCountsByGroup = selectChannelMemberCountsByGroup(state, channelId);
 
     if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
         const teammate = getChannelMembersForDm(state, currentChannel);
@@ -70,17 +70,6 @@ export function mapStateToProps(state, ownProps) {
                 channel: currentChannel.id,
                 permission: Permissions.USE_CHANNEL_MENTIONS,
                 default: true,
-            },
-        );
-    }
-
-    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 24) && license && license.IsLicensed === 'true') {
-        useGroupMentions = haveIChannelPermission(
-            state,
-            {
-                channel: currentChannel.id,
-                team: currentChannel.team_id,
-                permission: Permissions.USE_GROUP_MENTIONS,
             },
         );
     }
