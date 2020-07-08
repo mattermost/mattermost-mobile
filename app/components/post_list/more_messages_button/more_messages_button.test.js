@@ -602,7 +602,6 @@ describe('MoreMessagesButton', () => {
             expect(clearTimeout).not.toHaveBeenCalled();
         });
 
-
         it('should return early when viewableItems length is 0', () => {
             const viewableItems = [];
             wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
