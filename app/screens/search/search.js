@@ -794,6 +794,9 @@ export default class Search extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: '100%',

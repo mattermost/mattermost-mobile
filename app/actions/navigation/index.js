@@ -252,6 +252,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
         },
     };
 
+    EphemeralStore.addNavigationModal(name);
     Navigation.showModal({
         stack: {
             children: [{
@@ -319,10 +320,15 @@ export function showSearchModal(initialValue = '') {
 }
 
 export async function dismissModal(options = {}) {
+    if (!EphemeralStore.hasModalsOpened()) {
+        return;
+    }
+
     const componentId = EphemeralStore.getNavigationTopComponentId();
 
     try {
         await Navigation.dismissModal(componentId, options);
+        EphemeralStore.removeNavigationModal(componentId);
     } catch (error) {
         // RNN returns a promise rejection if there is no modal to
         // dismiss. We'll do nothing in this case.
@@ -330,8 +336,13 @@ export async function dismissModal(options = {}) {
 }
 
 export async function dismissAllModals(options = {}) {
+    if (!EphemeralStore.hasModalsOpened()) {
+        return;
+    }
+
     try {
         await Navigation.dismissAllModals(options);
+        EphemeralStore.clearNavigationModals();
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to
         // dismiss. We'll do nothing in this case.

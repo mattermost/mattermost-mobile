@@ -17,6 +17,8 @@ jest.unmock('@actions/navigation');
 jest.mock('@store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
     clearNavigationComponents: jest.fn(),
+    addNavigationModal: jest.fn(),
+    hasModalsOpened: jest.fn().mockReturnValue(true),
 }));
 
 const mockStore = configureMockStore([thunk]);
