@@ -616,7 +616,7 @@
   "user.settings.push_notification.online": "Online, afwezig of offline",
   "web.root.signup_info": "Alle team communicatie op een plaats, doorzoekbaar en van overal bereikbaar",
   "mobile.message_length.message_split_left": "Bericht overschrijdt het maximum aantal karakters",
-  "mobile.server_upgrade.learn_more": "Meer Informatie",
+  "mobile.server_upgrade.learn_more": "Meer informatie",
   "mobile.server_upgrade.dismiss": "Afwijzen",
   "mobile.server_upgrade.alert_description": "Deze serverversie wordt niet ondersteund en gebruikers zullen worden blootgesteld aan compatibiliteitsproblemen die crashes of ernstige bugs veroorzaken die de basisfuncties van de app verstoren. Upgraden naar serverversie {serverVersion} of hoger is vereist."
 }
