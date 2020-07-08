@@ -23,7 +23,7 @@ export function getAllGroups(state: GlobalState) {
 }
 
 export function getMyGroups(state: GlobalState) {
-    return state.entities.groups.myGroups;
+    return state.entities.groups?.myGroups || [];
 }
 
 export function getGroup(state: GlobalState, id: string) {
