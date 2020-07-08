@@ -590,9 +590,22 @@ describe('MoreMessagesButton', () => {
             expect(clearTimeout).not.toHaveBeenCalled();
         });
 
+        it('should return early when unreadCount is 0', () => {
+            const viewableItems = [{index: 0}, {index: 1}];
+
+            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 0});
+            instance.onViewableItemsChanged(viewableItems);
+            expect(clearTimeout).not.toHaveBeenCalled();
+
+            wrapper.setProps({newMessageLineIndex: -1});
+            instance.onViewableItemsChanged(viewableItems);
+            expect(clearTimeout).not.toHaveBeenCalled();
+        });
+
+
         it('should return early when viewableItems length is 0', () => {
             const viewableItems = [];
-            wrapper.setProps({newMessageLineIndex: 1});
+            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
 
             instance.onViewableItemsChanged(viewableItems);
             expect(clearTimeout).not.toHaveBeenCalled();
@@ -600,7 +613,7 @@ describe('MoreMessagesButton', () => {
 
         it('should return early when disableViewableItems is true', () => {
             const viewableItems = [{index: 0}];
-            wrapper.setProps({newMessageLineIndex: 1});
+            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
             instance.disableViewableItems = true;
 
             instance.onViewableItemsChanged(viewableItems);
@@ -611,7 +624,7 @@ describe('MoreMessagesButton', () => {
             // When the channel is first loaded index 0 will be viewable
             const viewableItems = [{index: 0}, {index: 1}, {index: 2}];
             const newMessageLineIndex = 2;
-            wrapper.setProps({newMessageLineIndex});
+            wrapper.setProps({newMessageLineIndex, unreadCount: 10});
             instance.disableViewableItems = false;
 
             instance.onViewableItemsChanged(viewableItems);
@@ -626,7 +639,7 @@ describe('MoreMessagesButton', () => {
             // When the channel is first loaded index 0 will be viewable
             const viewableItems = [{index: 0}, {index: 1}, {index: 2}];
             const newMessageLineIndex = 3;
-            wrapper.setProps({newMessageLineIndex});
+            wrapper.setProps({newMessageLineIndex, unreadCount: 10});
             instance.disableViewableItems = false;
 
             instance.onViewableItemsChanged(viewableItems);

@@ -206,8 +206,8 @@ export default class MoreMessageButton extends React.PureComponent {
     onViewableItemsChanged = (viewableItems) => {
         this.viewableItems = viewableItems;
 
-        const {newMessageLineIndex, scrollToIndex} = this.props;
-        if (newMessageLineIndex <= 0 || viewableItems.length === 0 || this.disableViewableItems) {
+        const {newMessageLineIndex, scrollToIndex, unreadCount} = this.props;
+        if (newMessageLineIndex <= 0 || unreadCount === 0 || viewableItems.length === 0 || this.disableViewableItems) {
             return;
         }
 
