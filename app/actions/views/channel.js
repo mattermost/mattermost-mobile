@@ -579,13 +579,17 @@ function loadGroupData() {
         const state = getState();
         const actions = [];
         const team = getCurrentTeam(state);
+        const currentUserId = getCurrentUserId(state);
         const serverVersion = state.entities.general.serverVersion;
         const license = getLicense(state);
         const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
+        let myGroupsPromise;
 
         if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 24)) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
+                    myGroupsPromise = Client4.getGroupsByUserId(currentUserId);
+
                     if (team.group_constrained) {
                         const [getAllGroupsAssociatedToChannelsInTeam, getAllGroupsAssociatedToTeam] = await Promise.all([ //eslint-disable-line no-await-in-loop
                             Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
@@ -625,9 +629,18 @@ function loadGroupData() {
                             });
                         }
                     }
+                    break;
                 } catch (err) {
                     return {error: err};
                 }
+            }
+
+            const myGroups = await myGroupsPromise;
+            if (myGroups.length) {
+                actions.push({
+                    type: GroupTypes.RECEIVED_MY_GROUPS,
+                    data: myGroups,
+                });
             }
         }
 
@@ -655,15 +668,13 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
                     console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
-                    const [channels, channelMembers, myGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                    const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
                         Client4.getMyChannels(teamId, true),
                         Client4.getMyChannelMembers(teamId),
-                        Client4.getGroupsByUserId(currentUserId),
                     ]);
 
                     data.channels = channels;
                     data.channelMembers = channelMembers;
-                    data.myGroups = myGroups;
                     break;
                 } catch (err) {
                     if (i === MAX_RETRIES) {
@@ -671,13 +682,6 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                         return {error: hasChannelsLoaded ? null : err};
                     }
                 }
-            }
-
-            if (data.myGroups.length) {
-                actions.push({
-                    type: GroupTypes.RECEIVED_MY_GROUPS,
-                    data: data.myGroups,
-                });
             }
 
             if (data.channels) {
