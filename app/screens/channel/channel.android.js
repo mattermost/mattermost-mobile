@@ -43,7 +43,7 @@ export default class ChannelAndroid extends ChannelBase {
             backPressedCount++;
             ToastAndroid.show(formatMessage({
                 id: 'mobile.android.back_handler_exit',
-                defaultMessage: 'Press again to exit',
+                defaultMessage: 'Press back again to exit',
             }), ToastAndroid.SHORT);
             setTimeout(() => {
                 backPressedCount = 0;
