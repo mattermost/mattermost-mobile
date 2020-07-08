@@ -103,7 +103,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
             }
           }
         >
-          10 new messages
+          
         </Text>
       </View>
       <TouchableWithFeedbackIOS

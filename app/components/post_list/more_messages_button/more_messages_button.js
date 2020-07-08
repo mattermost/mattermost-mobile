@@ -71,10 +71,6 @@ export default class MoreMessageButton extends React.PureComponent {
         EventEmitter.on(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
         this.removeScrollEndIndexListener = this.props.registerScrollEndIndexListener(this.onScrollEndIndex);
-
-        if (this.props.unreadCount > 0) {
-            this.showMoreText(0);
-        }
     }
 
     componentWillUnmount() {
@@ -145,7 +141,7 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     show = () => {
-        if (!this.buttonVisible && this.state.moreText && !this.props.deepLinkURL && !this.canceled) {
+        if (!this.buttonVisible && this.state.moreText && !this.props.deepLinkURL && !this.canceled && this.props.unreadCount > 0) {
             this.buttonVisible = true;
             const toValue = this.indicatorBarVisible ? MAX_INPUT : MAX_INPUT - INDICATOR_BAR_FACTOR;
             Animated.spring(this.top, {

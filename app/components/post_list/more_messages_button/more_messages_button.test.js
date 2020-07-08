@@ -76,32 +76,6 @@ describe('MoreMessagesButton', () => {
             expect(instance.removeScrollEndIndexListener).toBeDefined();
         });
 
-        test('componentDidMount should call showMoreText when the unreadCount > 0', () => {
-            let props = {
-                ...baseProps,
-                unreadCount: 0,
-            };
-            let wrapper = shallowWithIntl(
-                <MoreMessagesButton {...props}/>,
-            );
-            let instance = wrapper.instance();
-            instance.showMoreText = jest.fn();
-            instance.componentDidMount();
-            expect(instance.showMoreText).not.toHaveBeenCalled();
-
-            props = {
-                ...baseProps,
-                unreadCount: 1,
-            };
-            wrapper = shallowWithIntl(
-                <MoreMessagesButton {...props}/>,
-            );
-            instance = wrapper.instance();
-            instance.showMoreText = jest.fn();
-            instance.componentDidMount();
-            expect(instance.showMoreText).toHaveBeenCalledWith(0);
-        });
-
         test('componentWillUnmount should remove the indicator bar visible listener, the viewable items listener, the scroll end index listener, and clear all timers', () => {
             jest.useFakeTimers();
             EventEmitter.off = jest.fn();
@@ -364,10 +338,20 @@ describe('MoreMessagesButton', () => {
             expect(Animated.spring).not.toHaveBeenCalled();
         });
 
-        it('should animate when not visible, state.moreText is not empty, props.deepLinkURL is not set, and canceled is false', () => {
+        it('should animate when not visible, state.moreText is not empty, props.deepLinkURL is not set, canceled is false, but unreadCount is 0', () => {
             instance.buttonVisible = false;
             wrapper.setState({moreText: '1 new message'});
-            wrapper.setProps({deepLinkURL: null});
+            wrapper.setProps({deepLinkURL: null, unreadCount: 0});
+            instance.canceled = false;
+
+            instance.show();
+            expect(Animated.spring).not.toHaveBeenCalled();
+        });
+
+        it('should animate when not visible, state.moreText is not empty, props.deepLinkURL is not set, canceled is false, and unreadCount is > 0', () => {
+            instance.buttonVisible = false;
+            wrapper.setState({moreText: '1 new message'});
+            wrapper.setProps({deepLinkURL: null, unreadCount: 1});
             instance.canceled = false;
 
             instance.show();
@@ -382,7 +366,7 @@ describe('MoreMessagesButton', () => {
             instance.indicatorBarVisible = true;
             instance.buttonVisible = false;
             wrapper.setState({moreText: '1 new message'});
-            wrapper.setProps({deepLinkURL: null});
+            wrapper.setProps({deepLinkURL: null, unreadCount: 1});
             instance.canceled = false;
 
             instance.show();
@@ -684,7 +668,7 @@ describe('MoreMessagesButton', () => {
             const viewableItems = [{index: 1}, {index: 2}, {index: 3}];
             const newMessageLineIndex = 10;
             wrapper.setProps({newMessageLineIndex});
-            wrapper.setProps({moreText: '10 new messages'});
+            wrapper.setState({moreText: '10 new messages'});
             instance.disableViewableItems = false;
 
             instance.endIndex = null;
