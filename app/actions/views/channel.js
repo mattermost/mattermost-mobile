@@ -655,13 +655,15 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
                     console.log('Fetching channels attempt', teamId, (i + 1)); //eslint-disable-line no-console
-                    const [channels, channelMembers] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                    const [channels, channelMembers, myGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
                         Client4.getMyChannels(teamId, true),
                         Client4.getMyChannelMembers(teamId),
+                        Client4.getGroupsByUserId(currentUserId),
                     ]);
 
                     data.channels = channels;
                     data.channelMembers = channelMembers;
+                    data.myGroups = myGroups;
                     break;
                 } catch (err) {
                     if (i === MAX_RETRIES) {
@@ -669,6 +671,13 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                         return {error: hasChannelsLoaded ? null : err};
                     }
                 }
+            }
+
+            if (data.myGroups.length) {
+                actions.push({
+                    type: GroupTypes.RECEIVED_MY_GROUPS,
+                    data: data.myGroups,
+                });
             }
 
             if (data.channels) {
