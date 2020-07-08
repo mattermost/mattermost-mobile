@@ -9,7 +9,7 @@ import {createPost} from '@mm-redux/actions/posts';
 import {setStatus} from '@mm-redux/actions/users';
 import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats, getChannelMemberCountsByGroup as selectChannelMemberCountsByGroup} from '@mm-redux/selectors/entities/channels';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
-import {canUploadFilesOnMobile, getConfig, getLicense} from '@mm-redux/selectors/entities/general';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
@@ -74,7 +74,7 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
-    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22) && license && license.IsLicensed === 'true') {
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 24) && license && license.IsLicensed === 'true') {
         useGroupMentions = haveIChannelPermission(
             state,
             {
@@ -85,7 +85,7 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
-    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22) && license && license.IsLicensed === 'true') {
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 24) && license && license.IsLicensed === 'true') {
         useGroupMentions = haveIChannelPermission(
             state,
             {
@@ -101,7 +101,6 @@ export function mapStateToProps(state, ownProps) {
         currentChannel,
         channelId,
         channelTeamId,
-        canUploadFiles: canUploadFilesOnMobile(state),
         channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
         channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
         channelIsReadOnly: isCurrentChannelReadOnly(state) || false,
