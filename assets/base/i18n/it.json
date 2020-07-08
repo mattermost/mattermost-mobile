@@ -560,7 +560,7 @@
   "mobile.server_link.error.text": "Questo collegamento non è stato trovato sul server.",
   "mobile.select_team.guest_cant_join_team": "Il tuo account ospite non è assegnato a nessuna squadra o canale. Contatta l'amministratore.",
   "mobile.routes.user_profile.edit": "Modifica",
-  "mobile.routes.channelInfo.unarchive_channel": "Archivia Canale",
+  "mobile.routes.channelInfo.unarchive_channel": "Disarchivia canale",
   "mobile.routes.channelInfo.groupManaged": "I membri sono gestiti dai gruppi collegati",
   "mobile.reaction_header.all_emojis": "Tutti",
   "mobile.push_notification_reply.title": "Rispondi",
