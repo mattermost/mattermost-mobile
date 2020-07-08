@@ -30,6 +30,7 @@
  - Fixed an issue where the channel header transition to landscape mode was slow.
  - Fixed an issue where teams were not listed alphabetically on the **Select Team** screen.
  - Fixed an issue where a currently active unread channel was not bolded.
+ - Fixed an issue where a team icon was not visible on the left-hand side.
  - Fixed an issue where user was unable to create channels directly after joining a team.
  - Fixed an issue where the **:** search date picker on edit replaced the date and left old date info.
  - Fixed an issue where a confusing **Invalid Message** banner was present on Edit Message modal when typing a message that was over the character limit.
@@ -42,6 +43,7 @@
  - Fixed an issue where hitting edit multiple times opened the edit window without a save button.
 
 #### iOS specific
+ - Fixed an issue where ``switchKeyboardForCodeBlocks`` crashed the app on iOS 11.
  - Fixed an issue where the Enter key did not work in search when using an iPad with an external keyboard.
  - Fixed an issue where OAuth and SAML single sign-on (SSO) no longer required re-entering credentials after logging out and logging back in.
 
