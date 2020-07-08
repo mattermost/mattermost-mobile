@@ -616,5 +616,7 @@
   "user.settings.push_notification.online": "Conectado, ausente ou desconectado",
   "web.root.signup_info": "Toda comunicação em um só lugar, pesquisável e acessível em qualquer lugar",
   "mobile.server_upgrade.learn_more": "Saiba Mais",
-  "mobile.server_upgrade.dismiss": "Ignorar"
+  "mobile.server_upgrade.dismiss": "Ignorar",
+  "mobile.server_upgrade.alert_description": "Esta versão do servidor não é suportada e os usuários serão expostos a problemas de compatibilidade que causam falhas ou erros graves que quebram a funcionalidade principal do aplicativo. É necessário atualizar para a versão do servidor {serverVersion} ou posterior.",
+  "mobile.message_length.message_split_left": "Mensagem excede o limite de caracteres"
 }
