@@ -614,5 +614,6 @@
   "date_separator.today": "Today",
   "channel.isGuest": "This person is a guest",
   "channel.hasGuests": "This group message has guests",
-  "channel.channelHasGuests": "This channel has guests"
+  "channel.channelHasGuests": "This channel has guests",
+  "mobile.message_length.message_split_left": "Message exceeds the character limit"
 }
