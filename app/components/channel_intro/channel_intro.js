@@ -8,11 +8,12 @@ import {
     View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {General} from '@mm-redux/constants';
 
-import {goToScreen} from 'app/actions/navigation';
+import {showModal} from 'app/actions/navigation';
 import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {BotTag, GuestTag} from 'app/components/tag';
@@ -37,15 +38,28 @@ class ChannelIntro extends PureComponent {
         currentChannelMembers: [],
     };
 
-    goToUserProfile = (userId) => {
-        const {intl} = this.props;
+    goToUserProfile = async (userId) => {
+        const {intl, theme} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId,
         };
 
-        goToScreen(screen, title, passProps);
+        if (!this.closeButton) {
+            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+        }
+
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
+        showModal(screen, title, passProps, options);
     };
 
     getDisplayName = (member) => {

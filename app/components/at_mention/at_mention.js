@@ -5,13 +5,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Clipboard, Text} from 'react-native';
 import {intlShape} from 'react-intl';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
-import {goToScreen} from 'app/actions/navigation';
+import {showModal} from 'app/actions/navigation';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
@@ -46,15 +47,29 @@ export default class AtMention extends React.PureComponent {
         }
     }
 
-    goToUserProfile = () => {
+    goToUserProfile = async () => {
         const {intl} = this.context;
+        const {theme} = this.props;
         const screen = 'UserProfile';
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId: this.state.user.id,
         };
 
-        goToScreen(screen, title, passProps);
+        if (!this.closeButton) {
+            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+        }
+
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
+        showModal(screen, title, passProps, options);
     };
 
     getUserDetailsFromMentionName() {
