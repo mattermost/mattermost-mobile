@@ -19,11 +19,11 @@ const emptySyncables = {
 };
 
 export function getAllGroups(state: GlobalState) {
-    return state.entities.groups?.groups || [];
+    return state.entities.groups?.groups || {};
 }
 
 export function getMyGroups(state: GlobalState) {
-    return state.entities.groups?.myGroups || [];
+    return state.entities.groups?.myGroups || {};
 }
 
 export function getGroup(state: GlobalState, id: string) {
