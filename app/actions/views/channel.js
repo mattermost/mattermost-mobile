@@ -5,17 +5,19 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
+import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
 import {savePreferences} from '@mm-redux/actions/preferences';
+import {getLicense} from '@mm-redux/selectors/entities/general';
 import {selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
@@ -23,7 +25,7 @@ import {
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getTeamByName} from '@mm-redux/selectors/entities/teams';
+import {getTeamByName, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 
 import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -572,6 +574,71 @@ function setLoadMorePostsVisible(visible) {
     };
 }
 
+function loadGroupData() {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const actions = [];
+        const team = getCurrentTeam(state);
+        const serverVersion = state.entities.general.serverVersion;
+        const license = getLicense(state);
+        const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
+
+        if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 24)) {
+            for (let i = 0; i <= MAX_RETRIES; i++) {
+                try {
+                    if (team.group_constrained) {
+                        const [getAllGroupsAssociatedToChannelsInTeam, getAllGroupsAssociatedToTeam] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
+                            Client4.getAllGroupsAssociatedToTeam(team.id, true),
+                        ]);
+
+                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                            });
+                        }
+
+                        if (getAllGroupsAssociatedToTeam) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
+                                data: {...getAllGroupsAssociatedToTeam, teamID: team.id},
+                            });
+                        }
+                    } else {
+                        const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
+                            Client4.getGroups(true),
+                        ]);
+
+                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                            });
+                        }
+
+                        if (getGroups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_GROUPS,
+                                data: getGroups,
+                            });
+                        }
+                    }
+                } catch (err) {
+                    return {error: err};
+                }
+            }
+        }
+
+        if (actions.length) {
+            dispatch(batchActions(actions, 'BATCH_GROUP_DATA'));
+        }
+
+        return {data: true};
+    };
+}
+
 export function loadChannelsForTeam(teamId, skipDispatch = false) {
     return async (dispatch, getState) => {
         const state = getState();
@@ -642,6 +709,8 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
 
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
+
+            dispatch(loadGroupData());
         }
 
         return {data};

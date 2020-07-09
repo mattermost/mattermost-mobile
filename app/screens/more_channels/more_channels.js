@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Platform, View, Text} from 'react-native';
+import {Keyboard, Platform, View, Text} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
@@ -162,6 +162,7 @@ export default class MoreChannels extends PureComponent {
     };
 
     close = () => {
+        Keyboard.dismiss();
         dismissModal();
     };
 

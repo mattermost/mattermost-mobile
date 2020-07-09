@@ -194,7 +194,20 @@ function groups(state: Dictionary<Group> = {}, action: GenericAction) {
         }
         return nextState;
     }
+    case GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM: {
+        const nextState = {...state};
+        const {groupsByChannelId} = action.data;
+
+        for (const group of Object.values(groupsByChannelId) as Group[]) {
+            if (group) {
+                nextState[group.id] = group;
+            }
+        }
+        return nextState;
+    }
     case GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_TEAM:
+    case GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM:
+    case GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNEL:
     case GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_CHANNEL: {
         const nextState = {...state};
         for (const group of action.data.groups) {

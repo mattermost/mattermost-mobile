@@ -454,7 +454,7 @@
   "post_info.system": "Sistema",
   "post_message_view.edited": "(editado)",
   "posts_view.newMsg": "Novas Mensagens",
-  "rhs_thread.rootPostDeletedMessage.body": "Uma parte desta thread foi apagada devido a política de retenção de dados. Você nao pode mais responder para esta thread.",
+  "rhs_thread.rootPostDeletedMessage.body": "Uma parte deste tópico foi apagada devido a política de retenção de dados. Você não pode mais responder para este tópico.",
   "search_bar.search": "Procurar",
   "search_header.results": "Resultados da Pesquisa",
   "search_header.title2": "Menções Recentes",
@@ -614,5 +614,9 @@
   "mobile.camera_video_permission_denied_title": "{applicationName} gostaria de acessar sua camera",
   "mobile.camera_video_permission_denied_description": "Faça vídeos e envie-os para a sua instância do Mattermost ou salve-os no seu dispositivo. Abra Configurações para conceder ao Mattermost acesso de leitura e gravação à sua câmera.",
   "mobile.camera_photo_permission_denied_title": "{applicationName} gostaria de acessar sua camera",
-  "mobile.camera_photo_permission_denied_description": "Tire fotos e carregue-as na sua instância do Mattermost ou salve-as no seu dispositivo. Abra Configurações para conceder ao Mattermost acesso de leitura e gravação à sua câmera."
+  "mobile.camera_photo_permission_denied_description": "Tire fotos e carregue-as na sua instância do Mattermost ou salve-as no seu dispositivo. Abra Configurações para conceder ao Mattermost acesso de leitura e gravação à sua câmera.",
+  "mobile.server_upgrade.learn_more": "Saiba Mais",
+  "mobile.server_upgrade.dismiss": "Ignorar",
+  "mobile.server_upgrade.alert_description": "Esta versão do servidor não é suportada e os usuários serão expostos a problemas de compatibilidade que causam falhas ou erros graves que quebram a funcionalidade principal do aplicativo. É necessário atualizar para a versão do servidor {serverVersion} ou posterior.",
+  "mobile.message_length.message_split_left": "Mensagem excede o limite de caracteres"
 }
