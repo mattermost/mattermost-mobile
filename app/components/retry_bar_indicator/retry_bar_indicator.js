@@ -6,7 +6,13 @@ import {
     Animated,
     StyleSheet,
 } from 'react-native';
-import FormattedText from 'app/components/formatted_text';
+
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
+import {ViewTypes} from '@constants';
+import {INDICATOR_BAR_HEIGHT} from '@constants/view';
+
+import FormattedText from '@components/formatted_text';
 
 const {View: AnimatedView} = Animated;
 
@@ -26,12 +32,21 @@ export default class RetryBarIndicator extends PureComponent {
     }
 
     toggleRetryMessage = (show = true) => {
-        const value = show ? 38 : 0;
+        const value = show ? INDICATOR_BAR_HEIGHT : 0;
+
+        if (show) {
+            EventEmitter.emit(ViewTypes.INDICATOR_BAR_VISIBLE, true);
+        }
+
         Animated.timing(this.state.retryMessageHeight, {
             toValue: value,
             duration: 350,
             useNativeDriver: false,
-        }).start();
+        }).start(() => {
+            if (!show) {
+                EventEmitter.emit(ViewTypes.INDICATOR_BAR_VISIBLE, false);
+            }
+        });
     };
 
     render() {

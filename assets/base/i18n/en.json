@@ -309,6 +309,7 @@
   "mobile.more_dms.start": "Start",
   "mobile.more_dms.title": "New Conversation",
   "mobile.more_dms.you": "@{username} - you",
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}",
   "mobile.notice_mobile_link": "mobile apps",
   "mobile.notice_platform_link": "server",
   "mobile.notice_text": "Mattermost is made possible by the open source software used in our {platform} and {mobile}.",

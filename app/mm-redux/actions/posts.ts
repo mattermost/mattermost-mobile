@@ -182,6 +182,7 @@ export function createPost(post: Post, files: any[] = []) {
             pending_post_id: pendingPostId,
             create_at: timestamp,
             update_at: timestamp,
+            ownPost: true,
         };
 
         // We are retrying a pending post that had files
@@ -218,10 +219,7 @@ export function createPost(post: Post, files: any[] = []) {
             const created = await Client4.createPost({...newPost, create_at: 0});
 
             actions = [
-                receivedPost(created),
-                {
-                    type: PostTypes.CREATE_POST_SUCCESS,
-                },
+                receivedPost({...created, ownPost: true}),
                 {
                     type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
                     data: {
@@ -287,6 +285,7 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             pending_post_id: pendingPostId,
             create_at: timestamp,
             update_at: timestamp,
+            ownPost: true,
         };
 
         if (files.length) {
@@ -304,14 +303,43 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             });
         }
 
-        dispatch(receivedNewPost({
-            ...newPost,
-            id: pendingPostId,
-        }));
+        dispatch(
+            receivedNewPost({
+                ...newPost,
+                id: pendingPostId,
+            }),
+        );
 
         try {
             const created = await Client4.createPost({...newPost, create_at: 0});
-            newPost.id = created.id;
+
+            const actions: Action[] = [
+                receivedPost({...created, ownPost: true}),
+                {
+                    type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
+                    },
+                },
+                {
+                    type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
+                    },
+                },
+            ];
+
+            if (files) {
+                actions.push({
+                    type: FileTypes.RECEIVED_FILES_FOR_POST,
+                    postId: newPost.id,
+                    data: files,
+                });
+            }
+
+            dispatch(batchActions(actions));
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(batchActions([
@@ -321,37 +349,6 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             ]));
             return {error};
         }
-
-        const actions: Action[] = [
-            receivedPost(newPost),
-            {
-                type: PostTypes.CREATE_POST_SUCCESS,
-            },
-            {
-                type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
-                data: {
-                    channelId: newPost.channel_id,
-                    amount: 1,
-                },
-            },
-            {
-                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
-                data: {
-                    channelId: newPost.channel_id,
-                    amount: 1,
-                },
-            },
-        ];
-
-        if (files) {
-            actions.push({
-                type: FileTypes.RECEIVED_FILES_FOR_POST,
-                postId: newPost.id,
-                data: files,
-            });
-        }
-
-        dispatch(batchActions(actions));
 
         return {data: newPost};
     };
