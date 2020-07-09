@@ -13,7 +13,7 @@
  - Starting with mobile app v1.33.0, users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed. Updating your server to v5.19 or later is required.
  
 ### Highlights
- -  System admins will now receive an in-app notification to upgrade their server version if they are running versions v5.19 and below.
+ -  System admins will now receive an in-app notification to upgrade their server version if they are running versions v5.18 and below.
 
 ### Improvements
  - Servers will now send a push notification to the client when the session has expired.
