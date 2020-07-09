@@ -450,7 +450,7 @@
   "mobile.server_link.error.title": "Link-Fehler",
   "mobile.server_link.unreachable_channel.error": "Der Link gehört zu einem gelöschten Kanal oder einem Kanal auf den Sie keinen Zugriff haben.",
   "mobile.server_link.unreachable_team.error": "Der Link verweist auf ein gelöschtes Team oder ein Team auf das Sie keinen Zugriff haben.",
-  "mobile.server_ssl.error.text": "Das Zertifikat von {host} ist ungültig.\n\nBitte kontaktieren Sie Ihren System Administrator um die Zertifikatsproblems zu beheben und somit Verbindungen zum Server zu erlauben.",
+  "mobile.server_ssl.error.text": "Das Sicherheitszertifikat von {host} ist ungültig.\n\nBitte kontaktieren Sie Ihren System Administrator um die Probleme mit dem Sicherheitszertifikat zu beheben und somit Verbindungen zum Server zu erlauben.",
   "mobile.server_ssl.error.title": "Ungültiges Sicherheitszertifikat",
   "mobile.server_upgrade.button": "OK",
   "mobile.server_upgrade.description": "\nEine Serveraktualisierung ist erforderlich, um die Mattermost-App zu verwenden. Bitte Fragen Sie ihren Systemadministrator für Details.\n",
