@@ -17,4 +17,9 @@ public class ShareActivity extends ReactActivity {
         MainApplication app = (MainApplication) this.getApplication();
         app.sharedExtensionIsOpened = true;
     }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
 }

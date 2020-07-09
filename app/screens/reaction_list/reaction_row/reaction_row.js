@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
@@ -16,7 +17,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {goToScreen} from 'app/actions/navigation';
+import {showModal} from 'app/actions/navigation';
 
 import Emoji from 'app/components/emoji';
 
@@ -37,8 +38,8 @@ export default class ReactionRow extends React.PureComponent {
         intl: intlShape,
     };
 
-    goToUserProfile = () => {
-        const {user} = this.props;
+    goToUserProfile = async () => {
+        const {user, theme} = this.props;
         const {formatMessage} = this.context.intl;
         const screen = 'UserProfile';
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
@@ -46,7 +47,20 @@ export default class ReactionRow extends React.PureComponent {
             userId: user.id,
         };
 
-        goToScreen(screen, title, passProps);
+        if (!this.closeButton) {
+            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+        }
+
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: 'close-settings',
+                    icon: this.closeButton,
+                }],
+            },
+        };
+
+        showModal(screen, title, passProps, options);
     };
 
     render() {

@@ -112,7 +112,7 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'UserProfile',
             intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-            {userId, fromSettings: true},
+            {userId},
         );
     };
 
