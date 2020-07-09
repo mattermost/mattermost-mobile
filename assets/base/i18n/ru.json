@@ -406,7 +406,7 @@
   "mobile.share_extension.team": "Команда",
   "mobile.suggestion.members": "Участники",
   "mobile.terms_of_service.alert_cancel": "Отмена",
-  "mobile.terms_of_service.alert_ok": "Ок",
+  "mobile.terms_of_service.alert_ok": "Ок\"",
   "mobile.terms_of_service.alert_retry": "Попробовать снова",
   "mobile.terms_of_service.terms_rejected": "Вы должны принять условия использования перед входом на {siteName}. Пожалуйста, обратитесь к своему системному администратору за подробностями.",
   "mobile.timezone_settings.automatically": "Выбрать автоматически",
@@ -617,6 +617,7 @@
   "channel.hasGuests": "В этом групповом сообщении есть гости",
   "channel.channelHasGuests": "У этого канала есть гости",
   "mobile.server_upgrade.learn_more": "Узнать больше",
-  "mobile.server_upgrade.dismiss": "Отклонить",
-  "mobile.server_upgrade.alert_description": "Эта версия сервера не поддерживается, и пользователи будут сталкиваться с проблемами совместимости, которые вызывают сбои или серьезные ошибки, нарушающие основные функции приложения. Требуется обновление до версии сервера {serverVersion} или новее."
+  "mobile.server_upgrade.dismiss": "Отмена",
+  "mobile.server_upgrade.alert_description": "Эта версия сервера не поддерживается, и пользователи будут сталкиваться с проблемами совместимости, которые вызывают сбои или серьезные ошибки, нарушающие основные функции приложения. Требуется обновление до версии сервера {serverVersion} или новее.",
+  "suggestion.mention.groups": "Групповые упоминания"
 }
