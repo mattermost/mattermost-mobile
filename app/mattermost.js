@@ -63,6 +63,8 @@ const launchApp = (credentials) => {
             if (valid) {
                 store.dispatch(loadMe());
                 await globalEventHandler.configureAnalytics();
+                // eslint-disable-next-line no-console
+                console.log('Launch app in Channel screen');
                 resetToChannel({skipMetrics: true});
             } else {
                 const error = new Error(`Previous app version "${previousVersion}" is invalid.`);

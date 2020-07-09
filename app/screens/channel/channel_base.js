@@ -184,7 +184,11 @@ export default class ChannelBase extends PureComponent {
 
     loadChannels = (teamId) => {
         const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
-        if (!EphemeralStore.getStartFromNotification()) {
+        if (EphemeralStore.getStartFromNotification()) {
+            // eslint-disable-next-line no-console
+            console.log('Switch to channel from a push notification');
+            EphemeralStore.setStartFromNotification(false);
+        } else {
             loadChannelsForTeam(teamId).then((result) => {
                 if (result?.error) {
                     this.setState({channelsRequestFailed: true});
