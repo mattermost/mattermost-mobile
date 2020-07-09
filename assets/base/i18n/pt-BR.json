@@ -619,5 +619,6 @@
   "mobile.server_upgrade.dismiss": "Ignorar",
   "mobile.server_upgrade.alert_description": "Esta versão do servidor não é suportada e os usuários serão expostos a problemas de compatibilidade que causam falhas ou erros graves que quebram a funcionalidade principal do aplicativo. É necessário atualizar para a versão do servidor {serverVersion} ou posterior.",
   "mobile.message_length.message_split_left": "Mensagem excede o limite de caracteres",
-  "suggestion.mention.groups": "Menção de Grupo"
+  "suggestion.mention.groups": "Menção de Grupo",
+  "mobile.android.back_handler_exit": "Pressione voltar novamente para sair"
 }
