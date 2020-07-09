@@ -636,7 +636,6 @@ function loadGroupData() {
                             });
                         }
                     }
-                    break;
                 } catch (err) {
                     return {error: err};
                 }
