@@ -171,7 +171,7 @@
   "mobile.client_upgrade.download_error.title": "Update kan niet worden geïnstalleerd",
   "mobile.client_upgrade.latest_version": "Jouw Versie: {version}",
   "mobile.client_upgrade.listener.dismiss_button": "Afwijzen",
-  "mobile.client_upgrade.listener.learn_more_button": "Meer Informatie",
+  "mobile.client_upgrade.listener.learn_more_button": "Meer informatie",
   "mobile.client_upgrade.listener.message": "Er is een upgrade van de client beschikbaar!",
   "mobile.client_upgrade.listener.upgrade_button": "Bijwerken",
   "mobile.client_upgrade.must_upgrade_subtitle": "Werk de app bij om door te gaan.",
@@ -618,5 +618,6 @@
   "channel.channelHasGuests": "Dit kanaal heeft gasten",
   "mobile.server_upgrade.learn_more": "Meer informatie",
   "mobile.server_upgrade.dismiss": "Afwijzen",
-  "mobile.server_upgrade.alert_description": "Deze serverversie wordt niet ondersteund en gebruikers zullen worden blootgesteld aan compatibiliteitsproblemen die crashes of ernstige bugs veroorzaken die de basisfuncties van de app verstoren. Upgraden naar serverversie {serverVersion} of hoger is vereist."
+  "mobile.server_upgrade.alert_description": "Deze serverversie wordt niet ondersteund en gebruikers zullen worden blootgesteld aan compatibiliteitsproblemen die crashes of ernstige bugs veroorzaken die de basisfuncties van de app verstoren. Upgraden naar serverversie {serverVersion} of hoger is vereist.",
+  "suggestion.mention.groups": "Groepsvermeldingen"
 }
