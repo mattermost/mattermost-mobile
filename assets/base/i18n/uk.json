@@ -616,5 +616,6 @@
   "user.settings.push_notification.online": "У мережі, немає на місці або не в мережі",
   "web.root.signup_info": "Всі спілкування вашої команди в одному місці, з миттєвим пошуком та доступом звідусюди. ",
   "mobile.server_upgrade.learn_more": "Вчи більше",
-  "mobile.server_upgrade.dismiss": "Відхилити"
+  "mobile.server_upgrade.dismiss": "Відхилити",
+  "mobile.message_length.message_split_left": "Message exceeds the character limit"
 }
