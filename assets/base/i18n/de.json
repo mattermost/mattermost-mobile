@@ -616,5 +616,8 @@
   "channel.hasGuests": "Diese Gruppennachricht hat Gäste",
   "channel.channelHasGuests": "Dieser Kanal hat Gäste",
   "mobile.server_upgrade.alert_description": "Diese Serverversion wird nicht mehr unterstützt und es können potentielle Kompatibilitätsprobleme für Nutzer auftreten, die zu Abstürzen oder schwerwiegenden Beeinträchtigungen der Hauptfunktionen der Applikation führen können. Eine Aktualisierung der Serverversion {serverVersion} oder aktueller ist nötig.",
-  "mobile.message_length.message_split_left": "Nachricht überschreitet maximale Schriftzeichenanzahl"
+  "mobile.message_length.message_split_left": "Nachricht überschreitet maximale Schriftzeichenanzahl",
+  "suggestion.mention.groups": "Group Mentions",
+  "mobile.server_upgrade.learn_more": "Mehr erfahren",
+  "mobile.server_upgrade.dismiss": "Verwerfen"
 }
