@@ -480,7 +480,7 @@ export default class PostDraft extends PureComponent {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
         const toAllOrChannel = this.textContainsAtAllAtChannel(value);
-        const groupMentions = this.groupsMentionedInText(value);
+        const groupMentions = notificationsToGroups ? this.groupsMentionedInText(value) : [];
 
         if (value.indexOf('/') === 0) {
             this.sendCommand(value);
@@ -610,10 +610,10 @@ export default class PostDraft extends PureComponent {
 
     groupsMentionedInText = (text) => {
         const {groupsWithAllowReference} = this.props;
-        const textWithoutCode = text.replace(CODE_REGEX, '');
-        const mentions = textWithoutCode.match(AT_MENTION_REGEX_GLOBAL) || [];
         const groups = [];
         if (groupsWithAllowReference.size > 0) {
+            const textWithoutCode = text.replace(CODE_REGEX, '');
+            const mentions = textWithoutCode.match(AT_MENTION_REGEX_GLOBAL) || [];
             mentions.forEach((mention) => {
                 const group = groupsWithAllowReference.get(mention);
                 if (group) {

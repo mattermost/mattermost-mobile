@@ -45,6 +45,7 @@ export function mapStateToProps(state, ownProps) {
     let deactivatedChannel = false;
     let useGroupMentions = false;
     const channelMemberCountsByGroup = selectChannelMemberCountsByGroup(state, channelId);
+    let groupsWithAllowReference = new Map();
 
     if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
         const teammate = getChannelMembersForDm(state, currentChannel);
@@ -83,6 +84,10 @@ export function mapStateToProps(state, ownProps) {
                 permission: Permissions.USE_GROUP_MENTIONS,
             },
         );
+
+        if (useGroupMentions) {
+            groupsWithAllowReference = getAssociatedGroupsForReferenceMap(state, channelTeamId, channelId);
+        }
     }
 
     return {
@@ -106,7 +111,7 @@ export function mapStateToProps(state, ownProps) {
         useChannelMentions,
         userIsOutOfOffice,
         value: currentDraft.draft,
-        groupsWithAllowReference: getAssociatedGroupsForReferenceMap(state, channelTeamId, channelId),
+        groupsWithAllowReference,
         useGroupMentions,
         channelMemberCountsByGroup,
     };
