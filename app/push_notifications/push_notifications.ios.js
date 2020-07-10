@@ -51,7 +51,12 @@ class PushNotification {
 
         this.requestNotificationReplyPermissions();
 
-        if (options.popInitialNotification) {
+        return new Promise((resolve) => {
+            if (!options.popInitialNotification) {
+                resolve();
+                return;
+            }
+
             NotificationsIOS.getInitialNotification().
                 then((notification) => {
                     if (notification) {
@@ -64,8 +69,11 @@ class PushNotification {
                 }).
                 catch((err) => {
                     console.log('iOS getInitialNotifiation() failed', err); //eslint-disable-line no-console
+                }).
+                finally(() => {
+                    resolve();
                 });
-        }
+        });
     }
 
     requestNotificationReplyPermissions = () => {

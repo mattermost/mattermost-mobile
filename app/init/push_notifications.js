@@ -39,8 +39,8 @@ class PushNotificationUtils {
         this.replyNotificationData = null;
     }
 
-    configure = () => {
-        PushNotifications.configure({
+    configure = async () => {
+        return PushNotifications.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
@@ -50,8 +50,6 @@ class PushNotificationUtils {
     };
 
     loadFromNotification = async (notification) => {
-        // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
-        EphemeralStore.setStartFromNotification(true);
         await Store.redux.dispatch(loadFromPushNotification(notification));
 
         // if we have a componentId means that the app is already initialized
