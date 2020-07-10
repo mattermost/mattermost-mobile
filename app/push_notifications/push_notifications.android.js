@@ -31,6 +31,7 @@ class PushNotification {
 
         NotificationsAndroid.setNotificationOpenedListener((notification) => {
             if (notification) {
+                EphemeralStore.setStartFromNotification(true);
                 const data = notification.getData();
                 this.handleNotification(data, true);
             }
@@ -65,7 +66,7 @@ class PushNotification {
                     if (notification) {
                         const data = notification.getData();
                         if (data) {
-                            EphemeralStore.appStartedFromPushNotification = true;
+                            EphemeralStore.setStartFromNotification(true);
                             this.handleNotification(data, true);
                         }
                     }
