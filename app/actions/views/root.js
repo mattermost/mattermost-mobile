@@ -133,7 +133,7 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
         }
 
         // eslint-disable-next-line no-console
-        console.log('channel switch from push notification to', channel?.display_name, (Date.now() - dt), 'ms');
+        console.log('channel switch from push notification to', channel?.display_name || channel?.id, (Date.now() - dt), 'ms');
     };
 }
 

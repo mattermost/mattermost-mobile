@@ -39,8 +39,8 @@ class PushNotificationUtils {
         this.replyNotificationData = null;
     }
 
-    configure = () => {
-        PushNotifications.configure({
+    configure = async () => {
+        return PushNotifications.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
