@@ -193,7 +193,7 @@
   "mobile.client_upgrade.download_error.title": "Update kan niet worden geïnstalleerd",
   "mobile.client_upgrade.latest_version": "Jouw Versie: {version}",
   "mobile.client_upgrade.listener.dismiss_button": "Afwijzen",
-  "mobile.client_upgrade.listener.learn_more_button": "Meer Informatie",
+  "mobile.client_upgrade.listener.learn_more_button": "Meer informatie",
   "mobile.client_upgrade.listener.message": "Er is een upgrade van de client beschikbaar!",
   "mobile.client_upgrade.listener.upgrade_button": "Bijwerken",
   "mobile.client_upgrade.must_upgrade_subtitle": "Werk de app bij om door te gaan.",
