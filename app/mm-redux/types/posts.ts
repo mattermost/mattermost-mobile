@@ -70,6 +70,7 @@ export type Post = {
     failed?: boolean;
     user_activity_posts?: Array<Post>;
     state?: 'DELETED';
+    ownPost?: boolean;
 };
 
 export type PostWithFormatData = Post & {

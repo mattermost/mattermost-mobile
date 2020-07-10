@@ -1,208 +1,232 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PostList setting channel deep link 1`] = `
-<FlatList
-  ListFooterComponent={[Function]}
-  contentContainerStyle={
-    Object {
-      "paddingTop": 5,
-    }
-  }
-  data={
-    Array [
-      "post-id-1",
-      "post-id-2",
-    ]
-  }
-  disableVirtualization={false}
-  extraData={
-    Array [
-      "channel-id",
-      undefined,
-      undefined,
-      undefined,
-    ]
-  }
-  horizontal={false}
-  initialNumToRender={10}
-  inverted={true}
-  keyExtractor={[Function]}
-  keyboardDismissMode="interactive"
-  keyboardShouldPersistTaps="handled"
-  listKey="recyclerFor-channel-id"
-  maintainVisibleContentPosition={
-    Object {
-      "autoscrollToTopThreshold": 60,
-      "minIndexForVisible": 0,
-    }
-  }
-  maxToRenderPerBatch={10}
-  numColumns={1}
-  onContentSizeChange={[Function]}
-  onEndReachedThreshold={2}
-  onLayout={[Function]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollToIndexFailed={[Function]}
-  refreshControl={
-    <RefreshControl
-      colors={
-        Array [
-          "#3d3c40",
-        ]
+<React.Fragment>
+  <FlatList
+    ListFooterComponent={[Function]}
+    contentContainerStyle={
+      Object {
+        "paddingTop": 5,
       }
-      onRefresh={[Function]}
-      refreshing={false}
-      tintColor="#3d3c40"
-    />
-  }
-  removeClippedSubviews={false}
-  renderItem={[Function]}
-  scrollEventThrottle={60}
-  style={
-    Object {
-      "flex": 1,
     }
-  }
-  updateCellsBatchingPeriod={50}
-  windowSize={50}
-/>
+    data={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
+    }
+    disableVirtualization={false}
+    extraData={
+      Array [
+        "channel-id",
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+    horizontal={false}
+    initialNumToRender={10}
+    inverted={true}
+    keyExtractor={[Function]}
+    keyboardDismissMode="interactive"
+    keyboardShouldPersistTaps="handled"
+    listKey="recyclerFor-channel-id"
+    maintainVisibleContentPosition={
+      Object {
+        "autoscrollToTopThreshold": 60,
+        "minIndexForVisible": 0,
+      }
+    }
+    maxToRenderPerBatch={10}
+    numColumns={1}
+    onContentSizeChange={[Function]}
+    onEndReachedThreshold={2}
+    onLayout={[Function]}
+    onScroll={[Function]}
+    onScrollToIndexFailed={[Function]}
+    onViewableItemsChanged={null}
+    refreshControl={
+      <RefreshControl
+        colors={
+          Array [
+            "#3d3c40",
+          ]
+        }
+        onRefresh={[Function]}
+        refreshing={false}
+        tintColor="#3d3c40"
+      />
+    }
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={60}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    updateCellsBatchingPeriod={50}
+    viewabilityConfig={
+      Object {
+        "itemVisiblePercentThreshold": 1,
+        "minimumViewTime": 100,
+      }
+    }
+    windowSize={30}
+  />
+</React.Fragment>
 `;
 
 exports[`PostList setting permalink deep link 1`] = `
-<FlatList
-  ListFooterComponent={[Function]}
-  contentContainerStyle={
-    Object {
-      "paddingTop": 5,
-    }
-  }
-  data={
-    Array [
-      "post-id-1",
-      "post-id-2",
-    ]
-  }
-  disableVirtualization={false}
-  extraData={
-    Array [
-      "channel-id",
-      undefined,
-      undefined,
-      undefined,
-    ]
-  }
-  horizontal={false}
-  initialNumToRender={10}
-  inverted={true}
-  keyExtractor={[Function]}
-  keyboardDismissMode="interactive"
-  keyboardShouldPersistTaps="handled"
-  listKey="recyclerFor-channel-id"
-  maintainVisibleContentPosition={
-    Object {
-      "autoscrollToTopThreshold": 60,
-      "minIndexForVisible": 0,
-    }
-  }
-  maxToRenderPerBatch={10}
-  numColumns={1}
-  onContentSizeChange={[Function]}
-  onEndReachedThreshold={2}
-  onLayout={[Function]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollToIndexFailed={[Function]}
-  refreshControl={
-    <RefreshControl
-      colors={
-        Array [
-          "#3d3c40",
-        ]
+<React.Fragment>
+  <FlatList
+    ListFooterComponent={[Function]}
+    contentContainerStyle={
+      Object {
+        "paddingTop": 5,
       }
-      onRefresh={[Function]}
-      refreshing={false}
-      tintColor="#3d3c40"
-    />
-  }
-  removeClippedSubviews={false}
-  renderItem={[Function]}
-  scrollEventThrottle={60}
-  style={
-    Object {
-      "flex": 1,
     }
-  }
-  updateCellsBatchingPeriod={50}
-  windowSize={50}
-/>
+    data={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
+    }
+    disableVirtualization={false}
+    extraData={
+      Array [
+        "channel-id",
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+    horizontal={false}
+    initialNumToRender={10}
+    inverted={true}
+    keyExtractor={[Function]}
+    keyboardDismissMode="interactive"
+    keyboardShouldPersistTaps="handled"
+    listKey="recyclerFor-channel-id"
+    maintainVisibleContentPosition={
+      Object {
+        "autoscrollToTopThreshold": 60,
+        "minIndexForVisible": 0,
+      }
+    }
+    maxToRenderPerBatch={10}
+    numColumns={1}
+    onContentSizeChange={[Function]}
+    onEndReachedThreshold={2}
+    onLayout={[Function]}
+    onScroll={[Function]}
+    onScrollToIndexFailed={[Function]}
+    onViewableItemsChanged={null}
+    refreshControl={
+      <RefreshControl
+        colors={
+          Array [
+            "#3d3c40",
+          ]
+        }
+        onRefresh={[Function]}
+        refreshing={false}
+        tintColor="#3d3c40"
+      />
+    }
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={60}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    updateCellsBatchingPeriod={50}
+    viewabilityConfig={
+      Object {
+        "itemVisiblePercentThreshold": 1,
+        "minimumViewTime": 100,
+      }
+    }
+    windowSize={30}
+  />
+</React.Fragment>
 `;
 
 exports[`PostList should match snapshot 1`] = `
-<FlatList
-  ListFooterComponent={[Function]}
-  contentContainerStyle={
-    Object {
-      "paddingTop": 5,
-    }
-  }
-  data={
-    Array [
-      "post-id-1",
-      "post-id-2",
-    ]
-  }
-  disableVirtualization={false}
-  extraData={
-    Array [
-      "channel-id",
-      undefined,
-      undefined,
-      undefined,
-    ]
-  }
-  horizontal={false}
-  initialNumToRender={10}
-  inverted={true}
-  keyExtractor={[Function]}
-  keyboardDismissMode="interactive"
-  keyboardShouldPersistTaps="handled"
-  listKey="recyclerFor-channel-id"
-  maintainVisibleContentPosition={
-    Object {
-      "autoscrollToTopThreshold": 60,
-      "minIndexForVisible": 0,
-    }
-  }
-  maxToRenderPerBatch={10}
-  numColumns={1}
-  onContentSizeChange={[Function]}
-  onEndReachedThreshold={2}
-  onLayout={[Function]}
-  onScroll={[Function]}
-  onScrollBeginDrag={[Function]}
-  onScrollToIndexFailed={[Function]}
-  refreshControl={
-    <RefreshControl
-      colors={
-        Array [
-          "#3d3c40",
-        ]
+<React.Fragment>
+  <FlatList
+    ListFooterComponent={[Function]}
+    contentContainerStyle={
+      Object {
+        "paddingTop": 5,
       }
-      onRefresh={[Function]}
-      refreshing={false}
-      tintColor="#3d3c40"
-    />
-  }
-  removeClippedSubviews={false}
-  renderItem={[Function]}
-  scrollEventThrottle={60}
-  style={
-    Object {
-      "flex": 1,
     }
-  }
-  updateCellsBatchingPeriod={50}
-  windowSize={50}
-/>
+    data={
+      Array [
+        "post-id-1",
+        "post-id-2",
+      ]
+    }
+    disableVirtualization={false}
+    extraData={
+      Array [
+        "channel-id",
+        undefined,
+        undefined,
+        undefined,
+      ]
+    }
+    horizontal={false}
+    initialNumToRender={10}
+    inverted={true}
+    keyExtractor={[Function]}
+    keyboardDismissMode="interactive"
+    keyboardShouldPersistTaps="handled"
+    listKey="recyclerFor-channel-id"
+    maintainVisibleContentPosition={
+      Object {
+        "autoscrollToTopThreshold": 60,
+        "minIndexForVisible": 0,
+      }
+    }
+    maxToRenderPerBatch={10}
+    numColumns={1}
+    onContentSizeChange={[Function]}
+    onEndReachedThreshold={2}
+    onLayout={[Function]}
+    onScroll={[Function]}
+    onScrollToIndexFailed={[Function]}
+    onViewableItemsChanged={null}
+    refreshControl={
+      <RefreshControl
+        colors={
+          Array [
+            "#3d3c40",
+          ]
+        }
+        onRefresh={[Function]}
+        refreshing={false}
+        tintColor="#3d3c40"
+      />
+    }
+    removeClippedSubviews={false}
+    renderItem={[Function]}
+    scrollEventThrottle={60}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    updateCellsBatchingPeriod={50}
+    viewabilityConfig={
+      Object {
+        "itemVisiblePercentThreshold": 1,
+        "minimumViewTime": 100,
+      }
+    }
+    windowSize={30}
+  />
+</React.Fragment>
 `;

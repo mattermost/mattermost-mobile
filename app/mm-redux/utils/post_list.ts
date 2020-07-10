@@ -101,7 +101,6 @@ export function makeFilterPostsAndAddSeparators() {
                 if (
                     lastViewedAt &&
                     post.create_at > lastViewedAt &&
-                    post.user_id !== currentUser.id &&
                     !addedNewMessagesIndicator &&
                     indicateNewMessages
                 ) {
@@ -432,4 +431,12 @@ export function combineUserActivitySystemPost(systemPosts: Array<types.posts.Pos
     }, {});
 
     return extractUserActivityData(userActivities);
+}
+
+export function messageCount(postIds: string[]) {
+    const messagePostIds = postIds.filter((postId) => {
+        return !isStartOfNewMessages(postId) && !isDateLine(postId) && !isCombinedUserActivityPost(postId);
+    });
+
+    return messagePostIds.length;
 }
