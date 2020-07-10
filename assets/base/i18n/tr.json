@@ -617,7 +617,8 @@
   "channel.hasGuests": "Bu grup iletisinde konuklar var",
   "channel.channelHasGuests": "Bu kanalda konuklar var",
   "mobile.server_upgrade.learn_more": "Ayrıntılı Bilgi Alın",
-  "mobile.server_upgrade.dismiss": "Kapat",
+  "mobile.server_upgrade.dismiss": "Yok say",
   "mobile.server_upgrade.alert_description": "Bu sunucu sürümü desteklenmediğinden, kullanıcılar uyumluluk sorunlarından kaynaklanan çökmeler ya da uygulamanın temel işlevselliğini bozan ciddi sorunlar ile karşılaşacak. Sunucu sürümünün {ServerVersion} ya da üzerindeki bir sürüme yükseltilmesi gerekli.",
-  "suggestion.mention.groups": "Grup Anmaları"
+  "suggestion.mention.groups": "Grup Anmaları",
+  "mobile.android.back_handler_exit": "Çıkmak için yeniden geri üzerine tıklayın"
 }
