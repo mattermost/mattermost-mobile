@@ -39,15 +39,16 @@ class PushNotification {
     }
 
     handleNotification = (data, userInteraction) => {
+        const foreground = !userInteraction && AppState.currentState === 'active';
         this.deviceNotification = {
             data,
-            foreground: !userInteraction && AppState.currentState === 'active',
+            foreground,
             message: data.message,
             userInfo: data.userInfo,
             userInteraction,
         };
 
-        if (this.onNotification) {
+        if (this.onNotification && (foreground || userInteraction)) {
             this.onNotification(this.deviceNotification);
         }
     };
@@ -60,7 +61,12 @@ class PushNotification {
             this.onRegister({token: this.deviceToken});
         }
 
-        if (options.popInitialNotification) {
+        return new Promise((resolve) => {
+            if (!options.popInitialNotification) {
+                resolve();
+                return;
+            }
+
             PendingNotifications.getInitialNotification().
                 then((notification) => {
                     if (notification) {
@@ -73,8 +79,11 @@ class PushNotification {
                 }).
                 catch((err) => {
                     console.log('Android getInitialNotifiation() failed', err); //eslint-disable-line no-console
+                }).
+                finally(() => {
+                    resolve();
                 });
-        }
+        });
     }
 
     localNotificationSchedule(notification) {
