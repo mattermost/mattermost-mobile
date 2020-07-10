@@ -294,7 +294,7 @@ lane :github do
       name: "Mobile Version #{version}",
       tag_name: tag,
       description: changelog,
-      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk", "./Mattermost-simulator-x86_64.app.zip"],
+      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk"],
       is_draft: true
     )
   end
@@ -346,7 +346,7 @@ platform :ios do
     sh 'rm -rf ../build-ios/'
   end
 
-  lane :iphonesimulator do
+  lane :simulator do
     UI.success('Building iOS app for simulator')
 
     ENV['APP_NAME'] = 'Mattermost'
@@ -786,11 +786,6 @@ def send_message_to_mattermost(options)
                      {
                          title: 'Build Number',
                          value: options[:build_number],
-                         short: true
-                     },
-                     {
-                         title: 'Built by',
-                         value: 'Jenkins',
                          short: true
                      }]
         },

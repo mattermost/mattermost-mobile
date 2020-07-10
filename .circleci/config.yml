@@ -368,7 +368,7 @@ jobs:
       - save:
           filename: "Mattermost-unsigned.ipa"
 
-  build-ios-iphonesimulator:
+  build-ios-simulator:
     executor: ios
     steps:
       - checkout:
@@ -385,7 +385,7 @@ jobs:
           no_output_timeout: 30m
           command: |
             HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
-            bundle exec fastlane ios iphonesimulator
+            bundle exec fastlane ios simulator
       - persist_to_workspace:
           root: ~/
           paths:
@@ -573,24 +573,22 @@ workflows:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
             branches:
               only: unsigned
-      - build-ios-iphonesimulator:
+      - build-ios-simulator:
           context: mattermost-mobile-unsigned
           requires:
             - test
           filters:
-            tags:
-              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
-            branches:  
+            branches:
               only:
-                - unsigned
-                - /^iphonesimulator-.*/
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-beta-\d+$/
                 
       - github-release:
           context: mattermost-mobile-unsigned
           requires:
             - build-android-unsigned
             - build-ios-unsigned
-            - build-ios-iphonesimulator
           filters:
             tags:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
