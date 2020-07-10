@@ -87,10 +87,10 @@ export default class ChannelMention extends PureComponent {
             this.runSearch(currentTeamId, matchTerm);
         }
 
-        if (matchTerm === '' || (myChannels !== prevProps.myChannels || otherChannels !== prevProps.otherChannels ||
-            privateChannels !== prevProps.privateChannels || publicChannels !== prevProps.publicChannels ||
-            directAndGroupMessages !== prevProps.directAndGroupMessages ||
-            myMembers !== prevProps.myMembers)) {
+        if (matchTerm === '' || (!_.isEqual(myChannels, prevProps.myChannels) || !_.isEqual(otherChannels, prevProps.otherChannels) ||
+            !_.isEqual(privateChannels, prevProps.privateChannels) || !_.isEqual(publicChannels, prevProps.publicChannels) ||
+            !_.isEqual(directAndGroupMessages, prevProps.directAndGroupMessages) || !_.isEqual(myMembers, prevProps.myMembers)
+        )) {
             const sections = [];
             if (isSearch) {
                 if (publicChannels.length) {
