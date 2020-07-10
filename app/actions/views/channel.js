@@ -590,13 +590,10 @@ function loadGroupData() {
         const serverVersion = state.entities.general.serverVersion;
         const license = getLicense(state);
         const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
-        let myGroupsPromise;
 
         if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 24)) {
             for (let i = 0; i <= MAX_RETRIES; i++) {
                 try {
-                    myGroupsPromise = Client4.getGroupsByUserId(currentUserId);
-
                     if (team.group_constrained) {
                         const [getAllGroupsAssociatedToChannelsInTeam, getAllGroupsAssociatedToTeam] = await Promise.all([ //eslint-disable-line no-await-in-loop
                             Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
@@ -636,12 +633,15 @@ function loadGroupData() {
                             });
                         }
                     }
+                    break;
                 } catch (err) {
-                    return {error: err};
+                    if (i === MAX_RETRIES) {
+                        return {error: err};
+                    }
                 }
             }
 
-            const myGroups = await myGroupsPromise;
+            const myGroups = await Client4.getGroupsByUserId(currentUserId);
             if (myGroups.length) {
                 actions.push({
                     type: GroupTypes.RECEIVED_MY_GROUPS,
