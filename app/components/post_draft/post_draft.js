@@ -154,7 +154,6 @@ export default class PostDraft extends PureComponent {
 
         this.input.current.changeDraft('');
 
-        let callback;
         if (Platform.OS === 'android') {
             // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
             // are typed successively without blurring the input
@@ -162,7 +161,7 @@ export default class PostDraft extends PureComponent {
                 keyboardType: 'email-address',
             };
 
-            callback = () => this.setState({keyboardType: 'default'});
+            const callback = () => this.setState({keyboardType: 'default'});
 
             this.setState(nextState, callback);
         }
