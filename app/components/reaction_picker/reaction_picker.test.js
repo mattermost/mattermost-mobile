@@ -10,10 +10,12 @@ import Preferences from '@mm-redux/constants/preferences';
 
 describe('Reactions', () => {
     const baseProps = {
-        theme: Preferences.THEMES.default,
-        recentEmojis: [],
         addReaction: jest.fn(),
+        deviceWidth: undefined,
+        isLandscape: false,
         openReactionScreen: jest.fn(),
+        recentEmojis: [],
+        theme: Preferences.THEMES.default,
     };
 
     test('Should match snapshot with default emojis', () => {

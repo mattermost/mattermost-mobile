@@ -46,7 +46,7 @@ exports[`PostList setting channel deep link 1`] = `
     onScrollToIndexFailed={[Function]}
     onViewableItemsChanged={null}
     refreshControl={
-      <RefreshControl
+      <RefreshControlMock
         colors={
           Array [
             "#3d3c40",
@@ -123,7 +123,7 @@ exports[`PostList setting permalink deep link 1`] = `
     onScrollToIndexFailed={[Function]}
     onViewableItemsChanged={null}
     refreshControl={
-      <RefreshControl
+      <RefreshControlMock
         colors={
           Array [
             "#3d3c40",
@@ -200,7 +200,7 @@ exports[`PostList should match snapshot 1`] = `
     onScrollToIndexFailed={[Function]}
     onViewableItemsChanged={null}
     refreshControl={
-      <RefreshControl
+      <RefreshControlMock
         colors={
           Array [
             "#3d3c40",

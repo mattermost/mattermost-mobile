@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReactionHeaderItem should match snapshot 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   style={
     Array [
@@ -41,7 +41,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       3
     </Text>
   </React.Fragment>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `

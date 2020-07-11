@@ -30,6 +30,7 @@ export default class ProgressiveImage extends PureComponent {
 
     static defaultProps = {
         style: {},
+        defaultSource: undefined,
         resizeMode: 'contain',
     };
 

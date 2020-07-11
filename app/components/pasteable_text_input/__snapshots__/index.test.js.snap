@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PasteableTextInput should render pasteable text input 1`] = `
-<TextInput
+<Component
   allowFontScaling={true}
   onPaste={[Function]}
   rejectResponderTermination={true}
   underlineColorAndroid="transparent"
 >
   My Text
-</TextInput>
+</Component>
 `;
