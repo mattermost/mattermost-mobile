@@ -26,7 +26,6 @@ export default class Autocomplete extends PureComponent {
         cursorPosition: PropTypes.number,
         deviceHeight: PropTypes.number,
         onChangeText: PropTypes.func.isRequired,
-        maxHeight: PropTypes.number,
         rootId: PropTypes.string,
         isSearch: PropTypes.bool,
         theme: PropTypes.object.isRequired,
