@@ -6,7 +6,7 @@ import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import LocalConfig from '@assets/config';
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
+import Autocomplete from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';

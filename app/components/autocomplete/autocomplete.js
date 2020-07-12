@@ -153,7 +153,7 @@ export default class Autocomplete extends PureComponent {
     };
 
     maxListHeight() {
-        // List is expanding downwards, likely from the search box
+    // List is expanding downwards, likely from the search box
         let offset = Platform.select({ios: 65, android: 75});
             if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
                 offset = 90;

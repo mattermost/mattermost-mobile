@@ -5,7 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
+import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import PostDraft from '@components/post_draft';

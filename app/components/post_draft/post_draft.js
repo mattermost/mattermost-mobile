@@ -24,9 +24,6 @@ import QuickActions from './quick_actions';
 import Typing from './typing';
 import Uploads from './uploads';
 
-const AUTOCOMPLETE_MARGIN = 20;
-const AUTOCOMPLETE_MAX_HEIGHT = 200;
-
 export default class PostDraft extends PureComponent {
     static propTypes = {
         addReactionToLatestPost: PropTypes.func.isRequired,
