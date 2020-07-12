@@ -480,7 +480,7 @@ export default class PostDraft extends PureComponent {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
         const toAllOrChannel = this.textContainsAtAllAtChannel(value);
-        const groupMentions = notificationsToGroups ? this.groupsMentionedInText(value) : [];
+        const groupMentions = (!toAllOrChannel && notificationsToGroups) ? this.groupsMentionedInText(value) : [];
 
         if (value.indexOf('/') === 0) {
             this.sendCommand(value);

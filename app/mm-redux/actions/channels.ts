@@ -1484,7 +1484,7 @@ export function getChannelMemberCountsByGroup(channelId: string, includeTimezone
             return {error};
         }
 
-        if (channelMemberCountsByGroup) {
+        if (channelMemberCountsByGroup.length) {
             dispatch({
                 type: ChannelTypes.RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP,
                 data: {channelId, memberCounts: channelMemberCountsByGroup},
