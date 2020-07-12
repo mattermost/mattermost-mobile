@@ -83,7 +83,6 @@ exports[`EditPost should match snapshot 1`] = `
   >
     <Connect(Autocomplete)
       cursorPosition={0}
-      maxHeight={200}
       nestedScrollEnabled={true}
       onChangeText={[Function]}
       onVisible={[Function]}

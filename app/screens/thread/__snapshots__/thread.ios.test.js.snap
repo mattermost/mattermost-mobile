@@ -44,7 +44,6 @@ exports[`thread should match snapshot, has root post 1`] = `
       >
         <Connect(Autocomplete)
           cursorPositionEvent="onThreadTextBoxCursorChange"
-          maxHeight={200}
           onChangeText={[Function]}
           rootId="root_id"
           valueEvent="onThreadTextBoxValueChange"
