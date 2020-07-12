@@ -9,7 +9,6 @@ import {
     Keyboard,
     Linking,
     StyleSheet,
-    Platform,
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
@@ -35,6 +34,7 @@ export default class ChannelBase extends PureComponent {
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
+            resetUnreadMessageCount: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -90,6 +90,7 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (currentChannelId) {
+            actions.resetUnreadMessageCount(this.props.currentChannelId);
             PushNotifications.clearChannelNotifications(currentChannelId);
             requestAnimationFrame(() => {
                 actions.getChannelStats(currentChannelId);
@@ -169,11 +170,6 @@ export default class ChannelBase extends PureComponent {
                         icon: source,
                     }],
                 },
-                ...Platform.select({
-                    ios: {
-                        modalPresentationStyle: 'pageSheet',
-                    },
-                }),
             };
 
             Keyboard.dismiss();
@@ -188,7 +184,11 @@ export default class ChannelBase extends PureComponent {
 
     loadChannels = (teamId) => {
         const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
-        if (!EphemeralStore.getStartFromNotification()) {
+        if (EphemeralStore.getStartFromNotification()) {
+            // eslint-disable-next-line no-console
+            console.log('Switch to channel from a push notification');
+            EphemeralStore.setStartFromNotification(false);
+        } else {
             loadChannelsForTeam(teamId).then((result) => {
                 if (result?.error) {
                     this.setState({channelsRequestFailed: true});

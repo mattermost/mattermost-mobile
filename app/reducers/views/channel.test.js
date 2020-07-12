@@ -15,6 +15,7 @@ describe('Reducers.channel', () => {
         loadMorePostsVisible: true,
         lastChannelViewTime: {},
         keepChannelIdAsUnread: null,
+        unreadMessageCount: {},
     };
 
     test('Initial state', () => {
@@ -30,6 +31,7 @@ describe('Reducers.channel', () => {
                 loadMorePostsVisible: true,
                 lastChannelViewTime: {},
                 keepChannelIdAsUnread: null,
+                unreadMessageCount: {},
             },
             {},
         );

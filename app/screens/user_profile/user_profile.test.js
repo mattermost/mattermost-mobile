@@ -145,47 +145,8 @@ describe('user_profile', () => {
         expect(goToScreen).toHaveBeenCalledTimes(1);
     });
 
-    test('close should dismiss modal when fromSettings is true', async () => {
-        const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
-        const dismissAllModals = jest.spyOn(NavigationActions, 'dismissAllModals');
-        const popToRoot = jest.spyOn(NavigationActions, 'popToRoot');
-
-        const props = {...baseProps, fromSettings: true};
-
-        const wrapper = shallow(
-            <UserProfile
-                {...props}
-                user={user}
-            />,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        await wrapper.instance().close();
-        expect(dismissModal).toHaveBeenCalledTimes(1);
-        expect(dismissAllModals).toHaveBeenCalledTimes(0);
-        expect(popToRoot).toHaveBeenCalledTimes(0);
-    });
-
-    test('close should dismiss all modals and pop to root when fromSettings is false', async () => {
-        const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
-        const popToRoot = jest.spyOn(NavigationActions, 'popToRoot');
-
-        const props = {...baseProps, fromSettings: false};
-
-        const wrapper = shallow(
-            <UserProfile
-                {...props}
-                user={user}
-            />,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        await wrapper.instance().close();
-        expect(dismissModal).toHaveBeenCalledTimes(0);
-        expect(popToRoot).toHaveBeenCalledTimes(1);
-    });
-
     test('should call close', () => {
+        const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
         const wrapper = shallow(
             <UserProfile
                 {...baseProps}
@@ -198,5 +159,6 @@ describe('user_profile', () => {
         const event = {buttonId: 'close-settings'};
         wrapper.instance().navigationButtonPressed(event);
         expect(close).toHaveBeenCalledTimes(1);
+        expect(dismissModal).toHaveBeenCalledTimes(1);
     });
 });

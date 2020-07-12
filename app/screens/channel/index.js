@@ -4,7 +4,7 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {loadChannelsForTeam, selectInitialChannel} from '@actions/views/channel';
+import {loadChannelsForTeam, selectInitialChannel, resetUnreadMessageCount} from '@actions/views/channel';
 import {recordLoadTime} from '@actions/views/root';
 import {selectDefaultTeam} from '@actions/views/select_team';
 import {ViewTypes} from '@constants';
@@ -52,6 +52,7 @@ function mapDispatchToProps(dispatch) {
             selectDefaultTeam,
             selectInitialChannel,
             recordLoadTime,
+            resetUnreadMessageCount,
         }, dispatch),
     };
 }
