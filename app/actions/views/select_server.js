@@ -17,6 +17,12 @@ export function handleServerUrlChanged(serverUrl) {
 export function setServerUrl(serverUrl) {
     return {type: ViewTypes.SERVER_URL_CHANGED, serverUrl};
 }
+export function urlConnectedToServerSuccessfully(serverUrl) {
+    return {type: ViewTypes.SERVER_URL_SUCCESSFULLY_CONNECTED, serverUrl};
+}
+export function deleteServerUrl(serverUrl) {
+    return {type: ViewTypes.DELETE_SERVER_URL, serverUrl};
+}
 
 export default {
     handleServerUrlChanged,

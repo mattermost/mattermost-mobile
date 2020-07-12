@@ -1,30 +1,40 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
+import { bindActionCreators } from "redux";
+import { connect } from "react-redux";
 
-import {setLastUpgradeCheck} from '@actions/views/client_upgrade';
-import {loadConfigAndLicense} from '@actions/views/root';
-import {handleServerUrlChanged} from '@actions/views/select_server';
-import {scheduleExpiredNotification} from '@actions/views/session';
-import {getPing, resetPing, setServerVersion} from '@mm-redux/actions/general';
-import {login} from '@mm-redux/actions/users';
-import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-import getClientUpgrade from '@selectors/client_upgrade';
+import { setLastUpgradeCheck } from "@actions/views/client_upgrade";
+import { loadConfigAndLicense } from "@actions/views/root";
+import {
+    handleServerUrlChanged,
+    urlConnectedToServerSuccessfully,
+    deleteServerUrl,
+} from "@actions/views/select_server";
+import { scheduleExpiredNotification } from "@actions/views/session";
+import {
+    getPing,
+    resetPing,
+    setServerVersion,
+} from "@mm-redux/actions/general";
+import { login } from "@mm-redux/actions/users";
+import { getConfig, getLicense } from "@mm-redux/selectors/entities/general";
+import getClientUpgrade from "@selectors/client_upgrade";
 
-import SelectServer from './select_server';
+import SelectServer from "./select_server";
 
 function mapStateToProps(state) {
     const config = getConfig(state);
     const license = getLicense(state);
-    const {currentVersion, latestVersion, minVersion} = getClientUpgrade(state);
-
+    const { currentVersion, latestVersion, minVersion } = getClientUpgrade(
+        state
+    );
     return {
         ...state.views.selectServer,
         config,
         currentVersion,
-        hasConfigAndLicense: Object.keys(config).length > 0 && Object.keys(license).length > 0,
+        hasConfigAndLicense:
+            Object.keys(config).length > 0 && Object.keys(license).length > 0,
         latestVersion,
         license,
         minVersion,
@@ -33,16 +43,21 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
     return {
-        actions: bindActionCreators({
-            getPing,
-            scheduleExpiredNotification,
-            handleServerUrlChanged,
-            loadConfigAndLicense,
-            login,
-            resetPing,
-            setLastUpgradeCheck,
-            setServerVersion,
-        }, dispatch),
+        actions: bindActionCreators(
+            {
+                getPing,
+                scheduleExpiredNotification,
+                handleServerUrlChanged,
+                urlConnectedToServerSuccessfully,
+                deleteServerUrl,
+                loadConfigAndLicense,
+                login,
+                resetPing,
+                setLastUpgradeCheck,
+                setServerVersion,
+            },
+            dispatch
+        ),
     };
 }
 

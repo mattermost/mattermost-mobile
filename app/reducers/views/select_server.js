@@ -1,22 +1,54 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {combineReducers} from 'redux';
+import { combineReducers } from "redux";
 
-import Config from '@assets/config.json';
+import Config from "@assets/config.json";
 
-import {ViewTypes} from 'app/constants';
+import { ViewTypes } from "app/constants";
+
+const deleteUrlFromHistory = (url, serverHistory) => {
+    newServerHistory = [...serverHistory];
+    newServerHistory = newServerHistory.filter((recentUrl) => recentUrl != url);
+    return newServerHistory;
+};
+
+const addUrlToHistory = (url, serverHistory) => {
+    newServerHistory = [...serverHistory];
+    newServerHistory = newServerHistory.filter((recentUrl) => recentUrl != url);
+
+    if (newServerHistory.length >= 10) {
+        newServerHistory.pop();
+    }
+
+    newServerHistory.unshift(url);
+
+    return newServerHistory;
+};
 
 function serverUrl(state = Config.DefaultServerUrl, action) {
     switch (action.type) {
-    case ViewTypes.SERVER_URL_CHANGED:
-        return action.serverUrl;
+        case ViewTypes.SERVER_URL_CHANGED:
+            return action.serverUrl;
 
-    default:
-        return state;
+        default:
+            return state;
+    }
+}
+
+function serverHistory(state = [], action) {
+    switch (action.type) {
+        case ViewTypes.SERVER_URL_SUCCESSFULLY_CONNECTED:
+            return addUrlToHistory(action.serverUrl, state);
+        case ViewTypes.DELETE_SERVER_URL:
+            return deleteUrlFromHistory(action.serverUrl, state);
+
+        default:
+            return state;
     }
 }
 
 export default combineReducers({
     serverUrl,
+    serverHistory,
 });

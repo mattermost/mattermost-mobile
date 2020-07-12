@@ -347,6 +347,7 @@ class GlobalEventHandler {
                     },
                     selectServer: {
                         serverUrl: state.views.selectServer.serverUrl,
+                        serverHistory: state.views.selectServer.serverHistory,
                     },
                 },
                 _persist: {
