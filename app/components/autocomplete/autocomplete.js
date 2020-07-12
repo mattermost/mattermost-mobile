@@ -154,19 +154,12 @@ export default class Autocomplete extends PureComponent {
     };
 
     maxListHeight() {
-        let maxHeight;
-        if (this.props.maxHeight) {
-            maxHeight = this.props.maxHeight;
-        } else {
-            // List is expanding downwards, likely from the search box
-            let offset = Platform.select({ios: 65, android: 75});
+        // List is expanding downwards, likely from the search box
+        let offset = Platform.select({ios: 65, android: 75});
             if (DeviceTypes.IS_IPHONE_WITH_INSETS) {
                 offset = 90;
             }
-
-            maxHeight = this.props.deviceHeight - offset - this.state.keyboardOffset;
-        }
-
+        const maxHeight = this.props.deviceHeight - offset - this.state.keyboardOffset;
         return maxHeight;
     }
 

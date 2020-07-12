@@ -533,7 +533,6 @@ export default class PostDraft extends PureComponent {
                 {Platform.OS === 'android' &&
                 <Autocomplete
                     cursorPositionEvent={cursorPositionEvent}
-                    maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
                     onChangeText={this.handleInputQuickAction}
                     valueEvent={valueEvent}
                 />

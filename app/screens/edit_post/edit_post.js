@@ -274,7 +274,6 @@ export default class EditPost extends PureComponent {
                 <KeyboardTrackingView style={autocompleteStyles}>
                     <Autocomplete
                         cursorPosition={this.state.cursorPosition}
-                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.onPostChangeText}
                         value={message}
                         nestedScrollEnabled={true}

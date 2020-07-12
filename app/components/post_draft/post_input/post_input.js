@@ -280,7 +280,7 @@ export default class PostInput extends PureComponent {
         const {channelDisplayName, isLandscape, onPasteFiles, readonly, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
-        let maxHeight = 100;
+        let maxHeight = 150;
 
         if (isLandscape) {
             maxHeight = 88;

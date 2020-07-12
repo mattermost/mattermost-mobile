@@ -57,7 +57,6 @@ export default class ThreadIOS extends ThreadBase {
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
                         <Autocomplete
-                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                             onChangeText={this.handleAutoComplete}
                             cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
                             valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}

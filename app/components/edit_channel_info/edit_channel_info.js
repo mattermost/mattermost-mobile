@@ -345,7 +345,6 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <Autocomplete
                                 cursorPosition={header.length}
-                                maxHeight={200}
                                 onChangeText={this.onHeaderChangeText}
                                 value={header}
                                 nestedScrollEnabled={true}
