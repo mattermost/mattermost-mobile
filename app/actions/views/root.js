@@ -13,7 +13,6 @@ import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import EphemeralStore from '@store/ephemeral_store';
 import initialState from '@store/initial_state';
 import {getStateForReset} from '@store/utils';
 
@@ -133,9 +132,8 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
             dispatch(batchActions(actions, 'BATCH_SELECT_TEAM_AND_CHANNEL'));
         }
 
-        EphemeralStore.setStartFromNotification(false);
-
-        console.log('channel switch from push notification to', channel?.display_name, (Date.now() - dt), 'ms'); //eslint-disable-line
+        // eslint-disable-next-line no-console
+        console.log('channel switch from push notification to', channel?.display_name || channel?.id, (Date.now() - dt), 'ms');
     };
 }
 

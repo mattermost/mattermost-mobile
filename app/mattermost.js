@@ -29,15 +29,15 @@ import {captureJSException} from '@utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
-    const MMKVStorage = await getStorage();
-
-    const {store} = configureStore(MMKVStorage);
     if (EphemeralStore.appStarted) {
         launchApp(credentials);
         return;
     }
 
-    pushNotifications.configure();
+    const MMKVStorage = await getStorage();
+    const {store} = configureStore(MMKVStorage);
+
+    await pushNotifications.configure();
     globalEventHandler.configure({
         launchApp,
     });
@@ -63,6 +63,8 @@ const launchApp = (credentials) => {
             if (valid) {
                 store.dispatch(loadMe());
                 await globalEventHandler.configureAnalytics();
+                // eslint-disable-next-line no-console
+                console.log('Launch app in Channel screen');
                 resetToChannel({skipMetrics: true});
             } else {
                 const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
