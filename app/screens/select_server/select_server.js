@@ -216,7 +216,7 @@ export default class SelectServer extends PureComponent {
     };
 
     handleConnect = preventDoubleTap(async () => {
-        this.setState({url:this.state.urlSearch})
+        this.setState({url: this.state.urlSearch});
         Keyboard.dismiss();
 
         if (this.state.connecting || this.state.connected) {
