@@ -16,13 +16,13 @@
  -  System admins will now receive an in-app notification to upgrade their server version if they are running versions v5.18 and below.
 
 ### Improvements
- - Servers will now send a push notification to the client when the session has expired.
  - Removed **Select Team** title in cases where teams aren't loading.
  - The at-mention and search autocompletes now render even if there is a server request or a network outage.
  
 ### Bug Fixes
 
 #### All apps
+ - Fixed an issue where push notifications did not redirect to the correct channel when the app was not running in the background.
  - Fixed an issue where Enterprise mobility management (EMM) filled username field was not accepted as a valid username.
  - Fixed an issue where the app did not open on server url screen with previous server url filled in after logging out.
  - Fixed an issue where leaving a team in a browser while the mobile app was open caused the app to be stuck in the team.
