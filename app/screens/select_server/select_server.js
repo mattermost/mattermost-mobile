@@ -216,6 +216,7 @@ export default class SelectServer extends PureComponent {
     };
 
     handleConnect = preventDoubleTap(async () => {
+        this.setState({url:this.state.urlSearch})
         Keyboard.dismiss();
 
         if (this.state.connecting || this.state.connected) {
@@ -335,7 +336,7 @@ export default class SelectServer extends PureComponent {
     };
 
     handleTextChanged = (url) => {
-        this.setState({urlSearch: url, url});
+        this.setState({urlSearch: url});
     };
 
     inputRef = (ref) => {
@@ -540,8 +541,7 @@ export default class SelectServer extends PureComponent {
                 >
                     <StatusBar barStyle={statusStyle}/>
                     <TouchableWithoutFeedback
-
-                        // onPress={this.blur}
+                        onPress={this.blur}
                         accessible={false}
                     >
                         <View
