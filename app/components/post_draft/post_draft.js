@@ -93,27 +93,24 @@ export default class PostDraft extends PureComponent {
         };
     }
 
-    componentDidMount(prevProps) {
-        const {useGroupMentions} = this.props;
-
-        if (this.props.isTimezoneEnabled !== prevProps?.isTimezoneEnabled || prevProps?.channelId !== this.props.channelId) {
-            this.numberOfTimezones().then((channelTimezoneCount) => this.setState({channelTimezoneCount}));
-            if (useGroupMentions) {
-                this.props.getChannelMemberCountsByGroup(this.props.channelId, this.props.isTimezoneEnabled);
-            }
-        }
-    }
-
     componentDidUpdate(prevProps) {
-        if (this.input.current) {
-            const {channelId, rootId, value} = this.props;
-            const diffChannel = channelId !== prevProps.channelId;
-            const diffThread = rootId !== prevProps.rootId;
+        const {channelId, rootId, value, useGroupMentions, getChannelMemberCountsByGroup, isTimezoneEnabled} = this.props;
+        const diffChannel = channelId !== prevProps?.channelId;
+        const diffTimezoneEnabled = isTimezoneEnabled !== prevProps?.isTimezoneEnabled;
 
+        if (this.input.current) {
+            const diffThread = rootId !== prevProps.rootId;
             if (diffChannel || diffThread) {
                 const trimmed = value.trim();
                 this.input.current.setValue(trimmed);
                 this.updateInitialValue(trimmed);
+            }
+        }
+
+        if (diffTimezoneEnabled || diffChannel) {
+            this.numberOfTimezones().then((channelTimezoneCount) => this.setState({channelTimezoneCount}));
+            if (useGroupMentions) {
+                getChannelMemberCountsByGroup(channelId, isTimezoneEnabled);
             }
         }
     }

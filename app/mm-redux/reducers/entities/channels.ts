@@ -670,13 +670,21 @@ export function channelMemberCountsByGroup(state: any = {}, action: GenericActio
         const {channelId, memberCounts} = action.data;
         const memberCountsByGroup: ChannelMemberCountsByGroup = {};
         memberCounts.forEach((channelMemberCount: ChannelMemberCountByGroup) => {
-            memberCountsByGroup[channelMemberCount.group_id] = channelMemberCount;
+            if (!state[channelId]?.[channelMemberCount.group_id] ||
+                state[channelId]?.[channelMemberCount.group_id]?.channel_member_count !== channelMemberCount.channel_member_count ||
+                state[channelId]?.[channelMemberCount.group_id]?.channel_member_timezones_count !== channelMemberCount.channel_member_timezones_count) {
+                memberCountsByGroup[channelMemberCount.group_id] = channelMemberCount;
+            }
         });
 
-        return {
-            ...state,
-            [channelId]: memberCountsByGroup,
-        };
+        if (Object.keys(memberCountsByGroup).length > 0) {
+            return {
+                ...state,
+                [channelId]: memberCountsByGroup,
+            };
+        }
+
+        return state;
     }
     default:
         return state;
