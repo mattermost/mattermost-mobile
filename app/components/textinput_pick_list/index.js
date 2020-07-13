@@ -73,7 +73,6 @@ export default class TextInputPickList extends PureComponent {
                 onSelect={this.handleItemSelect}
                 selectedId={selectedId}
                 selected={selected}
-                onBlur={this.onBlur}
                 onDelete={this.props.onDelete}
             />
         );

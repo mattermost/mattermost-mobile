@@ -36,8 +36,8 @@ export const NOTIFY_ALL_MEMBERS = 5;
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
-    SERVER_URL_SUCCESSFULLY_CONNECTED:null,
-    DELETE_SERVER_URL:null,
+    SERVER_URL_SUCCESSFULLY_CONNECTED: null,
+    DELETE_SERVER_URL: null,
 
     POST_DRAFT_CHANGED: null,
     COMMENT_DRAFT_CHANGED: null,
