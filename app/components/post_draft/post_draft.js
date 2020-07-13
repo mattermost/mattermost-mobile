@@ -474,9 +474,26 @@ export default class PostDraft extends PureComponent {
         }
     };
 
+    mapGroupMentions = (groupMentions) => {
+        const {channelMemberCountsByGroup} = this.props;
+        let memberNotifyCount = 0;
+        let channelTimezoneCount = 0;
+        const groupMentionsSet = new Set();
+        groupMentions.
+            forEach((group) => {
+                const mappedValue = channelMemberCountsByGroup[group.id];
+                if (mappedValue?.channel_member_count > NOTIFY_ALL_MEMBERS && mappedValue?.channel_member_count > memberNotifyCount) {
+                    memberNotifyCount = mappedValue.channel_member_count;
+                    channelTimezoneCount = mappedValue.channel_member_timezones_count;
+                }
+                groupMentionsSet.add(`@${group.name}`);
+            });
+        return {groupMentionsSet, memberNotifyCount, channelTimezoneCount};
+    }
+
     sendMessage = () => {
         const value = this.input.current?.getValue() || '';
-        const {enableConfirmNotificationsToChannel, membersCount, useGroupMentions, useChannelMentions, channelMemberCountsByGroup} = this.props;
+        const {enableConfirmNotificationsToChannel, membersCount, useGroupMentions, useChannelMentions} = this.props;
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
         const toAllOrChannel = this.textContainsAtAllAtChannel(value);
@@ -487,18 +504,7 @@ export default class PostDraft extends PureComponent {
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
             this.showSendToAllOrChannelAlert(membersCount);
         } else if (notificationsToGroups && !toAllOrChannel && groupMentions.length > 0) {
-            let memberNotifyCount = 0;
-            let channelTimezoneCount = 0;
-            const groupMentionsSet = new Set();
-            groupMentions.
-                forEach((group) => {
-                    const mappedValue = channelMemberCountsByGroup[group.id];
-                    if (mappedValue?.channel_member_count > NOTIFY_ALL_MEMBERS && mappedValue?.channel_member_count > memberNotifyCount) {
-                        memberNotifyCount = mappedValue.channel_member_count;
-                        channelTimezoneCount = mappedValue.channel_member_timezones_count;
-                    }
-                    groupMentionsSet.add(`@${group.name}`);
-                });
+            const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
             if (memberNotifyCount > 0) {
                 this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount);
             } else {
