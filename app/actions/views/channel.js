@@ -641,12 +641,16 @@ function loadGroupData() {
                 }
             }
 
-            const myGroups = await Client4.getGroupsByUserId(currentUserId);
-            if (myGroups.length) {
-                actions.push({
-                    type: GroupTypes.RECEIVED_MY_GROUPS,
-                    data: myGroups,
-                });
+            try {
+                const myGroups = await Client4.getGroupsByUserId(currentUserId);
+                if (myGroups.length) {
+                    actions.push({
+                        type: GroupTypes.RECEIVED_MY_GROUPS,
+                        data: myGroups,
+                    });
+                }
+            } catch {
+                // do nothing
             }
         }
 
