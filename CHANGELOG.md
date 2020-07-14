@@ -1,5 +1,54 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.33.0 Release
+- Release Date: July 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Breaking Changes
+ - Starting with mobile app v1.33.0, users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed. Updating your server to v5.19 or later is required.
+ 
+**Note:** Mattermost Mobile App v1.33.0 contains a low level security fix. Upgrading is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
+ 
+### Highlights
+ -  System admins will now receive an in-app notification to upgrade their server version if they are running versions v5.18 and below.
+
+### Improvements
+ - Removed **Select Team** title in cases where teams aren't loading.
+ - The at-mention and search autocompletes now render even if there is a server request or a network outage.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue where push notifications did not redirect to the correct channel when the app was not running in the background.
+ - Fixed an issue where Enterprise mobility management (EMM) filled username field was not accepted as a valid username.
+ - Fixed an issue where the app did not open on server url screen with previous server url filled in after logging out.
+ - Fixed an issue where leaving a team in a browser while the mobile app was open caused the app to be stuck in the team.
+ - Fixed an issue where, when hitting the **Delete Documents & Data** button, the button to join the team disappeared.
+ - Fixed an issue where the channel header transition to landscape mode was slow.
+ - Fixed an issue where teams were not listed alphabetically on the **Select Team** screen.
+ - Fixed an issue where a currently active unread channel was not bolded.
+ - Fixed an issue where a team icon was not visible on the left-hand side.
+ - Fixed an issue where user was unable to create channels directly after joining a team.
+ - Fixed an issue where the **:** search date picker on edit replaced the date and left old date info.
+ - Fixed an issue where a confusing **Invalid Message** banner was present on Edit Message modal when typing a message that was over the character limit.
+ - Fixed an issue with an unhandled error when logging out from the **Select Team** screen.
+ - Fixed an issue where an error message on Server URL screen moved strangely when the keyboard slid on.
+ - Fixed an issue with an uneven horizontal margins around **Jump to** box.
+ - Fixed an issue where the OneLogin button had a blue outline, but a green fill.
+
+#### Android specific
+ - Fixed an issue where hitting edit multiple times opened the edit window without a save button.
+
+#### iOS specific
+ - Fixed an issue where ``switchKeyboardForCodeBlocks`` crashed the app on iOS 11.
+ - Fixed an issue where the Enter key did not work in search when using an iPad with an external keyboard.
+ - Fixed an issue where OAuth and SAML single sign-on (SSO) no longer required re-entering credentials after logging out and logging back in.
+
 ## 1.32.2 Release
 - Release Date: June 26, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
@@ -24,7 +73,7 @@
 
 ### Bug Fixes
  - Fixed an issue where Android app cold start and channel switching were slow.
- 
+
 ## 1.32.0 Release
 - Release Date: June 16, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
