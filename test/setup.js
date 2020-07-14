@@ -94,7 +94,11 @@ jest.doMock('react-native', () => {
     };
 
     return Object.setPrototypeOf({
-        Platform,
+        Platform: {
+            ...Platform,
+            OS: 'ios',
+            Version: 12,
+        },
         StyleSheet,
         ViewPropTypes,
         PermissionsAndroid,
@@ -122,7 +126,7 @@ jest.mock('react-native-device-info', () => {
 jest.mock('rn-fetch-blob', () => ({
     fs: {
         dirs: {
-            DocumentDir: () => jest.fn(),
+            DocumentDir: '/data/com.mattermost.beta/documents',
             CacheDir: '/data/com.mattermost.beta/cache',
         },
         exists: jest.fn(),
@@ -154,7 +158,7 @@ jest.mock('react-native-localize', () => ({
     ]),
 }));
 
-jest.mock('@react-native-community/cookies', () => ({
+jest.mock('react-native-cookies', () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     openURL: jest.fn(),

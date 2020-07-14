@@ -23,6 +23,7 @@ import reply from '@assets/images/post_menu/reply.png';
 import bookmark from '@assets/images/post_menu/bookmark.png';
 import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {preventDoubleTap} from '@utils/tap';
 
 const icons = {
     copy,
@@ -46,12 +47,9 @@ export default class PostOption extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    handleOnPress = () => {
-        // Wait for the tap animation so that the user has some feedback
-        setTimeout(() => {
-            this.props.onPress();
-        }, 250);
-    };
+    handleOnPress = preventDoubleTap(() => {
+        this.props.onPress();
+    }, 500);
 
     render() {
         const {destructive, icon, text, isLandscape, theme} = this.props;

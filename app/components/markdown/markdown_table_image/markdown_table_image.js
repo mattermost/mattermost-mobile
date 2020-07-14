@@ -14,10 +14,10 @@ import {goToScreen} from 'app/actions/navigation';
 export default class MarkdownTableImage extends React.PureComponent {
     static propTypes = {
         children: PropTypes.node.isRequired,
+        imagesMetadata: PropTypes.object,
         source: PropTypes.string.isRequired,
         textStyle: CustomPropTypes.Style.isRequired,
         serverURL: PropTypes.string,
-        theme: PropTypes.object.isRequired,
     };
 
     static contextTypes = {
@@ -32,6 +32,7 @@ export default class MarkdownTableImage extends React.PureComponent {
             defaultMessage: 'Image',
         });
         const passProps = {
+            imagesMetadata: this.props.imagesMetadata,
             imageSource: this.getImageSource(),
         };
 

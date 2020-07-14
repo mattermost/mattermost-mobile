@@ -34,6 +34,7 @@ describe('Selectors.Groups', () => {
                         delete_at: 0,
                         has_syncables: false,
                         member_count: 2,
+                        allow_reference: true,
                     },
                     [expectedAssociatedGroupID3]: {
                         id: expectedAssociatedGroupID3,
@@ -47,9 +48,10 @@ describe('Selectors.Groups', () => {
                         delete_at: 0,
                         has_syncables: false,
                         member_count: 5,
+                        allow_reference: false,
                     },
                     [expectedAssociatedGroupID4]: {
-                        id: [expectedAssociatedGroupID4],
+                        id: expectedAssociatedGroupID4,
                         name: 'nobctj4brfgtpj3a1peiyq47tc',
                         display_name: 'engineering',
                         description: '',
@@ -60,6 +62,7 @@ describe('Selectors.Groups', () => {
                         delete_at: 0,
                         has_syncables: false,
                         member_count: 8,
+                        allow_reference: true,
                     },
                     [expectedAssociatedGroupID2]: {
                         id: expectedAssociatedGroupID2,
@@ -73,6 +76,7 @@ describe('Selectors.Groups', () => {
                         delete_at: 0,
                         has_syncables: false,
                         member_count: 2,
+                        allow_reference: false,
                     },
                 },
             },
@@ -113,5 +117,27 @@ describe('Selectors.Groups', () => {
     it('getGroupsNotAssociatedToChannel', () => {
         const expected = Object.entries(testState.entities.groups.groups).filter(([groupID]) => !channelAssociatedGroupIDs.includes(groupID)).map(([, group]) => group);
         assert.deepEqual(Selectors.getGroupsNotAssociatedToChannel(testState, channelID), expected);
+    });
+
+    it('getGroupsAssociatedToTeamForReference', () => {
+        const expected = [
+            testState.entities.groups.groups[expectedAssociatedGroupID1],
+        ];
+        assert.deepEqual(Selectors.getGroupsAssociatedToTeamForReference(testState, teamID), expected);
+    });
+
+    it('getGroupsAssociatedToChannelForReference', () => {
+        const expected = [
+            testState.entities.groups.groups[expectedAssociatedGroupID4],
+        ];
+        assert.deepEqual(Selectors.getGroupsAssociatedToChannelForReference(testState, channelID), expected);
+    });
+
+    it('getAllAssociatedGroupsForReference', () => {
+        const expected = [
+            testState.entities.groups.groups[expectedAssociatedGroupID1],
+            testState.entities.groups.groups[expectedAssociatedGroupID4],
+        ];
+        assert.deepEqual(Selectors.getAllAssociatedGroupsForReference(testState, channelID), expected);
     });
 });

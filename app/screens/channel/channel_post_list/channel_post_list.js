@@ -211,6 +211,7 @@ export default class ChannelPostList extends PureComponent {
                     refreshing={refreshing}
                     scrollViewNativeID={channelId}
                     loadMorePostsVisible={this.props.loadMorePostsVisible}
+                    showMoreMessagesButton={true}
                 />
             );
         }

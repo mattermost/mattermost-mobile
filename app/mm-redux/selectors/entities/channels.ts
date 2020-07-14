@@ -885,7 +885,7 @@ export const getDefaultChannelForTeams: (a: GlobalState) => RelationOneToOne<Tea
 });
 
 export const getMyFirstChannelForTeams: (a: GlobalState) => RelationOneToOne<Team, Channel> = createSelector(getAllChannels, getMyChannelMemberships, getMyTeams, getCurrentUser, (allChannels: IDMappedObjects<Channel>, myChannelMemberships: RelationOneToOne<Channel, ChannelMembership>, myTeams: Array<Team>, currentUser: UserProfile): RelationOneToOne<Team, Channel> => {
-    const locale = currentUser.locale || General.DEFAULT_LOCALE;
+    const locale = currentUser?.locale || General.DEFAULT_LOCALE;
     const result: RelationOneToOne<Team, Channel> = {};
 
     for (const team of myTeams) {

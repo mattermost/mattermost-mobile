@@ -1,6 +1,45 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components/autocomplete/emoji_suggestion should match snapshot 1`] = `null`;
+exports[`components/autocomplete/emoji_suggestion should match snapshot 1`] = `
+<FlatList
+  ItemSeparatorComponent={[Function]}
+  data={Array []}
+  disableVirtualization={false}
+  extraData={
+    Object {
+      "active": false,
+      "dataSource": Array [],
+    }
+  }
+  horizontal={false}
+  initialListSize={10}
+  initialNumToRender={10}
+  keyExtractor={[Function]}
+  keyboardShouldPersistTaps="always"
+  maxToRenderPerBatch={10}
+  nestedScrollEnabled={false}
+  numColumns={1}
+  onEndReachedThreshold={2}
+  pageSize={10}
+  removeClippedSubviews={false}
+  renderItem={[Function]}
+  scrollEventThrottle={50}
+  style={
+    Array [
+      Object {
+        "backgroundColor": "#ffffff",
+        "flex": 1,
+      },
+      Object {
+        "height": 0,
+        "maxHeight": undefined,
+      },
+    ]
+  }
+  updateCellsBatchingPeriod={50}
+  windowSize={21}
+/>
+`;
 
 exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
 <FlatList
@@ -3047,6 +3086,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
         "flex": 1,
       },
       Object {
+        "height": undefined,
         "maxHeight": undefined,
       },
     ]

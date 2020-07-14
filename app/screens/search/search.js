@@ -9,36 +9,38 @@ import {intlShape} from 'react-intl';
 import {
     Keyboard,
     Platform,
+    SafeAreaView,
     SectionList,
     Text,
     View,
 } from 'react-native';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
+import {goToScreen, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
+import Autocomplete from '@components/autocomplete';
+import KeyboardLayout from '@components/layout/keyboard_layout';
+import DateHeader from '@components/post_list/date_header';
+import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
+import PostListRetry from '@components/post_list_retry';
+import PostSeparator from '@components/post_separator';
+import SearchBar from '@components/search_bar';
+import StatusBar from '@components/status_bar';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {ListTypes} from '@constants';
 import {debounce} from '@mm-redux/actions/helpers';
 import {isDateLine, getDateForDateLine} from '@mm-redux/utils/post_list';
-
-import Autocomplete from 'app/components/autocomplete';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import DateHeader from 'app/components/post_list/date_header';
-import FormattedText from 'app/components/formatted_text';
-import Loading from 'app/components/loading';
-import PostListRetry from 'app/components/post_list_retry';
-import PostSeparator from 'app/components/post_separator';
-import SafeAreaView from 'app/components/safe_area_view';
-import SearchBar from 'app/components/search_bar';
-import StatusBar from 'app/components/status_bar';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {DeviceTypes, ListTypes} from 'app/constants';
-import mattermostManaged from 'app/mattermost_managed';
-import {preventDoubleTap} from 'app/utils/tap';
-import {goToScreen, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {preventDoubleTap} from '@utils/tap';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
+} from '@utils/theme';
+
+import mattermostManaged from 'app/mattermost_managed';
 
 import ChannelDisplayName from './channel_display_name';
 import Modifier, {MODIFIER_LABEL_HEIGHT} from './modifier';
@@ -108,6 +110,7 @@ export default class Search extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
+        HWKeyboardEvent.onHWKeyPressed(this.handleHardwareEnterPress);
 
         if (this.props.initialValue) {
             this.search(this.props.initialValue);
@@ -149,6 +152,20 @@ export default class Search extends PureComponent {
                     });
                 }
             }, 250);
+        }
+    }
+
+    componentWillUnmount() {
+        HWKeyboardEvent.removeOnHWKeyPressed();
+    }
+
+    handleHardwareEnterPress = (keyEvent) => {
+        if (EphemeralStore.getNavigationTopComponentId() === 'Search') {
+            switch (keyEvent.pressedKey) {
+            case 'enter':
+                this.search(this.state.value);
+                break;
+            }
         }
     }
 
@@ -713,14 +730,12 @@ export default class Search extends PureComponent {
             paddingRes.paddingLeft = null;
 
             if (isLandscape) {
-                paddingRes.paddingTop = 5;
+                paddingRes.paddingTop = 14;
             }
         }
 
         return (
-            <SafeAreaView
-                excludeHeader={isLandscape && DeviceTypes.IS_IPHONE_WITH_INSETS}
-            >
+            <SafeAreaView style={style.flex}>
                 <KeyboardLayout>
                     <StatusBar/>
                     <View style={[style.header, paddingRes]}>
@@ -777,6 +792,9 @@ export default class Search extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {
+            flex: 1,
+        },
         header: {
             backgroundColor: theme.sidebarHeaderBg,
             width: '100%',
@@ -786,9 +804,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     justifyContent: 'center',
                 },
                 ios: {
-                    height: 44,
-                    paddingLeft: 8,
-                    paddingBottom: 10,
+                    height: 61,
+                    paddingLeft: 14,
+                    paddingRight: 5,
+                    paddingTop: 14,
                 },
             }),
         },

@@ -17,6 +17,8 @@ jest.unmock('@actions/navigation');
 jest.mock('@store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
     clearNavigationComponents: jest.fn(),
+    addNavigationModal: jest.fn(),
+    hasModalsOpened: jest.fn().mockReturnValue(true),
 }));
 
 const mockStore = configureMockStore([thunk]);
@@ -229,7 +231,7 @@ describe('@actions/navigation', () => {
         const showModal = jest.spyOn(Navigation, 'showModal');
 
         const defaultOptions = {
-            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+            modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },
@@ -366,7 +368,7 @@ describe('@actions/navigation', () => {
             },
         };
         const defaultOptions = {
-            modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+            modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
             layout: {
                 componentBackgroundColor: theme.centerChannelBg,
             },

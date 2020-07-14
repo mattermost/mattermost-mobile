@@ -7,19 +7,18 @@ import {Alert, Clipboard, StyleSheet, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {showModal, dismissModal} from '@actions/navigation';
+import ReactionPicker from '@components/reaction_picker';
+import SlideUpPanel from '@components/slide_up_panel';
+import {BOTTOM_MARGIN} from '@components/slide_up_panel/slide_up_panel';
+import {REACTION_PICKER_HEIGHT} from '@constants/reaction_picker';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import SlideUpPanel from 'app/components/slide_up_panel';
-import {BOTTOM_MARGIN} from 'app/components/slide_up_panel/slide_up_panel';
-import {t} from 'app/utils/i18n';
-import {showModal, dismissModal} from 'app/actions/navigation';
-
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
-import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
-import {REACTION_PICKER_HEIGHT} from 'app/constants/reaction_picker';
-import ReactionPicker from 'app/components/reaction_picker';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
 
 import PostOption from './post_option';
+import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
 
 export default class PostOptions extends PureComponent {
     static propTypes = {
@@ -57,10 +56,10 @@ export default class PostOptions extends PureComponent {
     };
 
     close = async (cb) => {
-        dismissModal();
+        await dismissModal();
 
         if (typeof cb === 'function') {
-            setTimeout(cb, 300);
+            requestAnimationFrame(cb);
         }
     };
 
@@ -253,17 +252,15 @@ export default class PostOptions extends PureComponent {
         const {theme} = this.props;
         const {formatMessage} = this.context.intl;
 
-        this.close(() => {
-            MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
-                const screen = 'AddReaction';
-                const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
-                const passProps = {
-                    closeButton: source,
-                    onEmojiPress: this.handleAddReactionToPost,
-                };
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+            const screen = 'AddReaction';
+            const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
+            const passProps = {
+                closeButton: source,
+                onEmojiPress: this.handleAddReactionToPost,
+            };
 
-                showModal(screen, title, passProps);
-            });
+            this.closeWithAnimation(() => showModal(screen, title, passProps));
         });
     };
 
@@ -274,11 +271,10 @@ export default class PostOptions extends PureComponent {
         });
     };
 
-    handleAddReaction = (emoji) => {
-        this.closeWithAnimation(() => {
-            this.handleAddReactionToPost(emoji);
-        });
-    }
+    handleAddReaction = preventDoubleTap((emoji) => {
+        this.handleAddReactionToPost(emoji);
+        this.closeWithAnimation();
+    }, 500);
 
     handleAddReactionToPost = (emoji) => {
         const {actions, post} = this.props;
@@ -358,17 +354,15 @@ export default class PostOptions extends PureComponent {
         const {theme, post} = this.props;
         const {intl} = this.context;
 
-        this.close(() => {
-            MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
-                const screen = 'EditPost';
-                const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
-                const passProps = {
-                    post,
-                    closeButton: source,
-                };
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+            const screen = 'EditPost';
+            const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
+            const passProps = {
+                post,
+                closeButton: source,
+            };
 
-                showModal(screen, title, passProps);
-            });
+            this.closeWithAnimation(() => showModal(screen, title, passProps));
         });
     };
 

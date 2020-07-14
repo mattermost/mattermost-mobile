@@ -90,7 +90,7 @@ export function validatePreviousVersion(previousVersion) {
         INVALID_VERSIONS.push('1.31.0', '1.31.1');
     }
 
-    if (!previousVersion || INVALID_VERSIONS.includes(previousVersion)) {
+    if (INVALID_VERSIONS.includes(previousVersion)) {
         return false;
     }
 

@@ -5,6 +5,7 @@ import {Keyboard, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import merge from 'deepmerge';
 
+import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import EphemeralStore from '@store/ephemeral_store';
@@ -83,7 +84,7 @@ export function resetToChannel(passProps = {}) {
 }
 
 export function resetToSelectServer(allowOtherServers) {
-    const theme = getThemeFromState();
+    const theme = Preferences.THEMES.default;
 
     Navigation.setRoot({
         root: {
@@ -225,7 +226,7 @@ export async function popToRoot() {
 export function showModal(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
-        modalPresentationStyle: Platform.select({ios: 'fullScreen', android: 'none'}),
+        modalPresentationStyle: Platform.select({ios: 'pageSheet', android: 'none'}),
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
@@ -251,6 +252,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
         },
     };
 
+    EphemeralStore.addNavigationModal(name);
     Navigation.showModal({
         stack: {
             children: [{
@@ -312,16 +314,26 @@ export function showSearchModal(initialValue = '') {
             visible: false,
             height: 0,
         },
+        ...Platform.select({
+            ios: {
+                modalPresentationStyle: 'pageSheet',
+            },
+        }),
     };
 
     showModal(name, title, passProps, options);
 }
 
 export async function dismissModal(options = {}) {
+    if (!EphemeralStore.hasModalsOpened()) {
+        return;
+    }
+
     const componentId = EphemeralStore.getNavigationTopComponentId();
 
     try {
         await Navigation.dismissModal(componentId, options);
+        EphemeralStore.removeNavigationModal(componentId);
     } catch (error) {
         // RNN returns a promise rejection if there is no modal to
         // dismiss. We'll do nothing in this case.
@@ -329,8 +341,13 @@ export async function dismissModal(options = {}) {
 }
 
 export async function dismissAllModals(options = {}) {
+    if (!EphemeralStore.hasModalsOpened()) {
+        return;
+    }
+
     try {
         await Navigation.dismissAllModals(options);
+        EphemeralStore.clearNavigationModals();
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to
         // dismiss. We'll do nothing in this case.

@@ -14,17 +14,16 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelTimezones} from '@mm-redux/actions/channels';
 
-import {executeCommand} from 'app/actions/views/command';
-import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {handleClearFiles, handleClearFailedFiles, initUploadFiles} from 'app/actions/views/file_upload';
-import {getCurrentChannelDraft, getThreadDraft} from 'app/selectors/views';
-import {getChannelMembersForDm} from 'app/selectors/channel';
-import {getAllowedServerMaxFileSize} from 'app/utils/file';
-import {isLandscape} from 'app/selectors/device';
+import {executeCommand} from '@actions/views/command';
+import {addReactionToLatestPost} from '@actions/views/emoji';
+import {handleClearFiles, handleClearFailedFiles, initUploadFiles} from '@actions/views/file_upload';
+import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {getCurrentChannelDraft, getThreadDraft} from '@selectors/views';
+import {getChannelMembersForDm} from '@selectors/channel';
+import {getAllowedServerMaxFileSize} from '@utils/file';
+import {isLandscape} from '@selectors/device';
 
 import PostDraft from './post_draft';
-
-const MAX_MESSAGE_LENGTH = 4000;
 
 export function mapStateToProps(state, ownProps) {
     const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
@@ -69,19 +68,26 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
+    const channelId = ownProps.channelId || (currentChannel ? currentChannel.id : '');
+
+    let channelIsReadOnly = false;
+    if (currentUserId && channelId) {
+        channelIsReadOnly = isCurrentChannelReadOnly(state) || false;
+    }
+
     return {
         canPost,
         channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
-        channelId: ownProps.channelId || (currentChannel ? currentChannel.id : ''),
+        channelId,
         channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
-        channelIsReadOnly: isCurrentChannelReadOnly(state) || false,
+        channelIsReadOnly,
         currentUserId,
         deactivatedChannel,
         enableConfirmNotificationsToChannel,
         files: currentDraft.files,
         isLandscape: isLandscape(state),
         isTimezoneEnabled,
-        maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH,
+        maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH_FALLBACK,
         maxFileSize: getAllowedServerMaxFileSize(config),
         membersCount,
         theme: getTheme(state),

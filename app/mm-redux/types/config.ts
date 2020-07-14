@@ -151,6 +151,7 @@ export type Config = {
     SendEmailNotifications: string;
     SendPushNotifications: string;
     ShowEmailAddress: string;
+    ShowFullName: string;
     SiteName: string;
     SiteURL: string;
     SQLDriverName: string;

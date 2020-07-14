@@ -5,11 +5,11 @@ import AsyncStorage from '@react-native-community/async-storage';
 import * as redux from 'redux';
 import {createPersistoid, createTransform, persistReducer, persistStore, Persistor, PersistConfig} from 'redux-persist';
 import {createBlacklistFilter} from 'redux-persist-transform-filter';
-import reduxReset from 'redux-reset';
 import DeviceInfo from 'react-native-device-info';
 
 import {General} from '@mm-redux/constants';
 import serviceReducer from '@mm-redux/reducers';
+import {GenericAction} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
 
 import initialState from '@store/initial_state';
@@ -183,7 +183,17 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
 
     const persistConfig: PersistConfig<GlobalState> = Object.assign({}, defaultConfig, optionalConfig);
     const baseState: any = Object.assign({}, initialState, preloadedState);
-    const rootReducer: any = createReducer(serviceReducer as any, appReducer as any);
+    const baseReducer: any = createReducer(serviceReducer as any, appReducer as any);
+    const rootReducer: any = (state: GlobalState, action: GenericAction) => {
+        if (action.type === General.OFFLINE_STORE_PURGE) {
+            // eslint-disable-next-line no-underscore-dangle
+            if (action.data?._persist) {
+                delete action?.data?._persist;
+            }
+            return baseReducer(action.data, action as any);
+        }
+        return baseReducer(state as any, action as any);
+    };
     const persistedReducer = persistReducer({...persistConfig}, rootReducer);
     const options: ClientOptions = Object.assign({}, defaultOptions, optionalOptions);
 
@@ -194,7 +204,6 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             redux.applyMiddleware(
                 ...createMiddlewares(options),
             ),
-            reduxReset(General.OFFLINE_STORE_PURGE),
         ),
     );
 
@@ -223,7 +232,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
 
             store.dispatch({
                 type: General.OFFLINE_STORE_PURGE,
-                state,
+                data: state,
             });
 
             console.log('HYDRATED FROM v4', storeKeys); // eslint-disable-line no-console
@@ -233,6 +242,8 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
             });
             store.dispatch({type: General.REHYDRATED});
             AsyncStorage.multiRemove(storeKeys);
+        } else if (store.getState()._persist?.rehydrated) { // eslint-disable-line no-underscore-dangle
+            store.dispatch({type: General.REHYDRATED});
         } else {
             let executed = false;
             const unsubscribe = store.subscribe(() => {
