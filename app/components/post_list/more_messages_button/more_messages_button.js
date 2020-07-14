@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ActivityIndicator, Animated, Text, View} from 'react-native';
+import {ActivityIndicator, Animated, AppState, Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import PropTypes from 'prop-types';
 
@@ -51,6 +51,7 @@ export default class MoreMessageButton extends React.PureComponent {
         scrollToIndex: PropTypes.func.isRequired,
         registerViewableItemsListener: PropTypes.func.isRequired,
         registerScrollEndIndexListener: PropTypes.func.isRequired,
+        resetUnreadMessageCount: PropTypes.func.isRequired,
         deepLinkURL: PropTypes.string,
     };
 
@@ -68,12 +69,14 @@ export default class MoreMessageButton extends React.PureComponent {
     }
 
     componentDidMount() {
+        AppState.addEventListener('change', this.onAppStateChange);
         EventEmitter.on(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         this.removeViewableItemsListener = this.props.registerViewableItemsListener(this.onViewableItemsChanged);
         this.removeScrollEndIndexListener = this.props.registerScrollEndIndexListener(this.onScrollEndIndex);
     }
 
     componentWillUnmount() {
+        AppState.removeEventListener('change', this.onAppStateChange);
         EventEmitter.off(ViewTypes.INDICATOR_BAR_VISIBLE, this.onIndicatorBarVisible);
         if (this.removeViewableItemsListener) {
             this.removeViewableItemsListener();
@@ -113,6 +116,17 @@ export default class MoreMessageButton extends React.PureComponent {
         // viewableItems.
         if (unreadCount > prevProps.unreadCount && prevProps.unreadCount === 0) {
             this.onViewableItemsChanged(this.viewableItems);
+        }
+
+        if (unreadCount === 0 && prevProps.unreadCount > 0) {
+            this.hide();
+        }
+    }
+
+    onAppStateChange = (appState) => {
+        const isActive = appState === 'active';
+        if (!isActive) {
+            this.props.resetUnreadMessageCount(this.props.channelId);
         }
     }
 
@@ -201,9 +215,9 @@ export default class MoreMessageButton extends React.PureComponent {
 
     onViewableItemsChanged = (viewableItems) => {
         this.viewableItems = viewableItems;
+        const {newMessageLineIndex, scrollToIndex} = this.props;
 
-        const {newMessageLineIndex, scrollToIndex, unreadCount} = this.props;
-        if (newMessageLineIndex <= 0 || unreadCount === 0 || viewableItems.length === 0 || this.disableViewableItems) {
+        if (newMessageLineIndex <= 0 || viewableItems.length === 0 || this.disableViewableItems) {
             return;
         }
 

@@ -27,7 +27,6 @@ describe('ChannelBase', () => {
             recordLoadTime: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
-            resetUnreadMessageCount: jest.fn(),
         },
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.default,

@@ -34,7 +34,6 @@ export default class ChannelBase extends PureComponent {
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
-            resetUnreadMessageCount: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -90,7 +89,6 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (currentChannelId) {
-            actions.resetUnreadMessageCount(this.props.currentChannelId);
             PushNotifications.clearChannelNotifications(currentChannelId);
             requestAnimationFrame(() => {
                 actions.getChannelStats(currentChannelId);
