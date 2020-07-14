@@ -84,6 +84,7 @@ describe('ChannelBase', () => {
     test('registerTypingAnimation should return a callback that removes the typing animation', () => {
         const wrapper = shallow(
             <ChannelBase {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         const instance = wrapper.instance();
