@@ -12,6 +12,8 @@
 ### Breaking Changes
  - Starting with mobile app v1.33.0, users on server versions below v5.19 may experience issues with how attachments, link previews, reactions and embed data are displayed. Updating your server to v5.19 or later is required.
  
+**Note:** Mattermost Mobile App v1.33.0 contains a low level security fix. Upgrading is recommended. Details will be posted on our [security updates page](https://about.mattermost.com/security-updates/) 30 days after release as per the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/).
+ 
 ### Highlights
  -  System admins will now receive an in-app notification to upgrade their server version if they are running versions v5.18 and below.
 
