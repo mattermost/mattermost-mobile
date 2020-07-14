@@ -34,6 +34,7 @@ exports[`ChannelPostList should match snapshot 1`] = `
     renderFooter={[Function]}
     renderReplies={true}
     scrollViewNativeID="channel-id"
+    showMoreMessagesButton={true}
   />
   <Connect(AnnouncementBanner) />
   <Connect(RetryBarIndicator) />
