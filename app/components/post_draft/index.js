@@ -90,6 +90,11 @@ export function mapStateToProps(state, ownProps) {
         }
     }
 
+    let channelIsReadOnly = false;
+    if (currentUserId && channelId) {
+        channelIsReadOnly = isCurrentChannelReadOnly(state) || false;
+    }
+
     return {
         canPost,
         currentChannel,
@@ -97,7 +102,7 @@ export function mapStateToProps(state, ownProps) {
         channelTeamId,
         channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
         channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
-        channelIsReadOnly: isCurrentChannelReadOnly(state) || false,
+        channelIsReadOnly,
         currentUserId,
         deactivatedChannel,
         enableConfirmNotificationsToChannel,
