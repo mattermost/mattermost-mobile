@@ -11,18 +11,13 @@ import {
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import SlashSuggestionItem from './slash_suggestion_item';
+import SlashSuggestionItem from '../slash_suggestion_item';
+import {Client4} from '@mm-redux/client';
+import {COMMANDS_TO_HIDE_ON_MOBILE} from '../cached/index';
 
-const SLASH_REGEX = /(^\/)([a-zA-Z-]*)$/;
-const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
-
-export default class SlashSuggestion extends PureComponent {
+export default class SlashSuggestionNonCached extends PureComponent {
     static propTypes = {
-        actions: PropTypes.shape({
-            getAutocompleteCommands: PropTypes.func.isRequired,
-        }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
-        commands: PropTypes.array,
         isSearch: PropTypes.bool,
         maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
@@ -31,6 +26,8 @@ export default class SlashSuggestion extends PureComponent {
         value: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
+        rootId: PropTypes.string,
+        channelId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -40,72 +37,51 @@ export default class SlashSuggestion extends PureComponent {
 
     state = {
         active: false,
-        suggestionComplete: false,
         dataSource: [],
-        lastCommandRequest: 0,
     };
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.isSearch) {
+        if (nextProps.isSearch || nextProps.value === this.props.value) {
             return;
         }
 
-        const {currentTeamId} = this.props;
-        const {
-            commands: nextCommands,
-            currentTeamId: nextTeamId,
-            value: nextValue,
-        } = nextProps;
-
-        if (currentTeamId !== nextTeamId) {
-            this.setState({
-                lastCommandRequest: 0,
-            });
-        }
-
-        const match = nextValue.match(SLASH_REGEX);
-
-        if (!match || this.state.suggestionComplete) {
+        if (nextProps.value[0] !== '/') {
             this.setState({
                 active: false,
-                matchTerm: null,
-                suggestionComplete: false,
             });
             this.props.onResultCountChange(0);
             return;
         }
 
-        const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
+        const args = {
+            channel_id: this.props.channelId,
+            ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
+        };
 
-        if ((!nextCommands.length || dataIsStale)) {
-            this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
-            this.setState({
-                lastCommandRequest: Date.now(),
-            });
-        }
-
-        const matchTerm = match[2];
-
-        const data = this.filterSlashSuggestions(matchTerm, nextCommands);
-
-        this.setState({
-            active: data.length,
-            dataSource: data,
-        });
-
-        this.props.onResultCountChange(data.length);
+        Client4.getCommandAutocompleteSuggestionsList(nextProps.value, nextProps.currentTeamId, args).then(
+            (data) => {
+                const matches = [];
+                const suggestions = data.filter((sug) => !COMMANDS_TO_HIDE_ON_MOBILE.includes(sug.Complete));
+                suggestions.forEach((sug) => {
+                    if (!this.contains(matches, '/' + sug.Complete)) {
+                        matches.push({
+                            Complete: sug.Complete,
+                            Suggestion: sug.Suggestion,
+                            Hint: sug.Hint,
+                            Description: sug.Description,
+                        });
+                    }
+                });
+                this.setState({
+                    active: matches.length,
+                    dataSource: matches,
+                });
+            },
+        );
     }
 
-    filterSlashSuggestions = (matchTerm, commands) => {
-        return commands.filter((command) => {
-            if (!command.auto_complete) {
-                return false;
-            } else if (!matchTerm) {
-                return true;
-            }
-
-            return command.display_name.startsWith(matchTerm) || command.trigger.startsWith(matchTerm);
-        });
+    contains(matches, complete) {
+        return matches.findIndex((match) => match.complete === complete) !== -1;
     }
 
     completeSuggestion = (command) => {
@@ -127,22 +103,18 @@ export default class SlashSuggestion extends PureComponent {
                 onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
             });
         }
-
-        this.setState({
-            active: false,
-            suggestionComplete: true,
-        });
     };
 
-    keyExtractor = (item) => item.id || item.trigger;
+    keyExtractor = (item) => item.id || item.Suggestion;
 
     renderItem = ({item}) => (
         <SlashSuggestionItem
-            description={item.auto_complete_desc}
-            hint={item.auto_complete_hint}
+            description={item.Description}
+            hint={item.Hint}
             onPress={this.completeSuggestion}
             theme={this.props.theme}
-            trigger={item.trigger}
+            suggestion={item.Suggestion}
+            complete={item.Complete}
             isLandscape={this.props.isLandscape}
         />
     )
