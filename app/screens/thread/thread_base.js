@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Keyboard} from 'react-native';
+import {Animated, Keyboard} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {General, RequestStatus} from '@mm-redux/constants';
@@ -11,6 +11,7 @@ import {General, RequestStatus} from '@mm-redux/constants';
 import Loading from 'app/components/loading';
 import DeletedPost from 'app/components/deleted_post';
 import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
+import {TYPING_HEIGHT} from '@constants/post_draft';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {
@@ -25,6 +26,7 @@ export default class ThreadBase extends PureComponent {
         rootId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         postIds: PropTypes.array.isRequired,
+        registerTypingAnimation: PropTypes.func.isRequired,
         channelIsArchived: PropTypes.bool,
         threadLoadingStatus: PropTypes.object,
     };
@@ -64,6 +66,12 @@ export default class ThreadBase extends PureComponent {
         this.state = {
             lastViewedAt: props.myMember && props.myMember.last_viewed_at,
         };
+
+        this.bottomPadding = new Animated.Value(0);
+    }
+
+    componentDidMount() {
+        this.removeTypingAnimation = this.props.registerTypingAnimation(this.bottomPaddingAnimation);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -79,6 +87,7 @@ export default class ThreadBase extends PureComponent {
 
     componentWillUnmount() {
         this.props.actions.selectPost('');
+        this.removeTypingAnimation();
     }
 
     close = () => {
@@ -109,4 +118,16 @@ export default class ThreadBase extends PureComponent {
 
         return null;
     };
+
+    bottomPaddingAnimation = (visible) => {
+        const [padding, duration] = visible ?
+            [TYPING_HEIGHT, 200] :
+            [0, 400];
+
+        return Animated.timing(this.bottomPadding, {
+            toValue: padding,
+            duration,
+            useNativeDriver: false,
+        });
+    }
 }
