@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import * as reselect from 'reselect';
-import {PostProps} from '@mm-redux/types/posts';
 import {GlobalState} from '@mm-redux/types/store';
 import {UserMentionKey} from './users';
 import {getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
@@ -26,23 +25,23 @@ export const getAllUserMentionKeys: (state: GlobalState) => UserMentionKey[] = r
     },
 );
 
-export function makeGetMentionKeysForPost(): (b: GlobalState, a: PostProps) => UserMentionKey[] {
-    return reselect.createSelector(
-        (state: GlobalState) => getAllUserMentionKeys(state),
-        getCurrentUserMentionKeys,
-        (state: GlobalState, postProps: PostProps) => postProps,
-        (allMentionKeys, mentionKeysWithoutGroups, postProps) => {
-            let mentionKeys = allMentionKeys;
-            if (postProps?.disable_group_highlight) {
-                mentionKeys = mentionKeysWithoutGroups;
-            }
+export const makeGetMentionKeysForPost: (state: GlobalState, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => UserMentionKey[] = reselect.createSelector(
+    getAllUserMentionKeys,
+    getCurrentUserMentionKeys,
+    (state: GlobalState, disableGroupHighlight: boolean) => disableGroupHighlight,
+    (state: GlobalState, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => mentionHighlightDisabled,
+    (allMentionKeys, mentionKeysWithoutGroups, disableGroupHighlight = false, mentionHighlightDisabled = false) => {
+        let mentionKeys = allMentionKeys;
+        if (disableGroupHighlight) {
+            mentionKeys = mentionKeysWithoutGroups;
+        }
 
-            if (postProps?.mentionHighlightDisabled) {
-                const CHANNEL_MENTIONS = ['@all', '@channel', '@here'];
-                mentionKeys = mentionKeys.filter((value) => !CHANNEL_MENTIONS.includes(value.key));
-            }
+        if (mentionHighlightDisabled) {
+            const CHANNEL_MENTIONS = ['@all', '@channel', '@here'];
+            mentionKeys = mentionKeys.filter((value) => !CHANNEL_MENTIONS.includes(value.key));
+        }
 
-            return mentionKeys;
-        },
-    );
-}
+        return mentionKeys;
+    },
+);
+

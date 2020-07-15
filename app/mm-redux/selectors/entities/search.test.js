@@ -66,7 +66,6 @@ describe('Selectors.Search', () => {
     });
 
     describe('makeGetMentionKeysForPost', () => {
-        const getMentionKeysForPost = Selectors.makeGetMentionKeysForPost();
         it('should return all mentionKeys', () => {
             const postProps = {
                 disable_group_highlight: false,
@@ -97,7 +96,7 @@ describe('Selectors.Search', () => {
                     },
                 },
             };
-            const results = getMentionKeysForPost(state, postProps);
+            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}, {key: '@developers'}];
             assert.deepEqual(results, expected);
         });
@@ -132,7 +131,7 @@ describe('Selectors.Search', () => {
                     },
                 },
             };
-            const results = getMentionKeysForPost(state, postProps);
+            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}];
             assert.deepEqual(results, expected);
         });
@@ -167,7 +166,7 @@ describe('Selectors.Search', () => {
                     },
                 },
             };
-            const results = getMentionKeysForPost(state, postProps);
+            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@a123'}, {key: '@developers'}];
             assert.deepEqual(results, expected);
         });
@@ -202,7 +201,7 @@ describe('Selectors.Search', () => {
                     },
                 },
             };
-            const results = getMentionKeysForPost(state, postProps);
+            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@a123'}];
             assert.deepEqual(results, expected);
         });
