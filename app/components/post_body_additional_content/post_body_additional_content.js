@@ -391,9 +391,14 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()),
         );
 
-        let imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        let imgUrl;
         if (this.props.metadata?.images) {
             imgUrl = Object.keys(this.props.metadata.images)[0];
+        }
+
+        if (!imgUrl) {
+            // Fallback to default YouTube thumbnail if available
+            imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         }
 
         return (
