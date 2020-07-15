@@ -536,6 +536,8 @@ export default class PostDraft extends PureComponent {
                     maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
                     onChangeText={this.handleInputQuickAction}
                     valueEvent={valueEvent}
+                    rootId={rootId}
+                    channelId={channelId}
                 />
                 }
                 <View

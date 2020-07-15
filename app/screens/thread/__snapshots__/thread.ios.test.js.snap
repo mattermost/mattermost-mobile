@@ -43,6 +43,7 @@ exports[`thread should match snapshot, has root post 1`] = `
         nativeID="threadAccessoriesContainer"
       >
         <Connect(Autocomplete)
+          channelId="channel_id"
           cursorPositionEvent="onThreadTextBoxCursorChange"
           maxHeight={200}
           onChangeText={[Function]}
