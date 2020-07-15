@@ -108,7 +108,6 @@ def enableSeparateBuildPerCPUArchitecture = false
  */
 def enableProguardInReleaseBuilds = false
 
-// Add v8-android - prebuilt libv8android.so into APK
 def jscFlavor = 'org.webkit:android-jsc-intl:+'
 
 /**
