@@ -1,7 +1,7 @@
 # Mattermost Mobile Apps Changelog
 
 ## 1.33.1 Release
-- Release Date: July , 2020
+- Release Date: July 15, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
 
 ### Compatibility
@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Bug Fixes
- - Fixed an issue where the apps crash when a malformed YouTube link is posted in a channel.
+ - Fixed an issue where the apps crashed when a malformed YouTube link was posted in a channel.
 
 ## 1.33.0 Release
 - Release Date: July 16, 2020
