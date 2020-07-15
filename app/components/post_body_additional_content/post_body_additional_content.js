@@ -391,7 +391,11 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()),
         );
 
-        const imgUrl = Object.keys(this.props.metadata.images)[0] || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        let imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        if (this.props.metadata?.images) {
+            imgUrl = Object.keys(this.props.metadata.images)[0];
+        }
+
         return (
             <TouchableWithFeedback
                 style={[styles.imageContainer, {height: dimensions.height}]}
