@@ -774,21 +774,19 @@ describe('MoreMessagesButton', () => {
             jest.clearAllMocks();
         });
 
-        it('should force cancel when props.unreadCount - readCount is <= 0', () => {
+        it('should not set moreText when props.unreadCount - readCount is <= 0', () => {
             let readCount = props.unreadCount + 1;
             instance.showMoreText(readCount);
-            expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel.mock.calls[0][0]).toBe(true);
             expect(instance.moreText).not.toHaveBeenCalled();
             expect(instance.setState).not.toHaveBeenCalled();
 
             readCount = props.unreadCount;
             instance.showMoreText(readCount);
-            expect(instance.cancel).toHaveBeenCalledTimes(2);
-            expect(instance.cancel.mock.calls[1][0]).toBe(true);
+            expect(instance.moreText).not.toHaveBeenCalled();
+            expect(instance.setState).not.toHaveBeenCalled();
         });
 
-        it('should set moreTextd when props.unreadCount - readCount is > 0', () => {
+        it('should set moreText when props.unreadCount - readCount is > 0', () => {
             const moreCount = 1;
             const readCount = props.unreadCount - moreCount;
             instance.showMoreText(readCount);

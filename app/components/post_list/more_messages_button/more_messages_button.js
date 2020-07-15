@@ -262,13 +262,10 @@ export default class MoreMessageButton extends React.PureComponent {
     showMoreText = (readCount) => {
         const moreCount = this.props.unreadCount - readCount;
 
-        if (moreCount <= 0) {
-            this.cancel(true);
-            return;
+        if (moreCount > 0) {
+            const moreText = this.moreText(moreCount);
+            this.setState({moreText}, this.show);
         }
-
-        const moreText = this.moreText(moreCount);
-        this.setState({moreText}, this.show);
     }
 
     getReadCount = (lastViewableIndex) => {
