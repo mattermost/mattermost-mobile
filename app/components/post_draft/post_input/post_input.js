@@ -265,6 +265,14 @@ export default class PostInput extends PureComponent {
         });
     };
 
+    resetTextInput = () => {
+        if (this.input.current) {
+            this.input.current.setNativeProps({
+                text: '',
+            });
+        }
+    }
+
     setValue = (value, autocomplete = false) => {
         this.value = value;
         if (this.input.current) {

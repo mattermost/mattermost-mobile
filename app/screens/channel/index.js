@@ -23,21 +23,18 @@ function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
     const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
     const isSystemAdmin = checkIsSystemAdmin(roles);
-    let isSupportedServer = true;
-
-    if (isSystemAdmin) {
-        isSupportedServer = isMinimumServerVersion(
-            getServerVersion(state),
-            ViewTypes.RequiredServer.MAJOR_VERSION,
-            ViewTypes.RequiredServer.MIN_VERSION,
-            ViewTypes.RequiredServer.PATCH_VERSION,
-        );
-    }
+    const isSupportedServer = isMinimumServerVersion(
+        getServerVersion(state),
+        ViewTypes.RequiredServer.MAJOR_VERSION,
+        ViewTypes.RequiredServer.MIN_VERSION,
+        ViewTypes.RequiredServer.PATCH_VERSION,
+    );
 
     return {
         currentTeamId: currentTeam?.id,
         currentChannelId: getCurrentChannelId(state),
         isSupportedServer,
+        isSystemAdmin,
         teamName: currentTeam?.display_name,
         theme: getTheme(state),
         showTermsOfService: shouldShowTermsOfService(state),

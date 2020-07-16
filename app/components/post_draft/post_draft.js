@@ -30,6 +30,7 @@ const AUTOCOMPLETE_MAX_HEIGHT = 200;
 
 export default class PostDraft extends PureComponent {
     static propTypes = {
+        registerTypingAnimation: PropTypes.func.isRequired,
         addReactionToLatestPost: PropTypes.func.isRequired,
         getChannelMemberCountsByGroup: PropTypes.func.isRequired,
         canPost: PropTypes.bool.isRequired,
@@ -230,62 +231,41 @@ export default class PostDraft extends PureComponent {
     };
 
     doSubmitMessage = () => {
-        if (this.input.current) {
-            const {createPost, currentUserId, channelId, files, handleClearFiles, rootId} = this.props;
-            const value = this.input.current.getValue() || '';
-            const postFiles = files.filter((f) => !f.failed);
-            const post = {
-                user_id: currentUserId,
-                channel_id: channelId,
-                root_id: rootId,
-                parent_id: rootId,
-                message: value,
+        const {createPost, currentUserId, channelId, files, handleClearFiles, rootId} = this.props;
+        const value = this.input.current.getValue();
+        const postFiles = files.filter((f) => !f.failed);
+        const post = {
+            user_id: currentUserId,
+            channel_id: channelId,
+            root_id: rootId,
+            parent_id: rootId,
+            message: value,
+        };
+
+        createPost(post, postFiles);
+
+        if (postFiles.length) {
+            handleClearFiles(channelId, rootId);
+        }
+
+        this.input.current.setValue('');
+        this.setState({sendingMessage: false});
+
+        this.input.current.changeDraft('');
+
+        if (Platform.OS === 'android') {
+            // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
+            // are typed successively without blurring the input
+            const nextState = {
+                keyboardType: 'email-address',
             };
 
-            createPost(post, postFiles);
+            const callback = () => this.setState({keyboardType: 'default'});
 
-            if (postFiles.length) {
-                handleClearFiles(channelId, rootId);
-            }
-
-            if (Platform.OS === 'ios') {
-                // On iOS, if the PostInput height increases from its
-                // initial height (due to a multiline post or a post whose
-                // message wraps, for example), then when the text is cleared
-                // the PostInput height decrease will be animated. This
-                // animation in conjunction with the PostList animation as it
-                // receives the newly created post is causing issues in the iOS
-                // PostList component as it fails to properly react to its content
-                // size changes. While a proper fix is determined for the PostList
-                // component, a small delay in triggering the height decrease
-                // animation gives the PostList enough time to first handle content
-                // size changes from the new post.
-                setTimeout(() => {
-                    this.input.current.setValue('');
-                    this.setState({sendingMessage: false});
-                }, 250);
-            } else {
-                this.input.current.setValue('');
-                this.setState({sendingMessage: false});
-            }
-
-            this.input.current.changeDraft('');
-
-            let callback;
-            if (Platform.OS === 'android') {
-                // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
-                // are typed successively without blurring the input
-                const nextState = {
-                    keyboardType: 'email-address',
-                };
-
-                callback = () => this.setState({keyboardType: 'default'});
-
-                this.setState(nextState, callback);
-            }
-
-            EventEmitter.emit('scroll-to-bottom');
+            this.setState(nextState, callback);
         }
+
+        EventEmitter.emit('scroll-to-bottom');
     };
 
     getStatusFromSlashCommand = (message) => {
@@ -335,52 +315,62 @@ export default class PostDraft extends PureComponent {
     };
 
     handleSendMessage = () => {
-        if (!this.isSendButtonEnabled()) {
+        if (!this.input.current) {
             return;
         }
 
-        this.setState({sendingMessage: true});
+        this.input.current.resetTextInput();
 
-        const {channelId, files, handleClearFailedFiles, rootId} = this.props;
-        const value = this.input.current?.getValue() || '';
+        requestAnimationFrame(() => {
+            const value = this.input.current.getValue();
+            if (!this.isSendButtonEnabled()) {
+                this.input.current.setValue(value);
+                return;
+            }
 
-        const isReactionMatch = value.match(IS_REACTION_REGEX);
-        if (isReactionMatch) {
-            const emoji = isReactionMatch[2];
-            this.sendReaction(emoji);
-            return;
-        }
+            this.setState({sendingMessage: true});
 
-        const hasFailedAttachments = files.some((f) => f.failed);
-        if (hasFailedAttachments) {
-            const {intl} = this.context;
+            const {channelId, files, handleClearFailedFiles, rootId} = this.props;
 
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.post_textbox.uploadFailedTitle',
-                    defaultMessage: 'Attachment failure',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.post_textbox.uploadFailedDesc',
-                    defaultMessage: 'Some attachments failed to upload to the server. Are you sure you want to post the message?',
-                }),
-                [{
-                    text: intl.formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
-                    onPress: () => {
-                        this.setState({sendingMessage: false});
-                    },
-                }, {
-                    text: intl.formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
-                    onPress: () => {
-                        // Remove only failed files
-                        handleClearFailedFiles(channelId, rootId);
-                        this.sendMessage();
-                    },
-                }],
-            );
-        } else {
-            this.sendMessage();
-        }
+            const isReactionMatch = value.match(IS_REACTION_REGEX);
+            if (isReactionMatch) {
+                const emoji = isReactionMatch[2];
+                this.sendReaction(emoji);
+                return;
+            }
+
+            const hasFailedAttachments = files.some((f) => f.failed);
+            if (hasFailedAttachments) {
+                const {intl} = this.context;
+
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.post_textbox.uploadFailedTitle',
+                        defaultMessage: 'Attachment failure',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.post_textbox.uploadFailedDesc',
+                        defaultMessage: 'Some attachments failed to upload to the server. Are you sure you want to post the message?',
+                    }),
+                    [{
+                        text: intl.formatMessage({id: 'mobile.channel_info.alertNo', defaultMessage: 'No'}),
+                        onPress: () => {
+                            this.input.current.setValue(value);
+                            this.setState({sendingMessage: false});
+                        },
+                    }, {
+                        text: intl.formatMessage({id: 'mobile.channel_info.alertYes', defaultMessage: 'Yes'}),
+                        onPress: () => {
+                            // Remove only failed files
+                            handleClearFailedFiles(channelId, rootId);
+                            this.sendMessage();
+                        },
+                    }],
+                );
+            } else {
+                this.sendMessage();
+            }
+        });
     };
 
     handleUploadFiles = async (files) => {
@@ -455,6 +445,7 @@ export default class PostDraft extends PureComponent {
         this.setState({sendingMessage: false});
 
         if (error) {
+            this.input.current.setValue(msg);
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.commands.error_title',
@@ -465,10 +456,8 @@ export default class PostDraft extends PureComponent {
             return;
         }
 
-        if (this.input.current) {
-            this.input.current.setValue('');
-            this.input.current.changeDraft('');
-        }
+        this.input.current.setValue('');
+        this.input.current.changeDraft('');
     };
 
     mapGroupMentions = (groupMentions) => {
@@ -489,26 +478,29 @@ export default class PostDraft extends PureComponent {
     }
 
     sendMessage = () => {
-        const value = this.input.current?.getValue() || '';
-        const {enableConfirmNotificationsToChannel, membersCount, useGroupMentions, useChannelMentions} = this.props;
-        const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-        const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
-        const toAllOrChannel = this.textContainsAtAllAtChannel(value);
-        const groupMentions = (!toAllOrChannel && notificationsToGroups) ? this.groupsMentionedInText(value) : [];
+        const value = this.input.current.getValue();
 
-        if (value.indexOf('/') === 0) {
-            this.sendCommand(value);
-        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
-            this.showSendToAllOrChannelAlert(membersCount);
-        } else if (groupMentions.length > 0) {
-            const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
-            if (memberNotifyCount > 0) {
-                this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount);
+        if (value) {
+            const {enableConfirmNotificationsToChannel, membersCount, useGroupMentions, useChannelMentions} = this.props;
+            const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
+            const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
+            const toAllOrChannel = this.textContainsAtAllAtChannel(value);
+            const groupMentions = (!toAllOrChannel && notificationsToGroups) ? this.groupsMentionedInText(value) : [];
+
+            if (value.indexOf('/') === 0) {
+                this.sendCommand(value);
+            } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
+                this.showSendToAllOrChannelAlert(membersCount);
+            } else if (groupMentions.length > 0) {
+                const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
+                if (memberNotifyCount > 0) {
+                    this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount);
+                } else {
+                    this.doSubmitMessage();
+                }
             } else {
                 this.doSubmitMessage();
             }
-        } else {
-            this.doSubmitMessage();
         }
     };
 
@@ -516,10 +508,8 @@ export default class PostDraft extends PureComponent {
         const {addReactionToLatestPost, rootId} = this.props;
         addReactionToLatestPost(emoji, rootId);
 
-        if (this.input.current) {
-            this.input.current.setValue('');
-            this.input.current.changeDraft('');
-        }
+        this.input.current.setValue('');
+        this.input.current.changeDraft('');
 
         this.setState({sendingMessage: false});
     };
@@ -546,7 +536,7 @@ export default class PostDraft extends PureComponent {
         );
     };
 
-    showSendToAllOrChannelAlert = (membersCount) => {
+    showSendToAllOrChannelAlert = (membersCount, msg) => {
         const {intl} = this.context;
         const {channelTimezoneCount} = this.state;
         const {isTimezoneEnabled} = this.props;
@@ -592,6 +582,7 @@ export default class PostDraft extends PureComponent {
                         defaultMessage: 'Cancel',
                     }),
                     onPress: () => {
+                        this.input.current.setValue(msg);
                         this.setState({sendingMessage: false});
                     },
                 },
@@ -663,13 +654,17 @@ export default class PostDraft extends PureComponent {
             maxMessageLength,
             screenId,
             valueEvent,
+            registerTypingAnimation,
         } = this.props;
         const style = getStyleSheet(theme);
         const readonly = channelIsReadOnly || !canPost;
 
         return (
             <>
-                <Typing theme={theme}/>
+                <Typing
+                    theme={theme}
+                    registerTypingAnimation={registerTypingAnimation}
+                />
                 {Platform.OS === 'android' &&
                 <Autocomplete
                     cursorPositionEvent={cursorPositionEvent}

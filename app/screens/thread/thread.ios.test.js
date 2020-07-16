@@ -30,6 +30,9 @@ describe('thread', () => {
         postIds: ['root_id', 'post_id_1', 'post_id_2'],
         channelIsArchived: false,
         threadLoadingStatus: {status: RequestStatus.STARTED},
+        registerTypingAnimation: jest.fn(() => {
+            return jest.fn();
+        }),
     };
 
     test('should match snapshot, has root post', () => {
@@ -69,5 +72,19 @@ describe('thread', () => {
         const newPostIds = ['post_id_1', 'post_id_2'];
         wrapper.setProps({postIds: newPostIds});
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should add/remove typing animation on mount/unmount', () => {
+        const wrapper = shallow(
+            <ThreadIOS {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+
+        expect(baseProps.registerTypingAnimation).toHaveBeenCalledTimes(1);
+        expect(instance.removeTypingAnimation).not.toHaveBeenCalled();
+
+        wrapper.unmount();
+        expect(instance.removeTypingAnimation).toHaveBeenCalledTimes(1);
     });
 });
