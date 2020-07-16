@@ -94,6 +94,13 @@ export default class PostDraft extends PureComponent {
         };
     }
 
+    componentDidMount() {
+        const {getChannelMemberCountsByGroup, channelId, isTimezoneEnabled, useGroupMentions} = this.props;
+        if (useGroupMentions) {
+            getChannelMemberCountsByGroup(channelId, isTimezoneEnabled);
+        }
+    }
+
     componentDidUpdate(prevProps) {
         const {channelId, rootId, value, useGroupMentions, getChannelMemberCountsByGroup, isTimezoneEnabled} = this.props;
         const diffChannel = channelId !== prevProps?.channelId;
