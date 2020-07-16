@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Animated, View} from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
@@ -37,6 +37,7 @@ export default class ThreadIOS extends ThreadBase {
             rootId,
             channelIsArchived,
             theme,
+            registerTypingAnimation,
         } = this.props;
 
         let content;
@@ -44,17 +45,19 @@ export default class ThreadIOS extends ThreadBase {
         if (this.hasRootPost()) {
             content = (
                 <>
-                    <PostList
-                        renderFooter={this.renderFooter()}
-                        indicateNewMessages={false}
-                        postIds={postIds}
-                        lastPostIndex={getLastPostIndex(postIds)}
-                        currentUserId={myMember && myMember.user_id}
-                        lastViewedAt={this.state.lastViewedAt}
-                        onPostPress={this.hideKeyboard}
-                        location={THREAD}
-                        scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
-                    />
+                    <Animated.View style={{flex: 1, paddingBottom: this.bottomPadding}}>
+                        <PostList
+                            renderFooter={this.renderFooter()}
+                            indicateNewMessages={false}
+                            postIds={postIds}
+                            lastPostIndex={getLastPostIndex(postIds)}
+                            currentUserId={myMember && myMember.user_id}
+                            lastViewedAt={this.state.lastViewedAt}
+                            onPostPress={this.hideKeyboard}
+                            location={THREAD}
+                            scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                        />
+                    </Animated.View>
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
                         <Autocomplete
                             maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
@@ -80,6 +83,7 @@ export default class ThreadIOS extends ThreadBase {
                         rootId={rootId}
                         screenId={this.props.componentId}
                         valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
+                        registerTypingAnimation={registerTypingAnimation}
                     />
                 </KeyboardTrackingView>
             );

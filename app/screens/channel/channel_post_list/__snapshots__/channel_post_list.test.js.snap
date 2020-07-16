@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelPostList should match snapshot 1`] = `
+<ForwardRef(AnimatedComponentWrapper)
+  style={
+    Array [
+      Object {
+        "flex": 1,
+      },
+      Object {
+        "paddingBottom": 0,
+      },
+    ]
+  }
+>
+  <View
+    style={
+      Object {
+        "backgroundColor": "rgba(61,60,64,0.2)",
+        "height": 1,
+      }
+    }
+  />
+  <Connect(PostList)
+    channelId="channel-id"
+    extraData={false}
+    indicateNewMessages={true}
+    lastPostIndex={-1}
+    loadMorePostsVisible={false}
+    onLoadMoreUp={[Function]}
+    onPostPress={[Function]}
+    postIds={Array []}
+    refreshing={false}
+    renderFooter={[Function]}
+    renderReplies={true}
+    scrollViewNativeID="channel-id"
+    showMoreMessagesButton={true}
+  />
+  <Connect(AnnouncementBanner) />
+  <Connect(RetryBarIndicator) />
+</ForwardRef(AnimatedComponentWrapper)>
+`;

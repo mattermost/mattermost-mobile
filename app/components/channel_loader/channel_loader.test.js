@@ -8,10 +8,6 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import ChannelLoader from './channel_loader';
 
-jest.mock('rn-placeholder', () => ({
-    ImageContent: () => null,
-}));
-
 describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
