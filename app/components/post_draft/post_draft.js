@@ -490,7 +490,7 @@ export default class PostDraft extends PureComponent {
             if (value.indexOf('/') === 0) {
                 this.sendCommand(value);
             } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
-                this.showSendToAllOrChannelAlert(membersCount);
+                this.showSendToAllOrChannelAlert(membersCount, value);
             } else if (groupMentions.length > 0) {
                 const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
                 if (memberNotifyCount > 0) {
