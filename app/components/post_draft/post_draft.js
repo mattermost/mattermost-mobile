@@ -139,7 +139,7 @@ export default class PostDraft extends PureComponent {
         return messageLength > 0;
     };
 
-    showSendToGroupsAlert = (groupMentions, memberNotifyCount, channelTimezoneCount) => {
+    showSendToGroupsAlert = (groupMentions, memberNotifyCount, channelTimezoneCount, msg) => {
         const {intl} = this.context;
 
         let notifyAllMessage = '';
@@ -216,6 +216,7 @@ export default class PostDraft extends PureComponent {
                         defaultMessage: 'Cancel',
                     }),
                     onPress: () => {
+                        this.input.current.setValue(msg);
                         this.setState({sendingMessage: false});
                     },
                 },
@@ -494,7 +495,7 @@ export default class PostDraft extends PureComponent {
             } else if (groupMentions.length > 0) {
                 const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
                 if (memberNotifyCount > 0) {
-                    this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount);
+                    this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount, value);
                 } else {
                     this.doSubmitMessage();
                 }
