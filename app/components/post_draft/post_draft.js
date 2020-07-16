@@ -607,7 +607,7 @@ export default class PostDraft extends PureComponent {
 
     textContainsAtAllAtChannel = (text) => {
         const textWithoutCode = text.replace(CODE_REGEX, '');
-        return (/\B@(all|channel)\b/i).test(textWithoutCode);
+        return (/(?:\B|\b_+)@(channel|all)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
     };
 
     groupsMentionedInText = (text) => {
