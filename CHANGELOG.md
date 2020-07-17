@@ -10,20 +10,27 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Highlights
- -  
+ - End users will now receive an in-app notification to upgrade their server version if they are running versions v5.18 and below.
+ - Added Group Mentions support for mobile 
 
 ### Improvements
- - 
+ - Removed auto-scrolling to the new message line on channel load and added a "More Messages" button when there are unread posts.
+ - Improved iOS Settings, Profile screen, Channel Info, "+" button for DMs and channels, Create Channel, and Other User Profile screen styling.
+ - Added the ability to view first and last name in profile view.
  
 ### Bug Fixes
 
 #### All apps
- - 
+ - Fixed an issue with More Messages button inconsistencies when opening the app from a push notification.
 
 #### Android specific
- - 
+ - Fixed an issue with keyboard glitches after using an invalid slash command.
+ - Fixed an issue where when closing the 'channel more' modal, the keyboard did not disappear.
+ - Fixed an issue where typing right after clicking the send button didn't clear the old message.
 
 #### iOS specific
+ - Fixed an issue where user was unable to scroll or tap on emoji autocomplete in post Edit mode.
+ - Fixed an issue where the Channel list was not scrolled to the bottom when a new message was received while the keyboard was open.
 
 ## 1.33.1 Release
 - Release Date: July 15, 2020
