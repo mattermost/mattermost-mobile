@@ -11,13 +11,13 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isLandscape} from 'app/selectors/device';
 
-import SlashSuggestionCached from './slash_suggestion';
+import SlashSuggestion from './slash_suggestion';
 
 // TODO: Remove when all below commands have been implemented
 const COMMANDS_TO_IMPLEMENT_LATER = ['collapse', 'expand', 'join', 'open', 'leave', 'logout', 'msg', 'grpmsg'];
 const NON_MOBILE_COMMANDS = ['rename', 'invite_people', 'shortcuts', 'search', 'help', 'settings', 'remove'];
 
-export const COMMANDS_TO_HIDE_ON_MOBILE = [...COMMANDS_TO_IMPLEMENT_LATER, ...NON_MOBILE_COMMANDS];
+const COMMANDS_TO_HIDE_ON_MOBILE = [...COMMANDS_TO_IMPLEMENT_LATER, ...NON_MOBILE_COMMANDS];
 
 const mobileCommandsSelector = createSelector(
     getAutocompleteCommandsList,
@@ -43,4 +43,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SlashSuggestionCached);
+export default connect(mapStateToProps, mapDispatchToProps)(SlashSuggestion);
