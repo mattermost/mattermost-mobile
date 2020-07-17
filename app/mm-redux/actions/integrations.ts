@@ -174,6 +174,19 @@ export function getAutocompleteCommands(teamId: string, page = 0, perPage: numbe
     });
 }
 
+export function getCommandAutocompleteSuggestions(userInput: string, teamId: string, commandArgs: any): ActionFunc {
+    return bindClientFunc({
+        clientFunc: Client4.getCommandAutocompleteSuggestionsList,
+        onSuccess: [IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS],
+        onFailure: IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS_FAILURE,
+        params: [
+            userInput,
+            teamId,
+            commandArgs,
+        ],
+    });
+}
+
 export function getCustomTeamCommands(teamId: string): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.getCustomTeamCommands,

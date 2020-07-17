@@ -80,6 +80,7 @@ export type IntegrationsState = {
     oauthApps: IDMappedObjects<OAuthApp>;
     systemCommands: IDMappedObjects<Command>;
     commands: IDMappedObjects<Command>;
+    commandAutocompleteSuggestions: Array<AutocompleteSuggestion>;
 };
 export type DialogSubmission = {
     url: string;

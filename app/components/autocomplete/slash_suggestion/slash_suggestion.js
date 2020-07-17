@@ -21,6 +21,7 @@ export default class SlashSuggestion extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getAutocompleteCommands: PropTypes.func.isRequired,
+            getCommandAutocompleteSuggestions: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         commands: PropTypes.array,
@@ -32,6 +33,7 @@ export default class SlashSuggestion extends PureComponent {
         value: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
+        suggestions: PropTypes.array,
         rootId: PropTypes.string,
         channelId: PropTypes.string,
     };
@@ -48,7 +50,8 @@ export default class SlashSuggestion extends PureComponent {
     };
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.isSearch || nextProps.value === this.props.value) {
+        if ((nextProps.value === this.props.value && nextProps.suggestions === this.props.suggestions) ||
+            nextProps.isSearch || nextProps.value.startsWith('//') || !nextProps.channelId) {
             return;
         }
 
@@ -57,6 +60,7 @@ export default class SlashSuggestion extends PureComponent {
             commands: nextCommands,
             currentTeamId: nextTeamId,
             value: nextValue,
+            suggestions: nextSuggestions,
         } = nextProps;
 
         if (nextValue[0] !== '/') {
@@ -86,27 +90,26 @@ export default class SlashSuggestion extends PureComponent {
             const matches = this.filterSlashSuggestions(nextValue.substring(1), nextCommands);
             this.updateSuggestions(matches);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            const args = {
-                channel_id: this.props.channelId,
-                ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
-            };
-
-            Client4.getCommandAutocompleteSuggestionsList(nextProps.value, nextProps.currentTeamId, args).then(
-                (data) => {
-                    const matches = [];
-                    data.forEach((sug) => {
-                        if (!this.contains(matches, '/' + sug.Complete)) {
-                            matches.push({
-                                Complete: sug.Complete,
-                                Suggestion: sug.Suggestion,
-                                Hint: sug.Hint,
-                                Description: sug.Description,
-                            });
-                        }
-                    });
-                    this.updateSuggestions(matches);
-                },
-            );
+            if (nextProps.suggestions === this.props.suggestions) {
+                const args = {
+                    channel_id: this.props.channelId,
+                    ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
+                };
+                this.props.actions.getCommandAutocompleteSuggestions(nextProps.value, nextProps.currentTeamId, args);
+            } else {
+                const matches = [];
+                nextSuggestions.forEach((sug) => {
+                    if (!this.contains(matches, '/' + sug.Complete)) {
+                        matches.push({
+                            Complete: sug.Complete,
+                            Suggestion: sug.Suggestion,
+                            Hint: sug.Hint,
+                            Description: sug.Description,
+                        });
+                    }
+                });
+                this.updateSuggestions(matches);
+            }
         } else {
             this.setState({
                 active: false,
