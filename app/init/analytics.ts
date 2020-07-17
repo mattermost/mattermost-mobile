@@ -75,7 +75,7 @@ export function recordTime(screenName: string, category: string, userId: string)
                 userId: diagnosticId,
                 context,
                 properties: {
-                    actual_user_id: userId,
+                    user_actual_id: userId,
                     time: Date.now() - startTime,
                 },
             },
