@@ -619,5 +619,6 @@
   "mobile.server_upgrade.learn_more": "了解更多",
   "mobile.server_upgrade.dismiss": "解除",
   "mobile.server_upgrade.alert_description": "此服务器版本不受支持，用户将面临兼容性问题，这些问题会导致崩溃或严重的错误影响应用程序的核心功能。 需要升级到服务器版本 {serverVersion} 或更高。",
-  "suggestion.mention.groups": "组提及"
+  "suggestion.mention.groups": "组提及",
+  "mobile.android.back_handler_exit": "再次点击后退以退出"
 }
