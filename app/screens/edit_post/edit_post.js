@@ -279,8 +279,6 @@ export default class EditPost extends PureComponent {
                         value={message}
                         nestedScrollEnabled={true}
                         onVisible={this.onAutocompleteVisible}
-                        rootId={this.props.post.root_id}
-                        channelId={this.props.post.channel_id}
                     />
                 </KeyboardTrackingView>
             </View>
