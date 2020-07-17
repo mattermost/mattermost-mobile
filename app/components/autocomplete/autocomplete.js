@@ -18,11 +18,8 @@ import {emptyFunction} from 'app/utils/general';
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
 import EmojiSuggestion from './emoji_suggestion';
-import SlashSuggestionNonCached from './slash_suggestion/non_cached';
-import SlashSuggestionCached from './slash_suggestion/cached';
+import SlashSuggestion from './slash_suggestion';
 import DateSuggestion from './date_suggestion';
-import {Client4} from '@mm-redux/client';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 export default class Autocomplete extends PureComponent {
     static propTypes = {
@@ -199,29 +196,6 @@ export default class Autocomplete extends PureComponent {
 
         const maxListHeight = this.maxListHeight();
 
-        let slashSuggestion = (
-            <SlashSuggestionCached
-                {...this.props}
-                maxListHeight={maxListHeight}
-                onChangeText={this.onChangeText}
-                onResultCountChange={this.handleCommandCountChange}
-                value={value || ''}
-                nestedScrollEnabled={this.props.nestedScrollEnabled}
-            />
-        );
-        if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            slashSuggestion = (
-                <SlashSuggestionNonCached
-                    {...this.props}
-                    maxListHeight={maxListHeight}
-                    onChangeText={this.onChangeText}
-                    onResultCountChange={this.handleCommandCountChange}
-                    value={value || ''}
-                    nestedScrollEnabled={this.props.nestedScrollEnabled}
-                />
-            );
-        }
-
         return (
             <View style={wrapperStyles}>
                 <View
@@ -255,7 +229,14 @@ export default class Autocomplete extends PureComponent {
                         value={value || ''}
                         nestedScrollEnabled={this.props.nestedScrollEnabled}
                     />
-                    {slashSuggestion}
+                    <SlashSuggestion
+                        {...this.props}
+                        maxListHeight={maxListHeight}
+                        onChangeText={this.onChangeText}
+                        onResultCountChange={this.handleCommandCountChange}
+                        value={value || ''}
+                        nestedScrollEnabled={this.props.nestedScrollEnabled}
+                    />
                     {(this.props.isSearch && this.props.enableDateSuggestion) &&
                     <DateSuggestion
                         {...this.props}

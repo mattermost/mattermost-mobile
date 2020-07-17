@@ -11,13 +11,19 @@ import {
 import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import SlashSuggestionItem from '../slash_suggestion_item';
+import SlashSuggestionItem from './slash_suggestion_item';
 import {Client4} from '@mm-redux/client';
-import {COMMANDS_TO_HIDE_ON_MOBILE} from '../cached/index';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-export default class SlashSuggestionNonCached extends PureComponent {
+const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
+
+export default class SlashSuggestion extends PureComponent {
     static propTypes = {
+        actions: PropTypes.shape({
+            getAutocompleteCommands: PropTypes.func.isRequired,
+        }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
+        commands: PropTypes.array,
         isSearch: PropTypes.bool,
         maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
@@ -38,6 +44,7 @@ export default class SlashSuggestionNonCached extends PureComponent {
     state = {
         active: false,
         dataSource: [],
+        lastCommandRequest: 0,
     };
 
     componentWillReceiveProps(nextProps) {
@@ -45,7 +52,14 @@ export default class SlashSuggestionNonCached extends PureComponent {
             return;
         }
 
-        if (nextProps.value[0] !== '/') {
+        const {currentTeamId} = this.props;
+        const {
+            commands: nextCommands,
+            currentTeamId: nextTeamId,
+            value: nextValue,
+        } = nextProps;
+
+        if (nextValue[0] !== '/') {
             this.setState({
                 active: false,
             });
@@ -53,34 +67,82 @@ export default class SlashSuggestionNonCached extends PureComponent {
             return;
         }
 
-        const args = {
-            channel_id: this.props.channelId,
-            ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
-        };
-
-        Client4.getCommandAutocompleteSuggestionsList(nextProps.value, nextProps.currentTeamId, args).then(
-            (data) => {
-                const matches = [];
-                const suggestions = data.filter((sug) => !COMMANDS_TO_HIDE_ON_MOBILE.includes(sug.Complete));
-                suggestions.forEach((sug) => {
-                    if (!this.contains(matches, '/' + sug.Complete)) {
-                        matches.push({
-                            Complete: sug.Complete,
-                            Suggestion: sug.Suggestion,
-                            Hint: sug.Hint,
-                            Description: sug.Description,
-                        });
-                    }
-                });
+        if (nextValue.indexOf(' ') === -1) { // return suggestions for a top level cached commands
+            if (currentTeamId !== nextTeamId) {
                 this.setState({
-                    active: matches.length,
-                    dataSource: matches,
+                    lastCommandRequest: 0,
                 });
-            },
-        );
+            }
+
+            const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
+
+            if ((!nextCommands.length || dataIsStale)) {
+                this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
+                this.setState({
+                    lastCommandRequest: Date.now(),
+                });
+            }
+
+            const matches = this.filterSlashSuggestions(nextValue.substring(1), nextCommands);
+            this.updateSuggestions(matches);
+        } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
+            const args = {
+                channel_id: this.props.channelId,
+                ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
+            };
+
+            Client4.getCommandAutocompleteSuggestionsList(nextProps.value, nextProps.currentTeamId, args).then(
+                (data) => {
+                    const matches = [];
+                    data.forEach((sug) => {
+                        if (!this.contains(matches, '/' + sug.Complete)) {
+                            matches.push({
+                                Complete: sug.Complete,
+                                Suggestion: sug.Suggestion,
+                                Hint: sug.Hint,
+                                Description: sug.Description,
+                            });
+                        }
+                    });
+                    this.updateSuggestions(matches);
+                },
+            );
+        } else {
+            this.setState({
+                active: false,
+            });
+        }
     }
 
-    contains(matches, complete) {
+    updateSuggestions = (matches) => {
+        this.setState({
+            active: matches.length,
+            dataSource: matches,
+        });
+        this.props.onResultCountChange(matches.length);
+    }
+
+    filterSlashSuggestions = (matchTerm, commands) => {
+        const data = commands.filter((command) => {
+            if (!command.auto_complete) {
+                return false;
+            } else if (!matchTerm) {
+                return true;
+            }
+
+            return command.display_name.startsWith(matchTerm) || command.trigger.startsWith(matchTerm);
+        });
+        return data.map((item) => {
+            return {
+                Complete: item.trigger,
+                Suggestion: '/' + item.trigger,
+                Hint: item.auto_complete_hint,
+                Description: item.auto_complete_desc,
+            };
+        });
+    }
+
+    contains = (matches, complete) => {
         return matches.findIndex((match) => match.complete === complete) !== -1;
     }
 
@@ -101,6 +163,12 @@ export default class SlashSuggestionNonCached extends PureComponent {
             // after the auto correct vanished
             setTimeout(() => {
                 onChangeText(completedDraft.replace(`//${command} `, `/${command} `));
+            });
+        }
+
+        if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
+            this.setState({
+                active: false,
             });
         }
     };
