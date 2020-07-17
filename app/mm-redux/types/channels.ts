@@ -75,6 +75,7 @@ export type ChannelsState = {
     totalCount: number;
     manuallyUnread: RelationOneToOne<Channel, boolean>;
     channelModerations: RelationOneToOne<Channel, Array<ChannelModeration>>;
+    channelMemberCountsByGroup: RelationOneToOne<Channel, ChannelMemberCountsByGroup>;
 };
 
 export type ChannelModeration = {
@@ -98,3 +99,11 @@ export type ChannelModerationPatch = {
         members?: boolean;
     };
 };
+
+export type ChannelMemberCountByGroup = {
+    group_id: string;
+    channel_member_count: number;
+    channel_member_timezones_count: number;
+};
+
+export type ChannelMemberCountsByGroup = Record<string, ChannelMemberCountByGroup>;
