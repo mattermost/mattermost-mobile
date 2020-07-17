@@ -619,5 +619,6 @@
   "mobile.server_upgrade.learn_more": "Scopri di più",
   "mobile.server_upgrade.dismiss": "Chiudi",
   "mobile.server_upgrade.alert_description": "Questa versione del server non è supportata e gli utenti saranno esposti a problemi di compatibilità che potrebbero causare crash o seri problemi alle funzionalità principali dellìapp. Aggiornare il server alla versione {serverVersion} o successive.",
-  "suggestion.mention.groups": "Citazioni di gruppo"
+  "suggestion.mention.groups": "Citazioni di gruppo",
+  "mobile.unsupported_server.ok": "OK"
 }
