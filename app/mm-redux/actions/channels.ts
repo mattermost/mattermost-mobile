@@ -1475,6 +1475,26 @@ export function patchChannelModerations(channelId: string, patch: Array<ChannelM
     });
 }
 
+export function getChannelMemberCountsByGroup(channelId: string, includeTimezones: boolean): ActionFunc {
+    return async (dispatch: DispatchFunc) => {
+        let channelMemberCountsByGroup;
+        try {
+            channelMemberCountsByGroup = await Client4.getChannelMemberCountsByGroup(channelId, includeTimezones);
+        } catch (error) {
+            return {error};
+        }
+
+        if (channelMemberCountsByGroup.length) {
+            dispatch({
+                type: ChannelTypes.RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP,
+                data: {channelId, memberCounts: channelMemberCountsByGroup},
+            });
+        }
+
+        return {data: true};
+    };
+}
+
 export default {
     selectChannel,
     createChannel,

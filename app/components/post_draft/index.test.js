@@ -37,13 +37,19 @@ describe('mapStateToProps', () => {
                 serverVersion: '',
             },
             users: {
+                profiles: {},
                 currentUserId: '',
             },
             channels: {
                 currentChannelId: '',
+                channelMemberCountsByGroup: {},
+                channels: {},
             },
             preferences: {
                 myPreferences: {},
+            },
+            teams: {
+                teams: {},
             },
         },
         views: {
