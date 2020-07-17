@@ -94,7 +94,11 @@ jest.doMock('react-native', () => {
     };
 
     return Object.setPrototypeOf({
-        Platform,
+        Platform: {
+            ...Platform,
+            OS: 'ios',
+            Version: 12,
+        },
         StyleSheet,
         ViewPropTypes,
         PermissionsAndroid,

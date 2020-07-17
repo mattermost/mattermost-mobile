@@ -10,10 +10,6 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import RecentMentions from './recent_mentions';
 
-jest.mock('rn-placeholder', () => ({
-    ImageContent: () => null,
-}));
-
 describe('RecentMentions', () => {
     const baseProps = {
         actions: {

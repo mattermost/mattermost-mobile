@@ -547,6 +547,22 @@ function stats(state: RelationOneToOne<Channel, ChannelStats> = {}, action: Gene
 
 function groupsAssociatedToChannel(state: any = {}, action: GenericAction) {
     switch (action.type) {
+    case GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM: {
+        const {groupsByChannelId} = action.data;
+        const nextState = {...state};
+
+        for (const channelID of Object.keys(groupsByChannelId)) {
+            if (groupsByChannelId[channelID]) {
+                const associatedGroupIDs = new Set<string>([]);
+                for (const group of groupsByChannelId[channelID]) {
+                    associatedGroupIDs.add(group.id);
+                }
+                const ids = Array.from(associatedGroupIDs);
+                nextState[channelID] = {ids, totalCount: ids.length};
+            }
+        }
+        return nextState;
+    }
     case GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_CHANNEL: {
         const {channelID, groups, totalGroupCount} = action.data;
         const nextState = {...state};

@@ -67,9 +67,9 @@ function mapStateToProps(state) {
     const favoriteChannels = getSortedFavoriteChannelIds(state);
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels && favoriteChannels.indexOf(currentChannel.id) > -1;
-    const roles = getCurrentUserRoles(state);
+    const roles = getCurrentUserRoles(state) || '';
     const {serverVersion} = state.entities.general;
-    let canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
+    let canManageUsers = currentChannel.id ? canManageChannelMembers(state) : false;
     if (currentChannel.group_constrained) {
         canManageUsers = false;
     }
@@ -96,7 +96,11 @@ function mapStateToProps(state) {
     const isChannelAdmin = checkIsChannelAdmin(roles);
     const isSystemAdmin = checkIsSystemAdmin(roles);
 
-    const channelIsReadOnly = isCurrentChannelReadOnly(state);
+    let channelIsReadOnly = false;
+    if (currentUserId && currentChannel.id) {
+        channelIsReadOnly = isCurrentChannelReadOnly(state) || false;
+    }
+
     const canEditChannel = !channelIsReadOnly && showManagementOptions(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
     const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
 

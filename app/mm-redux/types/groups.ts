@@ -18,6 +18,7 @@ export type Group = {
     has_syncables: boolean;
     member_count: number;
     scheme_admin: boolean;
+    allow_reference: boolean;
 };
 export type GroupTeam = {
     team_id: string;

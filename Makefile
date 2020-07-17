@@ -186,8 +186,10 @@ unsigned-ios: stop pre-build check-style ## Build an unsigned version of the iOS
 	$(call stop_packager)
 
 ios-sim-x86_64: stop pre-build check-style ## Build an unsigned x86_64 version of the iOS app for iPhone simulator
+	$(call start_packager)
 	@echo "Building unsigned x86_64 iOS app for iPhone simulator"
 	@cd fastlane && NODE_ENV=production bundle exec fastlane ios simulator
+	$(call stop_packager)
 
 unsigned-android: stop pre-build check-style prepare-android-build ## Build an unsigned version of the Android app
 	@cd fastlane && NODE_ENV=production bundle exec fastlane android unsigned

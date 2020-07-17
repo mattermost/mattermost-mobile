@@ -313,6 +313,16 @@ function lastChannelViewTime(state = {}, action) {
         return {...state, [data.channelId]: data.lastViewedAt};
     }
 
+    case PostTypes.RECEIVED_POST:
+    case PostTypes.RECEIVED_NEW_POST: {
+        const data = action.data;
+        if (!data.ownPost) {
+            return state;
+        }
+
+        return {...state, [data.channel_id]: data.create_at + 1};
+    }
+
     default:
         return state;
     }
@@ -359,6 +369,20 @@ function keepChannelIdAsUnread(state = null, action) {
     }
 }
 
+function unreadMessageCount(state = {}, action) {
+    switch (action.type) {
+    case ChannelTypes.SET_UNREAD_MSG_COUNT: {
+        const {channelId, count} = action.data;
+        return {
+            ...state,
+            [channelId]: count,
+        };
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     displayName,
     drafts,
@@ -370,4 +394,5 @@ export default combineReducers({
     loadMorePostsVisible,
     lastChannelViewTime,
     keepChannelIdAsUnread,
+    unreadMessageCount,
 });
