@@ -37,6 +37,7 @@ function serverUrl(state = Config.DefaultServerUrl, action) {
 }
 
 function serverHistory(state = [], action) {
+    // console.log('Reduxer', state, action);
     switch (action.type) {
     case ViewTypes.SERVER_URL_SUCCESSFULLY_CONNECTED:
         return addUrlToHistory(action.serverUrl, state);

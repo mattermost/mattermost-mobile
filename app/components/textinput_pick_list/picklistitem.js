@@ -8,31 +8,33 @@ import PropTypes from 'prop-types';
 export default class PickListItem extends PureComponent {
     static propTypes = {
         index: PropTypes.number.isRequired,
-        selected: PropTypes.bool,
-        selectedId: PropTypes.number,
+        selected: PropTypes.string,
         onSelect: PropTypes.func.isRequired,
         onDelete: PropTypes.func.isRequired,
         item: PropTypes.string.isRequired,
 
     };
+
+    onPress=() => {
+        const {item, index, onSelect} = this.props;
+        onSelect(item, index);
+    }
+
+    onDelete=() => {
+        const {item, onDelete} = this.props;
+        onDelete(item);
+    }
     render() {
         const {
-            index,
             selected,
-            selectedId,
-            onSelect,
             item,
-            onDelete,
         } = this.props;
         return (
             <View
-                key={index}
                 style={styles.mainContainer}
             >
                 <TouchableWithoutFeedback
-                    onPress={() => {
-                        onSelect(item, index);
-                    }}
+                    onPress={this.onPress}
                 >
                     <View style={styles.contentContainer}>
                         <Text
@@ -41,7 +43,7 @@ export default class PickListItem extends PureComponent {
                         >
                             {item}
                         </Text>
-                        {selected && selectedId === index && (
+                        {selected === item && (
                             <Icon
                                 name='check'
                                 type='feather'
@@ -53,9 +55,7 @@ export default class PickListItem extends PureComponent {
                     </View>
                 </TouchableWithoutFeedback>
                 <TouchableWithoutFeedback
-                    onPress={() => {
-                        onDelete(item);
-                    }}
+                    onPress={this.onDelete}
                 >
                     <Icon
                         name='x'

@@ -83,9 +83,7 @@ export default class SelectServer extends PureComponent {
             connecting: false,
             error: null,
             url: props.serverUrl,
-            urlSearch: '',
         };
-
         this.cancelPing = null;
     }
 
@@ -97,6 +95,8 @@ export default class SelectServer extends PureComponent {
             // If the app is managed or AutoSelectServerUrl is true in the Config, the server url is set and the user can't change it
             // we automatically trigger the ping to move to the next screen
             this.handleConnect();
+        } else {
+            this.clearStateUrl();
         }
 
         if (Platform.OS === 'android') {
@@ -215,8 +215,11 @@ export default class SelectServer extends PureComponent {
         this.blur();
     };
 
+    clearStateUrl=() => {
+        this.setState({url: ''});
+    }
+
     handleConnect = preventDoubleTap(async () => {
-        this.setState({url: this.state.urlSearch});
         Keyboard.dismiss();
 
         if (this.state.connecting || this.state.connected) {
@@ -336,7 +339,11 @@ export default class SelectServer extends PureComponent {
     };
 
     handleTextChanged = (url) => {
-        this.setState({urlSearch: url});
+        this.setState({url});
+    };
+
+    handleTextSelect = (url) => {
+        this.setState({url});
     };
 
     inputRef = (ref) => {
@@ -486,14 +493,10 @@ export default class SelectServer extends PureComponent {
         });
     };
 
-    filteredServerHistory = (serverHistory, searchTerm) => {
-        return serverHistory.filter((url) => url.includes(searchTerm));
-    };
-
     render() {
         const {formatMessage} = this.context.intl;
         const {allowOtherServers, serverHistory} = this.props;
-        const {connected, connecting, error, urlSearch} = this.state;
+        const {connected, connecting, error, url} = this.state;
         const {deleteServerUrl} = this.props.actions;
         let buttonIcon;
         let buttonText;
@@ -567,11 +570,11 @@ export default class SelectServer extends PureComponent {
 
                             <TextInputPickList
                                 inputRef={this.inputRef}
-                                value={urlSearch}
+                                value={url}
                                 editable={!inputDisabled}
                                 onChangeText={this.handleTextChanged}
                                 onSubmitEditing={this.handleConnect}
-                                onSelect={this.handleTextChanged}
+                                onSelect={this.handleTextSelect}
                                 onDelete={deleteServerUrl}
                                 containerStyle={style.inputContainer}
                                 style={style.inputText}
@@ -591,10 +594,7 @@ export default class SelectServer extends PureComponent {
                                 returnKeyType='go'
                                 underlineColorAndroid='transparent'
                                 disableFullscreenUI={true}
-                                listData={this.filteredServerHistory(
-                                    serverHistory,
-                                    urlSearch,
-                                )}
+                                listData={serverHistory}
                             />
 
                             <Button
@@ -602,15 +602,15 @@ export default class SelectServer extends PureComponent {
                                 containerStyle={[
                                     GlobalStyles.signupButton,
                                     style.connectButton,
-                                    !urlSearch && style.signupButtonDisabled,
+                                    !url && style.signupButtonDisabled,
                                 ]}
-                                disabled={!urlSearch}
+                                disabled={!url}
                             >
                                 {buttonIcon}
                                 <Text
                                     style={[
                                         GlobalStyles.signupButtonText,
-                                        !urlSearch &&
+                                        !url &&
                                             style.signupButtonTextDisabled,
                                     ]}
                                 >
@@ -637,6 +637,7 @@ const style = StyleSheet.create({
     },
     connectButton: {
         alignItems: 'center',
+        zIndex: 0,
     },
     connectingIndicator: {
         marginRight: 5,

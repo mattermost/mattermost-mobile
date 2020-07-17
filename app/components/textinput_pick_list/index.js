@@ -10,6 +10,7 @@ import {
     TextInput,
     FlatList,
     Text,
+    Platform,
 } from 'react-native';
 import {Icon} from 'react-native-elements';
 import PickListItem from './picklistitem';
@@ -25,9 +26,17 @@ export default class TextInputPickList extends PureComponent {
         onBlur: PropTypes.func,
         onSubmitEditing: PropTypes.func.isRequired,
         containerStyle: PropTypes.object,
-        license: PropTypes.object,
         listData: PropTypes.array,
         style: PropTypes.object,
+        autoCapitalize: PropTypes.string,
+        autoCorrect: PropTypes.bool,
+        keyboardType: PropTypes.string,
+        placeholder: PropTypes.any,
+        placeholderTextColor: PropTypes.any,
+        returnKeyType: PropTypes.string,
+        underlineColorAndroid: PropTypes.string,
+        disableFullscreenUI: PropTypes.bool,
+
     };
 
     constructor(props) {
@@ -38,40 +47,55 @@ export default class TextInputPickList extends PureComponent {
             focused: false,
             ref: null,
             onSelect: props.onSelect,
-            selected: false,
-            selectedId: null,
+            selected: null,
             value: props.value,
         };
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.value !== this.props.value) {
-            // eslint-disable-next-line react/no-did-update-set-state
-            this.setState({value: this.props.value});
+    static getDerivedStateFromProps(props, state) {
+        if (props.value !== state.value) {
+            return {
+                ...state,
+                value: props.value,
+            };
         }
+        return state;
     }
+    inputRef = (reference) => {
+        if (this.props.inputRef) {
+            this.props.inputRef(reference);
+        }
+        this.setState({ref: reference});
+    };
 
     onFocus = () => {
+        if (this.props.onFocus) {
+            this.props.onFocus();
+        }
         this.setState({focused: true});
     };
 
     onBlur = () => {
+        if (this.props.onBlur) {
+            this.props.onBlur();
+        }
         this.state.onSelect(this.props.value);
         this.setState({focused: false});
     };
 
-    inputRef = (ref) => {
-        this.setState({ref});
+    onSubmitEditing = () => {
+        this.props.onSelect(this.props.value);
+        this.props.onSubmitEditing();
     };
 
     renderListItem = ({item, index}) => {
-        const {selected, selectedId} = this.state;
+        const {selected} = this.state;
         return (
             <PickListItem
+                key={index}
                 index={index}
                 item={item}
                 onSelect={this.handleItemSelect}
-                selectedId={selectedId}
                 selected={selected}
                 onDelete={this.props.onDelete}
             />
@@ -80,7 +104,13 @@ export default class TextInputPickList extends PureComponent {
 
     dropdownMenu = (listData, y) => {
         return (
-            <View style={[styles.dropdownContainer, {top: y + 50}]}>
+            <View
+                style={[
+                    styles.dropdownContainer,
+                    {top: y + 50},
+                    Platform.OS === 'android' && {zIndex: 1},
+                ]}
+            >
                 <FlatList
                     keyboardShouldPersistTaps={'handled'}
                     ListHeaderComponent={
@@ -96,10 +126,9 @@ export default class TextInputPickList extends PureComponent {
         );
     };
 
-    handleItemSelect = (item, selectedId) => {
+    handleItemSelect = (item) => {
         this.setState({
-            selected: true,
-            selectedId,
+            selected: item,
         });
         this.state.onSelect(item);
         setTimeout(() => {
@@ -107,33 +136,70 @@ export default class TextInputPickList extends PureComponent {
         }, 1500);
     };
 
+    filteredServerHistory = () => {
+        const serverHistory = this.props.listData;
+        const {value, selected} = this.state;
+        if (selected) {
+            return serverHistory;
+        }
+        const ret = serverHistory.filter((url) => url.includes(value));
+        return ret;
+    };
+
+    clearTextInput=() => {
+        if (this.state.ref) {
+            this.state.ref.clear();
+        }
+        this.setState({selected: null});
+
+        if (this.props.onChangeText) {
+            this.props.onChangeText('');
+        }
+    }
+
+    toggleDropDown=() => {
+        if (this.state.focused) {
+            this.onBlur();
+        } else {
+            this.onFocus();
+        }
+    }
+
+    textInputOnLayout=(event) => {
+        const {x, y} = event.nativeEvent.layout;
+        this.setState({x, y});
+    }
+
     render() {
         const {
-            inputRef,
+            editable,
+            onChangeText,
             containerStyle,
             style,
-            listData,
-            onFocus,
-            onBlur,
-            onChangeText,
-            onSelect,
-            onSubmitEditing,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            onDelete,
-            ...props
+            autoCapitalize,
+            autoCorrect,
+            keyboardType,
+            placeholder,
+            placeholderTextColor,
+            returnKeyType,
+            underlineColorAndroid,
+            disableFullscreenUI,
+
         } = this.props;
-        const {y, focused, ref, value} = this.state;
+        const listData = this.filteredServerHistory();
+
+        const {y, focused, value} = this.state;
         const serverHistoryExists = listData != null && listData.length > 0;
-        // eslint-disable-next-line eqeqeq
-        const searchTermExists = value != null && value != '';
+        const searchTermExists = value != null && value !== '';
         return (
-            <View style={styles.mainContainer}>
+            <View
+                style={[
+                    styles.mainContainer,
+                    Platform.OS === 'ios' && {zIndex: 1},
+                ]}
+            >
                 <View
-                    onLayout={(event) => {
-                        // eslint-disable-next-line no-shadow
-                        const {x, y} = event.nativeEvent.layout;
-                        this.setState({x, y});
-                    }}
+                    onLayout={this.textInputOnLayout}
                     style={[
                         containerStyle,
                         styles.innerContainer,
@@ -142,42 +208,29 @@ export default class TextInputPickList extends PureComponent {
                 >
                     <View style={styles.textInputContainer}>
                         <TextInput
-                            ref={(reference) => {
-                                // eslint-disable-next-line no-unused-expressions
-                                inputRef && inputRef(reference);
-                                this.inputRef(reference);
-                            }}
+                            ref={this.inputRef}
                             style={[style, styles.textInput]}
-                            {...props}
-                            underlineColorAndroid='transparent'
-                            onFocus={() => {
-                                // eslint-disable-next-line no-unused-expressions
-                                onFocus && onFocus();
-                                this.onFocus();
-                            }}
-                            onBlur={() => {
-                                // eslint-disable-next-line no-unused-expressions
-                                onBlur && onBlur();
-                                this.onBlur();
-                            }}
+                            onFocus={this.onFocus}
+                            onBlur={this.onBlur}
                             onChangeText={onChangeText}
-                            onSubmitEditing={() => {
-                                onSelect(value);
-                                onSubmitEditing();
-                            }}
+                            onSubmitEditing={this.onSubmitEditing}
                             value={value}
+                            editable={editable}
+                            autoCapitalize={autoCapitalize}
+                            autoCorrect={autoCorrect}
+                            keyboardType={keyboardType}
+                            placeholder={placeholder}
+                            placeholderTextColor={placeholderTextColor}
+                            returnKeyType={returnKeyType}
+                            underlineColorAndroid={underlineColorAndroid}
+                            disableFullscreenUI={disableFullscreenUI}
                         />
                     </View>
 
                     <View style={styles.textInputButtonsContainer}>
                         {searchTermExists && (
                             <TouchableWithoutFeedback
-                                onPress={() => {
-                                    // eslint-disable-next-line no-unused-expressions
-                                    ref && ref.clear();
-                                    // eslint-disable-next-line no-unused-expressions
-                                    onChangeText && onChangeText('');
-                                }}
+                                onPress={this.clearTextInput}
                             >
                                 <Icon
                                     name='cancel'
@@ -194,10 +247,7 @@ export default class TextInputPickList extends PureComponent {
                         )}
                         {serverHistoryExists && (
                             <TouchableWithoutFeedback
-                                onPress={() => {
-                                    // eslint-disable-next-line no-unused-expressions
-                                    focused ? this.onBlur() : this.onFocus();
-                                }}
+                                onPress={this.toggleDropDown}
                             >
                                 <Icon
                                     name='chevron-down'
@@ -221,7 +271,7 @@ export default class TextInputPickList extends PureComponent {
 const styles = StyleSheet.create({
     mainContainer: {width: '100%'},
     innerContainer: {flexDirection: 'row'},
-    textInputContainer: {flex: 1},
+    textInputContainer: {flex: 1, justifyContent: 'center'},
     textInputContainerFocused: {borderColor: '#166DE0', borderWidth: 2},
     textInput: {width: '100%', marginRight: 10},
     textInputButtonsContainer: {
@@ -236,7 +286,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     dropdownContainer: {
-        zIndex: 1,
         position: 'absolute',
         height: 125,
         width: '100%',
