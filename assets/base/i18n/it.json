@@ -620,5 +620,9 @@
   "mobile.server_upgrade.dismiss": "Chiudi",
   "mobile.server_upgrade.alert_description": "Questa versione del server non è supportata e gli utenti saranno esposti a problemi di compatibilità che potrebbero causare crash o seri problemi alle funzionalità principali dellìapp. Aggiornare il server alla versione {serverVersion} o successive.",
   "suggestion.mention.groups": "Citazioni di gruppo",
-  "mobile.unsupported_server.ok": "OK"
+  "mobile.unsupported_server.ok": "OK",
+  "mobile.unsupported_server.title": "Versione server non supportata",
+  "mobile.unsupported_server.message": "Allegati, anteprima collegamenti, reazione e dati integrati potrebbero non essere visualizzati correttamente. Se il problema persiste contatta il tuo amministratore di sistema per aggiornare il server Mattermost.",
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}",
+  "mobile.android.back_handler_exit": "Premi di nuovo indietro per uscire"
 }
