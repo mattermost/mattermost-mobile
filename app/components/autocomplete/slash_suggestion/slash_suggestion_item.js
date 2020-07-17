@@ -42,7 +42,7 @@ export default class SlashSuggestionItem extends PureComponent {
                 style={[style.row, padding(isLandscape)]}
                 type={'opacity'}
             >
-                <Text style={style.suggestionName}>{`/${suggestion} ${hint}`}</Text>
+                <Text style={style.suggestionName}>{`${suggestion} ${hint}`}</Text>
                 <Text style={style.suggestionDescription}>{description}</Text>
             </TouchableWithFeedback>
         );
