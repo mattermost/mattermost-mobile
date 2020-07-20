@@ -365,7 +365,7 @@ index 48fb5c1..3872d91 100644
 +  }
  }
 diff --git a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/utils/RealPathUtil.java b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/utils/RealPathUtil.java
-index cc90dce..2256973 100644
+index cc90dce..c1cc74d 100644
 --- a/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/utils/RealPathUtil.java
 +++ b/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/utils/RealPathUtil.java
 @@ -7,16 +7,22 @@ import android.net.Uri;
@@ -392,7 +392,21 @@ index cc90dce..2256973 100644
  	public static @Nullable Uri compatUriFromFile(@NonNull final Context context,
  												  @NonNull final File file) {
  		Uri result = null;
-@@ -89,7 +95,7 @@ public class RealPathUtil {
+@@ -58,12 +64,7 @@ public class RealPathUtil {
+ 			}
+ 			// DownloadsProvider
+ 			else if (isDownloadsDocument(uri)) {
+-
+-				final String id = DocumentsContract.getDocumentId(uri);
+-				final Uri contentUri = ContentUris.withAppendedId(
+-						Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+-
+-				return getDataColumn(context, contentUri, null, null);
++				return getPathFromSavingTempFile(context, uri);
+ 			}
+ 			// MediaProvider
+ 			else if (isMediaDocument(uri)) {
+@@ -89,7 +90,7 @@ public class RealPathUtil {
  			}
  		}
  		// MediaStore (and general)
@@ -401,7 +415,7 @@ index cc90dce..2256973 100644
  
  			// Return the remote address
  			if (isGooglePhotosUri(uri))
-@@ -98,7 +104,7 @@ public class RealPathUtil {
+@@ -98,7 +99,7 @@ public class RealPathUtil {
  			if (isFileProviderUri(context, uri))
  				return getFileProviderPath(context, uri);
  
@@ -410,7 +424,7 @@ index cc90dce..2256973 100644
  		}
  		// File
  		else if ("file".equalsIgnoreCase(uri.getScheme())) {
-@@ -108,6 +114,49 @@ public class RealPathUtil {
+@@ -108,6 +109,49 @@ public class RealPathUtil {
  		return null;
  	}
  
