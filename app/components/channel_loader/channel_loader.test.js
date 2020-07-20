@@ -12,10 +12,6 @@ describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
         theme: Preferences.THEMES.default,
-        actions: {
-            handleSelectChannel: jest.fn(),
-            setChannelLoading: jest.fn(),
-        },
         isLandscape: false,
     };
 

@@ -17,6 +17,7 @@ function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
     const emojiName = ownProps.emojiName;
     const customEmojis = getCustomEmojisByName(state);
+    const serverUrl = Client4.getUrl();
 
     let imageUrl = '';
     let unicode;
@@ -26,9 +27,13 @@ function mapStateToProps(state, ownProps) {
         const emoji = Emojis[EmojiIndicesByAlias.get(emojiName)];
         unicode = emoji.filename;
         if (BuiltInEmojis.includes(emojiName)) {
-            imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
+            if (serverUrl) {
+                imageUrl = Client4.getSystemEmojiImageUrl(emoji.filename);
+            } else {
+                displayTextOnly = true;
+            }
         }
-    } else if (customEmojis.has(emojiName)) {
+    } else if (customEmojis.has(emojiName) && serverUrl) {
         const emoji = customEmojis.get(emojiName);
         imageUrl = Client4.getCustomEmojiImageUrl(emoji.id);
         isCustomEmoji = true;

@@ -8,7 +8,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {General} from '@mm-redux/constants';
@@ -92,7 +92,7 @@ export default class EditChannelInfo extends PureComponent {
         }
 
         if (this.scroll?.current) {
-            this.scroll.current.scrollToPosition(0, 0, true);
+            this.scroll.current.scrollTo({x: 0, y: 0, animated: true});
         }
     };
 
@@ -184,7 +184,7 @@ export default class EditChannelInfo extends PureComponent {
 
     scrollHeaderToTop = () => {
         if (this.scroll.current) {
-            this.scroll.current.scrollToPosition(0, this.state.headerPosition);
+            this.scroll.current.scrollTo({x: 0, y: this.state.headerPosition});
         }
     }
 

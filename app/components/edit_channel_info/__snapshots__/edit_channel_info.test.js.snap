@@ -5,20 +5,18 @@ exports[`EditChannelInfo should match snapshot 1`] = `
   <Connect(StatusBar) />
   <KeyboardAwareScrollView
     enableAutomaticScroll={true}
-    enableOnAndroid={false}
-    enableResetScrollToCoords={true}
-    extraHeight={75}
-    extraScrollHeight={0}
-    keyboardOpeningTime={250}
+    getTextInputRefs={[Function]}
     keyboardShouldPersistTaps="always"
     onKeyboardDidHide={[Function]}
     onKeyboardDidShow={[Function]}
+    scrollToBottomOnKBShow={false}
+    scrollToInputAdditionalOffset={75}
+    startScrolledToBottom={false}
     style={
       Object {
         "flex": 1,
       }
     }
-    viewIsInsideTabBar={false}
   >
     <TouchableWithoutFeedback
       onPress={[Function]}

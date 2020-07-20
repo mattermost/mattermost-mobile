@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import DocumentPicker from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 
@@ -200,7 +200,7 @@ export default class EditProfile extends PureComponent {
         this.setState({error, updating: false});
         this.emitCanUpdateAccount(true);
         if (this.scrollView) {
-            this.scrollView.props.scrollToPosition(0, 0);
+            this.scrollView.props.scrollTo({x: 0, y: 0});
         }
     };
 
