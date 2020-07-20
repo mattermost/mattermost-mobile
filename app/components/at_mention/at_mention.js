@@ -3,7 +3,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Text} from 'react-native';
+import {Text} from 'react-native';
+import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 

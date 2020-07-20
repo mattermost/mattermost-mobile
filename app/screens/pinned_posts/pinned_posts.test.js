@@ -50,7 +50,7 @@ describe('PinnedPosts', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when component waiting for response', () => {
+    test('should match snapshot when component waiting for response', async () => {
         const error = new Error('foo');
 
         const newProps = {

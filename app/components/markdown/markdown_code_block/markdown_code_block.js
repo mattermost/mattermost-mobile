@@ -5,12 +5,12 @@ import {PropTypes} from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
-    Clipboard,
     Keyboard,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
+import Clipboard from '@react-native-community/clipboard';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import FormattedText from 'app/components/formatted_text';

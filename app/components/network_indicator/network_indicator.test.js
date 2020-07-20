@@ -11,12 +11,14 @@ import {ViewTypes} from '@constants';
 
 import NetworkIndicator from './network_indicator';
 
+jest.useFakeTimers();
+
 describe('AttachmentFooter', () => {
     Animated.sequence = jest.fn(() => ({
         start: jest.fn((cb) => cb()),
     }));
     Animated.timing = jest.fn(() => ({
-        start: jest.fn(),
+        start: jest.fn((cb) => cb()),
     }));
 
     const baseProps = {
@@ -43,7 +45,7 @@ describe('AttachmentFooter', () => {
         const wrapper = shallow(<NetworkIndicator {...baseProps}/>);
         const instance = wrapper.instance();
 
-        it('emits INDICATOR_BAR_VISIBLE with true only if not already visible', () => {
+        it('emits INDICATOR_BAR_VISIBLE with true only if not already visible', async () => {
             instance.visible = true;
             instance.show();
             expect(EventEmitter.emit).not.toHaveBeenCalled();
@@ -52,6 +54,7 @@ describe('AttachmentFooter', () => {
             instance.show();
             expect(EventEmitter.emit).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, true);
             expect(instance.visible).toBe(true);
+            expect(wrapper.state('opacity')).toBe(1);
         });
     });
 
@@ -60,7 +63,7 @@ describe('AttachmentFooter', () => {
         const wrapper = shallow(<NetworkIndicator {...baseProps}/>);
         const instance = wrapper.instance();
 
-        it('emits INDICATOR_BAR_VISIBLE with false only if visible', () => {
+        it('emits INDICATOR_BAR_VISIBLE with false only if visible', async () => {
             instance.visible = false;
             instance.connected();
             expect(EventEmitter.emit).not.toHaveBeenCalled();
@@ -69,6 +72,7 @@ describe('AttachmentFooter', () => {
             instance.connected();
             expect(EventEmitter.emit).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, false);
             expect(instance.visible).toBe(false);
+            expect(wrapper.state('opacity')).toBe(0);
         });
     });
 });

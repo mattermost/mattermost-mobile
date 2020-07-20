@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
-    Clipboard,
     Linking,
     Platform,
     StyleSheet,
@@ -13,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
+import Clipboard from '@react-native-community/clipboard';
 
 import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ImageViewPort from '@components/image_viewport';
