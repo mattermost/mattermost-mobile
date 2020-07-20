@@ -74,7 +74,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingVertical: 8,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
         },
         rowPicture: {
             marginHorizontal: 8,

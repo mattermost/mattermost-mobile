@@ -64,14 +64,6 @@ export default class ChannelIOS extends ChannelBase {
                     <ChannelPostList
                         updateNativeScrollView={this.updateNativeScrollView}
                     />
-                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <Autocomplete
-                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                            onChangeText={this.handleAutoComplete}
-                            cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        />
-                    </View>
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
                 </>
             );
@@ -104,6 +96,14 @@ export default class ChannelIOS extends ChannelBase {
                     />
                 </KeyboardTrackingView>
                 }
+                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                    <Autocomplete
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.handleAutoComplete}
+                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                    />
+                </View>
             </>
         );
 

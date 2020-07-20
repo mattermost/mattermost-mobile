@@ -242,11 +242,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: theme.centerChannelBg,
         },
         row: {
-            height: 40,
             flexDirection: 'row',
             alignItems: 'center',
-            padding: 16,
-            backgroundColor: theme.centerChannelBg,
+            overflow: 'hidden',
+            paddingVertical: 8,
+            paddingHorizontal: 16,
+            height: 40,
         },
     };
 });

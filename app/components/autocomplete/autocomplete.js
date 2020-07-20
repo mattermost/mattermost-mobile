@@ -37,6 +37,7 @@ export default class Autocomplete extends PureComponent {
         nestedScrollEnabled: PropTypes.bool,
         expandDown: PropTypes.bool,
         onVisible: PropTypes.func,
+        bottom: PropTypes.number,
     };
 
     static defaultProps = {
@@ -45,6 +46,7 @@ export default class Autocomplete extends PureComponent {
         enableDateSuggestion: false,
         nestedScrollEnabled: false,
         onVisible: emptyFunction,
+        bottom: 80,
     };
 
     static getDerivedStateFromProps(props, state) {
@@ -171,7 +173,7 @@ export default class Autocomplete extends PureComponent {
     }
 
     render() {
-        const {theme, isSearch, expandDown} = this.props;
+        const {theme, isSearch, expandDown, bottom} = this.props;
         const style = getStyleFromTheme(theme);
 
         const wrapperStyles = [];
@@ -180,7 +182,10 @@ export default class Autocomplete extends PureComponent {
             wrapperStyles.push(style.base, style.searchContainer);
             containerStyles.push(style.content);
         } else {
-            const containerStyle = expandDown ? style.containerExpandDown : style.container;
+            let containerStyle = {bottom};
+            if (expandDown) {
+                containerStyle = style.containerExpandDown;
+            }
             containerStyles.push(style.base, containerStyle);
         }
 
@@ -195,7 +200,6 @@ export default class Autocomplete extends PureComponent {
         }
 
         const maxListHeight = this.maxListHeight();
-
         return (
             <View style={wrapperStyles}>
                 <View
@@ -270,9 +274,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         borders: {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-        },
-        container: {
-            bottom: 0,
         },
         containerExpandDown: {
             top: 0,

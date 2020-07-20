@@ -122,7 +122,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 40,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
         },
         rowDisplayName: {
             fontSize: 15,

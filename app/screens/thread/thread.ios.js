@@ -43,28 +43,17 @@ export default class ThreadIOS extends ThreadBase {
         let postDraft;
         if (this.hasRootPost()) {
             content = (
-                <>
-                    <PostList
-                        renderFooter={this.renderFooter()}
-                        indicateNewMessages={false}
-                        postIds={postIds}
-                        lastPostIndex={getLastPostIndex(postIds)}
-                        currentUserId={myMember && myMember.user_id}
-                        lastViewedAt={this.state.lastViewedAt}
-                        onPostPress={this.hideKeyboard}
-                        location={THREAD}
-                        scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
-                    />
-                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <Autocomplete
-                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                            onChangeText={this.handleAutoComplete}
-                            cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
-                            rootId={rootId}
-                        />
-                    </View>
-                </>
+                <PostList
+                    renderFooter={this.renderFooter()}
+                    indicateNewMessages={false}
+                    postIds={postIds}
+                    lastPostIndex={getLastPostIndex(postIds)}
+                    currentUserId={myMember && myMember.user_id}
+                    lastViewedAt={this.state.lastViewedAt}
+                    onPostPress={this.hideKeyboard}
+                    location={THREAD}
+                    scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                />
             );
 
             postDraft = (
@@ -101,6 +90,15 @@ export default class ThreadIOS extends ThreadBase {
                     {content}
                 </SafeAreaView>
                 {postDraft}
+                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                    <Autocomplete
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.handleAutoComplete}
+                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
+                        rootId={rootId}
+                    />
+                </View>
             </React.Fragment>
         );
     }

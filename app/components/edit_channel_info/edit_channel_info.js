@@ -12,7 +12,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {General} from '@mm-redux/constants';
 
-import Autocomplete from 'app/components/autocomplete';
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -345,7 +345,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <Autocomplete
                                 cursorPosition={header.length}
-                                maxHeight={200}
+                                maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                                 onChangeText={this.onHeaderChangeText}
                                 value={header}
                                 nestedScrollEnabled={true}
