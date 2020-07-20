@@ -240,7 +240,7 @@ export default class PostDraft extends PureComponent {
 
     doSubmitMessage = () => {
         const {createPost, currentUserId, channelId, files, handleClearFiles, rootId} = this.props;
-        const value = this.input.current.getValue();
+        const value = this.input.current?.getValue() || '';
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -256,10 +256,12 @@ export default class PostDraft extends PureComponent {
             handleClearFiles(channelId, rootId);
         }
 
-        this.input.current.setValue('');
-        this.setState({sendingMessage: false});
+        if (this.input.current) {
+            this.input.current.setValue('');
+            this.input.current.changeDraft('');
+        }
 
-        this.input.current.changeDraft('');
+        this.setState({sendingMessage: false});
 
         if (Platform.OS === 'android') {
             // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
@@ -486,29 +488,26 @@ export default class PostDraft extends PureComponent {
     }
 
     sendMessage = () => {
-        const value = this.input.current.getValue();
+        const value = this.input.current?.getValue() || '';
+        const {enableConfirmNotificationsToChannel, membersCount, useGroupMentions, useChannelMentions} = this.props;
+        const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
+        const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
+        const toAllOrChannel = this.textContainsAtAllAtChannel(value);
+        const groupMentions = (!toAllOrChannel && notificationsToGroups) ? this.groupsMentionedInText(value) : [];
 
-        if (value) {
-            const {enableConfirmNotificationsToChannel, membersCount, useGroupMentions, useChannelMentions} = this.props;
-            const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-            const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
-            const toAllOrChannel = this.textContainsAtAllAtChannel(value);
-            const groupMentions = (!toAllOrChannel && notificationsToGroups) ? this.groupsMentionedInText(value) : [];
-
-            if (value.indexOf('/') === 0) {
-                this.sendCommand(value);
-            } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
-                this.showSendToAllOrChannelAlert(membersCount, value);
-            } else if (groupMentions.length > 0) {
-                const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
-                if (memberNotifyCount > 0) {
-                    this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount, value);
-                } else {
-                    this.doSubmitMessage();
-                }
+        if (value.indexOf('/') === 0) {
+            this.sendCommand(value);
+        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
+            this.showSendToAllOrChannelAlert(membersCount, value);
+        } else if (groupMentions.length > 0) {
+            const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
+            if (memberNotifyCount > 0) {
+                this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount, value);
             } else {
                 this.doSubmitMessage();
             }
+        } else {
+            this.doSubmitMessage();
         }
     };
 
