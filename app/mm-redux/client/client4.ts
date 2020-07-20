@@ -2817,6 +2817,13 @@ export default class Client4 {
         );
     };
 
+    getCommandAutocompleteSuggestionsList = (userInput: string, teamId: string, commandArgs: {}) => {
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/commands/autocomplete_suggestions${buildQueryString({...commandArgs, user_input: userInput})}`,
+            {method: 'get'},
+        );
+    };
+
     // Groups
 
     linkGroupSyncable = async (groupID: string, syncableID: string, syncableType: string, patch: SyncablePatch) => {
