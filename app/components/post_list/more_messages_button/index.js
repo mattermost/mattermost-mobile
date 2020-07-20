@@ -3,6 +3,8 @@
 
 import {connect} from 'react-redux';
 
+import {resetUnreadMessageCount} from '@actions/views/channel';
+
 import MoreMessagesButton from './more_messages_button';
 
 function mapStateToProps(state, ownProps) {
@@ -18,4 +20,8 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(mapStateToProps)(MoreMessagesButton);
+const mapDispatchToProps = {
+    resetUnreadMessageCount,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(MoreMessagesButton);

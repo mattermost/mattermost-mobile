@@ -8,6 +8,7 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import EphemeralStore from 'app/store/ephemeral_store';
 import * as NavigationActions from 'app/actions/navigation';
+import {emptyFunction} from '@utils/general';
 
 import ChannelBase from './channel_base';
 
@@ -27,7 +28,6 @@ describe('ChannelBase', () => {
             recordLoadTime: jest.fn(),
             selectDefaultTeam: jest.fn(),
             selectInitialChannel: jest.fn(),
-            resetUnreadMessageCount: jest.fn(),
         },
         componentId: channelBaseComponentId,
         theme: Preferences.THEMES.default,
@@ -78,5 +78,21 @@ describe('ChannelBase', () => {
             [componentIds[1], newThemeOptions],
             [componentIds[0], newThemeOptions],
         ]);
+    });
+
+    test('registerTypingAnimation should return a callback that removes the typing animation', () => {
+        const wrapper = shallow(
+            <ChannelBase {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        const instance = wrapper.instance();
+        expect(instance.typingAnimations).toStrictEqual([]);
+
+        const removeAnimation = instance.registerTypingAnimation(emptyFunction);
+        expect(instance.typingAnimations).toStrictEqual([emptyFunction]);
+
+        removeAnimation();
+        expect(instance.typingAnimations).toStrictEqual([]);
     });
 });

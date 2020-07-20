@@ -4,12 +4,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Keyboard, StyleSheet} from 'react-native';
+import {Animated, Keyboard, StyleSheet} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import {NavigationTypes} from '@constants';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import {unsupportedServer} from '@utils/supported_server';
@@ -30,7 +31,6 @@ export default class ChannelBase extends PureComponent {
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
-            resetUnreadMessageCount: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
         currentChannelId: PropTypes.string,
@@ -65,6 +65,8 @@ export default class ChannelBase extends PureComponent {
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
+
+        this.typingAnimations = [];
     }
 
     componentDidMount() {
@@ -80,6 +82,7 @@ export default class ChannelBase extends PureComponent {
         } = this.props;
         EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
+        EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
 
         if (currentTeamId) {
             this.loadChannels(currentTeamId);
@@ -88,7 +91,6 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (currentChannelId) {
-            actions.resetUnreadMessageCount(this.props.currentChannelId);
             PushNotifications.clearChannelNotifications(currentChannelId);
             requestAnimationFrame(() => {
                 actions.getChannelStats(currentChannelId);
@@ -147,6 +149,23 @@ export default class ChannelBase extends PureComponent {
     componentWillUnmount() {
         EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
+        EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+    }
+
+    registerTypingAnimation = (animation) => {
+        const length = this.typingAnimations.push(animation);
+        const removeAnimation = () => {
+            const animationIndex = length - 1;
+            this.typingAnimations = this.typingAnimations.filter((a, index) => index !== animationIndex);
+        };
+
+        return removeAnimation;
+    }
+
+    runTypingAnimations = (typingVisible) => {
+        Animated.parallel(
+            this.typingAnimations.map((animation) => animation(typingVisible)),
+        ).start();
     }
 
     blurPostDraft = () => {

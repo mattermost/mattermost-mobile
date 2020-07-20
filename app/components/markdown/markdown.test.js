@@ -33,24 +33,4 @@ describe('Markdown', () => {
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
-
-    describe('getMentionKeys', () => {
-        let wrapper;
-        beforeAll(() => {
-            wrapper = shallow(
-                <Markdown
-                    {...baseProps}
-                />,
-            );
-        });
-
-        it('should return base mentionKey props when disableAtChannelMentionHighlight not present', () => {
-            expect(wrapper.instance().getMentionKeys()).toEqual(baseProps.mentionKeys);
-        });
-
-        it('should filter channel mentions from mentionKey props when disableAtChannelMentionHighlight is true', () => {
-            wrapper.setProps({disableAtChannelMentionHighlight: true});
-            expect(wrapper.instance().getMentionKeys()).toEqual([{key: 'user.name'}]);
-        });
-    });
 });

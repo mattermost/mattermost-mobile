@@ -77,6 +77,13 @@ describe('makeMapStateToProps', () => {
             general: {
                 serverVersion: '',
             },
+            users: {
+                profiles: {},
+            },
+            groups: {
+                groups: {},
+                myGroups: {},
+            },
         },
     };
     const defaultOwnProps = {

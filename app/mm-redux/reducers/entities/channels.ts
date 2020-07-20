@@ -4,7 +4,7 @@ import {combineReducers} from 'redux';
 import {ChannelTypes, UserTypes, SchemeTypes, GroupTypes} from '@mm-redux/action_types';
 import {General} from '../../constants';
 import {GenericAction} from '@mm-redux/types/actions';
-import {Channel, ChannelMembership, ChannelStats} from '@mm-redux/types/channels';
+import {Channel, ChannelMembership, ChannelStats, ChannelMemberCountByGroup, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {RelationOneToMany, RelationOneToOne, IDMappedObjects, UserIDMappedObjects} from '@mm-redux/types/utilities';
 import {Team} from '@mm-redux/types/teams';
 
@@ -664,6 +664,33 @@ export function channelModerations(state: any = {}, action: GenericAction) {
     }
 }
 
+export function channelMemberCountsByGroup(state: any = {}, action: GenericAction) {
+    switch (action.type) {
+    case ChannelTypes.RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP: {
+        const {channelId, memberCounts} = action.data;
+        const memberCountsByGroup: ChannelMemberCountsByGroup = {};
+        memberCounts.forEach((channelMemberCount: ChannelMemberCountByGroup) => {
+            if (!state[channelId]?.[channelMemberCount.group_id] ||
+                state[channelId]?.[channelMemberCount.group_id]?.channel_member_count !== channelMemberCount.channel_member_count ||
+                state[channelId]?.[channelMemberCount.group_id]?.channel_member_timezones_count !== channelMemberCount.channel_member_timezones_count) {
+                memberCountsByGroup[channelMemberCount.group_id] = channelMemberCount;
+            }
+        });
+
+        if (Object.keys(memberCountsByGroup).length > 0) {
+            return {
+                ...state,
+                [channelId]: memberCountsByGroup,
+            };
+        }
+
+        return state;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
 
     // the current selected channel
@@ -693,4 +720,7 @@ export default combineReducers({
 
     // object where every key is the channel id and has an object with the channel moderations
     channelModerations,
+
+    // object where every key is the channel id containing one or several object(s) with a mapping of <group_id: ChannelMemberCountByGroup>
+    channelMemberCountsByGroup,
 });

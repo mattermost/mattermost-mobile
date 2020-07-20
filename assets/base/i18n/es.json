@@ -619,5 +619,7 @@
   "mobile.server_upgrade.learn_more": "Conocer más",
   "mobile.server_upgrade.dismiss": "Descartar",
   "mobile.server_upgrade.alert_description": "Esta versión del servidor no es compatible y los usuarios estarán expuestos a problemas de compatibilidad que causan bloqueos o errores graves que rompen la funcionalidad principal de la aplicación. Se requiere actualizar a la versión del servidor {serverVersion} o posterior.",
-  "suggestion.mention.groups": "Menciones de Grupo"
+  "suggestion.mention.groups": "Menciones de Grupo",
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nuevo} other {nuevos}} {count, plural, one {mensaje} other {mensajes}}",
+  "mobile.android.back_handler_exit": "Presione de nuevo para salir"
 }
