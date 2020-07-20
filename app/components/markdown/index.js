@@ -5,16 +5,16 @@ import {connect} from 'react-redux';
 
 import {getAutolinkedUrlSchemes, getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
+import {getAllUserMentionKeys} from '@mm-redux/selectors/entities/search';
 
 import Markdown from './markdown';
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
     const {MinimumHashtagLength} = getConfig(state);
 
     return {
         autolinkedUrlSchemes: getAutolinkedUrlSchemes(state),
-        mentionKeys: getCurrentUserMentionKeys(state),
+        mentionKeys: ownProps.mentionKeys || getAllUserMentionKeys(state),
         minimumHashtagLength: MinimumHashtagLength ? parseInt(MinimumHashtagLength, 10) : 3,
         theme: getTheme(state),
     };

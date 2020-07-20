@@ -586,6 +586,7 @@ function loadGroupData() {
         const state = getState();
         const actions = [];
         const team = getCurrentTeam(state);
+        const currentUserId = getCurrentUserId(state);
         const serverVersion = state.entities.general.serverVersion;
         const license = getLicense(state);
         const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
@@ -632,9 +633,24 @@ function loadGroupData() {
                             });
                         }
                     }
+                    break;
                 } catch (err) {
-                    return {error: err};
+                    if (i === MAX_RETRIES) {
+                        return {error: err};
+                    }
                 }
+            }
+
+            try {
+                const myGroups = await Client4.getGroupsByUserId(currentUserId);
+                if (myGroups.length) {
+                    actions.push({
+                        type: GroupTypes.RECEIVED_MY_GROUPS,
+                        data: myGroups,
+                    });
+                }
+            } catch {
+                // do nothing
             }
         }
 
