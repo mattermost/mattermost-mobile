@@ -65,6 +65,7 @@ export default class ThreadIOS extends ThreadBase {
                             cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
                             valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
                             rootId={rootId}
+                            channelId={channelId}
                         />
                     </View>
                 </>

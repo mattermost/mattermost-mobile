@@ -5,8 +5,8 @@ import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 
-import {getAutocompleteCommands} from '@mm-redux/actions/integrations';
-import {getAutocompleteCommandsList} from '@mm-redux/selectors/entities/integrations';
+import {getAutocompleteCommands, getCommandAutocompleteSuggestions} from '@mm-redux/actions/integrations';
+import {getAutocompleteCommandsList, getCommandAutocompleteSuggestionsList} from '@mm-redux/selectors/entities/integrations';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {isLandscape} from 'app/selectors/device';
@@ -32,6 +32,7 @@ function mapStateToProps(state) {
         currentTeamId: getCurrentTeamId(state),
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        suggestions: getCommandAutocompleteSuggestionsList(state),
     };
 }
 
@@ -39,6 +40,7 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getAutocompleteCommands,
+            getCommandAutocompleteSuggestions,
         }, dispatch),
     };
 }
