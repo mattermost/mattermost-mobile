@@ -52,7 +52,7 @@ exports[`Permalink should match snapshot 1`] = `
           }
         }
       >
-        <Component
+        <ForwardRef
           onPress={[Function]}
           style={
             Object {
@@ -69,7 +69,7 @@ exports[`Permalink should match snapshot 1`] = `
             name="close"
             size={20}
           />
-        </Component>
+        </ForwardRef>
         <View
           style={
             Object {

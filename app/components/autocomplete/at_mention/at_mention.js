@@ -62,6 +62,7 @@ export default class AtMention extends PureComponent {
 
         // Not invoked, render nothing.
         if (matchTerm === null) {
+            this.props.onResultCountChange(0);
             this.setState({
                 mentionComplete: false,
                 sections: [],

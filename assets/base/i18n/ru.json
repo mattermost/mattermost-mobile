@@ -620,5 +620,14 @@
   "mobile.server_upgrade.dismiss": "Отмена",
   "mobile.server_upgrade.alert_description": "Эта версия сервера не поддерживается, и пользователи будут сталкиваться с проблемами совместимости, которые вызывают сбои или серьезные ошибки, нарушающие основные функции приложения. Требуется обновление до версии сервера {serverVersion} или новее.",
   "suggestion.mention.groups": "Групповые упоминания",
-  "mobile.android.back_handler_exit": "Нажмите еще раз, чтобы выйти"
+  "mobile.android.back_handler_exit": "Нажмите еще раз, чтобы выйти",
+  "mobile.unsupported_server.title": "Неподдерживаемая версия сервера",
+  "mobile.unsupported_server.ok": "ОК",
+  "mobile.unsupported_server.message": "Вложения, предварительный просмотр ссылок, реакции и встроенные данные могут отображаться некорректно. Если проблема не устраняется, обратитесь к системному администратору для обновления сервера Mattermost.",
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {новое} other {новых}} {count, plural, one {сообщение}, few {сообщения} other {сообщений}}",
+  "mobile.post_textbox.one_group.message.without_timezones": "Используя {mentions}, вы собираетесь отправить уведомления по крайней мере {totalMembers} людям. Вы уверены, что хотите это сделать?",
+  "mobile.post_textbox.one_group.message.with_timezones": "Используя {mention}, вы собираетесь отправить уведомления по крайней мере {totalMembers} людям в {timezones, number} {timezones, plural, one {часовом поясе} other {часовых поясах}}. Вы уверены, что хотите это сделать?",
+  "mobile.post_textbox.multi_group.message.without_timezones": "Используя {mentions} и {finalMention}, вы собираетесь отправить уведомления по крайней мере {totalMembers} людям. Вы уверены, что хотите это сделать?",
+  "mobile.post_textbox.multi_group.message.with_timezones": "Используя {mentions} и {finalMention}, вы собираетесь отправить уведомления по крайней мере {totalMembers} людям в {timezones, number} {timezones, plural, one {часовом поясе} other {часовых поясах}}. Вы уверены, что хотите это сделать?",
+  "mobile.post_textbox.groups.title": "Подтвердите отправку уведомлений группам"
 }

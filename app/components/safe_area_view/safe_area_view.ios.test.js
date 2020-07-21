@@ -125,7 +125,7 @@ describe('SafeAreaIos', () => {
         expect(wrapper.state().safeAreaInsets).not.toEqual(TEST_INSETS_1.safeAreaInsets);
     });
 
-    test('should set safe area insets on change if mounted and DeviceTypes.IS_IPHONE_WITH_INSETS is true', () => {
+    test('should set safe area insets on change if mounted and DeviceTypes.IS_IPHONE_WITH_INSETS is true', async () => {
         DeviceTypes.IS_IPHONE_WITH_INSETS = true;
         mattermostManaged.hasSafeAreaInsets = false;
 
@@ -140,7 +140,7 @@ describe('SafeAreaIos', () => {
         expect(wrapper.state().safeAreaInsets).toEqual(TEST_INSETS_2.safeAreaInsets);
     });
 
-    test('should set safe area insets on change if mounted and mattermostManaged.hasSafeAreaInsets is true', () => {
+    test('should set safe area insets on change if mounted and mattermostManaged.hasSafeAreaInsets is true', async () => {
         DeviceTypes.IS_IPHONE_WITH_INSETS = false;
         mattermostManaged.hasSafeAreaInsets = true;
 
@@ -155,7 +155,7 @@ describe('SafeAreaIos', () => {
         expect(wrapper.state().safeAreaInsets).toEqual(TEST_INSETS_2.safeAreaInsets);
     });
 
-    test('should not set safe area insets on change if mounted and neither DeviceTypes.IS_IPHONE_WITH_INSETS nor mattermostManaged.hasSafeAreaInsets is true', () => {
+    test('should not set safe area insets on change if mounted and neither DeviceTypes.IS_IPHONE_WITH_INSETS nor mattermostManaged.hasSafeAreaInsets is true', async () => {
         DeviceTypes.IS_IPHONE_WITH_INSETS = false;
         mattermostManaged.hasSafeAreaInsets = false;
 
@@ -170,7 +170,7 @@ describe('SafeAreaIos', () => {
         expect(wrapper.state().safeAreaInsets).not.toEqual(TEST_INSETS_2.safeAreaInsets);
     });
 
-    test('should set safe area insets on change not mounted', () => {
+    test('should set safe area insets on change not mounted', async () => {
         DeviceTypes.IS_IPHONE_WITH_INSETS = true;
         mattermostManaged.hasSafeAreaInsets = true;
 
@@ -186,7 +186,7 @@ describe('SafeAreaIos', () => {
         expect(wrapper.state().safeAreaInsets).not.toEqual(TEST_INSETS_2.safeAreaInsets);
     });
 
-    test('should set portrait safe area insets', () => {
+    test('should set portrait safe area insets', async () => {
         const wrapper = shallow(
             <SafeAreaIos {...baseProps}/>,
         );
@@ -203,7 +203,7 @@ describe('SafeAreaIos', () => {
         expect(EphemeralStore.safeAreaInsets[LANDSCAPE]).toEqual(null);
     });
 
-    test('should set portrait safe area insets from EphemeralStore', () => {
+    test('should set portrait safe area insets from EphemeralStore', async () => {
         const wrapper = shallow(
             <SafeAreaIos {...baseProps}/>,
         );
@@ -236,7 +236,7 @@ describe('SafeAreaIos', () => {
         expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
     });
 
-    test('should set landscape safe area insets from EphemeralStore', () => {
+    test('should set landscape safe area insets from EphemeralStore', async () => {
         const wrapper = shallow(
             <SafeAreaIos {...baseProps}/>,
         );
@@ -252,7 +252,7 @@ describe('SafeAreaIos', () => {
         expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
     });
 
-    test('should add safeAreaInsetsForRootViewDidChange listener when EphemeralStore values are not set', () => {
+    test('should add safeAreaInsetsForRootViewDidChange listener when EphemeralStore values are not set', async () => {
         const addEventListener = jest.spyOn(SafeArea, 'addEventListener');
 
         expect(EphemeralStore.safeAreaInsets[PORTRAIT]).toEqual(null);
@@ -281,7 +281,7 @@ describe('SafeAreaIos', () => {
         expect(addEventListener).not.toHaveBeenCalled();
     });
 
-    test('should remove safeAreaInsetsForRootViewDidChange listener when EphemeralStore values are set', () => {
+    test('should remove safeAreaInsetsForRootViewDidChange listener when EphemeralStore values are set', async () => {
         const removeEventListener = jest.spyOn(SafeArea, 'removeEventListener');
 
         const wrapper = shallow(

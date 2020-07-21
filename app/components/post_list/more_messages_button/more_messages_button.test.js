@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Animated} from 'react-native';
+import {Animated, AppState} from 'react-native';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
@@ -28,6 +28,7 @@ describe('MoreMessagesButton', () => {
         manuallyUnread: false,
         newMessageLineIndex: 0,
         scrollToIndex: jest.fn(),
+        resetUnreadMessageCount: jest.fn(),
         registerViewableItemsListener: jest.fn(() => {
             return jest.fn();
         }),
@@ -54,12 +55,16 @@ describe('MoreMessagesButton', () => {
     });
 
     describe('lifecycle methods', () => {
-        test('componentDidMount should register indicator visibility listener, viewable items listener, and scroll end index listener', () => {
+        AppState.addEventListener = jest.fn();
+        AppState.removeEventListener = jest.fn();
+
+        test('componentDidMount should register app state listener, indicator visibility listener, viewable items listener, and scroll end index listener', () => {
             EventEmitter.on = jest.fn();
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.onAppStateChange = jest.fn();
             instance.onIndicatorBarVisible = jest.fn();
             instance.onViewableItemsChanged = jest.fn();
             instance.onScrollEndIndex = jest.fn();
@@ -69,6 +74,7 @@ describe('MoreMessagesButton', () => {
             // have not yet been mocked so we call componentDidMount again.
             instance.componentDidMount();
 
+            expect(AppState.addEventListener).toHaveBeenCalledWith('change', instance.onAppStateChange);
             expect(EventEmitter.on).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, instance.onIndicatorBarVisible);
             expect(baseProps.registerViewableItemsListener).toHaveBeenCalledWith(instance.onViewableItemsChanged);
             expect(instance.removeViewableItemsListener).toBeDefined();
@@ -76,18 +82,20 @@ describe('MoreMessagesButton', () => {
             expect(instance.removeScrollEndIndexListener).toBeDefined();
         });
 
-        test('componentWillUnmount should remove the indicator bar visible listener, the viewable items listener, the scroll end index listener, and clear all timers', () => {
+        test('componentWillUnmount should remove the app state listener, the indicator bar visible listener, the viewable items listener, the scroll end index listener, and clear all timers', () => {
             jest.useFakeTimers();
             EventEmitter.off = jest.fn();
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.onAppStateChange = jest.fn();
             instance.onIndicatorBarVisible = jest.fn();
             instance.removeViewableItemsListener = jest.fn();
             instance.removeScrollEndIndexListener = jest.fn();
 
             instance.componentWillUnmount();
+            expect(AppState.removeEventListener).toHaveBeenCalledWith('change', instance.onAppStateChange);
             expect(EventEmitter.off).toHaveBeenCalledWith(ViewTypes.INDICATOR_BAR_VISIBLE, instance.onIndicatorBarVisible);
             expect(instance.removeViewableItemsListener).toHaveBeenCalled();
             expect(instance.removeScrollEndIndexListener).toHaveBeenCalled();
@@ -216,6 +224,52 @@ describe('MoreMessagesButton', () => {
 
             wrapper.setProps({unreadCount: 2});
             expect(instance.onViewableItemsChanged).toHaveBeenCalledTimes(1);
+        });
+
+        test('componentDidUpdate should call hide when the unreadCount decreases to 0', () => {
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+            instance.hide = jest.fn();
+            instance.viewableItems = [{index: 1}];
+
+            wrapper.setProps({unreadCount: 2});
+            expect(instance.hide).not.toHaveBeenCalled();
+
+            wrapper.setProps({unreadCount: 1});
+            expect(instance.hide).not.toHaveBeenCalled();
+
+            wrapper.setProps({unreadCount: 0});
+            expect(instance.hide).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('onAppStateChange', () => {
+        it('should call resetUnreadMessageCount when app state is not active', () => {
+            const wrapper = shallowWithIntl(
+                <MoreMessagesButton {...baseProps}/>,
+            );
+            const instance = wrapper.instance();
+
+            let appState = 'active';
+            instance.onAppStateChange(appState);
+            expect(baseProps.resetUnreadMessageCount).not.toHaveBeenCalled();
+
+            appState = 'inactive';
+            instance.onAppStateChange(appState);
+            expect(baseProps.resetUnreadMessageCount).toHaveBeenCalledTimes(1);
+            expect(baseProps.resetUnreadMessageCount).toHaveBeenCalledWith(baseProps.channelId);
+
+            appState = 'background';
+            instance.onAppStateChange(appState);
+            expect(baseProps.resetUnreadMessageCount).toHaveBeenCalledTimes(2);
+            expect(baseProps.resetUnreadMessageCount).toHaveBeenCalledWith(baseProps.channelId);
+
+            appState = '';
+            instance.onAppStateChange(appState);
+            expect(baseProps.resetUnreadMessageCount).toHaveBeenCalledTimes(3);
+            expect(baseProps.resetUnreadMessageCount).toHaveBeenCalledWith(baseProps.channelId);
         });
     });
 
@@ -574,18 +628,6 @@ describe('MoreMessagesButton', () => {
             expect(clearTimeout).not.toHaveBeenCalled();
         });
 
-        it('should return early when unreadCount is 0', () => {
-            const viewableItems = [{index: 0}, {index: 1}];
-
-            wrapper.setProps({newMessageLineIndex: 1, unreadCount: 0});
-            instance.onViewableItemsChanged(viewableItems);
-            expect(clearTimeout).not.toHaveBeenCalled();
-
-            wrapper.setProps({newMessageLineIndex: -1});
-            instance.onViewableItemsChanged(viewableItems);
-            expect(clearTimeout).not.toHaveBeenCalled();
-        });
-
         it('should return early when viewableItems length is 0', () => {
             const viewableItems = [];
             wrapper.setProps({newMessageLineIndex: 1, unreadCount: 10});
@@ -732,21 +774,19 @@ describe('MoreMessagesButton', () => {
             jest.clearAllMocks();
         });
 
-        it('should force cancel when props.unreadCount - readCount is <= 0', () => {
+        it('should not set moreText when props.unreadCount - readCount is <= 0', () => {
             let readCount = props.unreadCount + 1;
             instance.showMoreText(readCount);
-            expect(instance.cancel).toHaveBeenCalledTimes(1);
-            expect(instance.cancel.mock.calls[0][0]).toBe(true);
             expect(instance.moreText).not.toHaveBeenCalled();
             expect(instance.setState).not.toHaveBeenCalled();
 
             readCount = props.unreadCount;
             instance.showMoreText(readCount);
-            expect(instance.cancel).toHaveBeenCalledTimes(2);
-            expect(instance.cancel.mock.calls[1][0]).toBe(true);
+            expect(instance.moreText).not.toHaveBeenCalled();
+            expect(instance.setState).not.toHaveBeenCalled();
         });
 
-        it('should set moreTextd when props.unreadCount - readCount is > 0', () => {
+        it('should set moreText when props.unreadCount - readCount is > 0', () => {
             const moreCount = 1;
             const readCount = props.unreadCount - moreCount;
             instance.showMoreText(readCount);

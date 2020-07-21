@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.33.0</string>
+	<string>1.33.1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -34,7 +34,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>310</string>
+	<string>311</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -64,6 +64,8 @@
 	<string>Share contacts in your Mattermost instance</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Take a Photo or Video and upload it to your Mattermost instance</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Mattermost uses Face ID to restrict unauthorized users from accessing the app.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Send your current location to your Mattermost instance</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -72,14 +74,12 @@
 	<string>Capture audio when recording a video to share to your Mattermost instance</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Share your route in your Mattermost instance</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Upload Photos and Videos from your device to your Mattermost instance</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Save downloaded Photos and Videos from your Mattermost instance to your device</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Upload Photos and Videos from your device to your Mattermost instance</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Send voice messages to your Mattermost instance</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Mattermost uses Face ID to restrict unauthorized users from accessing the app.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>

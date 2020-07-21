@@ -4,13 +4,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Clipboard,
     Platform,
     Text,
     TouchableHighlight,
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import Clipboard from '@react-native-community/clipboard';
 
 import {General} from '@mm-redux/constants';
 

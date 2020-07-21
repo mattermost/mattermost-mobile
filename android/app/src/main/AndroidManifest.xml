@@ -19,6 +19,7 @@
       android:theme="@style/AppTheme"
       android:installLocation="auto"
       android:networkSecurityConfig="@xml/network_security_config"
+      android:requestLegacyExternalStorage="true"
     >
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"

@@ -29,6 +29,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -66,6 +67,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -101,6 +103,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -137,6 +140,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -171,6 +175,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -209,6 +214,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -244,6 +250,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -282,6 +289,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -316,6 +324,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -349,6 +358,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -381,6 +391,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -459,6 +470,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -504,6 +516,7 @@ describe('channels', () => {
                     },
                 },
                 channelModerations: {},
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -550,6 +563,7 @@ describe('channels', () => {
                         },
                     }],
                 },
+                channelMemberCountsByGroup: {},
             });
 
             const nextState = channelsReducer(state, {
@@ -574,6 +588,123 @@ describe('channels', () => {
             expect(nextState.channelModerations.channel1[0].name).toEqual(Permissions.CHANNEL_MODERATED_PERMISSIONS.CREATE_REACTIONS);
             expect(nextState.channelModerations.channel1[0].roles.members).toEqual(true);
             expect(nextState.channelModerations.channel1[0].roles.guests).toEqual(false);
+        });
+    });
+
+    describe('RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP', () => {
+        test('Should add new channel member counts', () => {
+            const state = deepFreeze({
+                channelsInTeam: {},
+                currentChannelId: '',
+                groupsAssociatedToChannel: {},
+                myMembers: {},
+                stats: {},
+                totalCount: 0,
+                membersInChannel: {},
+                channels: {
+                    channel1: {
+                        id: 'channel1',
+                        team_id: 'team',
+                    },
+                },
+                channelModerations: {},
+                channelMemberCountsByGroup: {},
+            });
+
+            const nextState = channelsReducer(state, {
+                type: ChannelTypes.RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP,
+                sync: true,
+                currentChannelId: 'channel1',
+                teamId: 'team',
+                data: {
+                    channelId: 'channel1',
+                    memberCounts: [
+                        {
+                            group_id: 'group-1',
+                            channel_member_count: 1,
+                            channel_member_timezones_count: 1,
+                        },
+                        {
+                            group_id: 'group-2',
+                            channel_member_count: 999,
+                            channel_member_timezones_count: 131,
+                        },
+                    ],
+                },
+            });
+
+            expect(nextState.channelMemberCountsByGroup.channel1['group-1'].channel_member_count).toEqual(1);
+            expect(nextState.channelMemberCountsByGroup.channel1['group-1'].channel_member_timezones_count).toEqual(1);
+
+            expect(nextState.channelMemberCountsByGroup.channel1['group-2'].channel_member_count).toEqual(999);
+            expect(nextState.channelMemberCountsByGroup.channel1['group-2'].channel_member_timezones_count).toEqual(131);
+        });
+
+        test('Should replace existing channel member counts', () => {
+            const state = deepFreeze({
+                channelsInTeam: {},
+                currentChannelId: '',
+                groupsAssociatedToChannel: {},
+                myMembers: {},
+                stats: {},
+                totalCount: 0,
+                membersInChannel: {},
+                channels: {
+                    channel1: {
+                        id: 'channel1',
+                        team_id: 'team',
+                    },
+                },
+                channelModerations: {},
+                channelMemberCountsByGroup: {
+                    'group-1': {
+                        group_id: 'group-1',
+                        channel_member_count: 1,
+                        channel_member_timezones_count: 1,
+                    },
+                    'group-2': {
+                        group_id: 'group-2',
+                        channel_member_count: 999,
+                        channel_member_timezones_count: 131,
+                    },
+                },
+            });
+
+            const nextState = channelsReducer(state, {
+                type: ChannelTypes.RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP,
+                sync: true,
+                currentChannelId: 'channel1',
+                teamId: 'team',
+                data: {
+                    channelId: 'channel1',
+                    memberCounts: [
+                        {
+                            group_id: 'group-1',
+                            channel_member_count: 5,
+                            channel_member_timezones_count: 2,
+                        },
+                        {
+                            group_id: 'group-2',
+                            channel_member_count: 1002,
+                            channel_member_timezones_count: 133,
+                        },
+                        {
+                            group_id: 'group-3',
+                            channel_member_count: 12,
+                            channel_member_timezones_count: 13,
+                        },
+                    ],
+                },
+            });
+
+            expect(nextState.channelMemberCountsByGroup.channel1['group-1'].channel_member_count).toEqual(5);
+            expect(nextState.channelMemberCountsByGroup.channel1['group-1'].channel_member_timezones_count).toEqual(2);
+
+            expect(nextState.channelMemberCountsByGroup.channel1['group-2'].channel_member_count).toEqual(1002);
+            expect(nextState.channelMemberCountsByGroup.channel1['group-2'].channel_member_timezones_count).toEqual(133);
+
+            expect(nextState.channelMemberCountsByGroup.channel1['group-3'].channel_member_count).toEqual(12);
+            expect(nextState.channelMemberCountsByGroup.channel1['group-3'].channel_member_timezones_count).toEqual(13);
         });
     });
 });

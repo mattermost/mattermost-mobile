@@ -617,5 +617,17 @@
   "channel.channelHasGuests": "此頻道有訪客",
   "suggestion.mention.groups": "群組提及",
   "mobile.server_upgrade.learn_more": "了解更多",
-  "mobile.server_upgrade.dismiss": "解除"
+  "mobile.server_upgrade.dismiss": "解除",
+  "mobile.unsupported_server.title": "不支援的伺服器版本",
+  "mobile.unsupported_server.ok": "確定",
+  "mobile.unsupported_server.message": "附加檔案、連結預覽、互動以及內嵌資料可能無法正確顯示。如果此問題持續發生，請聯絡系統管理員升級 Mattermost 伺服器。",
+  "mobile.server_upgrade.alert_description": "此伺服器版本沒有被支援，使用者將會遇到造成嚴重錯誤的相容性問題。必須升級伺服器版本到 {serverVersion} 或更高。",
+  "mobile.post_textbox.one_group.message.with_timezones": "使用 {mentions} 將會發送通知給 {totalMembers} 位處於 {timezones, number} 個不同時區的成員。確定要執行？",
+  "mobile.post_textbox.one_group.message.without_timezones": "使用 {mentions} 將會發送通知給 {totalMembers} 位成員。確定要執行？",
+  "mobile.post_textbox.multi_group.message.without_timezones": "使用 {mentions} 跟 {finalMention} 將會發送通知給至少 {totalMembers} 位成員。確定要執行？",
+  "mobile.post_textbox.multi_group.message.with_timezones": "使用 {mentions} 跟 {finalMention} 將會發送通知給至少 {totalMembers} 位處於 {timezones, number} 個不同時區的成員。確定要執行？",
+  "mobile.post_textbox.groups.title": "確認發送至群組的通知",
+  "mobile.more_messages_button.text": "{count} 筆新訊息",
+  "mobile.message_length.message_split_left": "訊息超過長度限制",
+  "mobile.android.back_handler_exit": "再按一次退回以離開"
 }

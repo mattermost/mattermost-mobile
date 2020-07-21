@@ -63,12 +63,14 @@ export default class ChannelIOS extends ChannelBase {
                 <>
                     <ChannelPostList
                         updateNativeScrollView={this.updateNativeScrollView}
+                        registerTypingAnimation={this.registerTypingAnimation}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
                         <Autocomplete
                             onChangeText={this.handleAutoComplete}
                             cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                             valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            channelId={currentChannelId}
                         />
                     </View>
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
@@ -100,6 +102,7 @@ export default class ChannelIOS extends ChannelBase {
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         ref={this.postDraft}
                         screenId={this.props.componentId}
+                        registerTypingAnimation={this.registerTypingAnimation}
                     />
                 </KeyboardTrackingView>
                 }

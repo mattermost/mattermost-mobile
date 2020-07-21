@@ -33,12 +33,12 @@ describe('ChannelNavBar', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should not set the permanentSidebar state if not Tablet', () => {
+    test('should not set the permanentSidebar state if not Tablet', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );
 
-        wrapper.instance().handlePermanentSidebar();
+        await wrapper.instance().handlePermanentSidebar();
         expect(wrapper.state('permanentSidebar')).toBeUndefined();
     });
 
@@ -50,11 +50,10 @@ describe('ChannelNavBar', () => {
         DeviceTypes.IS_TABLET = true;
 
         await wrapper.instance().handlePermanentSidebar();
-
         expect(wrapper.state('permanentSidebar')).toBeDefined();
     });
 
-    test('drawerButtonVisible appears for android tablets', () => {
+    test('drawerButtonVisible appears for android tablets', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );
@@ -65,7 +64,7 @@ describe('ChannelNavBar', () => {
         expect(wrapper.instance().drawerButtonVisible()).toBe(true);
     });
 
-    test('drawerButtonVisible appears for android phones', () => {
+    test('drawerButtonVisible appears for android phones', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );
@@ -76,7 +75,7 @@ describe('ChannelNavBar', () => {
         expect(wrapper.instance().drawerButtonVisible()).toBe(true);
     });
 
-    test('drawerButtonVisible appears for iOS phones', () => {
+    test('drawerButtonVisible appears for iOS phones', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );
@@ -87,7 +86,7 @@ describe('ChannelNavBar', () => {
         expect(wrapper.instance().drawerButtonVisible()).toBe(true);
     });
 
-    test('drawerButtonVisible appears for iOS tablets with PermanentSidebar at default false, and not in splitview', () => {
+    test('drawerButtonVisible appears for iOS tablets with PermanentSidebar at default false, and not in splitview', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );
@@ -100,7 +99,7 @@ describe('ChannelNavBar', () => {
         expect(wrapper.instance().drawerButtonVisible()).toBe(true);
     });
 
-    test('drawerButtonVisible does not appear for iOS tablets with permanentSidebar enabled', () => {
+    test('drawerButtonVisible does not appear for iOS tablets with permanentSidebar enabled', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );
@@ -113,7 +112,7 @@ describe('ChannelNavBar', () => {
         expect(wrapper.instance().drawerButtonVisible()).toBe(false);
     });
 
-    test('drawerButtonVisible appears for iOS tablets with splitview enabled', () => {
+    test('drawerButtonVisible appears for iOS tablets with splitview enabled', async () => {
         const wrapper = shallow(
             <ChannelNavBar {...baseProps}/>,
         );

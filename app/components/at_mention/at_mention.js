@@ -3,7 +3,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Clipboard, Text} from 'react-native';
+import {Text} from 'react-native';
+import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
@@ -25,6 +26,7 @@ export default class AtMention extends React.PureComponent {
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
         usersByUsername: PropTypes.object.isRequired,
+        groupsByName: PropTypes.object,
     };
 
     static contextTypes = {
@@ -93,6 +95,12 @@ export default class AtMention extends React.PureComponent {
         };
     }
 
+    getGroupFromMentionName() {
+        const {groupsByName, mentionName} = this.props;
+        const mentionNameTrimmed = mentionName.toLowerCase().replace(/[._-]*$/, '');
+        return groupsByName?.[mentionNameTrimmed] || {};
+    }
+
     handleLongPress = async () => {
         const {formatMessage} = this.context.intl;
 
@@ -134,13 +142,28 @@ export default class AtMention extends React.PureComponent {
     render() {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
         const {user} = this.state;
+        let highlighted;
 
         if (!user.username) {
+            const group = this.getGroupFromMentionName();
+            if (group.allow_reference) {
+                highlighted = mentionKeys.some((item) => item.key === group.name);
+                return (
+                    <Text
+                        style={textStyle}
+                    >
+                        <Text style={highlighted ? null : mentionStyle}>
+                            {`@${group.name}`}
+                        </Text>
+                    </Text>
+                );
+            }
+
             return <Text style={textStyle}>{'@' + mentionName}</Text>;
         }
 
         const suffix = this.props.mentionName.substring(user.username.length);
-        const highlighted = mentionKeys.some((item) => item.key === user.username);
+        highlighted = mentionKeys.some((item) => item.key === user.username);
 
         return (
             <Text

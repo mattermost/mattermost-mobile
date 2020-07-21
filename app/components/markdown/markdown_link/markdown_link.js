@@ -3,7 +3,8 @@
 
 import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Clipboard, Linking, Text} from 'react-native';
+import {Alert, Linking, Text} from 'react-native';
+import Clipboard from '@react-native-community/clipboard';
 import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
 

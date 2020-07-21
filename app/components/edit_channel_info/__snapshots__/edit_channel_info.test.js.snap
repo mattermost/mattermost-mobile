@@ -5,20 +5,18 @@ exports[`EditChannelInfo should match snapshot 1`] = `
   <Connect(StatusBar) />
   <KeyboardAwareScrollView
     enableAutomaticScroll={true}
-    enableOnAndroid={false}
-    enableResetScrollToCoords={true}
-    extraHeight={75}
-    extraScrollHeight={0}
-    keyboardOpeningTime={250}
+    getTextInputRefs={[Function]}
     keyboardShouldPersistTaps="always"
     onKeyboardDidHide={[Function]}
     onKeyboardDidShow={[Function]}
+    scrollToBottomOnKBShow={false}
+    scrollToInputAdditionalOffset={75}
+    startScrolledToBottom={false}
     style={
       Object {
         "flex": 1,
       }
     }
-    viewIsInsideTabBar={false}
   >
     <TouchableWithoutFeedback
       onPress={[Function]}
@@ -283,13 +281,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             value="header"
           />
         </View>
-        <Connect(Autocomplete)
-          cursorPosition={6}
-          expandDown={true}
-          nestedScrollEnabled={true}
-          onChangeText={[Function]}
-          value="header"
-        />
         <View
           style={
             Object {
@@ -318,5 +309,20 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       </View>
     </TouchableWithoutFeedback>
   </KeyboardAwareScrollView>
+  <KeyboardTrackingView
+    style={
+      Object {
+        "justifyContent": "flex-end",
+      }
+    }
+  >
+    <Connect(Autocomplete)
+      cursorPosition={6}
+      maxHeight={200}
+      nestedScrollEnabled={true}
+      onChangeText={[Function]}
+      value="header"
+    />
+  </KeyboardTrackingView>
 </React.Fragment>
 `;
