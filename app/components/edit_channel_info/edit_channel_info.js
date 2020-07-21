@@ -357,7 +357,7 @@ export default class EditChannelInfo extends PureComponent {
                 <KeyboardTrackingView style={style.autocompleteContainer}>
                     <Autocomplete
                         cursorPosition={header.length}
-                        maxHeight={200}
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.onHeaderChangeText}
                         value={header}
                         nestedScrollEnabled={true}
