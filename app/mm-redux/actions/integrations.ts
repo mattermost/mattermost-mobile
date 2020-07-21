@@ -6,13 +6,14 @@ import {Client4} from '@mm-redux/client';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {sanitizeCommandForAutocompleteTracking} from '@mm-redux/utils/helpers';
 
 import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
 import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
 
 import {logError} from './errors';
-import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
+import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
 export function createIncomingHook(hook: IncomingWebhook): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.createIncomingWebhook,
@@ -175,16 +176,20 @@ export function getAutocompleteCommands(teamId: string, page = 0, perPage: numbe
 }
 
 export function getCommandAutocompleteSuggestions(userInput: string, teamId: string, commandArgs: any): ActionFunc {
-    return bindClientFunc({
-        clientFunc: Client4.getCommandAutocompleteSuggestionsList,
-        onSuccess: [IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS],
-        onFailure: IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS_FAILURE,
-        params: [
-            userInput,
-            teamId,
-            commandArgs,
-        ],
-    });
+    return async (dispatch: DispatchFunc) => {
+        let data: any = null;
+        try {
+            Client4.trackEvent('command_autocomplete', 'get_suggestions_initiated', {command: sanitizeCommandForAutocompleteTracking(userInput)});
+            data = await Client4.getCommandAutocompleteSuggestionsList(userInput, teamId, commandArgs);
+        } catch (error) {
+            Client4.trackEvent('command_autocomplete', 'get_suggestions_failed', {command: sanitizeCommandForAutocompleteTracking(userInput), error: error.message});
+            dispatch(batchActions([logError(error), requestFailure(IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS_FAILURE, error)]));
+            return {error};
+        }
+        Client4.trackEvent('command_autocomplete', 'get_suggestions_success', {command: sanitizeCommandForAutocompleteTracking(userInput)});
+        dispatch(requestSuccess(IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS, data));
+        return {data};
+    };
 }
 
 export function getCustomTeamCommands(teamId: string): ActionFunc {

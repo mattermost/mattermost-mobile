@@ -121,3 +121,21 @@ export function buildQueryString(parameters: Dictionary<any>): string {
 
     return query;
 }
+
+export function sanitizeCommandForAutocompleteTracking(userInput: string): string {
+    const commandList = ['agenda', 'autolink', 'away', 'bot-server', 'code', 'collapse',
+        'dnd', 'echo', 'expand', 'export', 'giphy', 'github', 'groupmsg', 'header', 'help',
+        'invite', 'invite_people', 'jira', 'jitsi', 'join', 'kick', 'leave', 'logout', 'me',
+        'msg', 'mute', 'nc', 'offline', 'online', 'open', 'poll', 'poll2', 'post-mortem',
+        'purpose', 'recommend', 'remove', 'rename', 'search', 'settings', 'shortcuts',
+        'shrug', 'standup', 'todo', 'wrangler', 'zoom'];
+    const index = userInput.indexOf(' ');
+    if (index === -1) {
+        return userInput[0];
+    }
+    const command = userInput.substring(1, index);
+    if (commandList.includes(command)) {
+        return command;
+    }
+    return 'custom_command';
+}
