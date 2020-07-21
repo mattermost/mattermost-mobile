@@ -11,7 +11,8 @@
  
 ### Highlights
  - End users will now receive an in-app notification to upgrade their server version if they are running versions v5.18 and below.
- - Added Group Mentions support for mobile 
+ - Added Group Mentions support for mobile
+ - Implemented non-cached slash command autocomplete for mobile
 
 ### Improvements
  - Removed auto-scrolling to the new message line on channel load and added a "More Messages" button when there are unread posts.
