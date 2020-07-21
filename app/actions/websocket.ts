@@ -566,20 +566,56 @@ function handleUpdateTeamEvent(msg: WebSocketMessage) {
 function handleTeamAddedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc) => {
         try {
-            const [team, teamUnreads] = await Promise.all([
+            const teamId = msg.data.team_id;
+            const userId = msg.data.user_id;
+            const [team, member, teamUnreads] = await Promise.all([
                 Client4.getTeam(msg.data.team_id),
+                Client4.getTeamMember(teamId, userId),
                 Client4.getMyTeamUnreads(),
             ]);
 
-            const actions = [{
-                type: TeamTypes.RECEIVED_TEAM,
-                data: team,
-            }, {
-                type: TeamTypes.RECEIVED_MY_TEAM_UNREADS,
-                data: teamUnreads,
-            }];
+            const actions = [];
+            if (team) {
+                actions.push({
+                    type: TeamTypes.RECEIVED_TEAM,
+                    data: team,
+                });
 
-            dispatch(batchActions(actions, 'BATCH_WS_TEAM_ADDED'));
+                if (member) {
+                    actions.push({
+                        type: TeamTypes.RECEIVED_MY_TEAM_MEMBER,
+                        data: member,
+                    });
+
+                    if (member.roles) {
+                        const rolesToLoad = new Set<string>();
+                        for (const role of member.roles.split(' ')) {
+                            rolesToLoad.add(role);
+                        }
+
+                        if (rolesToLoad.size > 0) {
+                            const roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
+                            if (roles.length) {
+                                actions.push({
+                                    type: RoleTypes.RECEIVED_ROLES,
+                                    data: roles,
+                                });
+                            }
+                        }
+                    }
+                }
+
+                if (teamUnreads) {
+                    actions.push({
+                        type: TeamTypes.RECEIVED_MY_TEAM_UNREADS,
+                        data: teamUnreads,
+                    });
+                }
+            }
+
+            if (actions.length) {
+                dispatch(batchActions(actions, 'BATCH_WS_TEAM_ADDED'));
+            }
         } catch {
             // do nothing
         }
