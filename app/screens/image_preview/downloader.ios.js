@@ -200,7 +200,7 @@ export default class Downloader extends PureComponent {
             tension: 8,
             friction: 5,
         }).start(async () => {
-            await CameraRoll.saveToCameraRoll(videoPath, 'video');
+            await CameraRoll.save(videoPath, {type: 'video'});
             this.props.onDownloadSuccess();
             InteractionManager.runAfterInteractions(() => {
                 this.setState({force: false, isVideo: false});
@@ -281,7 +281,7 @@ export default class Downloader extends PureComponent {
             let path = res.path();
 
             if (saveToCameraRoll) {
-                path = await CameraRoll.saveToCameraRoll(path, 'photo'); /* eslint-disable-line require-atomic-updates */
+                path = await CameraRoll.save(path, {type: 'photo'});
             }
 
             if (this.mounted) {
