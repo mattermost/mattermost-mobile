@@ -2,13 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {logout} from '@actions/views/user';
-
+import {UserTypes} from '@mm-redux/action_types';
+import {Client4} from '@mm-redux/client';
 import {Client4Error} from '@mm-redux/types/client4';
+import {getCurrentUserId, getUsers} from '@mm-redux/selectors/entities/users';
 import {batchActions, Action, ActionFunc, GenericAction, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {GlobalState} from '@mm-redux/types/store';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {logError} from './errors';
+
 type ActionType = string;
 const HTTP_UNAUTHORIZED = 401;
+
 export function forceLogoutIfNecessary(err: Client4Error, dispatch: DispatchFunc, getState: GetStateFunc) {
     const {currentUserId} = getState().entities.users;
 
@@ -129,6 +135,29 @@ export function debounce(func: (...args: any) => unknown, wait: number, immediat
             }
         }
     };
+}
+
+export async function notVisibleUsersActions(state: GlobalState): Promise<Array<GenericAction>> {
+    if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 23)) {
+        return [];
+    }
+    let knownUsers: Set<string>;
+    try {
+        const fetchResult = await Client4.getKnownUsers();
+        knownUsers = new Set(fetchResult);
+    } catch (err) {
+        return [];
+    }
+    knownUsers.add(getCurrentUserId(state));
+    const allUsers = Object.keys(getUsers(state));
+    const usersToRemove = new Set(allUsers.filter((x) => !knownUsers.has(x)));
+
+    const actions = [];
+    for (const userToRemove of usersToRemove.values()) {
+        actions.push({type: UserTypes.PROFILE_NO_LONGER_VISIBLE, data: {user_id: userToRemove}});
+    }
+
+    return actions;
 }
 
 export class FormattedError extends Error {
