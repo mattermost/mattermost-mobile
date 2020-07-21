@@ -368,6 +368,31 @@ jobs:
       - save:
           filename: "Mattermost-unsigned.ipa"
 
+  build-ios-simulator:
+    executor: ios
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - ruby-setup
+      - npm-dependencies
+      - pods-dependencies
+      - assets
+      - fastlane-dependencies:
+          for: ios
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build unsigned x86_64 iOS app for iPhone simulator
+          no_output_timeout: 30m
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+            bundle exec fastlane ios simulator
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - mattermost-mobile/Mattermost-simulator-x86_64.app.zip
+      - save:
+          filename: "Mattermost-simulator-x86_64.app.zip"
+
   deploy-android-release:
     executor:
       name: android
@@ -548,6 +573,17 @@ workflows:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
             branches:
               only: unsigned
+      - build-ios-simulator:
+          context: mattermost-mobile-unsigned
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - /^build-\d+$/
+                - /^build-ios-\d+$/
+                - /^build-ios-beta-\d+$/
+                
       - github-release:
           context: mattermost-mobile-unsigned
           requires:

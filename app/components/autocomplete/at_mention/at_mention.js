@@ -11,6 +11,7 @@ import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocompl
 import AtMentionItem from 'app/components/autocomplete/at_mention_item';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
+import GroupMentionItem from 'app/components/autocomplete/at_mention_group/at_mention_group';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 
@@ -37,6 +38,7 @@ export default class AtMention extends PureComponent {
         isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
         useChannelMentions: PropTypes.bool.isRequired,
+        groups: PropTypes.array,
     };
 
     static defaultProps = {
@@ -59,6 +61,7 @@ export default class AtMention extends PureComponent {
 
         // Not invoked, render nothing.
         if (matchTerm === null) {
+            this.props.onResultCountChange(0);
             this.setState({
                 mentionComplete: false,
                 sections: [],
@@ -105,7 +108,7 @@ export default class AtMention extends PureComponent {
     }
 
     buildSections = (props) => {
-        const {isSearch, inChannel, outChannel, teamMembers, matchTerm} = props;
+        const {isSearch, inChannel, outChannel, teamMembers, matchTerm, groups} = props;
         const sections = [];
 
         if (isSearch) {
@@ -122,6 +125,16 @@ export default class AtMention extends PureComponent {
                     defaultMessage: 'Channel Members',
                     data: inChannel,
                     key: 'inChannel',
+                });
+            }
+
+            if (groups.length) {
+                sections.push({
+                    id: t('suggestion.mention.groups'),
+                    defaultMessage: 'Group Mentions',
+                    data: groups,
+                    key: 'groups',
+                    renderItem: this.renderGroupMentions,
                 });
             }
 
@@ -185,7 +198,6 @@ export default class AtMention extends PureComponent {
         } else {
             completedDraft = mentionPart.replace(AT_MENTION_REGEX, `@${mention} `);
         }
-
         if (value.length > cursorPosition) {
             completedDraft += value.substring(cursorPosition);
         }
@@ -227,10 +239,20 @@ export default class AtMention extends PureComponent {
         );
     };
 
+    renderGroupMentions = ({item}) => {
+        return (
+            <GroupMentionItem
+                key={`autocomplete-group-${item.name}`}
+                completeHandle={item.name}
+                onPress={this.completeMention}
+                theme={this.props.theme}
+            />
+        );
+    };
+
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
         const {mentionComplete, sections} = this.state;
-
         if (sections.length === 0 || mentionComplete) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.

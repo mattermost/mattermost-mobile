@@ -34,24 +34,24 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         actions: PropTypes.shape({
             getRedirectLocation: PropTypes.func.isRequired,
         }).isRequired,
-        link: PropTypes.string.isRequired,
-        message: PropTypes.string.isRequired,
+        baseTextStyle: CustomPropTypes.Style,
+        blockStyles: PropTypes.object,
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
+        expandedLink: PropTypes.string,
+        googleDeveloperKey: PropTypes.string,
+        isReplyPost: PropTypes.bool,
+        link: PropTypes.string.isRequired,
+        message: PropTypes.string.isRequired,
+        metadata: PropTypes.object,
+        onHashtagPress: PropTypes.func,
+        onPermalinkPress: PropTypes.func,
+        openGraphData: PropTypes.object,
         postId: PropTypes.string.isRequired,
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
-        baseTextStyle: CustomPropTypes.Style,
-        blockStyles: PropTypes.object,
-        googleDeveloperKey: PropTypes.string,
-        metadata: PropTypes.object,
-        isReplyPost: PropTypes.bool,
-        onHashtagPress: PropTypes.func,
-        onPermalinkPress: PropTypes.func,
-        openGraphData: PropTypes.object,
         textStyles: PropTypes.object,
-        expandedLink: PropTypes.string,
     };
 
     static contextTypes = {
@@ -122,10 +122,6 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
             if (img && img.height && img.width) {
                 this.setImageSize(path, img.width, img.height);
-            } else {
-                Image.getSize(path, (width, height) => {
-                    this.setImageSize(path, width, height);
-                }, () => this.setState({linkLoadError: true}));
             }
         }
     };
@@ -137,7 +133,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             imageUrl = link;
         } else if (isYoutubeLink(link)) {
             const videoId = getYouTubeVideoId(link);
-            imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            imageUrl = Object.keys(this.props.metadata.images)[0] || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         }
 
         return imageUrl;
@@ -221,11 +217,11 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         const {link, expandedLink, actions} = this.props;
 
         if (link) {
-            let imageUrl = this.getImageUrl(link);
-
             if (isYoutubeLink(link)) {
                 return;
             }
+
+            let imageUrl = this.getImageUrl(link);
 
             if (!imageUrl) {
                 if (!expandedLink || linkChanged) {
@@ -295,6 +291,10 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         const imageMetadata = this.props.metadata?.images?.[link];
         const {width, height, uri} = this.state;
 
+        if (!imageMetadata) {
+            return null;
+        }
+
         return (
             <PostAttachmentImage
                 height={height || MAX_IMAGE_HEIGHT}
@@ -360,11 +360,11 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             return attachments;
         }
 
-        if (!openGraphData && metadata) {
+        if (!openGraphData || !showLinkPreviews) {
             return null;
         }
 
-        if (link && showLinkPreviews) {
+        if (link) {
             if (!PostAttachmentOpenGraph) {
                 PostAttachmentOpenGraph = require('app/components/post_attachment_opengraph').default;
             }
@@ -374,7 +374,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                     isReplyPost={isReplyPost}
                     link={link}
                     openGraphData={openGraphData}
-                    imagesMetadata={metadata && metadata.images}
+                    imagesMetadata={metadata.images}
                     theme={theme}
                 />
             );
@@ -390,7 +390,16 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             MAX_YOUTUBE_IMAGE_WIDTH,
             getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()),
         );
-        const imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+        let imgUrl;
+        if (this.props.metadata?.images) {
+            imgUrl = Object.keys(this.props.metadata.images)[0];
+        }
+
+        if (!imgUrl) {
+            // Fallback to default YouTube thumbnail if available
+            imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        }
 
         return (
             <TouchableWithFeedback

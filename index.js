@@ -14,15 +14,17 @@ if (Platform.OS === 'android') {
 }
 
 if (__DEV__) {
-    const YellowBox = require('react-native/Libraries/YellowBox/YellowBox');
-    YellowBox.ignoreWarnings([
+    const LogBox = require('react-native/Libraries/LogBox/LogBox');
+    LogBox.ignoreLogs([
         'Warning: componentWillReceiveProps',
+        'Warning: componentWillMount',
         'Warning: StatusBarIOS',
         '`-[RCTRootView cancelTouches]`',
         'Animated',
 
         // Hide warnings caused by React Native (https://github.com/facebook/react-native/issues/20841)
         'Require cycle: node_modules/react-native/Libraries/Network/fetch.js',
+        'Warning: Cannot update a component from inside the function body of a different component',
     ]);
 }
 

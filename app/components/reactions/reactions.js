@@ -22,7 +22,6 @@ export default class Reactions extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             addReaction: PropTypes.func.isRequired,
-            getReactionsForPost: PropTypes.func.isRequired,
             removeReaction: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
@@ -42,13 +41,6 @@ export default class Reactions extends PureComponent {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
-
-    componentDidMount() {
-        const {actions, postId, reactions} = this.props;
-        if (!reactions) {
-            actions.getReactionsForPost(postId);
-        }
-    }
 
     handleAddReaction = preventDoubleTap(() => {
         const {theme} = this.props;

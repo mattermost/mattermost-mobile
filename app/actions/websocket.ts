@@ -3,8 +3,7 @@
 
 import {Client4} from '@mm-redux/client';
 import websocketClient from '@websocket';
-
-import {ChannelTypes, GeneralTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes} from '@mm-redux/action_types';
+import {ChannelTypes, GeneralTypes, EmojiTypes, PostTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes, IntegrationTypes, GroupTypes} from '@mm-redux/action_types';
 import {General, Preferences} from '@mm-redux/constants';
 import {
     getAllChannels,
@@ -298,6 +297,8 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleRoleUpdatedEvent(msg));
         case WebsocketEvents.USER_ROLE_UPDATED:
             return dispatch(handleUserRoleUpdated(msg));
+        case WebsocketEvents.MEMBERROLE_UPDATED:
+            return dispatch(handleUpdateMemberRoleEvent(msg));
         case WebsocketEvents.CHANNEL_CREATED:
             return dispatch(handleChannelCreatedEvent(msg));
         case WebsocketEvents.CHANNEL_DELETED:
@@ -341,6 +342,8 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleConfigChangedEvent(msg));
         case WebsocketEvents.OPEN_DIALOG:
             return dispatch(handleOpenDialogEvent(msg));
+        case WebsocketEvents.RECEIVED_GROUP:
+            return dispatch(handleGroupUpdatedEvent(msg));
         }
 
         return {data: true};
@@ -351,7 +354,13 @@ function handleNewPostEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
-        const post = JSON.parse(msg.data.post);
+        const currentUserId = getCurrentUserId(state);
+        const data = JSON.parse(msg.data.post);
+        const post = {
+            ...data,
+            ownPost: data.user_id === currentUserId,
+        };
+
         const actions: Array<GenericAction> = [];
 
         const exists = selectPost(state, post.pending_post_id);
@@ -421,7 +430,6 @@ function handleNewPostEvent(msg: WebSocketMessage) {
             }
 
             if (msg.data.channel_type === General.DM_CHANNEL) {
-                const currentUserId = getCurrentUserId(state);
                 const otherUserId = getUserIdFromChannelName(currentUserId, msg.data.channel_name);
                 const dmAction = makeDirectChannelVisibleIfNecessary(state, otherUserId);
                 if (dmAction) {
@@ -469,11 +477,17 @@ function handleNewPostEvent(msg: WebSocketMessage) {
 }
 
 function handlePostEdited(msg: WebSocketMessage) {
-    return async (dispatch: DispatchFunc) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const currentUserId = getCurrentUserId(state);
         const data = JSON.parse(msg.data.post);
-        const actions = [receivedPost(data)];
+        const post = {
+            ...data,
+            ownPost: data.user_id === currentUserId,
+        };
+        const actions = [receivedPost(post)];
 
-        const additional: any = await dispatch(getPostsAdditionalDataBatch([data]));
+        const additional: any = await dispatch(getPostsAdditionalDataBatch([post]));
         if (additional.data.length) {
             actions.push(...additional.data);
         }
@@ -958,6 +972,34 @@ function handleChannelSchemeUpdatedEvent(msg: WebSocketMessage) {
     };
 }
 
+function handleUpdateMemberRoleEvent(msg: WebSocketMessage) {
+    return async (dispatch: DispatchFunc) => {
+        const memberData = JSON.parse(msg.data.member);
+        const roles = memberData.roles.split(' ');
+        const actions = [];
+
+        try {
+            const newRoles = await Client4.getRolesByNames(roles);
+            if (newRoles.length) {
+                actions.push({
+                    type: RoleTypes.RECEIVED_ROLES,
+                    data: newRoles,
+                });
+            }
+        } catch (error) {
+            return {error};
+        }
+
+        actions.push({
+            type: TeamTypes.RECEIVED_MY_TEAM_MEMBER,
+            data: memberData,
+        });
+
+        dispatch(batchActions(actions));
+        return {data: true};
+    };
+}
+
 function handleDirectAddedEvent(msg: WebSocketMessage) {
     return async (dispatch: DispatchFunc) => {
         const channelActions = await fetchChannelAndMyMember(msg.broadcast.channel_id);
@@ -1138,6 +1180,23 @@ function handleOpenDialogEvent(msg: WebSocketMessage) {
     return (dispatch: DispatchFunc) => {
         const data = (msg.data && msg.data.dialog) || {};
         dispatch({type: IntegrationTypes.RECEIVED_DIALOG, data: JSON.parse(data)});
+        return {data: true};
+    };
+}
+
+function handleGroupUpdatedEvent(msg: WebSocketMessage) {
+    return (dispatch: DispatchFunc) => {
+        const data = JSON.parse(msg.data.group);
+        dispatch(batchActions([
+            {
+                type: GroupTypes.RECEIVED_GROUP,
+                data,
+            },
+            {
+                type: GroupTypes.RECEIVED_MY_GROUPS,
+                data: [data],
+            },
+        ]));
         return {data: true};
     };
 }

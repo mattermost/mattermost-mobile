@@ -15,13 +15,14 @@ export default class SlashSuggestionItem extends PureComponent {
         hint: PropTypes.string,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        trigger: PropTypes.string,
+        suggestion: PropTypes.string,
+        complete: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
     };
 
     completeSuggestion = () => {
-        const {onPress, trigger} = this.props;
-        onPress(trigger);
+        const {onPress, complete} = this.props;
+        onPress(complete);
     };
 
     render() {
@@ -29,7 +30,7 @@ export default class SlashSuggestionItem extends PureComponent {
             description,
             hint,
             theme,
-            trigger,
+            suggestion,
             isLandscape,
         } = this.props;
 
@@ -47,7 +48,7 @@ export default class SlashSuggestionItem extends PureComponent {
                         <Text style={style.iconText}>{'/'}</Text>
                     </View>
                     <View style={style.suggestionContainer}>
-                        <Text style={style.suggestionName}>{`${trigger} ${hint}`}</Text>
+                        <Text style={style.suggestionName}>{`${suggestion} ${hint}`}</Text>
                         <Text
                             ellipsizeMode='tail'
                             numberOfLines={1}

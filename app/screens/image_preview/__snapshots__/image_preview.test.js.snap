@@ -94,7 +94,7 @@ exports[`ImagePreview should match snapshot 1`] = `
             }
           }
         >
-          <Component
+          <ForwardRef
             onPress={[Function]}
             style={
               Object {
@@ -111,7 +111,7 @@ exports[`ImagePreview should match snapshot 1`] = `
               name="md-close"
               size={26}
             />
-          </Component>
+          </ForwardRef>
           <Text
             style={
               Object {
@@ -125,7 +125,7 @@ exports[`ImagePreview should match snapshot 1`] = `
           >
             1/2
           </Text>
-          <Component
+          <ForwardRef
             onPress={[Function]}
             style={
               Object {
@@ -142,7 +142,7 @@ exports[`ImagePreview should match snapshot 1`] = `
               name="ios-download"
               size={26}
             />
-          </Component>
+          </ForwardRef>
         </View>
       </View>
     </ForwardRef(AnimatedComponentWrapper)>
@@ -234,7 +234,7 @@ exports[`ImagePreview should match snapshot 1`] = `
 exports[`ImagePreview should match snapshot and not renderDownloadButton for local files 1`] = `null`;
 
 exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   style={
     Object {
@@ -251,5 +251,5 @@ exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
     name="ios-download"
     size={26}
   />
-</Component>
+</ForwardRef>
 `;

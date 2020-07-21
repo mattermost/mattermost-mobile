@@ -47,7 +47,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       ]
     }
   >
-    <Component
+    <ForwardRef
       onPress={[Function]}
     >
       <View
@@ -87,8 +87,8 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
           }
         }
       />
-    </Component>
-    <Component
+    </ForwardRef>
+    <ForwardRef
       onPress={[Function]}
     >
       <View
@@ -128,8 +128,8 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
           }
         }
       />
-    </Component>
-    <Component
+    </ForwardRef>
+    <ForwardRef
       onPress={[Function]}
     >
       <View
@@ -164,7 +164,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
           width={12}
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <View
     style={null}

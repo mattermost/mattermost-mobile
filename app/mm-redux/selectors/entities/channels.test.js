@@ -3811,3 +3811,32 @@ test('Selectors.Channels.getChannelModerations', () => {
     assert.equal(Selectors.getChannelModerations(state, undefined), undefined);
     assert.equal(Selectors.getChannelModerations(state, 'undefined'), undefined);
 });
+
+test('Selectors.Channels.getChannelMemberCountsByGroup', () => {
+    const memberCounts = {
+        'group-1': {
+            group_id: 'group-1',
+            channel_member_count: 1,
+            channel_member_timezones_count: 1,
+        },
+        'group-2': {
+            group_id: 'group-2',
+            channel_member_count: 999,
+            channel_member_timezones_count: 131,
+        },
+    };
+
+    const state = {
+        entities: {
+            channels: {
+                channelMemberCountsByGroup: {
+                    channel1: memberCounts,
+                },
+            },
+        },
+    };
+
+    assert.deepEqual(Selectors.getChannelMemberCountsByGroup(state, 'channel1'), memberCounts);
+    assert.deepEqual(Selectors.getChannelMemberCountsByGroup(state, undefined), {});
+    assert.deepEqual(Selectors.getChannelMemberCountsByGroup(state, 'undefined'), {});
+});

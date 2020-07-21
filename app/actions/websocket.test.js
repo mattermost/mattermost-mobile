@@ -54,7 +54,6 @@ const mockRolesRequest = (rolesToLoad = []) => {
 
 const mockTeamMemberRequest = (tm = []) => {
     nock(Client4.getUserRoute('me')).
-        log(console.log).
         get('/teams/members').
         reply(200, tm);
 };

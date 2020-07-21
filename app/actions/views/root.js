@@ -13,11 +13,10 @@ import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import EphemeralStore from '@store/ephemeral_store';
 import initialState from '@store/initial_state';
 import {getStateForReset} from '@store/utils';
 
-import {markChannelViewedAndRead} from './channel';
+import {markAsViewedAndReadBatch} from './channel';
 
 export function startDataCleanup() {
     return async (dispatch, getState) => {
@@ -108,7 +107,7 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
         const {currentTeamId} = state.entities.teams;
         const channel = channels[channelId];
         const member = myMembers[channelId];
-        const actions = [];
+        const actions = markAsViewedAndReadBatch(state, channelId);
 
         // when the notification is from a team other than the current team
         if (teamId !== currentTeamId) {
@@ -125,17 +124,14 @@ export function handleSelectTeamAndChannel(teamId, channelId) {
                     teamId: channel.team_id || currentTeamId,
                 },
             });
-
-            dispatch(markChannelViewedAndRead(channelId));
         }
 
         if (actions.length) {
             dispatch(batchActions(actions, 'BATCH_SELECT_TEAM_AND_CHANNEL'));
         }
 
-        EphemeralStore.setStartFromNotification(false);
-
-        console.log('channel switch from push notification to', channel?.display_name, (Date.now() - dt), 'ms'); //eslint-disable-line
+        // eslint-disable-next-line no-console
+        console.log('channel switch from push notification to', channel?.display_name || channel?.id, (Date.now() - dt), 'ms');
     };
 }
 

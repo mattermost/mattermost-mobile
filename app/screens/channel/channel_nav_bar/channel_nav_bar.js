@@ -62,11 +62,14 @@ export default class ChannelNavBar extends PureComponent {
         }
     };
 
-    handlePermanentSidebar = () => {
+    handlePermanentSidebar = async () => {
         if (DeviceTypes.IS_TABLET && this.mounted) {
-            AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS).then((enabled) => {
+            try {
+                const enabled = await AsyncStorage.getItem(DeviceTypes.PERMANENT_SIDEBAR_SETTINGS);
                 this.setState({permanentSidebar: enabled === 'true'});
-            });
+            } catch {
+                // do nothing
+            }
         }
     };
 

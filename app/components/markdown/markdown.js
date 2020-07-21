@@ -92,14 +92,6 @@ export default class Markdown extends PureComponent {
         return !scheme || this.props.autolinkedUrlSchemes.indexOf(scheme) !== -1;
     };
 
-    getMentionKeys = () => {
-        const mentionKeys = this.props.mentionKeys;
-        if (this.props.disableAtChannelMentionHighlight) {
-            return mentionKeys.filter((mention) => !['@all', '@channel', '@here'].includes(mention.key));
-        }
-        return mentionKeys;
-    }
-
     createRenderer = () => {
         return new Renderer({
             renderers: {
@@ -179,10 +171,15 @@ export default class Markdown extends PureComponent {
     };
 
     renderImage = ({linkDestination, reactChildren, context, src}) => {
+        if (!this.props.imagesMetadata) {
+            return null;
+        }
+
         if (context.indexOf('table') !== -1) {
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
+                    imagesMetadata={this.props.imagesMetadata}
                     source={src}
                     textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.link]}
                 >
@@ -218,6 +215,7 @@ export default class Markdown extends PureComponent {
                 isSearchResult={this.props.isSearchResult}
                 mentionName={mentionName}
                 onPostPress={this.props.onPostPress}
+                mentionKeys={this.props.mentionKeys}
             />
         );
     };
@@ -434,7 +432,7 @@ export default class Markdown extends PureComponent {
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
         ast = pullOutImages(ast);
-        ast = highlightMentions(ast, this.getMentionKeys());
+        ast = highlightMentions(ast, this.props.mentionKeys);
 
         if (this.props.isEdited) {
             const editIndicatorNode = new Node('edited_indicator');

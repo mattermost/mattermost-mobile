@@ -63,6 +63,7 @@ export default class ChannelIOS extends ChannelBase {
                 <>
                     <ChannelPostList
                         updateNativeScrollView={this.updateNativeScrollView}
+                        registerTypingAnimation={this.registerTypingAnimation}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
                 </>
@@ -93,6 +94,7 @@ export default class ChannelIOS extends ChannelBase {
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         ref={this.postDraft}
                         screenId={this.props.componentId}
+                        registerTypingAnimation={this.registerTypingAnimation}
                     />
                 </KeyboardTrackingView>
                 }

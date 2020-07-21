@@ -72,3 +72,33 @@ export function isThemeSwitchingEnabled(state) {
 export function getKeyboardAppearanceFromTheme(theme) {
     return tinyColor(theme.centerChannelBg).isLight() ? 'light' : 'dark';
 }
+
+export function hexToHue(hexColor) {
+    let {red, green, blue} = ThemeUtils.getComponents(hexColor);
+    red /= 255;
+    green /= 255;
+    blue /= 255;
+
+    const channelMax = Math.max(red, green, blue);
+    const channelMin = Math.min(red, green, blue);
+    const delta = channelMax - channelMin;
+    let hue = 0;
+
+    if (delta === 0) {
+        hue = 0;
+    } else if (channelMax === red) {
+        hue = ((green - blue) / delta) % 6;
+    } else if (channelMax === green) {
+        hue = ((blue - red) / delta) + 2;
+    } else {
+        hue = ((red - green) / delta) + 4;
+    }
+
+    hue = Math.round(hue * 60);
+
+    if (hue < 0) {
+        hue += 360;
+    }
+
+    return hue;
+}

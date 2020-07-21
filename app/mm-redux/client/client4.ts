@@ -1554,6 +1554,13 @@ export default class Client4 {
         );
     };
 
+    getChannelMemberCountsByGroup = async (channelId: string, includeTimezones: boolean) => {
+        return this.doFetch(
+            `${this.getChannelRoute(channelId)}/member_counts_by_group?include_timezones=${includeTimezones}`,
+            {method: 'get'},
+        );
+    };
+
     viewMyChannel = async (channelId: string, prevChannelId?: string) => {
         const data = {channel_id: channelId, prev_channel_id: prevChannelId};
         return this.doFetch(
@@ -2810,6 +2817,13 @@ export default class Client4 {
         );
     };
 
+    getCommandAutocompleteSuggestionsList = (userInput: string, teamId: string, commandArgs: {}) => {
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/commands/autocomplete_suggestions${buildQueryString({...commandArgs, user_input: userInput})}`,
+            {method: 'get'},
+        );
+    };
+
     // Groups
 
     linkGroupSyncable = async (groupID: string, syncableID: string, syncableType: string, patch: SyncablePatch) => {
@@ -2847,6 +2861,20 @@ export default class Client4 {
         );
     };
 
+    getGroups = async (filterAllowReference = false) => {
+        return this.doFetch(
+            `${this.getBaseRoute()}/groups${buildQueryString({filter_allow_reference: filterAllowReference})}`,
+            {method: 'get'},
+        );
+    };
+
+    getGroupsByUserId = async (userID: string) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/${userID}/groups`,
+            {method: 'get'},
+        );
+    }
+
     getGroupsNotAssociatedToTeam = async (teamID: string, q = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
         this.trackEvent('api', 'api_groups_get_not_associated_to_team', {team_id: teamID});
         return this.doFetch(
@@ -2863,34 +2891,41 @@ export default class Client4 {
         );
     };
 
-    getGroupsAssociatedToTeam = async (teamID: string, q = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getGroupsAssociatedToTeam = async (teamID: string, q = '', page = 0, perPage = PER_PAGE_DEFAULT, filterAllowReference = false) => {
         this.trackEvent('api', 'api_groups_get_associated_to_team', {team_id: teamID});
 
         return this.doFetch(
-            `${this.getBaseRoute()}/teams/${teamID}/groups${buildQueryString({page, per_page: perPage, q, include_member_count: true})}`,
+            `${this.getBaseRoute()}/teams/${teamID}/groups${buildQueryString({page, per_page: perPage, q, include_member_count: true, filter_allow_reference: filterAllowReference})}`,
             {method: 'get'},
         );
     };
 
-    getGroupsAssociatedToChannel = async (channelID: string, q = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getGroupsAssociatedToChannel = async (channelID: string, q = '', page = 0, perPage = PER_PAGE_DEFAULT, filterAllowReference = false) => {
         this.trackEvent('api', 'api_groups_get_associated_to_channel', {channel_id: channelID});
 
         return this.doFetch(
-            `${this.getBaseRoute()}/channels/${channelID}/groups${buildQueryString({page, per_page: perPage, q, include_member_count: true})}`,
+            `${this.getBaseRoute()}/channels/${channelID}/groups${buildQueryString({page, per_page: perPage, q, include_member_count: true, filter_allow_reference: filterAllowReference})}`,
             {method: 'get'},
         );
     };
 
-    getAllGroupsAssociatedToTeam = async (teamID: string) => {
+    getAllGroupsAssociatedToTeam = async (teamID: string, filterAllowReference = false) => {
         return this.doFetch(
-            `${this.getBaseRoute()}/teams/${teamID}/groups?paginate=false`,
+            `${this.getBaseRoute()}/teams/${teamID}/groups${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
             {method: 'get'},
         );
     };
 
-    getAllGroupsAssociatedToChannel = async (channelID: string) => {
+    getAllGroupsAssociatedToChannelsInTeam = async (teamID: string, filterAllowReference = false) => {
         return this.doFetch(
-            `${this.getBaseRoute()}/channels/${channelID}/groups?paginate=false`,
+            `${this.getBaseRoute()}/teams/${teamID}/groups_by_channels${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
+            {method: 'get'},
+        );
+    };
+
+    getAllGroupsAssociatedToChannel = async (channelID: string, filterAllowReference = false) => {
+        return this.doFetch(
+            `${this.getBaseRoute()}/channels/${channelID}/groups${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
             {method: 'get'},
         );
     };
@@ -3079,37 +3114,6 @@ export default class Client4 {
 
     trackEvent(category: string, event: string, props?: any) {
         if (!analytics) {
-            return;
-        }
-
-        // Temporary change to allow only certain events to reduce data rate - see MM-13062
-        // All events in 'admin' category are allowed, since they are low-volume
-        if (category !== 'admin' && ![
-            'api_posts_create',
-            'api_interactive_messages_button_clicked',
-            'api_interactive_messages_menu_selected',
-            'api_interactive_messages_dialog_submitted',
-            'ui_marketplace_download',
-            'ui_marketplace_download_update',
-            'ui_marketplace_configure',
-            'ui_marketplace_opened',
-            'ui_marketplace_closed',
-            'ui_marketplace_search',
-            'signup_user_01_welcome',
-            'signup_select_team',
-            'signup_team_01_name',
-            'signup_team_02_url',
-            'click_back',
-            'click_signin_account',
-            'click_create_account',
-            'click_create_team',
-            'click_system_console',
-            'click_logout',
-            'click_next',
-            'click_finish',
-            'click_dismiss_bar',
-            'diagnostics_disabled',
-        ].includes(event)) {
             return;
         }
 
