@@ -44,7 +44,7 @@ export default class SlashSuggestionItem extends PureComponent {
             >
                 <View style={style.container}>
                     <View style={style.icon}>
-                        <Text>{'/'}</Text>
+                        <Text style={style.iconText}>{'/'}</Text>
                     </View>
                     <View style={style.suggestionContainer}>
                         <Text style={style.suggestionName}>{`${trigger} ${hint}`}</Text>
@@ -73,6 +73,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 4,
             justifyContent: 'center',
             alignItems: 'center',
+        },
+        iconText: {
+            color: theme.centerChannelColor,
         },
         container: {
             flexDirection: 'row',

@@ -37,7 +37,7 @@ export default class Autocomplete extends PureComponent {
         nestedScrollEnabled: PropTypes.bool,
         expandDown: PropTypes.bool,
         onVisible: PropTypes.func,
-        bottom: PropTypes.number,
+        offsetY: PropTypes.number,
     };
 
     static defaultProps = {
@@ -46,7 +46,7 @@ export default class Autocomplete extends PureComponent {
         enableDateSuggestion: false,
         nestedScrollEnabled: false,
         onVisible: emptyFunction,
-        bottom: 80,
+        offsetY: 80,
     };
 
     static getDerivedStateFromProps(props, state) {
@@ -173,7 +173,7 @@ export default class Autocomplete extends PureComponent {
     }
 
     render() {
-        const {theme, isSearch, expandDown, bottom} = this.props;
+        const {theme, isSearch, expandDown, offsetY} = this.props;
         const style = getStyleFromTheme(theme);
 
         const wrapperStyles = [];
@@ -182,7 +182,7 @@ export default class Autocomplete extends PureComponent {
             wrapperStyles.push(style.base, style.searchContainer);
             containerStyles.push(style.content);
         } else {
-            let containerStyle = {bottom};
+            let containerStyle = {bottom: offsetY};
             if (expandDown) {
                 containerStyle = style.containerExpandDown;
             }
