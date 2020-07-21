@@ -23,6 +23,34 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static getDerivedStateFromProps(props, state) {
+        const {
+            notifyProps,
+            sendEmailNotifications,
+            enableEmailBatching,
+            emailInterval,
+        } = props;
+
+        if (
+            sendEmailNotifications !== state.lastSendEmailNotifications ||
+            enableEmailBatching !== state.lastEnableEmailBatching ||
+            emailInterval !== state.lastEmailInterval ||
+            notifyProps?.email !== state.lastNotifyPropsEmail
+        ) {
+            return {
+                emailInterval,
+                newInterval: computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
+
+                lastSendEmailNotifications: sendEmailNotifications,
+                lastEnableEmailBatching: enableEmailBatching,
+                lastEmailInterval: emailInterval,
+                lastNotifyPropsEmail: notifyProps.email,
+            };
+        }
+
+        return null;
+    }
+
     constructor(props) {
         super(props);
 
@@ -35,34 +63,18 @@ export default class NotificationSettingsEmailBase extends PureComponent {
 
         this.state = {
             emailInterval,
-            newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
+            newInterval: computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             showEmailNotificationsModal: false,
+
+            lastSendEmailNotifications: props.sendEmailNotifications,
+            lastEnableEmailBatching: props.enableEmailBatching,
+            lastEmailInterval: props.emailInterval,
+            lastNotifyPropsEmail: props.notifyProps.email,
         };
     }
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        const {
-            notifyProps,
-            sendEmailNotifications,
-            enableEmailBatching,
-            emailInterval,
-        } = nextProps;
-
-        if (
-            this.props.sendEmailNotifications !== sendEmailNotifications ||
-            this.props.enableEmailBatching !== enableEmailBatching ||
-            this.props.emailInterval !== emailInterval ||
-            this.props.notifyProps?.email !== notifyProps?.email
-        ) {
-            this.setState({
-                emailInterval,
-                newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
-            });
-        }
     }
 
     componentDidDisappear() {
@@ -101,12 +113,13 @@ export default class NotificationSettingsEmailBase extends PureComponent {
             actions.savePreferences(currentUser.id, [emailIntervalPreference]);
         }
     };
-
-    computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {
-        return getEmailInterval(
-            sendEmailNotifications,
-            enableEmailBatching,
-            parseInt(emailInterval, 10),
-        ).toString();
-    }
 }
+
+const computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {
+    return getEmailInterval(
+        sendEmailNotifications,
+        enableEmailBatching,
+        parseInt(emailInterval, 10),
+    ).toString();
+};
+
