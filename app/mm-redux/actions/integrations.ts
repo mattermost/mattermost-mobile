@@ -6,7 +6,7 @@ import {Client4} from '@mm-redux/client';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {sanitizeCommandForAutocompleteTracking} from '@mm-redux/utils/helpers';
+import {analytics} from '@init/analytics.ts';
 
 import {batchActions, DispatchFunc, GetStateFunc, ActionFunc} from '@mm-redux/types/actions';
 
@@ -179,14 +179,14 @@ export function getCommandAutocompleteSuggestions(userInput: string, teamId: str
     return async (dispatch: DispatchFunc) => {
         let data: any = null;
         try {
-            Client4.trackEvent('command_autocomplete', 'get_suggestions_initiated', {command: sanitizeCommandForAutocompleteTracking(userInput)});
+            analytics.trackCommand('get_suggestions_initiated', userInput);
             data = await Client4.getCommandAutocompleteSuggestionsList(userInput, teamId, commandArgs);
         } catch (error) {
-            Client4.trackEvent('command_autocomplete', 'get_suggestions_failed', {command: sanitizeCommandForAutocompleteTracking(userInput), error: error.message});
+            analytics.trackCommand('get_suggestions_failed', userInput, error.message);
             dispatch(batchActions([logError(error), requestFailure(IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS_FAILURE, error)]));
             return {error};
         }
-        Client4.trackEvent('command_autocomplete', 'get_suggestions_success', {command: sanitizeCommandForAutocompleteTracking(userInput)});
+        analytics.trackCommand('get_suggestions_success', userInput);
         dispatch(requestSuccess(IntegrationTypes.RECEIVED_COMMAND_SUGGESTIONS, data));
         return {data};
     };

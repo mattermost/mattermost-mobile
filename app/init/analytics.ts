@@ -7,6 +7,7 @@ import {Dimensions} from 'react-native';
 import LocalConfig from '@assets/config.json';
 import {Config} from '@mm-redux/types/config';
 import tracker from '@utils/time_tracker';
+import {isSystemAdmin} from '@mm-redux/utils/user_utils';
 
 type RudderClient = {
     setup(key: string, options: any): Promise<void>;
@@ -16,69 +17,145 @@ type RudderClient = {
     reset(): Promise<void>;
 }
 
-let diagnosticId: string | undefined;
-export let analytics: RudderClient | null = null;
-export let context: any;
+class Analytics {
+    analytics: RudderClient | null = null;
+    context: any;
+    diagnosticId: string | undefined;
 
-export async function init(config: Config) {
-    if (!analytics) {
-        analytics = require('@rudderstack/rudder-sdk-react-native').default;
+    userRoles?: string;
+    userId = '';
+
+    async init(config: Config) {
+        this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
+
+        if (this.analytics) {
+            const {height, width} = Dimensions.get('window');
+            this.diagnosticId = config.DiagnosticId;
+
+            if (this.diagnosticId) {
+                await this.analytics.setup(LocalConfig.RudderApiKey, {
+                    dataPlaneUrl: 'https://pdat.matterlytics.com',
+                    recordScreenViews: true,
+                    flushQueueSize: 20,
+                });
+
+                this.context = {
+                    app: {
+                        version: DeviceInfo.getVersion(),
+                        build: DeviceInfo.getBuildNumber(),
+                    },
+                    device: {
+                        dimensions: {
+                            height,
+                            width,
+                        },
+                        isTablet: DeviceInfo.isTablet(),
+                        os: DeviceInfo.getSystemVersion(),
+                    },
+                    ip: '0.0.0.0',
+                    server: config.Version,
+                };
+
+                this.analytics.identify(
+                    this.diagnosticId,
+                    this.context,
+                );
+            } else {
+                this.analytics.reset();
+            }
+        }
+
+        return this.analytics;
     }
 
-    if (analytics) {
-        const {height, width} = Dimensions.get('window');
-        diagnosticId = config.DiagnosticId;
-
-        if (diagnosticId) {
-            await analytics.setup(LocalConfig.RudderApiKey, {
-                dataPlaneUrl: 'https://pdat.matterlytics.com',
-                recordScreenViews: true,
-                flushQueueSize: 20,
-            });
-
-            context = {
-                app: {
-                    version: DeviceInfo.getVersion(),
-                    build: DeviceInfo.getBuildNumber(),
-                },
-                device: {
-                    dimensions: {
-                        height,
-                        width,
-                    },
-                    isTablet: DeviceInfo.isTablet(),
-                    os: DeviceInfo.getSystemVersion(),
-                },
-                ip: '0.0.0.0',
-                server: config.Version,
-            };
-
-            analytics.identify(
-                diagnosticId,
-                context,
-            );
-        } else {
-            analytics.reset();
+    async reset() {
+        if (this.analytics) {
+            await this.analytics.reset();
         }
     }
 
-    return analytics;
-}
+    setUserId(userId: string) {
+        this.userId = userId;
+    }
 
-export function recordTime(screenName: string, category: string, userId: string) {
-    if (analytics) {
-        const track: Record<string, number> = tracker;
-        const startTime: number = track[category];
-        track[category] = 0;
-        analytics.screen(
-            screenName, {
-                userId: diagnosticId,
-                context,
-                properties: {
-                    user_actual_id: userId,
-                    time: Date.now() - startTime,
+    setUserRoles(roles: string) {
+        this.userRoles = roles;
+    }
+
+    trackEvent(category: string, event: string, props?: any) {
+        if (!this.analytics) {
+            return;
+        }
+
+        const properties = Object.assign({
+            category,
+            type: event,
+            user_actual_role: this.userRoles && isSystemAdmin(this.userRoles) ? 'system_admin, system_user' : 'system_user',
+            user_actual_id: this.userId,
+        }, props);
+        const options = {
+            context: this.context,
+            anonymousId: '00000000000000000000000000',
+        };
+
+        this.analytics.track(event, properties, options);
+    }
+
+    recordTime(screenName: string, category: string, userId: string) {
+        if (this.analytics) {
+            const track: Record<string, number> = tracker;
+            const startTime: number = track[category];
+            track[category] = 0;
+            this.analytics.screen(
+                screenName, {
+                    userId: this.diagnosticId,
+                    context: this.context,
+                    properties: {
+                        user_actual_id: userId,
+                        time: Date.now() - startTime,
+                    },
                 },
-            },
-        );
+            );
+        }
+    }
+
+    trackAPI(event: string, props?: any) {
+        this.trackEvent('api', event, props);
+    }
+
+    trackCommand(event: string, command: string, errorMessage?: string) {
+        const sanitizedCommand = this.sanitizeCommand(command);
+        let props: any;
+        if (errorMessage) {
+            props = {command: sanitizedCommand, error: errorMessage};
+        } else {
+            props = {command: sanitizedCommand};
+        }
+
+        this.trackEvent('command', event, props);
+    }
+
+    trackAction(event: string, props?: any) {
+        this.trackEvent('action', event, props);
+    }
+
+    sanitizeCommand(userInput: string): string {
+        const commandList = ['agenda', 'autolink', 'away', 'bot-server', 'code', 'collapse',
+            'dnd', 'echo', 'expand', 'export', 'giphy', 'github', 'groupmsg', 'header', 'help',
+            'invite', 'invite_people', 'jira', 'jitsi', 'join', 'kick', 'leave', 'logout', 'me',
+            'msg', 'mute', 'nc', 'offline', 'online', 'open', 'poll', 'poll2', 'post-mortem',
+            'purpose', 'recommend', 'remove', 'rename', 'search', 'settings', 'shortcuts',
+            'shrug', 'standup', 'todo', 'wrangler', 'zoom'];
+        const index = userInput.indexOf(' ');
+        if (index === -1) {
+            return userInput[0];
+        }
+        const command = userInput.substring(1, index);
+        if (commandList.includes(command)) {
+            return command;
+        }
+        return 'custom_command';
     }
 }
+
+export const analytics = new Analytics();

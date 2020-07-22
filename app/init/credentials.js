@@ -9,6 +9,7 @@ import {Client4} from '@mm-redux/client';
 import mattermostManaged from 'app/mattermost_managed';
 import EphemeralStore from 'app/store/ephemeral_store';
 import {setCSRFFromCookie} from 'app/utils/security';
+import {analytics} from '@init/analytics.ts';
 
 const CURRENT_SERVER = '@currentServerUrl';
 
@@ -56,9 +57,10 @@ export const removeAppCredentials = async () => {
 
     Client4.setCSRF('');
     Client4.serverVersion = '';
-    Client4.setUserId('');
     Client4.setToken('');
     Client4.setUrl('');
+
+    analytics.setUserId('');
 
     if (url) {
         KeyChain.resetInternetCredentials(url);
@@ -84,7 +86,7 @@ async function getCredentialsFromGenericKeyChain() {
 
                 // if for any case the url and the token aren't valid proceed with re-hydration
                 if (url && url !== 'undefined' && token && token !== 'undefined') {
-                    Client4.setUserId(currentUserId);
+                    analytics.setUserId(currentUserId);
                     Client4.setUrl(url);
                     Client4.setToken(token);
                     await setCSRFFromCookie(url);
@@ -116,7 +118,7 @@ async function getInternetCredentials(url) {
 
             if (token && token !== 'undefined') {
                 EphemeralStore.deviceToken = deviceToken;
-                Client4.setUserId(currentUserId);
+                analytics.setUserId(currentUserId);
                 Client4.setUrl(url);
                 Client4.setToken(token);
                 await setCSRFFromCookie(url);

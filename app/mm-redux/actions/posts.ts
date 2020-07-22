@@ -22,6 +22,7 @@ import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelA
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
+import {analytics} from '@init/analytics.ts';
 
 import {
     deletePreferences,
@@ -670,7 +671,7 @@ export function flagPost(postId: string) {
             value: 'true',
         };
 
-        Client4.trackEvent('action', 'action_posts_flag');
+        analytics.trackAction('action_posts_flag');
 
         return savePreferences(currentUserId, [preference])(dispatch);
     };
@@ -1123,7 +1124,7 @@ export function unflagPost(postId: string) {
             name: postId,
         };
 
-        Client4.trackEvent('action', 'action_posts_unflag');
+        analytics.trackAction('action_posts_unflag');
 
         return deletePreferences(currentUserId, [preference])(dispatch, getState);
     };

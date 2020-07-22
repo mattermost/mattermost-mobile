@@ -4,7 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {NavigationTypes, ViewTypes} from '@constants';
-import {recordTime} from '@init/analytics.ts';
+import {analytics} from '@init/analytics.ts';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
 import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
@@ -180,7 +180,7 @@ export function recordLoadTime(screenName, category) {
     return async (dispatch, getState) => {
         const {currentUserId} = getState().entities.users;
 
-        recordTime(screenName, category, currentUserId);
+        analytics.recordTime(screenName, category, currentUserId);
     };
 }
 
