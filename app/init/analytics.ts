@@ -22,7 +22,7 @@ class Analytics {
     context: any;
     diagnosticId: string | undefined;
 
-    userRoles?: string;
+    userRoles: string | null = null;
     userId = '';
 
     async init(config: Config) {
@@ -69,6 +69,8 @@ class Analytics {
     }
 
     async reset() {
+        this.userId = '';
+        this.userRoles = null;
         if (this.analytics) {
             await this.analytics.reset();
         }

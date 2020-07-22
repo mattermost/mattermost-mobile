@@ -60,8 +60,6 @@ export const removeAppCredentials = async () => {
     Client4.setToken('');
     Client4.setUrl('');
 
-    analytics.setUserId('');
-
     if (url) {
         KeyChain.resetInternetCredentials(url);
     }
