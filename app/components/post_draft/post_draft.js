@@ -11,6 +11,7 @@ import Autocomplete from '@components/autocomplete';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX, MAX_FILE_COUNT} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
+import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from 'app/constants/autocomplete';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
@@ -31,6 +32,7 @@ export default class PostDraft extends PureComponent {
     static propTypes = {
         registerTypingAnimation: PropTypes.func.isRequired,
         addReactionToLatestPost: PropTypes.func.isRequired,
+        getChannelMemberCountsByGroup: PropTypes.func.isRequired,
         canPost: PropTypes.bool.isRequired,
         channelDisplayName: PropTypes.string,
         channelId: PropTypes.string.isRequired,
@@ -60,6 +62,9 @@ export default class PostDraft extends PureComponent {
         userIsOutOfOffice: PropTypes.bool.isRequired,
         value: PropTypes.string.isRequired,
         valueEvent: PropTypes.string,
+        useGroupMentions: PropTypes.bool.isRequired,
+        channelMemberCountsByGroup: PropTypes.object,
+        groupsWithAllowReference: PropTypes.object,
     };
 
     static defaultProps = {
@@ -89,22 +94,31 @@ export default class PostDraft extends PureComponent {
         };
     }
 
-    componentDidMount(prevProps) {
-        if (this.props.isTimezoneEnabled !== prevProps?.isTimezoneEnabled || prevProps?.channelId !== this.props.channelId) {
-            this.numberOfTimezones().then((channelTimezoneCount) => this.setState({channelTimezoneCount}));
+    componentDidMount() {
+        const {getChannelMemberCountsByGroup, channelId, isTimezoneEnabled, useGroupMentions} = this.props;
+        if (useGroupMentions) {
+            getChannelMemberCountsByGroup(channelId, isTimezoneEnabled);
         }
     }
 
     componentDidUpdate(prevProps) {
-        if (this.input.current) {
-            const {channelId, rootId, value} = this.props;
-            const diffChannel = channelId !== prevProps.channelId;
-            const diffThread = rootId !== prevProps.rootId;
+        const {channelId, rootId, value, useGroupMentions, getChannelMemberCountsByGroup, isTimezoneEnabled} = this.props;
+        const diffChannel = channelId !== prevProps?.channelId;
+        const diffTimezoneEnabled = isTimezoneEnabled !== prevProps?.isTimezoneEnabled;
 
+        if (this.input.current) {
+            const diffThread = rootId !== prevProps.rootId;
             if (diffChannel || diffThread) {
                 const trimmed = value.trim();
                 this.input.current.setValue(trimmed);
                 this.updateInitialValue(trimmed);
+            }
+        }
+
+        if (diffTimezoneEnabled || diffChannel) {
+            this.numberOfTimezones().then((channelTimezoneCount) => this.setState({channelTimezoneCount}));
+            if (useGroupMentions) {
+                getChannelMemberCountsByGroup(channelId, isTimezoneEnabled);
             }
         }
     }
@@ -132,9 +146,101 @@ export default class PostDraft extends PureComponent {
         return messageLength > 0;
     };
 
+    showSendToGroupsAlert = (groupMentions, memberNotifyCount, channelTimezoneCount, msg) => {
+        const {intl} = this.context;
+
+        let notifyAllMessage = '';
+        if (groupMentions.length === 1) {
+            if (channelTimezoneCount > 0) {
+                notifyAllMessage = (
+                    intl.formatMessage(
+                        {
+                            id: 'mobile.post_textbox.one_group.message.with_timezones',
+                            defaultMessage: 'By using {mention} you are about to send notifications to {totalMembers} people in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
+                        },
+                        {
+                            mention: groupMentions[0],
+                            totalMembers: memberNotifyCount,
+                            timezones: channelTimezoneCount,
+                        },
+                    )
+                );
+            } else {
+                notifyAllMessage = (
+                    intl.formatMessage(
+                        {
+                            id: 'mobile.post_textbox.one_group.message.without_timezones',
+                            defaultMessage: 'By using {mention} you are about to send notifications to {totalMembers} people. Are you sure you want to do this?',
+                        },
+                        {
+                            mention: groupMentions[0],
+                            totalMembers: memberNotifyCount,
+                        },
+                    )
+                );
+            }
+        } else if (channelTimezoneCount > 0) {
+            notifyAllMessage = (
+                intl.formatMessage(
+                    {
+                        id: 'mobile.post_textbox.multi_group.message.with_timezones',
+                        defaultMessage: 'By using {mentions} and {finalMention} you are about to send notifications to at least {totalMembers} people in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
+                    },
+                    {
+                        mentions: groupMentions.slice(0, -1).join(', '),
+                        finalMention: groupMentions[groupMentions.length - 1],
+                        totalMembers: memberNotifyCount,
+                        timezones: channelTimezoneCount,
+                    },
+                )
+            );
+        } else {
+            notifyAllMessage = (
+                intl.formatMessage(
+                    {
+                        id: 'mobile.post_textbox.multi_group.message.without_timezones',
+                        defaultMessage: 'By using {mentions} and {finalMention} you are about to send notifications to at least {totalMembers} people. Are you sure you want to do this?',
+                    },
+                    {
+                        mentions: groupMentions.slice(0, -1).join(', '),
+                        finalMention: groupMentions[groupMentions.length - 1],
+                        totalMembers: memberNotifyCount,
+                    },
+                )
+            );
+        }
+
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.post_textbox.groups.title',
+                defaultMessage: 'Confirm sending notifications to groups',
+            }),
+            notifyAllMessage,
+            [
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.post_textbox.entire_channel.cancel',
+                        defaultMessage: 'Cancel',
+                    }),
+                    onPress: () => {
+                        this.input.current.setValue(msg);
+                        this.setState({sendingMessage: false});
+                    },
+                },
+                {
+                    text: intl.formatMessage({
+                        id: 'mobile.post_textbox.entire_channel.confirm',
+                        defaultMessage: 'Confirm',
+                    }),
+                    onPress: () => this.doSubmitMessage(),
+                },
+            ],
+        );
+    };
+
     doSubmitMessage = () => {
         const {createPost, currentUserId, channelId, files, handleClearFiles, rootId} = this.props;
-        const value = this.input.current.getValue();
+        const value = this.input.current?.getValue() || '';
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -150,10 +256,12 @@ export default class PostDraft extends PureComponent {
             handleClearFiles(channelId, rootId);
         }
 
-        this.input.current.setValue('');
-        this.setState({sendingMessage: false});
+        if (this.input.current) {
+            this.input.current.setValue('');
+            this.input.current.changeDraft('');
+        }
 
-        this.input.current.changeDraft('');
+        this.setState({sendingMessage: false});
 
         if (Platform.OS === 'android') {
             // Fixes the issue where Android predictive text would prepend suggestions to the post draft when messages
@@ -362,21 +470,44 @@ export default class PostDraft extends PureComponent {
         this.input.current.changeDraft('');
     };
 
+    mapGroupMentions = (groupMentions) => {
+        const {channelMemberCountsByGroup} = this.props;
+        let memberNotifyCount = 0;
+        let channelTimezoneCount = 0;
+        const groupMentionsSet = new Set();
+        groupMentions.
+            forEach((group) => {
+                const mappedValue = channelMemberCountsByGroup[group.id];
+                if (mappedValue?.channel_member_count > NOTIFY_ALL_MEMBERS && mappedValue?.channel_member_count > memberNotifyCount) {
+                    memberNotifyCount = mappedValue.channel_member_count;
+                    channelTimezoneCount = mappedValue.channel_member_timezones_count;
+                }
+                groupMentionsSet.add(`@${group.name}`);
+            });
+        return {groupMentionsSet, memberNotifyCount, channelTimezoneCount};
+    }
+
     sendMessage = () => {
-        const value = this.input.current.getValue();
+        const value = this.input.current?.getValue() || '';
+        const {enableConfirmNotificationsToChannel, membersCount, useGroupMentions, useChannelMentions} = this.props;
+        const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
+        const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
+        const toAllOrChannel = this.textContainsAtAllAtChannel(value);
+        const groupMentions = (!toAllOrChannel && notificationsToGroups) ? this.groupsMentionedInText(value) : [];
 
-        if (value) {
-            const {enableConfirmNotificationsToChannel, membersCount, useChannelMentions} = this.props;
-            const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-            const toAllOrChannel = this.textContainsAtAllAtChannel(value);
-
-            if (value.indexOf('/') === 0) {
-                this.sendCommand(value);
-            } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
-                this.showSendToAllOrChannelAlert(membersCount, value);
+        if (value.indexOf('/') === 0) {
+            this.sendCommand(value);
+        } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && toAllOrChannel) {
+            this.showSendToAllOrChannelAlert(membersCount, value);
+        } else if (groupMentions.length > 0) {
+            const {groupMentionsSet, memberNotifyCount, channelTimezoneCount} = this.mapGroupMentions(groupMentions);
+            if (memberNotifyCount > 0) {
+                this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount, value);
             } else {
                 this.doSubmitMessage();
             }
+        } else {
+            this.doSubmitMessage();
         }
     };
 
@@ -474,9 +605,25 @@ export default class PostDraft extends PureComponent {
     };
 
     textContainsAtAllAtChannel = (text) => {
-        const textWithoutCode = text.replace(/(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)| *(`{3,}|~{3,})[ .]*(\S+)? *\n([\s\S]*?\s*)\3 *(?:\n+|$)/g, '');
-        return (/\B@(all|channel)\b/i).test(textWithoutCode);
+        const textWithoutCode = text.replace(CODE_REGEX, '');
+        return (/(?:\B|\b_+)@(channel|all)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
     };
+
+    groupsMentionedInText = (text) => {
+        const {groupsWithAllowReference} = this.props;
+        const groups = [];
+        if (groupsWithAllowReference.size > 0) {
+            const textWithoutCode = text.replace(CODE_REGEX, '');
+            const mentions = textWithoutCode.match(AT_MENTION_REGEX_GLOBAL) || [];
+            mentions.forEach((mention) => {
+                const group = groupsWithAllowReference.get(mention);
+                if (group) {
+                    groups.push(group);
+                }
+            });
+        }
+        return groups;
+    }
 
     updateInitialValue = (value) => {
         this.setState({value});
@@ -531,6 +678,8 @@ export default class PostDraft extends PureComponent {
                     maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
                     onChangeText={this.handleInputQuickAction}
                     valueEvent={valueEvent}
+                    rootId={rootId}
+                    channelId={channelId}
                 />
                 }
                 <View

@@ -21,7 +21,7 @@
 	- react-native-video
 	- react-native/Libraries/Core/Devtools
 	- react-native/Libraries/Utilities/deepFreezeAndThrowOnMutationInDev
-	- react-native/Libraries/YellowBox
+	- react-native/Libraries/LogBox
 	- redux-devtools-instrument
 	- remove-redux-devtools
 	- remotedev-utils

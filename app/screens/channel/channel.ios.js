@@ -71,6 +71,7 @@ export default class ChannelIOS extends ChannelBase {
                             onChangeText={this.handleAutoComplete}
                             cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                             valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            channelId={currentChannelId}
                         />
                     </View>
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}

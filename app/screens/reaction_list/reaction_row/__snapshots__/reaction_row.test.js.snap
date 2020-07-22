@@ -23,7 +23,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
       ]
     }
   >
-    <Component
+    <ForwardRef
       onPress={[Function]}
     >
       <View
@@ -39,7 +39,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
           userId="user_id"
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <Text
     ellipsizeMode="tail"

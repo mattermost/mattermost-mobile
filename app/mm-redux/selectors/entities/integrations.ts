@@ -26,6 +26,10 @@ export function getSystemCommands(state: types.store.GlobalState) {
     return state.entities.integrations.systemCommands;
 }
 
+export function getCommandAutocompleteSuggestionsList(state: types.store.GlobalState) {
+    return state.entities.integrations.commandAutocompleteSuggestions;
+}
+
 /**
  * get outgoing hooks in current team
  */

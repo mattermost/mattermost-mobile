@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 module.exports = {
-    preset: '@testing-library/react-native',
+    preset: 'react-native',
     verbose: true,
     globals: {
         'ts-jest': {

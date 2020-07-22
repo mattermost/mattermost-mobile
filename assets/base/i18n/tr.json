@@ -620,5 +620,9 @@
   "mobile.server_upgrade.dismiss": "Yok say",
   "mobile.server_upgrade.alert_description": "Bu sunucu sürümü desteklenmediğinden, kullanıcılar uyumluluk sorunlarından kaynaklanan çökmeler ya da uygulamanın temel işlevselliğini bozan ciddi sorunlar ile karşılaşacak. Sunucu sürümünün {ServerVersion} ya da üzerindeki bir sürüme yükseltilmesi gerekli.",
   "suggestion.mention.groups": "Grup Anmaları",
-  "mobile.android.back_handler_exit": "Çıkmak için yeniden geri üzerine tıklayın"
+  "mobile.android.back_handler_exit": "Çıkmak için yeniden geri üzerine tıklayın",
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {yeni} other {daha yeni}} {count, plural, one {ileti} other {ileti}}",
+  "mobile.unsupported_server.title": "Sunucu sürümü desteklenmiyor",
+  "mobile.unsupported_server.message": "Ek dosyalar, bağlantı ön izlemeleri, tepkiler ve gömülü veriler doğru görüntülenmeyebilir. Bu sorun sürerse BT yöneticinizden Mattermost sürümünü yükseltmesi gerektiğini bildirin.",
+  "mobile.unsupported_server.ok": "Tamam"
 }

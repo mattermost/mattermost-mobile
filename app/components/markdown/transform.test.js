@@ -3055,7 +3055,7 @@ function nodeToString(node) {
 }
 
 const ignoredKeys = {_sourcepos: true, _lastLineBlank: true, _open: true, _string_content: true, _info: true, _isFenced: true, _fenceChar: true, _fenceLength: true, _fenceOffset: true, _onEnter: true, _onExit: true};
-function astToJson(node, visited = [], indent = '') { // eslint-disable-line @typescript-eslint/no-unused-vars
+function astToJson(node, visited = [], indent = '') {
     let out = '{';
 
     const myVisited = [...visited];
@@ -3081,7 +3081,7 @@ function astToJson(node, visited = [], indent = '') { // eslint-disable-line @ty
         } else if (typeof value === 'boolean') {
             out += String(value);
         } else if (typeof value === 'object') {
-            out += astToJson(value, myVisited, indent + '  ');
+            out += astToJson(value, myVisited, indent + '  '); // eslint-disable-line @typescript-eslint/no-unused-vars
         }
 
         if (i !== keys.length - 1) {
