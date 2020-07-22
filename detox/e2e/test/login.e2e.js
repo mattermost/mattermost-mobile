@@ -20,7 +20,6 @@ describe('Select Server', () => {
         await expect(element(by.id('select_server_screen'))).toBeVisible();
 
         // Enter invalid server URL
-        await element(by.id('server_url_input')).clearText();
         await element(by.id('server_url_input')).typeText('http://invalid:8065');
 
         // Tap anywhere to hide keyboard
@@ -38,8 +37,7 @@ describe('Select Server', () => {
         await expect(element(by.id('select_server_screen'))).toBeVisible();
 
         // Enter valid server URL
-        await element(by.id('server_url_input')).clearText();
-        await element(by.id('server_url_input')).typeText(env.siteUrl);
+        await element(by.id('server_url_input')).replaceText(env.siteUrl);
 
         // Tap connect button
         await element(by.id('connect_button')).tap();
@@ -79,7 +77,7 @@ describe('Select Server', () => {
         await expect(element(by.id('error_text'))).toHaveText('Please enter your password');
 
         // Clear input to username and enter invalid password
-        await element(by.id('username_input')).clearText();
+        await element(by.id('username_input')).replaceText('');
         await element(by.id('password_input')).typeText('any');
 
         // Tap anywhere to hide keyboard
@@ -99,15 +97,13 @@ describe('Select Server', () => {
         await expect(element(by.id('login_screen'))).toBeVisible();
 
         // Enter invalid username
-        await element(by.id('username_input')).clearText();
-        await element(by.id('username_input')).typeText('any');
+        await element(by.id('username_input')).replaceText('any');
 
         // Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
 
         // Enter invalid password
-        await element(by.id('password_input')).clearText();
-        await element(by.id('password_input')).typeText('any');
+        await element(by.id('password_input')).replaceText('any');
 
         // Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
@@ -126,15 +122,13 @@ describe('Select Server', () => {
         await expect(element(by.id('login_screen'))).toBeVisible();
 
         // Enter valid username
-        await element(by.id('username_input')).clearText();
-        await element(by.id('username_input')).typeText(env.adminUsername);
+        await element(by.id('username_input')).replaceText(env.adminUsername);
 
         // # Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
 
         // Enter valid password
-        await element(by.id('password_input')).clearText();
-        await element(by.id('password_input')).typeText(env.adminPassword);
+        await element(by.id('password_input')).replaceText(env.adminPassword);
 
         // # Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();

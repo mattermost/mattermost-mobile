@@ -10,8 +10,7 @@ import env from './env';
 export async function fulfillSelectServerScreen(url = env.siteUrl) {
     await expect(element(by.id('select_server_screen'))).toBeVisible();
 
-    await element(by.id('server_url_input')).clearText();
-    await element(by.id('server_url_input')).typeText(url);
+    await element(by.id('server_url_input')).replaceText(url);
 
     // # Tap anywhere to hide keyboard
     await element(by.text('Enter Server URL')).tap();
@@ -27,14 +26,12 @@ export async function fulfillSelectServerScreen(url = env.siteUrl) {
 export async function fulfillLoginScreen({username = env.adminUsername, password = env.adminPassword} = {}) {
     await expect(element(by.id('login_screen'))).toBeVisible();
 
-    await element(by.id('username_input')).clearText();
-    await element(by.id('username_input')).typeText(username);
+    await element(by.id('username_input')).replaceText(username);
 
     // # Tap anywhere to hide keyboard
     await element(by.text('Mattermost')).tap();
 
-    await element(by.id('password_input')).clearText();
-    await element(by.id('password_input')).typeText(password);
+    await element(by.id('password_input')).replaceText(password);
 
     // # Tap anywhere to hide keyboard
     await element(by.text('Mattermost')).tap();
