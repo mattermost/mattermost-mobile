@@ -625,5 +625,9 @@
     "mobile.post_textbox.one_group.message.with_timezones": "{mention} kullanarak {timezones, number} {timezones, plural, one {saat dilimi} other {saat dilimi}} üzerindeki {totalMembers} kişiye bildirim göndereceksiniz. Bunu yapmak istediğinize emin misiniz?",
     "mobile.post_textbox.multi_group.message.without_timezones": "{mentions} ve {finalMention} kullanarak, en az {totalMembers} kişiye bildirim göndereceksiniz. Bunu yapmak istediğinize emin misiniz?",
     "mobile.post_textbox.multi_group.message.with_timezones": "{mentions} ve {finalMention} kullanarak, en az {timezones, number} {timezones, plural, one {saat dilimi} other {saat dilimi}} üzerindeki {totalMembers} kişiye bildirim göndereceksiniz. Bunu yapmak istediğinize emin misiniz?",
-    "mobile.post_textbox.groups.title": "Gruplara bildirim gönderilmesini onaylayın"
+    "mobile.post_textbox.groups.title": "Gruplara bildirim gönderilmesini onaylayın",
+    "mobile.unsupported_server.title": "Sunucu sürümü desteklenmiyor",
+    "mobile.unsupported_server.ok": "Tamam",
+    "mobile.unsupported_server.message": "Ek dosyalar, bağlantı ön izlemeleri, tepkiler ve gömülü veriler doğru görüntülenmeyebilir. Bu sorun sürerse BT yöneticinizden Mattermost sürümünü yükseltmesi gerektiğini bildirin.",
+    "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {yeni} other {daha yeni}} {count, plural, one {ileti} other {ileti}}"
 }
