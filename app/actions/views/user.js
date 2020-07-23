@@ -40,8 +40,8 @@ export function completeLogin(user, deviceToken) {
         }
 
         // Data retention
-        if (config.DataRetentionEnableMessageDeletion && config.DataRetentionEnableMessageDeletion === 'true' &&
-            license.IsLicensed === 'true' && license.DataRetention === 'true') {
+        if (config?.DataRetentionEnableMessageDeletion && config?.DataRetentionEnableMessageDeletion === 'true' &&
+            license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
             dispatch(getDataRetentionPolicy());
         } else {
             dispatch({type: GeneralTypes.RECEIVED_DATA_RETENTION_POLICY, data: {}});
@@ -183,14 +183,10 @@ export function login(loginId, password, mfaToken, ldapOnly = false) {
     };
 }
 
-export function ssoLogin(token) {
+export function ssoLogin() {
     return async (dispatch, getState) => {
         const state = getState();
         const deviceToken = state.entities?.general?.deviceToken;
-
-        Client4.setToken(token);
-        await setCSRFFromCookie(Client4.getUrl());
-
         const result = await dispatch(loadMe());
 
         if (!result.error) {

@@ -41,6 +41,8 @@ const handleRedirectProtocol = (url, response) => {
 };
 
 Client4.doFetchWithResponse = async (url, options) => {
+    // eslint-disable-next-line no-console
+    console.log('Request endpoint', url);
     const customHeaders = LocalConfig.CustomRequestHeaders;
     let waitsForConnectivity = false;
     let timeoutIntervalForResource = 30;
@@ -136,7 +138,7 @@ Client4.doFetchWithResponse = async (url, options) => {
     }
 
     throw new ClientError(Client4.getUrl(), {
-        message: msg,
+        message: `${msg} url = ${url}`,
         server_error_id: data.id,
         status_code: data.status_code,
         url,
