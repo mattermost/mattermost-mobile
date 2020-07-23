@@ -14,6 +14,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import SlashSuggestionItem from './slash_suggestion_item';
 import {Client4} from '@mm-redux/client';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {analytics} from '@init/analytics.ts';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
@@ -90,12 +91,12 @@ export default class SlashSuggestion extends PureComponent {
             const matches = this.filterSlashSuggestions(nextValue.substring(1), nextCommands);
             this.updateSuggestions(matches);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            if (nextProps.suggestions === this.props.suggestions) {
+            if (nextSuggestions === this.props.suggestions) {
                 const args = {
                     channel_id: this.props.channelId,
                     ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
                 };
-                this.props.actions.getCommandAutocompleteSuggestions(nextProps.value, nextProps.currentTeamId, args);
+                this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
             } else {
                 const matches = [];
                 nextSuggestions.forEach((sug) => {
@@ -151,6 +152,7 @@ export default class SlashSuggestion extends PureComponent {
 
     completeSuggestion = (command) => {
         const {onChangeText} = this.props;
+        analytics.trackCommand('complete_suggestion', `/${command} `);
 
         // We are going to set a double / on iOS to prevent the auto correct from taking over and replacing it
         // with the wrong value, this is a hack but I could not found another way to solve it
