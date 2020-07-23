@@ -18,6 +18,7 @@ import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities
 import {setAppCredentials} from 'app/init/credentials';
 import {setCSRFFromCookie} from '@utils/security';
 import {getDeviceTimezone} from '@utils/timezone';
+import {analytics} from '@init/analytics.ts';
 
 const HTTP_UNAUTHORIZED = 401;
 
@@ -96,8 +97,8 @@ export function loadMe(user, deviceToken, skipDispatch = false) {
         }
 
         try {
-            Client4.setUserId(data.user.id);
-            Client4.setUserRoles(data.user.roles);
+            analytics.setUserId(data.user.id);
+            analytics.setUserRoles(data.user.roles);
 
             // Execute all other requests in parallel
             const teamsRequest = Client4.getMyTeams();

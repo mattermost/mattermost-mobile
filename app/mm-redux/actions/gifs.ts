@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {GifTypes} from '@mm-redux/action_types';
-import {Client4} from '@mm-redux/client';
 import gfycatSdk from '@mm-redux/utils/gfycat_sdk';
 import {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {GlobalState} from '@mm-redux/types/store';
+import {analytics} from '@init/analytics.ts';
 
 // APP PROPS
 
@@ -170,7 +170,7 @@ export function searchGfycat({searchText, count = 30, startIndex = 0}: { searchT
                 const context = getState().entities.gifs.categories.tagsDict[searchText] ?
                     'category' :
                     'search';
-                Client4.trackEvent(
+                analytics.trackEvent(
                     'gfycat',
                     'views',
                     {context, count: json.gfycats.length, keyword: searchText},
@@ -204,7 +204,7 @@ export function searchCategory({tagName = '', gfyCount = 30, cursorPos = undefin
                     dispatch(cacheGifsRequest(json.gfycats));
                     dispatch(receiveCategorySearch({tagName, json}));
 
-                    Client4.trackEvent(
+                    analytics.trackEvent(
                         'gfycat',
                         'views',
                         {context: 'category', count: json.gfycats.length, keyword: tagName},
