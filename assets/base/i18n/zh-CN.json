@@ -620,5 +620,14 @@
   "mobile.server_upgrade.dismiss": "解除",
   "mobile.server_upgrade.alert_description": "此服务器版本不受支持，用户将面临兼容性问题，这些问题会导致崩溃或严重的错误影响应用程序的核心功能。 需要升级到服务器版本 {serverVersion} 或更高。",
   "suggestion.mention.groups": "组提及",
-  "mobile.android.back_handler_exit": "再次点击后退以退出"
+  "mobile.android.back_handler_exit": "再次点击返回以退出",
+  "mobile.unsupported_server.message": "附件、链接预览、互动以及内嵌数据可能无法正确显示。如果此问题持续发生，请联系您的系统管理员以升级 Mattermost 服务器。",
+  "mobile.post_textbox.one_group.message.without_timezones": "使用 {mentions} 将发送通知给 {totalMembers} 人。您确定要这么做？",
+  "mobile.post_textbox.multi_group.message.without_timezones": "使用 {mentions} 与 {finalMention} 将发送通知给至少 {totalMembers} 人。您确定要这么做？",
+  "mobile.post_textbox.multi_group.message.with_timezones": "使用 {mentions} 与 {finalMention} 将发送通知给 {timezones, number} 个时区的 {totalMembers} 人。您确定要这么做？",
+  "mobile.post_textbox.one_group.message.with_timezones": "使用 {mentions} 将发送通知给 {timezones, number} 个时区的 {totalMembers} 人。您确定要这么做？",
+  "mobile.unsupported_server.title": "不支持的服务端版本",
+  "mobile.unsupported_server.ok": "确定",
+  "mobile.post_textbox.groups.title": "确认发送推送给组",
+  "mobile.more_messages_button.text": "{count} 条消息"
 }
