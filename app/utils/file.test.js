@@ -1,7 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {generateId, getLocalFilePathFromFile, getExtensionFromContentDisposition} from 'app/utils/file';
+import {
+    generateId,
+    getLocalFilePathFromFile,
+    getExtensionFromContentDisposition,
+    encodeLonePercentSymbols,
+} from 'app/utils/file';
 
 describe('getExtensionFromContentDisposition', () => {
     it('should return the extracted the extension', () => {
@@ -73,5 +78,24 @@ describe('getExtensionFromContentDisposition', () => {
         };
         const localFile = getLocalFilePathFromFile('Videos', {data});
         expect(localFile).toBeNull();
+    });
+});
+
+describe('encodeLonePercentSymbols', () => {
+    it('should not encode % chars used for encoding', () => {
+        const encodingChars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'];
+        for (let i = 0; i < encodingChars.length; i++) {
+            for (let j = 0; j < encodingChars.length; j++) {
+                const str = `test%${encodingChars[i]}${encodingChars[j]}`;
+                const result = encodeLonePercentSymbols(str);
+                expect(result).toEqual(str);
+            }
+        }
+    });
+
+    it('should encode % chars not used for encoding', () => {
+        const str = 'test%%20%21%AZ%';
+        const result = encodeLonePercentSymbols(str);
+        expect(result).toEqual('test%25%20%21%25AZ%25');
     });
 });
