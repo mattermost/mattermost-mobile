@@ -623,5 +623,11 @@
   "mobile.more_messages_button.text": "{count} 件の {isInitialMessage, select, true {新しい} other {新しい}} {count, plural, one {メッセージ} other {メッセージ}}",
   "mobile.android.back_handler_exit": "終了するにはもう一度戻るを押してください",
   "mobile.post_textbox.groups.title": "グループへ通知を送信する",
-  "mobile.unsupported_server.ok": "OK"
+  "mobile.unsupported_server.ok": "OK",
+  "mobile.unsupported_server.title": "サポートされていないサーバーバージョン",
+  "mobile.unsupported_server.message": "ファイル添付、リンクプレビュー、絵文字リアクション、埋め込みデータが正しく表示されなくなる可能性があります。この問題が続くようならば、システム管理者にMattermostサーバーをアップグレードするよう連絡してください。",
+  "mobile.post_textbox.one_group.message.without_timezones": "{mention} を利用すると {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
+  "mobile.post_textbox.one_group.message.with_timezones": "{mention} を利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
+  "mobile.post_textbox.multi_group.message.without_timezones": "{mentions} や {finalMention} を利用すると {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
+  "mobile.post_textbox.multi_group.message.with_timezones": "{mentions} や {finalMention} を利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？"
 }
