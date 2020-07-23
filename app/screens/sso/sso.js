@@ -121,10 +121,10 @@ class SSO extends PureComponent {
             const mmtoken = res.MMAUTHTOKEN;
             const csrf = res.MMCSRF;
             const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
-            const csfrToken = typeof csrf === 'object' ? csrf.value : csrf;
+            const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
 
-            if (csfrToken) {
-                Client4.setCSRF(csfrToken);
+            if (csrfToken) {
+                Client4.setCSRF(csrfToken);
             }
 
             if (token) {
