@@ -135,7 +135,7 @@ class SSO extends PureComponent {
                 } = this.props.actions;
 
                 Client4.setToken(token);
-                ssoLogin(token).then((result) => {
+                ssoLogin().then((result) => {
                     if (result.error) {
                         this.onLoadEndError(result.error);
                         return;
