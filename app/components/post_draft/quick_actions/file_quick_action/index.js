@@ -13,7 +13,6 @@ import Permissions from 'react-native-permissions';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {changeOpacity} from '@utils/theme';
-import {encodeLonePercentSymbols} from '@utils/file';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -69,8 +68,10 @@ export default class FileQuickAction extends PureComponent {
                     }
                 }
 
-                // Decode file uri to get the actual path
-                res.uri = decodeURIComponent(encodeLonePercentSymbols(res.uri));
+                if (Platform.OS === 'ios') {
+                    // Decode file uri to get the actual path
+                    res.uri = decodeURIComponent(res.uri);
+                }
 
                 this.props.onUploadFiles([res]);
             } catch (error) {

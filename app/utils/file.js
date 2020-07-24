@@ -263,7 +263,3 @@ export function getExtensionFromContentDisposition(contentDisposition) {
 
     return null;
 }
-
-export function encodeLonePercentSymbols(uri) {
-    return uri.replace(/%(?![0-9a-fA-F]{2})/g, '%25');
-}
