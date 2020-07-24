@@ -23,6 +23,7 @@
 
 #### All apps
  - Fixed an issue with More Messages button inconsistencies when opening the app from a push notification.
+ - Fixed an issue where users were unable to create channels when first joining a team.
 
 #### Android specific
  - Fixed an issue with keyboard glitches after using an invalid slash command.
