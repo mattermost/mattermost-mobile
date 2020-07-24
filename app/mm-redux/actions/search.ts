@@ -13,6 +13,8 @@ import {ActionResult, batchActions, DispatchFunc, GetStateFunc, ActionFunc} from
 import {RelationOneToOne} from '@mm-redux/types/utilities';
 import {Post} from '@mm-redux/types/posts';
 import {SearchParameter} from '@mm-redux/types/search';
+import {analytics} from '@init/analytics.ts';
+
 const WEBAPP_SEARCH_PER_PAGE = 20;
 export function getMissingChannelsFromPosts(posts: RelationOneToOne<Post, Post>): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -210,7 +212,7 @@ export function getRecentMentions(): ActionFunc {
 
             const terms = termKeys.map(({key}) => key).join(' ').trim() + ' ';
 
-            Client4.trackEvent('api', 'api_posts_search_mention');
+            analytics.trackAPI('api_posts_search_mention');
             posts = await Client4.searchPosts(teamId, terms, true);
 
             const profilesAndStatuses = getProfilesAndStatusesForPosts(posts.posts, dispatch, getState);

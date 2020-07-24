@@ -42,11 +42,10 @@ import PushNotifications from 'app/push_notifications';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
+import {analytics} from '@init/analytics.ts';
 
 const {StatusBarManager} = NativeModules;
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
-
-let analytics;
 
 class GlobalEventHandler {
     constructor() {
@@ -120,13 +119,10 @@ class GlobalEventHandler {
     configureAnalytics = async () => {
         const state = Store.redux.getState();
         const config = getConfig(state);
-        const initAnalytics = require('./analytics').init;
 
         if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.RudderApiKey) {
-            analytics = await initAnalytics(config);
+            await analytics.init(config);
         }
-
-        return analytics;
     };
 
     onAppStateChange = (appState) => {
@@ -204,9 +200,7 @@ class GlobalEventHandler {
         Store.redux.dispatch(closeWebSocket(false));
         Store.redux.dispatch(setServerVersion(''));
 
-        if (analytics) {
-            await analytics.reset();
-        }
+        await analytics.reset();
 
         mattermostBucket.removePreference('cert');
         mattermostBucket.removePreference('emm');
