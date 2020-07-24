@@ -1529,7 +1529,7 @@ THE SOFTWARE.
 
 ## react-native-cookies
 
-This product contains a modified version of 'react-native-cookies' by Shimo HQ.
+This product contains a modified version of 'react-native-cookies' by Joseph P. Ferraro.
 
 A cookie manager module for react-native(Supports for both iOS and Android).
 
