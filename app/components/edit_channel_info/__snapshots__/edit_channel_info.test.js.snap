@@ -309,11 +309,17 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       </View>
     </TouchableWithoutFeedback>
   </KeyboardAwareScrollView>
-  <KeyboardTrackingView
+  <View
     style={
-      Object {
-        "justifyContent": "flex-end",
-      }
+      Array [
+        Object {
+          "position": "absolute",
+          "width": "100%",
+        },
+        Object {
+          "bottom": 0,
+        },
+      ]
     }
   >
     <Connect(Autocomplete)
@@ -323,6 +329,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       onChangeText={[Function]}
       value="header"
     />
-  </KeyboardTrackingView>
+  </View>
 </React.Fragment>
 `;

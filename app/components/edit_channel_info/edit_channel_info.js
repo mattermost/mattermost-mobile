@@ -9,7 +9,6 @@ import {
     View,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {General} from '@mm-redux/constants';
 
@@ -201,7 +200,7 @@ export default class EditChannelInfo extends PureComponent {
             error,
             saving,
         } = this.props;
-        const {keyboardVisible} = this.state;
+        const {keyboardVisible, headerPosition} = this.state;
 
         const style = getStyleSheet(theme);
 
@@ -354,7 +353,7 @@ export default class EditChannelInfo extends PureComponent {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAwareScrollView>
-                <KeyboardTrackingView style={style.autocompleteContainer}>
+                <View style={[style.autocompleteContainer, {bottom: headerPosition || 0}]}>
                     <Autocomplete
                         cursorPosition={header.length}
                         maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
@@ -362,7 +361,7 @@ export default class EditChannelInfo extends PureComponent {
                         value={header}
                         nestedScrollEnabled={true}
                     />
-                </KeyboardTrackingView>
+                </View>
             </React.Fragment>
         );
     }
@@ -371,7 +370,8 @@ export default class EditChannelInfo extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         autocompleteContainer: {
-            justifyContent: 'flex-end',
+            position: 'absolute',
+            width: '100%',
         },
         container: {
             flex: 1,
