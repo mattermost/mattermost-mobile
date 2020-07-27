@@ -118,6 +118,10 @@ export default class ChannelBase extends PureComponent {
             this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
         }
 
+        if (prevProps.isSupportedServer && !this.props.isSupportedServer) {
+            unsupportedServer(this.props.isSystemAdmin, this.context.intl.formatMessage);
+        }
+
         if (this.props.theme !== prevProps.theme) {
             setNavigatorStyles(this.props.componentId, this.props.theme);
             EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
