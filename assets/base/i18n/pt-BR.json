@@ -621,5 +621,7 @@
   "mobile.message_length.message_split_left": "Mensagem excede o limite de caracteres",
   "suggestion.mention.groups": "Menção de Grupo",
   "mobile.android.back_handler_exit": "Pressione voltar novamente para sair",
-  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nova} other {novas}} {count, plural, one {mensagem} other {mensagens}}"
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nova} other {novas}} {count, plural, one {mensagem} other {mensagens}}",
+  "mobile.post_textbox.groups.title": "Confirmar envio de notificações para grupos",
+  "mobile.unsupported_server.ok": "OK"
 }

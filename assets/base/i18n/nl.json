@@ -624,5 +624,6 @@
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nieuwe} other {meer nieuwe}} {count, plural, one {bericht} other {berichten}}",
   "mobile.unsupported_server.title": "Niet ondersteunde serverversie",
   "mobile.unsupported_server.ok": "OK",
-  "mobile.unsupported_server.message": "Bijlagen, link voorvertoningen, reacties en ingevoegde bestanden worden mogelijks niet correct weergegeven. Als dit euvel blijft bestaan, contacteer je systeembeheerder om je Mattermost server te upgraden."
+  "mobile.unsupported_server.message": "Bijlagen, link voorvertoningen, reacties en ingevoegde bestanden worden mogelijks niet correct weergegeven. Als dit euvel blijft bestaan, contacteer je systeembeheerder om je Mattermost server te upgraden.",
+  "mobile.post_textbox.groups.title": "Verzenden van meldingen naar groepen bevestigen"
 }

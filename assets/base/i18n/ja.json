@@ -621,5 +621,7 @@
   "mobile.message_length.message_split_left": "メッセージが文字数制限を超えています",
   "suggestion.mention.groups": "グループメンション",
   "mobile.more_messages_button.text": "{count} 件の {isInitialMessage, select, true {新しい} other {新しい}} {count, plural, one {メッセージ} other {メッセージ}}",
-  "mobile.android.back_handler_exit": "終了するにはもう一度戻るを押してください"
+  "mobile.android.back_handler_exit": "終了するにはもう一度戻るを押してください",
+  "mobile.post_textbox.groups.title": "グループへ通知を送信する",
+  "mobile.unsupported_server.ok": "OK"
 }
