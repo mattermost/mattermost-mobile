@@ -619,5 +619,15 @@
   "mobile.server_upgrade.learn_more": "Learn More",
   "mobile.server_upgrade.dismiss": "Dismiss",
   "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
-  "mobile.unsupported_server.ok": "확인"
+  "mobile.unsupported_server.ok": "확인",
+  "mobile.message_length.message_split_left": "메시지가 문자 제한을 초과합니다",
+  "mobile.android.back_handler_exit": "종료하려면 뒤로 가기를 다시 눌러주세요",
+  "mobile.unsupported_server.title": "지원되지 않는 서버 버전",
+  "mobile.unsupported_server.message": "첨부 파일, 링크 미리보기, 반응 및 포함 데이터가 올바르게 표시되지 않을 수 있습니다. 이 문제가 지속되면 Mattermost 서버를 업그레이드하기 위해 시스템 관리자에게 문의하십시오.",
+  "mobile.server_upgrade.alert_description": "이 서버 버전은 지원되지 않으며, 사용자는 충돌이나 앱의 핵심 기능을 손상시키는 심각한 버그를 일으키는 호환성 문제에 노출이 될 수 있습니다. {serverVersion}이 상의 버전으로 업그레이드해야 합니다.",
+  "mobile.post_textbox.one_group.message.with_timezones": "{mention}을(를) 사용해서 {totalMembers}명의 {timezones, number} {timezones, plural, one {timezone} other {timezones}} 사람들에게 당신은 알림을 보내려고 합니다. 이 작업을 수행하시겠습니까?",
+  "mobile.post_textbox.one_group.message.without_timezones": "{mention}을(를) 사용해서 {totalMembers}명의 사람들에게 당신은 알림을 보내려고 합니다. 이 작업을 수행하시겠습니까?",
+  "mobile.post_textbox.multi_group.message.with_timezones": "{mentions}와 {finalMention}을(를) 사용해서 최소 {totalMembers}명의 {timezones, number} {timezones, plural, one {timezone} other {timezones}} 사람들에게 당신은 알림을 보내려고 합니다. 이 작업을 수행하시겠습니까?",
+  "mobile.post_textbox.multi_group.message.without_timezones": "{mentions}와 {finalMention}을(를) 사용해서 최소 {totalMembers}명의 사람들에게 당신은 알림을 보내려고 합니다. 이 작업을 수행하시겠습니까?",
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}"
 }
