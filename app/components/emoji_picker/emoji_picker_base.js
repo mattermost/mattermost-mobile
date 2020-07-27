@@ -14,6 +14,8 @@ import {
     View,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import EvilIcons from 'react-native-vector-icons/EvilIcons';
+
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import Emoji from 'app/components/emoji';
@@ -244,6 +246,7 @@ export default class EmojiPicker extends PureComponent {
 
     renderListComponent = (shorten) => {
         const {deviceWidth, theme} = this.props;
+        const {formatMessage} = this.context.intl;
         const {emojis, filteredEmojis, searchTerm} = this.state;
         const styles = getStyleSheetFromTheme(theme);
 
@@ -263,8 +266,33 @@ export default class EmojiPicker extends PureComponent {
                     />
                 );
             } else {
+                const title = formatMessage({
+                    id: 'mobile.emoji_picker.search.not_found_title',
+                    defaultMessage: 'No results found for "{searchTerm}"',
+                }, {
+                    searchTerm,
+                });
+                const description = formatMessage({
+                    id: 'mobile.emoji_picker.search.not_found_description',
+                    defaultMessage: 'Check the spelling or try another search.',
+                });
                 listComponent = (
-                    <Text>{'No results found.'}</Text>
+                    <View style={[styles.flex, styles.notFoundContainer]}>
+                        <View style={styles.notFoundIcon}>
+                            <EvilIcons
+                                name='search'
+                                size={72}
+                                color={theme.linkColor}
+                                style={{marginBottom: 5}}
+                            />
+                        </View>
+                        <Text style={[styles.notFoundText, styles.notFoundText20]}>
+                            {title}
+                        </Text>
+                        <Text style={[styles.notFoundText, styles.notFoundText15]}>
+                            {description}
+                        </Text>
+                    </View>
                 );
             }
         } else {
@@ -520,6 +548,32 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: 1,
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
+        },
+        notFoundContainer: {
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+        },
+        notFoundIcon: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        notFoundText: {
+            color: theme.centerChannelColor,
+            marginTop: 16,
+        },
+        notFoundText20: {
+            fontSize: 20,
+            fontWeight: 'bold',
+        },
+        notFoundText15: {
+            fontSize: 15,
         },
         searchBar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
