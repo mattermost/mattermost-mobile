@@ -249,18 +249,24 @@ export default class EmojiPicker extends PureComponent {
 
         let listComponent;
         if (searchTerm) {
-            listComponent = (
-                <FlatList
-                    data={filteredEmojis}
-                    initialListSize={10}
-                    keyboardShouldPersistTaps='always'
-                    keyExtractor={this.flatListKeyExtractor}
-                    nativeID={SCROLLVIEW_NATIVE_ID}
-                    pageSize={10}
-                    renderItem={this.flatListRenderItem}
-                    style={styles.flatList}
-                />
-            );
+            if (filteredEmojis && filteredEmojis.length > 0) {
+                listComponent = (
+                    <FlatList
+                        data={filteredEmojis}
+                        initialListSize={10}
+                        keyboardShouldPersistTaps='always'
+                        keyExtractor={this.flatListKeyExtractor}
+                        nativeID={SCROLLVIEW_NATIVE_ID}
+                        pageSize={10}
+                        renderItem={this.flatListRenderItem}
+                        style={styles.flatList}
+                    />
+                );
+            } else {
+                listComponent = (
+                    <Text>{'No results found.'}</Text>
+                );
+            }
         } else {
             listComponent = (
                 <SectionList
