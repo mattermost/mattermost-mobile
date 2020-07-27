@@ -70,21 +70,7 @@ exports[`thread should match snapshot, has root post 1`] = `
       channelId="channel_id"
       channelIsArchived={false}
       cursorPositionEvent="onThreadTextBoxCursorChange"
-      registerTypingAnimation={
-        [MockFunction] {
-          "calls": Array [
-            Array [
-              [Function],
-            ],
-          ],
-          "results": Array [
-            Object {
-              "type": "return",
-              "value": [MockFunction],
-            },
-          ],
-        }
-      }
+      registerTypingAnimation={[Function]}
       rootId="root_id"
       valueEvent="onThreadTextBoxValueChange"
     />
