@@ -621,5 +621,13 @@
   "mobile.server_upgrade.alert_description": "Esta versión del servidor no es compatible y los usuarios estarán expuestos a problemas de compatibilidad que causan bloqueos o errores graves que rompen la funcionalidad principal de la aplicación. Se requiere actualizar a la versión del servidor {serverVersion} o posterior.",
   "suggestion.mention.groups": "Menciones de Grupo",
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nuevo} other {nuevos}} {count, plural, one {mensaje} other {mensajes}}",
-  "mobile.android.back_handler_exit": "Presione de nuevo para salir"
+  "mobile.android.back_handler_exit": "Presione de nuevo para salir",
+  "mobile.unsupported_server.title": "Versión de servidor no compatible",
+  "mobile.unsupported_server.ok": "Aceptar",
+  "mobile.unsupported_server.message": "Los archivos adjuntos, vistas previas de enlaces, reacciones y datos incorporados pueden no mostrarse correctamente. Si este problema persiste, comuníquese con el administrador del sistema para actualizar su servidor Mattermost.",
+  "mobile.post_textbox.one_group.message.without_timezones": "Al utilizar {mention} estás a punto de enviar notificaciones a {totalMembers} personas. ¿Estás seguro?",
+  "mobile.post_textbox.one_group.message.with_timezones": "Al utilizar {mention} estás a punto de enviar notificaciones a {totalMembers} personas en {timezones,  number} {timezones, plural, one {zona horaria} other {zonas horarias}}. ¿Estás seguro?",
+  "mobile.post_textbox.multi_group.message.without_timezones": "Al utilizar {mentions} y {finalMention} estás a punto de enviar notificaciones al menos a {totalMembers} personas. ¿Estás seguro?",
+  "mobile.post_textbox.multi_group.message.with_timezones": "Al utilizar {mentions} y {finalMention} estás a punto de enviar notificaciones al menos a {totalMembers} personas en {timezones, number} {timezones, plural, one {zona horaria} other {zonas horarias}}. ¿Estás seguro?",
+  "mobile.post_textbox.groups.title": "Confirmar el envío de notificaciones a grupos"
 }
