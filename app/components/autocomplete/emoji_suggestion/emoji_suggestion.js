@@ -268,7 +268,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             overflow: 'hidden',
-            paddingVertical: 8,
+            paddingBottom: 8,
             paddingHorizontal: 16,
             height: 40,
         },

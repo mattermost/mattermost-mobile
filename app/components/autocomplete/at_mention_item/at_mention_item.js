@@ -73,6 +73,7 @@ export default class AtMentionItem extends PureComponent {
                             theme={theme}
                             size={24}
                             status={null}
+                            showStatus={false}
                         />
                     </View>
                     <BotTag
@@ -88,15 +89,19 @@ export default class AtMentionItem extends PureComponent {
                         numberOfLines={1}
                     >
                         {hasFullName && `${firstName} ${lastName}`}
-                        {hasNickname && ` (${nickname}) `}
+                        {hasNickname && ` (${nickname})`}
                         {isCurrentUser &&
                         <FormattedText
                             id='suggestion.mention.you'
                             defaultMessage='(you)'
                         />}
                     </Text>
-                    {hasFullName && <Text style={style.rowFullname}>{' - '}</Text>}
-                    <Text style={style.rowUsername}>{`@${username}`}</Text>
+                    <Text
+                        numberOfLines={1}
+                        style={style.rowUsername}
+                    >
+                        { `@${username}`}
+                    </Text>
                 </View>
             </TouchableWithFeedback>
         );
@@ -108,11 +113,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         row: {
             height: 40,
             paddingVertical: 8,
+            paddingHorizontal: 16,
             flexDirection: 'row',
-            alignItems: 'center',
         },
         rowPicture: {
-            marginHorizontal: 8,
+            marginRight: 10,
+            marginLeft: 2,
             width: 24,
             alignItems: 'center',
             justifyContent: 'center',

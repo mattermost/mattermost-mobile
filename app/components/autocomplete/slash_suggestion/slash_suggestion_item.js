@@ -48,7 +48,7 @@ export default class SlashSuggestionItem extends PureComponent {
                         <Text style={style.iconText}>{'/'}</Text>
                     </View>
                     <View style={style.suggestionContainer}>
-                        <Text style={style.suggestionName}>{`${suggestion} ${hint}`}</Text>
+                        <Text style={style.suggestionName}>{`${suggestion.substring(1, suggestion.length)} ${hint}`}</Text>
                         <Text
                             ellipsizeMode='tail'
                             numberOfLines={1}
@@ -68,8 +68,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         icon: {
             fontSize: 24,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            width: 32,
-            height: 32,
+            width: 35,
+            height: 35,
             marginRight: 12,
             borderRadius: 4,
             justifyContent: 'center',
@@ -81,8 +81,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingVertical: 8,
-            paddingHorizontal: 16,
+            paddingBottom: 8,
+            paddingHorizontal: 15,
             overflow: 'hidden',
         },
         suggestionContainer: {

@@ -95,7 +95,7 @@ export default class ChannelMentionItem extends PureComponent {
                             style={style.icon}
                         />
                         <Text style={style.rowDisplayName}>{displayName}</Text>
-                        <Text style={style.rowName}>{` (~${name})`}</Text>
+                        <Text style={style.rowName}>{` ~${name}`}</Text>
                     </View>
                 </TouchableWithFeedback>
             );

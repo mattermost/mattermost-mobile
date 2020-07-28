@@ -197,6 +197,8 @@ export default class Autocomplete extends PureComponent {
             } else {
                 containerStyles.push(style.borders);
             }
+        } else {
+            wrapperStyles.push(style.hidden);
         }
 
         const maxListHeight = this.maxListHeight();
@@ -280,6 +282,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         content: {
             flex: 1,
+        },
+        hidden: {
+            display: 'none',
         },
         searchContainer: {
             flex: 1,
