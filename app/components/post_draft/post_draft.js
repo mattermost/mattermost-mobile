@@ -21,6 +21,14 @@ export default class PostDraft extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    draftInput = React.createRef();
+
+    handleInputQuickAction = (value) => {
+        if (this.draftInput?.current) {
+            this.draftInput.current.handleInputQuickAction(value);
+        }
+    };
+
     render = () => {
         const {
             canPost,
@@ -54,6 +62,7 @@ export default class PostDraft extends PureComponent {
 
         return (
             <DraftInput
+                ref={this.draftInput}
                 channelId={channelId}
                 registerTypingAnimation={registerTypingAnimation}
                 rootId={rootId}
