@@ -617,5 +617,7 @@
   "channel.channelHasGuests": "Ten kanał zawiera gości",
   "suggestion.mention.groups": "Group Mentions",
   "mobile.server_upgrade.learn_more": "Dowiedz się więcej",
-  "mobile.server_upgrade.dismiss": "Odrzuć"
+  "mobile.server_upgrade.dismiss": "Odrzuć",
+  "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
+  "mobile.unsupported_server.ok": "OK"
 }

@@ -619,5 +619,7 @@
   "mobile.server_upgrade.alert_description": "Această versiune a serverului nu este compatibilă, iar utilizatorii vor fi expuși la probleme de compatibilitate care cauzează prăbușiri sau erori grave care rup funcționalitatea principală a aplicației. Actualizarea la versiunea serverului {serverVersion} sau o versiune ulterioară este necesară.",
   "mobile.server_upgrade.learn_more": "Aflați Mai Multe",
   "mobile.server_upgrade.dismiss": "Elimină",
-  "suggestion.mention.groups": "Mențiuni de grup"
+  "suggestion.mention.groups": "Mențiuni de grup",
+  "mobile.post_textbox.groups.title": "Confirmați trimiterea notificărilor către grupuri",
+  "mobile.unsupported_server.ok": "OK"
 }
