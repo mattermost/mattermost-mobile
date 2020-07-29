@@ -3,21 +3,26 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Platform, ScrollView, View} from 'react-native';
+import {Alert, Platform, ScrollView, View, Linking} from 'react-native';
 import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import Autocomplete from '@components/autocomplete';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {DeepLinkTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX, MAX_FILE_COUNT} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from 'app/constants/autocomplete';
+import {getCurrentServerUrl} from '@init/credentials';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import EphemeralStore from '@store/ephemeral_store';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {matchDeepLink, normalizeProtocol} from '@utils/url';
 
 import Archived from './archived';
 import PostInput from './post_input';
@@ -46,17 +51,22 @@ export default class PostDraft extends PureComponent {
         executeCommand: PropTypes.func.isRequired,
         files: PropTypes.array,
         getChannelTimezones: PropTypes.func.isRequired,
+        getUserByUsername: PropTypes.func.isRequired,
         handleClearFiles: PropTypes.func.isRequired,
         handleClearFailedFiles: PropTypes.func.isRequired,
+        handleSelectChannelByName: PropTypes.func.isRequired,
         initUploadFiles: PropTypes.func.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTimezoneEnabled: PropTypes.bool,
+        makeDirectChannel: PropTypes.func.isRequired,
         maxMessageLength: PropTypes.number.isRequired,
         maxFileSize: PropTypes.number.isRequired,
         membersCount: PropTypes.number,
         rootId: PropTypes.string,
         screenId: PropTypes.string.isRequired,
         setStatus: PropTypes.func.isRequired,
+        serverURL: PropTypes.string,
+        siteURL: PropTypes.string,
         theme: PropTypes.object.isRequired,
         useChannelMentions: PropTypes.bool.isRequired,
         userIsOutOfOffice: PropTypes.bool.isRequired,
@@ -451,7 +461,7 @@ export default class PostDraft extends PureComponent {
             return;
         }
 
-        const {error} = await executeCommand(msg, channelId, rootId);
+        const {data, error} = await executeCommand(msg, channelId, rootId);
         this.setState({sendingMessage: false});
 
         if (error) {
@@ -468,6 +478,77 @@ export default class PostDraft extends PureComponent {
 
         this.input.current.setValue('');
         this.input.current.changeDraft('');
+
+        if (data.goto_location) {
+            this.handleGotoLocation(data.goto_location);
+        }
+    };
+
+    handleGotoLocation = async (href) => {
+        const {serverURL, siteURL, handleSelectChannelByName, getUserByUsername, makeDirectChannel} = this.props;
+        const url = normalizeProtocol(href);
+
+        if (!url) {
+            return;
+        }
+
+        let serverUrl = serverURL;
+        if (!serverUrl) {
+            serverUrl = await getCurrentServerUrl();
+        }
+
+        const match = matchDeepLink(url, serverURL, siteURL);
+
+        if (match) {
+            switch (match.type) {
+                case DeepLinkTypes.CHANNEL:
+                    handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
+                    break;
+                case DeepLinkTypes.PERMALINK:
+                    //TODO
+                    break;
+                case DeepLinkTypes.DMCHANNEL:
+                    const {data} = await getUserByUsername(match.userName)
+                    if (!data) {
+                        // TODO use proper error
+                        this.errorBadChannel()
+                        return
+                    }
+                    makeDirectChannel(data.id);
+                    break;
+                case DeepLinkTypes.GROUPCHANNEL:
+                    //TODO
+                    break;
+            }
+        } else {
+            Linking.canOpenURL(url).then((supported) => {
+                if (supported) {
+                    Linking.openURL(url);
+                } else {
+                    const {formatMessage} = this.context.intl;
+                    Alert.alert(
+                        formatMessage({
+                            id: 'mobile.server_link.error.title',
+                            defaultMessage: 'Link Error',
+                        }),
+                        formatMessage({
+                            id: 'mobile.server_link.error.text',
+                            defaultMessage: 'The link could not be found on this server.',
+                        }),
+                    );
+                }
+            });
+        }
+    }
+
+    errorBadChannel = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_channel.error'),
+            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
+        };
+
+        alertErrorWithFallback(intl, {}, message);
     };
 
     mapGroupMentions = (groupMentions) => {
