@@ -11,7 +11,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 
-export const CHANNEL_SCREEN = 'Channel';
+const CHANNEL_SCREEN = 'Channel';
 
 function getThemeFromState() {
     const state = Store.redux?.getState() || {};
