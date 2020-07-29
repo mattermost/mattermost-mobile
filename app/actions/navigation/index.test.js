@@ -481,49 +481,4 @@ describe('@actions/navigation', () => {
         await NavigationActions.dismissOverlay(topComponentId);
         expect(dismissOverlay).toHaveBeenCalledWith(topComponentId);
     });
-
-    describe('popDismissToRoot', () => {
-        const popToRoot = jest.spyOn(Navigation, 'popToRoot');
-        const dismissAllModals = jest.spyOn(Navigation, 'dismissAllModals');
-
-        it('should return early if top componentId is channel', async () => {
-            EphemeralStore.getNavigationTopComponentId.mockReturnValueOnce(NavigationActions.CHANNEL_SCREEN);
-
-            await NavigationActions.popDismissToRoot();
-            expect(popToRoot).not.toHaveBeenCalled();
-            expect(dismissAllModals).not.toHaveBeenCalled();
-        });
-
-        it('should return early if there is 1 or less navigation components in the stack', async () => {
-            EphemeralStore.allNavigationComponentIds = ['A'];
-
-            await NavigationActions.popDismissToRoot();
-            expect(popToRoot).not.toHaveBeenCalled();
-            expect(dismissAllModals).not.toHaveBeenCalled();
-
-            EphemeralStore.allNavigationComponentIds = [];
-
-            await NavigationActions.popDismissToRoot();
-            expect(popToRoot).not.toHaveBeenCalled();
-            expect(dismissAllModals).not.toHaveBeenCalled();
-        });
-
-        it('should call pop and dismissModal then call itself until the channel screen is reached', async () => {
-            EphemeralStore.allNavigationComponentIds = ['A', 'B', NavigationActions.CHANNEL_SCREEN];
-
-            // getNavigationTopComponentId is called twice times per
-            // popDismissToChannel call that doesn't return early:
-            // once by popDismissToRoot and once by popToRoot
-            EphemeralStore.getNavigationTopComponentId.
-                mockReturnValueOnce('A').
-                mockReturnValueOnce('A').
-                mockReturnValueOnce('B').
-                mockReturnValueOnce('B').
-                mockReturnValueOnce(NavigationActions.CHANNEL_SCREEN);
-
-            await NavigationActions.popDismissToRoot();
-            expect(popToRoot).toHaveBeenCalledTimes(2);
-            expect(dismissAllModals).toHaveBeenCalledTimes(2);
-        });
-    });
 });

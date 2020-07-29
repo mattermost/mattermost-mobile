@@ -223,27 +223,6 @@ export async function popToRoot() {
     }
 }
 
-export async function popDismissToRoot() {
-    const componentId = EphemeralStore.getNavigationTopComponentId();
-    if (componentId === CHANNEL_SCREEN || EphemeralStore.allNavigationComponentIds.length <= 1) {
-        return;
-    }
-
-    try {
-        await popToRoot();
-    } catch (error) {
-        // Do nothing
-    }
-
-    try {
-        await dismissAllModals();
-    } catch (error) {
-        // Do nothing
-    }
-
-    await popDismissToRoot();
-}
-
 export function showModal(name, title, passProps = {}, options = {}) {
     const theme = getThemeFromState();
     const defaultOptions = {
