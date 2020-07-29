@@ -501,24 +501,25 @@ export default class PostDraft extends PureComponent {
 
         if (match) {
             switch (match.type) {
-                case DeepLinkTypes.CHANNEL:
-                    handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
-                    break;
-                case DeepLinkTypes.PERMALINK:
-                    //TODO
-                    break;
-                case DeepLinkTypes.DMCHANNEL:
-                    const {data} = await getUserByUsername(match.userName)
-                    if (!data) {
-                        // TODO use proper error
-                        this.errorBadChannel()
-                        return
-                    }
-                    makeDirectChannel(data.id);
-                    break;
-                case DeepLinkTypes.GROUPCHANNEL:
-                    //TODO
-                    break;
+            case DeepLinkTypes.CHANNEL:
+                handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
+                break;
+            case DeepLinkTypes.PERMALINK:
+                //TODO
+                break;
+            case DeepLinkTypes.DMCHANNEL: {
+                const {data} = await getUserByUsername(match.userName);
+                if (!data) {
+                    // TODO use proper error
+                    this.errorBadChannel();
+                    return;
+                }
+                makeDirectChannel(data.id);
+                break;
+            }
+            case DeepLinkTypes.GROUPCHANNEL:
+                //TODO
+                break;
             }
         } else {
             Linking.canOpenURL(url).then((supported) => {

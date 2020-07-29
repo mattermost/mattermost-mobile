@@ -6,14 +6,13 @@ import {connect} from 'react-redux';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {General, Permissions} from '@mm-redux/constants';
 import {createPost} from '@mm-redux/actions/posts';
-import {setStatus} from '@mm-redux/actions/users';
+import {setStatus, getUserByUsername} from '@mm-redux/actions/users';
 import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats, getChannelMemberCountsByGroup as selectChannelMemberCountsByGroup} from '@mm-redux/selectors/entities/channels';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getConfig, getLicense, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
-import {getUserByUsername} from '@mm-redux/actions/users'
 import {getAssociatedGroupsForReferenceMap} from '@mm-redux/selectors/entities/groups';
 
 import {executeCommand} from '@actions/views/command';
@@ -25,7 +24,7 @@ import {getChannelMembersForDm} from '@selectors/channel';
 import {getAllowedServerMaxFileSize} from '@utils/file';
 import {isLandscape} from '@selectors/device';
 import {handleSelectChannelByName} from 'app/actions/views/channel';
-import {makeDirectChannel} from 'app/actions/views/more_dms'
+import {makeDirectChannel} from 'app/actions/views/more_dms';
 
 import PostDraft from './post_draft';
 
