@@ -13,6 +13,5 @@ export const MAX_MESSAGE_LENGTH_FALLBACK = 4000;
 export const TYPING_VISIBLE = 'typingVisible';
 export const TYPING_HEIGHT = 18;
 export const MAX_FILE_COUNT_WARNING = 'onMaxFileCountWarning';
-export const MAX_FILE_SIZE_WARNING = 'onMaxFilesizeWarning';
 export const UPLOAD_FILES = 'onUploadFiles';
 export const PASTE_FILES = 'onPasteFiles';

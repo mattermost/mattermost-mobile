@@ -16,7 +16,7 @@ import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import FormattedText from '@components/formatted_text';
-import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, MAX_FILE_SIZE_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
+import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import EphemeralStore from '@store/ephemeral_store';
@@ -61,7 +61,6 @@ export default class Uploads extends PureComponent {
 
     componentDidMount() {
         EventEmitter.on(MAX_FILE_COUNT_WARNING, this.handleFileMaxWarning);
-        EventEmitter.on(MAX_FILE_SIZE_WARNING, this.handleFileSizeWarning);
         EventEmitter.on(UPLOAD_FILES, this.handleUploadFiles);
         EventEmitter.on(PASTE_FILES, this.handlePasteFiles);
 
@@ -76,7 +75,6 @@ export default class Uploads extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off(MAX_FILE_COUNT_WARNING, this.handleFileMaxWarning);
-        EventEmitter.off(MAX_FILE_SIZE_WARNING, this.handleFileSizeWarning);
         EventEmitter.off(UPLOAD_FILES, this.handleUploadFiles);
         EventEmitter.off(PASTE_FILES, this.handlePasteFiles);
 
@@ -175,12 +173,16 @@ export default class Uploads extends PureComponent {
         }
     };
 
-    handleUploadFiles = (files) => {
+    handleUploadFiles = async (files) => {
         let exceed = false;
 
-        files.forEach(async (file) => {
+        const totalFiles = files.length;
+        let i = 0;
+        while (i < totalFiles) {
+            const file = files[i];
             if (!file.fileSize | !file.fileName) {
                 const path = (file.path || file.uri).replace('file://', '');
+                // eslint-disable-next-line no-await-in-loop
                 const fileInfo = await RNFetchBlob.fs.stat(path);
                 file.fileSize = fileInfo.size;
                 file.fileName = fileInfo.filename;
@@ -188,11 +190,14 @@ export default class Uploads extends PureComponent {
 
             if (file.fileSize > this.props.maxFileSize) {
                 exceed = true;
+                break;
             }
-        });
+
+            i++;
+        }
 
         if (exceed) {
-            this.onShowFileSizeWarning();
+            this.handleFileSizeWarning();
         } else {
             this.props.initUploadFiles(files, this.props.rootId);
         }
