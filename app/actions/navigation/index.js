@@ -11,7 +11,7 @@ import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 
-const CHANNEL_SCREEN = 'Channel';
+export const CHANNEL_SCREEN = 'Channel';
 
 function getThemeFromState() {
     const state = Store.redux?.getState() || {};
@@ -221,6 +221,26 @@ export async function popToRoot() {
         // RNN returns a promise rejection if there are no screens
         // atop the root screen to pop. We'll do nothing in this case.
     }
+}
+
+export async function popDismissToChannel() {
+    const componentId = EphemeralStore.getNavigationTopComponentId();
+    if (componentId === CHANNEL_SCREEN || EphemeralStore.allNavigationComponentIds.length <= 1) {
+        return;
+    }
+
+    try {
+        await Navigation.pop(componentId);
+    } catch (error) {
+        // Do nothing
+    }
+    try {
+        await dismissModal();
+    } catch (error) {
+        // Do thing
+    }
+
+    popDismissToChannel();
 }
 
 export function showModal(name, title, passProps = {}, options = {}) {
