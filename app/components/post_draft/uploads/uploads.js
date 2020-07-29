@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     BackHandler,
     ScrollView,
     Text,
@@ -11,10 +12,14 @@ import {
     Platform,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-
-import EventEmitter from '@mm-redux/utils/event_emitter';
+import {intlShape} from 'react-intl';
+import RNFetchBlob from 'rn-fetch-blob';
 
 import FormattedText from '@components/formatted_text';
+import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, MAX_FILE_SIZE_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
+import EphemeralStore from '@store/ephemeral_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';
@@ -30,12 +35,19 @@ export default class Uploads extends PureComponent {
         files: PropTypes.array.isRequired,
         filesUploadingForCurrentChannel: PropTypes.bool.isRequired,
         handleRemoveLastFile: PropTypes.func.isRequired,
+        initUploadFiles: PropTypes.func.isRequired,
+        maxFileSize: PropTypes.number.isRequired,
         rootId: PropTypes.string,
+        screenId: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
         files: [],
+    };
+
+    static contextTypes = {
+        intl: intlShape,
     };
 
     state = {
@@ -48,8 +60,10 @@ export default class Uploads extends PureComponent {
     containerRef = React.createRef();
 
     componentDidMount() {
-        EventEmitter.on('fileMaxWarning', this.handleFileMaxWarning);
-        EventEmitter.on('fileSizeWarning', this.handleFileSizeWarning);
+        EventEmitter.on(MAX_FILE_COUNT_WARNING, this.handleFileMaxWarning);
+        EventEmitter.on(MAX_FILE_SIZE_WARNING, this.handleFileSizeWarning);
+        EventEmitter.on(UPLOAD_FILES, this.handleUploadFiles);
+        EventEmitter.on(PASTE_FILES, this.handlePasteFiles);
 
         if (this.props.files.length) {
             this.showOrHideContainer();
@@ -61,8 +75,10 @@ export default class Uploads extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off('fileMaxWarning', this.handleFileMaxWarning);
-        EventEmitter.off('fileSizeWarning', this.handleFileSizeWarning);
+        EventEmitter.off(MAX_FILE_COUNT_WARNING, this.handleFileMaxWarning);
+        EventEmitter.off(MAX_FILE_SIZE_WARNING, this.handleFileSizeWarning);
+        EventEmitter.off(UPLOAD_FILES, this.handleUploadFiles);
+        EventEmitter.off(PASTE_FILES, this.handlePasteFiles);
 
         if (Platform.OS === 'android') {
             BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBack);
@@ -117,14 +133,68 @@ export default class Uploads extends PureComponent {
         }
     };
 
-    handleFileSizeWarning = (message) => {
+    handleFileSizeWarning = () => {
         if (this.errorRef.current) {
-            if (message) {
-                this.setState({fileSizeWarning: message.replace(': ', ':\n')});
-                this.makeErrorVisible(true, 40);
-            } else {
+            const {formatMessage} = this.context.intl;
+            const message = formatMessage({
+                id: 'file_upload.fileAbove',
+                defaultMessage: 'Files above {max} cannot be uploaded',
+            }, {
+                max: getFormattedFileSize({size: this.props.maxFileSize}),
+            });
+
+            this.setState({fileSizeWarning: message});
+            this.makeErrorVisible(true, 20);
+            setTimeout(() => {
                 this.makeErrorVisible(false, 20);
+            }, 5000);
+        }
+    };
+
+    handlePasteFiles = (error, files) => {
+        if (this.props.screenId === EphemeralStore.getNavigationTopComponentId()) {
+            if (error) {
+                this.showPasteFilesErrorDialog();
+                return;
             }
+
+            const {maxFileSize} = this.props;
+            const availableCount = MAX_FILE_COUNT - this.props.files.length;
+            if (files.length > availableCount) {
+                this.handleFileMaxWarning();
+                return;
+            }
+
+            const largeFile = files.find((image) => image.fileSize > maxFileSize);
+            if (largeFile) {
+                this.handleFileSizeWarning();
+                return;
+            }
+
+            this.handleUploadFiles(files);
+        }
+    };
+
+    handleUploadFiles = (files) => {
+        let exceed = false;
+
+        files.forEach(async (file) => {
+            if (!file.fileSize | !file.fileName) {
+                const path = (file.path || file.uri).replace('file://', '');
+                const fileInfo = await RNFetchBlob.fs.stat(path);
+                file.fileSize = fileInfo.size;
+                file.fileName = fileInfo.filename;
+            }
+
+            if (file.fileSize > this.props.maxFileSize) {
+                exceed = true;
+            }
+        });
+
+        if (exceed) {
+            this.onShowFileSizeWarning();
+        } else {
+            this.props.initUploadFiles(files, this.props.rootId);
         }
     };
 
@@ -153,6 +223,28 @@ export default class Uploads extends PureComponent {
             this.shown = true;
         }
     }
+
+    showPasteFilesErrorDialog = () => {
+        const {formatMessage} = this.context.intl;
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.files_paste.error_title',
+                defaultMessage: 'Paste failed',
+            }),
+            formatMessage({
+                id: 'mobile.files_paste.error_description',
+                defaultMessage: 'An error occurred while pasting the file(s). Please try again.',
+            }),
+            [
+                {
+                    text: formatMessage({
+                        id: 'mobile.files_paste.error_dismiss',
+                        defaultMessage: 'Dismiss',
+                    }),
+                },
+            ],
+        );
+    };
 
     render() {
         const {fileSizeWarning, showFileMaxWarning} = this.state;

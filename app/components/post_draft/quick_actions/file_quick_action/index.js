@@ -11,18 +11,18 @@ import DocumentPicker from 'react-native-document-picker';
 import Permissions from 'react-native-permissions';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {ICON_SIZE} from '@constants/post_draft';
+import {NavigationTypes} from '@constants';
+import {ICON_SIZE, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {changeOpacity} from '@utils/theme';
 
 const ShareExtension = NativeModules.MattermostShare;
 
 export default class FileQuickAction extends PureComponent {
     static propTypes = {
-        blurTextBox: PropTypes.func.isRequired,
         disabled: PropTypes.bool,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number,
-        onShowFileMaxWarning: PropTypes.func,
         onUploadFiles: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -125,18 +125,16 @@ export default class FileQuickAction extends PureComponent {
 
     handleButtonPress = () => {
         const {
-            blurTextBox,
             fileCount,
             maxFileCount,
-            onShowFileMaxWarning,
         } = this.props;
 
         if (fileCount === maxFileCount) {
-            onShowFileMaxWarning();
+            EventEmitter.emit(MAX_FILE_COUNT_WARNING);
             return;
         }
 
-        blurTextBox();
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
         this.attachFileFromFiles();
     };
 

@@ -9,7 +9,6 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
-import {NavigationTypes} from '@constants';
 import {TYPING_VISIBLE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
@@ -80,7 +79,7 @@ export default class ChannelBase extends PureComponent {
             showTermsOfService,
             skipMetrics,
         } = this.props;
-        EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
+
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
 
@@ -151,7 +150,6 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
     }
@@ -171,12 +169,6 @@ export default class ChannelBase extends PureComponent {
             this.typingAnimations.map((animation) => animation(typingVisible)),
         ).start();
     }
-
-    blurPostDraft = () => {
-        if (this.postDraft?.current) {
-            this.postDraft.current.blurTextBox();
-        }
-    };
 
     goToChannelInfo = preventDoubleTap(() => {
         const {intl} = this.context;

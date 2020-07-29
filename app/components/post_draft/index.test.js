@@ -5,11 +5,8 @@
 
 import {Permissions} from '@mm-redux/constants';
 import * as channelSelectors from '@mm-redux/selectors/entities/channels';
-import * as userSelectors from '@mm-redux/selectors/entities/users';
-import * as generalSelectors from '@mm-redux/selectors/entities/general';
 import * as preferenceSelectors from '@mm-redux/selectors/entities/preferences';
 import * as roleSelectors from '@mm-redux/selectors/entities/roles';
-import * as deviceSelectors from '@selectors/device';
 
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
@@ -22,12 +19,8 @@ jest.mock('./post_draft', () => ({
 
 channelSelectors.getCurrentChannel = jest.fn().mockReturnValue({});
 channelSelectors.isCurrentChannelReadOnly = jest.fn();
-channelSelectors.getCurrentChannelStats = jest.fn();
-userSelectors.getStatusForUserId = jest.fn();
-generalSelectors.canUploadFilesOnMobile = jest.fn();
 preferenceSelectors.getTheme = jest.fn();
 roleSelectors.haveIChannelPermission = jest.fn();
-deviceSelectors.isLandscape = jest.fn();
 
 describe('mapStateToProps', () => {
     const baseState = {
@@ -100,12 +93,6 @@ describe('mapStateToProps', () => {
             channel: undefined,
             team: undefined,
             permission: Permissions.CREATE_POST,
-            default: true,
-        });
-
-        expect(roleSelectors.haveIChannelPermission).toHaveBeenCalledWith(state, {
-            channel: undefined,
-            permission: Permissions.USE_CHANNEL_MENTIONS,
             default: true,
         });
     });

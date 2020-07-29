@@ -14,7 +14,6 @@ import {Client4} from '@mm-redux/client';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -294,14 +293,13 @@ export default class EditProfile extends PureComponent {
         });
     };
 
-    onShowFileSizeWarning = (filename) => {
+    onShowFileSizeWarning = () => {
         const {formatMessage} = this.context.intl;
         const fileSizeWarning = formatMessage({
             id: 'file_upload.fileAbove',
-            defaultMessage: 'File above {max}MB cannot be uploaded: {filename}',
+            defaultMessage: 'File above {max} cannot be uploaded',
         }, {
             max: getFormattedFileSize({size: MAX_SIZE}),
-            filename,
         });
 
         Alert.alert(fileSizeWarning);
@@ -541,7 +539,6 @@ export default class EditProfile extends PureComponent {
                 <ProfilePictureButton
                     currentUser={currentUser}
                     theme={theme}
-                    blurTextBox={emptyFunction}
                     browseFileTypes={DocumentPicker.types.images}
                     canTakeVideo={false}
                     canBrowseVideoLibrary={false}

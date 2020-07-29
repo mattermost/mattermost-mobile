@@ -10,16 +10,16 @@ import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {ICON_SIZE} from '@constants/post_draft';
+import {NavigationTypes} from '@constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {ICON_SIZE, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
 import {changeOpacity} from '@utils/theme';
 
 export default class ImageQuickAction extends PureComponent {
     static propTypes = {
-        blurTextBox: PropTypes.func.isRequired,
         disabled: PropTypes.bool,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number,
-        onShowFileMaxWarning: PropTypes.func,
         onUploadFiles: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
     };
@@ -95,18 +95,16 @@ export default class ImageQuickAction extends PureComponent {
 
     handleButtonPress = () => {
         const {
-            blurTextBox,
             fileCount,
             maxFileCount,
-            onShowFileMaxWarning,
         } = this.props;
 
         if (fileCount === maxFileCount) {
-            onShowFileMaxWarning();
+            EventEmitter.emit(MAX_FILE_COUNT_WARNING);
             return;
         }
 
-        blurTextBox();
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
         this.attachFileFromLibrary();
     };
 

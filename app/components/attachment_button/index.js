@@ -19,19 +19,19 @@ import DocumentPicker from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
+import {showModalOverCurrentContext} from '@actions/navigation';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {NavigationTypes} from '@constants';
+import emmProvider from '@init/emm_provider';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {lookupMimeType} from '@mm-redux/utils/file_utils';
-
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import emmProvider from 'app/init/emm_provider';
-import {changeOpacity} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {showModalOverCurrentContext} from 'app/actions/navigation';
+import {t} from '@utils/i18n';
+import {changeOpacity} from '@utils/theme';
 
 const ShareExtension = NativeModules.MattermostShare;
 
 export default class AttachmentButton extends PureComponent {
     static propTypes = {
-        blurTextBox: PropTypes.func.isRequired,
         browseFileTypes: PropTypes.string,
         validMimeTypes: PropTypes.array,
         canBrowseFiles: PropTypes.bool,
@@ -414,7 +414,7 @@ export default class AttachmentButton extends PureComponent {
             return;
         }
 
-        this.props.blurTextBox();
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
         const items = [];
 
         if (canTakePhoto) {
