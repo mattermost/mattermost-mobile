@@ -17,6 +17,7 @@ jest.unmock('@actions/navigation');
 jest.mock('@store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
     clearNavigationComponents: jest.fn(),
+    clearNavigationModals: jest.fn(),
     addNavigationModal: jest.fn(),
     hasModalsOpened: jest.fn().mockReturnValue(true),
 }));
@@ -481,53 +482,48 @@ describe('@actions/navigation', () => {
         expect(dismissOverlay).toHaveBeenCalledWith(topComponentId);
     });
 
-    describe('popDismissToChannel', () => {
-        const pop = jest.spyOn(Navigation, 'pop');
-        const dismissModal = jest.spyOn(Navigation, 'dismissModal');
+    describe('popDismissToRoot', () => {
+        const popToRoot = jest.spyOn(Navigation, 'popToRoot');
+        const dismissAllModals = jest.spyOn(Navigation, 'dismissAllModals');
 
         it('should return early if top componentId is channel', async () => {
             EphemeralStore.getNavigationTopComponentId.mockReturnValueOnce(NavigationActions.CHANNEL_SCREEN);
 
-            await NavigationActions.popDismissToChannel();
-            expect(pop).not.toHaveBeenCalled();
-            expect(dismissModal).not.toHaveBeenCalled();
+            await NavigationActions.popDismissToRoot();
+            expect(popToRoot).not.toHaveBeenCalled();
+            expect(dismissAllModals).not.toHaveBeenCalled();
         });
 
         it('should return early if there is 1 or less navigation components in the stack', async () => {
             EphemeralStore.allNavigationComponentIds = ['A'];
 
-            await NavigationActions.popDismissToChannel();
-            expect(pop).not.toHaveBeenCalled();
-            expect(dismissModal).not.toHaveBeenCalled();
+            await NavigationActions.popDismissToRoot();
+            expect(popToRoot).not.toHaveBeenCalled();
+            expect(dismissAllModals).not.toHaveBeenCalled();
 
             EphemeralStore.allNavigationComponentIds = [];
 
-            await NavigationActions.popDismissToChannel();
-            expect(pop).not.toHaveBeenCalled();
-            expect(dismissModal).not.toHaveBeenCalled();
+            await NavigationActions.popDismissToRoot();
+            expect(popToRoot).not.toHaveBeenCalled();
+            expect(dismissAllModals).not.toHaveBeenCalled();
         });
 
         it('should call pop and dismissModal then call itself until the channel screen is reached', async () => {
-            EphemeralStore.hasModalsOpened = jest.fn(() => {
-                return true;
-            });
             EphemeralStore.allNavigationComponentIds = ['A', 'B', NavigationActions.CHANNEL_SCREEN];
 
             // getNavigationTopComponentId is called twice times per
             // popDismissToChannel call that doesn't return early:
-            // once by popDismissToChannel and once by dismissModal
+            // once by popDismissToRoot and once by popToRoot
             EphemeralStore.getNavigationTopComponentId.
                 mockReturnValueOnce('A').
-                mockReturnValueOnce('A');
-            EphemeralStore.getNavigationTopComponentId.
+                mockReturnValueOnce('A').
                 mockReturnValueOnce('B').
-                mockReturnValueOnce('B');
-            EphemeralStore.getNavigationTopComponentId.
+                mockReturnValueOnce('B').
                 mockReturnValueOnce(NavigationActions.CHANNEL_SCREEN);
 
-            await NavigationActions.popDismissToChannel();
-            expect(pop).toHaveBeenCalledTimes(2);
-            expect(dismissModal).toHaveBeenCalledTimes(2);
+            await NavigationActions.popDismissToRoot();
+            expect(popToRoot).toHaveBeenCalledTimes(2);
+            expect(dismissAllModals).toHaveBeenCalledTimes(2);
         });
     });
 });

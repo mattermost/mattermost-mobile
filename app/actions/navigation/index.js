@@ -223,24 +223,25 @@ export async function popToRoot() {
     }
 }
 
-export async function popDismissToChannel() {
+export async function popDismissToRoot() {
     const componentId = EphemeralStore.getNavigationTopComponentId();
     if (componentId === CHANNEL_SCREEN || EphemeralStore.allNavigationComponentIds.length <= 1) {
         return;
     }
 
     try {
-        await Navigation.pop(componentId);
+        await popToRoot();
     } catch (error) {
         // Do nothing
     }
+
     try {
-        await dismissModal();
+        await dismissAllModals();
     } catch (error) {
-        // Do thing
+        // Do nothing
     }
 
-    popDismissToChannel();
+    await popDismissToRoot();
 }
 
 export function showModal(name, title, passProps = {}, options = {}) {
