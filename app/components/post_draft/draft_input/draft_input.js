@@ -100,7 +100,7 @@ export default class DraftInput extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const {channelId, rootId, value, useGroupMentions, getChannelMemberCountsByGroup, isTimezoneEnabled} = this.props;
+        const {channelId, rootId, value, files, useGroupMentions, getChannelMemberCountsByGroup, isTimezoneEnabled} = this.props;
         const diffChannel = channelId !== prevProps?.channelId;
         const diffTimezoneEnabled = isTimezoneEnabled !== prevProps?.isTimezoneEnabled;
 
@@ -118,6 +118,10 @@ export default class DraftInput extends PureComponent {
             if (useGroupMentions) {
                 getChannelMemberCountsByGroup(channelId, isTimezoneEnabled);
             }
+        }
+
+        if (prevProps.files !== files) {
+            this.updateCanSubmit();
         }
     }
 
