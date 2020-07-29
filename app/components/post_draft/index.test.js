@@ -35,6 +35,9 @@ describe('mapStateToProps', () => {
             general: {
                 config: {},
                 serverVersion: '',
+                credentials: {
+                    url: '',
+                },
             },
             users: {
                 profiles: {},
