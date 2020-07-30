@@ -625,5 +625,9 @@
   "mobile.unsupported_server.message": "Allegati, anteprima collegamenti, reazione e dati integrati potrebbero non essere visualizzati correttamente. Se il problema persiste contatta il tuo amministratore di sistema per aggiornare il server Mattermost.",
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}",
   "mobile.android.back_handler_exit": "Premi di nuovo indietro per uscire",
-  "mobile.post_textbox.groups.title": "Conferma invio notifica di gruppo"
+  "mobile.post_textbox.groups.title": "Conferma invio notifica di gruppo",
+  "mobile.post_textbox.one_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} inviarea una notifica ad almento {totalMembers} persone. Sicuro di voler continuare?",
+  "mobile.post_textbox.one_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?",
+  "mobile.post_textbox.multi_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} inviarea una notifica ad almento {totalMembers} persone. Sicuro di voler continuare?",
+  "mobile.post_textbox.multi_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?"
 }

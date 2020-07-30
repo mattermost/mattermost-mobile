@@ -429,7 +429,7 @@
   "more_channels.title": "Выберите канал",
   "msg_typing.areTyping": "{users} и {last} печатают...",
   "msg_typing.isTyping": "{user} печатает...",
-  "navbar.leave": "Покинуть Канал",
+  "navbar.leave": "Покинуть канал",
   "password_form.title": "Сброс пароля",
   "password_send.checkInbox": "Проверьте свои входящие.",
   "password_send.description": "Для сброса пароля введите email адрес, использованный при регистрации",
