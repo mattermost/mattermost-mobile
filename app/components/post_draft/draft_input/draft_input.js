@@ -193,7 +193,7 @@ export default class DraftInput extends PureComponent {
                 this.handleSendMessage();
                 break;
             case 'shift-enter':
-                this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
+                this.onInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
                 break;
             }
         }
@@ -203,6 +203,12 @@ export default class DraftInput extends PureComponent {
         if (this.input.current) {
             this.setInputValue(inputValue, true);
             this.input.current.focus();
+        }
+    };
+
+    onInsertTextToDraft = (text) => {
+        if (this.input.current) {
+            this.input.current.handleInsertTextToDraft(text);
         }
     };
 

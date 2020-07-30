@@ -227,7 +227,8 @@ export default class PostInput extends PureComponent {
     };
 
     handleInsertTextToDraft = (text) => {
-        const {cursorPosition, value} = this.state;
+        const {cursorPosition} = this.state;
+        const value = this.getValue();
 
         let completed;
         if (value.length === 0) {
@@ -238,8 +239,9 @@ export default class PostInput extends PureComponent {
             completed = `${firstPart}${text}${secondPart}`;
         }
 
-        this.setState({
-            value: completed,
+        this.value = completed;
+        this.input.current.setNativeProps({
+            text: completed,
         });
     };
 
