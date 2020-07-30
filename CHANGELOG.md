@@ -11,7 +11,7 @@
  
 ### Highlights
  - End users will now receive an in-app notification to contact their System Admin to upgrade the server version if they are running versions v5.18 and below.
- - Added support for [group mentions (E20 feature)](https://docs.mattermost.com/deployment/ldap-group-sync.html) for mobile apps.
+ - Added support for [LDAP group mentions (E20 feature)](https://docs.mattermost.com/deployment/ldap-group-sync.html) for mobile apps.
  - Added support for non-cached slash command autocomplete for mobile apps.
 
 ### Improvements
