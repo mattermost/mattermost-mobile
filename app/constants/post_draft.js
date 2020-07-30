@@ -15,3 +15,4 @@ export const TYPING_HEIGHT = 18;
 export const MAX_FILE_COUNT_WARNING = 'onMaxFileCountWarning';
 export const UPLOAD_FILES = 'onUploadFiles';
 export const PASTE_FILES = 'onPasteFiles';
+export const UPDATE_NATIVE_SCROLLVIEW = 'onUpdateNativeScrollView';

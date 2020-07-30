@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {View} from 'react-native';
+import {SafeAreaView, View} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
 import FormattedText from '@components/formatted_text';
@@ -16,25 +16,29 @@ interface ReadOnlyProps {
 const ReadOnlyChannnel = ({theme}: ReadOnlyProps): ReactNode => {
     const style = getStyle(theme);
     return (
-        <View style={style.container}>
-            <Icon
-                name='glasses'
-                style={style.icon}
-                color={theme.centerChannelColor}
-            />
-            <FormattedText
-                id='mobile.create_post.read_only'
-                defaultMessage='This channel is read-only.'
-                style={style.text}
-            />
-        </View>
+        <SafeAreaView style={style.background}>
+            <View style={style.container}>
+                <Icon
+                    name='glasses'
+                    style={style.icon}
+                    color={theme.centerChannelColor}
+                />
+                <FormattedText
+                    id='mobile.create_post.read_only'
+                    defaultMessage='This channel is read-only.'
+                    style={style.text}
+                />
+            </View>
+        </SafeAreaView>
     );
 };
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
+    background: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.10),
+    },
     container: {
         alignItems: 'center',
-        backgroundColor: theme.centerChannelBg,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
         borderTopWidth: 1,
         flexDirection: 'row',

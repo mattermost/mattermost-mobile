@@ -62,19 +62,16 @@ exports[`thread should match snapshot, has root post 1`] = `
       </View>
     </React.Fragment>
   </Connect(SafeAreaIos)>
-  <KeyboardTrackingView
+  <Connect(PostDraft)
     accessoriesContainerID="threadAccessoriesContainer"
+    channelId="channel_id"
+    channelIsArchived={false}
+    cursorPositionEvent="onThreadTextBoxCursorChange"
+    registerTypingAnimation={[Function]}
+    rootId="root_id"
     scrollViewNativeID="threadPostList"
-  >
-    <Connect(PostDraft)
-      channelId="channel_id"
-      channelIsArchived={false}
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      registerTypingAnimation={[Function]}
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </KeyboardTrackingView>
+    valueEvent="onThreadTextBoxValueChange"
+  />
 </React.Fragment>
 `;
 

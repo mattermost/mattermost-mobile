@@ -207,7 +207,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
 `;
 
 exports[`PostDraft Should render the DraftInput 1`] = `
-Array [
+<KeyboardTrackingView>
   <View
     style={
       Object {
@@ -249,7 +249,7 @@ Array [
         }
       />
     </View>
-  </View>,
+  </View>
   <View
     onLayout={[Function]}
     style={
@@ -580,66 +580,82 @@ Array [
         </View>
       </View>
     </RCTScrollView>
-  </View>,
-]
+  </View>
+</KeyboardTrackingView>
 `;
 
 exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
-<View
+<RCTSafeAreaView
+  emulateUnlessSupported={true}
   style={
     Object {
-      "alignItems": "center",
-      "backgroundColor": "#ffffff",
-      "borderTopColor": "rgba(61,60,64,0.2)",
-      "borderTopWidth": 1,
-      "flexDirection": "row",
-      "height": 50,
-      "paddingHorizontal": 12,
+      "backgroundColor": "rgba(61,60,64,0.1)",
     }
   }
 >
-  <Text
+  <View
     style={
       Object {
-        "color": "#3d3c40",
-        "fontSize": 15,
-        "lineHeight": 20,
-        "marginLeft": 9,
-        "opacity": 0.56,
+        "alignItems": "center",
+        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopWidth": 1,
+        "flexDirection": "row",
+        "height": 50,
+        "paddingHorizontal": 12,
       }
     }
   >
-    This channel is read-only.
-  </Text>
-</View>
+    <Text
+      style={
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 15,
+          "lineHeight": 20,
+          "marginLeft": 9,
+          "opacity": 0.56,
+        }
+      }
+    >
+      This channel is read-only.
+    </Text>
+  </View>
+</RCTSafeAreaView>
 `;
 
 exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
-<View
+<RCTSafeAreaView
+  emulateUnlessSupported={true}
   style={
     Object {
-      "alignItems": "center",
-      "backgroundColor": "#ffffff",
-      "borderTopColor": "rgba(61,60,64,0.2)",
-      "borderTopWidth": 1,
-      "flexDirection": "row",
-      "height": 50,
-      "paddingHorizontal": 12,
+      "backgroundColor": "rgba(61,60,64,0.1)",
     }
   }
 >
-  <Text
+  <View
     style={
       Object {
-        "color": "#3d3c40",
-        "fontSize": 15,
-        "lineHeight": 20,
-        "marginLeft": 9,
-        "opacity": 0.56,
+        "alignItems": "center",
+        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopWidth": 1,
+        "flexDirection": "row",
+        "height": 50,
+        "paddingHorizontal": 12,
       }
     }
   >
-    This channel is read-only.
-  </Text>
-</View>
+    <Text
+      style={
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 15,
+          "lineHeight": 20,
+          "marginLeft": 9,
+          "opacity": 0.56,
+        }
+      }
+    >
+      This channel is read-only.
+    </Text>
+  </View>
+</RCTSafeAreaView>
 `;

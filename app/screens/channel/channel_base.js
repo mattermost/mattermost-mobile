@@ -9,7 +9,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
-import {TYPING_VISIBLE} from '@constants/post_draft';
+import {UPDATE_NATIVE_SCROLLVIEW, TYPING_VISIBLE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import {unsupportedServer} from '@utils/supported_server';
@@ -55,7 +55,6 @@ export default class ChannelBase extends PureComponent {
         super(props);
 
         this.postDraft = React.createRef();
-        this.keyboardTracker = React.createRef();
 
         this.state = {
             channelsRequestFailed: false,
@@ -288,9 +287,7 @@ export default class ChannelBase extends PureComponent {
     };
 
     updateNativeScrollView = () => {
-        if (this.keyboardTracker?.current) {
-            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
-        }
+        EventEmitter.emit(UPDATE_NATIVE_SCROLLVIEW, this.props.currentChannelId);
     };
 
     render() {

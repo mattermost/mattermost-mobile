@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {View} from 'react-native';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import LocalConfig from '@assets/config';
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
@@ -93,19 +92,15 @@ export default class ChannelIOS extends ChannelBase {
                     {component}
                 </SafeAreaView>
                 {renderDraftArea &&
-                <KeyboardTrackingView
-                    ref={this.keyboardTracker}
-                    scrollViewNativeID={currentChannelId}
-                    accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
-                >
                     <PostDraft
+                        accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         ref={this.postDraft}
-                        screenId={this.props.componentId}
                         registerTypingAnimation={this.registerTypingAnimation}
+                        screenId={this.props.componentId}
+                        scrollViewNativeID={currentChannelId}
+                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                     />
-                </KeyboardTrackingView>
                 }
             </>
         );
