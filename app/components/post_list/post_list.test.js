@@ -137,7 +137,7 @@ describe('PostList', () => {
         instance.componentDidMount();
         expect(EventEmitter.on).toHaveBeenCalledTimes(2);
         expect(EventEmitter.on).toHaveBeenCalledWith('scroll-to-bottom', instance.handleSetScrollToBottom);
-        expect(EventEmitter.on).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_POP_TO_ROOT, instance.handleClosePermalink);
+        expect(EventEmitter.on).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, instance.handleClosePermalink);
     });
 
     test('should remove listeners on componentWillUnmount', () => {
@@ -153,6 +153,6 @@ describe('PostList', () => {
         instance.componentWillUnmount();
         expect(EventEmitter.off).toHaveBeenCalledTimes(2);
         expect(EventEmitter.off).toHaveBeenCalledWith('scroll-to-bottom', instance.handleSetScrollToBottom);
-        expect(EventEmitter.off).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_POP_TO_ROOT, instance.handleClosePermalink);
+        expect(EventEmitter.off).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, instance.handleClosePermalink);
     });
 });

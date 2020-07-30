@@ -223,13 +223,11 @@ describe('@actions/navigation', () => {
         expect(pop).toHaveBeenCalledWith(otherComponentId);
     });
 
-    test('popToRoot should call Navigation.popToRoot and emit event', async () => {
+    test('popToRoot should call Navigation.popToRoot', async () => {
         const popToRoot = jest.spyOn(Navigation, 'popToRoot');
-        EventEmitter.emit = jest.fn();
 
         await NavigationActions.popToRoot();
         expect(popToRoot).toHaveBeenCalledWith(topComponentId);
-        expect(EventEmitter.emit).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_POP_TO_ROOT);
     });
 
     test('showModal should call Navigation.showModal', () => {
@@ -484,5 +482,16 @@ describe('@actions/navigation', () => {
 
         await NavigationActions.dismissOverlay(topComponentId);
         expect(dismissOverlay).toHaveBeenCalledWith(topComponentId);
+    });
+
+    test('dismissAllModalsAndPopToRoot should call Navigation.dismissAllModals, Navigation.popToRoot, and emit event', async () => {
+        const dismissAllModals = jest.spyOn(Navigation, 'dismissAllModals');
+        const popToRoot = jest.spyOn(Navigation, 'popToRoot');
+        EventEmitter.emit = jest.fn();
+
+        await NavigationActions.dismissAllModalsAndPopToRoot();
+        expect(dismissAllModals).toHaveBeenCalled();
+        expect(popToRoot).toHaveBeenCalledWith(topComponentId);
+        expect(EventEmitter.emit).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
     });
 });

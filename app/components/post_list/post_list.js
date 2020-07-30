@@ -105,7 +105,7 @@ export default class PostList extends PureComponent {
         const {actions, deepLinkURL, highlightPostId, initialIndex} = this.props;
 
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
-        EventEmitter.on(NavigationTypes.NAVIGATION_POP_TO_ROOT, this.handleClosePermalink);
+        EventEmitter.on(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, this.handleClosePermalink);
 
         // Invoked when hitting a deep link and app is not already running.
         if (deepLinkURL) {
@@ -150,7 +150,7 @@ export default class PostList extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
-        EventEmitter.off(NavigationTypes.NAVIGATION_POP_TO_ROOT, this.handleClosePermalink);
+        EventEmitter.off(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, this.handleClosePermalink);
 
         this.resetPostList();
     }

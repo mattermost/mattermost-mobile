@@ -219,11 +219,17 @@ export async function popToRoot() {
 
     try {
         await Navigation.popToRoot(componentId);
-        EventEmmiter.emit(NavigationTypes.NAVIGATION_POP_TO_ROOT);
     } catch (error) {
         // RNN returns a promise rejection if there are no screens
         // atop the root screen to pop. We'll do nothing in this case.
     }
+}
+
+export async function dismissAllModalsAndPopToRoot() {
+    await dismissAllModals();
+    await popToRoot();
+
+    EventEmmiter.emit(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
 }
 
 export function showModal(name, title, passProps = {}, options = {}) {
