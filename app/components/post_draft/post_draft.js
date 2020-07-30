@@ -25,7 +25,7 @@ export default class PostDraft extends PureComponent {
         registerTypingAnimation: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         screenId: PropTypes.string.isRequired,
-        scrollViewNativeID: PropTypes.string.isRequired,
+        scrollViewNativeID: PropTypes.string,
         valueEvent: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
