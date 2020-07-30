@@ -297,7 +297,7 @@ export default class EditProfile extends PureComponent {
         const {formatMessage} = this.context.intl;
         const fileSizeWarning = formatMessage({
             id: 'file_upload.fileAbove',
-            defaultMessage: 'File above {max} cannot be uploaded',
+            defaultMessage: 'Files must be less than {max}',
         }, {
             max: getFormattedFileSize({size: MAX_SIZE}),
         });

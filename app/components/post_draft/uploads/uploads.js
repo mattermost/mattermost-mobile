@@ -136,7 +136,7 @@ export default class Uploads extends PureComponent {
             const {formatMessage} = this.context.intl;
             const message = formatMessage({
                 id: 'file_upload.fileAbove',
-                defaultMessage: 'Files above {max} cannot be uploaded',
+                defaultMessage: 'Files must be less than {max}',
             }, {
                 max: getFormattedFileSize({size: this.props.maxFileSize}),
             });
