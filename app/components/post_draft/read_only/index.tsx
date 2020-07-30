@@ -35,7 +35,7 @@ const ReadOnlyChannnel = ({theme}: ReadOnlyProps): ReactNode => {
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     background: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.10),
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
     },
     container: {
         alignItems: 'center',

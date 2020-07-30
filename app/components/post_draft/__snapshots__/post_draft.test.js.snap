@@ -589,7 +589,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
   emulateUnlessSupported={true}
   style={
     Object {
-      "backgroundColor": "rgba(61,60,64,0.1)",
+      "backgroundColor": "rgba(61,60,64,0.04)",
     }
   }
 >
@@ -627,7 +627,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
   emulateUnlessSupported={true}
   style={
     Object {
-      "backgroundColor": "rgba(61,60,64,0.1)",
+      "backgroundColor": "rgba(61,60,64,0.04)",
     }
   }
 >
