@@ -7,9 +7,11 @@ import merge from 'deepmerge';
 
 import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import EventEmmiter from '@mm-redux/utils/event_emitter';
 
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
+import {NavigationTypes} from '@constants';
 
 const CHANNEL_SCREEN = 'Channel';
 
@@ -217,6 +219,7 @@ export async function popToRoot() {
 
     try {
         await Navigation.popToRoot(componentId);
+        EventEmmiter.emit(NavigationTypes.NAVIGATION_POP_TO_ROOT);
     } catch (error) {
         // RNN returns a promise rejection if there are no screens
         // atop the root screen to pop. We'll do nothing in this case.

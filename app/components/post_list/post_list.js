@@ -12,7 +12,7 @@ import * as PostListUtils from '@mm-redux/utils/post_list';
 
 import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
 import Post from 'app/components/post';
-import {DeepLinkTypes, ListTypes} from 'app/constants';
+import {DeepLinkTypes, ListTypes, NavigationTypes} from '@constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {changeOpacity} from 'app/utils/theme';
@@ -105,6 +105,7 @@ export default class PostList extends PureComponent {
         const {actions, deepLinkURL, highlightPostId, initialIndex} = this.props;
 
         EventEmitter.on('scroll-to-bottom', this.handleSetScrollToBottom);
+        EventEmitter.on(NavigationTypes.NAVIGATION_POP_TO_ROOT, this.handleClosePermalink);
 
         // Invoked when hitting a deep link and app is not already running.
         if (deepLinkURL) {
@@ -149,6 +150,7 @@ export default class PostList extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off('scroll-to-bottom', this.handleSetScrollToBottom);
+        EventEmitter.off(NavigationTypes.NAVIGATION_POP_TO_ROOT, this.handleClosePermalink);
 
         this.resetPostList();
     }

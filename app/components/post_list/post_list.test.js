@@ -5,8 +5,10 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import * as NavigationActions from 'app/actions/navigation';
+import {NavigationTypes} from '@constants';
 import PostList from './post_list';
 
 jest.useFakeTimers();
@@ -120,5 +122,37 @@ describe('PostList', () => {
         });
 
         expect(instance.loadToFillContent).toHaveBeenCalledTimes(1);
+    });
+
+    test('should register listeners on componentDidMount', () => {
+        const wrapper = shallow(
+            <PostList {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+        instance.handleSetScrollToBottom = jest.fn();
+        instance.handleClosePermalink = jest.fn();
+        EventEmitter.on = jest.fn();
+
+        expect(EventEmitter.on).not.toHaveBeenCalled();
+        instance.componentDidMount();
+        expect(EventEmitter.on).toHaveBeenCalledTimes(2);
+        expect(EventEmitter.on).toHaveBeenCalledWith('scroll-to-bottom', instance.handleSetScrollToBottom);
+        expect(EventEmitter.on).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_POP_TO_ROOT, instance.handleClosePermalink);
+    });
+
+    test('should remove listeners on componentWillUnmount', () => {
+        const wrapper = shallow(
+            <PostList {...baseProps}/>,
+        );
+        const instance = wrapper.instance();
+        instance.handleSetScrollToBottom = jest.fn();
+        instance.handleClosePermalink = jest.fn();
+        EventEmitter.off = jest.fn();
+
+        expect(EventEmitter.off).not.toHaveBeenCalled();
+        instance.componentWillUnmount();
+        expect(EventEmitter.off).toHaveBeenCalledTimes(2);
+        expect(EventEmitter.off).toHaveBeenCalledWith('scroll-to-bottom', instance.handleSetScrollToBottom);
+        expect(EventEmitter.off).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_POP_TO_ROOT, instance.handleClosePermalink);
     });
 });

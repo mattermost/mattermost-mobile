@@ -7,11 +7,14 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import merge from 'deepmerge';
 
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 import intitialState from '@store/initial_state';
 import Store from '@store/store';
+import {NavigationTypes} from '@constants';
 
 jest.unmock('@actions/navigation');
 jest.mock('@store/ephemeral_store', () => ({
@@ -220,11 +223,13 @@ describe('@actions/navigation', () => {
         expect(pop).toHaveBeenCalledWith(otherComponentId);
     });
 
-    test('popToRoot should call Navigation.popToRoot', async () => {
+    test('popToRoot should call Navigation.popToRoot and emit event', async () => {
         const popToRoot = jest.spyOn(Navigation, 'popToRoot');
+        EventEmitter.emit = jest.fn();
 
         await NavigationActions.popToRoot();
         expect(popToRoot).toHaveBeenCalledWith(topComponentId);
+        expect(EventEmitter.emit).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_POP_TO_ROOT);
     });
 
     test('showModal should call Navigation.showModal', () => {
