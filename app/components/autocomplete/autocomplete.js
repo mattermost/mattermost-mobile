@@ -35,9 +35,9 @@ export default class Autocomplete extends PureComponent {
         valueEvent: PropTypes.string,
         cursorPositionEvent: PropTypes.string,
         nestedScrollEnabled: PropTypes.bool,
-        expandDown: PropTypes.bool,
         onVisible: PropTypes.func,
         offsetY: PropTypes.number,
+        onKeyboardOffsetChanged: PropTypes.func,
     };
 
     static defaultProps = {
@@ -46,6 +46,7 @@ export default class Autocomplete extends PureComponent {
         enableDateSuggestion: false,
         nestedScrollEnabled: false,
         onVisible: emptyFunction,
+        onKeyboardOffsetChanged: emptyFunction,
         offsetY: 80,
     };
 
@@ -149,10 +150,12 @@ export default class Autocomplete extends PureComponent {
     keyboardDidShow = (e) => {
         const {height} = e.endCoordinates;
         this.setState({keyboardOffset: height});
+        this.props.onKeyboardOffsetChanged(height);
     };
 
     keyboardDidHide = () => {
         this.setState({keyboardOffset: 0});
+        this.props.onKeyboardOffsetChanged(0);
     };
 
     maxListHeight() {
@@ -166,42 +169,33 @@ export default class Autocomplete extends PureComponent {
                 offset = 90;
             }
 
-            maxHeight = this.props.deviceHeight - offset - this.state.keyboardOffset;
+            maxHeight = (this.props.deviceHeight / 2) - offset;
         }
 
         return maxHeight;
     }
 
     render() {
-        const {theme, isSearch, expandDown, offsetY} = this.props;
+        const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
+        const {theme, isSearch, offsetY} = this.props;
         const style = getStyleFromTheme(theme);
+        const maxListHeight = this.maxListHeight();
+        const wrapperStyles = [style.shadow];
+        const containerStyles = [style.borders];
 
-        const wrapperStyles = [];
-        const containerStyles = [];
         if (isSearch) {
-            wrapperStyles.push(style.base, style.searchContainer);
+            wrapperStyles.push(style.base, style.searchContainer, {height: maxListHeight});
             containerStyles.push(style.content);
         } else {
-            let containerStyle = {bottom: offsetY};
-            if (expandDown) {
-                containerStyle = style.containerExpandDown;
-            }
+            const containerStyle = {bottom: offsetY};
             containerStyles.push(style.base, containerStyle);
         }
 
-        // We always need to render something, but we only draw the borders when we have results to show
-        const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
-        if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount > 0) {
-            if (this.props.isSearch) {
-                wrapperStyles.push(style.borders);
-            } else {
-                containerStyles.push(style.borders);
-            }
-        } else {
+        // Hide when there are no active autocompletes
+        if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount === 0) {
             wrapperStyles.push(style.hidden);
         }
 
-        const maxListHeight = this.maxListHeight();
         return (
             <View style={wrapperStyles}>
                 <View
@@ -264,21 +258,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             left: 8,
             position: 'absolute',
             right: 8,
-            borderRadius: 4,
-            shadowColor: '#000',
-            shadowOpacity: 0.12,
-            shadowRadius: 8,
-            shadowOffset: {
-                width: 0,
-                height: 8,
-            },
         },
         borders: {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-        },
-        containerExpandDown: {
-            top: 0,
+            overflow: 'hidden',
+            borderRadius: 4,
         },
         content: {
             flex: 1,
@@ -293,9 +278,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     top: 46,
                 },
                 ios: {
-                    top: 44,
+                    top: 55,
                 },
             }),
+        },
+        shadow: {
+            shadowColor: '#000',
+            shadowOpacity: 0.12,
+            shadowRadius: 8,
+            shadowOffset: {
+                width: 0,
+                height: 8,
+            },
         },
     };
 });

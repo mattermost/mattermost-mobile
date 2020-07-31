@@ -262,6 +262,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold',
         },
         listView: {
+            paddingTop: 16,
             backgroundColor: theme.centerChannelBg,
         },
         row: {

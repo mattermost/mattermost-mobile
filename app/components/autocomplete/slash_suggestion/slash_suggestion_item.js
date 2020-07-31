@@ -82,7 +82,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingBottom: 8,
-            paddingHorizontal: 15,
+            paddingHorizontal: 16,
             overflow: 'hidden',
         },
         suggestionContainer: {
@@ -95,7 +95,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         suggestionName: {
             fontSize: 15,
             color: theme.centerChannelColor,
-            marginBottom: 5,
+            marginBottom: 4,
         },
     };
 });

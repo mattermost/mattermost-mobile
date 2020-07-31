@@ -118,7 +118,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             opacity: 0.56,
         },
         row: {
-            padding: 8,
+            paddingTop: 8,
+            paddingHorizontal: 16,
             height: 40,
             flexDirection: 'row',
             alignItems: 'center',

@@ -72,7 +72,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         row: {
             height: 40,
             paddingVertical: 8,
-            paddingHorizontal: 16,
+            paddingHorizontal: 9,
             flexDirection: 'row',
             alignItems: 'center',
         },

@@ -70,6 +70,7 @@ export default class EditChannelInfo extends PureComponent {
 
         this.state = {
             keyboardVisible: false,
+            keyboardPosition: 0,
         };
     }
 
@@ -173,6 +174,10 @@ export default class EditChannelInfo extends PureComponent {
         this.setState({keyboardVisible: false});
     }
 
+    onKeyboardOffsetChanged = (keyboardPosition) => {
+        this.setState({keyboardPosition});
+    }
+
     onHeaderFocus = () => {
         if (this.state.keyboardVisible) {
             this.scrollHeaderToTop();
@@ -200,7 +205,7 @@ export default class EditChannelInfo extends PureComponent {
             error,
             saving,
         } = this.props;
-        const {keyboardVisible, headerPosition} = this.state;
+        const {keyboardVisible, keyboardPosition} = this.state;
 
         const style = getStyleSheet(theme);
 
@@ -353,13 +358,15 @@ export default class EditChannelInfo extends PureComponent {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAwareScrollView>
-                <View style={[style.autocompleteContainer, {bottom: headerPosition || 0}]}>
+                <View style={[style.autocompleteContainer, {bottom: keyboardPosition}]}>
                     <Autocomplete
                         cursorPosition={header.length}
                         maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.onHeaderChangeText}
                         value={header}
                         nestedScrollEnabled={true}
+                        onKeyboardOffsetChanged={this.onKeyboardOffsetChanged}
+                        offsetY={8}
                     />
                 </View>
             </React.Fragment>
@@ -372,6 +379,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         autocompleteContainer: {
             position: 'absolute',
             width: '100%',
+            flex: 1,
+            justifyContent: 'flex-end',
         },
         container: {
             flex: 1,

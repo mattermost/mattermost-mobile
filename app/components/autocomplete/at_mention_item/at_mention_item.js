@@ -88,8 +88,8 @@ export default class AtMentionItem extends PureComponent {
                         style={style.rowFullname}
                         numberOfLines={1}
                     >
-                        {hasFullName && `${firstName} ${lastName}`}
-                        {hasNickname && ` (${nickname})`}
+                        {hasFullName && `${firstName} ${lastName} `}
+                        {hasNickname && `(${nickname}) `}
                         {isCurrentUser &&
                         <FormattedText
                             id='suggestion.mention.you'
@@ -100,7 +100,7 @@ export default class AtMentionItem extends PureComponent {
                         numberOfLines={1}
                         style={style.rowUsername}
                     >
-                        { `@${username}`}
+                        {` @${username}`}
                     </Text>
                 </View>
             </TouchableWithFeedback>

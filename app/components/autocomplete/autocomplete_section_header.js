@@ -60,6 +60,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
             color: changeOpacity(theme.centerChannelColor, 0.56),
             paddingTop: 16,
+            paddingBottom: 8,
             paddingHorizontal: 16,
             flex: 1,
         },
