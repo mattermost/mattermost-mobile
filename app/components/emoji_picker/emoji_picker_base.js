@@ -14,7 +14,7 @@ import {
     View,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import Octicons from 'react-native-vector-icons/Octicons';
 
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
@@ -279,11 +279,10 @@ export default class EmojiPicker extends PureComponent {
                 listComponent = (
                     <View style={[styles.flex, styles.notFoundContainer]}>
                         <View style={styles.notFoundIcon}>
-                            <EvilIcons
+                            <Octicons
                                 name='search'
-                                size={72}
+                                size={68}
                                 color={theme.linkColor}
-                                style={{marginBottom: 5}}
                             />
                         </View>
                         <Text style={[styles.notFoundText, styles.notFoundText20]}>
