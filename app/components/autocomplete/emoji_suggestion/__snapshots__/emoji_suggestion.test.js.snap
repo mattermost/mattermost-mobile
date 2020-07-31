@@ -27,6 +27,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 1`] = `
     Array [
       Object {
         "backgroundColor": "#ffffff",
+        "paddingTop": 16,
       },
       Object {
         "height": 0,
@@ -3080,6 +3081,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
     Array [
       Object {
         "backgroundColor": "#ffffff",
+        "paddingTop": 16,
       },
       Object {
         "height": undefined,
