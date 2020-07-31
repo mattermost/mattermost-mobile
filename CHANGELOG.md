@@ -24,6 +24,7 @@
 #### All apps
  - Fixed an issue with More Messages button inconsistencies when opening the app from a push notification.
  - Fixed an issue where users were unable to create channels when first joining a team.
+ - Fixed an issue where an extra separator line appeared above the message box in landscape view after using mentions autocomplete.
 
 #### Android specific
  - Fixed an issue with keyboard glitches after using an invalid slash command.
