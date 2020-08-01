@@ -2,7 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Alert} from 'react-native';
 import {shallow} from 'enzyme';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {General} from '@mm-redux/constants';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -94,5 +97,16 @@ describe('ChannelBase', () => {
 
         removeAnimation();
         expect(instance.typingAnimations).toStrictEqual([]);
+    });
+
+    test('should display an alert when the user is removed from the current channel', () => {
+        const alert = jest.spyOn(Alert, 'alert');
+        shallow(
+            <ChannelBase {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+
+        EventEmitter.emit(General.REMOVED_FROM_CHANNEL);
+        expect(alert).toHaveBeenCalled();
     });
 });
