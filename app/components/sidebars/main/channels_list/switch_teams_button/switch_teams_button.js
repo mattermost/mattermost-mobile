@@ -45,7 +45,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
         }
 
         const styles = getStyleSheet(theme);
-        
+
         const lowMentionCount = mentionCount <= 0;
         const minWidth = lowMentionCount ? 8 : 20;
         const badgeStyle = lowMentionCount ? styles.smallBadge : styles.badge;

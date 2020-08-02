@@ -45,7 +45,7 @@ export default class TeamsListItem extends React.PureComponent {
             isLandscape,
         } = this.props;
         const styles = getStyleSheet(theme);
-        
+
         const lowMentionCount = mentionCount <= 0;
         const minWidth = lowMentionCount ? 8 : 20;
         const badgeStyle = lowMentionCount ? styles.smallBadge : styles.badge;
