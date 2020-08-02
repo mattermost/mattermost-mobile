@@ -45,13 +45,18 @@ export default class SwitchTeamsButton extends React.PureComponent {
         }
 
         const styles = getStyleSheet(theme);
+        
+        const lowMentionCount = mentionCount <= 0;
+        const minWidth = lowMentionCount ? 8 : 20;
+        const badgeStyle = lowMentionCount ? styles.smallBadge : styles.badge;
+        const containerStyle = lowMentionCount ? styles.smallBadgeContainer : styles.badgeContainer;
 
         const badge = (
             <Badge
-                containerStyle={styles.badgeContainer}
-                style={styles.badge}
+                containerStyle={containerStyle}
+                style={badgeStyle}
                 countStyle={styles.mention}
-                minWidth={20}
+                minWidth={minWidth}
                 count={mentionCount}
             />
         );
@@ -89,6 +94,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 20,
             padding: 3,
         },
+        smallBadge: {
+            backgroundColor: theme.mentionBg,
+            height: 8,
+            padding: 3,
+        },
         badgeContainer: {
             borderColor: theme.sidebarBg,
             borderRadius: 14,
@@ -97,9 +107,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             right: 0,
             top: -9,
         },
+        smallBadgeContainer: {
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 14,
+            borderWidth: 2,
+            position: 'absolute',
+            right: 6,
+            top: -5,
+        },
         mention: {
             color: theme.mentionColor,
             fontSize: 10,
+            fontWeight: 'bold',
         },
         switcherArrow: {
             color: theme.sidebarHeaderBg,

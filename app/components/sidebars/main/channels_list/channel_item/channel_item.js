@@ -246,6 +246,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         mention: {
             color: theme.mentionColor,
             fontSize: 12,
+            fontWeight: 'bold',
         },
         muted: {
             opacity: 0.5,

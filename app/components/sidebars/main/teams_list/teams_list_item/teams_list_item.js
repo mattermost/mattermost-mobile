@@ -45,14 +45,19 @@ export default class TeamsListItem extends React.PureComponent {
             isLandscape,
         } = this.props;
         const styles = getStyleSheet(theme);
+        
+        const lowMentionCount = mentionCount <= 0;
+        const minWidth = lowMentionCount ? 8 : 20;
+        const badgeStyle = lowMentionCount ? styles.smallBadge : styles.badge;
+        const containerStyle = lowMentionCount ? styles.smallBadgeContainer : styles.badgeContainer;
 
         const badge = (
             <Badge
-                containerStyle={styles.badgeContainer}
+                containerStyle={containerStyle}
                 countStyle={styles.mention}
                 count={mentionCount}
-                minWidth={20}
-                style={styles.badge}
+                minWidth={minWidth}
+                style={badgeStyle}
             />
         );
 
@@ -152,6 +157,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 20,
             padding: 3,
         },
+        smallBadge: {
+            backgroundColor: theme.mentionBg,
+            height: 8,
+            padding: 3,
+        },
         badgeContainer: {
             borderColor: theme.sidebarBg,
             borderRadius: 14,
@@ -160,9 +170,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             right: -12,
             top: -10,
         },
+        smallBadgeContainer: {
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 14,
+            borderWidth: 2,
+            position: 'absolute',
+            right: -7,
+            top: -6,
+        },
         mention: {
             color: theme.mentionColor,
             fontSize: 10,
+            fontWeight: 'bold',
         },
     };
 });

@@ -106,11 +106,7 @@ export default class Badge extends PureComponent {
                 <View
                     style={[styles.text, this.props.countStyle]}
                     onLayout={this.onLayout}
-                >
-                    <View style={styles.verticalAlign}>
-                        <View style={[styles.unreadIndicator, {backgroundColor: this.props.countStyle.color}]}/>
-                    </View>
-                </View>
+                />
             );
         } else {
             let mentionCount = count;

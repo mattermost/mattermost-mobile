@@ -87,14 +87,19 @@ export default class ChannelDrawerButton extends PureComponent {
 
         let badge;
         if (badgeCount && visible) {
+            const badgeCountLow = badgeCount <= 0;
+            const minWidth = badgeCountLow ? 8 : 18;
+            const badgeStyle = badgeCountLow ? style.smallBadge : style.badge;
+            const containerStyle = badgeCountLow ? style.smallBadgeContainer : style.badgeContainer;
+
             badge = (
                 <Badge
-                    containerStyle={style.badgeContainer}
-                    style={style.badge}
+                    containerStyle={containerStyle}
+                    style={badgeStyle}
                     countStyle={style.mention}
                     count={badgeCount}
                     onPress={this.handlePress}
-                    minWidth={19}
+                    minWidth={minWidth}
                 />
             );
         }
@@ -155,9 +160,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         badge: {
             backgroundColor: theme.mentionBg,
-            height: 19,
+            height: 18,
             padding: 3,
         },
+        smallBadge: {
+            backgroundColor: theme.mentionBg,
+            height: 8,
+            padding: 3,
+         },
         badgeContainer: {
             borderColor: theme.sidebarHeaderBg,
             borderRadius: 14,
@@ -166,9 +176,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             right: -14,
             top: -7,
         },
+        smallBadgeContainer: {
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 14,
+            borderWidth: 2,
+            position: 'absolute',
+            right: -7,
+            top: 0,
+        },
         mention: {
             color: theme.mentionColor,
             fontSize: 10,
+            fontWeight: 'bold',
         },
     };
 });
