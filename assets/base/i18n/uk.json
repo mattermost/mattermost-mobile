@@ -618,5 +618,7 @@
   "mobile.message_length.message_split_left": "Message exceeds the character limit",
   "suggestion.mention.groups": "Group Mentions",
   "mobile.server_upgrade.learn_more": "Вчи більше",
-  "mobile.server_upgrade.dismiss": "Відхилити"
+  "mobile.server_upgrade.dismiss": "Відхилити",
+  "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
+  "mobile.unsupported_server.ok": "OK"
 }

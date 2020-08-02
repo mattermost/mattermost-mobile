@@ -68,8 +68,10 @@ export default class FileQuickAction extends PureComponent {
                     }
                 }
 
-                // Decode file uri to get the actual path
-                res.uri = decodeURIComponent(res.uri);
+                if (Platform.OS === 'ios') {
+                    // Decode file uri to get the actual path
+                    res.uri = decodeURIComponent(res.uri);
+                }
 
                 this.props.onUploadFiles([res]);
             } catch (error) {

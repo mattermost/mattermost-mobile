@@ -18,6 +18,7 @@ import ImageCacheManager from '@utils/image_cache_manager';
 
 import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
+import {analytics} from '@init/analytics.ts';
 
 export default class UploadItem extends PureComponent {
     static propTypes = {
@@ -147,7 +148,7 @@ export default class UploadItem extends PureComponent {
             fileInfo,
         ];
 
-        Client4.trackEvent('api', 'api_files_upload');
+        analytics.trackAPI('api_files_upload');
 
         const certificate = await mattermostBucket.getPreference('cert');
         const options = {

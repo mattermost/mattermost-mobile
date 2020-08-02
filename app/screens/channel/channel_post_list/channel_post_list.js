@@ -102,7 +102,7 @@ export default class ChannelPostList extends PureComponent {
 
     goToThread = (post) => {
         telemetry.start(['post_list:thread']);
-        const {actions, channelId, registerTypingAnimation} = this.props;
+        const {actions, channelId} = this.props;
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
@@ -114,7 +114,6 @@ export default class ChannelPostList extends PureComponent {
         const passProps = {
             channelId,
             rootId,
-            registerTypingAnimation,
         };
 
         requestAnimationFrame(() => {

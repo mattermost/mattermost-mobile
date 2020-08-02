@@ -37,7 +37,6 @@ export default class ThreadIOS extends ThreadBase {
             rootId,
             channelIsArchived,
             theme,
-            registerTypingAnimation,
         } = this.props;
 
         let content;
@@ -84,7 +83,7 @@ export default class ThreadIOS extends ThreadBase {
                         rootId={rootId}
                         screenId={this.props.componentId}
                         valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
-                        registerTypingAnimation={registerTypingAnimation}
+                        registerTypingAnimation={this.registerTypingAnimation}
                     />
                 </KeyboardTrackingView>
             );

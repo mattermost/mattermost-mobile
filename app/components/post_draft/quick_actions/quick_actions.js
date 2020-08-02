@@ -41,7 +41,7 @@ export default class QuickActions extends PureComponent {
         super(props);
 
         this.state = {
-            inputValue: props.initialValue,
+            inputValue: '',
             atDisabled: props.readonly,
             slashDisabled: props.readonly,
         };

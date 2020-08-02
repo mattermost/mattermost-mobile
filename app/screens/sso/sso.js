@@ -119,7 +119,13 @@ class SSO extends PureComponent {
 
         CookieManager.get(parsedUrl.href, true).then((res) => {
             const mmtoken = res.MMAUTHTOKEN;
+            const csrf = res.MMCSRF;
             const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+            const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
+
+            if (csrfToken) {
+                Client4.setCSRF(csrfToken);
+            }
 
             if (token) {
                 clearTimeout(this.cookiesTimeout);
@@ -129,7 +135,7 @@ class SSO extends PureComponent {
                 } = this.props.actions;
 
                 Client4.setToken(token);
-                ssoLogin(token).then((result) => {
+                ssoLogin().then((result) => {
                     if (result.error) {
                         this.onLoadEndError(result.error);
                         return;
@@ -227,15 +233,13 @@ class SSO extends PureComponent {
         const style = getStyleSheet(theme);
 
         let content;
-        if (!renderWebView) {
-            content = this.renderLoading();
-        } else if (error) {
+        if (error) {
             content = (
                 <View style={style.errorContainer}>
                     <Text style={style.errorText}>{error}</Text>
                 </View>
             );
-        } else {
+        } else if (renderWebView) {
             content = (
                 <WebView
                     ref={this.webViewRef}
@@ -252,6 +256,8 @@ class SSO extends PureComponent {
                     cacheEnabled={false}
                 />
             );
+        } else {
+            content = this.renderLoading();
         }
 
         return (

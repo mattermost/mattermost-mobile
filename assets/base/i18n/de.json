@@ -619,5 +619,7 @@
   "mobile.message_length.message_split_left": "Nachricht überschreitet maximale Schriftzeichenanzahl",
   "suggestion.mention.groups": "Group Mentions",
   "mobile.server_upgrade.learn_more": "Mehr erfahren",
-  "mobile.server_upgrade.dismiss": "Verwerfen"
+  "mobile.server_upgrade.dismiss": "Verwerfen",
+  "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
+  "mobile.unsupported_server.ok": "OK"
 }
