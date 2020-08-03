@@ -88,16 +88,17 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
           Object {
             "color": "#145dbf",
             "fontSize": 10,
+            "fontWeight": "bold",
           }
         }
         extraPaddingHorizontal={10}
         minHeight={20}
-        minWidth={19}
+        minWidth={18}
         onPress={[Function]}
         style={
           Object {
             "backgroundColor": "#ffffff",
-            "height": 19,
+            "height": 18,
             "padding": 3,
           }
         }
