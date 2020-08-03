@@ -54,14 +54,6 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         this.setEmailIntervalIfNeeded(prevProps);
     }
 
-    computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {
-        return getEmailInterval(
-            sendEmailNotifications,
-            enableEmailBatching,
-            parseInt(emailInterval, 10),
-        ).toString();
-    };
-
     setEmailIntervalIfNeeded = (prevProps) => {
         const {
             notifyProps,
@@ -86,6 +78,14 @@ export default class NotificationSettingsEmailBase extends PureComponent {
     getPlatformOS = () => {
         return Platform.OS;
     }
+
+    computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {
+        return getEmailInterval(
+            sendEmailNotifications,
+            enableEmailBatching,
+            parseInt(emailInterval, 10),
+        ).toString();
+    };
 
     setEmailInterval = (value) => {
         this.setState({newInterval: value});
