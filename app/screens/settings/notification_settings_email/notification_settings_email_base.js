@@ -79,16 +79,16 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         return Platform.OS;
     }
 
+    setEmailInterval = (value) => {
+        this.setState({newInterval: value});
+    };
+
     computeEmailInterval = (sendEmailNotifications, enableEmailBatching, emailInterval) => {
         return getEmailInterval(
             sendEmailNotifications,
             enableEmailBatching,
             parseInt(emailInterval, 10),
         ).toString();
-    };
-
-    setEmailInterval = (value) => {
-        this.setState({newInterval: value});
     };
 
     saveEmailNotifyProps = () => {
