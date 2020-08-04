@@ -210,7 +210,15 @@ class SSO extends PureComponent {
 
     onLoadEndError = (e) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
-        this.setState({error: e.message});
+        let error = e.message;
+        if (e.details) {
+            error += `\n${e.details.message}`;
+        }
+
+        if (e.url) {
+            error += `\nURL: ${e.url}`;
+        }
+        this.setState({error});
     };
 
     scheduleSessionExpiredNotification = () => {
