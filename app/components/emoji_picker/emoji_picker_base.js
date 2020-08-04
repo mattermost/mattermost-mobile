@@ -246,54 +246,25 @@ export default class EmojiPicker extends PureComponent {
 
     renderListComponent = (shorten) => {
         const {deviceWidth, theme} = this.props;
-        const {formatMessage} = this.context.intl;
         const {emojis, filteredEmojis, searchTerm} = this.state;
         const styles = getStyleSheetFromTheme(theme);
 
         let listComponent;
         if (searchTerm) {
-            if (filteredEmojis && filteredEmojis.length > 0) {
-                listComponent = (
-                    <FlatList
-                        data={filteredEmojis}
-                        initialListSize={10}
-                        keyboardShouldPersistTaps='always'
-                        keyExtractor={this.flatListKeyExtractor}
-                        nativeID={SCROLLVIEW_NATIVE_ID}
-                        pageSize={10}
-                        renderItem={this.flatListRenderItem}
-                        style={styles.flatList}
-                    />
-                );
-            } else {
-                const title = formatMessage({
-                    id: 'mobile.emoji_picker.search.not_found_title',
-                    defaultMessage: 'No results found for "{searchTerm}"',
-                }, {
-                    searchTerm,
-                });
-                const description = formatMessage({
-                    id: 'mobile.emoji_picker.search.not_found_description',
-                    defaultMessage: 'Check the spelling or try another search.',
-                });
-                listComponent = (
-                    <View style={[styles.flex, styles.notFoundContainer]}>
-                        <View style={styles.notFoundIcon}>
-                            <Octicons
-                                name='search'
-                                size={68}
-                                color={theme.linkColor}
-                            />
-                        </View>
-                        <Text style={[styles.notFoundText, styles.notFoundText20]}>
-                            {title}
-                        </Text>
-                        <Text style={[styles.notFoundText, styles.notFoundText15]}>
-                            {description}
-                        </Text>
-                    </View>
-                );
-            }
+            listComponent = (
+                <FlatList
+                    data={filteredEmojis}
+                    initialListSize={10}
+                    keyboardShouldPersistTaps='always'
+                    keyExtractor={this.flatListKeyExtractor}
+                    nativeID={SCROLLVIEW_NATIVE_ID}
+                    pageSize={10}
+                    renderItem={this.flatListRenderItem}
+                    ListEmptyComponent={this.renderEmptyList}
+                    contentContainerStyle={styles.flex}
+                    style={styles.flatList}
+                />
+            );
         } else {
             listComponent = (
                 <SectionList
@@ -482,6 +453,40 @@ export default class EmojiPicker extends PureComponent {
             </View>
         );
     };
+
+    renderEmptyList = () => {
+        const {theme} = this.props;
+        const {formatMessage} = this.context.intl;
+        const {searchTerm} = this.state;
+        const styles = getStyleSheetFromTheme(theme);
+        const title = formatMessage({
+            id: 'mobile.emoji_picker.search.not_found_title',
+            defaultMessage: 'No results found for "{searchTerm}"',
+        }, {
+            searchTerm,
+        });
+        const description = formatMessage({
+            id: 'mobile.emoji_picker.search.not_found_description',
+            defaultMessage: 'Check the spelling or try another search.',
+        });
+        return (
+            <View style={[styles.flex, styles.notFoundContainer]}>
+                <View style={styles.notFoundIcon}>
+                    <Octicons
+                        name='search'
+                        size={68}
+                        color={theme.linkColor}
+                    />
+                </View>
+                <Text style={[styles.notFoundText, styles.notFoundText20]}>
+                    {title}
+                </Text>
+                <Text style={[styles.notFoundText, styles.notFoundText15]}>
+                    {description}
+                </Text>
+            </View>
+        );
+    }
 }
 
 export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -552,7 +557,7 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '100%',
+            flexGrow: 1,
         },
         notFoundIcon: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
