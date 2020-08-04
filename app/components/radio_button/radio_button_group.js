@@ -17,39 +17,6 @@ export default class RadioButtonGroup extends PureComponent {
         options: [],
     };
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            selected: this.getSelectedValue(props.options),
-        };
-    }
-
-    componentDidUpdate(prevProps) {
-        this.updateSelectedIfNeeded(prevProps);
-    }
-
-    updateSelectedIfNeeded = (prevProps) => {
-        if (this.props.options !== prevProps.options) {
-            const {options} = this.props;
-            this.setState({
-                selected: this.getSelectedValue(options),
-            });
-        }
-    }
-
-    getSelectedValue = (options = []) => {
-        let selected;
-        for (const option in options) {
-            if (option.checked) {
-                selected = option.value;
-                break;
-            }
-        }
-
-        return selected;
-    }
-
     onChange = (value) => {
         const {onSelect} = this.props;
         this.setState({
