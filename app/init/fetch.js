@@ -89,6 +89,7 @@ Client4.doFetchWithResponse = async (url, options) => {
                 message: 'You need to use a valid client certificate in order to connect to this Mattermost server',
                 status_code: 401,
                 url,
+                details: err,
             });
         }
 
@@ -99,6 +100,7 @@ Client4.doFetchWithResponse = async (url, options) => {
                 defaultMessage: 'Received invalid response from the server.',
             },
             url,
+            details: err,
         });
     }
 
@@ -138,7 +140,7 @@ Client4.doFetchWithResponse = async (url, options) => {
     }
 
     throw new ClientError(Client4.getUrl(), {
-        message: `${msg} url = ${url}`,
+        message: msg,
         server_error_id: data.id,
         status_code: data.status_code,
         url,
