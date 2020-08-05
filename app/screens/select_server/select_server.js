@@ -82,7 +82,6 @@ export default class SelectServer extends PureComponent {
             connected: false,
             connecting: false,
             error: null,
-            url: props.serverUrl,
         };
 
         this.cancelPing = null;
@@ -92,6 +91,8 @@ export default class SelectServer extends PureComponent {
         if (state.url === undefined && props.allowOtherServers && props.deepLinkURL) {
             const url = urlParse(props.deepLinkURL).host;
             return {url};
+        } else if (state.url === undefined && props.serverUrl) {
+            return {url: props.serverUrl};
         }
         return null;
     }
