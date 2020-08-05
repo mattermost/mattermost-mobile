@@ -206,17 +206,17 @@ export default class ChannelBase extends PureComponent {
         this.props.actions.selectDefaultTeam();
     };
 
-    handleRemovedFromChannel = () => {
+    handleRemovedFromChannel = (channelName) => {
         const {formatMessage} = this.context.intl;
 
         Alert.alert(
             formatMessage({
                 id: 'mobile.user_removed.title',
-                defaultMessage: 'Removed from channel',
-            }),
+                defaultMessage: 'Removed from {channelName}',
+            }, {channelName}),
             formatMessage({
                 id: 'mobile.user_removed.message',
-                defaultMessage: 'You have been removed from the current channel',
+                defaultMessage: 'You were removed from the channel.',
             }),
         );
     };
