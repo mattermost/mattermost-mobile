@@ -1,71 +1,73 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`EditPost should match snapshot 1`] = `
-<View
-  style={
-    Object {
-      "flex": 1,
-    }
-  }
->
-  <Connect(StatusBar) />
+<React.Fragment>
   <View
     style={
       Object {
-        "backgroundColor": "rgba(61,60,64,0.03)",
         "flex": 1,
       }
     }
   >
+    <Connect(StatusBar) />
     <View
       style={
-        Array [
-          Object {
-            "backgroundColor": "#ffffff",
-            "borderBottomColor": "rgba(61,60,64,0.1)",
-            "borderBottomWidth": 1,
-            "borderTopColor": "rgba(61,60,64,0.1)",
-            "borderTopWidth": 1,
-            "marginTop": 2,
-          },
-          null,
-          Object {
-            "height": NaN,
-          },
-        ]
+        Object {
+          "backgroundColor": "rgba(61,60,64,0.03)",
+          "flex": 1,
+        }
       }
     >
-      <TextInputWithLocalizedPlaceholder
-        blurOnSubmit={false}
-        disableFullscreenUI={true}
-        keyboardAppearance="light"
-        keyboardType="default"
-        multiline={true}
-        numberOfLines={10}
-        onChangeText={[Function]}
-        onSelectionChange={[Function]}
-        placeholder={
-          Object {
-            "defaultMessage": "Edit the post...",
-            "id": "edit_post.editPost",
-          }
-        }
-        placeholderTextColor="rgba(61,60,64,0.4)"
+      <View
         style={
           Array [
             Object {
-              "color": "#3d3c40",
-              "fontSize": 14,
-              "padding": 15,
-              "textAlignVertical": "top",
+              "backgroundColor": "#ffffff",
+              "borderBottomColor": "rgba(61,60,64,0.1)",
+              "borderBottomWidth": 1,
+              "borderTopColor": "rgba(61,60,64,0.1)",
+              "borderTopWidth": 1,
+              "marginTop": 2,
             },
+            null,
             Object {
               "height": NaN,
             },
           ]
         }
-        underlineColorAndroid="transparent"
-      />
+      >
+        <TextInputWithLocalizedPlaceholder
+          blurOnSubmit={false}
+          disableFullscreenUI={true}
+          keyboardAppearance="light"
+          keyboardType="default"
+          multiline={true}
+          numberOfLines={10}
+          onChangeText={[Function]}
+          onSelectionChange={[Function]}
+          placeholder={
+            Object {
+              "defaultMessage": "Edit the post...",
+              "id": "edit_post.editPost",
+            }
+          }
+          placeholderTextColor="rgba(61,60,64,0.4)"
+          style={
+            Array [
+              Object {
+                "color": "#3d3c40",
+                "fontSize": 14,
+                "padding": 15,
+                "textAlignVertical": "top",
+              },
+              Object {
+                "height": NaN,
+              },
+            ]
+          }
+          underlineColorAndroid="transparent"
+        />
+      </View>
     </View>
   </View>
   <KeyboardTrackingView
@@ -87,7 +89,12 @@ exports[`EditPost should match snapshot 1`] = `
       nestedScrollEnabled={true}
       onChangeText={[Function]}
       onVisible={[Function]}
+      style={
+        Object {
+          "position": undefined,
+        }
+      }
     />
   </KeyboardTrackingView>
-</View>
+</React.Fragment>
 `;
