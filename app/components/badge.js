@@ -27,6 +27,7 @@ export default class Badge extends PureComponent {
         countStyle: Text.propTypes.style,
         minHeight: PropTypes.number,
         minWidth: PropTypes.number,
+        maxWidth: PropTypes.number,
         onPress: PropTypes.func,
     };
 
@@ -91,6 +92,7 @@ export default class Badge extends PureComponent {
                     width,
                     borderRadius,
                     opacity: 1,
+                    maxWidth: this.props.maxWidth,
                 },
             });
             this.layoutReady = true;
