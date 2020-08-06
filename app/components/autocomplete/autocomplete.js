@@ -7,6 +7,7 @@ import {
     Keyboard,
     Platform,
     View,
+    ViewPropTypes,
 } from 'react-native';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -37,6 +38,7 @@ export default class Autocomplete extends PureComponent {
         nestedScrollEnabled: PropTypes.bool,
         expandDown: PropTypes.bool,
         onVisible: PropTypes.func,
+        style: ViewPropTypes.style,
     };
 
     static defaultProps = {
@@ -192,6 +194,10 @@ export default class Autocomplete extends PureComponent {
             } else {
                 containerStyles.push(style.borders);
             }
+        }
+
+        if (this.props.style) {
+            containerStyles.push(this.props.style);
         }
 
         const maxListHeight = this.maxListHeight();
