@@ -18,7 +18,6 @@ jest.mock('react-native-image-picker', () => ({
 describe('FileQuickAction', () => {
     const formatMessage = jest.fn();
     const baseProps = {
-        blurTextBox: jest.fn(),
         fileCount: 0,
         maxFileCount: 5,
         onShowFileMaxWarning: jest.fn(),

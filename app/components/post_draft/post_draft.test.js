@@ -2,12 +2,44 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Alert} from 'react-native';
-import assert from 'assert';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import TestRenderer from 'react-test-renderer';
+import {IntlProvider} from 'react-intl';
+import {Provider} from 'react-redux';
+import configureMockStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
 
 import Preferences from '@mm-redux/constants/preferences';
+import intitialState from '@store/initial_state';
+
 import PostDraft from './post_draft';
+
+const mockStore = configureMockStore([thunk]);
+const state = {
+    ...intitialState,
+    entities: {
+        ...intitialState.entities,
+        channels: {
+            ...intitialState.entities.channels,
+            channels: {
+                'channel-id': {
+                    id: 'channel-id',
+                    name: 'test-channel',
+                    display_name: 'Display Name',
+                    type: 'O',
+                },
+            },
+            channelMemberCountsByGroup: {},
+        },
+    },
+    device: {
+        ...intitialState.device,
+        dimension: {
+            deviceWidth: 375,
+            deviceHeight: 812,
+        },
+    },
+};
+const store = mockStore(state);
 
 jest.mock('react-native-image-picker', () => ({
     launchCamera: jest.fn(),
@@ -15,335 +47,88 @@ jest.mock('react-native-image-picker', () => ({
 
 describe('PostDraft', () => {
     const baseProps = {
-        addReactionToLatestPost: jest.fn(),
-        createPost: jest.fn(),
-        executeCommand: jest.fn(),
-        handleCommentDraftChanged: jest.fn(),
-        handlePostDraftChanged: jest.fn(),
-        handleClearFiles: jest.fn(),
-        handleClearFailedFiles: jest.fn(),
-        handleRemoveLastFile: jest.fn(),
-        initUploadFiles: jest.fn(),
-        userTyping: jest.fn(),
-        handleCommentDraftSelectionChanged: jest.fn(),
-        setStatus: jest.fn(),
-        selectPenultimateChannel: jest.fn(),
-        getChannelTimezones: jest.fn(),
-        getChannelMemberCountsByGroup: jest.fn(),
-        canUploadFiles: true,
-        channelId: 'channel-id',
-        channelDisplayName: 'Test Channel',
-        channelTeamId: 'channel-team-id',
-        channelIsReadOnly: false,
-        currentUserId: 'current-user-id',
-        deactivatedChannel: false,
-        files: [],
-        maxFileSize: 1024,
-        maxMessageLength: 4000,
-        rootId: '',
-        theme: Preferences.THEMES.default,
-        uploadFileRequestStatus: 'NOT_STARTED',
-        value: '',
-        userIsOutOfOffice: false,
-        channelIsArchived: false,
-        onCloseChannel: jest.fn(),
-        cursorPositionEvent: '',
-        valueEvent: '',
-        isLandscape: false,
-        screenId: 'NavigationScreen1',
         canPost: true,
-        currentChannelMembersCount: 50,
-        enableConfirmNotificationsToChannel: true,
-        useChannelMentions: true,
-        useGroupMentions: true,
-        groupsWithAllowReference: new Map([
-            ['@developers', {
-                id: 'developers',
-                name: 'developers',
-            }],
-            ['@qa', {
-                id: 'qa',
-                name: 'qa',
-            }],
-        ]),
-        channelMemberCountsByGroup: {
-            developers: {
-                channel_member_count: 10,
-                channel_member_timezones_count: 0,
-            },
-            qa: {
-                channel_member_count: 3,
-                channel_member_timezones_count: 0,
-            },
-        },
-        membersCount: 10,
+        channelId: 'channel-id',
+        channelIsArchived: false,
+        channelIsReadOnly: false,
+        deactivatedChannel: false,
+        registerTypingAnimation: jest.fn(),
+        rootId: '',
+        screenId: 'NavigationScreen1',
+        theme: Preferences.THEMES.default,
     };
-    const ref = React.createRef();
 
-    test('should send an alert when sending a message with a channel mention', () => {
-        const wrapper = shallowWithIntl(
+    test('Should render the DraftInput', () => {
+        const wrapper = renderWithRedux(
             <PostDraft
                 {...baseProps}
-                ref={ref}
             />,
         );
-        const message = '@all';
-        const instance = wrapper.instance();
-        expect(instance.input).toEqual({current: null});
-        instance.input = {
-            current: {
-                getValue: () => message,
-                setValue: jest.fn(),
-                changeDraft: jest.fn(),
-            },
-        };
 
-        instance.sendMessage();
-        expect(Alert.alert).toBeCalled();
-        expect(Alert.alert).toHaveBeenCalledWith('Confirm sending notifications to entire channel', expect.anything(), expect.anything());
+        expect(wrapper.toJSON()).toMatchSnapshot();
+        const element = wrapper.root.find((el) => el.type === 'TextInput');
+        expect(element).toBeTruthy();
     });
 
-    test('should send an alert when sending a message with a group mention with group with count more than NOTIFY_ALL', () => {
-        const wrapper = shallowWithIntl(
+    test('Should render the Archived for channelIsArchived', () => {
+        const wrapper = renderWithRedux(
             <PostDraft
                 {...baseProps}
-                ref={ref}
+                channelIsArchived={true}
             />,
         );
-        const message = '@developers';
-        const instance = wrapper.instance();
-        expect(instance.input).toEqual({current: null});
-        instance.input = {
-            current: {
-                getValue: () => message,
-                setValue: jest.fn(),
-                changeDraft: jest.fn(),
-            },
-        };
-        instance.sendMessage();
-        expect(Alert.alert).toBeCalled();
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'archived channel');
+        expect(element).toBeTruthy();
     });
 
-    test('should not send an alert when sending a message with a group mention with group with count less than NOTIFY_ALL', () => {
-        const wrapper = shallowWithIntl(
+    test('Should render the Archived for deactivatedChannel', () => {
+        const wrapper = renderWithRedux(
             <PostDraft
                 {...baseProps}
-                ref={ref}
+                deactivatedChannel={true}
             />,
         );
-        const message = '@qa';
-        const instance = wrapper.instance();
-        expect(instance.input).toEqual({current: null});
-        instance.input = {
-            current: {
-                getValue: () => message,
-                setValue: jest.fn(),
-                changeDraft: jest.fn(),
-            },
-        };
 
-        instance.sendMessage();
-        expect(Alert.alert).not.toBeCalled();
+        expect(wrapper.toJSON()).toMatchSnapshot();
+        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'archived channel');
+        expect(element).toBeTruthy();
     });
 
-    test('should not send an alert when sending a message with a channel mention when the user does not have channel mentions permission', () => {
-        const wrapper = shallowWithIntl(
+    test('Should render the ReadOnly for channelIsReadOnly', () => {
+        const wrapper = renderWithRedux(
             <PostDraft
                 {...baseProps}
-                useChannelMentions={false}
-                ref={ref}
+                channelIsReadOnly={true}
             />,
         );
-        const message = '@all';
-        const instance = wrapper.instance();
-        expect(instance.input).toEqual({current: null});
-        instance.input = {
-            current: {
-                getValue: () => message,
-                setValue: jest.fn(),
-                changeDraft: jest.fn(),
-            },
-        };
 
-        instance.sendMessage();
-        expect(Alert.alert).not.toHaveBeenCalled();
+        expect(wrapper.toJSON()).toMatchSnapshot();
+        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'This channel is read-only.');
+        expect(element).toBeTruthy();
     });
 
-    test('should not send an alert when sending a message with a channel mention when the user does not have group mentions permission', () => {
-        const wrapper = shallowWithIntl(
+    test('Should render the ReadOnly for canPost', () => {
+        const wrapper = renderWithRedux(
             <PostDraft
                 {...baseProps}
-                useGroupMentions={false}
-                ref={ref}
+                canPost={false}
             />,
         );
-        const message = '@developer';
-        const instance = wrapper.instance();
-        expect(instance.input).toEqual({current: null});
-        instance.input = {
-            current: {
-                getValue: () => message,
-                setValue: jest.fn(),
-                changeDraft: jest.fn(),
-            },
-        };
 
-        instance.sendMessage();
-        expect(Alert.alert).not.toHaveBeenCalled();
-    });
-
-    test('should return correct @all (same for @channel)', () => {
-        for (const data of [
-            {
-                text: '',
-                result: false,
-            },
-            {
-                text: 'all',
-                result: false,
-            },
-            {
-                text: '@allison',
-                result: false,
-            },
-            {
-                text: '@ALLISON',
-                result: false,
-            },
-            {
-                text: '@all123',
-                result: false,
-            },
-            {
-                text: '123@all',
-                result: false,
-            },
-            {
-                text: 'hey@all',
-                result: false,
-            },
-            {
-                text: 'hey@all.com',
-                result: false,
-            },
-            {
-                text: '@all',
-                result: true,
-            },
-            {
-                text: '@ALL',
-                result: true,
-            },
-            {
-                text: '@all hey',
-                result: true,
-            },
-            {
-                text: 'hey @all',
-                result: true,
-            },
-            {
-                text: 'HEY @ALL',
-                result: true,
-            },
-            {
-                text: 'hey @all!',
-                result: true,
-            },
-            {
-                text: 'hey @all:+1:',
-                result: true,
-            },
-            {
-                text: 'hey @ALL:+1:',
-                result: true,
-            },
-            {
-                text: '`@all`',
-                result: false,
-            },
-            {
-                text: '@someone `@all`',
-                result: false,
-            },
-            {
-                text: '``@all``',
-                result: false,
-            },
-            {
-                text: '```@all```',
-                result: false,
-            },
-            {
-                text: '```\n@all\n```',
-                result: false,
-            },
-            {
-                text: '```````\n@all\n```````',
-                result: false,
-            },
-            {
-                text: '```code\n@all\n```',
-                result: false,
-            },
-            {
-                text: '~~~@all~~~',
-                result: true,
-            },
-            {
-                text: '~~~\n@all\n~~~',
-                result: false,
-            },
-            {
-                text: ' /not_cmd @all',
-                result: true,
-            },
-            {
-                text: '@channel',
-                result: true,
-            },
-            {
-                text: '@channel.',
-                result: true,
-            },
-            {
-                text: '@channel/test',
-                result: true,
-            },
-            {
-                text: 'test/@channel',
-                result: true,
-            },
-            {
-                text: '@all/@channel',
-                result: true,
-            },
-            {
-                text: '@cha*nnel*',
-                result: false,
-            },
-            {
-                text: '@cha**nnel**',
-                result: false,
-            },
-            {
-                text: '*@cha*nnel',
-                result: false,
-            },
-            {
-                text: '[@chan](https://google.com)nel',
-                result: false,
-            },
-            {
-                text: '@cha![](https://myimage)nnel',
-                result: false,
-            },
-        ]) {
-            const wrapper = shallowWithIntl(
-                <PostDraft {...baseProps}/>,
-            );
-            const containsAtChannel = wrapper.instance().textContainsAtAllAtChannel(data.text);
-            assert.equal(containsAtChannel, data.result, data.text);
-        }
+        expect(wrapper.toJSON()).toMatchSnapshot();
+        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'This channel is read-only.');
+        expect(element).toBeTruthy();
     });
 });
+
+function renderWithRedux(component) {
+    return TestRenderer.create(
+        <Provider store={store}>
+            <IntlProvider locale='en'>
+                {component}
+            </IntlProvider>
+        </Provider>,
+    );
+}
