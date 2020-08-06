@@ -43,7 +43,7 @@ export default class NotificationSettings extends PureComponent {
     componentDidUpdate(prevProps) {
         const {updateMeRequest} = this.props;
         const {intl} = this.context;
-        if (prevProps.updateMeRequest !== updateMeRequest && updateMeRequest.status === RequestStatus.FAILURE) {
+        if (prevProps.updateMeRequest.status !== updateMeRequest.status && updateMeRequest.status === RequestStatus.FAILURE) {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.notification_settings.save_failed_title',
