@@ -108,7 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             top: -9,
         },
         smallBadgeContainer: {
-            borderColor: theme.sidebarHeaderBg,
+            borderColor: theme.sidebarBg,
             borderRadius: 14,
             borderWidth: 2,
             position: 'absolute',
