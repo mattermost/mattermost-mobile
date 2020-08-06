@@ -283,14 +283,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
             value="header"
           />
         </View>
-        <Connect(Autocomplete)
-          cursorPosition={6}
-          expandDown={true}
-          maxHeight={200}
-          nestedScrollEnabled={true}
-          onChangeText={[Function]}
-          value="header"
-        />
         <View
           style={
             Object {
@@ -319,5 +311,25 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       </View>
     </TouchableWithoutFeedback>
   </KeyboardAwareScrollView>
+  <KeyboardTrackingView
+    style={
+      Object {
+        "justifyContent": "flex-end",
+      }
+    }
+  >
+    <Connect(Autocomplete)
+      cursorPosition={6}
+      maxHeight={200}
+      nestedScrollEnabled={true}
+      onChangeText={[Function]}
+      style={
+        Object {
+          "position": undefined,
+        }
+      }
+      value="header"
+    />
+  </KeyboardTrackingView>
 </React.Fragment>
 `;

@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {General} from '@mm-redux/constants';
 
@@ -228,7 +229,7 @@ export default class EditChannelInfo extends PureComponent {
         }
 
         return (
-            <React.Fragment>
+            <>
                 <StatusBar/>
                 <KeyboardAwareScrollView
                     ref={this.scroll}
@@ -343,14 +344,6 @@ export default class EditChannelInfo extends PureComponent {
                                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 />
                             </View>
-                            <Autocomplete
-                                cursorPosition={header.length}
-                                maxHeight={200}
-                                onChangeText={this.onHeaderChangeText}
-                                value={header}
-                                nestedScrollEnabled={true}
-                                expandDown={true}
-                            />
                             <View style={style.headerHelpText}>
                                 <FormattedText
                                     style={[style.helpText, padding(isLandscape)]}
@@ -361,13 +354,29 @@ export default class EditChannelInfo extends PureComponent {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAwareScrollView>
-            </React.Fragment>
+                <KeyboardTrackingView style={style.autocompleteContainer}>
+                    <Autocomplete
+                        cursorPosition={header.length}
+                        maxHeight={200}
+                        onChangeText={this.onHeaderChangeText}
+                        value={header}
+                        nestedScrollEnabled={true}
+                        style={style.autocomplete}
+                    />
+                </KeyboardTrackingView>
+            </>
         );
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        autocomplete: {
+            position: undefined,
+        },
+        autocompleteContainer: {
+            justifyContent: 'flex-end',
+        },
         container: {
             flex: 1,
         },
