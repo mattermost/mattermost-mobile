@@ -470,20 +470,22 @@ export default class EmojiPicker extends PureComponent {
             defaultMessage: 'Check the spelling or try another search.',
         });
         return (
-            <View style={[styles.flex, styles.notFoundContainer]}>
-                <View style={styles.notFoundIcon}>
-                    <Octicons
-                        name='search'
-                        size={68}
-                        color={theme.linkColor}
-                    />
+            <View style={[styles.flex, styles.flexCenter]}>
+                <View style={styles.flexCenter}>
+                    <View style={styles.notFoundIcon}>
+                        <Octicons
+                            name='search'
+                            size={60}
+                            color={theme.buttonBg}
+                        />
+                    </View>
+                    <Text style={[styles.notFoundText, styles.notFoundText20]}>
+                        {title}
+                    </Text>
+                    <Text style={[styles.notFoundText, styles.notFoundText15]}>
+                        {description}
+                    </Text>
                 </View>
-                <Text style={[styles.notFoundText, styles.notFoundText20]}>
-                    {title}
-                </Text>
-                <Text style={[styles.notFoundText, styles.notFoundText15]}>
-                    {description}
-                </Text>
             </View>
         );
     }
@@ -553,11 +555,10 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
         },
-        notFoundContainer: {
+        flexCenter: {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            flexGrow: 1,
         },
         notFoundIcon: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
@@ -574,7 +575,7 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         notFoundText20: {
             fontSize: 20,
-            fontWeight: 'bold',
+            fontWeight: '600',
         },
         notFoundText15: {
             fontSize: 15,
