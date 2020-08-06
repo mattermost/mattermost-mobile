@@ -16,6 +16,7 @@ import {
     goToScreen,
     dismissModal,
     setButtons,
+    dismissAllModalsAndPopToRoot,
 } from '@actions/navigation';
 import Config from '@assets/config';
 import FormattedTime from '@components/formatted_time';
@@ -215,7 +216,7 @@ export default class UserProfile extends PureComponent {
                 },
             );
         } else {
-            this.close();
+            dismissAllModalsAndPopToRoot();
         }
     };
 
