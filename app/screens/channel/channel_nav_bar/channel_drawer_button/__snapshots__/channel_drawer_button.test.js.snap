@@ -79,7 +79,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
             "borderRadius": 14,
             "borderWidth": 2,
             "position": "absolute",
-            "right": -14,
+            "right": -16,
             "top": -7,
           }
         }
@@ -92,6 +92,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
           }
         }
         extraPaddingHorizontal={10}
+        maxWidth={26}
         minHeight={20}
         minWidth={18}
         onPress={[Function]}

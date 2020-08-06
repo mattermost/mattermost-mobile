@@ -969,6 +969,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           }
         }
         extraPaddingHorizontal={10}
+        maxWidth={32}
         minHeight={20}
         minWidth={21}
         onPress={[Function]}
