@@ -6,7 +6,7 @@ import {batchActions} from 'redux-batched-actions';
 import {NavigationTypes, ViewTypes} from '@constants';
 import {analytics} from '@init/analytics.ts';
 import {ChannelTypes, GeneralTypes, TeamTypes} from '@mm-redux/action_types';
-import {fetchMyChannelsAndMembers} from '@mm-redux/actions/channels';
+import {fetchMyChannelsAndMembers, getChannelAndMyMember} from '@mm-redux/actions/channels';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import {receivedNewPost} from '@mm-redux/actions/posts';
 import {getMyTeams, getMyTeamMembers} from '@mm-redux/actions/teams';
@@ -102,6 +102,8 @@ export function loadFromPushNotification(notification) {
 export function handleSelectTeamAndChannel(teamId, channelId) {
     return async (dispatch, getState) => {
         const dt = Date.now();
+        await dispatch(getChannelAndMyMember(channelId));
+
         const state = getState();
         const {channels, currentChannelId, myMembers} = state.entities.channels;
         const {currentTeamId} = state.entities.teams;
