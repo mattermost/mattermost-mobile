@@ -24,6 +24,7 @@
 ### Bug Fixes
 
 #### All apps
+ - Fixed an issue where an endless spinner instead of an error message was displayed when SSO login action failed.
  - Fixed an issue where users were unable to create channels when first joining a team.
  - Fixed an issue where an extra separator line appeared above the message box in landscape view after using mentions autocomplete.
  - Fixed an issue where the at-symbol was shown twice when clicking on the at-icon.
@@ -34,6 +35,7 @@
  - Fixed an issue where typing right after clicking the send button didn't clear the old message.
 
 #### iOS specific
+ - Fixed an issue where users were unable to edit a message that contained a bullet list.
  - Fixed an issue where user was unable to scroll or tap on emoji autocomplete in post **Edit** screen.
  - Fixed an issue where the channel list was not scrolled to the bottom when a new message was received while the keyboard was open.
 
