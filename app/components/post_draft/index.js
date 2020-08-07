@@ -75,7 +75,7 @@ export function mapStateToProps(state, ownProps) {
         );
     }
 
-    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 24) && license && license.IsLicensed === 'true') {
+    if (currentChannel && isMinimumServerVersion(state.entities.general.serverVersion, 5, 24) && license && license.IsLicensed === 'true') {
         useGroupMentions = haveIChannelPermission(
             state,
             {
