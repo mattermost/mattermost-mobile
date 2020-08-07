@@ -48,7 +48,7 @@ export default class TeamsListItem extends React.PureComponent {
 
         const lowMentionCount = mentionCount <= 0;
         const minWidth = lowMentionCount ? 8 : 20;
-        const maxWidth = mentionCount >= 99 ? 38 : 32;
+        const maxWidth = mentionCount >= 99 ? 30 : 26;
         const badgeStyle = lowMentionCount ? styles.smallBadge : styles.badge;
         const containerStyle = lowMentionCount ? styles.smallBadgeContainer : styles.badgeContainer;
 
