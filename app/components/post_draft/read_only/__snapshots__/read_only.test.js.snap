@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PostDraft ReadOnly Should match snapshot 1`] = `
+<RCTSafeAreaView
+  emulateUnlessSupported={true}
+  style={
+    Object {
+      "backgroundColor": "rgba(61,60,64,0.04)",
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopWidth": 1,
+        "flexDirection": "row",
+        "height": 50,
+        "paddingHorizontal": 12,
+      }
+    }
+  >
+    <Text
+      style={
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 15,
+          "lineHeight": 20,
+          "marginLeft": 9,
+          "opacity": 0.56,
+        }
+      }
+    >
+      This channel is read-only.
+    </Text>
+  </View>
+</RCTSafeAreaView>
+`;

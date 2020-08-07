@@ -616,7 +616,7 @@ function loadGroupData() {
                     } else {
                         const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
                             Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
-                            Client4.getGroups(true),
+                            Client4.getGroups(true, 0, 0),
                         ]);
 
                         if (getAllGroupsAssociatedToChannelsInTeam.groups) {

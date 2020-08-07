@@ -207,22 +207,26 @@ describe('MoreMessagesButton', () => {
             expect(instance.showMoreText).toHaveBeenCalledWith(10);
         });
 
-        test('componentDidUpdate should call onViewableItemsChanged when the unreadCount increases from 0', () => {
+        test('componentDidUpdate should call uncancel and onViewableItemsChanged when the unreadCount increases from 0', () => {
             const wrapper = shallowWithIntl(
                 <MoreMessagesButton {...baseProps}/>,
             );
             const instance = wrapper.instance();
+            instance.uncancel = jest.fn();
             instance.onViewableItemsChanged = jest.fn();
             instance.viewableItems = [{index: 1}];
 
             wrapper.setProps({unreadCount: 0});
+            expect(instance.uncancel).not.toHaveBeenCalled();
             expect(instance.onViewableItemsChanged).not.toHaveBeenCalled();
 
             wrapper.setProps({unreadCount: 1});
+            expect(instance.uncancel).toHaveBeenCalledTimes(1);
             expect(instance.onViewableItemsChanged).toHaveBeenCalledTimes(1);
             expect(instance.onViewableItemsChanged).toHaveBeenCalledWith(instance.viewableItems);
 
             wrapper.setProps({unreadCount: 2});
+            expect(instance.uncancel).toHaveBeenCalledTimes(1);
             expect(instance.onViewableItemsChanged).toHaveBeenCalledTimes(1);
         });
 

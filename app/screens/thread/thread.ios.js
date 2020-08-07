@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {Animated, View} from 'react-native';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
 import Loading from '@components/loading';
@@ -71,21 +70,18 @@ export default class ThreadIOS extends ThreadBase {
             );
 
             postDraft = (
-                <KeyboardTrackingView
-                    scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                <PostDraft
                     accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
-                >
-                    <PostDraft
-                        channelId={channelId}
-                        channelIsArchived={channelIsArchived}
-                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
-                        ref={this.postDraft}
-                        rootId={rootId}
-                        screenId={this.props.componentId}
-                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
-                        registerTypingAnimation={this.registerTypingAnimation}
-                    />
-                </KeyboardTrackingView>
+                    channelId={channelId}
+                    channelIsArchived={channelIsArchived}
+                    cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                    ref={this.postDraft}
+                    rootId={rootId}
+                    screenId={this.props.componentId}
+                    scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
+                    valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
+                    registerTypingAnimation={this.registerTypingAnimation}
+                />
             );
         } else {
             content = (

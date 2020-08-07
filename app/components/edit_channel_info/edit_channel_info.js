@@ -361,6 +361,7 @@ export default class EditChannelInfo extends PureComponent {
                         onChangeText={this.onHeaderChangeText}
                         value={header}
                         nestedScrollEnabled={true}
+                        style={style.autocomplete}
                     />
                 </KeyboardTrackingView>
             </React.Fragment>
@@ -370,6 +371,9 @@ export default class EditChannelInfo extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        autocomplete: {
+            position: undefined,
+        },
         autocompleteContainer: {
             justifyContent: 'flex-end',
         },
