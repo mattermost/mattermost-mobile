@@ -2850,9 +2850,9 @@ export default class Client4 {
         );
     };
 
-    getGroups = async (filterAllowReference = false) => {
+    getGroups = async (filterAllowReference = false, page = 0, perPage = PER_PAGE_DEFAULT) => {
         return this.doFetch(
-            `${this.getBaseRoute()}/groups${buildQueryString({filter_allow_reference: filterAllowReference})}`,
+            `${this.getBaseRoute()}/groups${buildQueryString({filter_allow_reference: filterAllowReference, page, per_page: perPage})}`,
             {method: 'get'},
         );
     };
