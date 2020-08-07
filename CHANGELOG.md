@@ -18,13 +18,15 @@
  - Removed auto-scrolling to the new message line on channel load and added a "More Messages" button when there are unread posts.
  - Improved screen styling for iOS Settings, Profile, Channel Info, "+" button for DMs and channels, Create Channel, and other user profile pages.
  - Added the ability to view users' first and last name in the profile view.
+ - Added support on Android for showing a toast to exit when pressing the back button on channel screen.
+ - Added the ability for editing others' posts to function independently of Edit Own Posts.
  
 ### Bug Fixes
 
 #### All apps
- - Fixed an issue with More Messages button inconsistencies when opening the app from a push notification.
  - Fixed an issue where users were unable to create channels when first joining a team.
  - Fixed an issue where an extra separator line appeared above the message box in landscape view after using mentions autocomplete.
+ - Fixed an issue where the at-symbol was shown twice when clicking on the at-icon.
 
 #### Android specific
  - Fixed an issue with keyboard glitches after using an invalid slash command.
