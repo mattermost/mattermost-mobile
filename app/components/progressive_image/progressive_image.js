@@ -17,7 +17,7 @@ export default class ProgressiveImage extends PureComponent {
     static propTypes = {
         isBackgroundImage: PropTypes.bool,
         children: CustomPropTypes.Children,
-        defaultSource: PropTypes.oneOfType([PropTypes.object, PropTypes.number]), // this should be provided by the component
+        defaultSource: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.number]), // this should be provided by the component
         imageUri: PropTypes.string,
         imageStyle: CustomPropTypes.Style,
         onError: PropTypes.func,

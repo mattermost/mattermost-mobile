@@ -321,6 +321,11 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       maxHeight={200}
       nestedScrollEnabled={true}
       onChangeText={[Function]}
+      style={
+        Object {
+          "position": undefined,
+        }
+      }
       value="header"
     />
   </KeyboardTrackingView>

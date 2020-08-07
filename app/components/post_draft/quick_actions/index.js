@@ -3,14 +3,18 @@
 
 import {connect} from 'react-redux';
 
-import {canUploadFilesOnMobile} from '@mm-redux/selectors/entities/general';
+import {canUploadFilesOnMobile, getConfig} from '@mm-redux/selectors/entities/general';
+import {getAllowedServerMaxFileSize} from '@utils/file';
 
 import QuickActions from './quick_actions';
 
 function mapStateToProps(state) {
+    const config = getConfig(state);
+
     return {
         canUploadFiles: canUploadFilesOnMobile(state),
+        maxFileSize: getAllowedServerMaxFileSize(config),
     };
 }
 
-export default connect(mapStateToProps)(QuickActions);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(QuickActions);

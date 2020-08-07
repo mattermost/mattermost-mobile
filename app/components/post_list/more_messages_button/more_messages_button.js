@@ -115,6 +115,7 @@ export default class MoreMessageButton extends React.PureComponent {
         // In this case we want to manually call onViewableItemsChanged with the stored
         // viewableItems.
         if (unreadCount > prevProps.unreadCount && prevProps.unreadCount === 0) {
+            this.uncancel();
             this.onViewableItemsChanged(this.viewableItems);
         }
 

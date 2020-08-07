@@ -5,13 +5,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {NativeEventEmitter, NativeModules, Platform, TextInput} from 'react-native';
 
+import {PASTE_FILES} from '@constants/post_draft';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 const {OnPasteEventManager} = NativeModules;
 const OnPasteEventEmitter = new NativeEventEmitter(OnPasteEventManager);
 
 export class PasteableTextInput extends React.PureComponent {
     static propTypes = {
         ...TextInput.PropTypes,
-        onPaste: PropTypes.func,
         forwardRef: PropTypes.any,
     }
 
@@ -26,7 +28,6 @@ export class PasteableTextInput extends React.PureComponent {
     }
 
     onPaste = (event) => {
-        const {onPaste} = this.props;
         let data = null;
         let error = null;
 
@@ -38,7 +39,7 @@ export class PasteableTextInput extends React.PureComponent {
             data = event;
         }
 
-        return onPaste?.(error, data);
+        EventEmitter.emit(PASTE_FILES, error, data);
     }
 
     render() {
