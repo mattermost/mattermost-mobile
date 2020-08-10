@@ -74,7 +74,7 @@
   "edit_post.editPost": "İletiyi düzenle...",
   "edit_post.save": "Kaydet",
   "file_attachment.download": "İndir",
-  "file_upload.fileAbove": "{max} MB boyutundan büyük dosyalar yüklenemez: {filename}",
+  "file_upload.fileAbove": "Dosyalar {max} boyutundan küçük olmalıdır",
   "get_post_link_modal.title": "Bağlantıyı Kopyala",
   "integrations.add": "Ekle",
   "intro_messages.anyMember": " Tüm üyeler bu kanala üye olup iletileri okuyabilir.",
