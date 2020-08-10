@@ -551,7 +551,7 @@
   "mobile.storage_permission_denied_description": "Upload bestanden naar jouw Mattermost-installatie. Open Instellingen voor het verlenen van Mattermost Lees- en Schrijftoegang tot bestanden op dit apparaat.",
   "mobile.sidebar_settings.permanent_description": "Hou de zijbalk permanent open",
   "mobile.sidebar_settings.permanent": "Permanente Zijbalk",
-  "mobile.share_extension.too_long_title": "Bericht is te lang",
+  "mobile.share_extension.too_long_title": "Message is too long",
   "mobile.share_extension.too_long_message": "Aantal tekens: {count}/{max}",
   "mobile.server_ssl.error.title": "Onbetrouwbaar certificaat",
   "mobile.server_ssl.error.text": "Het certificaat van {host} is niet vertrouwd.\n\nNeem contact op met jouw systeembeheerder om het certificaatprobleem op te lossen en verbindingen toe te laten naar deze server.",
