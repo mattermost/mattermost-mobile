@@ -74,7 +74,7 @@
   "edit_post.editPost": "Редактировать сообщение...",
   "edit_post.save": "Сохранить",
   "file_attachment.download": "Скачать",
-  "file_upload.fileAbove": "Нельзя загрузить файл больше {max}МБ: {filename}",
+  "file_upload.fileAbove": "Файлы должны быть меньше {max}МБ",
   "get_post_link_modal.title": "Скопировать ссылку",
   "integrations.add": "Добавить",
   "intro_messages.anyMember": " Любой участник может зайти и читать этот канал.",
