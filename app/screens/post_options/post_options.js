@@ -363,7 +363,7 @@ export default class PostOptions extends PureComponent {
                 closeButton: source,
             };
 
-            this.closeWithAnimation(() => showModal(screen, title, passProps));
+            this.closeWithAnimation(() => showModal(screen, title, passProps, {modal: {swipeToDismiss: false}}));
         });
     };
 

@@ -3,27 +3,32 @@
 
 import {connect} from 'react-redux';
 
-import {handleRemoveLastFile} from '@actions/views/file_upload';
+import {handleRemoveLastFile, initUploadFiles} from '@actions/views/file_upload';
 import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getDimensions} from '@selectors/device';
 import {checkForFileUploadingInChannel} from '@selectors/file';
+import {getAllowedServerMaxFileSize} from '@utils/file';
 
 import Uploads from './uploads';
 
 function mapStateToProps(state, ownProps) {
     const {deviceHeight} = getDimensions(state);
     const channelId = getCurrentChannelId(state);
+    const config = getConfig(state);
 
     return {
         channelId,
         channelIsLoading: state.views.channel.loading,
         deviceHeight,
         filesUploadingForCurrentChannel: checkForFileUploadingInChannel(state, channelId, ownProps.rootId),
+        maxFileSize: getAllowedServerMaxFileSize(config),
     };
 }
 
 const mapDispatchToProps = {
     handleRemoveLastFile,
+    initUploadFiles,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Uploads);

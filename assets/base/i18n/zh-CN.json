@@ -508,7 +508,7 @@
   "user.settings.general.username": "用户名",
   "user.settings.modal.display": "显示",
   "user.settings.modal.notifications": "通知",
-  "user.settings.notifications.allActivity": "所有操作",
+  "user.settings.notifications.allActivity": "所有活动",
   "user.settings.notifications.comments": "回复通知",
   "user.settings.notifications.email.disabled": "邮件通知未开启",
   "user.settings.notifications.email.everyHour": "每小时",

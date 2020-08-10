@@ -24,7 +24,6 @@ describe('profile_picture_button', () => {
             nickname: 'Dragon',
             position: 'position',
         },
-        blurTextBox: jest.fn(),
         maxFileSize: 20 * 1024 * 1024,
         uploadFiles: jest.fn(),
     };

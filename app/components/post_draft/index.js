@@ -5,91 +5,38 @@ import {connect} from 'react-redux';
 
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {General, Permissions} from '@mm-redux/constants';
-import {createPost} from '@mm-redux/actions/posts';
-import {setStatus, getUserByUsername} from '@mm-redux/actions/users';
-import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats, getChannelMemberCountsByGroup as selectChannelMemberCountsByGroup} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannel, getChannel, isCurrentChannelReadOnly} from '@mm-redux/selectors/entities/channels';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
-import {getConfig, getLicense, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
-import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
-import {getAssociatedGroupsForReferenceMap} from '@mm-redux/selectors/entities/groups';
-
-import {executeCommand} from '@actions/views/command';
-import {addReactionToLatestPost} from '@actions/views/emoji';
-import {handleClearFiles, handleClearFailedFiles, initUploadFiles} from '@actions/views/file_upload';
-import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {getCurrentChannelDraft, getThreadDraft} from '@selectors/views';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getChannelMembersForDm} from '@selectors/channel';
-import {getAllowedServerMaxFileSize} from '@utils/file';
-import {isLandscape} from '@selectors/device';
-import {handleSelectChannelByName} from 'app/actions/views/channel';
-import {makeDirectChannel} from 'app/actions/views/more_dms';
 
 import PostDraft from './post_draft';
 
 export function mapStateToProps(state, ownProps) {
-    const currentDraft = ownProps.rootId ? getThreadDraft(state, ownProps.rootId) : getCurrentChannelDraft(state);
-    const config = getConfig(state);
-    const currentChannel = getCurrentChannel(state);
+    const channel = ownProps.rootId ? getChannel(state) : getCurrentChannel(state);
     const currentUserId = getCurrentUserId(state);
-    const status = getStatusForUserId(state, currentUserId);
-    const userIsOutOfOffice = status === General.OUT_OF_OFFICE;
-    const enableConfirmNotificationsToChannel = config?.EnableConfirmNotificationsToChannel === 'true';
-    const currentChannelStats = getCurrentChannelStats(state);
-    const membersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
-    const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
-    const channelId = ownProps.channelId || (currentChannel ? currentChannel.id : '');
-    const channelTeamId = currentChannel ? currentChannel.team_id : '';
-    const license = getLicense(state);
+    const channelId = ownProps.channelId || (channel ? channel.id : '');
     let canPost = true;
-    let useChannelMentions = true;
     let deactivatedChannel = false;
-    let useGroupMentions = false;
-    const channelMemberCountsByGroup = selectChannelMemberCountsByGroup(state, channelId);
-    let groupsWithAllowReference = new Map();
 
-    if (currentChannel && currentChannel.type === General.DM_CHANNEL) {
-        const teammate = getChannelMembersForDm(state, currentChannel);
+    if (channel && channel.type === General.DM_CHANNEL) {
+        const teammate = getChannelMembersForDm(state, channel);
         if (teammate.length && teammate[0].delete_at) {
             deactivatedChannel = true;
         }
     }
 
-    if (currentChannel && isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+    if (channel && isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
         canPost = haveIChannelPermission(
             state,
             {
-                channel: currentChannel.id,
-                team: currentChannel.team_id,
+                channel: channel.id,
+                team: channel.team_id,
                 permission: Permissions.CREATE_POST,
                 default: true,
             },
         );
-
-        useChannelMentions = haveIChannelPermission(
-            state,
-            {
-                channel: currentChannel.id,
-                permission: Permissions.USE_CHANNEL_MENTIONS,
-                default: true,
-            },
-        );
-    }
-
-    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 24) && license && license.IsLicensed === 'true') {
-        useGroupMentions = haveIChannelPermission(
-            state,
-            {
-                channel: currentChannel.id,
-                team: currentChannel.team_id,
-                permission: Permissions.USE_GROUP_MENTIONS,
-            },
-        );
-
-        if (useGroupMentions) {
-            groupsWithAllowReference = getAssociatedGroupsForReferenceMap(state, channelTeamId, channelId);
-        }
     }
 
     let channelIsReadOnly = false;
@@ -99,46 +46,12 @@ export function mapStateToProps(state, ownProps) {
 
     return {
         canPost,
-        currentChannel,
         channelId,
-        channelTeamId,
-        channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
-        channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
+        channelIsArchived: ownProps.channelIsArchived || (channel ? channel.delete_at !== 0 : false),
         channelIsReadOnly,
-        currentUserId,
         deactivatedChannel,
-        enableConfirmNotificationsToChannel,
-        files: currentDraft.files,
-        isLandscape: isLandscape(state),
-        isTimezoneEnabled,
-        maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH_FALLBACK,
-        maxFileSize: getAllowedServerMaxFileSize(config),
-        membersCount,
-        serverURL: getCurrentUrl(state),
-        siteURL: config.SiteURL,
         theme: getTheme(state),
-        useChannelMentions,
-        userIsOutOfOffice,
-        value: currentDraft.draft,
-        groupsWithAllowReference,
-        useGroupMentions,
-        channelMemberCountsByGroup,
     };
 }
 
-const mapDispatchToProps = {
-    addReactionToLatestPost,
-    createPost,
-    executeCommand,
-    getChannelTimezones,
-    getUserByUsername,
-    handleClearFiles,
-    handleClearFailedFiles,
-    handleSelectChannelByName,
-    initUploadFiles,
-    setStatus,
-    getChannelMemberCountsByGroup,
-    makeDirectChannel,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(PostDraft);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(PostDraft);

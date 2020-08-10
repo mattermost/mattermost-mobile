@@ -4,6 +4,9 @@ import React from 'react';
 import {NativeEventEmitter} from 'react-native';
 import {shallow} from 'enzyme';
 
+import {PASTE_FILES} from '@constants/post_draft';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import {PasteableTextInput} from './index';
 
 const nativeEventEmitter = new NativeEventEmitter();
@@ -19,22 +22,21 @@ describe('PasteableTextInput', () => {
     });
 
     test('should call onPaste props if native onPaste trigger', () => {
-        const onPaste = jest.fn();
         const event = {someData: 'data'};
         const text = 'My Text';
+        const onPaste = jest.spyOn(EventEmitter, 'emit');
         shallow(
-            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>,
+            <PasteableTextInput>{text}</PasteableTextInput>,
         );
         nativeEventEmitter.emit('onPaste', event);
-        expect(onPaste).toHaveBeenCalledWith(null, event);
+        expect(onPaste).toHaveBeenCalledWith(PASTE_FILES, null, event);
     });
 
     test('should remove onPaste listener when unmount', () => {
         const mockRemove = jest.fn();
-        const onPaste = jest.fn();
         const text = 'My Text';
         const component = shallow(
-            <PasteableTextInput onPaste={onPaste}>{text}</PasteableTextInput>,
+            <PasteableTextInput>{text}</PasteableTextInput>,
         );
 
         component.instance().subscription.remove = mockRemove;

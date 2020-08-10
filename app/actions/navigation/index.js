@@ -7,9 +7,11 @@ import merge from 'deepmerge';
 
 import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import EventEmmiter from '@mm-redux/utils/event_emitter';
 
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
+import {NavigationTypes} from '@constants';
 
 const CHANNEL_SCREEN = 'Channel';
 
@@ -221,6 +223,13 @@ export async function popToRoot() {
         // RNN returns a promise rejection if there are no screens
         // atop the root screen to pop. We'll do nothing in this case.
     }
+}
+
+export async function dismissAllModalsAndPopToRoot() {
+    await dismissAllModals();
+    await popToRoot();
+
+    EventEmmiter.emit(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
 }
 
 export function showModal(name, title, passProps = {}, options = {}) {

@@ -3,19 +3,22 @@
 
 import {createSelector} from 'reselect';
 
-export const checkForFileUploadingInChannel = createSelector(
-    (state, channelId, rootId) => {
-        if (rootId) {
-            return state.views.thread.drafts[rootId];
-        }
+import {selectDraft} from './views';
 
-        return state.views.channel.drafts[channelId];
-    },
+export const selectFilesFromDraft = createSelector(
+    selectDraft,
     (draft) => {
         if (!draft || !draft.files) {
-            return false;
+            return [];
         }
 
-        return draft.files.some((f) => f.loading);
+        return draft.files;
+    },
+);
+
+export const checkForFileUploadingInChannel = createSelector(
+    selectFilesFromDraft,
+    (files) => {
+        return files.some((f) => f.loading);
     },
 );

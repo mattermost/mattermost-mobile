@@ -110,6 +110,9 @@ jest.doMock('react-native', () => {
     }, ReactNative);
 });
 
+jest.mock('react-native-vector-icons/MaterialCommunityIcons');
+jest.mock('react-native-vector-icons/FontAwesome5');
+
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
