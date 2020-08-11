@@ -506,6 +506,8 @@
   "mobile.unsupported_server.ok": "OK",
   "mobile.unsupported_server.title": "Unsupported server version",
   "mobile.user_list.deactivated": "Deactivated",
+  "mobile.user_removed.message": "You were removed from the channel.",
+  "mobile.user_removed.title": "Removed from {channelName}",
   "mobile.user.settings.notifications.email.fifteenMinutes": "Every 15 minutes",
   "mobile.video_playback.failed_description": "An error occurred while trying to play the video.\n",
   "mobile.video_playback.failed_title": "Video playback failed",
