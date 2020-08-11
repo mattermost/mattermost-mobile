@@ -276,7 +276,11 @@ export default class ChannelAddMembers extends PureComponent {
         const options = {not_in_channel_id: currentChannelId, team_id: currentTeamId, group_constrained: currentChannelGroupConstrained};
         this.setState({loading: true});
 
-        actions.searchProfiles(term.toLowerCase(), options).then(({data}) => {
+        actions.searchProfiles(term.toLowerCase(), options).then((results) => {
+            let data = [];
+            if (results.data) {
+                data = results.data;
+            }
             this.setState({searchResults: data, loading: false});
         });
     };
