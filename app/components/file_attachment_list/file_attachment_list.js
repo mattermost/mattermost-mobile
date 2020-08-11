@@ -86,7 +86,7 @@ export default class FileAttachmentList extends ImageViewPort {
                 if (file.localPath) {
                     uri = file.localPath;
                 } else {
-                    uri = Client4.getFileUrl(file.id);
+                    uri = Client4.getFilePreviewUrl(file.id);
                 }
 
                 results.push({
