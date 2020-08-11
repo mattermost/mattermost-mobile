@@ -215,7 +215,11 @@ export default class SelectorScreen extends PureComponent {
         const {actions} = this.props;
         this.setState({loading: true});
 
-        actions.searchProfiles(term.toLowerCase()).then(({data}) => {
+        actions.searchProfiles(term.toLowerCase()).then((results) => {
+            let data = [];
+            if (results.data) {
+                data = results.data;
+            }
             this.setState({searchResults: data, loading: false});
         });
     };
