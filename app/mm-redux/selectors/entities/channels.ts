@@ -14,7 +14,7 @@ import {createIdsSelector} from '@mm-redux/utils/helpers';
 
 export {getCurrentChannelId, getMyChannelMemberships, getMyCurrentChannelMembership};
 import {GlobalState} from '@mm-redux/types/store';
-import {Channel, ChannelStats, ChannelMembership, ChannelModeration} from '@mm-redux/types/channels';
+import {Channel, ChannelStats, ChannelMembership, ChannelModeration, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {UsersState, UserProfile} from '@mm-redux/types/users';
 import {PreferenceType} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
@@ -146,6 +146,9 @@ export const getMyChannelMember: (b: GlobalState, a: string) => ChannelMembershi
 });
 export const getCurrentChannelStats: (a: GlobalState) => ChannelStats = createSelector(getAllChannelStats, getCurrentChannelId, (allChannelStats: RelationOneToOne<Channel, ChannelStats>, currentChannelId: string): ChannelStats => {
     return allChannelStats[currentChannelId];
+});
+export const getChannelStats: (a: GlobalState, b: string) => ChannelStats = createSelector(getAllChannelStats, (state: GlobalState, channelId: string): string => channelId, (allChannelStats: RelationOneToOne<Channel, ChannelStats>, channelId: string): ChannelStats => {
+    return allChannelStats[channelId];
 });
 export const isCurrentChannelFavorite: (a: GlobalState) => boolean = createSelector(getMyPreferences, getCurrentChannelId, (preferences: {
     [x: string]: PreferenceType;
@@ -929,4 +932,8 @@ export function isManuallyUnread(state: GlobalState, channelId?: string): boolea
 
 export function getChannelModerations(state: GlobalState, channelId: string): Array<ChannelModeration> {
     return state.entities.channels.channelModerations[channelId];
+}
+
+export function getChannelMemberCountsByGroup(state: GlobalState, channelId: string): ChannelMemberCountsByGroup {
+    return state.entities.channels.channelMemberCountsByGroup[channelId] || {};
 }

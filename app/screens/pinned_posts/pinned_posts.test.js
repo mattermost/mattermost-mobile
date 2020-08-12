@@ -9,10 +9,6 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import PinnedPosts from './pinned_posts';
 
-jest.mock('rn-placeholder', () => ({
-    ImageContent: () => null,
-}));
-
 describe('PinnedPosts', () => {
     const baseProps = {
         actions: {
@@ -54,7 +50,7 @@ describe('PinnedPosts', () => {
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot when component waiting for response', () => {
+    test('should match snapshot when component waiting for response', async () => {
         const error = new Error('foo');
 
         const newProps = {

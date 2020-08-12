@@ -10,10 +10,6 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 
 import FlaggedPosts from './flagged_posts';
 
-jest.mock('rn-placeholder', () => ({
-    ImageContent: () => null,
-}));
-
 describe('FlaggedPosts', () => {
     const baseProps = {
         actions: {

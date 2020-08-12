@@ -9,6 +9,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import Fuse from 'fuse.js';
 
 import AutocompleteDivider from '@components/autocomplete/autocomplete_divider';
 import Emoji from '@components/emoji';
@@ -19,6 +20,16 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
+const FUSE_OPTIONS = {
+    shouldSort: false,
+    threshold: 0.3,
+    location: 0,
+    distance: 10,
+    includeMatches: true,
+    findAllMatches: true,
+};
+
+let fuse;
 
 export default class EmojiSuggestion extends PureComponent {
     static propTypes = {
@@ -29,7 +40,6 @@ export default class EmojiSuggestion extends PureComponent {
         cursorPosition: PropTypes.number,
         customEmojisEnabled: PropTypes.bool,
         emojis: PropTypes.array.isRequired,
-        fuse: PropTypes.object.isRequired,
         isSearch: PropTypes.bool,
         maxListHeight: PropTypes.number,
         theme: PropTypes.object.isRequired,
@@ -43,6 +53,7 @@ export default class EmojiSuggestion extends PureComponent {
     static defaultProps = {
         defaultChannel: {},
         value: '',
+        emojis: [],
     };
 
     state = {
@@ -54,14 +65,20 @@ export default class EmojiSuggestion extends PureComponent {
         super(props);
 
         this.matchTerm = '';
+        fuse = new Fuse(props.emojis, FUSE_OPTIONS);
     }
 
-    componentDidUpdate() {
-        if (this.props.isSearch) {
+    componentDidUpdate(prevProps) {
+        const {isSearch, emojis, cursorPosition, value} = this.props;
+
+        if (isSearch) {
             return;
         }
 
-        const {cursorPosition, value} = this.props;
+        if (emojis.join('') !== prevProps.emojis.join('')) {
+            fuse = new Fuse(emojis, FUSE_OPTIONS);
+        }
+
         const match = value.substring(0, cursorPosition).match(EMOJI_REGEX);
 
         if (!match || this.state.emojiComplete) {
@@ -162,7 +179,7 @@ export default class EmojiSuggestion extends PureComponent {
     }
 
     searchEmojis = (searchTerm) => {
-        const {emojis, fuse} = this.props;
+        const {emojis} = this.props;
 
         let sorter = compareEmojis;
         if (searchTerm.trim().length) {
@@ -199,8 +216,6 @@ export default class EmojiSuggestion extends PureComponent {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
 
         if (!this.state.active) {
-            // If we are not in an active state return null so nothing is rendered
-            // other components are not blocked.
             return null;
         }
 
@@ -237,7 +252,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold',
         },
         listView: {
-            flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
         row: {

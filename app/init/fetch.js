@@ -41,6 +41,8 @@ const handleRedirectProtocol = (url, response) => {
 };
 
 Client4.doFetchWithResponse = async (url, options) => {
+    // eslint-disable-next-line no-console
+    console.log('Request endpoint', url);
     const customHeaders = LocalConfig.CustomRequestHeaders;
     let waitsForConnectivity = false;
     let timeoutIntervalForResource = 30;
@@ -87,6 +89,7 @@ Client4.doFetchWithResponse = async (url, options) => {
                 message: 'You need to use a valid client certificate in order to connect to this Mattermost server',
                 status_code: 401,
                 url,
+                details: err,
             });
         }
 
@@ -97,6 +100,7 @@ Client4.doFetchWithResponse = async (url, options) => {
                 defaultMessage: 'Received invalid response from the server.',
             },
             url,
+            details: err,
         });
     }
 

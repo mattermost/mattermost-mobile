@@ -94,7 +94,11 @@ jest.doMock('react-native', () => {
     };
 
     return Object.setPrototypeOf({
-        Platform,
+        Platform: {
+            ...Platform,
+            OS: 'ios',
+            Version: 12,
+        },
         StyleSheet,
         ViewPropTypes,
         PermissionsAndroid,
@@ -105,6 +109,9 @@ jest.doMock('react-native', () => {
         NativeModules,
     }, ReactNative);
 });
+
+jest.mock('react-native-vector-icons/MaterialCommunityIcons');
+jest.mock('react-native-vector-icons/FontAwesome5');
 
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
@@ -154,7 +161,7 @@ jest.mock('react-native-localize', () => ({
     ]),
 }));
 
-jest.mock('@react-native-community/cookies', () => ({
+jest.mock('react-native-cookies', () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     openURL: jest.fn(),

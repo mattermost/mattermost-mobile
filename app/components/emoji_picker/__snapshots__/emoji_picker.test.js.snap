@@ -9997,7 +9997,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
               }
             }
           >
-            <Component
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10023,8 +10023,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10048,8 +10048,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10073,8 +10073,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10098,8 +10098,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10123,8 +10123,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10148,8 +10148,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10173,8 +10173,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10198,8 +10198,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
-            <Component
+            </ForwardRef>
+            <ForwardRef
               onPress={[Function]}
               style={
                 Object {
@@ -10223,7 +10223,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                   ]
                 }
               />
-            </Component>
+            </ForwardRef>
           </View>
         </View>
       </KeyboardTrackingView>

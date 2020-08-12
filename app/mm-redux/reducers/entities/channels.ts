@@ -4,7 +4,7 @@ import {combineReducers} from 'redux';
 import {ChannelTypes, UserTypes, SchemeTypes, GroupTypes} from '@mm-redux/action_types';
 import {General} from '../../constants';
 import {GenericAction} from '@mm-redux/types/actions';
-import {Channel, ChannelMembership, ChannelStats} from '@mm-redux/types/channels';
+import {Channel, ChannelMembership, ChannelStats, ChannelMemberCountByGroup, ChannelMemberCountsByGroup} from '@mm-redux/types/channels';
 import {RelationOneToMany, RelationOneToOne, IDMappedObjects, UserIDMappedObjects} from '@mm-redux/types/utilities';
 import {Team} from '@mm-redux/types/teams';
 
@@ -547,6 +547,22 @@ function stats(state: RelationOneToOne<Channel, ChannelStats> = {}, action: Gene
 
 function groupsAssociatedToChannel(state: any = {}, action: GenericAction) {
     switch (action.type) {
+    case GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM: {
+        const {groupsByChannelId} = action.data;
+        const nextState = {...state};
+
+        for (const channelID of Object.keys(groupsByChannelId)) {
+            if (groupsByChannelId[channelID]) {
+                const associatedGroupIDs = new Set<string>([]);
+                for (const group of groupsByChannelId[channelID]) {
+                    associatedGroupIDs.add(group.id);
+                }
+                const ids = Array.from(associatedGroupIDs);
+                nextState[channelID] = {ids, totalCount: ids.length};
+            }
+        }
+        return nextState;
+    }
     case GroupTypes.RECEIVED_GROUPS_ASSOCIATED_TO_CHANNEL: {
         const {channelID, groups, totalGroupCount} = action.data;
         const nextState = {...state};
@@ -648,6 +664,33 @@ export function channelModerations(state: any = {}, action: GenericAction) {
     }
 }
 
+export function channelMemberCountsByGroup(state: any = {}, action: GenericAction) {
+    switch (action.type) {
+    case ChannelTypes.RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP: {
+        const {channelId, memberCounts} = action.data;
+        const memberCountsByGroup: ChannelMemberCountsByGroup = {};
+        memberCounts.forEach((channelMemberCount: ChannelMemberCountByGroup) => {
+            if (!state[channelId]?.[channelMemberCount.group_id] ||
+                state[channelId]?.[channelMemberCount.group_id]?.channel_member_count !== channelMemberCount.channel_member_count ||
+                state[channelId]?.[channelMemberCount.group_id]?.channel_member_timezones_count !== channelMemberCount.channel_member_timezones_count) {
+                memberCountsByGroup[channelMemberCount.group_id] = channelMemberCount;
+            }
+        });
+
+        if (Object.keys(memberCountsByGroup).length > 0) {
+            return {
+                ...state,
+                [channelId]: memberCountsByGroup,
+            };
+        }
+
+        return state;
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
 
     // the current selected channel
@@ -677,4 +720,7 @@ export default combineReducers({
 
     // object where every key is the channel id and has an object with the channel moderations
     channelModerations,
+
+    // object where every key is the channel id containing one or several object(s) with a mapping of <group_id: ChannelMemberCountByGroup>
+    channelMemberCountsByGroup,
 });

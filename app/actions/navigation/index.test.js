@@ -7,16 +7,21 @@ import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import merge from 'deepmerge';
 
+import EventEmitter from '@mm-redux/utils/event_emitter';
+
 import * as NavigationActions from '@actions/navigation';
 import Preferences from '@mm-redux/constants/preferences';
 import EphemeralStore from '@store/ephemeral_store';
 import intitialState from '@store/initial_state';
 import Store from '@store/store';
+import {NavigationTypes} from '@constants';
 
 jest.unmock('@actions/navigation');
 jest.mock('@store/ephemeral_store', () => ({
     getNavigationTopComponentId: jest.fn(),
     clearNavigationComponents: jest.fn(),
+    addNavigationModal: jest.fn(),
+    hasModalsOpened: jest.fn().mockReturnValue(true),
 }));
 
 const mockStore = configureMockStore([thunk]);
@@ -477,5 +482,16 @@ describe('@actions/navigation', () => {
 
         await NavigationActions.dismissOverlay(topComponentId);
         expect(dismissOverlay).toHaveBeenCalledWith(topComponentId);
+    });
+
+    test('dismissAllModalsAndPopToRoot should call Navigation.dismissAllModals, Navigation.popToRoot, and emit event', async () => {
+        const dismissAllModals = jest.spyOn(Navigation, 'dismissAllModals');
+        const popToRoot = jest.spyOn(Navigation, 'popToRoot');
+        EventEmitter.emit = jest.fn();
+
+        await NavigationActions.dismissAllModalsAndPopToRoot();
+        expect(dismissAllModals).toHaveBeenCalled();
+        expect(popToRoot).toHaveBeenCalledWith(topComponentId);
+        expect(EventEmitter.emit).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
     });
 });

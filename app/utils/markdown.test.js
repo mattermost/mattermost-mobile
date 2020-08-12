@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import {switchKeyboardForCodeBlocks} from './markdown';
 
 describe('switchKeyboardForCodeBlocks', () => {
@@ -66,4 +67,12 @@ describe('switchKeyboardForCodeBlocks', () => {
             expect(switchKeyboardForCodeBlocks(testCase.value, testCase.cursorPosition)).toEqual(testCase.expected);
         });
     }
+});
+
+describe('switchKeyboardForCodeBlocks for iOS 11', () => {
+    it('Should return default keyboard', () => {
+        Platform.Version = 11;
+        expect(switchKeyboardForCodeBlocks('```\ntest\n```test', 12)).toEqual('default');
+        Platform.Version = 12;
+    });
 });

@@ -17,7 +17,7 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
 import ErrorText from '@components/error_text';
@@ -55,6 +55,7 @@ export default class Login extends PureComponent {
 
         this.loginRef = React.createRef();
         this.passwordRef = React.createRef();
+        this.scroll = React.createRef();
         this.loginId = '';
         this.password = '';
 
@@ -213,7 +214,9 @@ export default class Login extends PureComponent {
     };
 
     orientationDidChange = () => {
-        this.scroll.scrollToPosition(0, 0, true);
+        if (this.scroll.current) {
+            this.scroll.current.scrollTo({x: 0, y: 0, animated: true});
+        }
     };
 
     passwordFocus = () => {
@@ -290,14 +293,11 @@ export default class Login extends PureComponent {
         actions.scheduleExpiredNotification(intl);
     };
 
-    scrollRef = (ref) => {
-        this.scroll = ref;
-    };
-
     setEmmUsernameIfAvailable = async () => {
         const managedConfig = await mattermostManaged.getConfig();
         if (managedConfig?.username && this.loginRef.current) {
-            this.loginRef.current.setNativeProps({text: managedConfig?.username});
+            this.loginRef.current.setNativeProps({text: managedConfig.username});
+            this.loginId = managedConfig.username;
         }
     }
 

@@ -270,7 +270,7 @@ LongPost {
                 }
               }
             >
-              <Component
+              <ForwardRef
                 onPress={[Function]}
                 style={
                   Object {
@@ -287,7 +287,7 @@ LongPost {
                   name="close"
                   size={20}
                 />
-              </Component>
+              </ForwardRef>
               <View
                 style={
                   Object {

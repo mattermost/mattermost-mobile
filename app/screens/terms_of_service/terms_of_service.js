@@ -11,15 +11,14 @@ import {
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import FailedNetworkAction from 'app/components/failed_network_action';
+import {dismissModal, setButtons} from '@actions/navigation';
+import FailedNetworkAction from '@components/failed_network_action';
 import Loading from 'app/components/loading';
 import Markdown from 'app/components/markdown';
 import StatusBar from 'app/components/status_bar';
-
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import {dismissModal, setButtons} from 'app/actions/navigation';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
+import {unsupportedServer} from '@utils/supported_server';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class TermsOfService extends PureComponent {
     static propTypes = {
@@ -30,6 +29,8 @@ export default class TermsOfService extends PureComponent {
         }).isRequired,
         componentId: PropTypes.string,
         closeButton: PropTypes.object,
+        isSupportedServer: PropTypes.bool,
+        isSystemAdmin: PropTypes.bool,
         siteName: PropTypes.string,
         theme: PropTypes.object,
     };
@@ -145,11 +146,18 @@ export default class TermsOfService extends PureComponent {
     };
 
     handleAcceptTerms = () => {
+        const onSuccess = () => {
+            const {isSupportedServer, isSystemAdmin} = this.props;
+            dismissModal();
+
+            if (!isSupportedServer) {
+                unsupportedServer(isSystemAdmin, this.context.intl.formatMessage);
+            }
+        };
+
         this.registerUserAction(
             true,
-            () => {
-                dismissModal();
-            },
+            onSuccess,
             this.handleAcceptTerms,
         );
     };
@@ -189,7 +197,6 @@ export default class TermsOfService extends PureComponent {
         });
 
         const {data} = await actions.updateMyTermsOfServiceStatus(this.state.termsId, accepted);
-
         this.setState({
             loading: false,
         });

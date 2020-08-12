@@ -21,30 +21,21 @@ export default class TeamIcon extends React.PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
-    constructor(props) {
-        super(props);
+    static defaultProps = {
+        displayName: '',
+    };
 
-        this.state = {
-            teamIcon: null,
-            imageError: false,
-        };
-    }
+    state = {
+        imageError: false,
+    };
 
     componentDidMount() {
-        const {lastIconUpdate, teamId} = this.props;
         this.mounted = true;
-
-        if (lastIconUpdate) {
-            this.preloadTeamIcon(teamId, lastIconUpdate);
-        }
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.teamId !== prevProps.teamId) {
-            this.setImageURL(null);
-        } else if (this.props.lastIconUpdate && this.props.lastIconUpdate !== prevProps.lastIconUpdate) {
-            const {lastIconUpdate, teamId} = this.props;
-            this.preloadTeamIcon(teamId, lastIconUpdate);
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.imageError && prevProps.teamId !== this.props.teamId) {
+            this.handleImageError(false);
         }
     }
 
@@ -52,20 +43,17 @@ export default class TeamIcon extends React.PureComponent {
         this.mounted = false;
     }
 
-    preloadTeamIcon = (teamId, lastIconUpdate) => {
-        const uri = Client4.getTeamIconUrl(teamId, lastIconUpdate);
-        this.setImageURL(uri);
-    };
-
-    setImageURL = (teamIcon) => {
+    handleImageError = (hasError) => {
         if (this.mounted) {
-            this.setState({imageError: false, teamIcon});
+            this.setState({imageError: Boolean(hasError)});
         }
     };
 
     render() {
         const {
             displayName,
+            lastIconUpdate,
+            teamId,
             theme,
             styleContainer,
             styleText,
@@ -75,19 +63,19 @@ export default class TeamIcon extends React.PureComponent {
         const styles = getStyleSheet(theme);
 
         let teamIconContent;
-        if (this.state.teamIcon) {
-            teamIconContent = (
-                <FastImage
-                    style={[styles.image, styleImage]}
-                    source={{uri: this.state.teamIcon}}
-                    onError={() => this.setState({imageError: true})}
-                />
-            );
-        } else {
+        if (this.state.imageError || !lastIconUpdate) {
             teamIconContent = (
                 <Text style={[styles.text, styleText]}>
                     {displayName?.substr(0, 2).toUpperCase()}
                 </Text>
+            );
+        } else {
+            teamIconContent = (
+                <FastImage
+                    style={[styles.image, styleImage]}
+                    source={{uri: Client4.getTeamIconUrl(teamId, lastIconUpdate)}}
+                    onError={this.handleImageError}
+                />
             );
         }
 

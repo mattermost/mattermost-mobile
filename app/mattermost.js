@@ -29,15 +29,15 @@ import {captureJSException} from '@utils/sentry';
 
 const init = async () => {
     const credentials = await getAppCredentials();
-    const MMKVStorage = await getStorage();
-
-    const {store} = configureStore(MMKVStorage);
     if (EphemeralStore.appStarted) {
         launchApp(credentials);
         return;
     }
 
-    pushNotifications.configure();
+    const MMKVStorage = await getStorage();
+    const {store} = configureStore(MMKVStorage);
+
+    await pushNotifications.configure();
     globalEventHandler.configure({
         launchApp,
     });
@@ -56,23 +56,25 @@ const launchApp = (credentials) => {
     ]);
 
     const store = Store.redux;
-    if (credentials) {
-        waitForHydration(store, async () => {
+    waitForHydration(store, async () => {
+        if (credentials) {
             const {previousVersion} = store.getState().app;
             const valid = validatePreviousVersion(previousVersion);
             if (valid) {
                 store.dispatch(loadMe());
                 await globalEventHandler.configureAnalytics();
+                // eslint-disable-next-line no-console
+                console.log('Launch app in Channel screen');
                 resetToChannel({skipMetrics: true});
             } else {
                 const error = new Error(`Previous app version "${previousVersion}" is invalid.`);
                 captureJSException(error, false, store);
                 store.dispatch(logout());
             }
-        });
-    } else {
-        resetToSelectServer(emmProvider.allowOtherServers);
-    }
+        } else {
+            resetToSelectServer(emmProvider.allowOtherServers);
+        }
+    });
 
     telemetry.startSinceLaunch(['start:splash_screen']);
     EphemeralStore.appStarted = true;
@@ -102,26 +104,29 @@ const launchAppAndAuthenticateIfNeeded = async (credentials) => {
 Navigation.events().registerAppLaunchedListener(() => {
     init();
 
-    // Keep track of the latest componentId to appear
-    Navigation.events().registerComponentDidAppearListener(({componentId}) => {
-        EphemeralStore.addNavigationComponentId(componentId);
-
-        switch (componentId) {
-        case 'MainSidebar':
-            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
-            EventEmitter.emit(Navigation.BLUR_POST_DRAFT);
-            break;
-        case 'SettingsSidebar':
-            EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
-            break;
-        }
-    });
-
-    Navigation.events().registerComponentDidDisappearListener(({componentId}) => {
-        EphemeralStore.removeNavigationComponentId(componentId);
-
-        if (componentId === 'MainSidebar') {
-            EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
-        }
-    });
+    // Keep track of the latest componentId to appear/disappear
+    Navigation.events().registerComponentDidAppearListener(componentDidAppearListener);
+    Navigation.events().registerComponentDidDisappearListener(componentDidDisappearListener);
 });
+
+export function componentDidAppearListener({componentId}) {
+    EphemeralStore.addNavigationComponentId(componentId);
+
+    switch (componentId) {
+    case 'MainSidebar':
+        EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_OPEN, this.handleSidebarDidOpen);
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
+        break;
+    case 'SettingsSidebar':
+        EventEmitter.emit(NavigationTypes.BLUR_POST_DRAFT);
+        break;
+    }
+}
+
+export function componentDidDisappearListener({componentId}) {
+    EphemeralStore.removeNavigationComponentId(componentId);
+
+    if (componentId === 'MainSidebar') {
+        EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
+    }
+}

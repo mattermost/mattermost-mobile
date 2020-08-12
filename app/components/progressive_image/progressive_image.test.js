@@ -20,6 +20,7 @@ describe('ProgressiveImage', () => {
             resizeMode: 'contain',
             theme: Preferences.THEMES.default,
             tintDefaultSource: false,
+            defaultSource: undefined,
         };
 
         const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
@@ -50,6 +51,7 @@ describe('ProgressiveImage', () => {
             resizeMode: 'contain',
             theme: Preferences.THEMES.default,
             tintDefaultSource: false,
+            defaultSource: null,
         };
 
         const wrapper = shallow(<ProgressiveImage {...baseProps}/>);

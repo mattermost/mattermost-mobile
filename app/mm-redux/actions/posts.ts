@@ -22,6 +22,7 @@ import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelA
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
 import {logError} from './errors';
 import {forceLogoutIfNecessary} from './helpers';
+import {analytics} from '@init/analytics.ts';
 
 import {
     deletePreferences,
@@ -182,6 +183,7 @@ export function createPost(post: Post, files: any[] = []) {
             pending_post_id: pendingPostId,
             create_at: timestamp,
             update_at: timestamp,
+            ownPost: true,
         };
 
         // We are retrying a pending post that had files
@@ -218,10 +220,7 @@ export function createPost(post: Post, files: any[] = []) {
             const created = await Client4.createPost({...newPost, create_at: 0});
 
             actions = [
-                receivedPost(created),
-                {
-                    type: PostTypes.CREATE_POST_SUCCESS,
-                },
+                receivedPost({...created, ownPost: true}),
                 {
                     type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
                     data: {
@@ -287,6 +286,7 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             pending_post_id: pendingPostId,
             create_at: timestamp,
             update_at: timestamp,
+            ownPost: true,
         };
 
         if (files.length) {
@@ -304,14 +304,43 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             });
         }
 
-        dispatch(receivedNewPost({
-            ...newPost,
-            id: pendingPostId,
-        }));
+        dispatch(
+            receivedNewPost({
+                ...newPost,
+                id: pendingPostId,
+            }),
+        );
 
         try {
             const created = await Client4.createPost({...newPost, create_at: 0});
-            newPost.id = created.id;
+
+            const actions: Action[] = [
+                receivedPost({...created, ownPost: true}),
+                {
+                    type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
+                    },
+                },
+                {
+                    type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
+                    data: {
+                        channelId: newPost.channel_id,
+                        amount: 1,
+                    },
+                },
+            ];
+
+            if (files) {
+                actions.push({
+                    type: FileTypes.RECEIVED_FILES_FOR_POST,
+                    postId: newPost.id,
+                    data: files,
+                });
+            }
+
+            dispatch(batchActions(actions));
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(batchActions([
@@ -321,37 +350,6 @@ export function createPostImmediately(post: Post, files: any[] = []) {
             ]));
             return {error};
         }
-
-        const actions: Action[] = [
-            receivedPost(newPost),
-            {
-                type: PostTypes.CREATE_POST_SUCCESS,
-            },
-            {
-                type: ChannelTypes.INCREMENT_TOTAL_MSG_COUNT,
-                data: {
-                    channelId: newPost.channel_id,
-                    amount: 1,
-                },
-            },
-            {
-                type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
-                data: {
-                    channelId: newPost.channel_id,
-                    amount: 1,
-                },
-            },
-        ];
-
-        if (files) {
-            actions.push({
-                type: FileTypes.RECEIVED_FILES_FOR_POST,
-                postId: newPost.id,
-                data: files,
-            });
-        }
-
-        dispatch(batchActions(actions));
 
         return {data: newPost};
     };
@@ -673,7 +671,7 @@ export function flagPost(postId: string) {
             value: 'true',
         };
 
-        Client4.trackEvent('action', 'action_posts_flag');
+        analytics.trackAction('action_posts_flag');
 
         return savePreferences(currentUserId, [preference])(dispatch);
     };
@@ -1126,7 +1124,7 @@ export function unflagPost(postId: string) {
             name: postId,
         };
 
-        Client4.trackEvent('action', 'action_posts_unflag');
+        analytics.trackAction('action_posts_unflag');
 
         return deletePreferences(currentUserId, [preference])(dispatch, getState);
     };

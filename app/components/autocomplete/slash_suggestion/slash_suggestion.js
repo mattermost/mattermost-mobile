@@ -12,14 +12,17 @@ import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divide
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import SlashSuggestionItem from './slash_suggestion_item';
+import {Client4} from '@mm-redux/client';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {analytics} from '@init/analytics.ts';
 
-const SLASH_REGEX = /(^\/)([a-zA-Z-]*)$/;
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
 export default class SlashSuggestion extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getAutocompleteCommands: PropTypes.func.isRequired,
+            getCommandAutocompleteSuggestions: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         commands: PropTypes.array,
@@ -31,6 +34,9 @@ export default class SlashSuggestion extends PureComponent {
         value: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
+        suggestions: PropTypes.array,
+        rootId: PropTypes.string,
+        channelId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -40,13 +46,13 @@ export default class SlashSuggestion extends PureComponent {
 
     state = {
         active: false,
-        suggestionComplete: false,
         dataSource: [],
         lastCommandRequest: 0,
     };
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.isSearch) {
+        if ((nextProps.value === this.props.value && nextProps.suggestions === this.props.suggestions && nextProps.commands === this.props.commands) ||
+            nextProps.isSearch || nextProps.value.startsWith('//') || !nextProps.channelId) {
             return;
         }
 
@@ -55,49 +61,73 @@ export default class SlashSuggestion extends PureComponent {
             commands: nextCommands,
             currentTeamId: nextTeamId,
             value: nextValue,
+            suggestions: nextSuggestions,
         } = nextProps;
 
-        if (currentTeamId !== nextTeamId) {
-            this.setState({
-                lastCommandRequest: 0,
-            });
-        }
-
-        const match = nextValue.match(SLASH_REGEX);
-
-        if (!match || this.state.suggestionComplete) {
+        if (nextValue[0] !== '/') {
             this.setState({
                 active: false,
-                matchTerm: null,
-                suggestionComplete: false,
             });
             this.props.onResultCountChange(0);
             return;
         }
 
-        const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
+        if (nextValue.indexOf(' ') === -1) { // return suggestions for a top level cached commands
+            if (currentTeamId !== nextTeamId) {
+                this.setState({
+                    lastCommandRequest: 0,
+                });
+            }
 
-        if ((!nextCommands.length || dataIsStale)) {
-            this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
+            const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
+
+            if ((!nextCommands.length || dataIsStale)) {
+                this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
+                this.setState({
+                    lastCommandRequest: Date.now(),
+                });
+            }
+
+            const matches = this.filterSlashSuggestions(nextValue.substring(1), nextCommands);
+            this.updateSuggestions(matches);
+        } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
+            if (nextSuggestions === this.props.suggestions) {
+                const args = {
+                    channel_id: this.props.channelId,
+                    ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
+                };
+                this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
+            } else {
+                const matches = [];
+                nextSuggestions.forEach((sug) => {
+                    if (!this.contains(matches, '/' + sug.Complete)) {
+                        matches.push({
+                            Complete: sug.Complete,
+                            Suggestion: sug.Suggestion,
+                            Hint: sug.Hint,
+                            Description: sug.Description,
+                        });
+                    }
+                });
+                this.updateSuggestions(matches);
+            }
+        } else {
             this.setState({
-                lastCommandRequest: Date.now(),
+                active: false,
             });
         }
+    }
 
-        const matchTerm = match[2];
-
-        const data = this.filterSlashSuggestions(matchTerm, nextCommands);
-
+    updateSuggestions = (matches) => {
         this.setState({
-            active: data.length,
-            dataSource: data,
+            active: matches.length,
+            dataSource: matches,
         });
-
-        this.props.onResultCountChange(data.length);
+        this.props.onResultCountChange(matches.length);
     }
 
     filterSlashSuggestions = (matchTerm, commands) => {
-        return commands.filter((command) => {
+        const data = commands.filter((command) => {
             if (!command.auto_complete) {
                 return false;
             } else if (!matchTerm) {
@@ -106,10 +136,23 @@ export default class SlashSuggestion extends PureComponent {
 
             return command.display_name.startsWith(matchTerm) || command.trigger.startsWith(matchTerm);
         });
+        return data.map((item) => {
+            return {
+                Complete: item.trigger,
+                Suggestion: '/' + item.trigger,
+                Hint: item.auto_complete_hint,
+                Description: item.auto_complete_desc,
+            };
+        });
+    }
+
+    contains = (matches, complete) => {
+        return matches.findIndex((match) => match.complete === complete) !== -1;
     }
 
     completeSuggestion = (command) => {
         const {onChangeText} = this.props;
+        analytics.trackCommand('complete_suggestion', `/${command} `);
 
         // We are going to set a double / on iOS to prevent the auto correct from taking over and replacing it
         // with the wrong value, this is a hack but I could not found another way to solve it
@@ -128,21 +171,23 @@ export default class SlashSuggestion extends PureComponent {
             });
         }
 
-        this.setState({
-            active: false,
-            suggestionComplete: true,
-        });
+        if (!isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
+            this.setState({
+                active: false,
+            });
+        }
     };
 
-    keyExtractor = (item) => item.id || item.trigger;
+    keyExtractor = (item) => item.id || item.Suggestion;
 
     renderItem = ({item}) => (
         <SlashSuggestionItem
-            description={item.auto_complete_desc}
-            hint={item.auto_complete_hint}
+            description={item.Description}
+            hint={item.Hint}
             onPress={this.completeSuggestion}
             theme={this.props.theme}
-            trigger={item.trigger}
+            suggestion={item.Suggestion}
+            complete={item.Complete}
             isLandscape={this.props.isLandscape}
         />
     )

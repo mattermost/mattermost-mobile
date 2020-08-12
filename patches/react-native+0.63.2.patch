@@ -1,21 +1,21 @@
 diff --git a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-index c14b13e..8ea534f 100644
+index e8598a6..62bcf45 100644
 --- a/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
 +++ b/node_modules/react-native/Libraries/Components/TextInput/AndroidTextInputNativeComponent.js
-@@ -564,7 +564,7 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
- });
+@@ -560,7 +560,7 @@ if (global.RN$Bridgeless) {
+   AndroidTextInputNativeComponent = 'AndroidTextInput';
+ } else {
+   AndroidTextInputNativeComponent = requireNativeComponent<NativeProps>(
+-    'AndroidTextInput',
++    'PasteableTextInputAndroid',
+   );
+ }
  
- const AndroidTextInputNativeComponent: HostComponent<NativeProps> = requireNativeComponent<NativeProps>(
--  'AndroidTextInput',
-+  'PasteableTextInputAndroid',
- );
- 
- export default AndroidTextInputNativeComponent;
 diff --git a/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h b/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h
-index bb1c8d2..a0ea89f 100644
+index 2da6323..1f64ffe 100644
 --- a/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h
 +++ b/node_modules/react-native/Libraries/FBReactNativeSpec/FBReactNativeSpec/FBReactNativeSpec.h
-@@ -2809,6 +2809,7 @@ namespace JS {
+@@ -2796,6 +2796,7 @@ namespace JS {
    namespace NativeWebSocketModule {
      struct SpecConnectOptions {
        id<NSObject> _Nullable headers() const;
@@ -23,17 +23,18 @@ index bb1c8d2..a0ea89f 100644
  
        SpecConnectOptions(NSDictionary *const v) : _v(v) {}
      private:
-@@ -3870,3 +3871,8 @@ inline id<NSObject> _Nullable JS::NativeWebSocketModule::SpecConnectOptions::hea
+@@ -3862,3 +3863,9 @@ inline id<NSObject> _Nullable JS::NativeWebSocketModule::SpecConnectOptions::hea
    id const p = _v[@"headers"];
    return p;
  }
++
 +inline NSString *JS::NativeWebSocketModule::SpecConnectOptions::certificate() const
 +{
 +    id const p = _v[@"certificate"];
 +    return p;
 +}
 diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
-index 5ef712c..d6f9082 100644
+index 9ec105f..18f7bf6 100644
 --- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 +++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
 @@ -20,6 +20,7 @@ const ScrollView = require('../Components/ScrollView/ScrollView');
@@ -44,7 +45,7 @@ index 5ef712c..d6f9082 100644
  
  const flattenStyle = require('../StyleSheet/flattenStyle');
  const infoLog = require('../Utilities/infoLog');
-@@ -2100,7 +2101,7 @@ class VirtualizedCellWrapper extends React.Component<{
+@@ -2186,7 +2187,7 @@ function describeNestedLists(childList: {
  
  const styles = StyleSheet.create({
    verticallyInverted: {
@@ -84,7 +85,7 @@ index 1b17cff..70a59b6 100644
  
  #pragma mark - RCTSRWebSocketDelegate
 diff --git a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
-index b967c14..e24e926 100644
+index b967c14..1a38e00 100644
 --- a/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
 +++ b/node_modules/react-native/Libraries/WebSocket/RCTSRWebSocket.m
 @@ -228,7 +228,7 @@ @implementation RCTSRWebSocket
@@ -125,14 +126,14 @@ index b967c14..e24e926 100644
  }
  
  - (void)_RCTSR_commonInit
-@@ -344,6 +348,37 @@ - (void)setReadyState:(RCTSRReadyState)aReadyState
+@@ -344,6 +348,36 @@ - (void)setReadyState:(RCTSRReadyState)aReadyState
  
  #endif
  
 +- (SecIdentityRef) GetIdentityByName:(NSString *)name
 +{
 +  NSMutableDictionary * query = [[NSMutableDictionary alloc] init];
-+  
++
 +  //Set up the invariant pieces of the query
 +  [query setObject:(id)kSecMatchLimitAll forKey:(id)kSecMatchLimit];
 +  [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnRef];
@@ -140,7 +141,7 @@ index b967c14..e24e926 100644
 +  [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];
 +  [query setObject:(id)kSecClassIdentity forKey:(id)kSecClass];
 +  [query setObject:name forKey:(id)kSecAttrLabel];
-+  
++
 +  OSStatus resultCode = noErr;
 +  CFTypeRef result = nil;
 +  //Execute the query saving the results in items.
@@ -153,17 +154,16 @@ index b967c14..e24e926 100644
 +    {
 +      identity = (SecIdentityRef)value;
 +    }
-+    
++
 +    return identity;
 +  }
 +  return nil;
 +}
 +
-+
  - (void)open
  {
    assert(_url);
-@@ -515,6 +550,24 @@ - (void)_initializeStreams
+@@ -515,6 +549,24 @@ - (void)_initializeStreams
      RCTLogInfo(@"SocketRocket: In debug mode.  Allowing connection to any root cert");
  #endif
  
@@ -189,10 +189,10 @@ index b967c14..e24e926 100644
                          forKey:(__bridge id)kCFStreamPropertySSLSettings];
    }
 diff --git a/node_modules/react-native/Libraries/WebSocket/WebSocket.js b/node_modules/react-native/Libraries/WebSocket/WebSocket.js
-index a1679bd..9445e3e 100644
+index 0b051c4..d5bbf3f 100644
 --- a/node_modules/react-native/Libraries/WebSocket/WebSocket.js
 +++ b/node_modules/react-native/Libraries/WebSocket/WebSocket.js
-@@ -92,7 +92,7 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): any) {
+@@ -91,7 +91,7 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): any) {
        protocols = [protocols];
      }
  
@@ -201,7 +201,7 @@ index a1679bd..9445e3e 100644
  
      // Preserve deprecated backwards compatibility for the 'origin' option
      /* $FlowFixMe(>=0.68.0 site=react_native_fb) This comment suppresses an
-@@ -129,7 +129,7 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): any) {
+@@ -128,7 +128,7 @@ class WebSocket extends (EventTarget(...WEBSOCKET_EVENTS): any) {
      this._eventEmitter = new NativeEventEmitter(NativeWebSocketModule);
      this._socketId = nextWebSocketId++;
      this._registerEvents();
@@ -211,7 +211,7 @@ index a1679bd..9445e3e 100644
  
    get binaryType(): ?BinaryType {
 diff --git a/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm b/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm
-index 06734d3..6d1d5ed 100644
+index 9648b18..3594b43 100644
 --- a/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm
 +++ b/node_modules/react-native/React/CoreModules/RCTWebSocketModule.mm
 @@ -88,7 +88,7 @@ - (void)invalidate
@@ -219,24 +219,24 @@ index 06734d3..6d1d5ed 100644
    }
  
 -  RCTSRWebSocket *webSocket = [[RCTSRWebSocket alloc] initWithURLRequest:request protocols:protocols];
-+    RCTSRWebSocket *webSocket = [[RCTSRWebSocket alloc] initWithURLRequest:request protocols:protocols certificate:options.certificate()];
++  RCTSRWebSocket *webSocket = [[RCTSRWebSocket alloc] initWithURLRequest:request protocols:protocols certificate:options.certificate()];
    [webSocket setDelegateDispatchQueue:[self methodQueue]];
    webSocket.delegate = self;
    webSocket.reactTag = @(socketID);
 diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
-index d886a9b..8febb59 100644
+index 6441d93..4a0cd01 100644
 --- a/node_modules/react-native/react.gradle
 +++ b/node_modules/react-native/react.gradle
-@@ -143,7 +143,7 @@ afterEvaluate {
+@@ -157,7 +157,7 @@ afterEvaluate {
  
              // Set up dev mode
              def devEnabled = !(config."devDisabledIn${targetName}"
 -                || targetName.toLowerCase().contains("release"))
 +                || targetName.toLowerCase().contains("release") || targetName.toLowerCase().contains("unsigned"))
  
-             def extraArgs = extraPackagerArgs;
+             def extraArgs = config.extraPackagerArgs ?: [];
  
-@@ -163,7 +163,7 @@ afterEvaluate {
+@@ -177,7 +177,7 @@ afterEvaluate {
                      def hermesFlags;
                      def hbcTempFile = file("${jsBundleFile}.hbc")
                      exec {
@@ -245,7 +245,7 @@ index d886a9b..8febb59 100644
                              // Can't use ?: since that will also substitute valid empty lists
                              hermesFlags = config.hermesFlagsRelease
                              if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
-@@ -207,7 +207,7 @@ afterEvaluate {
+@@ -221,7 +221,7 @@ afterEvaluate {
                  ? config."bundleIn${targetName}"
                  : config."bundleIn${variant.buildType.name.capitalize()}" != null
                      ? config."bundleIn${variant.buildType.name.capitalize()}"
@@ -254,7 +254,7 @@ index d886a9b..8febb59 100644
          }
  
          // Expose a minimal interface on the application variant and the task itself:
-@@ -299,7 +299,7 @@ afterEvaluate {
+@@ -313,7 +313,7 @@ afterEvaluate {
          // This should really be done by packaging all Hermes releated libs into
          // two separate HermesDebug and HermesRelease AARs, but until then we'll
          // kludge it by deleting the .so files out of the /transforms/ directory.

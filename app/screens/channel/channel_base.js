@@ -4,18 +4,16 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    Keyboard,
-    StyleSheet,
-    Platform,
-} from 'react-native';
+import {Alert, Animated, Keyboard, StyleSheet} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {General} from '@mm-redux/constants';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
-import {NavigationTypes} from '@constants';
+import {UPDATE_NATIVE_SCROLLVIEW, TYPING_VISIBLE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
+import {unsupportedServer} from '@utils/supported_server';
 import {preventDoubleTap} from '@utils/tap';
 import {setNavigatorStyles} from '@utils/theme';
 import tracker from '@utils/time_tracker';
@@ -38,6 +36,8 @@ export default class ChannelBase extends PureComponent {
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string,
         disableTermsModal: PropTypes.bool,
+        isSupportedServer: PropTypes.bool,
+        isSystemAdmin: PropTypes.bool,
         teamName: PropTypes.string,
         theme: PropTypes.object.isRequired,
         showTermsOfService: PropTypes.bool,
@@ -56,7 +56,6 @@ export default class ChannelBase extends PureComponent {
         super(props);
 
         this.postDraft = React.createRef();
-        this.keyboardTracker = React.createRef();
 
         this.state = {
             channelsRequestFailed: false,
@@ -65,34 +64,51 @@ export default class ChannelBase extends PureComponent {
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
             ClientUpgradeListener = require('app/components/client_upgrade_listener').default;
         }
+
+        this.typingAnimations = [];
     }
 
     componentDidMount() {
-        EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
-        EventEmitter.on('leave_team', this.handleLeaveTeam);
+        const {
+            actions,
+            currentChannelId,
+            currentTeamId,
+            disableTermsModal,
+            isSupportedServer,
+            isSystemAdmin,
+            showTermsOfService,
+            skipMetrics,
+        } = this.props;
 
-        if (this.props.currentTeamId) {
-            this.loadChannels(this.props.currentTeamId);
+        EventEmitter.on('leave_team', this.handleLeaveTeam);
+        EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
+        EventEmitter.on(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
+
+        if (currentTeamId) {
+            this.loadChannels(currentTeamId);
         } else {
-            this.props.actions.selectDefaultTeam();
+            actions.selectDefaultTeam();
         }
 
-        if (this.props.currentChannelId) {
-            PushNotifications.clearChannelNotifications(this.props.currentChannelId);
+        if (currentChannelId) {
+            PushNotifications.clearChannelNotifications(currentChannelId);
             requestAnimationFrame(() => {
-                this.props.actions.getChannelStats(this.props.currentChannelId);
+                actions.getChannelStats(currentChannelId);
             });
         }
 
-        if (tracker.initialLoad && !this.props.skipMetrics) {
-            this.props.actions.recordLoadTime('Start time', 'initialLoad');
+        if (tracker.initialLoad && !skipMetrics) {
+            actions.recordLoadTime('Start time', 'initialLoad');
         }
 
-        if (this.props.showTermsOfService && !this.props.disableTermsModal) {
+        if (showTermsOfService && !disableTermsModal) {
             this.showTermsOfServiceModal();
+        } else if (!isSupportedServer) {
+            // Only display the Alert if the TOS does not need to show first
+            unsupportedServer(isSystemAdmin, this.context.intl.formatMessage);
         }
 
-        if (!this.props.skipMetrics) {
+        if (!skipMetrics) {
             telemetry.end(['start:channel_screen']);
         }
     }
@@ -100,6 +116,10 @@ export default class ChannelBase extends PureComponent {
     componentDidUpdate(prevProps) {
         if (tracker.teamSwitch) {
             this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
+        }
+
+        if (prevProps.isSupportedServer && !this.props.isSupportedServer) {
+            unsupportedServer(this.props.isSystemAdmin, this.context.intl.formatMessage);
         }
 
         if (this.props.theme !== prevProps.theme) {
@@ -131,40 +151,26 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
+        EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+        EventEmitter.off(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
     }
 
-    blurPostDraft = () => {
-        if (this.postDraft?.current) {
-            this.postDraft.current.blurTextBox();
-        }
-    };
+    registerTypingAnimation = (animation) => {
+        const length = this.typingAnimations.push(animation);
+        const removeAnimation = () => {
+            const animationIndex = length - 1;
+            this.typingAnimations = this.typingAnimations.filter((a, index) => index !== animationIndex);
+        };
 
-    showTermsOfServiceModal = async () => {
-        const {intl} = this.context;
-        const {theme} = this.props;
-        const screen = 'TermsOfService';
-        const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((closeButton) => {
-            const passProps = {closeButton};
-            const options = {
-                layout: {
-                    componentBackgroundColor: theme.centerChannelBg,
-                },
-                topBar: {
-                    visible: true,
-                    height: null,
-                    title: {
-                        color: theme.sidebarHeaderTextColor,
-                        text: title,
-                    },
-                },
-            };
+        return removeAnimation;
+    }
 
-            showModalOverCurrentContext(screen, passProps, options);
-        });
-    };
+    runTypingAnimations = (typingVisible) => {
+        Animated.parallel(
+            this.typingAnimations.map((animation) => animation(typingVisible)),
+        ).start();
+    }
 
     goToChannelInfo = preventDoubleTap(() => {
         const {intl} = this.context;
@@ -179,11 +185,6 @@ export default class ChannelBase extends PureComponent {
                         icon: source,
                     }],
                 },
-                ...Platform.select({
-                    ios: {
-                        modalPresentationStyle: 'pageSheet',
-                    },
-                }),
             };
 
             Keyboard.dismiss();
@@ -196,9 +197,28 @@ export default class ChannelBase extends PureComponent {
         this.props.actions.selectDefaultTeam();
     };
 
+    handleRemovedFromChannel = (channelName) => {
+        const {formatMessage} = this.context.intl;
+
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.user_removed.title',
+                defaultMessage: 'Removed from {channelName}',
+            }, {channelName}),
+            formatMessage({
+                id: 'mobile.user_removed.message',
+                defaultMessage: 'You were removed from the channel.',
+            }),
+        );
+    };
+
     loadChannels = (teamId) => {
         const {loadChannelsForTeam, selectInitialChannel} = this.props.actions;
-        if (!EphemeralStore.getStartFromNotification()) {
+        if (EphemeralStore.getStartFromNotification()) {
+            // eslint-disable-next-line no-console
+            console.log('Switch to channel from a push notification');
+            EphemeralStore.setStartFromNotification(false);
+        } else {
             loadChannelsForTeam(teamId).then((result) => {
                 if (result?.error) {
                     this.setState({channelsRequestFailed: true});
@@ -255,10 +275,37 @@ export default class ChannelBase extends PureComponent {
         return null;
     }
 
+    showTermsOfServiceModal = async () => {
+        const {intl} = this.context;
+        const {isSupportedServer, isSystemAdmin, theme} = this.props;
+        const screen = 'TermsOfService';
+        const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
+        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((closeButton) => {
+            const passProps = {
+                closeButton,
+                isSupportedServer,
+                isSystemAdmin,
+            };
+            const options = {
+                layout: {
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                topBar: {
+                    visible: true,
+                    height: null,
+                    title: {
+                        color: theme.sidebarHeaderTextColor,
+                        text: title,
+                    },
+                },
+            };
+
+            showModalOverCurrentContext(screen, passProps, options);
+        });
+    };
+
     updateNativeScrollView = () => {
-        if (this.keyboardTracker?.current) {
-            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
-        }
+        EventEmitter.emit(UPDATE_NATIVE_SCROLLVIEW, this.props.currentChannelId);
     };
 
     render() {

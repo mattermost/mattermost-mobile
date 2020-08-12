@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MoreMessagesButton should match snapshot 1`] = `
+<ForwardRef(AnimatedComponentWrapper)
+  style={
+    Array [
+      Object {
+        "backgroundColor": "#166de0",
+        "elevation": 1,
+        "flex": 1,
+        "margin": 8,
+        "position": "absolute",
+        "zIndex": 1,
+      },
+      Object {
+        "borderRadius": 4,
+      },
+      Object {
+        "transform": Array [
+          Object {
+            "translateY": -138,
+          },
+        ],
+      },
+    ]
+  }
+>
+  <TouchableWithFeedbackIOS
+    onPress={[Function]}
+    style={
+      Object {
+        "borderRadius": 4,
+      }
+    }
+    type="native"
+    underlayColor="hsl(214, 50%, 38%)"
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+            "height": 40,
+            "justifyContent": "space-evenly",
+            "paddingLeft": 11,
+            "paddingRight": 5,
+            "paddingVertical": 1,
+            "shadowColor": "#3d3c40",
+            "shadowOffset": Object {
+              "height": 6,
+              "width": 0,
+            },
+            "shadowOpacity": 0.12,
+            "shadowRadius": 4,
+            "width": "100%",
+          },
+          Object {
+            "borderRadius": 4,
+          },
+        ]
+      }
+    >
+      <View
+        style={
+          Object {
+            "width": 22,
+          }
+        }
+      >
+        <VectorIcon
+          name="md-arrow-up"
+          size={14}
+          style={
+            Object {
+              "alignSelf": "center",
+              "color": "#ffffff",
+              "fontSize": 18,
+              "fontWeight": "bold",
+            }
+          }
+          type="ion"
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "alignItems": "flex-start",
+            "flex": 10,
+            "flexDirection": "row",
+            "paddingLeft": 4,
+          }
+        }
+      >
+        <Text
+          style={
+            Object {
+              "alignSelf": "center",
+              "color": "#ffffff",
+              "fontWeight": "bold",
+              "paddingLeft": 0,
+            }
+          }
+        >
+          
+        </Text>
+      </View>
+      <TouchableWithFeedbackIOS
+        onPress={[Function]}
+        type="none"
+      >
+        <View
+          style={
+            Object {
+              "alignItems": "flex-end",
+              "flex": 1,
+            }
+          }
+        >
+          <VectorIcon
+            name="md-close"
+            size={14}
+            style={
+              Object {
+                "alignSelf": "center",
+                "color": "#ffffff",
+                "fontSize": 18,
+                "fontWeight": "bold",
+              }
+            }
+            type="ion"
+          />
+        </View>
+      </TouchableWithFeedbackIOS>
+    </View>
+  </TouchableWithFeedbackIOS>
+</ForwardRef(AnimatedComponentWrapper)>
+`;

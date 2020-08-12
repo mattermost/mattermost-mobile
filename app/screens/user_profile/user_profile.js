@@ -14,9 +14,9 @@ import {Navigation} from 'react-native-navigation';
 
 import {
     goToScreen,
-    popToRoot,
     dismissModal,
     setButtons,
+    dismissAllModalsAndPopToRoot,
 } from '@actions/navigation';
 import Config from '@assets/config';
 import FormattedTime from '@components/formatted_time';
@@ -51,7 +51,6 @@ export default class UserProfile extends PureComponent {
         militaryTime: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
         isMyUser: PropTypes.bool.isRequired,
-        fromSettings: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -99,14 +98,7 @@ export default class UserProfile extends PureComponent {
     }
 
     close = async () => {
-        const {fromSettings} = this.props;
-
-        if (fromSettings) {
-            dismissModal();
-            return;
-        }
-
-        await popToRoot();
+        dismissModal();
     };
 
     getDisplayName = () => {
@@ -224,7 +216,7 @@ export default class UserProfile extends PureComponent {
                 },
             );
         } else {
-            this.close();
+            dismissAllModalsAndPopToRoot();
         }
     };
 
@@ -300,8 +292,8 @@ export default class UserProfile extends PureComponent {
 
         return (
             <View style={style.content}>
-                {this.buildDisplayBlock('first_name')}
-                {this.buildDisplayBlock('last_name')}
+                {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('first_name')}
+                {this.props.config.ShowFullName === 'true' && this.buildDisplayBlock('last_name')}
                 {this.props.config.ShowEmailAddress === 'true' && this.buildDisplayBlock('email')}
                 {this.buildDisplayBlock('nickname')}
                 {this.buildDisplayBlock('position')}

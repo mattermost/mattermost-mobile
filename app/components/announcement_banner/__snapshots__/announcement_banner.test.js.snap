@@ -18,7 +18,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
     ]
   }
 >
-  <Component
+  <ForwardRef
     onPress={[Function]}
     style={
       Array [
@@ -57,7 +57,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
       name="info"
       size={16}
     />
-  </Component>
+  </ForwardRef>
 </ForwardRef(AnimatedComponentWrapper)>
 `;
 

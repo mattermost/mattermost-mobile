@@ -307,7 +307,11 @@ export default class ChannelMembers extends PureComponent {
         const options = {in_channel_id: currentChannelId};
         this.setState({loading: true});
 
-        actions.searchProfiles(term.toLowerCase(), options).then(({data}) => {
+        actions.searchProfiles(term.toLowerCase(), options).then((results) => {
+            let data = [];
+            if (results.data) {
+                data = results.data;
+            }
             this.setState({searchResults: data, loading: false});
         });
     };

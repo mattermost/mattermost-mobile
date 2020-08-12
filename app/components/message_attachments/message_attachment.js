@@ -49,6 +49,7 @@ export default class MessageAttachment extends PureComponent {
 
         const style = getStyleSheet(theme);
         const STATUS_COLORS = getStatusColors(theme);
+        const hasImage = Boolean(metadata?.images?.[attachment.image_url]);
 
         let borderStyle;
         if (attachment.color) {
@@ -111,6 +112,7 @@ export default class MessageAttachment extends PureComponent {
                         actions={attachment.actions}
                         postId={postId}
                     />
+                    {hasImage &&
                     <AttachmentImage
                         deviceHeight={deviceHeight}
                         deviceWidth={deviceWidth}
@@ -118,6 +120,7 @@ export default class MessageAttachment extends PureComponent {
                         imageMetadata={metadata?.images?.[attachment.image_url]}
                         theme={theme}
                     />
+                    }
                 </View>
             </React.Fragment>
         );

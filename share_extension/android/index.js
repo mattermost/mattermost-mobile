@@ -5,6 +5,10 @@ import React, {PureComponent} from 'react';
 import {Provider} from 'react-redux';
 import {IntlProvider} from 'react-intl';
 
+import {getMyTeams, getMyTeamMembers, selectTeam} from '@mm-redux/actions/teams';
+
+import {selectDefaultTeam} from '@actions/views/select_team';
+import {selectDefaultChannel, loadChannelsForTeam} from '@actions/views/channel';
 import {getTranslations} from '@i18n';
 import {getCurrentLocale} from '@selectors/i18n';
 import configureStore from '@store';
@@ -44,12 +48,28 @@ export default class ShareApp extends PureComponent {
         if (MMKVStorage) {
             configureStore(MMKVStorage);
         }
-        waitForHydration(Store.redux, () => {
-            const {dispatch, getState} = Store.redux;
-            const {currentTeamId} = getState().entities.teams;
-            dispatch(extensionSelectTeamId(currentTeamId));
+        waitForHydration(Store.redux, async () => {
+            await this.initTeamAndChannel(Store.redux);
+
             this.setState({init: true});
         });
+    }
+
+    initTeamAndChannel = async ({dispatch, getState}) => {
+        await dispatch(getMyTeams());
+        await dispatch(getMyTeamMembers());
+
+        const {myMembers} = getState().entities.teams;
+        if (Object.keys(myMembers).length === 0) {
+            dispatch(selectTeam(''));
+            dispatch(extensionSelectTeamId(''));
+        } else {
+            await dispatch(selectDefaultTeam());
+            const {currentTeamId} = getState().entities.teams;
+            await dispatch(loadChannelsForTeam(currentTeamId));
+            await dispatch(selectDefaultChannel(currentTeamId));
+            dispatch(extensionSelectTeamId(currentTeamId));
+        }
     }
 
     render() {

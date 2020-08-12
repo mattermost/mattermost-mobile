@@ -10,7 +10,7 @@ import {
     Platform,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import CookieManager from '@react-native-community/cookies';
+import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
 import {Client4} from '@mm-redux/client';
@@ -27,7 +27,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = 'window.ReactNativeWebView.postMessage(document.body.innerText);';
+const postMessageJS = "window.postMessage(document.body.innerText, '*');";
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -109,9 +109,23 @@ class SSO extends PureComponent {
     }
 
     extractCookie = (parsedUrl) => {
-        CookieManager.get(parsedUrl.origin, true).then((res) => {
+        const original = urlParse(this.props.serverUrl);
+
+        // Check whether we need to set a sub-path
+        parsedUrl.set('pathname', original.pathname || '');
+
+        parsedUrl.set('query', '');
+        Client4.setUrl(parsedUrl.href);
+
+        CookieManager.get(parsedUrl.href, true).then((res) => {
             const mmtoken = res.MMAUTHTOKEN;
+            const csrf = res.MMCSRF;
             const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+            const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
+
+            if (csrfToken) {
+                Client4.setCSRF(csrfToken);
+            }
 
             if (token) {
                 clearTimeout(this.cookiesTimeout);
@@ -121,14 +135,7 @@ class SSO extends PureComponent {
                 } = this.props.actions;
 
                 Client4.setToken(token);
-                if (this.props.serverUrl !== parsedUrl.origin) {
-                    const original = urlParse(this.props.serverUrl);
-
-                    // Check whether we need to set a sub-path
-                    parsedUrl.set('pathname', original.pathname || '');
-                    Client4.setUrl(parsedUrl.href);
-                }
-                ssoLogin(token).then((result) => {
+                ssoLogin().then((result) => {
                     if (result.error) {
                         this.onLoadEndError(result.error);
                         return;
@@ -203,7 +210,15 @@ class SSO extends PureComponent {
 
     onLoadEndError = (e) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
-        this.setState({error: e.message});
+        let error = e.message;
+        if (e.details) {
+            error += `\n${e.details.message}`;
+        }
+
+        if (e.url) {
+            error += `\nURL: ${e.url}`;
+        }
+        this.setState({error});
     };
 
     scheduleSessionExpiredNotification = () => {
@@ -226,32 +241,31 @@ class SSO extends PureComponent {
         const style = getStyleSheet(theme);
 
         let content;
-        if (!renderWebView) {
-            content = this.renderLoading();
-        } else if (error) {
+        if (error) {
             content = (
                 <View style={style.errorContainer}>
                     <Text style={style.errorText}>{error}</Text>
                 </View>
             );
-        } else {
+        } else if (renderWebView) {
             content = (
                 <WebView
                     ref={this.webViewRef}
                     source={{uri: this.loginUrl, headers: HEADERS}}
-                    javaScriptEnabled={true}
+                    javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
                     onShouldStartLoadWithRequest={() => true}
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
-                    onMessage={(messagingEnabled || Platform.OS === 'android') ? this.onMessage : null}
-                    sharedCookiesEnabled={Platform.OS === 'android'}
-                    cacheEnabled={false}
+                    onMessage={messagingEnabled ? this.onMessage : null}
                     useSharedProcessPool={false}
+                    cacheEnabled={false}
                 />
             );
+        } else {
+            content = this.renderLoading();
         }
 
         return (

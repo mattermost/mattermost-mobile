@@ -16,33 +16,43 @@ exports[`thread should match snapshot, has root post 1`] = `
     />
     <Connect(StatusBar) />
     <React.Fragment>
-      <Connect(PostList)
-        currentUserId="member_user_id"
-        indicateNewMessages={false}
-        lastPostIndex={2}
-        lastViewedAt={0}
-        location="thread"
-        onPostPress={[Function]}
-        postIds={
-          Array [
-            "root_id",
-            "post_id_1",
-            "post_id_2",
-          ]
+      <ForwardRef(AnimatedComponentWrapper)
+        style={
+          Object {
+            "flex": 1,
+            "paddingBottom": 0,
+          }
         }
-        renderFooter={
-          <Loading
-            color="#3d3c40"
-            size="large"
-            style={Object {}}
-          />
-        }
-        scrollViewNativeID="threadPostList"
-      />
+      >
+        <Connect(PostList)
+          currentUserId="member_user_id"
+          indicateNewMessages={false}
+          lastPostIndex={2}
+          lastViewedAt={0}
+          location="thread"
+          onPostPress={[Function]}
+          postIds={
+            Array [
+              "root_id",
+              "post_id_1",
+              "post_id_2",
+            ]
+          }
+          renderFooter={
+            <Loading
+              color="#3d3c40"
+              size="large"
+              style={Object {}}
+            />
+          }
+          scrollViewNativeID="threadPostList"
+        />
+      </ForwardRef(AnimatedComponentWrapper)>
       <View
         nativeID="threadAccessoriesContainer"
       >
         <Connect(Autocomplete)
+          channelId="channel_id"
           cursorPositionEvent="onThreadTextBoxCursorChange"
           maxHeight={200}
           onChangeText={[Function]}
@@ -52,18 +62,16 @@ exports[`thread should match snapshot, has root post 1`] = `
       </View>
     </React.Fragment>
   </Connect(SafeAreaIos)>
-  <KeyboardTrackingView
+  <Connect(PostDraft)
     accessoriesContainerID="threadAccessoriesContainer"
+    channelId="channel_id"
+    channelIsArchived={false}
+    cursorPositionEvent="onThreadTextBoxCursorChange"
+    registerTypingAnimation={[Function]}
+    rootId="root_id"
     scrollViewNativeID="threadPostList"
-  >
-    <Connect(PostDraft)
-      channelId="channel_id"
-      channelIsArchived={false}
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </KeyboardTrackingView>
+    valueEvent="onThreadTextBoxValueChange"
+  />
 </React.Fragment>
 `;
 

@@ -110,6 +110,7 @@ export default class CreateChannel extends PureComponent {
     }
 
     close = (goBack = false) => {
+        Keyboard.dismiss();
         if (goBack) {
             popTopScreen();
         } else {

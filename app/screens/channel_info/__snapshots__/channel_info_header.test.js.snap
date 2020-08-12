@@ -92,7 +92,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -126,7 +126,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           Purpose string
         </Text>
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <View
     style={
@@ -138,7 +138,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -275,7 +275,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           value="Header string"
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <Text
     style={
@@ -431,7 +431,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -465,7 +465,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           Purpose string
         </Text>
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <View
     style={
@@ -477,7 +477,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -614,7 +614,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           value="Header string"
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <Text
     style={
@@ -742,7 +742,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -776,7 +776,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           Purpose string
         </Text>
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <View
     style={
@@ -788,7 +788,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -925,7 +925,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           value="Header string"
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <Text
     style={
@@ -1081,7 +1081,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -1115,7 +1115,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           Purpose string
         </Text>
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <View
     style={
@@ -1127,7 +1127,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -1264,7 +1264,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           value="Header string"
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <Text
     style={
@@ -1392,7 +1392,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -1426,7 +1426,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           Purpose string
         </Text>
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <View
     style={
@@ -1438,7 +1438,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -1575,7 +1575,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           value="Header string"
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <Text
     style={
@@ -1753,7 +1753,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -1787,7 +1787,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           Purpose string
         </Text>
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <View
     style={
@@ -1799,7 +1799,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       ]
     }
   >
-    <Component
+    <ForwardRef
       onLongPress={[Function]}
     >
       <View
@@ -1936,7 +1936,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           value="Header string"
         />
       </View>
-    </Component>
+    </ForwardRef>
   </View>
   <Text
     style={

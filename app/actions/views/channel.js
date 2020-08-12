@@ -5,18 +5,19 @@ import {batchActions} from 'redux-batched-actions';
 
 import {ViewTypes} from 'app/constants';
 
-import {ChannelTypes, RoleTypes} from '@mm-redux/action_types';
+import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
-import {getFilesForPost} from '@mm-redux/actions/files';
 import {savePreferences} from '@mm-redux/actions/preferences';
+import {getLicense} from '@mm-redux/selectors/entities/general';
 import {selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
@@ -24,7 +25,7 @@ import {
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getTeamByName} from '@mm-redux/selectors/entities/teams';
+import {getTeamByName, getCurrentTeam} from '@mm-redux/selectors/entities/teams';
 
 import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm-redux/utils/channel_utils';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -107,17 +108,6 @@ export function fetchPostActionWithRetry(action, maxTries = MAX_RETRIES) {
         dispatch(setChannelRetryFailed(true));
 
         return null;
-    };
-}
-
-export function loadFilesForPostIfNecessary(postId) {
-    return async (dispatch, getState) => {
-        const {files} = getState().entities;
-        const fileIdsForPost = files.fileIdsByPostId[postId];
-
-        if (!fileIdsForPost?.length) {
-            await dispatch(getFilesForPost(postId));
-        }
     };
 }
 
@@ -326,12 +316,19 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
         }
 
         if (channel) {
+            const unreadMessageCount = channel.total_msg_count - member.msg_count;
             actions.push({
+                type: ChannelTypes.SET_UNREAD_MSG_COUNT,
+                data: {
+                    channelId,
+                    count: unreadMessageCount,
+                },
+            }, {
                 type: ChannelTypes.DECREMENT_UNREAD_MSG_COUNT,
                 data: {
                     teamId: channel.team_id,
                     channelId,
-                    amount: channel.total_msg_count - member.msg_count,
+                    amount: unreadMessageCount,
                 },
             }, {
                 type: ChannelTypes.DECREMENT_UNREAD_MENTION_COUNT,
@@ -584,6 +581,87 @@ function setLoadMorePostsVisible(visible) {
     };
 }
 
+function loadGroupData() {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const actions = [];
+        const team = getCurrentTeam(state);
+        const currentUserId = getCurrentUserId(state);
+        const serverVersion = state.entities.general.serverVersion;
+        const license = getLicense(state);
+        const hasLicense = license?.IsLicensed === 'true' && license?.LDAPGroups === 'true';
+
+        if (hasLicense && team && isMinimumServerVersion(serverVersion, 5, 24)) {
+            for (let i = 0; i <= MAX_RETRIES; i++) {
+                try {
+                    if (team.group_constrained) {
+                        const [getAllGroupsAssociatedToChannelsInTeam, getAllGroupsAssociatedToTeam] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
+                            Client4.getAllGroupsAssociatedToTeam(team.id, true),
+                        ]);
+
+                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                            });
+                        }
+
+                        if (getAllGroupsAssociatedToTeam) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_TEAM,
+                                data: {...getAllGroupsAssociatedToTeam, teamID: team.id},
+                            });
+                        }
+                    } else {
+                        const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
+                            Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
+                            Client4.getGroups(true, 0, 0),
+                        ]);
+
+                        if (getAllGroupsAssociatedToChannelsInTeam.groups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_ALL_GROUPS_ASSOCIATED_TO_CHANNELS_IN_TEAM,
+                                data: {groupsByChannelId: getAllGroupsAssociatedToChannelsInTeam.groups},
+                            });
+                        }
+
+                        if (getGroups) {
+                            actions.push({
+                                type: GroupTypes.RECEIVED_GROUPS,
+                                data: getGroups,
+                            });
+                        }
+                    }
+                    break;
+                } catch (err) {
+                    if (i === MAX_RETRIES) {
+                        return {error: err};
+                    }
+                }
+            }
+
+            try {
+                const myGroups = await Client4.getGroupsByUserId(currentUserId);
+                if (myGroups.length) {
+                    actions.push({
+                        type: GroupTypes.RECEIVED_MY_GROUPS,
+                        data: myGroups,
+                    });
+                }
+            } catch {
+                // do nothing
+            }
+        }
+
+        if (actions.length) {
+            dispatch(batchActions(actions, 'BATCH_GROUP_DATA'));
+        }
+
+        return {data: true};
+    };
+}
+
 export function loadChannelsForTeam(teamId, skipDispatch = false) {
     return async (dispatch, getState) => {
         const state = getState();
@@ -654,6 +732,8 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
 
                 dispatch(loadUnreadChannelPosts(data.channels, data.channelMembers));
             }
+
+            dispatch(loadGroupData());
         }
 
         return {data};
@@ -669,5 +749,17 @@ function loadSidebar(data) {
         if (sidebarActions.length) {
             dispatch(batchActions(sidebarActions, 'BATCH_LOAD_SIDEBAR'));
         }
+    };
+}
+
+export function resetUnreadMessageCount(channelId) {
+    return async (dispatch) => {
+        dispatch({
+            type: ChannelTypes.SET_UNREAD_MSG_COUNT,
+            data: {
+                channelId,
+                count: 0,
+            },
+        });
     };
 }
