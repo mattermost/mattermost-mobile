@@ -135,7 +135,6 @@ export default class ChannelItem extends PureComponent {
 
         let badge;
         if (mentions) {
-            const maxWidth = mentions > 99 ? 38 : 32;
             badge = (
                 <Badge
                     containerStyle={style.badgeContainer}
@@ -144,7 +143,7 @@ export default class ChannelItem extends PureComponent {
                     count={mentions}
                     onPress={this.onPress}
                     minWidth={21}
-                    maxWidth={maxWidth}
+                    isChannelItem={true}
                 />
             );
         }

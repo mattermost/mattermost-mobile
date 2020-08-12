@@ -89,7 +89,6 @@ export default class ChannelDrawerButton extends PureComponent {
         if (badgeCount && visible) {
             const badgeCountLow = badgeCount <= 0;
             const minWidth = badgeCountLow ? 8 : 18;
-            const maxWidth = badgeCount >= 99 ? 30 : 26;
             const badgeStyle = badgeCountLow ? style.smallBadge : style.badge;
             const containerStyle = badgeCountLow ? style.smallBadgeContainer : style.badgeContainer;
 
@@ -101,7 +100,6 @@ export default class ChannelDrawerButton extends PureComponent {
                     count={badgeCount}
                     onPress={this.handlePress}
                     minWidth={minWidth}
-                    maxWidth={maxWidth}
                 />
             );
         }

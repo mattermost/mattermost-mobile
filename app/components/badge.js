@@ -27,7 +27,7 @@ export default class Badge extends PureComponent {
         countStyle: Text.propTypes.style,
         minHeight: PropTypes.number,
         minWidth: PropTypes.number,
-        maxWidth: PropTypes.number,
+        isChannelItem: PropTypes.bool,
         onPress: PropTypes.func,
     };
 
@@ -79,6 +79,12 @@ export default class Badge extends PureComponent {
     onLayout = (e) => {
         if (!this.layoutReady) {
             let width;
+            let maxWidth;
+            if (this.props.isChannelItem) {
+                maxWidth = this.props.count > 99 ? 38 : 32;
+            } else {
+                maxWidth = this.props.count > 99 ? 30 : 26;
+            }
 
             if (e.nativeEvent.layout.width <= e.nativeEvent.layout.height) {
                 width = e.nativeEvent.layout.height;
@@ -87,12 +93,13 @@ export default class Badge extends PureComponent {
             }
             width = Math.max(this.props.count < 10 ? width : width + 10, this.props.minWidth);
             const borderRadius = width / 2;
+
             this.setNativeProps({
                 style: {
                     width,
                     borderRadius,
                     opacity: 1,
-                    maxWidth: this.props.maxWidth,
+                    maxWidth,
                 },
             });
             this.layoutReady = true;

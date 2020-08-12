@@ -92,7 +92,6 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
           }
         }
         extraPaddingHorizontal={10}
-        maxWidth={26}
         minHeight={20}
         minWidth={18}
         onPress={[Function]}
