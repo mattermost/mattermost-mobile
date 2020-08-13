@@ -629,5 +629,6 @@
   "mobile.post_textbox.multi_group.message.without_timezones": "Folosind {mentions} și {finalMention} sunteți pe punctul de a trimite notificări la cel puțin {totalMembers} persoane. Ești sigur că vrei să faci asta?",
   "mobile.post_textbox.multi_group.message.with_timezones": "Folosind {mentions} și {finalMention} sunteți pe punctul de a trimite notificări la cel puțin {totalMembers} persoane din {timezones, number} {timezones, plural, una {timezone} alte {timezones}}. Ești sigur că vrei să faci asta?",
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nou} other {mai multe noi}} {count, plural, one {mesaj} other {mesaje}}",
-  "mobile.android.back_handler_exit": "Apăsați inapoi din nou pentru a ieși"
+  "mobile.android.back_handler_exit": "Apăsați inapoi din nou pentru a ieși",
+  "mobile.emoji_picker.search.not_found_description": "Verificați ortografia sau încercați o altă căutare."
 }
