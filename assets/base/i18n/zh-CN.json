@@ -629,5 +629,6 @@
   "mobile.unsupported_server.title": "不支持的服务端版本",
   "mobile.unsupported_server.ok": "确定",
   "mobile.post_textbox.groups.title": "确认发送推送给组",
-  "mobile.more_messages_button.text": "{count} 条消息"
+  "mobile.more_messages_button.text": "{count} 条消息",
+  "mobile.emoji_picker.search.not_found_description": "检查拼写后再尝试。"
 }
