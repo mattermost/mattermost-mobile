@@ -18,7 +18,7 @@ import {t} from 'app/utils/i18n';
 import {intlShape} from 'react-intl';
 
 import telemetry from 'app/telemetry';
-import {LARGE_BADGE_RIGHT_POSITION, SMALL_BADGE_RIGHT_POSITION} from '@constants/view';
+import {LARGE_BADGE_RIGHT_POSITION, SMALL_BADGE_RIGHT_POSITION, MAX_BADGE_RIGHT_POSITION} from '@constants/view';
 
 export default class ChannelDrawerButton extends PureComponent {
     static propTypes = {
@@ -91,7 +91,8 @@ export default class ChannelDrawerButton extends PureComponent {
             const badgeCountLow = badgeCount <= 0;
             const minWidth = badgeCountLow ? 8 : 18;
             const badgeStyle = badgeCountLow ? style.smallBadge : style.badge;
-            const rightStylePosition = badgeCount > 9 ? LARGE_BADGE_RIGHT_POSITION : SMALL_BADGE_RIGHT_POSITION;
+            const smallBadgeRightPosition = badgeCount > 9 ? LARGE_BADGE_RIGHT_POSITION : SMALL_BADGE_RIGHT_POSITION;
+            const rightStylePosition = badgeCount > 99 ? MAX_BADGE_RIGHT_POSITION : smallBadgeRightPosition;
             const containerStyle = badgeCountLow ? style.smallBadgeContainer : {...style.badgeContainer, right: rightStylePosition};
 
             badge = (
