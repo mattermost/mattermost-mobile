@@ -619,5 +619,6 @@
   "mobile.server_upgrade.learn_more": "Dowiedz się więcej",
   "mobile.server_upgrade.dismiss": "Odrzuć",
   "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
-  "mobile.unsupported_server.ok": "OK"
+  "mobile.unsupported_server.ok": "OK",
+  "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search."
 }

@@ -631,5 +631,6 @@
   "mobile.post_textbox.multi_group.message.with_timezones": "Используя {mentions} и {finalMention}, вы собираетесь отправить уведомления по крайней мере {totalMembers} людям в {timezones, number} {timezones, plural, one {часовом поясе} other {часовых поясах}}. Вы уверены, что хотите это сделать?",
   "mobile.post_textbox.groups.title": "Подтвердите отправку уведомлений группам",
   "mobile.user_removed.title": "Удален из {channelName}",
-  "mobile.user_removed.message": "Вы были удалены из канала."
+  "mobile.user_removed.message": "Вы были удалены из канала.",
+  "mobile.emoji_picker.search.not_found_description": "Проверьте орфографию или попробуйте другой поиск."
 }

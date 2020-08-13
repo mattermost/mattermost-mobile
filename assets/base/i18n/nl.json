@@ -629,5 +629,6 @@
   "mobile.post_textbox.one_group.message.with_timezones": "Door het gebruik van {mention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen in {timezones,number} {timezones, plural, one {tijdzone} other {tijdzones}}. Ben je zeker dat je wil doen?",
   "mobile.post_textbox.one_group.message.without_timezones": "Door het gebruik van {mention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen. Ben je zeker dat je wil doen?",
   "mobile.post_textbox.multi_group.message.without_timezones": "Door het gebruik van {mentions} en {finalMention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen. Ben je zeker dat je dit wil doen?",
-  "mobile.post_textbox.multi_group.message.with_timezones": "Door het gebruik van {mentions} en {finalMention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen in {timezones,number} {timezones, plural, one {tijdzone} other {tijdzones}}. Ben je zeker dat je wil doen?"
+  "mobile.post_textbox.multi_group.message.with_timezones": "Door het gebruik van {mentions} en {finalMention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen in {timezones,number} {timezones, plural, one {tijdzone} other {tijdzones}}. Ben je zeker dat je wil doen?",
+  "mobile.emoji_picker.search.not_found_description": "Controleer de spelling of probeer een andere zoekopdracht."
 }

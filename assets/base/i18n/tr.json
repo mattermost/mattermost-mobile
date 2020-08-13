@@ -631,5 +631,6 @@
   "mobile.post_textbox.multi_group.message.without_timezones": "{mentions} ve {finalMention} kullanarak, en az {totalMembers} kişiye bildirim göndereceksiniz. Bunu yapmak istediğinize emin misiniz?",
   "mobile.post_textbox.multi_group.message.with_timezones": "{mentions} ve {finalMention} kullanarak, en az {timezones, number} {timezones, plural, one {saat dilimi} other {saat dilimi}} üzerindeki {totalMembers} kişiye bildirim göndereceksiniz. Bunu yapmak istediğinize emin misiniz?",
   "mobile.user_removed.title": "{channelName} kanalından çıkarıldı",
-  "mobile.user_removed.message": "Kanaldan çıkarıldınız."
+  "mobile.user_removed.message": "Kanaldan çıkarıldınız.",
+  "mobile.emoji_picker.search.not_found_description": "Yazımı denetleyin ya da başka bir arama yapmayı deneyin."
 }
