@@ -629,5 +629,7 @@
   "mobile.post_textbox.one_group.message.without_timezones": "Ao usar {mention}, você está prestes a enviar notificações para {totalMembers} pessoas. Você tem certeza de que quer fazer isso?",
   "mobile.post_textbox.one_group.message.with_timezones": "Ao usar {mention}, você está prestes a enviar notificações para {totalMembers} pessoas em {timezones, number} {timezones, plural, one {fuso horário} other {fusos horários}}. Você tem certeza de que quer fazer isso?",
   "mobile.post_textbox.multi_group.message.without_timezones": "Ao usar {mentions} e {finalMention}, você está prestes a enviar notificações para pelo menos {totalMembers} pessoas. Você tem certeza de que quer fazer isso?",
-  "mobile.post_textbox.multi_group.message.with_timezones": "Ao usar {mentions} e {finalMention}, você está prestes a enviar notificações para pelo menos {totalMembers} pessoas em {timezones, number} {timezones, plural, one {fuso horário} other {fusos horários}}. Você tem certeza de que quer fazer isso?"
+  "mobile.post_textbox.multi_group.message.with_timezones": "Ao usar {mentions} e {finalMention}, você está prestes a enviar notificações para pelo menos {totalMembers} pessoas em {timezones, number} {timezones, plural, one {fuso horário} other {fusos horários}}. Você tem certeza de que quer fazer isso?",
+  "mobile.user_removed.title": "Removido de {channelName}",
+  "mobile.user_removed.message": "Você foi removido do canal."
 }
