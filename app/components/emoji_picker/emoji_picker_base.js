@@ -14,6 +14,8 @@ import {
     View,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import Octicons from 'react-native-vector-icons/Octicons';
+
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import Emoji from 'app/components/emoji';
@@ -258,6 +260,8 @@ export default class EmojiPicker extends PureComponent {
                     nativeID={SCROLLVIEW_NATIVE_ID}
                     pageSize={10}
                     renderItem={this.flatListRenderItem}
+                    ListEmptyComponent={this.renderEmptyList}
+                    contentContainerStyle={styles.flex}
                     style={styles.flatList}
                 />
             );
@@ -449,6 +453,42 @@ export default class EmojiPicker extends PureComponent {
             </View>
         );
     };
+
+    renderEmptyList = () => {
+        const {theme} = this.props;
+        const {formatMessage} = this.context.intl;
+        const {searchTerm} = this.state;
+        const styles = getStyleSheetFromTheme(theme);
+        const title = formatMessage({
+            id: 'mobile.emoji_picker.search.not_found_title',
+            defaultMessage: 'No results found for "{searchTerm}"',
+        }, {
+            searchTerm,
+        });
+        const description = formatMessage({
+            id: 'mobile.emoji_picker.search.not_found_description',
+            defaultMessage: 'Check the spelling or try another search.',
+        });
+        return (
+            <View style={[styles.flex, styles.flexCenter]}>
+                <View style={styles.flexCenter}>
+                    <View style={styles.notFoundIcon}>
+                        <Octicons
+                            name='search'
+                            size={60}
+                            color={theme.buttonBg}
+                        />
+                    </View>
+                    <Text style={[styles.notFoundText, styles.notFoundText20]}>
+                        {title}
+                    </Text>
+                    <Text style={[styles.notFoundText, styles.notFoundText15]}>
+                        {description}
+                    </Text>
+                </View>
+            </View>
+        );
+    }
 }
 
 export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -514,6 +554,31 @@ export const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: 1,
             borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
             overflow: 'hidden',
+        },
+        flexCenter: {
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        notFoundIcon: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        notFoundText: {
+            color: theme.centerChannelColor,
+            marginTop: 16,
+        },
+        notFoundText20: {
+            fontSize: 20,
+            fontWeight: '600',
+        },
+        notFoundText15: {
+            fontSize: 15,
         },
         searchBar: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
