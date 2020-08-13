@@ -36,6 +36,13 @@ export const NotificationLevels = {
 export const NOTIFY_ALL_MEMBERS = 5;
 export const INDICATOR_BAR_HEIGHT = 38;
 
+export const CHANNEL_ITEM_LARGE_BADGE_MAX_WIDTH = 38;
+export const CHANNEL_ITEM_SMALL_BADGE_MAX_WIDTH = 32;
+export const LARGE_BADGE_MAX_WIDTH = 30;
+export const SMALL_BADGE_MAX_WIDTH = 26;
+export const LARGE_BADGE_RIGHT_POSITION = -16;
+export const SMALL_BADGE_RIGHT_POSITION = -13;
+
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
     SERVER_URL_CHANGED: null,
