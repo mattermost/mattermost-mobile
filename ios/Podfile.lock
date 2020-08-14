@@ -216,7 +216,7 @@ PODS:
     - React
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (2.3.1):
+  - react-native-image-picker (2.3.3):
     - React
   - react-native-local-auth (1.6.0):
     - React
@@ -322,7 +322,7 @@ PODS:
     - React
     - SDWebImage (~> 5.0)
     - SDWebImageWebPCoder (~> 0.4.1)
-  - RNFileViewer (2.1.0):
+  - RNFileViewer (2.1.1):
     - React
   - RNGestureHandler (1.6.1):
     - React
@@ -612,7 +612,7 @@ SPEC CHECKSUMS:
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
   react-native-document-picker: c5752781fbc0c126c627c1549b037c139444a4cf
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
+  react-native-image-picker: a6c3d644751a388b0fc8b56822ff7cbd398a3008
   react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
   react-native-mmkv-storage: 49389227471de5258b4e5bae7857bfe0ad02c8f7
   react-native-netinfo: 7f3f3ed9e8f0e7ab3e7cac00cbfdc6997e25ecaf
@@ -641,7 +641,7 @@ SPEC CHECKSUMS:
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
   RNDeviceInfo: b4e7cc649b2258a60490c7ac096efbf85fbe65c3
   RNFastImage: 35ae972d6727c84ee3f5c6897e07f84d0a3445e9
-  RNFileViewer: 3600e85d326dadfd0fd367eb38fcb4300b699b49
+  RNFileViewer: db62d60dd19007c54b2c959b5e675a46d59f8a43
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
   RNLocalize: fc27ee5878ce5a3af73873fb2d8e866e0d1e6d84
