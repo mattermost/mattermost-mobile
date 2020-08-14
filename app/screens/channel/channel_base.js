@@ -4,8 +4,9 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Animated, Keyboard, StyleSheet} from 'react-native';
+import {Alert, Animated, Keyboard, StyleSheet} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {General} from '@mm-redux/constants';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
@@ -83,6 +84,7 @@ export default class ChannelBase extends PureComponent {
         EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
+        EventEmitter.on(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
 
         if (currentTeamId) {
             this.loadChannels(currentTeamId);
@@ -154,6 +156,7 @@ export default class ChannelBase extends PureComponent {
         EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+        EventEmitter.off(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
     }
 
     registerTypingAnimation = (animation) => {
@@ -201,6 +204,21 @@ export default class ChannelBase extends PureComponent {
 
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
+    };
+
+    handleRemovedFromChannel = (channelName) => {
+        const {formatMessage} = this.context.intl;
+
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.user_removed.title',
+                defaultMessage: 'Removed from {channelName}',
+            }, {channelName}),
+            formatMessage({
+                id: 'mobile.user_removed.message',
+                defaultMessage: 'You were removed from the channel.',
+            }),
+        );
     };
 
     loadChannels = (teamId) => {
