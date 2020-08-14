@@ -310,7 +310,7 @@ PODS:
     - React-RCTText
   - rn-fetch-blob (0.12.0):
     - React-Core
-  - RNCAsyncStorage (1.10.1):
+  - RNCAsyncStorage (1.11.0):
     - React
   - RNCClipboard (1.2.3):
     - React
@@ -636,7 +636,7 @@ SPEC CHECKSUMS:
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 667586f6924fbd09512e2933fe70497db914b758
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
-  RNCAsyncStorage: f640ddf9266df777c38e112ea5881ead7188b59c
+  RNCAsyncStorage: db711e29e5e0500d9bd21aa0c2e397efa45302b1
   RNCClipboard: 5f3218dcdc28405aa2ae72b78e388f150b826dd3
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
   RNDeviceInfo: 498ccbf8b1361fe858581e3c1193ecee1a031e62
