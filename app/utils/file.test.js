@@ -1,7 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {generateId, getLocalFilePathFromFile, getExtensionFromContentDisposition} from 'app/utils/file';
+import {
+    generateId,
+    getLocalFilePathFromFile,
+    getExtensionFromContentDisposition,
+} from 'app/utils/file';
 
 describe('getExtensionFromContentDisposition', () => {
     it('should return the extracted the extension', () => {
