@@ -6,7 +6,7 @@ import {ActionResult, DispatchFunc, batchActions} from '@mm-redux/types/actions'
 import {WebSocketMessage} from '@mm-redux/types/websocket';
 
 export function handleGroupUpdatedEvent(msg: WebSocketMessage) {
-    return (dispatch: DispatchFunc) : ActionResult => {
+    return (dispatch: DispatchFunc): ActionResult => {
         const data = JSON.parse(msg.data.group);
         dispatch(batchActions([
             {

@@ -3,7 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, View, Text} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from '@mm-redux/constants';
@@ -15,6 +16,8 @@ import {NavigationTypes} from 'app/constants';
 import {confirmOutOfOfficeDisabled} from 'app/utils/status';
 import {preventDoubleTap} from 'app/utils/tap';
 import {t} from 'app/utils/i18n';
+import {doPluginAction} from '@actions/plugins';
+import {changeOpacity} from 'app/utils/theme';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -25,8 +28,10 @@ export default class SettingsSidebarBase extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
+            fetchMobilePluginIntegrations: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
+        plugins: PropTypes.array.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -39,6 +44,7 @@ export default class SettingsSidebarBase extends PureComponent {
     componentDidMount() {
         this.mounted = true;
         EventEmitter.on(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
+        this.props.actions.fetchMobilePluginIntegrations();
     }
 
     componentWillUnmount() {
@@ -184,6 +190,61 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
+    getPluginOptions = (style) => {
+        const {plugins, theme} = this.props;
+        if (plugins.length === 0) {
+            return null;
+        }
+
+        const options = plugins.map((p, i) => {
+            let leftComponent;
+            if (p.extra.icon) {
+                leftComponent = (
+                    <FastImage
+                        source={{uri: p.extra.icon}}
+                        style={{width: 36, height: 36}}
+                    />
+                );
+            }
+            return (
+                <DrawerItem
+                    key={p.id}
+                    labelComponent={
+                        (
+                            <Text
+                                style={[{
+                                    color: changeOpacity(theme.centerChannelColor, 0.5),
+                                    flex: 1,
+                                    fontSize: 17,
+                                    textAlignVertical: 'center',
+                                    includeFontPadding: false,
+                                }]}
+                            >
+                                {p.extra.text}
+                            </Text>
+                        )
+                    }
+                    onPress={() => {
+                        doPluginAction(p.id, p.request_url, {});
+                        this.closeSettingsSidebar();
+                    }}
+                    separator={i !== plugins.length - 1}
+                    theme={theme}
+                    leftComponent={leftComponent}
+                />
+            );
+        });
+
+        return (
+            <React.Fragment>
+                <View style={style.separator}/>
+                <View style={style.block}>
+                    {options}
+                </View>
+            </React.Fragment>
+        );
+    }
+
     renderOptions = (style) => {
         const {currentUser, theme} = this.props;
 
@@ -248,6 +309,7 @@ export default class SettingsSidebarBase extends PureComponent {
                             theme={theme}
                         />
                     </View>
+                    {this.getPluginOptions(style)}
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem

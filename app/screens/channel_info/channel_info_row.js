@@ -43,6 +43,13 @@ function channelInfoRow(props) {
                 style={style.leftIcon}
             />
         );
+    } else if (image.uri) {
+        iconElement = (
+            <Image
+                source={image}
+                style={{width: 15, height: 15}}
+            />
+        );
     } else {
         iconElement = (
             <Image
@@ -100,7 +107,10 @@ channelInfoRow.propTypes = {
     ]),
     icon: PropTypes.string,
     iconColor: PropTypes.string,
-    image: PropTypes.number,
+    image: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.object,
+    ]),
     imageTintColor: PropTypes.string,
     rightArrow: PropTypes.bool,
     textId: PropTypes.string.isRequired,

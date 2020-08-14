@@ -45,7 +45,7 @@ export default class ChannelInfo extends PureComponent {
             selectPenultimateChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            getMobilePlugins: PropTypes.func.isRequired,
+            fetchMobilePluginIntegrations: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         viewArchivedChannels: PropTypes.bool.isRequired,
@@ -70,7 +70,7 @@ export default class ChannelInfo extends PureComponent {
         isBot: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        mobilePlugins: PropTypes.array,
+        plugins: PropTypes.array,
     };
 
     static defaultProps = {
@@ -109,7 +109,7 @@ export default class ChannelInfo extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
         this.props.actions.getChannelStats(this.props.currentChannel.id);
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
-        this.props.actions.getMobilePlugins();
+        this.props.actions.fetchMobilePluginIntegrations();
     }
 
     navigationButtonPressed({buttonId}) {
@@ -461,15 +461,16 @@ export default class ChannelInfo extends PureComponent {
             currentChannel,
         } = this.props;
 
-        const channelHeaderPlugins = this.props.mobilePlugins.filter((plugin) => plugin.location === 'CHANNEL_HEADER');
+        const channelHeaderPlugins = this.props.plugins.filter((plugin) => plugin.location === 'CHANNEL_HEADER');
         return channelHeaderPlugins.map((plugin) => (
-            <React.Fragment key={plugin.id + plugin.requestURL}>
+            <React.Fragment key={plugin.id + plugin.request_url}>
                 <ChannelInfoRow
-                    action={() => doPluginAction(plugin.id, plugin.requestURL, {channel_id: currentChannel.id})}
-                    defaultMessage={plugin.extra} // in future version should use plugin.extra.defaultMessage
+                    action={() => doPluginAction(plugin.id, plugin.request_url, {channel_id: currentChannel.id})}
+                    defaultMessage={plugin.extra.text} // in future version should use plugin.extra.defaultMessage
                     theme={theme}
                     isLandscape={isLandscape}
-                    textId={plugin.id + plugin.requestURL}
+                    textId={plugin.id + plugin.request_url}
+                    image={{uri: plugin.extra.icon}}
                 />
             </React.Fragment>
         ));

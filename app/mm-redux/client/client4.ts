@@ -2819,7 +2819,7 @@ export default class Client4 {
             {method: 'get'},
         );
     }
-    
+
     getCommandAutocompleteSuggestionsList = (userInput: string, teamId: string, commandArgs: {}) => {
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/commands/autocomplete_suggestions${buildQueryString({...commandArgs, user_input: userInput})}`,

@@ -54,7 +54,12 @@ export default class PostOption extends PureComponent {
     render() {
         const {destructive, icon, text, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
-        const image = icons[icon];
+        let imageStyle = style.iconImage;
+        let image = icons[icon];
+        if (!image) {
+            image = {uri: icon};
+            imageStyle = {width: 36, height: 36};
+        }
 
         const Touchable = Platform.select({
             ios: TouchableHighlight,
@@ -84,7 +89,7 @@ export default class PostOption extends PureComponent {
                         <View style={[style.icon]}>
                             <Image
                                 source={image}
-                                style={[style.iconImage, destructive ? style.destructiveIconImage : null]}
+                                style={[imageStyle, destructive ? style.destructiveIconImage : null]}
                             />
                         </View>
                         <View style={style.textContainer}>

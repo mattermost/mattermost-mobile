@@ -17,7 +17,7 @@ import {
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
 import {clearPinnedPosts} from '@mm-redux/actions/search';
-import {General} from '@mm-redux/constants';
+import {General, Plugins} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {
     canManageChannelMembers,
@@ -120,7 +120,7 @@ function mapStateToProps(state) {
         });
     }
 
-    const mobilePlugins = getPluginIntegrations(state);
+    const plugins = getPluginIntegrations(state, Plugins.PLUGIN_LOCATION_CHANNEL_HEADER);
 
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
@@ -146,7 +146,7 @@ function mapStateToProps(state) {
         isTeammateGuest,
         isLandscape: isLandscape(state),
         timeZone,
-        mobilePlugins,
+        plugins,
     };
 }
 

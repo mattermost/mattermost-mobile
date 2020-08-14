@@ -17,6 +17,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
+import {doPluginAction} from '@actions/plugins';
 
 import PostOption from './post_option';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
@@ -32,6 +33,7 @@ export default class PostOptions extends PureComponent {
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
             setUnreadPost: PropTypes.func.isRequired,
+            fetchMobilePluginIntegrations: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
         canReply: PropTypes.bool,
@@ -47,6 +49,7 @@ export default class PostOptions extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
+        plugins: PropTypes.array.isRequired,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -55,6 +58,10 @@ export default class PostOptions extends PureComponent {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
+
+    componentDidMount() {
+        this.props.actions.fetchMobilePluginIntegrations();
+    }
 
     close = async (cb) => {
         await dismissModal();
@@ -234,6 +241,33 @@ export default class PostOptions extends PureComponent {
         return null;
     };
 
+    getPluginOptions = () => {
+        const {post, plugins, isLandscape, theme} = this.props;
+        if (!plugins) {
+            return [];
+        }
+
+        if (!isSystemMessage(post)) {
+            return plugins.map((p) => {
+                return (
+                    <PostOption
+                        key={p.id}
+                        icon={p.extra.icon}
+                        text={p.extra.text}
+                        onPress={() => {
+                            doPluginAction(p.id, p.request_url, {post_id: post.id});
+                            this.closeWithAnimation();
+                        }}
+                        isLandscape={isLandscape}
+                        theme={theme}
+                    />
+                );
+            });
+        }
+
+        return [];
+    }
+
     getPostOptions = () => {
         const actions = [
             this.getReplyOption(),
@@ -243,6 +277,7 @@ export default class PostOptions extends PureComponent {
             this.getCopyText(),
             this.getPinOption(),
             this.getEditOption(),
+            ...this.getPluginOptions(),
             this.getDeleteOption(),
         ];
 

@@ -21,6 +21,7 @@ describe('PostOptions', () => {
         unflagPost: jest.fn(),
         unpinPost: jest.fn(),
         setUnreadPost: jest.fn(),
+        fetchMobilePluginIntegrations: jest.fn(),
     };
 
     const post = {
@@ -52,6 +53,7 @@ describe('PostOptions', () => {
         showAddReaction: true,
         theme: Preferences.THEMES.default,
         isLandscape: false,
+        plugins: [],
     };
 
     function getWrapper(props = {}) {

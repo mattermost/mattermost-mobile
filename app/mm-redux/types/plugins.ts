@@ -26,7 +26,7 @@ export type MarketplacePlugin = {
 export type PluginIntegration = {
     id: string;
     location: string;
-    requestURL: string;
+    request_url: string;
     extra: any;
 }
 
