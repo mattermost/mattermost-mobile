@@ -623,5 +623,5 @@
   "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
   "mobile.unsupported_server.ok": "OK",
   "mobile.post_textbox.multi_group.message.with_timezones": "Wenn Sie {mentions} und {finalMention} verwenden, werden Sie Benachrichtigungen an mindestens {totalMembers} Menschen in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Sind Sie sich sicher, Sie wollen dies tun?",
-  "mobile.emoji_picker.search.not_found_description": ""
+  "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search."
 }
