@@ -367,6 +367,7 @@ export default class EditChannelInfo extends PureComponent {
                         nestedScrollEnabled={true}
                         onKeyboardOffsetChanged={this.onKeyboardOffsetChanged}
                         offsetY={8}
+                        style={style.autocomplete}
                     />
                 </View>
             </React.Fragment>
@@ -376,6 +377,9 @@ export default class EditChannelInfo extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        autocomplete: {
+            position: undefined,
+        },
         autocompleteContainer: {
             position: 'absolute',
             width: '100%',

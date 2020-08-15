@@ -619,5 +619,15 @@
   "mobile.server_upgrade.alert_description": "Această versiune a serverului nu este compatibilă, iar utilizatorii vor fi expuși la probleme de compatibilitate care cauzează prăbușiri sau erori grave care rup funcționalitatea principală a aplicației. Actualizarea la versiunea serverului {serverVersion} sau o versiune ulterioară este necesară.",
   "mobile.server_upgrade.learn_more": "Aflați Mai Multe",
   "mobile.server_upgrade.dismiss": "Elimină",
-  "suggestion.mention.groups": "Mențiuni de grup"
+  "suggestion.mention.groups": "Mențiuni de grup",
+  "mobile.post_textbox.groups.title": "Confirmați trimiterea notificărilor către grupuri",
+  "mobile.unsupported_server.ok": "OK",
+  "mobile.unsupported_server.title": "Versiunea serverului neacceptat",
+  "mobile.unsupported_server.message": "Fișierele atașate, previzualizările linkurilor, reacțiile și datele încorporate nu pot fi afișate corect. Dacă această problemă persistă, contactați administratorul de sistem pentru a actualiza serverul dvs. Mattermost.",
+  "mobile.post_textbox.one_group.message.without_timezones": "Folosind {mentionare} sunteți pe punctul de a trimite notificări către {totalMembers} persoane. Ești sigur că vrei să faci asta?",
+  "mobile.post_textbox.one_group.message.with_timezones": "Folosind {mentionare} sunteți pe punctul de a trimite notificări către {totalMembers} persoane din {timezones, number} {timezones, plural, una {timezone} alte {timezones}}. Ești sigur că vrei să faci asta?",
+  "mobile.post_textbox.multi_group.message.without_timezones": "Folosind {mentions} și {finalMention} sunteți pe punctul de a trimite notificări la cel puțin {totalMembers} persoane. Ești sigur că vrei să faci asta?",
+  "mobile.post_textbox.multi_group.message.with_timezones": "Folosind {mentions} și {finalMention} sunteți pe punctul de a trimite notificări la cel puțin {totalMembers} persoane din {timezones, number} {timezones, plural, una {timezone} alte {timezones}}. Ești sigur că vrei să faci asta?",
+  "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nou} other {mai multe noi}} {count, plural, one {mesaj} other {mesaje}}",
+  "mobile.android.back_handler_exit": "Apăsați inapoi din nou pentru a ieși"
 }

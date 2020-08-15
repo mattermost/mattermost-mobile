@@ -2,7 +2,6 @@
 
 exports[`profile_picture_button should match snapshot 1`] = `
 <AttachmentButton
-  blurTextBox={[MockFunction]}
   browseFileTypes="public.item"
   canBrowseFiles={true}
   canBrowsePhotoLibrary={true}

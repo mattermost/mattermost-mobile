@@ -4,13 +4,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Animated, Keyboard, StyleSheet} from 'react-native';
+import {Alert, Animated, Keyboard, StyleSheet} from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {General} from '@mm-redux/constants';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
-import {NavigationTypes} from '@constants';
-import {TYPING_VISIBLE} from '@constants/post_draft';
+import {UPDATE_NATIVE_SCROLLVIEW, TYPING_VISIBLE} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import {unsupportedServer} from '@utils/supported_server';
@@ -56,7 +56,6 @@ export default class ChannelBase extends PureComponent {
         super(props);
 
         this.postDraft = React.createRef();
-        this.keyboardTracker = React.createRef();
 
         this.state = {
             channelsRequestFailed: false,
@@ -80,9 +79,10 @@ export default class ChannelBase extends PureComponent {
             showTermsOfService,
             skipMetrics,
         } = this.props;
-        EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
+
         EventEmitter.on('leave_team', this.handleLeaveTeam);
         EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
+        EventEmitter.on(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
 
         if (currentTeamId) {
             this.loadChannels(currentTeamId);
@@ -118,6 +118,10 @@ export default class ChannelBase extends PureComponent {
             this.props.actions.recordLoadTime('Switch Team', 'teamSwitch');
         }
 
+        if (prevProps.isSupportedServer && !this.props.isSupportedServer) {
+            unsupportedServer(this.props.isSystemAdmin, this.context.intl.formatMessage);
+        }
+
         if (this.props.theme !== prevProps.theme) {
             setNavigatorStyles(this.props.componentId, this.props.theme);
             EphemeralStore.allNavigationComponentIds.forEach((componentId) => {
@@ -147,9 +151,9 @@ export default class ChannelBase extends PureComponent {
     }
 
     componentWillUnmount() {
-        EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blurPostDraft);
         EventEmitter.off('leave_team', this.handleLeaveTeam);
         EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
+        EventEmitter.off(General.REMOVED_FROM_CHANNEL, this.handleRemovedFromChannel);
     }
 
     registerTypingAnimation = (animation) => {
@@ -167,12 +171,6 @@ export default class ChannelBase extends PureComponent {
             this.typingAnimations.map((animation) => animation(typingVisible)),
         ).start();
     }
-
-    blurPostDraft = () => {
-        if (this.postDraft?.current) {
-            this.postDraft.current.blurTextBox();
-        }
-    };
 
     goToChannelInfo = preventDoubleTap(() => {
         const {intl} = this.context;
@@ -197,6 +195,21 @@ export default class ChannelBase extends PureComponent {
 
     handleLeaveTeam = () => {
         this.props.actions.selectDefaultTeam();
+    };
+
+    handleRemovedFromChannel = (channelName) => {
+        const {formatMessage} = this.context.intl;
+
+        Alert.alert(
+            formatMessage({
+                id: 'mobile.user_removed.title',
+                defaultMessage: 'Removed from {channelName}',
+            }, {channelName}),
+            formatMessage({
+                id: 'mobile.user_removed.message',
+                defaultMessage: 'You were removed from the channel.',
+            }),
+        );
     };
 
     loadChannels = (teamId) => {
@@ -292,9 +305,7 @@ export default class ChannelBase extends PureComponent {
     };
 
     updateNativeScrollView = () => {
-        if (this.keyboardTracker?.current) {
-            this.keyboardTracker.current.resetScrollView(this.props.currentChannelId);
-        }
+        EventEmitter.emit(UPDATE_NATIVE_SCROLLVIEW, this.props.currentChannelId);
     };
 
     render() {

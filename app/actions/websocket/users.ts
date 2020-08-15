@@ -152,6 +152,7 @@ export function handleUserRemovedEvent(msg: WebSocketMessage) {
 
             dispatch(batchActions(actions, 'BATCH_WS_USER_REMOVED'));
             if (redirectToDefaultChannel) {
+                EventEmitter.emit(General.REMOVED_FROM_CHANNEL, channel.display_name);
                 EventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
             }
         } catch {

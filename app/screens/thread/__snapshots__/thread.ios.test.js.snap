@@ -48,47 +48,30 @@ exports[`thread should match snapshot, has root post 1`] = `
           scrollViewNativeID="threadPostList"
         />
       </ForwardRef(AnimatedComponentWrapper)>
+      <View
+        nativeID="threadAccessoriesContainer"
+      >
+        <Connect(Autocomplete)
+          channelId="channel_id"
+          cursorPositionEvent="onThreadTextBoxCursorChange"
+          maxHeight={200}
+          onChangeText={[Function]}
+          rootId="root_id"
+          valueEvent="onThreadTextBoxValueChange"
+        />
+      </View>
     </React.Fragment>
   </Connect(SafeAreaIos)>
-  <KeyboardTrackingView
+  <Connect(PostDraft)
     accessoriesContainerID="threadAccessoriesContainer"
+    channelId="channel_id"
+    channelIsArchived={false}
+    cursorPositionEvent="onThreadTextBoxCursorChange"
+    registerTypingAnimation={[Function]}
+    rootId="root_id"
     scrollViewNativeID="threadPostList"
-  >
-    <Connect(PostDraft)
-      channelId="channel_id"
-      channelIsArchived={false}
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      registerTypingAnimation={
-        [MockFunction] {
-          "calls": Array [
-            Array [
-              [Function],
-            ],
-          ],
-          "results": Array [
-            Object {
-              "type": "return",
-              "value": [MockFunction],
-            },
-          ],
-        }
-      }
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </KeyboardTrackingView>
-  <View
-    nativeID="threadAccessoriesContainer"
-  >
-    <Connect(Autocomplete)
-      channelId="channel_id"
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      maxHeight={200}
-      onChangeText={[Function]}
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </View>
+    valueEvent="onThreadTextBoxValueChange"
+  />
 </React.Fragment>
 `;
 
@@ -113,18 +96,6 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
       style={Object {}}
     />
   </Connect(SafeAreaIos)>
-  <View
-    nativeID="threadAccessoriesContainer"
-  >
-    <Connect(Autocomplete)
-      channelId="channel_id"
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      maxHeight={200}
-      onChangeText={[Function]}
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </View>
 </React.Fragment>
 `;
 
@@ -195,17 +166,5 @@ exports[`thread should match snapshot, render footer 3`] = `
       style={Object {}}
     />
   </Connect(SafeAreaIos)>
-  <View
-    nativeID="threadAccessoriesContainer"
-  >
-    <Connect(Autocomplete)
-      channelId="channel_id"
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      maxHeight={200}
-      onChangeText={[Function]}
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </View>
 </React.Fragment>
 `;

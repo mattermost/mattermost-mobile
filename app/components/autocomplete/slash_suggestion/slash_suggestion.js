@@ -50,7 +50,7 @@ export default class SlashSuggestion extends PureComponent {
     };
 
     componentWillReceiveProps(nextProps) {
-        if ((nextProps.value === this.props.value && nextProps.suggestions === this.props.suggestions) ||
+        if ((nextProps.value === this.props.value && nextProps.suggestions === this.props.suggestions && nextProps.commands === this.props.commands) ||
             nextProps.isSearch || nextProps.value.startsWith('//') || !nextProps.channelId) {
             return;
         }

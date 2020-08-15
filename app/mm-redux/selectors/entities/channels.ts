@@ -147,6 +147,9 @@ export const getMyChannelMember: (b: GlobalState, a: string) => ChannelMembershi
 export const getCurrentChannelStats: (a: GlobalState) => ChannelStats = createSelector(getAllChannelStats, getCurrentChannelId, (allChannelStats: RelationOneToOne<Channel, ChannelStats>, currentChannelId: string): ChannelStats => {
     return allChannelStats[currentChannelId];
 });
+export const getChannelStats: (a: GlobalState, b: string) => ChannelStats = createSelector(getAllChannelStats, (state: GlobalState, channelId: string): string => channelId, (allChannelStats: RelationOneToOne<Channel, ChannelStats>, channelId: string): ChannelStats => {
+    return allChannelStats[channelId];
+});
 export const isCurrentChannelFavorite: (a: GlobalState) => boolean = createSelector(getMyPreferences, getCurrentChannelId, (preferences: {
     [x: string]: PreferenceType;
 }, channelId: string): boolean => isFavoriteChannel(preferences, channelId));

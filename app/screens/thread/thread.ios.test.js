@@ -6,8 +6,10 @@ import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {General, RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import PostList from 'app/components/post_list';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 
 import ThreadIOS from './thread.ios';
 
@@ -30,9 +32,6 @@ describe('thread', () => {
         postIds: ['root_id', 'post_id_1', 'post_id_2'],
         channelIsArchived: false,
         threadLoadingStatus: {status: RequestStatus.STARTED},
-        registerTypingAnimation: jest.fn(() => {
-            return jest.fn();
-        }),
     };
 
     test('should match snapshot, has root post', () => {
@@ -80,11 +79,21 @@ describe('thread', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
         const instance = wrapper.instance();
+        instance.registerTypingAnimation = jest.fn(() => {
+            return jest.fn();
+        });
+        instance.bottomPaddingAnimation = jest.fn();
+        instance.runTypingAnimations = jest.fn();
+        EventEmitter.on = jest.fn();
+        EventEmitter.off = jest.fn();
 
-        expect(baseProps.registerTypingAnimation).toHaveBeenCalledTimes(1);
+        instance.componentDidMount();
+        expect(instance.registerTypingAnimation).toHaveBeenCalledWith(instance.bottomPaddingAnimation);
         expect(instance.removeTypingAnimation).not.toHaveBeenCalled();
+        expect(EventEmitter.on).toHaveBeenCalledWith(TYPING_VISIBLE, instance.runTypingAnimations);
 
-        wrapper.unmount();
-        expect(instance.removeTypingAnimation).toHaveBeenCalledTimes(1);
+        instance.componentWillUnmount();
+        expect(instance.removeTypingAnimation).toHaveBeenCalled();
+        expect(EventEmitter.off).toHaveBeenCalledWith(TYPING_VISIBLE, instance.runTypingAnimations);
     });
 });

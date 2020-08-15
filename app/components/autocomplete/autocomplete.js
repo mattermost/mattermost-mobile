@@ -7,6 +7,7 @@ import {
     Keyboard,
     Platform,
     View,
+    ViewPropTypes,
 } from 'react-native';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -38,6 +39,7 @@ export default class Autocomplete extends PureComponent {
         onVisible: PropTypes.func,
         offsetY: PropTypes.number,
         onKeyboardOffsetChanged: PropTypes.func,
+        style: ViewPropTypes.style,
     };
 
     static defaultProps = {

@@ -74,7 +74,7 @@
   "edit_post.editPost": "Bewerk het bericht...",
   "edit_post.save": "Opslaan",
   "file_attachment.download": "Downloaden",
-  "file_upload.fileAbove": "Het bestand groter dan {max} MB kan niet worden geüploaded: {filename}",
+  "file_upload.fileAbove": "Het bestand kleiner zijn dan {max}",
   "get_post_link_modal.title": "Kopieer link",
   "integrations.add": "Toevoegen",
   "intro_messages.anyMember": " Ieder lid kan dit kanaal lezen en volgen.",
@@ -624,5 +624,10 @@
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {nieuwe} other {meer nieuwe}} {count, plural, one {bericht} other {berichten}}",
   "mobile.unsupported_server.title": "Niet ondersteunde serverversie",
   "mobile.unsupported_server.ok": "OK",
-  "mobile.unsupported_server.message": "Bijlagen, link voorvertoningen, reacties en ingevoegde bestanden worden mogelijks niet correct weergegeven. Als dit euvel blijft bestaan, contacteer je systeembeheerder om je Mattermost server te upgraden."
+  "mobile.unsupported_server.message": "Bijlagen, link voorvertoningen, reacties en ingevoegde bestanden worden mogelijks niet correct weergegeven. Als dit euvel blijft bestaan, contacteer je systeembeheerder om je Mattermost server te upgraden.",
+  "mobile.post_textbox.groups.title": "Verzenden van meldingen naar groepen bevestigen",
+  "mobile.post_textbox.one_group.message.with_timezones": "Door het gebruik van {mention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen in {timezones,number} {timezones, plural, one {tijdzone} other {tijdzones}}. Ben je zeker dat je wil doen?",
+  "mobile.post_textbox.one_group.message.without_timezones": "Door het gebruik van {mention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen. Ben je zeker dat je wil doen?",
+  "mobile.post_textbox.multi_group.message.without_timezones": "Door het gebruik van {mentions} en {finalMention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen. Ben je zeker dat je dit wil doen?",
+  "mobile.post_textbox.multi_group.message.with_timezones": "Door het gebruik van {mentions} en {finalMention} sta je op het punt om meldingen te zenden naar minstens {totalMembers} mensen in {timezones,number} {timezones, plural, one {tijdzone} other {tijdzones}}. Ben je zeker dat je wil doen?"
 }

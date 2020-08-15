@@ -64,7 +64,6 @@ export default class EmojiSuggestion extends PureComponent {
         super(props);
 
         this.matchTerm = '';
-        this.listRef = React.createRef();
         fuse = new Fuse(props.emojis, FUSE_OPTIONS);
     }
 
@@ -219,23 +218,16 @@ export default class EmojiSuggestion extends PureComponent {
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
 
-        let height;
         if (!this.state.active) {
-            // If we are not in an active state set a height of 0 so nothing is rendered
-            // and other components are not blocked.
-            height = 0;
-            if (this.listRef.current) {
-                this.listRef.current.scrollToOffset({offset: 0});
-            }
+            return null;
         }
 
         const style = getStyleFromTheme(theme);
 
         return (
             <FlatList
-                ref={this.listRef}
                 keyboardShouldPersistTaps='always'
-                style={[style.listView, {maxHeight: maxListHeight, height}]}
+                style={[style.listView, {maxHeight: maxListHeight}]}
                 extraData={this.state}
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}

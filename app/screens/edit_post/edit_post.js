@@ -248,27 +248,29 @@ export default class EditPost extends PureComponent {
         ];
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                <View style={style.scrollView}>
-                    {displayError}
-                    <View style={[inputContainerStyle, padding(isLandscape), {height}]}>
-                        <TextInputWithLocalizedPlaceholder
-                            ref={this.messageRef}
-                            value={message}
-                            blurOnSubmit={false}
-                            onChangeText={this.onPostChangeText}
-                            multiline={true}
-                            numberOfLines={10}
-                            style={[style.input, {height}]}
-                            placeholder={{id: t('edit_post.editPost'), defaultMessage: 'Edit the post...'}}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
-                            keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
-                            onSelectionChange={this.handleOnSelectionChange}
-                            keyboardType={this.state.keyboardType}
-                        />
+            <>
+                <View style={style.container}>
+                    <StatusBar/>
+                    <View style={style.scrollView}>
+                        {displayError}
+                        <View style={[inputContainerStyle, padding(isLandscape), {height}]}>
+                            <TextInputWithLocalizedPlaceholder
+                                ref={this.messageRef}
+                                value={message}
+                                blurOnSubmit={false}
+                                onChangeText={this.onPostChangeText}
+                                multiline={true}
+                                numberOfLines={10}
+                                style={[style.input, {height}]}
+                                placeholder={{id: t('edit_post.editPost'), defaultMessage: 'Edit the post...'}}
+                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                                underlineColorAndroid='transparent'
+                                disableFullscreenUI={true}
+                                keyboardAppearance={getKeyboardAppearanceFromTheme(this.props.theme)}
+                                onSelectionChange={this.handleOnSelectionChange}
+                                keyboardType={this.state.keyboardType}
+                            />
+                        </View>
                     </View>
                 </View>
                 <KeyboardTrackingView style={autocompleteStyles}>
@@ -280,15 +282,19 @@ export default class EditPost extends PureComponent {
                         nestedScrollEnabled={true}
                         onVisible={this.onAutocompleteVisible}
                         offsetY={8}
+                        style={style.autocomplete}
                     />
                 </KeyboardTrackingView>
-            </View>
+            </>
         );
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        autocomplete: {
+            position: undefined,
+        },
         container: {
             flex: 1,
         },
