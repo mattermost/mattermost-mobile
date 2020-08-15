@@ -3,11 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, View} from 'react-native';
+import {Image, Text, View} from 'react-native';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import slashIcon from '@assets/images/autocomplete/slash_command.png';
 
 export default class SlashSuggestionItem extends PureComponent {
     static propTypes = {
@@ -45,7 +46,12 @@ export default class SlashSuggestionItem extends PureComponent {
             >
                 <View style={style.container}>
                     <View style={style.icon}>
-                        <Text style={style.iconText}>{'/'}</Text>
+                        <Image
+                            style={style.iconColor}
+                            width={10}
+                            height={16}
+                            source={slashIcon}
+                        />
                     </View>
                     <View style={style.suggestionContainer}>
                         <Text style={style.suggestionName}>{`${suggestion.substring(1, suggestion.length)} ${hint}`}</Text>
@@ -74,9 +80,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 4,
             justifyContent: 'center',
             alignItems: 'center',
+            marginTop: 8,
         },
-        iconText: {
-            color: theme.centerChannelColor,
+        iconColor: {
+            tintColor: theme.centerChannelColor,
         },
         container: {
             flexDirection: 'row',
