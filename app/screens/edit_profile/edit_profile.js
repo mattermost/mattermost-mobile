@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Alert, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import DocumentPicker from 'react-native-document-picker';
 import {Navigation} from 'react-native-navigation';
 
@@ -14,7 +14,6 @@ import {Client4} from '@mm-redux/client';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -200,7 +199,7 @@ export default class EditProfile extends PureComponent {
         this.setState({error, updating: false});
         this.emitCanUpdateAccount(true);
         if (this.scrollView) {
-            this.scrollView.props.scrollToPosition(0, 0);
+            this.scrollView.props.scrollTo({x: 0, y: 0});
         }
     };
 
@@ -294,14 +293,13 @@ export default class EditProfile extends PureComponent {
         });
     };
 
-    onShowFileSizeWarning = (filename) => {
+    onShowFileSizeWarning = () => {
         const {formatMessage} = this.context.intl;
         const fileSizeWarning = formatMessage({
             id: 'file_upload.fileAbove',
-            defaultMessage: 'File above {max}MB cannot be uploaded: {filename}',
+            defaultMessage: 'Files must be less than {max}',
         }, {
             max: getFormattedFileSize({size: MAX_SIZE}),
-            filename,
         });
 
         Alert.alert(fileSizeWarning);
@@ -541,7 +539,6 @@ export default class EditProfile extends PureComponent {
                 <ProfilePictureButton
                     currentUser={currentUser}
                     theme={theme}
-                    blurTextBox={emptyFunction}
                     browseFileTypes={DocumentPicker.types.images}
                     canTakeVideo={false}
                     canBrowseVideoLibrary={false}

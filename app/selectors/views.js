@@ -10,6 +10,14 @@ const emptyDraft = {
     files: [],
 };
 
+export function selectDraft(state, channelId, rootId) {
+    if (rootId) {
+        return state.views.thread.drafts[rootId];
+    }
+
+    return state.views.channel.drafts[channelId];
+}
+
 function getChannelDrafts(state) {
     return state.views.channel.drafts;
 }

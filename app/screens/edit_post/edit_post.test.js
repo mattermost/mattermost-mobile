@@ -62,7 +62,7 @@ describe('EditPost', () => {
             [false],
         ]);
         expect(instance.setState.mock.calls).toEqual([
-            [{editing: true, error: null}],
+            [{editing: true, error: null, errorExtra: null}],
             [{editing: false, error}, instance.focus],
         ]);
     });
@@ -89,7 +89,7 @@ describe('EditPost', () => {
             [false],
         ]);
         expect(instance.setState.mock.calls).toEqual([
-            [{editing: true, error: null}],
+            [{editing: true, error: null, errorExtra: null}],
             [{editing: false}, instance.close],
         ]);
     });

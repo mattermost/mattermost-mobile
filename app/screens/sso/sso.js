@@ -10,7 +10,7 @@ import {
     Platform,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import CookieManager from '@react-native-community/cookies';
+import CookieManager from 'react-native-cookies';
 import urlParse from 'url-parse';
 
 import {Client4} from '@mm-redux/client';
@@ -27,7 +27,7 @@ const HEADERS = {
     'X-Mobile-App': 'mattermost',
 };
 
-const postMessageJS = "window.ReactNativeWebView.postMessage(document.body.innerText, '*');";
+const postMessageJS = "window.postMessage(document.body.innerText, '*');";
 
 // Used to make sure that OneLogin forms scale appropriately on both platforms.
 const oneLoginFormScalingJS = `
@@ -104,6 +104,51 @@ class SSO extends PureComponent {
         }
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.cookiesTimeout);
+    }
+
+    extractCookie = (parsedUrl) => {
+        const original = urlParse(this.props.serverUrl);
+
+        // Check whether we need to set a sub-path
+        parsedUrl.set('pathname', original.pathname || '');
+
+        parsedUrl.set('query', '');
+        Client4.setUrl(parsedUrl.href);
+
+        CookieManager.get(parsedUrl.href, true).then((res) => {
+            const mmtoken = res.MMAUTHTOKEN;
+            const csrf = res.MMCSRF;
+            const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+            const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
+
+            if (csrfToken) {
+                Client4.setCSRF(csrfToken);
+            }
+
+            if (token) {
+                clearTimeout(this.cookiesTimeout);
+                this.setState({renderWebView: false});
+                const {
+                    ssoLogin,
+                } = this.props.actions;
+
+                Client4.setToken(token);
+                ssoLogin().then((result) => {
+                    if (result.error) {
+                        this.onLoadEndError(result.error);
+                        return;
+                    }
+                    this.goToChannel();
+                });
+            } else if (this.webView && !this.state.error) {
+                this.webView.injectJavaScript(postMessageJS);
+                this.cookiesTimeout = setTimeout(this.extractCookie.bind(null, parsedUrl), 250);
+            }
+        });
+    }
+
     goToChannel = () => {
         tracker.initialLoad = Date.now();
 
@@ -122,6 +167,7 @@ class SSO extends PureComponent {
                     status_code: statusCode,
                 } = response;
                 if (id && message && statusCode !== 200) {
+                    clearTimeout(this.cookiesTimeout);
                     this.setState({error: message});
                 }
             }
@@ -158,41 +204,21 @@ class SSO extends PureComponent {
         }
 
         if (isLastRedirect) {
-            CookieManager.get(parsed.origin, this.useWebkit).then((res) => {
-                const mmtoken = res.MMAUTHTOKEN;
-                const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
-
-                if (token) {
-                    this.setState({renderWebView: false});
-                    const {
-                        ssoLogin,
-                    } = this.props.actions;
-
-                    Client4.setToken(token);
-                    if (this.props.serverUrl !== parsed.origin) {
-                        const original = urlParse(this.props.serverUrl);
-
-                        // Check whether we need to set a sub-path
-                        parsed.set('pathname', original.pathname || '');
-                        Client4.setUrl(parsed.href);
-                    }
-                    ssoLogin(token).then((result) => {
-                        if (result.error) {
-                            this.onLoadEndError(result.error);
-                            return;
-                        }
-                        this.goToChannel();
-                    });
-                } else if (this.webView && !this.state.error) {
-                    this.webView.injectJavaScript(postMessageJS);
-                }
-            });
+            this.extractCookie(parsed);
         }
     };
 
     onLoadEndError = (e) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
-        this.setState({error: e.message});
+        let error = e.message;
+        if (e.details) {
+            error += `\n${e.details.message}`;
+        }
+
+        if (e.url) {
+            error += `\nURL: ${e.url}`;
+        }
+        this.setState({error});
     };
 
     scheduleSessionExpiredNotification = () => {
@@ -215,20 +241,18 @@ class SSO extends PureComponent {
         const style = getStyleSheet(theme);
 
         let content;
-        if (!renderWebView) {
-            content = this.renderLoading();
-        } else if (error) {
+        if (error) {
             content = (
                 <View style={style.errorContainer}>
                     <Text style={style.errorText}>{error}</Text>
                 </View>
             );
-        } else {
+        } else if (renderWebView) {
             content = (
                 <WebView
                     ref={this.webViewRef}
                     source={{uri: this.loginUrl, headers: HEADERS}}
-                    javaScriptEnabled={true}
+                    javaScriptEnabledAndroid={true}
                     automaticallyAdjustContentInsets={false}
                     startInLoadingState={true}
                     onNavigationStateChange={this.onNavigationStateChange}
@@ -236,10 +260,12 @@ class SSO extends PureComponent {
                     injectedJavaScript={jsCode}
                     onLoadEnd={this.onLoadEnd}
                     onMessage={messagingEnabled ? this.onMessage : null}
-                    sharedCookiesEnabled={Platform.OS === 'android'}
+                    useSharedProcessPool={false}
                     cacheEnabled={false}
                 />
             );
+        } else {
+            content = this.renderLoading();
         }
 
         return (

@@ -11,6 +11,7 @@ class EphemeralStore {
         this.deviceToken = null;
         this.currentServerUrl = null;
         this.navigationComponentIdStack = [];
+        this.navigationModalStack = [];
         this.safeAreaInsets = {
             [ViewTypes.PORTRAIT]: null,
             [ViewTypes.LANDSCAPE]: null,
@@ -21,13 +22,22 @@ class EphemeralStore {
 
     clearNavigationComponents = () => {
         this.navigationComponentIdStack = [];
+        this.navigationModalStack = [];
         this.allNavigationComponentIds = [];
     };
+
+    clearNavigationModals = () => {
+        this.navigationModalStack = [];
+    }
 
     addNavigationComponentId = (componentId) => {
         this.addToNavigationComponentIdStack(componentId);
         this.addToAllNavigationComponentIds(componentId);
     };
+
+    addNavigationModal = (componentId) => {
+        this.navigationModalStack.unshift(componentId);
+    }
 
     addToNavigationComponentIdStack = (componentId) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
@@ -44,10 +54,20 @@ class EphemeralStore {
         }
     }
 
+    hasModalsOpened = () => this.navigationModalStack.length > 0;
+
     removeNavigationComponentId = (componentId) => {
         const index = this.navigationComponentIdStack.indexOf(componentId);
         if (index >= 0) {
             this.navigationComponentIdStack.splice(index, 1);
+        }
+    }
+
+    removeNavigationModal = (componentId) => {
+        const index = this.navigationModalStack.indexOf(componentId);
+
+        if (index >= 0) {
+            this.navigationModalStack.splice(index, 1);
         }
     }
 

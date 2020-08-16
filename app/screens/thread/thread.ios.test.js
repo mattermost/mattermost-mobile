@@ -6,8 +6,10 @@ import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
 import {General, RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import PostList from 'app/components/post_list';
+import {TYPING_VISIBLE} from '@constants/post_draft';
 
 import ThreadIOS from './thread.ios';
 
@@ -69,5 +71,29 @@ describe('thread', () => {
         const newPostIds = ['post_id_1', 'post_id_2'];
         wrapper.setProps({postIds: newPostIds});
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should add/remove typing animation on mount/unmount', () => {
+        const wrapper = shallow(
+            <ThreadIOS {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+        instance.registerTypingAnimation = jest.fn(() => {
+            return jest.fn();
+        });
+        instance.bottomPaddingAnimation = jest.fn();
+        instance.runTypingAnimations = jest.fn();
+        EventEmitter.on = jest.fn();
+        EventEmitter.off = jest.fn();
+
+        instance.componentDidMount();
+        expect(instance.registerTypingAnimation).toHaveBeenCalledWith(instance.bottomPaddingAnimation);
+        expect(instance.removeTypingAnimation).not.toHaveBeenCalled();
+        expect(EventEmitter.on).toHaveBeenCalledWith(TYPING_VISIBLE, instance.runTypingAnimations);
+
+        instance.componentWillUnmount();
+        expect(instance.removeTypingAnimation).toHaveBeenCalled();
+        expect(EventEmitter.off).toHaveBeenCalledWith(TYPING_VISIBLE, instance.runTypingAnimations);
     });
 });

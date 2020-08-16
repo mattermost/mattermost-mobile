@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelItem should match snapshot 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -99,11 +99,11 @@ exports[`ChannelItem should match snapshot 1`] = `
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -211,11 +211,11 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot for current user i.e currentUser (you) when isSearchResult 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -323,11 +323,11 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is currentChannel 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -435,11 +435,11 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and is searchResult 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -537,11 +537,11 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot for deactivated user and not searchResults or currentChannel 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -639,11 +639,11 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -741,7 +741,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
@@ -749,7 +749,7 @@ exports[`ChannelItem should match snapshot for no displayName 1`] = `null`;
 exports[`ChannelItem should match snapshot for showUnreadForMsgs 1`] = `null`;
 
 exports[`ChannelItem should match snapshot with draft 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -847,11 +847,11 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
       </Text>
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;
 
 exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
-<Component
+<ForwardRef
   onPress={[Function]}
   underlayColor="rgba(69,120,191,0.5)"
 >
@@ -982,5 +982,5 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
       />
     </View>
   </View>
-</Component>
+</ForwardRef>
 `;

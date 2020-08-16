@@ -5,8 +5,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
-    Clipboard,
-    Image,
     Linking,
     Platform,
     StyleSheet,
@@ -14,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
+import Clipboard from '@react-native-community/clipboard';
 
 import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ImageViewPort from '@components/image_viewport';
@@ -55,11 +54,6 @@ export default class MarkdownImage extends ImageViewPort {
             failed: false,
             uri: null,
         };
-    }
-
-    componentDidMount() {
-        super.componentDidMount();
-        this.loadImageSize(this.getSource());
     }
 
     setImageRef = (ref) => {
@@ -167,12 +161,6 @@ export default class MarkdownImage extends ImageViewPort {
         }];
 
         previewImageAtIndex([this.itemRef], 0, files);
-    };
-
-    loadImageSize = (source) => {
-        if (!this.state.originalWidth) {
-            Image.getSize(source, this.handleSizeReceived, this.handleSizeFailed);
-        }
     };
 
     render() {

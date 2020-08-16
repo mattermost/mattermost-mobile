@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {View} from 'react-native';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import LocalConfig from '@assets/config';
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
@@ -63,6 +62,7 @@ export default class ChannelIOS extends ChannelBase {
                 <>
                     <ChannelPostList
                         updateNativeScrollView={this.updateNativeScrollView}
+                        registerTypingAnimation={this.registerTypingAnimation}
                     />
                     <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
                         <Autocomplete
@@ -70,6 +70,7 @@ export default class ChannelIOS extends ChannelBase {
                             onChangeText={this.handleAutoComplete}
                             cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                             valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                            channelId={currentChannelId}
                         />
                     </View>
                     {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
@@ -91,18 +92,15 @@ export default class ChannelIOS extends ChannelBase {
                     {component}
                 </SafeAreaView>
                 {renderDraftArea &&
-                <KeyboardTrackingView
-                    ref={this.keyboardTracker}
-                    scrollViewNativeID={currentChannelId}
-                    accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
-                >
                     <PostDraft
+                        accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         ref={this.postDraft}
+                        registerTypingAnimation={this.registerTypingAnimation}
                         screenId={this.props.componentId}
+                        scrollViewNativeID={currentChannelId}
+                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                     />
-                </KeyboardTrackingView>
                 }
             </>
         );

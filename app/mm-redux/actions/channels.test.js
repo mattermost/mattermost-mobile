@@ -2320,4 +2320,34 @@ describe('Actions.Channels', () => {
         assert.equal(moderations[0].roles.members, true);
         assert.equal(moderations[0].roles.guests, false);
     });
+
+    it('getChannelMemberCountsByGroup', async () => {
+        const channelID = 'cid10000000000000000000000';
+
+        nock(Client4.getBaseRoute()).get(
+            `/channels/${channelID}/member_counts_by_group?include_timezones=true`).
+            reply(200, [
+                {
+                    group_id: 'group-1',
+                    channel_member_count: 1,
+                    channel_member_timezones_count: 1,
+                },
+                {
+                    group_id: 'group-2',
+                    channel_member_count: 999,
+                    channel_member_timezones_count: 131,
+                },
+            ]);
+
+        await store.dispatch(Actions.getChannelMemberCountsByGroup(channelID, true));
+
+        const channelMemberCounts = store.getState().entities.channels.channelMemberCountsByGroup[channelID];
+        assert.equal(channelMemberCounts['group-1'].group_id, 'group-1');
+        assert.equal(channelMemberCounts['group-1'].channel_member_count, 1);
+        assert.equal(channelMemberCounts['group-1'].channel_member_timezones_count, 1);
+
+        assert.equal(channelMemberCounts['group-2'].group_id, 'group-2');
+        assert.equal(channelMemberCounts['group-2'].channel_member_count, 999);
+        assert.equal(channelMemberCounts['group-2'].channel_member_timezones_count, 131);
+    });
 });

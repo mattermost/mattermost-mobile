@@ -25,6 +25,7 @@ import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary} from './helpers';
 import {getMissingProfilesByIds} from './users';
 import {loadRolesIfNeeded} from './roles';
+import {analytics} from '@init/analytics.ts';
 
 export function selectChannel(channelId: string) {
     return {
@@ -626,7 +627,7 @@ export function leaveChannel(channelId: string): ActionFunc {
         const channel = channels[channelId];
         const member = myMembers[channelId];
 
-        Client4.trackEvent('action', 'action_channels_leave', {channel_id: channelId});
+        analytics.trackAction('action_channels_leave', {channel_id: channelId});
 
         dispatch({
             type: ChannelTypes.LEAVE_CHANNEL,
@@ -679,7 +680,7 @@ export function joinChannel(userId: string, teamId: string, channelId: string, c
             return {error};
         }
 
-        Client4.trackEvent('action', 'action_channels_join', {channel_id: channelId});
+        analytics.trackAction('action_channels_join', {channel_id: channelId});
 
         dispatch(batchActions([
             {
@@ -1127,7 +1128,7 @@ export function addChannelMember(channelId: string, userId: string, postRootId =
             return {error};
         }
 
-        Client4.trackEvent('action', 'action_channels_add_member', {channel_id: channelId});
+        analytics.trackAction('action_channels_add_member', {channel_id: channelId});
 
         dispatch(batchActions([
             {
@@ -1158,7 +1159,7 @@ export function removeChannelMember(channelId: string, userId: string): ActionFu
             return {error};
         }
 
-        Client4.trackEvent('action', 'action_channels_remove_member', {channel_id: channelId});
+        analytics.trackAction('action_channels_remove_member', {channel_id: channelId});
 
         dispatch(batchActions([
             {
@@ -1199,7 +1200,7 @@ export function updateChannelMemberRoles(channelId: string, userId: string, role
 
 export function updateChannelHeader(channelId: string, header: string): ActionFunc {
     return async (dispatch: DispatchFunc) => {
-        Client4.trackEvent('action', 'action_channels_update_header', {channel_id: channelId});
+        analytics.trackAction('action_channels_update_header', {channel_id: channelId});
 
         dispatch({
             type: ChannelTypes.UPDATE_CHANNEL_HEADER,
@@ -1215,7 +1216,7 @@ export function updateChannelHeader(channelId: string, header: string): ActionFu
 
 export function updateChannelPurpose(channelId: string, purpose: string): ActionFunc {
     return async (dispatch: DispatchFunc) => {
-        Client4.trackEvent('action', 'action_channels_update_purpose', {channel_id: channelId});
+        analytics.trackAction('action_channels_update_purpose', {channel_id: channelId});
 
         dispatch({
             type: ChannelTypes.UPDATE_CHANNEL_PURPOSE,
@@ -1394,7 +1395,7 @@ export function favoriteChannel(channelId: string): ActionFunc {
             value: 'true',
         };
 
-        Client4.trackEvent('action', 'action_channels_favorite');
+        analytics.trackAction('action_channels_favorite');
 
         return dispatch(savePreferences(currentUserId, [preference]));
     };
@@ -1410,7 +1411,7 @@ export function unfavoriteChannel(channelId: string): ActionFunc {
             value: '',
         };
 
-        Client4.trackEvent('action', 'action_channels_unfavorite');
+        analytics.trackAction('action_channels_unfavorite');
 
         return deletePreferences(currentUserId, [preference])(dispatch, getState);
     };
@@ -1473,6 +1474,26 @@ export function patchChannelModerations(channelId: string, patch: Array<ChannelM
             channelId,
         ],
     });
+}
+
+export function getChannelMemberCountsByGroup(channelId: string, includeTimezones: boolean): ActionFunc {
+    return async (dispatch: DispatchFunc) => {
+        let channelMemberCountsByGroup;
+        try {
+            channelMemberCountsByGroup = await Client4.getChannelMemberCountsByGroup(channelId, includeTimezones);
+        } catch (error) {
+            return {error};
+        }
+
+        if (channelMemberCountsByGroup.length) {
+            dispatch({
+                type: ChannelTypes.RECEIVED_CHANNEL_MEMBER_COUNTS_BY_GROUP,
+                data: {channelId, memberCounts: channelMemberCountsByGroup},
+            });
+        }
+
+        return {data: true};
+    };
 }
 
 export default {

@@ -3,7 +3,7 @@
 
 import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import CookieManager from '@react-native-community/cookies';
+import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import {getLocales} from 'react-native-localize';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -42,11 +42,10 @@ import PushNotifications from 'app/push_notifications';
 
 import {getAppCredentials, removeAppCredentials} from './credentials';
 import emmProvider from './emm_provider';
+import {analytics} from '@init/analytics.ts';
 
 const {StatusBarManager} = NativeModules;
 const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 1000;
-
-let analytics;
 
 class GlobalEventHandler {
     constructor() {
@@ -120,13 +119,10 @@ class GlobalEventHandler {
     configureAnalytics = async () => {
         const state = Store.redux.getState();
         const config = getConfig(state);
-        const initAnalytics = require('./analytics').init;
 
         if (config && config.DiagnosticsEnabled === 'true' && config.DiagnosticId && LocalConfig.RudderApiKey) {
-            analytics = await initAnalytics(config);
+            await analytics.init(config);
         }
-
-        return analytics;
     };
 
     onAppStateChange = (appState) => {
@@ -157,30 +153,35 @@ class GlobalEventHandler {
         emmProvider.handleManagedConfig(true);
     };
 
-    onLogout = async () => {
-        Store.redux.dispatch(closeWebSocket(false));
-        Store.redux.dispatch(setServerVersion(''));
-
-        if (analytics) {
-            await analytics.reset();
+    clearCookiesAndWebData = async () => {
+        try {
+            await CookieManager.clearAll(Platform.OS === 'ios');
+        } catch (error) {
+            // Nothing to clear
         }
 
-        removeAppCredentials();
-        deleteFileCache();
-        await this.resetState();
-        resetMomentLocale();
+        switch (Platform.OS) {
+        case 'ios': {
+            const mainPath = RNFetchBlob.fs.dirs.DocumentDir.split('/').slice(0, -1).join('/');
+            const libraryDir = `${mainPath}/Library`;
+            const cookiesDir = `${libraryDir}/Cookies`;
+            const cookies = await RNFetchBlob.fs.exists(cookiesDir);
+            const webkitDir = `${libraryDir}/WebKit`;
+            const webkit = await RNFetchBlob.fs.exists(webkitDir);
 
-        // TODO: Handle when multi-server support is added
-        CookieManager.clearAll(Platform.OS === 'ios');
-        PushNotifications.clearNotifications();
-        const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
-        const mainPath = cacheDir.split('/').slice(0, -1).join('/');
+            if (cookies) {
+                RNFetchBlob.fs.unlink(cookiesDir);
+            }
 
-        mattermostBucket.removePreference('cert');
-        mattermostBucket.removePreference('emm');
-        if (Platform.OS === 'ios') {
-            mattermostBucket.removeFile('entities');
-        } else {
+            if (webkit) {
+                RNFetchBlob.fs.unlink(webkitDir);
+            }
+            break;
+        }
+
+        case 'android': {
+            const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
+            const mainPath = cacheDir.split('/').slice(0, -1).join('/');
             const cookies = await RNFetchBlob.fs.exists(`${mainPath}/app_webview/Cookies`);
             const cookiesJ = await RNFetchBlob.fs.exists(`${mainPath}/app_webview/Cookies-journal`);
             if (cookies) {
@@ -190,7 +191,29 @@ class GlobalEventHandler {
             if (cookiesJ) {
                 RNFetchBlob.fs.unlink(`${mainPath}/app_webview/Cookies-journal`);
             }
+            break;
         }
+        }
+    };
+
+    onLogout = async () => {
+        Store.redux.dispatch(closeWebSocket(false));
+        Store.redux.dispatch(setServerVersion(''));
+
+        await analytics.reset();
+
+        mattermostBucket.removePreference('cert');
+        mattermostBucket.removePreference('emm');
+        if (Platform.OS === 'ios') {
+            mattermostBucket.removeFile('entities');
+        }
+
+        removeAppCredentials();
+        deleteFileCache();
+        resetMomentLocale();
+
+        await this.clearCookiesAndWebData();
+        PushNotifications.clearNotifications();
 
         if (this.launchApp) {
             this.launchApp();
@@ -327,7 +350,7 @@ class GlobalEventHandler {
 
             return Store.redux.dispatch({
                 type: General.OFFLINE_STORE_PURGE,
-                state: newState,
+                data: newState,
             });
         } catch (e) {
             // clear error

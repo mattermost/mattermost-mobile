@@ -5,57 +5,68 @@ class NotificationService: UNNotificationServiceExtension {
   
   var contentHandler: ((UNNotificationContent) -> Void)?
   var bestAttemptContent: UNMutableNotificationContent?
-  var sendFailed = false;
+
+  var retryIndex = 0
   
   override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
     self.contentHandler = contentHandler
-    bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
-    if let bestAttemptContent = bestAttemptContent {
-      let ackId = bestAttemptContent.userInfo["ack_id"]
-      let type = bestAttemptContent.userInfo["type"]
-      let postId = bestAttemptContent.userInfo["post_id"]
-      let idLoaded = bestAttemptContent.userInfo["id_loaded"] ?? false
+
+    let fibonacciBackoffsInSeconds = [1.0, 2.0, 3.0, 5.0, 8.0]
+
+    func fetchReceipt(notificationId: String, receivedAt: Int, type: String, postId: String, idLoaded: Bool ) -> Void {
+      if (self.retryIndex >= fibonacciBackoffsInSeconds.count) {
+        contentHandler(self.bestAttemptContent!)
+        return
+      }
 
       UploadSession.shared.notificationReceipt(
+        notificationId: notificationId,
+        receivedAt: receivedAt,
+        type: type,
+        postId: postId,
+        idLoaded: idLoaded) { data, response, error in
+          if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            contentHandler(self.bestAttemptContent!)
+            return
+          }
+
+          guard let data = data, error == nil else {
+            if (idLoaded) {
+              // Receipt retrieval failed. Kick off retries.
+              let backoffInSeconds = fibonacciBackoffsInSeconds[self.retryIndex]
+
+              DispatchQueue.main.asyncAfter(deadline: .now() + backoffInSeconds, execute: {
+                fetchReceipt(
+                  notificationId: notificationId,
+                  receivedAt: Date().millisecondsSince1970,
+                  type: type,
+                  postId: postId,
+                  idLoaded: idLoaded
+                )
+              })
+ 
+              self.retryIndex += 1
+            }
+            return
+          }
+          self.processResponse(data: data, bestAttemptContent: self.bestAttemptContent!, contentHandler: contentHandler)
+        }
+    }
+
+    bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
+    if let bestAttemptContent = bestAttemptContent {
+      let ackId = (bestAttemptContent.userInfo["ack_id"] ?? "") as! String
+      let type = (bestAttemptContent.userInfo["type"] ?? "") as! String
+      let postId = (bestAttemptContent.userInfo["post_id"] ?? "") as! String
+      let idLoaded = (bestAttemptContent.userInfo["id_loaded"] ?? false) as! Bool
+
+      fetchReceipt(
         notificationId: ackId,
         receivedAt: Date().millisecondsSince1970,
         type: type,
         postId: postId,
-        idLoaded: idLoaded as! Bool
-      ) { data, error in
-        if (idLoaded as! Bool) {
-          guard let data = data, error == nil else {
-            self.sendFailed = true;
-            let fibonacciBackoffsInSeconds = [1.0, 2.0, 3.0, 5.0, 8.0]
-            for backoffInSeconds in fibonacciBackoffsInSeconds {
-              let timer = Timer.scheduledTimer(withTimeInterval: backoffInSeconds, repeats: false) { timer in
-                UploadSession.shared.notificationReceipt(
-                  notificationId: ackId,
-                  receivedAt: Date().millisecondsSince1970,
-                  type: type,
-                  postId: postId,
-                  idLoaded: idLoaded as! Bool
-                ) { data, error in
-                  guard let data = data, error == nil else {
-                    self.sendFailed = true;
-                    return
-                  }
-                  self.processResponse(data: data, bestAttemptContent: bestAttemptContent, contentHandler: contentHandler)
-                }
-              }
-              
-              if (self.sendFailed) {
-                self.sendFailed = false
-                timer.fire()
-              } else {
-                break
-              }
-            }
-            return
-          }
-          self.processResponse(data: data, bestAttemptContent: bestAttemptContent, contentHandler: contentHandler)
-        }
-      }
+        idLoaded: idLoaded
+      )
     }
   }
 
@@ -88,7 +99,6 @@ class NotificationService: UNNotificationServiceExtension {
       contentHandler(bestAttemptContent)
     }
   }
-  
 }
 
 extension Date {

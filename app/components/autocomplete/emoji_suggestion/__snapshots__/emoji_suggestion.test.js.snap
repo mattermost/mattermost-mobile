@@ -3044,7 +3044,6 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
     Array [
       Object {
         "backgroundColor": "#ffffff",
-        "flex": 1,
       },
       Object {
         "maxHeight": undefined,

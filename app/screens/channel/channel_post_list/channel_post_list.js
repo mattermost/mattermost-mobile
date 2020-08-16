@@ -7,6 +7,7 @@ import {
     Keyboard,
     Platform,
     View,
+    Animated,
 } from 'react-native';
 
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
@@ -19,6 +20,8 @@ import tracker from 'app/utils/time_tracker';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import telemetry from 'app/telemetry';
 import {goToScreen} from 'app/actions/navigation';
+
+import {TYPING_HEIGHT} from '@constants/post_draft';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -43,6 +46,7 @@ export default class ChannelPostList extends PureComponent {
         refreshing: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         updateNativeScrollView: PropTypes.func,
+        registerTypingAnimation: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -56,10 +60,13 @@ export default class ChannelPostList extends PureComponent {
 
         this.isLoadingMoreBottom = false;
         this.isLoadingMoreTop = false;
+
+        this.bottomPadding = new Animated.Value(0);
     }
 
     componentDidMount() {
         EventEmitter.on('goToThread', this.goToThread);
+        this.removeTypingAnimation = this.props.registerTypingAnimation(this.bottomPaddingAnimation);
     }
 
     componentDidUpdate(prevProps) {
@@ -78,6 +85,19 @@ export default class ChannelPostList extends PureComponent {
 
     componentWillUnmount() {
         EventEmitter.off('goToThread', this.goToThread);
+        this.removeTypingAnimation();
+    }
+
+    bottomPaddingAnimation = (visible) => {
+        const [padding, duration] = visible ?
+            [TYPING_HEIGHT, 200] :
+            [0, 400];
+
+        return Animated.timing(this.bottomPadding, {
+            toValue: padding,
+            duration,
+            useNativeDriver: false,
+        });
     }
 
     goToThread = (post) => {
@@ -190,6 +210,7 @@ export default class ChannelPostList extends PureComponent {
                     refreshing={refreshing}
                     scrollViewNativeID={channelId}
                     loadMorePostsVisible={this.props.loadMorePostsVisible}
+                    showMoreMessagesButton={true}
                 />
             );
         }
@@ -197,12 +218,12 @@ export default class ChannelPostList extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <Animated.View style={[style.container, {paddingBottom: this.bottomPadding}]}>
                 <View style={style.separator}/>
                 {component}
                 <AnnouncementBanner/>
                 <RetryBarIndicator/>
-            </View>
+            </Animated.View>
         );
     }
 }

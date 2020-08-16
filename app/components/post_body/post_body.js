@@ -71,6 +71,7 @@ export default class PostBody extends PureComponent {
         shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
         location: PropTypes.string,
+        mentionKeys: PropTypes.array.isRequired,
     };
 
     static defaultProps = {
@@ -274,7 +275,7 @@ export default class PostBody extends PureComponent {
             return null;
         }
 
-        if (metadata && !metadata.embeds) {
+        if (!metadata?.embeds?.length) {
             return null;
         }
 
@@ -345,6 +346,7 @@ export default class PostBody extends PureComponent {
             shouldRenderJumboEmoji,
             showLongPost,
             theme,
+            mentionKeys,
         } = this.props;
         const {isLongPost, maxHeight} = this.state;
         const style = getStyleSheet(theme);
@@ -413,7 +415,7 @@ export default class PostBody extends PureComponent {
                         onPostPress={onPress}
                         textStyles={textStyles}
                         value={message}
-                        disableAtChannelMentionHighlight={postProps.mentionHighlightDisabled}
+                        mentionKeys={mentionKeys}
                     />
                 </View>
             );

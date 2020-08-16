@@ -12,6 +12,7 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {memoizeResult} from '@mm-redux/utils/helpers';
+import {makeGetMentionKeysForPost} from '@mm-redux/selectors/entities/search';
 
 import {
     isEdited,
@@ -103,6 +104,7 @@ export function makeMapStateToProps() {
             isEmojiOnly,
             shouldRenderJumboEmoji,
             theme: getTheme(state),
+            mentionKeys: makeGetMentionKeysForPost(state, postProps?.disable_group_highlight, postProps?.mentionHighlightDisabled),
             canDelete,
             ...getDimensions(state),
         };

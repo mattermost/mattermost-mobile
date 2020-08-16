@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {render} from '@testing-library/react-native';
+import TestRenderer from 'react-test-renderer';
 import {IntlProvider} from 'react-intl';
 import moment from 'moment-timezone';
 
@@ -21,9 +21,10 @@ describe('FormattedTime', () => {
         let wrapper = renderWithIntl(
             <FormattedTime {...baseProps}/>,
         );
+        let element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '7:02 PM');
 
         expect(wrapper.baseElement).toMatchSnapshot();
-        expect(wrapper.getByText('7:02 PM')).toBeTruthy();
+        expect(element).toBeTruthy();
 
         wrapper = renderWithIntl(
             <FormattedTime
@@ -32,7 +33,8 @@ describe('FormattedTime', () => {
             />,
         );
 
-        expect(wrapper.getByText('19:02')).toBeTruthy();
+        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '19:02');
+        expect(element).toBeTruthy();
     });
 
     it('should support localization', () => {
@@ -42,7 +44,8 @@ describe('FormattedTime', () => {
             'es',
         );
 
-        expect(wrapper.getByText('7:02 PM')).toBeTruthy();
+        let element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '7:02 PM');
+        expect(element).toBeTruthy();
 
         moment.locale('ko');
         wrapper = renderWithIntl(
@@ -50,7 +53,8 @@ describe('FormattedTime', () => {
             'ko',
         );
 
-        expect(wrapper.getByText('오후 7:02')).toBeTruthy();
+        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '오후 7:02');
+        expect(element).toBeTruthy();
 
         wrapper = renderWithIntl(
             <FormattedTime
@@ -60,7 +64,8 @@ describe('FormattedTime', () => {
             'ko',
         );
 
-        expect(wrapper.getByText('19:02')).toBeTruthy();
+        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '19:02');
+        expect(element).toBeTruthy();
     });
 
     it('should fallback to default short format for unsupported locale of react-intl ', () => {
@@ -73,7 +78,8 @@ describe('FormattedTime', () => {
             'es',
         );
 
-        expect(wrapper.getByText('8:47 AM')).toBeTruthy();
+        let element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '8:47 AM');
+        expect(element).toBeTruthy();
 
         wrapper = renderWithIntl(
             <FormattedTime
@@ -84,10 +90,11 @@ describe('FormattedTime', () => {
             'es',
         );
 
-        expect(wrapper.getByText('8:47')).toBeTruthy();
+        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '8:47');
+        expect(element).toBeTruthy();
     });
 });
 
 function renderWithIntl(component, locale = 'en') {
-    return render(<IntlProvider locale={locale}>{component}</IntlProvider>);
+    return TestRenderer.create(<IntlProvider locale={locale}>{component}</IntlProvider>);
 }

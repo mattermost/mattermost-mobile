@@ -22,6 +22,8 @@ import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, debounce} from './helpers';
 import {getMyPreferences, makeDirectChannelVisibleIfNecessary, makeGroupMessageVisibleIfNecessary} from './preferences';
 import {Dictionary} from '@mm-redux/types/utilities';
+import {analytics} from '@init/analytics.ts';
+
 export function checkMfa(loginId: string): ActionFunc {
     return async (dispatch: DispatchFunc) => {
         dispatch({type: UserTypes.CHECK_MFA_REQUEST, data: null});
@@ -126,8 +128,8 @@ function completeLogin(data: UserProfile): ActionFunc {
             data,
         });
 
-        Client4.setUserId(data.id);
-        Client4.setUserRoles(data.roles);
+        analytics.setUserId(data.id);
+        analytics.setUserRoles(data.roles);
         let teamMembers;
 
         try {
@@ -231,11 +233,11 @@ export function loadMe(): ActionFunc {
         const {currentUserId} = getState().entities.users;
         const user = getState().entities.users.profiles[currentUserId];
         if (currentUserId) {
-            Client4.setUserId(currentUserId);
+            analytics.setUserId(currentUserId);
         }
 
         if (user) {
-            Client4.setUserRoles(user.roles);
+            analytics.setUserRoles(user.roles);
         }
 
         return {data: true};

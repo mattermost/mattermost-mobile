@@ -23,7 +23,6 @@ describe('AttachmentButton', () => {
     const formatMessage = jest.fn();
     const baseProps = {
         theme: Preferences.THEMES.default,
-        blurTextBox: jest.fn(),
         maxFileSize: 10,
         uploadFiles: jest.fn(),
     };

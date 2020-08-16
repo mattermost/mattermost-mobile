@@ -44,30 +44,34 @@ export default class NotificationSettingsEmailBase extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentDidDisappear() {
+        if (this.getPlatformOS() === 'ios') {
+            this.saveEmailNotifyProps();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        this.setEmailIntervalIfNeeded(prevProps);
+    }
+
+    setEmailIntervalIfNeeded = (prevProps) => {
         const {
             notifyProps,
             sendEmailNotifications,
             enableEmailBatching,
             emailInterval,
-        } = nextProps;
+        } = this.props;
 
         if (
-            this.props.sendEmailNotifications !== sendEmailNotifications ||
-            this.props.enableEmailBatching !== enableEmailBatching ||
-            this.props.emailInterval !== emailInterval ||
-            this.props.notifyProps?.email !== notifyProps?.email
+            sendEmailNotifications !== prevProps.sendEmailNotifications ||
+            enableEmailBatching !== prevProps.enableEmailBatching ||
+            emailInterval !== prevProps.emailInterval ||
+            notifyProps?.email !== prevProps.notifyProps?.email
         ) {
             this.setState({
                 emailInterval,
                 newInterval: this.computeEmailInterval(notifyProps?.email === 'true' && sendEmailNotifications, enableEmailBatching, emailInterval),
             });
-        }
-    }
-
-    componentDidDisappear() {
-        if (this.getPlatformOS() === 'ios') {
-            this.saveEmailNotifyProps();
         }
     }
 

@@ -61,10 +61,10 @@ export default class Root extends PureComponent {
             setTimeout(this.errorTeamsList, 200);
             return;
         }
-        this.navigateToTeamsPage('ErrorTeamsList');
+        this.navigateToTeamsPage('ErrorTeamsList', true);
     }
 
-    navigateToTeamsPage = (screen) => {
+    navigateToTeamsPage = (screen, error = false) => {
         const {currentUrl, theme} = this.props;
         const {intl} = this.providerRef.getChildContext();
 
@@ -93,7 +93,10 @@ export default class Root extends PureComponent {
             };
         }
 
-        const title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
+        let title = '';
+        if (!error) {
+            title = intl.formatMessage({id: 'mobile.routes.selectTeam', defaultMessage: 'Select Team'});
+        }
 
         resetToTeams(screen, title, passProps, options);
     }

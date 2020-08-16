@@ -52,6 +52,15 @@ export type Command = {
     'description': string;
     'url': string;
 };
+
+// AutocompleteSuggestion represents a single suggestion downloaded from the server.
+export type AutocompleteSuggestion = {
+    Complete: string;
+    Suggestion: string;
+    Hint: string;
+    Description: string;
+    IconData: string;
+};
 export type OAuthApp = {
     'id': string;
     'creator_id': string;
@@ -71,6 +80,7 @@ export type IntegrationsState = {
     oauthApps: IDMappedObjects<OAuthApp>;
     systemCommands: IDMappedObjects<Command>;
     commands: IDMappedObjects<Command>;
+    commandAutocompleteSuggestions: Array<AutocompleteSuggestion>;
 };
 export type DialogSubmission = {
     url: string;

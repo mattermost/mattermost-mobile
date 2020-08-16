@@ -70,6 +70,7 @@ export type Post = {
     failed?: boolean;
     user_activity_posts?: Array<Post>;
     state?: 'DELETED';
+    ownPost?: boolean;
 };
 
 export type PostWithFormatData = Post & {
@@ -109,3 +110,8 @@ export type PostsState = {
     messagesHistory: MessageHistory;
     expandedURLs: Dictionary<string>;
 };
+
+export type PostProps = {
+    disable_group_highlight?: boolean;
+    mentionHighlightDisabled: boolean;
+}

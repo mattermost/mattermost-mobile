@@ -3,14 +3,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Keyboard} from 'react-native';
+import {Animated, Keyboard} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {General, RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import Loading from 'app/components/loading';
 import DeletedPost from 'app/components/deleted_post';
 import {popTopScreen, mergeNavigationOptions} from 'app/actions/navigation';
+import {TYPING_HEIGHT, TYPING_VISIBLE} from '@constants/post_draft';
 
 export default class ThreadBase extends PureComponent {
     static propTypes = {
@@ -64,6 +66,14 @@ export default class ThreadBase extends PureComponent {
         this.state = {
             lastViewedAt: props.myMember && props.myMember.last_viewed_at,
         };
+
+        this.bottomPadding = new Animated.Value(0);
+        this.typingAnimations = [];
+    }
+
+    componentDidMount() {
+        this.removeTypingAnimation = this.registerTypingAnimation(this.bottomPaddingAnimation);
+        EventEmitter.on(TYPING_VISIBLE, this.runTypingAnimations);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -79,6 +89,8 @@ export default class ThreadBase extends PureComponent {
 
     componentWillUnmount() {
         this.props.actions.selectPost('');
+        this.removeTypingAnimation();
+        EventEmitter.off(TYPING_VISIBLE, this.runTypingAnimations);
     }
 
     close = () => {
@@ -109,4 +121,32 @@ export default class ThreadBase extends PureComponent {
 
         return null;
     };
+
+    registerTypingAnimation = (animation) => {
+        const length = this.typingAnimations.push(animation);
+        const removeAnimation = () => {
+            const animationIndex = length - 1;
+            this.typingAnimations = this.typingAnimations.filter((a, index) => index !== animationIndex);
+        };
+
+        return removeAnimation;
+    }
+
+    runTypingAnimations = (typingVisible) => {
+        Animated.parallel(
+            this.typingAnimations.map((animation) => animation(typingVisible)),
+        ).start();
+    }
+
+    bottomPaddingAnimation = (visible) => {
+        const [padding, duration] = visible ?
+            [TYPING_HEIGHT, 200] :
+            [0, 400];
+
+        return Animated.timing(this.bottomPadding, {
+            toValue: padding,
+            duration,
+            useNativeDriver: false,
+        });
+    }
 }

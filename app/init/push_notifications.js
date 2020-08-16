@@ -4,11 +4,6 @@
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {setDeviceToken} from '@mm-redux/actions/general';
-import {Client4} from '@mm-redux/client';
-import {General} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
 import {markChannelViewedAndRead, fetchPostActionWithRetry} from '@actions/views/channel';
 import {dismissAllModals, popToRoot} from '@actions/navigation';
 import {getPosts} from '@actions/views/post';
@@ -16,17 +11,27 @@ import {
     createPostForNotificationReply,
     loadFromPushNotification,
 } from '@actions/views/root';
-
+import {logout} from '@actions/views/user';
 import {NavigationTypes, ViewTypes} from '@constants';
 import {getLocalizedMessage} from '@i18n';
+import {getCurrentServerUrl, getAppCredentials} from '@init/credentials';
+import {setDeviceToken} from '@mm-redux/actions/general';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getCurrentLocale} from '@selectors/i18n';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 import {waitForHydration} from '@store/utils';
 import {t} from '@utils/i18n';
 
-import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
+
+const NOTIFICATION_TYPE = {
+    CLEAR: 'clear',
+    MESSAGE: 'message',
+    SESSION: 'session',
+};
 
 class PushNotificationUtils {
     constructor() {
@@ -34,8 +39,8 @@ class PushNotificationUtils {
         this.replyNotificationData = null;
     }
 
-    configure = () => {
-        PushNotifications.configure({
+    configure = async () => {
+        return PushNotifications.configure({
             onRegister: this.onRegisterDevice,
             onNotification: this.onPushNotification,
             onReply: this.onPushNotificationReply,
@@ -45,8 +50,6 @@ class PushNotificationUtils {
     };
 
     loadFromNotification = async (notification) => {
-        // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
-        EphemeralStore.setStartFromNotification(true);
         await Store.redux.dispatch(loadFromPushNotification(notification));
 
         // if we have a componentId means that the app is already initialized
@@ -70,20 +73,28 @@ class PushNotificationUtils {
             message,
         };
 
-        if (data.type === 'clear') {
-            dispatch(markChannelViewedAndRead(data.channel_id, null, false));
-        } else if (data.type === 'message') {
-            // get the posts for the channel as soon as possible
-            dispatch(fetchPostActionWithRetry(getPosts(data.channel_id)));
+        waitForHydration(Store.redux, () => {
+            switch (data.type) {
+            case NOTIFICATION_TYPE.CLEAR:
+                dispatch(markChannelViewedAndRead(data.channel_id, null, false));
+                break;
+            case NOTIFICATION_TYPE.MESSAGE:
+                // get the posts for the channel as soon as possible
+                dispatch(fetchPostActionWithRetry(getPosts(data.channel_id)));
 
-            if (foreground) {
-                EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-            } else if (userInteraction && !notification?.data?.localNotification) {
-                waitForHydration(Store.redux, () => {
+                if (foreground) {
+                    EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
+                } else if (userInteraction && !notification?.data?.localNotification) {
                     this.loadFromNotification(notification);
-                });
+                }
+                break;
+            case NOTIFICATION_TYPE.SESSION:
+                // eslint-disable-next-line no-console
+                console.log('Session expired notification');
+                dispatch(logout());
+                break;
             }
-        }
+        });
     };
 
     onPushNotificationReply = async (data, text, completion) => {

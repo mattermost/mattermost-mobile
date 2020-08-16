@@ -50,6 +50,7 @@ public class CustomPushNotification extends PushNotification {
 
     private static final String PUSH_TYPE_MESSAGE = "message";
     private static final String PUSH_TYPE_CLEAR = "clear";
+    private static final String PUSH_TYPE_SESSION = "session";
     private static final String PUSH_TYPE_UPDATE_BADGE = "update_badge";
 
     private NotificationChannel mHighImportanceChannel;
@@ -163,6 +164,7 @@ public class CustomPushNotification extends PushNotification {
 
         switch(type) {
         case PUSH_TYPE_MESSAGE:
+        case PUSH_TYPE_SESSION:
             super.postNotification(notificationId);
             break;
         case PUSH_TYPE_CLEAR:
@@ -170,15 +172,19 @@ public class CustomPushNotification extends PushNotification {
             break;
         }
 
-        notifyReceivedToJS();
+        if (mAppLifecycleFacade.isReactInitialized()) {
+            notifyReceivedToJS();
+        }
     }
 
     @Override
     public void onOpened() {
         Bundle data = mNotificationProps.asBundle();
         final String channelId = data.getString("channel_id");
-        channelIdToNotificationCount.remove(channelId);
-        channelIdToNotification.remove(channelId);
+        if (channelId != null) {
+            channelIdToNotificationCount.remove(channelId);
+            channelIdToNotification.remove(channelId);
+        }
         digestNotification();
     }
 
@@ -222,7 +228,9 @@ public class CustomPushNotification extends PushNotification {
         }
 
         String channelId = bundle.getString("channel_id");
-        userInfoBundle.putString("channel_id", channelId);
+        if (channelId != null) {
+            userInfoBundle.putString("channel_id", channelId);
+        }
 
         notification.addExtras(userInfoBundle);
     }
@@ -459,7 +467,8 @@ public class CustomPushNotification extends PushNotification {
 
     private void addNotificationReplyAction(Notification.Builder notification, int notificationId, Bundle bundle) {
         String postId = bundle.getString("post_id");
-        if (postId == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+
+        if (android.text.TextUtils.isEmpty(postId) || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return;
         }
 

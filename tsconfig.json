@@ -34,6 +34,7 @@
         "paths": {
             "@actions/*": ["app/actions/*"],
             "@assets/*": ["dist/assets/*"],
+            "@components/*": ["app/components/*"],
             "@constants/*": ["app/constants/*"],
             "@constants": ["app/constants/index"],
             "@i18n": ["app/i18n/index"],

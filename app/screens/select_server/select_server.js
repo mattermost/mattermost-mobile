@@ -324,10 +324,6 @@ export default class SelectServer extends PureComponent {
             error: null,
         });
 
-        const serverUrl = await this.getUrl(url, !retryWithHttp);
-        Client4.setUrl(serverUrl);
-        handleServerUrlChanged(serverUrl);
-
         let cancel = false;
         this.cancelPing = () => {
             cancel = true;
@@ -339,6 +335,10 @@ export default class SelectServer extends PureComponent {
 
             this.cancelPing = null;
         };
+
+        const serverUrl = await this.getUrl(url, !retryWithHttp);
+        Client4.setUrl(serverUrl);
+        handleServerUrlChanged(serverUrl);
 
         try {
             const result = await getPing();

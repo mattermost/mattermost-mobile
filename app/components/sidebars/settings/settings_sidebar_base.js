@@ -29,7 +29,6 @@ export default class SettingsSidebarBase extends PureComponent {
         currentUser: PropTypes.object.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        locale: PropTypes.string,
     };
 
     static defaultProps = {
@@ -113,7 +112,7 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'UserProfile',
             intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'}),
-            {userId, fromSettings: true},
+            {userId},
         );
     };
 
@@ -130,7 +129,7 @@ export default class SettingsSidebarBase extends PureComponent {
         logout();
     });
 
-    openModal = async (screen, title, passProps) => {
+    openModal = async (screen, title, passProps = {}) => {
         this.closeSettingsSidebar();
 
         if (!this.closeButton) {

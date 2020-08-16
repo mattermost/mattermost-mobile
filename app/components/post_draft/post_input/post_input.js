@@ -5,9 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Alert, AppState, findNodeHandle, Keyboard, NativeModules, Platform} from 'react-native';
 import {intlShape} from 'react-intl';
-import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
 import PasteableTextInput from '@components/pasteable_text_input';
+import {NavigationTypes} from '@constants';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
@@ -16,7 +16,6 @@ import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} 
 
 const {RNTextInputReset} = NativeModules;
 const INPUT_LINE_HEIGHT = 20;
-const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 
 export default class PostInput extends PureComponent {
     static contextTypes = {
@@ -36,9 +35,6 @@ export default class PostInput extends PureComponent {
         inputEventType: PropTypes.string,
         isLandscape: PropTypes.bool,
         maxMessageLength: PropTypes.number,
-        onPasteFiles: PropTypes.func.isRequired,
-        onSend: PropTypes.func.isRequired,
-        readonly: PropTypes.bool,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         updateInitialValue: PropTypes.func.isRequired,
@@ -61,8 +57,8 @@ export default class PostInput extends PureComponent {
     componentDidMount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
         EventEmitter.on(event, this.handleInsertTextToDraft);
+        EventEmitter.on(NavigationTypes.BLUR_POST_DRAFT, this.blur);
         AppState.addEventListener('change', this.handleAppStateChange);
-        HWKeyboardEvent.onHWKeyPressed(this.handleHardwareEnterPress);
 
         if (Platform.OS === 'android') {
             Keyboard.addListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -71,10 +67,9 @@ export default class PostInput extends PureComponent {
 
     componentWillUnmount() {
         const event = this.props.rootId ? INSERT_TO_COMMENT : INSERT_TO_DRAFT;
-
+        EventEmitter.off(NavigationTypes.BLUR_POST_DRAFT, this.blur);
         EventEmitter.off(event, this.handleInsertTextToDraft);
         AppState.removeEventListener('change', this.handleAppStateChange);
-        HWKeyboardEvent.removeOnHWKeyPressed();
 
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
@@ -137,12 +132,10 @@ export default class PostInput extends PureComponent {
     }
 
     getPlaceHolder = () => {
-        const {readonly, rootId} = this.props;
+        const {rootId} = this.props;
         let placeholder;
 
-        if (readonly) {
-            placeholder = {id: t('mobile.create_post.read_only'), defaultMessage: 'This channel is read-only.'};
-        } else if (rootId) {
+        if (rootId) {
             placeholder = {id: t('create_comment.addComment'), defaultMessage: 'Add a comment...'};
         } else {
             placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
@@ -158,17 +151,6 @@ export default class PostInput extends PureComponent {
     handleAndroidKeyboard = () => {
         this.blur();
     };
-
-    handleHardwareEnterPress = (keyEvent) => {
-        switch (keyEvent.pressedKey) {
-        case 'enter':
-            this.props.onSend();
-            break;
-        case 'shift-enter':
-            this.handleInsertTextToDraft(HW_SHIFT_ENTER_TEXT);
-            break;
-        }
-    }
 
     handleAppStateChange = (nextAppState) => {
         if (nextAppState !== 'active') {
@@ -245,7 +227,8 @@ export default class PostInput extends PureComponent {
     };
 
     handleInsertTextToDraft = (text) => {
-        const {cursorPosition, value} = this.state;
+        const {cursorPosition} = this.state;
+        const value = this.getValue();
 
         let completed;
         if (value.length === 0) {
@@ -256,10 +239,19 @@ export default class PostInput extends PureComponent {
             completed = `${firstPart}${text}${secondPart}`;
         }
 
-        this.setState({
-            value: completed,
+        this.value = completed;
+        this.input.current.setNativeProps({
+            text: completed,
         });
     };
+
+    resetTextInput = () => {
+        if (this.input.current) {
+            this.input.current.setNativeProps({
+                text: '',
+            });
+        }
+    }
 
     setValue = (value, autocomplete = false) => {
         this.value = value;
@@ -273,7 +265,7 @@ export default class PostInput extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {channelDisplayName, isLandscape, onPasteFiles, readonly, theme} = this.props;
+        const {channelDisplayName, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
         let maxHeight = 150;
@@ -296,8 +288,6 @@ export default class PostInput extends PureComponent {
                 keyboardType={this.state.keyboardType}
                 onEndEditing={this.handleEndEditing}
                 disableFullscreenUI={true}
-                editable={!readonly}
-                onPaste={onPasteFiles}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
             />
         );

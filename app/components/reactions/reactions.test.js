@@ -12,7 +12,6 @@ describe('Reactions', () => {
     const baseProps = {
         actions: {
             addReaction: jest.fn(),
-            getReactionsForPost: jest.fn(),
             removeReaction: jest.fn(),
         },
         canAddReaction: true,
