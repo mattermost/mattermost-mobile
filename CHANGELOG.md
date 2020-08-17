@@ -16,7 +16,7 @@
 
 ### Improvements
  - Addded a default empty search state for the emoji picker screen.
- - Added an alert box to tell users what happened when removed from the channel they were currently viewing.
+ - Added an alert box to tell users what happened when removed from a channel they were currently viewing.
 
 ### Bug Fixes
 
@@ -25,7 +25,7 @@
  - Fixed an issue where YouTube videos rendered as OpenGraph objects but also displaed play buttons when posted using bit.ly links.
 
 #### Android specific
- - Fixed an issue where users were unable to upload files in Android with spaces in the file name.
+ - Fixed an issue on Android where users were unable to upload files with spaces in the file name.
  - Fixed a crash issue.
 
 #### iOS specific
