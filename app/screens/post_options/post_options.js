@@ -33,7 +33,6 @@ export default class PostOptions extends PureComponent {
             unflagPost: PropTypes.func.isRequired,
             unpinPost: PropTypes.func.isRequired,
             setUnreadPost: PropTypes.func.isRequired,
-            fetchMobilePluginIntegrations: PropTypes.func.isRequired,
         }).isRequired,
         canAddReaction: PropTypes.bool,
         canReply: PropTypes.bool,
@@ -58,10 +57,6 @@ export default class PostOptions extends PureComponent {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
-
-    componentDidMount() {
-        this.props.actions.fetchMobilePluginIntegrations();
-    }
 
     close = async (cb) => {
         await dismissModal();

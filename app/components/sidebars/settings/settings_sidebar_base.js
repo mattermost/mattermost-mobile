@@ -28,7 +28,6 @@ export default class SettingsSidebarBase extends PureComponent {
         actions: PropTypes.shape({
             logout: PropTypes.func.isRequired,
             setStatus: PropTypes.func.isRequired,
-            fetchMobilePluginIntegrations: PropTypes.func.isRequired,
         }).isRequired,
         currentUser: PropTypes.object.isRequired,
         plugins: PropTypes.array.isRequired,
@@ -44,7 +43,6 @@ export default class SettingsSidebarBase extends PureComponent {
     componentDidMount() {
         this.mounted = true;
         EventEmitter.on(NavigationTypes.CLOSE_SETTINGS_SIDEBAR, this.closeSettingsSidebar);
-        this.props.actions.fetchMobilePluginIntegrations();
     }
 
     componentWillUnmount() {
@@ -202,7 +200,7 @@ export default class SettingsSidebarBase extends PureComponent {
                 leftComponent = (
                     <FastImage
                         source={{uri: p.extra.icon}}
-                        style={{width: 36, height: 36}}
+                        style={{width: 45, height: 45}}
                     />
                 );
             }

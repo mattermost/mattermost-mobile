@@ -45,7 +45,6 @@ export default class ChannelInfo extends PureComponent {
             selectPenultimateChannel: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
-            fetchMobilePluginIntegrations: PropTypes.func.isRequired,
         }),
         componentId: PropTypes.string,
         viewArchivedChannels: PropTypes.bool.isRequired,
@@ -109,7 +108,6 @@ export default class ChannelInfo extends PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent(this);
         this.props.actions.getChannelStats(this.props.currentChannel.id);
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
-        this.props.actions.fetchMobilePluginIntegrations();
     }
 
     navigationButtonPressed({buttonId}) {

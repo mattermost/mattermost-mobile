@@ -83,7 +83,6 @@ describe('channel_info', () => {
             selectPenultimateChannel: jest.fn(),
             setChannelDisplayName: jest.fn(),
             handleSelectChannel: jest.fn(),
-            fetchMobilePluginIntegrations: jest.fn(),
         },
         plugins: [],
     };

@@ -21,6 +21,7 @@ import {WebSocketMessage} from '@mm-redux/types/websocket';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {removeUserFromList} from '@mm-redux/utils/user_utils';
+import {fetchMobilePluginIntegrations} from '@mm-redux/actions/plugins';
 import websocketClient from '@websocket';
 
 import {
@@ -88,6 +89,8 @@ export function doFirstConnect(now: number) {
             data: null,
         }];
 
+        dispatch(fetchMobilePluginIntegrations());
+
         if (isMinimumServerVersion(Client4.getServerVersion(), 5, 14) && lastDisconnectAt) {
             const currentUserId = getCurrentUserId(state);
             const users = getUsers(state);
@@ -124,6 +127,8 @@ export function doReconnect(now: number) {
             timestamp: now,
             data: null,
         });
+
+        dispatch(fetchMobilePluginIntegrations());
 
         try {
             const {data: me}: any = await dispatch(loadMe(null, null, true));
@@ -373,6 +378,8 @@ function handleEvent(msg: WebSocketMessage) {
             return dispatch(handleOpenDialogEvent(msg));
         case WebsocketEvents.RECEIVED_GROUP:
             return dispatch(handleGroupUpdatedEvent(msg));
+        case WebsocketEvents.PLUGIN_STATUSES_CHANGED:
+            return dispatch(fetchMobilePluginIntegrations());
         }
 
         return {data: true};

@@ -58,7 +58,7 @@ export default class PostOption extends PureComponent {
         let image = icons[icon];
         if (!image) {
             image = {uri: icon};
-            imageStyle = {width: 36, height: 36};
+            imageStyle = {width: 24, height: 24};
         }
 
         const Touchable = Platform.select({

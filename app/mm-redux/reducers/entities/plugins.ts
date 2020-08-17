@@ -10,6 +10,9 @@ function mobilePluginIntegrations(state: PluginIntegration[] = [], action: Gener
     case PluginTypes.RECEIVED_PLUGIN_INTEGRATIONS: {
         return action.data;
     }
+    case PluginTypes.REMOVE_PLUGIN_INTEGRATIONS: {
+        return [];
+    }
     default:
         return state;
     }

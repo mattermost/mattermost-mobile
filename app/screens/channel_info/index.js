@@ -28,7 +28,6 @@ import {
     isCurrentChannelReadOnly,
 } from '@mm-redux/selectors/entities/channels';
 import {getPluginIntegrations} from '@mm-redux/selectors/entities/plugins';
-import {fetchMobilePluginIntegrations} from '@mm-redux/actions/plugins';
 import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from '@mm-redux/utils/channel_utils';
 import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
@@ -171,7 +170,6 @@ function mapDispatchToProps(dispatch) {
             selectPenultimateChannel,
             setChannelDisplayName,
             handleSelectChannel,
-            fetchMobilePluginIntegrations,
         }, dispatch),
     };
 }

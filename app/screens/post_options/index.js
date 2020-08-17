@@ -14,7 +14,6 @@ import {
     setUnreadPost,
 } from '@mm-redux/actions/posts';
 import {getPluginIntegrations} from '@mm-redux/selectors/entities/plugins';
-import {fetchMobilePluginIntegrations} from '@mm-redux/actions/plugins';
 import {General, Permissions, Plugins} from '@mm-redux/constants';
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
@@ -164,7 +163,6 @@ function mapDispatchToProps(dispatch) {
             unflagPost,
             unpinPost,
             setUnreadPost,
-            fetchMobilePluginIntegrations,
         }, dispatch),
     };
 }
