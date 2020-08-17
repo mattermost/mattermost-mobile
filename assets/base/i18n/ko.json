@@ -629,5 +629,6 @@
   "mobile.server_upgrade.alert_description": "이 서버 버전은 지원되지 않으며, 사용자는 충돌이나 앱의 핵심 기능을 손상시키는 심각한 버그를 일으키는 호환성 문제에 노출이 될 수 있습니다. {serverVersion}이 상의 버전으로 업그레이드해야 합니다.",
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}",
   "mobile.message_length.message_split_left": "메시지가 문자 제한을 초과합니다",
-  "mobile.android.back_handler_exit": "종료하려면 뒤로 가기를 다시 눌러주세요"
+  "mobile.android.back_handler_exit": "종료하려면 뒤로 가기를 다시 눌러주세요",
+  "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search."
 }

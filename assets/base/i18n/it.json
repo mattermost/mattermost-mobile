@@ -629,5 +629,8 @@
   "mobile.post_textbox.one_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} inviarea una notifica ad almento {totalMembers} persone. Sicuro di voler continuare?",
   "mobile.post_textbox.one_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?",
   "mobile.post_textbox.multi_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} inviarea una notifica ad almento {totalMembers} persone. Sicuro di voler continuare?",
-  "mobile.post_textbox.multi_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?"
+  "mobile.post_textbox.multi_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?",
+  "mobile.user_removed.title": "Rimosso da {channelName}",
+  "mobile.user_removed.message": "Sei stato rimosso dal canale.",
+  "mobile.emoji_picker.search.not_found_description": "Controlla l'ortografia o prova un'altra ricerca."
 }
