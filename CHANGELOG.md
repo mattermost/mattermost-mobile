@@ -1,5 +1,36 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.35.0 Release
+- Release Date: September 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Highlights
+
+#### Upgrade to React Native 0.63.2
+ - React Native 0.63.2 introduces performance and stability improvements to the core app platform.
+
+### Improvements
+ - Addded a default empty search state for the emoji picker screen.
+ - Added an alert box to tell users what happened when removed from the channel they were currently viewing.
+
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue where the app crashed on a channel that had lot of images and attachments.
+ - Fixed an issue where YouTube videos rendered as OpenGraph objects but also displaed play buttons when posted using bit.ly links.
+
+#### Android specific
+ - Fixed an issue where users were unable to upload files in Android with spaces in the file name.
+ - Fixed a crash issue.
+
+#### iOS specific
+
+
 ## 1.34.0 Release
 - Release Date: August 16, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
