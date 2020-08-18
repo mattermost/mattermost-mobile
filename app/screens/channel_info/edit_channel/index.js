@@ -26,10 +26,10 @@ function mapStateToProps(state) {
         channelIsReadOnly = isCurrentChannelReadOnly(state) || false;
     }
 
-    const canEditChannel = !channelIsReadOnly && showManagementOptions(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
+    const canEdit = !channelIsReadOnly && showManagementOptions(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
 
     return {
-        canEditChannel,
+        canEdit,
     };
 }
 
