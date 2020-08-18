@@ -74,7 +74,7 @@
   "edit_post.editPost": "Bewerk het bericht...",
   "edit_post.save": "Opslaan",
   "file_attachment.download": "Downloaden",
-  "file_upload.fileAbove": "Het bestand groter dan {max} MB kan niet worden geüploaded: {filename}",
+  "file_upload.fileAbove": "Het bestand kleiner zijn dan {max}",
   "get_post_link_modal.title": "Kopieer link",
   "integrations.add": "Toevoegen",
   "intro_messages.anyMember": " Ieder lid kan dit kanaal lezen en volgen.",

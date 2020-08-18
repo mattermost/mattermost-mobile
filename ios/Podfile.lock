@@ -32,9 +32,9 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
-  - MMKV (1.1.1):
-    - MMKVCore (~> 1.1.1)
-  - MMKVCore (1.1.2)
+  - MMKV (1.2.1):
+    - MMKVCore (~> 1.2.1)
+  - MMKVCore (1.2.1)
   - Permission-Camera (2.1.4):
     - RNPermissions
   - Permission-PhotoLibrary (2.1.4):
@@ -212,16 +212,16 @@ PODS:
     - React
   - react-native-cookies (3.2.0):
     - React
-  - react-native-document-picker (3.4.0):
+  - react-native-document-picker (3.5.4):
     - React
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (2.3.1):
+  - react-native-image-picker (2.3.3):
     - React
   - react-native-local-auth (1.6.0):
     - React
-  - react-native-mmkv-storage (0.3.2):
-    - MMKV (= 1.1.1)
+  - react-native-mmkv-storage (0.3.5):
+    - MMKV (= 1.2.1)
     - React
   - react-native-netinfo (5.9.5):
     - React
@@ -316,13 +316,13 @@ PODS:
     - React
   - RNCMaskedView (0.1.10):
     - React
-  - RNDeviceInfo (5.5.7):
+  - RNDeviceInfo (5.6.4):
     - React
   - RNFastImage (8.1.5):
     - React
     - SDWebImage (~> 5.0)
     - SDWebImageWebPCoder (~> 0.4.1)
-  - RNFileViewer (2.1.0):
+  - RNFileViewer (2.1.1):
     - React
   - RNGestureHandler (1.6.1):
     - React
@@ -593,8 +593,8 @@ SPEC CHECKSUMS:
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
   jail-monkey: d7c5048b2336f22ee9c9e0efa145f1f917338ea9
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
-  MMKV: 5eb44526fcf38152328ebfeff5ec585972ace00d
-  MMKVCore: ae976ab3f019a3e4448f884353e0557b324ff136
+  MMKV: 67253edee25a34edf332f91d73fa94a9e038b971
+  MMKVCore: fe398984acac1fa33f92795d1b5fd0a334c944af
   Permission-Camera: 3ed116545ee8806cd706bca0e1a9a2c3cd36c6bd
   Permission-PhotoLibrary: 56e71522b008d9abca150680c1f8050f267cdffb
   RCTRequired: f13f25e7b12f925f1f6a6a8c69d929a03c0129fe
@@ -610,11 +610,11 @@ SPEC CHECKSUMS:
   React-jsinspector: b14e62ebe7a66e9231e9581279909f2fc3db6606
   react-native-cameraroll: 7c2e22b5a8e8f30fc6d5566c942b225ca7129752
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
-  react-native-document-picker: d694111879537cec2c258a1dcd2243d9df746824
+  react-native-document-picker: c5752781fbc0c126c627c1549b037c139444a4cf
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: 668e72d0277dc8c12ae90e835507c1eddd2e4f85
+  react-native-image-picker: a6c3d644751a388b0fc8b56822ff7cbd398a3008
   react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
-  react-native-mmkv-storage: 49389227471de5258b4e5bae7857bfe0ad02c8f7
+  react-native-mmkv-storage: be9f9ed4ce7c1af990f40bf610c8b8a59c88a944
   react-native-netinfo: 7f3f3ed9e8f0e7ab3e7cac00cbfdc6997e25ecaf
   react-native-notifications: 24706907104a0f00c35c4bde7e0ca76a50f730e1
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
@@ -639,9 +639,9 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: db711e29e5e0500d9bd21aa0c2e397efa45302b1
   RNCClipboard: 5f3218dcdc28405aa2ae72b78e388f150b826dd3
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
-  RNDeviceInfo: 498ccbf8b1361fe858581e3c1193ecee1a031e62
+  RNDeviceInfo: b4e7cc649b2258a60490c7ac096efbf85fbe65c3
   RNFastImage: 35ae972d6727c84ee3f5c6897e07f84d0a3445e9
-  RNFileViewer: 3600e85d326dadfd0fd367eb38fcb4300b699b49
+  RNFileViewer: db62d60dd19007c54b2c959b5e675a46d59f8a43
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
   RNLocalize: fc27ee5878ce5a3af73873fb2d8e866e0d1e6d84
