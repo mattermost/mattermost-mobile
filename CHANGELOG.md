@@ -23,13 +23,14 @@
 #### All apps
  - Fixed an issue where the app crashed on a channel that had lot of images and attachments.
  - Fixed an issue where YouTube videos rendered as OpenGraph objects but also displaed play buttons when posted using bit.ly links.
+ - Fixed an issue where the permission to delete others' posts did not function independently of deleting own posts.
 
 #### Android specific
  - Fixed an issue on Android where users were unable to upload files with spaces in the file name.
  - Fixed a crash issue.
 
 #### iOS specific
-
+ - Fixed an issue where users were unable to swipe to close the left-hand side after closing the keyboard.
 
 ## 1.34.0 Release
 - Release Date: August 16, 2020
