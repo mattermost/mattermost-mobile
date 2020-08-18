@@ -24,6 +24,7 @@ function mapStateToProps(state) {
         ...state.views.selectServer,
         config,
         currentVersion,
+        deepLinkURL: state.views.root.deepLinkURL,
         hasConfigAndLicense: Object.keys(config).length > 0 && Object.keys(license).length > 0,
         latestVersion,
         license,
