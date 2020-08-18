@@ -62,11 +62,18 @@ export function canDeletePost(state: GlobalState, config: any, license: any, tea
     const isOwner = isPostOwner(userId, post);
 
     if (hasNewPermissions(state)) {
-        const canDelete = haveIChannelPermission(state, {team: teamId, channel: channelId, permission: Permissions.DELETE_POST});
-        if (!isOwner) {
-            return canDelete && haveIChannelPermission(state, {team: teamId, channel: channelId, permission: Permissions.DELETE_OTHERS_POSTS});
+        let permissions = [];
+        if (isOwner) {
+            permissions = [Permissions.DELETE_POST];
+        } else {
+            const {serverVersion} = state.entities.general;
+
+            // prior to v5.27, the server used to require delete_own_posts and
+            // delete_others_posts permissions to be able to delete a post by a
+            // different author.
+            permissions = isMinimumServerVersion(serverVersion, 5, 27) ? [Permissions.DELETE_OTHERS_POSTS] : [Permissions.DELETE_POST, Permissions.DELETE_OTHERS_POSTS];
         }
-        return canDelete;
+        return permissions.every((permission) => haveIChannelPermission(state, {team: teamId, channel: channelId, permission, default: false}));
     }
 
     // Backwards compatibility with pre-advanced permissions config settings.
@@ -87,11 +94,12 @@ export function canEditPost(state: GlobalState, config: any, license: any, teamI
     let canEdit = true;
 
     if (hasNewPermissions(state)) {
-        const {serverVersion} = state.entities.general;
         let permissions = [];
         if (isOwner) {
             permissions = [Permissions.EDIT_POST];
         } else {
+            const {serverVersion} = state.entities.general;
+
             // prior to v5.26, the server used to require edit_own_posts and
             // edit_others_posts permissions to be able to edit a post by a
             // different author.
