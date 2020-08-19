@@ -34,7 +34,6 @@ describe('Permalink', () => {
         isPermalink: true,
         myMembers: {},
         onClose: jest.fn(),
-        onPress: jest.fn(),
         postIds: ['post_id_1', 'focused_post_id', 'post_id_3'],
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
@@ -62,8 +61,7 @@ describe('Permalink', () => {
 
         wrapper.instance().loadPosts = jest.fn();
         wrapper.instance().retry();
-        expect(wrapper.instance().loadPosts).toHaveBeenCalledTimes(2);
-        expect(wrapper.instance().loadPosts).toBeCalledWith(baseProps);
+        expect(wrapper.instance().loadPosts).toHaveBeenCalledTimes(1);
     });
 
     test('should call handleClose on onNavigatorEvent(backPress)', () => {
@@ -75,44 +73,5 @@ describe('Permalink', () => {
         wrapper.instance().handleClose = jest.fn();
         wrapper.instance().navigationButtonPressed({buttonId: 'backPress'});
         expect(wrapper.instance().handleClose).toHaveBeenCalledTimes(1);
-    });
-
-    test('should match state', () => {
-        const wrapper = shallow(
-            <Permalink {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        expect(wrapper.state('channelIdState')).toEqual(baseProps.channelId);
-        expect(wrapper.state('channelNameState')).toEqual(baseProps.channelName);
-        expect(wrapper.state('focusedPostIdState')).toEqual(baseProps.focusedPostId);
-        expect(wrapper.state('postIdsState')).toEqual(baseProps.postIds);
-
-        wrapper.setProps({channelId: ''});
-        expect(wrapper.state('channelIdState')).toEqual(baseProps.channelId);
-        wrapper.setProps({channelId: null});
-        expect(wrapper.state('channelIdState')).toEqual(baseProps.channelId);
-        wrapper.setProps({channelId: 'new_channel_id'});
-        expect(wrapper.state('channelIdState')).toEqual('new_channel_id');
-
-        wrapper.setProps({channelName: ''});
-        expect(wrapper.state('channelNameState')).toEqual(baseProps.channelName);
-        wrapper.setProps({channelName: null});
-        expect(wrapper.state('channelNameState')).toEqual(baseProps.channelName);
-        wrapper.setProps({channelName: 'new_channel_name'});
-        expect(wrapper.state('channelNameState')).toEqual('new_channel_name');
-
-        wrapper.setProps({focusedPostId: 'new_focused_post_id'});
-        expect(wrapper.state('focusedPostIdState')).toEqual('new_focused_post_id');
-
-        wrapper.setProps({postIds: []});
-        expect(wrapper.state('postIdsState')).toEqual(baseProps.postIds);
-        wrapper.setProps({postIds: ['post_id_1', 'focused_post_id']});
-        expect(wrapper.state('postIdsState')).toEqual(['post_id_1', 'focused_post_id']);
-
-        wrapper.setProps({postIds: baseProps.postIds, focusedPostId: baseProps.focusedPostId});
-        expect(wrapper.state('loading')).toEqual(true);
-        wrapper.setProps({postIds: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'], focusedPostId: 'new_focused_post_id'});
-        expect(wrapper.state('loading')).toEqual(false);
     });
 });
