@@ -135,7 +135,7 @@ export function matchDeepLink(url, serverURL, siteURL) {
 
     match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(urlToMatch);
     if (match) {
-        return {type: DeepLinkTypes.GROUPCHANNEL, teamName: match[1], userName: match[2]};
+        return {type: DeepLinkTypes.GROUPCHANNEL, teamName: match[1], id: match[2]};
     }
 
     return null;

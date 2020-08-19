@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Platform, ScrollView, View, Linking} from 'react-native';
+import {Platform, ScrollView, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
@@ -14,18 +14,15 @@ import SendAction from '@components/post_draft/send_action';
 import Typing from '@components/post_draft/typing';
 import Uploads from '@components/post_draft/uploads';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
-import {DeepLinkTypes} from '@constants';
+import {DeepLinkTypes, NavigationTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
-import {getCurrentServerUrl} from '@init/credentials';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import EphemeralStore from '@store/ephemeral_store';
 import * as DraftUtils from '@utils/draft';
-import {alertErrorWithFallback} from '@utils/general';
-import {t} from '@utils/i18n';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {matchDeepLink, normalizeProtocol} from '@utils/url';
+import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 const AUTOCOMPLETE_MARGIN = 20;
 const AUTOCOMPLETE_MAX_HEIGHT = 200;
@@ -68,6 +65,9 @@ export default class DraftInput extends PureComponent {
         useGroupMentions: PropTypes.bool.isRequired,
         channelMemberCountsByGroup: PropTypes.object,
         groupsWithAllowReference: PropTypes.object,
+        loadChannelsByTeamName: PropTypes.func.isRequired,
+        selectFocusedPostId: PropTypes.func.isRequired,
+        handleSelectChannel: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -99,6 +99,7 @@ export default class DraftInput extends PureComponent {
         const {getChannelMemberCountsByGroup, channelId, isTimezoneEnabled, useGroupMentions, value} = this.props;
 
         HWKeyboardEvent.onHWKeyPressed(this.handleHardwareEnterPress);
+        EventEmitter.on(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, this.handleClosePermalink);
 
         if (value) {
             this.setInputValue(value);
@@ -137,6 +138,7 @@ export default class DraftInput extends PureComponent {
 
     componentWillUnmount() {
         HWKeyboardEvent.removeOnHWKeyPressed();
+        EventEmitter.off(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, this.handleClosePermalink);
     }
 
     canSend = () => {
@@ -318,71 +320,60 @@ export default class DraftInput extends PureComponent {
     };
 
     handleGotoLocation = async (href) => {
-        const {serverURL, siteURL, handleSelectChannelByName, getUserByUsername, makeDirectChannel} = this.props;
-        const url = normalizeProtocol(href);
-
-        if (!url) {
-            return;
-        }
-
-        let serverUrl = serverURL;
-        if (!serverUrl) {
-            serverUrl = await getCurrentServerUrl();
-        }
-
-        const match = matchDeepLink(url, serverURL, siteURL);
+        const {serverURL, siteURL, handleSelectChannelByName, getUserByUsername, makeDirectChannel, loadChannelsByTeamName, handleSelectChannel} = this.props;
+        const {url, match} = await DraftUtils.getURLAndMatch(href, serverURL, siteURL);
 
         if (match) {
             switch (match.type) {
             case DeepLinkTypes.CHANNEL:
-                handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
+                handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(this.context.intln));
                 break;
             case DeepLinkTypes.PERMALINK:
-                //TODO
+                loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(this.context.intln));
+                this.showPermalinkView(match.postId);
                 break;
             case DeepLinkTypes.DMCHANNEL: {
                 const {data} = await getUserByUsername(match.userName);
                 if (!data) {
-                    // TODO use proper error
-                    this.errorBadChannel();
+                    DraftUtils.errrorBadUser(this.context.intl);
                     return;
                 }
                 makeDirectChannel(data.id);
                 break;
             }
             case DeepLinkTypes.GROUPCHANNEL:
-                //TODO
+                handleSelectChannel(match.id);
                 break;
             }
         } else {
-            Linking.canOpenURL(url).then((supported) => {
-                if (supported) {
-                    Linking.openURL(url);
-                } else {
-                    const {formatMessage} = this.context.intl;
-                    Alert.alert(
-                        formatMessage({
-                            id: 'mobile.server_link.error.title',
-                            defaultMessage: 'Link Error',
-                        }),
-                        formatMessage({
-                            id: 'mobile.server_link.error.text',
-                            defaultMessage: 'The link could not be found on this server.',
-                        }),
-                    );
-                }
-            });
+            DraftUtils.tryOpenURL(url);
         }
     }
 
-    errorBadChannel = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_channel.error'),
-            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
-        };
+    showPermalinkView = (postId, error = '') => {
+        const {selectFocusedPostId} = this.props;
+        selectFocusedPostId(postId);
 
-        alertErrorWithFallback(intl, {}, message);
+        if (!this.showingPermalink) {
+            const screen = 'Permalink';
+            const passProps = {
+                isPermalink: true,
+                onClose: this.handleClosePermalink,
+                error,
+            };
+            const options = {
+                layout: {
+                    componentBackgroundColor: changeOpacity('#000', 0.2),
+                },
+            };
+            showModalOverCurrentContext(screen, passProps, options);
+        }
+    };
+
+    handleClosePermalink = () => {
+        const {selectFocusedPostId} = this.props;
+        selectFocusedPostId('');
+        this.showingPermalink = false;
     };
 
     sendMessage = () => {

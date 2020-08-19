@@ -8,7 +8,7 @@ import {addReactionToLatestPost} from '@actions/views/emoji';
 import {handleClearFiles, handleClearFailedFiles} from '@actions/views/file_upload';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
-import {createPost} from '@mm-redux/actions/posts';
+import {createPost, selectFocusedPostId} from '@mm-redux/actions/posts';
 import {setStatus, getUserByUsername} from '@mm-redux/actions/users';
 import {General, Permissions} from '@mm-redux/constants';
 import {getCurrentChannel, getChannel, getChannelStats, getChannelMemberCountsByGroup as selectChannelMemberCountsByGroup} from '@mm-redux/selectors/entities/channels';
@@ -20,7 +20,7 @@ import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isLandscape} from '@selectors/device';
 import {getCurrentChannelDraft, getThreadDraft} from '@selectors/views';
-import {handleSelectChannelByName} from 'app/actions/views/channel';
+import {handleSelectChannelByName, handleSelectChannel, loadChannelsByTeamName} from 'app/actions/views/channel';
 import {makeDirectChannel} from 'app/actions/views/more_dms';
 
 import PostDraft from './draft_input';
@@ -103,9 +103,12 @@ const mapDispatchToProps = {
     handleClearFiles,
     handleClearFailedFiles,
     handleSelectChannelByName,
+    handleSelectChannel,
     setStatus,
     getChannelMemberCountsByGroup,
     makeDirectChannel,
+    loadChannelsByTeamName,
+    selectFocusedPostId,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(PostDraft);
