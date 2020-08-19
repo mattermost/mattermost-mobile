@@ -39,6 +39,7 @@
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
             "@mm-redux/*": ["app/mm-redux/*"],
+            "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
             "@store/*": ["app/store"],
             "@telemetry/*": ["/app/telemetry/*"],

@@ -3,3 +3,4 @@
 declare module 'gfycat-sdk';
 declare module 'remote-redux-devtools';
 declare module 'redux-action-buffer';
+declare module 'react-intl';
