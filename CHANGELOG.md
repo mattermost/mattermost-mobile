@@ -31,6 +31,7 @@
 
 #### iOS specific
  - Fixed an issue where users were unable to swipe to close the left-hand side after closing the keyboard.
+ - Fixed an issue where the channel info screen ``This channel has guests`` text was out of safe area.
 
 ## 1.34.0 Release
 - Release Date: August 16, 2020
