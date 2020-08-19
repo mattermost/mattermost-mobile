@@ -97,6 +97,15 @@ export default class ChannelMention extends PureComponent {
         myMembers !== this.props.myMembers)) {
             const sections = [];
             if (isSearch) {
+                if (directAndGroupMessages.length && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+                    sections.push({
+                        id: t('suggestion.search.direct'),
+                        defaultMessage: 'Direct Messages',
+                        data: directAndGroupMessages,
+                        key: 'directAndGroupMessages',
+                    });
+                }
+
                 if (publicChannels.length) {
                     sections.push({
                         id: t('suggestion.search.public'),
@@ -114,15 +123,6 @@ export default class ChannelMention extends PureComponent {
                         data: privateChannels,
                         key: 'privateChannels',
                         hideLoadingIndicator: true,
-                    });
-                }
-
-                if (directAndGroupMessages.length && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-                    sections.push({
-                        id: t('suggestion.search.direct'),
-                        defaultMessage: 'Direct Messages',
-                        data: directAndGroupMessages,
-                        key: 'directAndGroupMessages',
                     });
                 }
             } else {
