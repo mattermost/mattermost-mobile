@@ -111,12 +111,13 @@ export default class Permalink extends PureComponent {
         this.mounted = true;
 
         if (this.state.loading && this.props.focusedPostId) {
+            this.initialLoad = true;
             this.loadPosts();
         }
     }
 
     componentDidUpdate() {
-        if (this.state.loading && this.props.focusedPostId) {
+        if (this.state.loading && this.props.focusedPostId && !this.initialLoad) {
             this.loadPosts();
         }
     }
@@ -220,7 +221,7 @@ export default class Permalink extends PureComponent {
         const {formatMessage} = intl;
         let focusChannelId = channelId;
 
-        if (this.mounted) {
+        if (this.mounted && !this.initialLoad) {
             this.setState({loading: false});
         }
 
@@ -259,6 +260,11 @@ export default class Permalink extends PureComponent {
             }
 
             await actions.getPostsAround(focusChannelId, focusedPostId, 10);
+
+            if (this.initialLoad) {
+                this.initialLoad = false;
+                this.setState({loading: false});
+            }
         }
     };
 
@@ -320,7 +326,7 @@ export default class Permalink extends PureComponent {
                     onPermalinkPress={this.handlePermalinkPress}
                     onPostPress={this.goToThread}
                     postIds={postIds}
-                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds || []) : -1}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     highlightPinnedOrFlagged={false}
