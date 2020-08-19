@@ -9,11 +9,6 @@ import {General} from '@mm-redux/constants';
 
 import ChannelInfo from './channel_info';
 
-// ChannelInfoRow expects to receive the pinIcon as a number
-jest.mock('@assets/images/channel_info/pin.png', () => {
-    return 1;
-});
-
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');
     return {
@@ -22,7 +17,7 @@ jest.mock('@utils/theme', () => {
     };
 });
 
-describe('channel_info', () => {
+describe('channelInfo', () => {
     const intlMock = {
         formatMessage: jest.fn(),
         formatDate: jest.fn(),
@@ -34,12 +29,6 @@ describe('channel_info', () => {
         now: jest.fn(),
     };
     const baseProps = {
-        canDeleteChannel: true,
-        canUnarchiveChannel: false,
-        canConvertChannel: true,
-        canManageUsers: true,
-        viewArchivedChannels: true,
-        canEditChannel: true,
         currentChannel: {
             id: '1234',
             display_name: 'Channel Name',
@@ -54,35 +43,17 @@ describe('channel_info', () => {
         currentChannelMemberCount: 2,
         currentChannelGuestCount: 0,
         currentUserId: '1234',
-        currentUserIsGuest: false,
-        isChannelMuted: false,
-        ignoreChannelMentions: false,
-        isCurrent: true,
-        isFavorite: false,
         status: 'status',
         theme: Preferences.THEMES.default,
         isBot: false,
         isTeammateGuest: false,
         isLandscape: false,
         actions: {
-            clearPinnedPosts: jest.fn(),
-            closeDMChannel: jest.fn(),
-            closeGMChannel: jest.fn(),
-            convertChannelToPrivate: jest.fn(),
-            deleteChannel: jest.fn(),
-            unarchiveChannel: jest.fn(),
             getChannelStats: jest.fn(),
-            getChannel: jest.fn(),
-            leaveChannel: jest.fn(),
             loadChannelsByTeamName: jest.fn(),
-            favoriteChannel: jest.fn(),
-            unfavoriteChannel: jest.fn(),
             getCustomEmojisInText: jest.fn(),
             selectFocusedPostId: jest.fn(),
-            updateChannelNotifyProps: jest.fn(),
-            selectPenultimateChannel: jest.fn(),
             setChannelDisplayName: jest.fn(),
-            handleSelectChannel: jest.fn(),
         },
     };
 
@@ -94,63 +65,6 @@ describe('channel_info', () => {
             {context: {intl: intlMock}},
         );
         expect(wrapper.getElement()).toMatchSnapshot();
-    });
-
-    test('should render convert to private button when user has team admin permissions', async () => {
-        const wrapper = shallow(
-            <ChannelInfo
-                {...baseProps}
-            />,
-            {context: {intl: intlMock}},
-        );
-
-        const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
-        expect(render).toBeTruthy();
-    });
-
-    test('should not render convert to private button when user is not team admin or above', async () => {
-        const wrapper = shallow(
-            <ChannelInfo
-                {...baseProps}
-                canConvertChannel={false}
-            />,
-            {context: {intl: intlMock}},
-        );
-
-        const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
-        expect(render).toBeFalsy();
-    });
-
-    test('should not render convert to private button currentChannel is already private', async () => {
-        const props = Object.assign({}, baseProps);
-        props.currentChannel.type = General.PRIVATE_CHANNEL;
-        const wrapper = shallow(
-            <ChannelInfo
-                {...props}
-            />,
-            {context: {intl: intlMock}},
-        );
-
-        const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
-        expect(render).toBeFalsy();
-    });
-
-    test('should not render convert to private button when currentChannel is a default channel', async () => {
-        const props = Object.assign({}, baseProps);
-        props.currentChannel.name = General.DEFAULT_CHANNEL;
-        const wrapper = shallow(
-            <ChannelInfo
-                {...props}
-            />,
-            {context: {intl: intlMock}},
-        );
-
-        const instance = wrapper.instance();
-        const render = instance.renderConvertToPrivateRow();
-        expect(render).toBeFalsy();
     });
 
     test('should dismiss modal on close', () => {
@@ -166,39 +80,5 @@ describe('channel_info', () => {
         expect(dismissModal).not.toHaveBeenCalled();
         instance.close();
         expect(dismissModal).toHaveBeenCalled();
-    });
-
-    test('should render unarchive channel button when currentChannel is an archived channel', async () => {
-        const props = Object.assign({}, baseProps);
-        props.canUnarchiveChannel = true;
-        props.currentChannel.delete_at = 1234566;
-
-        const wrapper = shallow(
-            <ChannelInfo
-                {...props}
-            />,
-            {context: {intl: intlMock}},
-        );
-
-        const instance = wrapper.instance();
-        const render = instance.renderUnarchiveChannel();
-        expect(render).toBeTruthy();
-    });
-
-    test('should not render unarchive channel button when currentChannel is an active channel', async () => {
-        const props = Object.assign({}, baseProps);
-        props.canUnarchiveChannel = false;
-        props.currentChannel.delete_at = 0;
-
-        const wrapper = shallow(
-            <ChannelInfo
-                {...props}
-            />,
-            {context: {intl: intlMock}},
-        );
-
-        const instance = wrapper.instance();
-        const render = instance.renderUnarchiveChannel();
-        expect(render).toBeFalsy();
     });
 });
