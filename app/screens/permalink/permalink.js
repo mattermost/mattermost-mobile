@@ -270,6 +270,7 @@ export default class Permalink extends PureComponent {
 
     retry = () => {
         if (this.mounted) {
+            this.initialLoad = false;
             this.setState({loading: true, error: null, retry: false});
         }
     };

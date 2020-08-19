@@ -120,62 +120,12 @@ exports[`Permalink should match snapshot 1`] = `
           ]
         }
       >
-        <Connect(PostList)
-          currentUserId="current_user_id"
-          highlightPinnedOrFlagged={false}
-          highlightPostId="focused_post_id"
-          indicateNewMessages={false}
-          isSearchResult={false}
-          lastPostIndex={-1}
-          lastViewedAt={0}
-          onHashtagPress={[Function]}
-          onPermalinkPress={[Function]}
-          onPostPress={[Function]}
-          postIds={
-            Array [
-              "post_id_1",
-              "focused_post_id",
-              "post_id_3",
-            ]
-          }
-          renderReplies={true}
-          shouldRenderReplyButton={false}
+        <Loading
+          color="#3d3c40"
+          size="large"
+          style={Object {}}
         />
       </View>
-      <ForwardRef
-        onPress={[Function]}
-        style={
-          Array [
-            Object {
-              "alignItems": "center",
-              "backgroundColor": "#166de0",
-              "flexDirection": "row",
-              "height": 43,
-              "justifyContent": "center",
-              "paddingRight": 16,
-              "width": "100%",
-            },
-            Object {
-              "borderBottomLeftRadius": 6,
-              "borderBottomRightRadius": 6,
-            },
-          ]
-        }
-      >
-        <FormattedText
-          defaultMessage=""
-          defautMessage="Jump to recent messages"
-          id="mobile.search.jump"
-          style={
-            Object {
-              "color": "#ffffff",
-              "fontSize": 15,
-              "fontWeight": "600",
-              "textAlignVertical": "center",
-            }
-          }
-        />
-      </ForwardRef>
     </withAnimatable(View)>
   </View>
 </Connect(SafeAreaIos)>
