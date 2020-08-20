@@ -18,6 +18,7 @@ import {t} from 'app/utils/i18n';
 import {intlShape} from 'react-intl';
 
 import telemetry from 'app/telemetry';
+import {LARGE_BADGE_RIGHT_POSITION, SMALL_BADGE_RIGHT_POSITION, MAX_BADGE_RIGHT_POSITION} from '@constants/view';
 
 export default class ChannelDrawerButton extends PureComponent {
     static propTypes = {
@@ -87,14 +88,21 @@ export default class ChannelDrawerButton extends PureComponent {
 
         let badge;
         if (badgeCount && visible) {
+            const badgeCountLow = badgeCount <= 0;
+            const minWidth = badgeCountLow ? 8 : 18;
+            const badgeStyle = badgeCountLow ? style.smallBadge : style.badge;
+            const smallBadgeRightPosition = badgeCount > 9 ? LARGE_BADGE_RIGHT_POSITION : SMALL_BADGE_RIGHT_POSITION;
+            const rightStylePosition = badgeCount > 99 ? MAX_BADGE_RIGHT_POSITION : smallBadgeRightPosition;
+            const containerStyle = badgeCountLow ? style.smallBadgeContainer : {...style.badgeContainer, right: rightStylePosition};
+
             badge = (
                 <Badge
-                    containerStyle={style.badgeContainer}
-                    style={style.badge}
+                    containerStyle={containerStyle}
+                    style={badgeStyle}
                     countStyle={style.mention}
                     count={badgeCount}
                     onPress={this.handlePress}
-                    minWidth={19}
+                    minWidth={minWidth}
                 />
             );
         }
@@ -155,7 +163,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         badge: {
             backgroundColor: theme.mentionBg,
-            height: 19,
+            height: 18,
+            padding: 3,
+        },
+        smallBadge: {
+            backgroundColor: theme.mentionBg,
+            height: 8,
             padding: 3,
         },
         badgeContainer: {
@@ -163,12 +176,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 14,
             borderWidth: 2,
             position: 'absolute',
-            right: -14,
-            top: -7,
+            top: -6,
+        },
+        smallBadgeContainer: {
+            borderColor: theme.sidebarHeaderBg,
+            borderRadius: 14,
+            borderWidth: 2,
+            position: 'absolute',
+            right: -7,
+            top: 0,
         },
         mention: {
             color: theme.mentionColor,
             fontSize: 10,
+            fontWeight: 'bold',
         },
     };
 });

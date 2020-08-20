@@ -24,6 +24,7 @@ import {
 import Button from 'react-native-button';
 import RNFetchBlob from 'rn-fetch-blob';
 import merge from 'deepmerge';
+import urlParse from 'url-parse';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
@@ -63,6 +64,7 @@ export default class SelectServer extends PureComponent {
         license: PropTypes.object,
         minVersion: PropTypes.string,
         serverUrl: PropTypes.string.isRequired,
+        deepLinkURL: PropTypes.string,
     };
 
     static defaultProps = {
@@ -80,10 +82,19 @@ export default class SelectServer extends PureComponent {
             connected: false,
             connecting: false,
             error: null,
-            url: props.serverUrl,
         };
 
         this.cancelPing = null;
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (state.url === undefined && props.allowOtherServers && props.deepLinkURL) {
+            const url = urlParse(props.deepLinkURL).host;
+            return {url};
+        } else if (state.url === undefined && props.serverUrl) {
+            return {url: props.serverUrl};
+        }
+        return null;
     }
 
     componentDidMount() {
@@ -364,7 +375,6 @@ export default class SelectServer extends PureComponent {
     };
 
     sanitizeUrl = (url, useHttp = false) => {
-        const urlParse = require('url-parse');
         let preUrl = urlParse(url, true);
 
         if (!preUrl.host || preUrl.protocol === 'file:') {
@@ -391,7 +401,6 @@ export default class SelectServer extends PureComponent {
 
         this.cancelPing();
 
-        const urlParse = require('url-parse');
         const host = urlParse(this.state.url, true).host || this.state.url;
 
         const {formatMessage} = this.context.intl;

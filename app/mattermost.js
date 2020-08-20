@@ -57,6 +57,12 @@ const launchApp = (credentials) => {
 
     const store = Store.redux;
     waitForHydration(store, async () => {
+        Linking.getInitialURL().then((url) => {
+            if (url) {
+                store.dispatch(setDeepLinkURL(url));
+            }
+        });
+
         if (credentials) {
             const {previousVersion} = store.getState().app;
             const valid = validatePreviousVersion(previousVersion);
@@ -78,12 +84,6 @@ const launchApp = (credentials) => {
 
     telemetry.startSinceLaunch(['start:splash_screen']);
     EphemeralStore.appStarted = true;
-
-    Linking.getInitialURL().then((url) => {
-        if (url) {
-            store.dispatch(setDeepLinkURL(url));
-        }
-    });
 };
 
 const launchAppAndAuthenticateIfNeeded = async (credentials) => {

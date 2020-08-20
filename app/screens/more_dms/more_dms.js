@@ -279,20 +279,24 @@ export default class MoreDirectMessages extends PureComponent {
         }
     };
 
-    searchProfiles = (term) => {
+    searchProfiles = async (term) => {
         const lowerCasedTerm = term.toLowerCase();
         const {actions, currentTeamId, restrictDirectMessage} = this.props;
         this.setState({loading: true});
+        let results;
 
         if (restrictDirectMessage) {
-            actions.searchProfiles(lowerCasedTerm).then(({data}) => {
-                this.setState({searchResults: data, loading: false});
-            });
+            results = await actions.searchProfiles(lowerCasedTerm);
         } else {
-            actions.searchProfiles(lowerCasedTerm, {team_id: currentTeamId}).then(({data}) => {
-                this.setState({searchResults: data, loading: false});
-            });
+            results = await actions.searchProfiles(lowerCasedTerm, {team_id: currentTeamId});
         }
+
+        let data = [];
+        if (results.data) {
+            data = results.data;
+        }
+
+        this.setState({searchResults: data, loading: false});
     };
 
     startConversation = async (selectedId) => {

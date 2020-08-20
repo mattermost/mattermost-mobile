@@ -13,3 +13,8 @@ export type GeneralState = {
     serverVersion: string;
     timezones: Array<string>;
 };
+
+export type FormattedMsg = {
+    id: string;
+    defaultMessage: string;
+};

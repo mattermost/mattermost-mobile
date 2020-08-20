@@ -11,7 +11,6 @@ import {
 import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ProgressiveImage from '@components/progressive_image';
 import {Client4} from '@mm-redux/client';
-import {isGif} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
@@ -81,7 +80,7 @@ export default class FileAttachmentImage extends PureComponent {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
-            imageProps.imageUri = isGif(file) ? Client4.getFilePreviewUrl(file.id) : Client4.getFileUrl(file.id);
+            imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
         }
         return imageProps;
     };

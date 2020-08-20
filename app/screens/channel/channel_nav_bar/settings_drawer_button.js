@@ -35,7 +35,7 @@ class SettingDrawerButton extends PureComponent {
 
         const icon = (
             <Icon
-                name='md-more'
+                name='ellipsis-vertical'
                 size={25}
                 color={theme.sidebarHeaderTextColor}
             />
