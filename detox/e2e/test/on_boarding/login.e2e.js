@@ -1,10 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import env from '@helper/env';
-import {fulfillSelectServerScreen} from '@helper/screen';
+import {Setup} from '@support/server_api';
+import {serverUrl} from '@support/test_config';
+import {fulfillSelectServerScreen} from '@support/ui/screen';
+import {isAndroid, timeouts, wait} from '@support/utils';
 
-describe('Select Server', () => {
+describe('On boarding', () => {
+    let user;
+
+    beforeAll(async () => {
+        ({user} = await Setup.apiInit());
+    });
+
     beforeEach(async () => {
         await device.reloadReactNative();
     });
@@ -25,11 +33,19 @@ describe('Select Server', () => {
         // Tap anywhere to hide keyboard
         await element(by.text('Enter Server URL')).tap();
 
+        // Verify that the error message does not exist
+        await waitFor(element(by.id('error_text'))).not.toExist().withTimeout(timeouts.HALF_SEC);
+
         // Tap connect button
         await element(by.id('connect_button')).tap();
 
-        // Verify that the error message is shown as expected
-        await expect(element(by.id('error_text'))).toBeVisible();
+        // Explicitly wait on Android before verifying error message
+        if (isAndroid()) {
+            await wait(timeouts.ONE_MIN);
+        }
+
+        // Verify error message
+        await waitFor(element(by.id('error_text'))).toBeVisible().withTimeout(timeouts.ONE_MIN);
         await expect(element(by.id('error_text'))).toHaveText('Cannot connect to the server. Please check your server URL and internet connection.');
     });
 
@@ -37,7 +53,7 @@ describe('Select Server', () => {
         await expect(element(by.id('select_server_screen'))).toBeVisible();
 
         // Enter valid server URL
-        await element(by.id('server_url_input')).replaceText(env.siteUrl);
+        await element(by.id('server_url_input')).replaceText(serverUrl);
 
         // Tap connect button
         await element(by.id('connect_button')).tap();
@@ -47,7 +63,7 @@ describe('Select Server', () => {
     });
 
     it('should match elements on Login screen', async () => {
-        await fulfillSelectServerScreen();
+        await fulfillSelectServerScreen(serverUrl);
 
         // Verify basic elements on Login screen
         await expect(element(by.id('login_screen'))).toBeVisible();
@@ -59,7 +75,7 @@ describe('Select Server', () => {
     });
 
     it('should show error on missing any of the username or password', async () => {
-        await fulfillSelectServerScreen();
+        await fulfillSelectServerScreen(serverUrl);
 
         await expect(element(by.id('login_screen'))).toBeVisible();
 
@@ -69,7 +85,7 @@ describe('Select Server', () => {
         // Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
 
-        // Tap signin button
+        // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
 
         // Verify that the error message is shown as expected
@@ -83,7 +99,7 @@ describe('Select Server', () => {
         // Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
 
-        // Tap signin button
+        // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
 
         // Verify that the error message is shown as expected
@@ -92,7 +108,7 @@ describe('Select Server', () => {
     });
 
     it('should show error on incorrect credential', async () => {
-        await fulfillSelectServerScreen();
+        await fulfillSelectServerScreen(serverUrl);
 
         await expect(element(by.id('login_screen'))).toBeVisible();
 
@@ -108,7 +124,7 @@ describe('Select Server', () => {
         // Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
 
-        // Tap signin button
+        // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
 
         // Verify that the error message is shown as expected
@@ -117,23 +133,23 @@ describe('Select Server', () => {
     });
 
     it('should move to Channel screen on successful login', async () => {
-        await fulfillSelectServerScreen();
+        await fulfillSelectServerScreen(serverUrl);
 
         await expect(element(by.id('login_screen'))).toBeVisible();
 
         // Enter valid username
-        await element(by.id('username_input')).replaceText(env.adminUsername);
+        await element(by.id('username_input')).replaceText(user.username);
 
         // # Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
 
         // Enter valid password
-        await element(by.id('password_input')).replaceText(env.adminPassword);
+        await element(by.id('password_input')).replaceText(user.password);
 
         // # Tap anywhere to hide keyboard
         await element(by.text('Mattermost')).tap();
 
-        // Tap signin button
+        // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
 
         // Verify that it goes into Channel screen

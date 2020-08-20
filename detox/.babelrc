@@ -5,7 +5,7 @@
         ["module-resolver", {
             "root": ["."],
             "alias": {
-                "@helper": "./e2e/helper"
+                "@support": "./e2e/support"
             }
         }]
     ]
