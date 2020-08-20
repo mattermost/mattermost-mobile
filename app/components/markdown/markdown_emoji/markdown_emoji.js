@@ -38,6 +38,7 @@ export default class MarkdownEmoji extends PureComponent {
                 editedIndicator: this.renderEditedIndicator,
                 emoji: this.renderEmoji,
                 paragraph: this.renderParagraph,
+                document: this.renderParagraph,
                 text: this.renderText,
             },
         });
@@ -66,7 +67,7 @@ export default class MarkdownEmoji extends PureComponent {
     renderParagraph = ({children}) => {
         const style = getStyleSheet(this.props.theme);
         return (
-            <View style={style.block}>{children}</View>
+            <View style={style.block}><Text>{children}</Text></View>
         );
     };
 
