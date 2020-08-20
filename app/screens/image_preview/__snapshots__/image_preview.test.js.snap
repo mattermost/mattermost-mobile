@@ -139,7 +139,7 @@ exports[`ImagePreview should match snapshot 1`] = `
             <Icon
               allowFontScaling={false}
               color="#fff"
-              name="ios-download"
+              name="download-outline"
               size={26}
             />
           </ForwardRef>
@@ -248,7 +248,7 @@ exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
   <Icon
     allowFontScaling={false}
     color="#fff"
-    name="ios-download"
+    name="download-outline"
     size={26}
   />
 </ForwardRef>

@@ -252,7 +252,7 @@ export default class ImagePreview extends PureComponent {
                 if (Platform.OS === 'android') {
                     icon = (
                         <Icon
-                            name='md-more'
+                            name='ellipsis-vertical'
                             size={32}
                             color='#fff'
                         />
@@ -260,7 +260,7 @@ export default class ImagePreview extends PureComponent {
                 } else if (file.source || isVideo(file.data)) {
                     icon = (
                         <Icon
-                            name='ios-download'
+                            name='download-outline'
                             size={26}
                             color='#fff'
                         />
