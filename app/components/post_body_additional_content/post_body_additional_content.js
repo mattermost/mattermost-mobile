@@ -238,9 +238,10 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     };
 
     playYouTubeVideo = () => {
-        const {link} = this.props;
-        const videoId = getYouTubeVideoId(link);
-        const startTime = this.getYouTubeTime(link);
+        const {expandedLink, link} = this.props;
+        const videoLink = expandedLink || link;
+        const videoId = getYouTubeVideoId(videoLink);
+        const startTime = this.getYouTubeTime(videoLink);
 
         if (Platform.OS === 'ios') {
             YouTubeStandaloneIOS.
@@ -258,7 +259,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                     startTime,
                 }).catch(this.playYouTubeVideoError);
             } else {
-                Linking.openURL(link);
+                Linking.openURL(videoLink);
             }
         }
     };

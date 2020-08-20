@@ -965,9 +965,11 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           Object {
             "color": "#145dbf",
             "fontSize": 12,
+            "fontWeight": "bold",
           }
         }
         extraPaddingHorizontal={10}
+        isChannelItem={true}
         minHeight={20}
         minWidth={21}
         onPress={[Function]}

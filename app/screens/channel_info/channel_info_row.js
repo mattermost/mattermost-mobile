@@ -112,6 +112,7 @@ channelInfoRow.propTypes = {
         PropTypes.object,
     ]),
     imageTintColor: PropTypes.string,
+    isLandscape: PropTypes.bool,
     rightArrow: PropTypes.bool,
     textId: PropTypes.string.isRequired,
     togglable: PropTypes.bool,

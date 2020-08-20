@@ -395,9 +395,12 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <View
     style={
-      Object {
-        "marginTop": 15,
-      }
+      Array [
+        Object {
+          "marginTop": 15,
+        },
+        null,
+      ]
     }
   >
     <View
@@ -1045,9 +1048,12 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <View
     style={
-      Object {
-        "marginTop": 15,
-      }
+      Array [
+        Object {
+          "marginTop": 15,
+        },
+        null,
+      ]
     }
   >
     <View
@@ -1717,9 +1723,12 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <View
     style={
-      Object {
-        "marginTop": 15,
-      }
+      Array [
+        Object {
+          "marginTop": 15,
+        },
+        null,
+      ]
     }
   >
     <View

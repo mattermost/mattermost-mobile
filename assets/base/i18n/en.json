@@ -243,6 +243,8 @@
   "mobile.emoji_picker.people": "PEOPLE",
   "mobile.emoji_picker.places": "PLACES",
   "mobile.emoji_picker.recent": "RECENTLY USED",
+  "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search.",
+  "mobile.emoji_picker.search.not_found_title": "No results found for \"{searchTerm}\"",
   "mobile.emoji_picker.symbols": "SYMBOLS",
   "mobile.error_handler.button": "Relaunch",
   "mobile.error_handler.description": "\nTap relaunch to open the app again. After restart, you can report the problem from the settings menu.\n",

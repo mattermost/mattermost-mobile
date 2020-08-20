@@ -1,5 +1,44 @@
 # Mattermost Mobile Apps Changelog
 
+## 1.34.0 Release
+- Release Date: August 16, 2020
+- Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device
+
+### Compatibility
+ - **Upgrade to server version v5.19 or later is required.** Support for server [Extended Support Release](https://docs.mattermost.com/administration/extended-support-release.html) (ESR) 5.9 has ended and upgrading to server ESR v5.19 or later is required. As we innovate and offer newer versions of our mobile apps, we maintain backwards compatibility only with supported server versions. Users who upgrade to the newest mobile apps while being connected to an unsupported server version can be exposed to compatibility issues, which can cause crashes or severe bugs that break core functionality of the app. See [this blog post](https://mattermost.com/blog/support-for-esr-5-9-has-ended/) for more details.
+ - Android operating system 7+ [is required by Google](https://android-developers.googleblog.com/2017/12/improving-app-security-and-performance.html).
+ - iPhone 5s devices and later with iOS 11+ is required.
+ 
+### Highlights
+ - End users will now receive an in-app notification to contact their System Admin to upgrade the server version if they are running versions v5.18 and below.
+ - Added support for [LDAP group mentions (E20 feature)](https://docs.mattermost.com/deployment/ldap-group-sync.html) for mobile apps.
+ - Added support for non-cached slash command autocomplete for mobile apps.
+
+### Improvements
+ - Removed auto-scrolling to the new message line on channel load and added a "More Messages" button when there are unread posts.
+ - Improved screen styling for iOS Settings, Profile, Channel Info, "+" button for DMs and channels, Create Channel, and other user profile pages.
+ - Added the ability to view users' first and last name in the profile view.
+ - Added support on Android for showing a toast to exit when pressing the back button on channel screen.
+ - Added the ability for editing others' posts to function independently of Edit Own Posts.
+ 
+### Bug Fixes
+
+#### All apps
+ - Fixed an issue where an endless spinner instead of an error message was displayed when SSO login action failed.
+ - Fixed an issue where users were unable to create channels when first joining a team.
+ - Fixed an issue where an extra separator line appeared above the message box in landscape view after using mentions autocomplete.
+ - Fixed an issue where the at-symbol was shown twice when clicking on the at-icon.
+
+#### Android specific
+ - Fixed an issue with keyboard glitches after using an invalid slash command.
+ - Fixed an issue where the keyboard did not disappear when closing the channel sidebar **More** screen.
+ - Fixed an issue where typing right after clicking the send button didn't clear the old message.
+
+#### iOS specific
+ - Fixed an issue where users were unable to edit a message that contained a bullet list.
+ - Fixed an issue where user was unable to scroll or tap on emoji autocomplete in post **Edit** screen.
+ - Fixed an issue where the channel list was not scrolled to the bottom when a new message was received while the keyboard was open.
+
 ## 1.33.1 Release
 - Release Date: July 15, 2020
 - Server Versions Supported: Server v5.19+ is required, Self-Signed SSL Certificates are not supported unless the user installs the CA certificate on their device

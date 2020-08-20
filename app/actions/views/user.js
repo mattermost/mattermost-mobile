@@ -211,7 +211,7 @@ export function logout(skipServerLogout = false) {
             {
                 type: PluginTypes.REMOVE_PLUGIN_INTEGRATIONS,
                 data: true,
-            }
+            },
         ]));
         EventEmitter.emit(NavigationTypes.NAVIGATION_RESET);
         return {data: true};
