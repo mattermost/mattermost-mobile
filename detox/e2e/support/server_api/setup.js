@@ -9,8 +9,6 @@ import {getResponseFromError} from './common';
 /**
  * Creates new user, channel and team for test isolation.
  * @param {Object} options - may pass options to predefine channel, team and user creation
- * @param {Object} option.teamOptions
- * @param {Object} option.userOptions
  * @return {Object} returns {channel, team, user} on success or {error, status} on error
  */
 export const apiInit = async ({
