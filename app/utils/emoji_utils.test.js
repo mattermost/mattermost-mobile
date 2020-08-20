@@ -64,6 +64,19 @@ describe('hasEmojisOnly with named emojis', () => {
         name: 'This should render a codeblock instead',
         message: '    :D',
         expected: {isEmojiOnly: false, shouldRenderJumboEmoji: false},
+    }, {
+        name: 'Mixed emojis with whitespace and newlines',
+        message: `:fire: 
+        :-)`,
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
+        name: 'Emojis with whitespace and newlines',
+        message: ':fire: \n:smile:',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
+    }, {
+        name: 'Emojis with newlines',
+        message: ':fire:\n:smile:',
+        expected: {isEmojiOnly: true, shouldRenderJumboEmoji: true},
     }];
 
     const customEmojis = new Map([['valid_custom', 0]]);
