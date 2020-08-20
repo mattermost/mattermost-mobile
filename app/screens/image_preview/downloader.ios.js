@@ -128,7 +128,7 @@ export default class Downloader extends PureComponent {
         if (realFill === 100) {
             component = (
                 <Icon
-                    name='ios-checkmark'
+                    name='checkmark'
                     size={64}
                     color='white'
                 />
@@ -169,7 +169,7 @@ export default class Downloader extends PureComponent {
                 <TouchableOpacity onPress={this.startDownload}>
                     <View style={styles.manualDownloadContainer}>
                         <Icon
-                            name='md-download'
+                            name='download-outline'
                             size={48}
                             color='white'
                         />
