@@ -258,14 +258,18 @@ export const filterDirectAndGroupMessages = createSelector(
         if (matchTerm === null) {
             return null;
         }
+        let mt = matchTerm;
+        if (matchTerm.startsWith('@')) {
+            mt = matchTerm.replace(/^@/, '');
+        }
 
         let channels;
-        if (matchTerm) {
+        if (mt) {
             channels = myChannels.filter((c) => {
-                if (c.type === General.DM_CHANNEL && (originalChannels[c.id].display_name.toLowerCase().startsWith(matchTerm))) {
+                if (c.type === General.DM_CHANNEL && (originalChannels[c.id].display_name.toLowerCase().startsWith(mt))) {
                     return true;
                 }
-                if (c.type === General.GM_CHANNEL && (c.name.toLowerCase().startsWith(matchTerm) || c.display_name.toLowerCase().replace(/ /g, '').startsWith(matchTerm))) {
+                if (c.type === General.GM_CHANNEL && (c.name.toLowerCase().startsWith(mt) || c.display_name.toLowerCase().replace(/ /g, '').startsWith(mt))) {
                     return true;
                 }
                 return false;

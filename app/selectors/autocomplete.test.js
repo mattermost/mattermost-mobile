@@ -7,7 +7,10 @@ import {
     getMatchTermForAtMention,
     filterMembersNotInChannel,
     filterMembersInChannel,
+    filterDirectAndGroupMessages,
 } from 'app/selectors/autocomplete';
+
+import {General} from '@mm-redux/constants';
 
 /* eslint-disable max-nested-callbacks */
 
@@ -133,5 +136,74 @@ describe('Selectors.Autocomplete', () => {
 
         profiles = filterMembersInChannel(state, 'example');
         expect(profiles.length).toBe(2);
+    });
+
+    it('Should return DMs', () => {
+        const dm1 = {
+            id: 'dm-1-id',
+            type: General.DM_CHANNEL,
+            name: 'another1',
+            display_name: 'another1',
+        };
+        const dm2 = {
+            id: 'dm-2-id',
+            type: General.DM_CHANNEL,
+            name: 'another2',
+            display_name: 'another2',
+        };
+        const gm1 = {
+            id: 'gm-1-id',
+            type: General.GM_CHANNEL,
+            name: 'anothergroup1',
+            display_name: 'anothergroup1',
+        };
+        const teamId = 'current-team-id';
+        const state = {
+            entities: {
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
+                channels: {
+                    channels: {
+                        [dm1.id]: dm1,
+                        [dm2.id]: dm2,
+                        [gm1.id]: gm1,
+                    },
+                    myMembers: {
+                        [dm1.id]: {},
+                        [dm2.id]: {},
+                        [gm1.id]: {},
+                    },
+                    channelsInTeam: {
+                        [teamId]: new Set([dm1.id, dm2.id, gm1.id]),
+                    },
+                },
+                teams: {
+                    currentTeamId: teamId,
+                },
+                users: {
+                    currentUserId: 'current-user-id',
+
+                    profiles: {
+                        'current-user-id': {id: 'current-user-id', username: 'current', first_name: 'Current', last_name: 'User', email: 'current@user.com', nickname: 'nickname', delete_at: 0},
+                    },
+                },
+            },
+        };
+
+        let profiles = filterDirectAndGroupMessages(state, '@another1');
+        expect(profiles.length).toBe(1);
+
+        profiles = filterDirectAndGroupMessages(state, 'another2');
+        expect(profiles.length).toBe(1);
+
+        profiles = filterDirectAndGroupMessages(state, '@anothergroup1');
+        expect(profiles.length).toBe(1);
+
+        profiles = filterDirectAndGroupMessages(state, '@another');
+        expect(profiles.length).toBe(3);
     });
 });
