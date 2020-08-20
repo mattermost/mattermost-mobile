@@ -106,22 +106,22 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
 
-                if (publicChannels.length) {
-                    sections.push({
-                        id: t('suggestion.search.public'),
-                        defaultMessage: 'Public Channels',
-                        data: publicChannels.filter((cId) => myMembers[cId]),
-                        key: 'publicChannels',
-                        hideLoadingIndicator: true,
-                    });
-                }
-
                 if (privateChannels.length) {
                     sections.push({
                         id: t('suggestion.search.private'),
                         defaultMessage: 'Private Channels',
                         data: privateChannels,
                         key: 'privateChannels',
+                        hideLoadingIndicator: true,
+                    });
+                }
+
+                if (publicChannels.length) {
+                    sections.push({
+                        id: t('suggestion.search.public'),
+                        defaultMessage: 'Public Channels',
+                        data: publicChannels.filter((cId) => myMembers[cId]),
+                        key: 'publicChannels',
                         hideLoadingIndicator: true,
                     });
                 }
