@@ -267,7 +267,7 @@
   "mobile.more_dms.add_more": "あと{remaining, number}人のユーザーを追加できます",
   "mobile.more_dms.cannot_add_more": "これ以上ユーザーを追加できません",
   "mobile.more_dms.one_more": "あと1ユーザー追加できます",
-  "mobile.more_dms.start": "先頭",
+  "mobile.more_dms.start": "開始",
   "mobile.more_dms.title": "新しい会話",
   "mobile.more_dms.you": "@{username} - あなた",
   "mobile.notice_mobile_link": "モバイルアプリ",
