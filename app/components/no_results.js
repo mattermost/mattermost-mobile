@@ -38,9 +38,9 @@ export default class NoResults extends PureComponent {
         } else if (iconName) {
             icon = (
                 <IonIcon
-                    size={44}
-                    color={changeOpacity(theme.centerChannelColor, 0.4)}
+                    size={128}
                     name={iconName}
+                    style={style.icon}
                 />
             );
         }
@@ -66,15 +66,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 15,
         },
         title: {
-            color: changeOpacity(theme.centerChannelColor, 0.4),
+            color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 20,
-            fontWeight: '600',
+            fontWeight: 'bold',
             marginVertical: 15,
         },
         description: {
-            color: changeOpacity(theme.centerChannelColor, 0.4),
+            color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 17,
             textAlign: 'center',
+        },
+        icon: {
+            color: theme.linkColor,
         },
     };
 });

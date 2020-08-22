@@ -96,6 +96,8 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'FlaggedPosts',
             intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Flagged Posts'}),
+            {},
+            true,
         );
     };
 
@@ -103,6 +105,8 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'RecentMentions',
             intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
+            {},
+            true,
         );
     };
 
@@ -129,14 +133,14 @@ export default class SettingsSidebarBase extends PureComponent {
         logout();
     });
 
-    openModal = async (screen, title, passProps = {}) => {
+    openModal = async (screen, title, passProps = {}, alignTitleCenter = false) => {
         this.closeSettingsSidebar();
 
         if (!this.closeButton) {
             this.closeButton = await MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor);
         }
 
-        const options = {
+        var options = {
             topBar: {
                 leftButtons: [{
                     id: 'close-settings',
@@ -144,6 +148,12 @@ export default class SettingsSidebarBase extends PureComponent {
                 }],
             },
         };
+
+        if (alignTitleCenter) {
+            options.topBar.title = {
+                alignment: 'center',
+            };
+        }
 
         showModal(screen, title, passProps, options);
     };
