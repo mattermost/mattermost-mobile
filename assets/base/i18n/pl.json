@@ -525,7 +525,7 @@
   "user.settings.push_notification.online": "Tryb online, offline lub zaraz wracam",
   "web.root.signup_info": "Cała komunikacja Twojego zespołu w jednym miejscu, z natychmiastowym przeszukiwaniem i dostępna z każdego miejsca.",
   "user.settings.display.custom_theme": "Motyw użytkownika",
-  "suggestion.mention.you": "",
+  "suggestion.mention.you": "(you)",
   "post_info.guest": "GOŚĆ",
   "post_body.check_for_out_of_channel_groups_mentions.message": "nie zostali powiadomieni poprzez tą wzmiankę, ponieważ nie są na kanale. Nie można ich dodać do kanału, ponieważ nie są członkami grup połączonych. Aby dodać je do tego kanału, muszą zostać dodane do połączonych grup.",
   "permalink.error.link_not_found": "",
