@@ -47,8 +47,6 @@ function mapStateToProps(state) {
         }
     }
 
-    const plugins = getPluginIntegrations(state, Plugins.PLUGIN_LOCATION_CHANNEL_HEADER);
-
     return {
         currentChannel,
         currentChannelCreatorName,
@@ -57,7 +55,6 @@ function mapStateToProps(state) {
         currentUserId,
         isBot,
         isLandscape: isLandscape(state),
-        plugins,
         isTeammateGuest,
         status,
         theme: getTheme(state),

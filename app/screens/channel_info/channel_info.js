@@ -11,9 +11,7 @@ import {
 import {Navigation} from 'react-native-navigation';
 
 import {dismissModal, showModalOverCurrentContext} from '@actions/navigation';
-import {doPluginAction} from '@actions/plugins';
 import StatusBar from '@components/status_bar';
-import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddMembers from './add_members';
@@ -28,6 +26,7 @@ import ManageMembers from './manage_members';
 import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
+import Pluggable from './pluggable';
 
 export default class ChannelInfo extends PureComponent {
     static propTypes = {
@@ -45,7 +44,6 @@ export default class ChannelInfo extends PureComponent {
         currentUserId: PropTypes.string,
         isBot: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        plugins: PropTypes.array,
         isTeammateGuest: PropTypes.bool.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -111,28 +109,6 @@ export default class ChannelInfo extends PureComponent {
         showModalOverCurrentContext(screen, passProps, options);
     };
 
-    pluginRows = () => {
-        const {
-            theme,
-            isLandscape,
-            currentChannel,
-        } = this.props;
-
-        const channelHeaderPlugins = this.props.plugins.filter((plugin) => plugin.location === 'CHANNEL_HEADER');
-        return channelHeaderPlugins.map((plugin) => (
-            <React.Fragment key={plugin.id + plugin.request_url}>
-                <ChannelInfoRow
-                    action={() => doPluginAction(plugin.id, plugin.request_url, {channel_id: currentChannel.id})}
-                    defaultMessage={plugin.extra.text} // in future version should use plugin.extra.defaultMessage
-                    theme={theme}
-                    isLandscape={isLandscape}
-                    textId={plugin.id + plugin.request_url}
-                    image={{uri: plugin.extra.icon}}
-                />
-            </React.Fragment>
-        ));
-    }
-
     actionsRows = (style, channelIsArchived) => {
         const {currentChannel, currentUserId, isLandscape, theme} = this.props;
 
@@ -187,7 +163,10 @@ export default class ChannelInfo extends PureComponent {
                     isLandscape={isLandscape}
                     theme={theme}
                 />
-                {this.pluginRows()}
+                <Pluggable
+                    isLandscape={isLandscape}
+                    theme={theme}
+                />
             </>
         );
     };

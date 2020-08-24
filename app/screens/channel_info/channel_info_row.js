@@ -10,6 +10,7 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import FormattedText from 'app/components/formatted_text';
@@ -45,7 +46,7 @@ function channelInfoRow(props) {
         );
     } else if (image.uri) {
         iconElement = (
-            <Image
+            <FastImage
                 source={image}
                 style={{width: 15, height: 15}}
             />

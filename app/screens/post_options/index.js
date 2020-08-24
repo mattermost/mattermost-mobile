@@ -13,8 +13,7 @@ import {
     removePost,
     setUnreadPost,
 } from '@mm-redux/actions/posts';
-import {getPluginIntegrations} from '@mm-redux/selectors/entities/plugins';
-import {General, Permissions, Plugins} from '@mm-redux/constants';
+import {General, Permissions} from '@mm-redux/constants';
 import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
 import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -46,7 +45,6 @@ export function makeMapStateToProps() {
         const reactions = getReactionsForPostSelector(state, post.id);
         const channelIsArchived = channel.delete_at !== 0;
         const {serverVersion} = state.entities.general;
-        const plugins = getPluginIntegrations(state, Plugins.PLUGIN_LOCATION_POST_ACTION);
 
         let canMarkAsUnread = true;
         let canAddReaction = true;
@@ -147,7 +145,6 @@ export function makeMapStateToProps() {
             currentUserId,
             theme: getTheme(state),
             isLandscape: isLandscape(state),
-            plugins,
         };
     };
 }

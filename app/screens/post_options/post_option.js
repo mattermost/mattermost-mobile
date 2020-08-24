@@ -11,6 +11,7 @@ import {
     TouchableNativeFeedback,
     View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 import copy from '@assets/images/post_menu/copy.png';
 import edit from '@assets/images/post_menu/edit.png';
@@ -56,7 +57,9 @@ export default class PostOption extends PureComponent {
         const style = getStyleSheet(theme);
         let imageStyle = style.iconImage;
         let image = icons[icon];
+        let ImageComponent = Image;
         if (!image) {
+            ImageComponent = FastImage;
             image = {uri: icon};
             imageStyle = {width: 24, height: 24};
         }
@@ -87,7 +90,7 @@ export default class PostOption extends PureComponent {
                 >
                     <View style={style.row}>
                         <View style={[style.icon]}>
-                            <Image
+                            <ImageComponent
                                 source={image}
                                 style={[imageStyle, destructive ? style.destructiveIconImage : null]}
                             />
