@@ -525,7 +525,7 @@
   "user.settings.push_notification.online": "У мережі, немає на місці або не в мережі",
   "web.root.signup_info": "Всі спілкування вашої команди в одному місці, з миттєвим пошуком та доступом звідусюди. ",
   "user.settings.display.custom_theme": "Тема користувача  ",
-  "suggestion.mention.you": "",
+  "suggestion.mention.you": "(you)",
   "post_info.guest": "GUEST",
   "post_body.check_for_out_of_channel_groups_mentions.message": "did not get notified by this mention because they are not in the channel. They cannot be added to the channel because they are not a member of the linked groups. To add them to this channel, they must be added to the linked groups.",
   "permalink.error.link_not_found": "",
