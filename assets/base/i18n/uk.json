@@ -566,7 +566,7 @@
   "mobile.push_notification_reply.title": "Відповідь",
   "mobile.push_notification_reply.placeholder": "",
   "mobile.push_notification_reply.button": "Відправити",
-  "mobile.privacy_link": "",
+  "mobile.privacy_link": "Privacy Policy",
   "mobile.post_textbox.entire_channel.title": "Підтвердьте надсилання повідомлень на весь канал",
   "mobile.post_textbox.entire_channel.message.with_timezones": "Використовуючи @all або @channel, ви збираєтеся надсилати сповіщення** {totalMembers} людям** у **{timezones, number} {timezones, plural, one {timezone} other {timezones}}**. Ви впевнені, що хочете це зробити?",
   "mobile.post_textbox.entire_channel.message": "Використовуючи @all або @channel, ви збираєтеся надсилати сповіщення** {totalMembers} людям** у **{timezones, number} {timezones, plural, one {timezone} other {timezones}}**. Ви впевнені, що хочете це зробити?",
