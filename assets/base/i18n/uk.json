@@ -614,7 +614,7 @@
   "date_separator.today": "",
   "channel.isGuest": "",
   "channel.hasGuests": "",
-  "channel.channelHasGuests": "",
+  "channel.channelHasGuests": "This channel has guests",
   "mobile.message_length.message_split_left": "",
   "suggestion.mention.groups": "",
   "mobile.server_upgrade.learn_more": "Вчи більше",
