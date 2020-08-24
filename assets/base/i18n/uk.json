@@ -70,7 +70,7 @@
   "combined_system_message.you": "Ви",
   "create_comment.addComment": "Додати коментар...",
   "create_post.deactivated": "Ви переглядаєте архівований канал з деактивованим користувачем.",
-  "create_post.write": "",
+  "create_post.write": "Write to {channelDisplayName}",
   "edit_post.editPost": "Редагувати повідомлення...",
   "edit_post.save": "Зберегти",
   "file_attachment.download": "Завантажити",
