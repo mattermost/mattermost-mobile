@@ -573,7 +573,7 @@
   "mobile.post_textbox.entire_channel.confirm": "Підтвердьте",
   "mobile.post_textbox.entire_channel.cancel": "Відміна",
   "mobile.post_info.reply": "Відповідь",
-  "mobile.post_info.mark_unread": "",
+  "mobile.post_info.mark_unread": "Mark as Unread",
   "mobile.photo_library_permission_denied_title": "",
   "mobile.photo_library_permission_denied_description": "Щоб зберегти зображення та відео в бібліотеці, змініть налаштування вашого дозволу.",
   "mobile.permission_denied_retry": "Налаштування",
