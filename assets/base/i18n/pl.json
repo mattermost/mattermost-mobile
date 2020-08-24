@@ -615,7 +615,7 @@
   "channel.isGuest": "Ta osoba jest gościem",
   "channel.hasGuests": "Ten czat grupowy zawiera gości.",
   "channel.channelHasGuests": "Ten kanał zawiera gości",
-  "suggestion.mention.groups": "",
+  "suggestion.mention.groups": "Group Mentions",
   "mobile.server_upgrade.learn_more": "Dowiedz się więcej",
   "mobile.server_upgrade.dismiss": "Odrzuć",
   "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
