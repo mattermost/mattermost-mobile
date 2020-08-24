@@ -225,7 +225,7 @@ jobs:
           command: npm test
       - run:
           name: Check i18n
-          command: make i18n-extract-ci
+          command: make i18n-checks
 
   check-deps:
     parameters:
