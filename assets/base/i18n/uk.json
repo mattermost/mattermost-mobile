@@ -610,7 +610,7 @@
   "mobile.camera_photo_permission_denied_description": "",
   "mobile.alert_dialog.alertCancel": "Відміна",
   "intro_messages.creatorPrivate": "{name} {type}, створений {creator} {date}.",
-  "date_separator.yesterday": "",
+  "date_separator.yesterday": "Yesterday",
   "date_separator.today": "Today",
   "channel.isGuest": "",
   "channel.hasGuests": "This group message has guests",
