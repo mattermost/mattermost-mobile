@@ -619,7 +619,7 @@
   "suggestion.mention.groups": "",
   "mobile.server_upgrade.learn_more": "Вчи більше",
   "mobile.server_upgrade.dismiss": "Відхилити",
-  "mobile.post_textbox.groups.title": "",
+  "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
   "mobile.unsupported_server.ok": "OK",
   "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search."
 }
