@@ -104,7 +104,7 @@ export function makeMapStateToProps() {
             isEmojiOnly,
             shouldRenderJumboEmoji,
             theme: getTheme(state),
-            mentionKeys: makeGetMentionKeysForPost(state, postProps?.disable_group_highlight, postProps?.mentionHighlightDisabled),
+            mentionKeys: makeGetMentionKeysForPost(state, channel, postProps?.disable_group_highlight, postProps?.mentionHighlightDisabled),
             canDelete,
             ...getDimensions(state),
         };
