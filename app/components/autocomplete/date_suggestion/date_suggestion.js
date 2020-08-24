@@ -37,6 +37,7 @@ export default class DateSuggestion extends PureComponent {
 
         this.state = {
             mentionComplete: false,
+            active: false,
             sections: [],
         };
     }
@@ -54,6 +55,23 @@ export default class DateSuggestion extends PureComponent {
 
         if (locale !== prevProps.locale) {
             this.setCalendarLocale();
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const {mentionComplete} = this.state;
+        if (nextProps.matchTerm === null || mentionComplete || !this.props.enableDateSuggestion) {
+            this.setState({
+                active: false,
+            });
+            return;
+        }
+
+        if (nextProps.matchTerm !== null) {
+            this.props.onResultCountChange(1);
+            this.setState({
+                active: true,
+            });
         }
     }
 
@@ -118,10 +136,10 @@ export default class DateSuggestion extends PureComponent {
     };
 
     render() {
-        const {mentionComplete} = this.state;
-        const {matchTerm, enableDateSuggestion, theme} = this.props;
+        const {active} = this.state;
+        const {theme} = this.props;
 
-        if (matchTerm === null || mentionComplete || !enableDateSuggestion) {
+        if (!active) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
