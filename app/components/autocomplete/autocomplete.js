@@ -182,8 +182,12 @@ export default class Autocomplete extends PureComponent {
         const {theme, isSearch, offsetY} = this.props;
         const style = getStyleFromTheme(theme);
         const maxListHeight = this.maxListHeight();
-        const wrapperStyles = [style.shadow];
+        const wrapperStyles = [];
         const containerStyles = [style.borders];
+
+        if (Platform.OS === 'ios') {
+            wrapperStyles.push(style.shadow);
+        }
 
         if (isSearch) {
             wrapperStyles.push(style.base, style.searchContainer, {height: maxListHeight});
@@ -196,6 +200,7 @@ export default class Autocomplete extends PureComponent {
         // Hide when there are no active autocompletes
         if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount === 0) {
             wrapperStyles.push(style.hidden);
+            containerStyles.push(style.hidden);
         }
 
         return (
