@@ -38,7 +38,7 @@ export default class NoResults extends PureComponent {
         } else if (iconName) {
             icon = (
                 <IonIcon
-                    size={128}
+                    size={64}
                     name={iconName}
                     style={style.icon}
                 />
@@ -47,7 +47,9 @@ export default class NoResults extends PureComponent {
 
         return (
             <View style={style.container}>
-                {icon}
+                <View style={style.iconContainer}>
+                    {icon}
+                </View>
                 <Text style={style.title}>{title}</Text>
                 {description &&
                 <Text style={style.description}>{description}</Text>
@@ -78,6 +80,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         icon: {
             color: theme.linkColor,
+        },
+        iconContainer: {
+            textAlign: 'center',
+            borderRadius: 64,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            padding: 20,
         },
     };
 });

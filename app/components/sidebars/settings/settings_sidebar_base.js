@@ -140,7 +140,7 @@ export default class SettingsSidebarBase extends PureComponent {
             this.closeButton = await MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor);
         }
 
-        var options = {
+        const options = {
             topBar: {
                 leftButtons: [{
                     id: 'close-settings',
