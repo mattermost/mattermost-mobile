@@ -33,7 +33,7 @@ const Pluggable = (props) => {
             {options}
         </>
     );
-}
+};
 
 Pluggable.propTypes = {
     plugins: PropTypes.array.isRequired,
@@ -56,7 +56,7 @@ class Option extends PureComponent {
 
     onPress = () => {
         const {id, request_url} = this.props.plugin;
-        const {closeWithAnimation, post} = this.props
+        const {closeWithAnimation, post} = this.props;
         doPluginAction(id, request_url, {post_id: post.id});
         closeWithAnimation();
     }
@@ -71,6 +71,6 @@ class Option extends PureComponent {
                 isLandscape={isLandscape}
                 theme={theme}
             />
-        )
+        );
     }
 }

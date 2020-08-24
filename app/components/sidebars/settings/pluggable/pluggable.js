@@ -17,7 +17,7 @@ const Pluggable = (props) => {
         return null;
     }
 
-    const styles = getStyleSheet(theme)
+    const styles = getStyleSheet(theme);
 
     const options = plugins.map((p, i) => (
         <Option
@@ -38,7 +38,7 @@ const Pluggable = (props) => {
             </View>
         </>
     );
-}
+};
 
 Pluggable.propTypes = {
     plugins: PropTypes.array.isRequired,

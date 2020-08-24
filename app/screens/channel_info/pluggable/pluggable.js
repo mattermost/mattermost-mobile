@@ -28,7 +28,7 @@ const Pluggable = (props) => {
             {options}
         </>
     );
-}
+};
 
 Pluggable.propTypes = {
     plugins: PropTypes.array.isRequired,
@@ -49,7 +49,7 @@ class Option extends PureComponent {
 
     onPress = () => {
         const {id, request_url} = this.props.plugin;
-        const channelId = this.props.currentChannel.id
+        const channelId = this.props.currentChannel.id;
         doPluginAction(id, request_url, {channel_id: channelId});
     }
 
@@ -67,6 +67,6 @@ class Option extends PureComponent {
                     image={{uri: plugin.extra.icon}}
                 />
             </>
-        )
+        );
     }
 }

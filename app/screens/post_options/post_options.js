@@ -243,7 +243,7 @@ export default class PostOptions extends PureComponent {
                 post={post}
                 closeWithAnimation={this.closeWithAnimation}
             />
-        )
+        );
     }
 
     getPostOptions = () => {
