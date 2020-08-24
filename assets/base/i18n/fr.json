@@ -615,10 +615,10 @@
   "channel.isGuest": "Cet utilisateur est un utilisateur invité",
   "channel.hasGuests": "Ce groupe dispose d'utilisateurs invités",
   "channel.channelHasGuests": "Ce canal dispose d'utilisateurs invités",
-  "suggestion.mention.groups": "Group Mentions",
+  "suggestion.mention.groups": "",
   "mobile.server_upgrade.learn_more": "En savoir plus",
   "mobile.server_upgrade.dismiss": "Rejeter",
-  "mobile.post_textbox.groups.title": "Confirm sending notifications to groups",
+  "mobile.post_textbox.groups.title": "",
   "mobile.unsupported_server.ok": "OK",
-  "mobile.emoji_picker.search.not_found_description": "Check the spelling or try another search."
+  "mobile.emoji_picker.search.not_found_description": ""
 }
