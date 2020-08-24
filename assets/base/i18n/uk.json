@@ -613,7 +613,7 @@
   "date_separator.yesterday": "",
   "date_separator.today": "",
   "channel.isGuest": "",
-  "channel.hasGuests": "",
+  "channel.hasGuests": "This group message has guests",
   "channel.channelHasGuests": "This channel has guests",
   "mobile.message_length.message_split_left": "",
   "suggestion.mention.groups": "",
