@@ -532,7 +532,7 @@
   "navbar.channel_drawer.hint": "",
   "navbar.channel_drawer.button": "",
   "more_channels.showPublicChannels": "Новий публічний канал",
-  "more_channels.showArchivedChannels": "",
+  "more_channels.showArchivedChannels": "Show: Archived Channels",
   "more_channels.publicChannels": "Публічні канали",
   "more_channels.dropdownTitle": "",
   "more_channels.archivedChannels": "Архів каналів",
