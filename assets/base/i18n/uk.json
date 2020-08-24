@@ -562,7 +562,7 @@
   "mobile.routes.user_profile.edit": "Редагувати",
   "mobile.routes.channelInfo.unarchive_channel": "Архів каналів",
   "mobile.routes.channelInfo.groupManaged": "",
-  "mobile.reaction_header.all_emojis": "",
+  "mobile.reaction_header.all_emojis": "All",
   "mobile.push_notification_reply.title": "Відповідь",
   "mobile.push_notification_reply.placeholder": "",
   "mobile.push_notification_reply.button": "Відправити",
