@@ -8,10 +8,9 @@ import {loadChannelsByTeamName, setChannelDisplayName} from '@actions/views/chan
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
-import {General, Plugins} from '@mm-redux/constants';
+import {General} from '@mm-redux/constants';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
-import {getPluginIntegrations} from '@mm-redux/selectors/entities/plugins';
 import {getCurrentUserId, getUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';

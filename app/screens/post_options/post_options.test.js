@@ -52,7 +52,6 @@ describe('PostOptions', () => {
         showAddReaction: true,
         theme: Preferences.THEMES.default,
         isLandscape: false,
-        plugins: [],
     };
 
     function getWrapper(props = {}) {

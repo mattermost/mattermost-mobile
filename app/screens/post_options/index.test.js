@@ -51,9 +51,6 @@ describe('makeMapStateToProps', () => {
             teams: {myMembers: {}},
             roles: {roles: {}},
             users: {profiles: {}},
-            plugins: {
-                mobilePluginIntegrations: [],
-            },
         },
     };
 

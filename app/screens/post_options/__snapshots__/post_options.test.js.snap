@@ -10,200 +10,6 @@ exports[`PostOptions should match snapshot, no option for system message to user
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={322}
-    marginFromTop={278}
-    onRequestClose={[Function]}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  >
-    <Connect(ReactionPicker)
-      addReaction={[Function]}
-      openReactionScreen={[Function]}
-    />
-    <PostOption
-      destructive={false}
-      icon="reply"
-      isLandscape={false}
-      onPress={[Function]}
-      text="Reply"
-      theme={
-        Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        }
-      }
-    />
-    <PostOption
-      icon="bookmark"
-      isLandscape={false}
-      onPress={[Function]}
-      text="Mark as Unread"
-      theme={
-        Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        }
-      }
-    />
-    <PostOption
-      destructive={false}
-      icon="pin"
-      isLandscape={false}
-      onPress={[Function]}
-      text="Pin to Channel"
-      theme={
-        Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        }
-      }
-    />
-    <PostOption
-      destructive={false}
-      icon="edit"
-      isLandscape={false}
-      onPress={[Function]}
-      text="Edit"
-      theme={
-        Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        }
-      }
-    />
-  </Connect(SlideUpPanel)>
-</View>
-`;
-
-exports[`PostOptions should match snapshot, showing Delete option only for system message to user who has permission to delete 1`] = `
-<View
-  style={
-    Object {
-      "flex": 1,
-    }
-  }
->
-  <Connect(SlideUpPanel)
-    allowStayMiddle={false}
     initialPosition={372}
     marginFromTop={228}
     onRequestClose={[Function]}
@@ -381,6 +187,226 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
           "sidebarTextHoverBg": "#4578bf",
           "sidebarUnreadText": "#ffffff",
           "type": "Mattermost",
+        }
+      }
+    />
+    <Connect(Pluggable)
+      closeWithAnimation={[Function]}
+      isLandscape={false}
+      post={
+        Object {
+          "channel_id": "channel_id",
+          "id": "post_id",
+          "is_pinned": false,
+          "message": "message",
+          "root_id": "root_id",
+        }
+      }
+    />
+  </Connect(SlideUpPanel)>
+</View>
+`;
+
+exports[`PostOptions should match snapshot, showing Delete option only for system message to user who has permission to delete 1`] = `
+<View
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <Connect(SlideUpPanel)
+    allowStayMiddle={false}
+    initialPosition={422}
+    marginFromTop={178}
+    onRequestClose={[Function]}
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  >
+    <Connect(ReactionPicker)
+      addReaction={[Function]}
+      openReactionScreen={[Function]}
+    />
+    <PostOption
+      destructive={false}
+      icon="reply"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Reply"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <PostOption
+      icon="bookmark"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Mark as Unread"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <PostOption
+      destructive={false}
+      icon="pin"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Pin to Channel"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <PostOption
+      destructive={false}
+      icon="edit"
+      isLandscape={false}
+      onPress={[Function]}
+      text="Edit"
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
+      }
+    />
+    <Connect(Pluggable)
+      closeWithAnimation={[Function]}
+      isLandscape={false}
+      post={
+        Object {
+          "channel_id": "channel_id",
+          "id": "post_id",
+          "is_pinned": false,
+          "message": "message",
+          "root_id": "root_id",
         }
       }
     />
@@ -434,8 +460,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={372}
-    marginFromTop={228}
+    initialPosition={422}
+    marginFromTop={178}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -611,6 +637,19 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
           "sidebarTextHoverBg": "#4578bf",
           "sidebarUnreadText": "#ffffff",
           "type": "Mattermost",
+        }
+      }
+    />
+    <Connect(Pluggable)
+      closeWithAnimation={[Function]}
+      isLandscape={false}
+      post={
+        Object {
+          "channel_id": "channel_id",
+          "id": "post_id",
+          "is_pinned": false,
+          "message": "message",
+          "root_id": "root_id",
         }
       }
     />

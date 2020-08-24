@@ -4,7 +4,7 @@
 import {batchActions} from 'redux-batched-actions';
 
 import {NavigationTypes} from 'app/constants';
-import {GeneralTypes, RoleTypes, UserTypes, PluginTypes} from '@mm-redux/action_types';
+import {GeneralTypes, RoleTypes, UserTypes} from '@mm-redux/action_types';
 import {getDataRetentionPolicy} from '@mm-redux/actions/general';
 import * as HelperActions from '@mm-redux/actions/helpers';
 import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
@@ -198,7 +198,7 @@ export function ssoLogin() {
 }
 
 export function logout(skipServerLogout = false) {
-    return async (dispatch) => {
+    return async () => {
         if (!skipServerLogout) {
             try {
                 Client4.logout();

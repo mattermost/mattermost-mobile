@@ -177,6 +177,7 @@ describe('Actions.Websocket doReconnect', () => {
         const timestamp = 1000;
         const expectedActions = [
             GeneralTypes.WEBSOCKET_SUCCESS,
+            'BATCHING_REDUCER.BATCH',
             'BATCH_WS_RECONNECT',
             'BATCH_GET_POSTS',
         ];
@@ -300,6 +301,7 @@ describe('Actions.Websocket doReconnect', () => {
         const timestamp = 1000;
         const expectedActions = [
             GeneralTypes.WEBSOCKET_SUCCESS,
+            'BATCHING_REDUCER.BATCH',
             'BATCH_WS_RECONNECT',
         ];
         const expectedMissingActions = [
@@ -333,6 +335,7 @@ describe('Actions.Websocket doReconnect', () => {
         const timestamp = 1000;
         const expectedActions = [
             GeneralTypes.WEBSOCKET_SUCCESS,
+            'BATCHING_REDUCER.BATCH',
             'BATCH_WS_LEAVE_TEAM',
             'BATCH_WS_RECONNECT',
         ];

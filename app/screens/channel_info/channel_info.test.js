@@ -55,7 +55,6 @@ describe('channelInfo', () => {
             selectFocusedPostId: jest.fn(),
             setChannelDisplayName: jest.fn(),
         },
-        plugins: [],
     };
 
     test('should match snapshot', async () => {
