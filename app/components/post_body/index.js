@@ -33,6 +33,7 @@ const POST_TIMEOUT = 20000;
 export function makeMapStateToProps() {
     const memoizeHasEmojisOnly = memoizeResult((message, customEmojis) => hasEmojisOnly(message, customEmojis));
     const getReactionsForPost = makeGetReactionsForPost();
+    const getMentionKeysForPost = makeGetMentionKeysForPost();
 
     return (state, ownProps) => {
         const post = ownProps.post;
@@ -104,7 +105,7 @@ export function makeMapStateToProps() {
             isEmojiOnly,
             shouldRenderJumboEmoji,
             theme: getTheme(state),
-            mentionKeys: makeGetMentionKeysForPost(state, channel, postProps?.disable_group_highlight, postProps?.mentionHighlightDisabled),
+            mentionKeys: getMentionKeysForPost(state, channel, postProps?.disable_group_highlight, postProps?.mentionHighlightDisabled),
             canDelete,
             ...getDimensions(state),
         };

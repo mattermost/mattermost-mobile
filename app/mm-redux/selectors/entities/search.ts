@@ -26,23 +26,24 @@ export const getAllUserMentionKeys: (state: GlobalState) => UserMentionKey[] = r
     },
 );
 
-export const makeGetMentionKeysForPost: (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => UserMentionKey[] = reselect.createSelector(
-    getCurrentUserMentionKeys,
-    (state: GlobalState, channel: Channel) => (channel?.id ? getMyGroupMentionKeysForChannel(state, channel?.team_id, channel?.id) : getMyGroupMentionKeys(state)),
-    (state: GlobalState, channel: Channel, disableGroupHighlight: boolean) => disableGroupHighlight,
-    (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => mentionHighlightDisabled,
-    (mentionKeysWithoutGroups, groupMentionKeys, disableGroupHighlight = false, mentionHighlightDisabled = false) => {
-        let mentionKeys = mentionKeysWithoutGroups;
-        if (!disableGroupHighlight) {
-            mentionKeys = mentionKeys.concat(groupMentionKeys);
-        }
+export function makeGetMentionKeysForPost(): (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => UserMentionKey[] {
+    return reselect.createSelector(
+        getCurrentUserMentionKeys,
+        (state: GlobalState, channel: Channel) => (channel?.id ? getMyGroupMentionKeysForChannel(state, channel?.team_id, channel?.id) : getMyGroupMentionKeys(state)),
+        (state: GlobalState, channel: Channel, disableGroupHighlight: boolean) => disableGroupHighlight,
+        (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => mentionHighlightDisabled,
+        (mentionKeysWithoutGroups, groupMentionKeys, disableGroupHighlight = false, mentionHighlightDisabled = false) => {
+            let mentionKeys = mentionKeysWithoutGroups;
+            if (!disableGroupHighlight) {
+                mentionKeys = mentionKeys.concat(groupMentionKeys);
+            }
 
-        if (mentionHighlightDisabled) {
-            const CHANNEL_MENTIONS = ['@all', '@channel', '@here'];
-            mentionKeys = mentionKeys.filter((value) => !CHANNEL_MENTIONS.includes(value.key));
-        }
+            if (mentionHighlightDisabled) {
+                const CHANNEL_MENTIONS = ['@all', '@channel', '@here'];
+                mentionKeys = mentionKeys.filter((value) => !CHANNEL_MENTIONS.includes(value.key));
+            }
 
-        return mentionKeys;
-    },
-);
-
+            return mentionKeys;
+        },
+    );
+}

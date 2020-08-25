@@ -65,7 +65,7 @@ describe('Selectors.Search', () => {
         assert.deepEqual(Selectors.getAllUserMentionKeys(state), [{key: 'First', caseSensitive: true}, {key: '@user'}, {key: '@I-AM-THE-BEST!'}, {key: '@Do-you-love-me?'}]);
     });
 
-    describe('makeGetMentionKeysForPost', () => {
+    describe('getMentionKeysForPost', () => {
         const group = {
             id: 123,
             name: 'developers',
@@ -135,12 +135,14 @@ describe('Selectors.Search', () => {
             },
         };
 
+        const getMentionKeysForPost = Selectors.makeGetMentionKeysForPost();
+
         it('should return all mentionKeys for post if null channel given', () => {
             const postProps = {
                 disable_group_highlight: false,
                 mentionHighlightDisabled: false,
             };
-            const results = Selectors.makeGetMentionKeysForPost(state, null, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = getMentionKeysForPost(state, null, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}, {key: '@developers'}, {key: '@developers2'}];
             assert.deepEqual(results, expected);
         });
@@ -150,7 +152,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: false,
                 mentionHighlightDisabled: false,
             };
-            const results = Selectors.makeGetMentionKeysForPost(state, channel2, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = getMentionKeysForPost(state, channel2, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}, {key: '@developers'}, {key: '@developers2'}];
             assert.deepEqual(results, expected);
         });
@@ -160,7 +162,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: false,
                 mentionHighlightDisabled: false,
             };
-            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = getMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}, {key: '@developers'}];
             assert.deepEqual(results, expected);
         });
@@ -170,7 +172,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: true,
                 mentionHighlightDisabled: false,
             };
-            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = getMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}];
             assert.deepEqual(results, expected);
         });
@@ -180,7 +182,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: false,
                 mentionHighlightDisabled: true,
             };
-            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = getMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@a123'}, {key: '@developers'}];
             assert.deepEqual(results, expected);
         });
@@ -190,7 +192,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: true,
                 mentionHighlightDisabled: true,
             };
-            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = getMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@a123'}];
             assert.deepEqual(results, expected);
         });
