@@ -260,7 +260,7 @@ export const filterDirectAndGroupMessages = createSelector(
         }
         let mt = matchTerm;
         if (matchTerm.startsWith('@')) {
-            mt = matchTerm.replace(/^@/, '');
+            mt = matchTerm.substr(1);
         }
 
         let channels;
