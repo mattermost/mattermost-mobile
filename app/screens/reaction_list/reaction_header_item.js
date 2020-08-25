@@ -50,6 +50,7 @@ export default class ReactionHeaderItem extends PureComponent {
             <React.Fragment>
                 <Emoji
                     emojiName={emojiName}
+                    textStyle={styles.emojiText}
                     size={16}
                     padding={5}
                 />
@@ -77,6 +78,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         allText: {
             marginLeft: 7,
+        },
+        emojiText: {
+            color: '#000',
+            fontWeight: 'bold',
         },
         text: {
             color: theme.buttonBg,
