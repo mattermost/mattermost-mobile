@@ -113,6 +113,7 @@ export default class ReactionRow extends React.PureComponent {
                 <View style={style.emoji}>
                     <Emoji
                         emojiName={emojiName}
+                        textStyle={style.emojiText}
                         size={24}
                     />
                 </View>
@@ -154,6 +155,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             width: '13%',
             justifyContent: 'center',
+        },
+        emojiText: {
+            color: '#000',
+            fontWeight: 'bold',
         },
     };
 });

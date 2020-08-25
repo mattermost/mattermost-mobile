@@ -285,9 +285,9 @@ export default class SlideUpPanel extends PureComponent {
                         >
                             <Animated.View>
                                 <SlideUpPanelIndicator/>
-                                {headerComponent}
                             </Animated.View>
                         </PanGestureHandler>
+                        {headerComponent}
                         <PanGestureHandler
                             ref={this.panRef}
                             simultaneousHandlers={[this.scrollRef, this.masterRef]}

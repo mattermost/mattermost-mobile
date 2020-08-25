@@ -231,12 +231,12 @@ PODS:
     - React
   - react-native-safe-area (0.5.1):
     - React
-  - react-native-safe-area-context (1.0.0):
+  - react-native-safe-area-context (3.1.7):
     - React
-  - react-native-video (5.1.0-alpha7):
+  - react-native-video (5.1.0-alpha8):
     - React
-    - react-native-video/Video (= 5.1.0-alpha7)
-  - react-native-video/Video (5.1.0-alpha7):
+    - react-native-video/Video (= 5.1.0-alpha8)
+  - react-native-video/Video (5.1.0-alpha8):
     - React
   - react-native-webview (7.0.1):
     - React
@@ -304,7 +304,12 @@ PODS:
     - React
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (6.4.0):
+  - ReactNativeNavigation (6.12.1):
+    - React
+    - React-RCTImage
+    - React-RCTText
+    - ReactNativeNavigation/Core (= 6.12.1)
+  - ReactNativeNavigation/Core (6.12.1):
     - React
     - React-RCTImage
     - React-RCTText
@@ -324,7 +329,7 @@ PODS:
     - SDWebImageWebPCoder (~> 0.6.1)
   - RNFileViewer (2.1.1):
     - React
-  - RNGestureHandler (1.6.1):
+  - RNGestureHandler (1.7.0):
     - React
   - RNKeychain (4.0.5):
     - React
@@ -334,12 +339,12 @@ PODS:
     - React
   - RNReactNativeHapticFeedback (1.10.0):
     - React
-  - RNReanimated (1.8.0):
+  - RNReanimated (1.13.0):
     - React
   - RNRudderSdk (1.0.0):
     - React
     - Rudder (= 1.0.3-beta-4)
-  - RNScreens (2.7.0):
+  - RNScreens (2.10.1):
     - React
   - RNSentry (1.7.1):
     - React
@@ -619,8 +624,8 @@ SPEC CHECKSUMS:
   react-native-notifications: 24706907104a0f00c35c4bde7e0ca76a50f730e1
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
-  react-native-safe-area-context: 5f3e081f937ab7c44c179d551f332fa494cfcf8f
-  react-native-video: 184f7d5107582e7def6dafdd3ddc0f795dc33f6a
+  react-native-safe-area-context: fcece23844742b6f7f0627c3715b806a7deff946
+  react-native-video: 8d97379f3c2322a569f1e27542ad1a646cad9444
   react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
   React-RCTActionSheet: 910163b6b09685a35c4ebbc52b66d1bfbbe39fc5
   React-RCTAnimation: 9a883bbe1e9d2e158d4fb53765ed64c8dc2200c6
@@ -634,7 +639,7 @@ SPEC CHECKSUMS:
   ReactCommon: a0a1edbebcac5e91338371b72ffc66aa822792ce
   ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: 667586f6924fbd09512e2933fe70497db914b758
+  ReactNativeNavigation: 67d1f3d7f335f39873a5cf26058f03d0511dd0de
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: 3eea36d9460c5159b592f9ecbe5a77f8aca98006
   RNCClipboard: 5f3218dcdc28405aa2ae72b78e388f150b826dd3
@@ -642,14 +647,14 @@ SPEC CHECKSUMS:
   RNDeviceInfo: e841619c3dac5495a095c5455473579ff04908d4
   RNFastImage: e19ba191922e7dab9d932a4d59d62d76660aa222
   RNFileViewer: db62d60dd19007c54b2c959b5e675a46d59f8a43
-  RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
+  RNGestureHandler: b6b359bb800ae399a9c8b27032bdbf7c18f08a08
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
   RNLocalize: c388679af021ddd6069c215f7fdd2acf4e77ede5
   RNPermissions: 1888705aebcc81714efa5dbff94351e4388ae012
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
-  RNReanimated: 955cf4068714003d2f1a6e2bae3fb1118f359aff
+  RNReanimated: 89f5e0a04d1dd52fbf27e7e7030d8f80a646a3fc
   RNRudderSdk: 3abdcc4b145b3db6571827b0fc7af4e75a96af13
-  RNScreens: cf198f915f8a2bf163de94ca9f5bfc8d326c3706
+  RNScreens: b748efec66e095134c7166ca333b628cd7e6f3e2
   RNSentry: 2bae4ffee2e66376ef42cb845a494c3bde17bc56
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNVectorIcons: da6fe858f5a65d7bbc3379540a889b0b12aa5976
