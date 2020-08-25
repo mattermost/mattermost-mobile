@@ -140,10 +140,10 @@ export default class FlaggedPosts extends PureComponent {
             <NoResults
                 description={formatMessage({
                     id: 'mobile.flagged_posts.empty_description',
-                    defaultMessage: 'Flags are a way to mark messages for follow up. Your flags are personal, and cannot be seen by other users.',
+                    defaultMessage: 'Saved messages are only visible to you. Mark messages for follow-up or save something for later by long-pressing a message and choosing Save from the menu.',
                 })}
-                iconName='ios-flag'
-                title={formatMessage({id: 'mobile.flagged_posts.empty_title', defaultMessage: 'No Flagged Posts'})}
+                iconName='ios-bookmark-outline'
+                title={formatMessage({id: 'mobile.flagged_posts.empty_title', defaultMessage: 'No Saved messages yet'})}
                 theme={theme}
             />
         );

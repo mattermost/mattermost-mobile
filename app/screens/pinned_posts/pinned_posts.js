@@ -141,10 +141,10 @@ export default class PinnedPosts extends PureComponent {
             <NoResults
                 description={formatMessage({
                     id: 'mobile.pinned_posts.empty_description',
-                    defaultMessage: 'Pin important items by holding down on any message and selecting "Pin to Channel".',
+                    defaultMessage: 'Pin important messages which are visible to the whole channel. Long press on a message and choose Pin to Channel to save it here.',
                 })}
                 image={noResultsImage}
-                title={formatMessage({id: 'mobile.pinned_posts.empty_title', defaultMessage: 'No Pinned Posts'})}
+                title={formatMessage({id: 'mobile.pinned_posts.empty_title', defaultMessage: 'No Pinned messages yet'})}
                 theme={theme}
             />
         );

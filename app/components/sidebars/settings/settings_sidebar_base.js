@@ -95,9 +95,7 @@ export default class SettingsSidebarBase extends PureComponent {
     goToFlaggedScreen = (intl) => {
         this.openModal(
             'FlaggedPosts',
-            intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Flagged Posts'}),
-            {},
-            true,
+            intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Saved Messages'}),
         );
     };
 
@@ -105,8 +103,6 @@ export default class SettingsSidebarBase extends PureComponent {
         this.openModal(
             'RecentMentions',
             intl.formatMessage({id: 'search_header.title2', defaultMessage: 'Recent Mentions'}),
-            {},
-            true,
         );
     };
 
@@ -133,7 +129,7 @@ export default class SettingsSidebarBase extends PureComponent {
         logout();
     });
 
-    openModal = async (screen, title, passProps = {}, alignTitleCenter = false) => {
+    openModal = async (screen, title, passProps = {}) => {
         this.closeSettingsSidebar();
 
         if (!this.closeButton) {
@@ -148,12 +144,6 @@ export default class SettingsSidebarBase extends PureComponent {
                 }],
             },
         };
-
-        if (alignTitleCenter) {
-            options.topBar.title = {
-                alignment: 'center',
-            };
-        }
 
         showModal(screen, title, passProps, options);
     };
@@ -228,9 +218,9 @@ export default class SettingsSidebarBase extends PureComponent {
                             theme={theme}
                         />
                         <DrawerItem
-                            defaultMessage='Flagged Posts'
+                            defaultMessage='Saved Messages'
                             i18nId='search_header.title3'
-                            iconName='ios-flag'
+                            iconName='ios-bookmark-outline'
                             iconType='ion'
                             onPress={this.goToFlagged}
                             separator={false}

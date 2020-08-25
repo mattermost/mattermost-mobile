@@ -27,7 +27,7 @@ export default class Pinned extends PureComponent<PinnedProps> {
         const {channelId} = this.props;
         const {formatMessage} = this.context.intl;
         const id = t('channel_header.pinnedPosts');
-        const defaultMessage = 'Pinned Posts';
+        const defaultMessage = 'Pinned Messages';
         const screen = 'PinnedPosts';
         const title = formatMessage({id, defaultMessage});
         const passProps = {
@@ -42,7 +42,7 @@ export default class Pinned extends PureComponent<PinnedProps> {
         return (
             <ChannelInfoRow
                 action={this.goToPinnedPosts}
-                defaultMessage='Pinned Posts'
+                defaultMessage='Pinned Messages'
                 detail={pinnedCount}
                 image={require('@assets/images/channel_info/pin.png')}
                 textId={t('channel_header.pinnedPosts')}
