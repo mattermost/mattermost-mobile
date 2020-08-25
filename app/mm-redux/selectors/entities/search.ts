@@ -28,7 +28,7 @@ export const getAllUserMentionKeys: (state: GlobalState) => UserMentionKey[] = r
 
 export const makeGetMentionKeysForPost: (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => UserMentionKey[] = reselect.createSelector(
     getCurrentUserMentionKeys,
-    (state: GlobalState, channel: Channel) => (channel?.id ? getMyGroupMentionKeysForChannel(state, channel?.team_id, channel?.id) : []),
+    (state: GlobalState, channel: Channel) => (channel?.id ? getMyGroupMentionKeysForChannel(state, channel?.team_id, channel?.id) : getMyGroupMentionKeys(state)),
     (state: GlobalState, channel: Channel, disableGroupHighlight: boolean) => disableGroupHighlight,
     (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => mentionHighlightDisabled,
     (mentionKeysWithoutGroups, groupMentionKeys, disableGroupHighlight = false, mentionHighlightDisabled = false) => {

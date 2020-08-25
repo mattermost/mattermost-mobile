@@ -66,37 +66,101 @@ describe('Selectors.Search', () => {
     });
 
     describe('makeGetMentionKeysForPost', () => {
-        it('should return all mentionKeys', () => {
-            const postProps = {
-                disable_group_highlight: false,
-                mentionHighlightDisabled: false,
-            };
-            const state = {
-                entities: {
-                    users: {
-                        currentUserId: 'a123',
-                        profiles: {
-                            a123: {
-                                username: 'a123',
-                                notify_props: {
-                                    channel: 'true',
-                                },
-                            },
-                        },
-                    },
-                    groups: {
-                        myGroups: {
-                            developers: {
-                                id: 123,
-                                name: 'developers',
-                                allow_reference: true,
-                                delete_at: 0,
+        const group = {
+            id: 123,
+            name: 'developers',
+            allow_reference: true,
+            delete_at: 0,
+        };
+
+        const group2 = {
+            id: 1234,
+            name: 'developers2',
+            allow_reference: true,
+            delete_at: 0,
+        };
+
+        const channel1 = {...TestHelper.fakeChannelWithId(team1.id), group_constrained: true};
+        const channel2 = {...TestHelper.fakeChannelWithId(team1.id), group_constrained: false};
+
+        const state = {
+            entities: {
+                users: {
+                    currentUserId: 'a123',
+                    profiles: {
+                        a123: {
+                            username: 'a123',
+                            notify_props: {
+                                channel: 'true',
                             },
                         },
                     },
                 },
+                groups: {
+                    syncables: {},
+                    members: {},
+                    groups: {
+                        [group.name]: group,
+                        [group2.name]: group2,
+                    },
+                    myGroups: {
+                        [group.name]: group,
+                        [group2.name]: group2,
+                    },
+                },
+                teams: {
+                    teams: {
+                        [team1.id]: team1,
+                    },
+                    groupsAssociatedToTeam: {
+                        [team1.id]: {ids: []},
+                    },
+                },
+                channels: {
+                    channels: {
+                        [channel1.id]: channel1,
+                        [channel2.id]: channel2,
+                    },
+                    groupsAssociatedToChannel: {
+                        [channel1.id]: {ids: [group.id]},
+                        [channel2.id]: {ids: []},
+                    },
+                },
+                general: {
+                    config: {},
+                },
+                preferences: {
+                    myPreferences: {},
+                },
+            },
+        };
+
+        it('should return all mentionKeys for post if null channel given', () => {
+            const postProps = {
+                disable_group_highlight: false,
+                mentionHighlightDisabled: false,
             };
-            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = Selectors.makeGetMentionKeysForPost(state, null, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}, {key: '@developers'}, {key: '@developers2'}];
+            assert.deepEqual(results, expected);
+        });
+
+        it('should return all mentionKeys for post made in non group constrained channel', () => {
+            const postProps = {
+                disable_group_highlight: false,
+                mentionHighlightDisabled: false,
+            };
+            const results = Selectors.makeGetMentionKeysForPost(state, channel2, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}, {key: '@developers'}, {key: '@developers2'}];
+            assert.deepEqual(results, expected);
+        });
+
+        it('should return mentionKeys for post made in group constrained channel', () => {
+            const postProps = {
+                disable_group_highlight: false,
+                mentionHighlightDisabled: false,
+            };
+            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}, {key: '@developers'}];
             assert.deepEqual(results, expected);
         });
@@ -106,32 +170,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: true,
                 mentionHighlightDisabled: false,
             };
-            const state = {
-                entities: {
-                    users: {
-                        currentUserId: 'a123',
-                        profiles: {
-                            a123: {
-                                username: 'a123',
-                                notify_props: {
-                                    channel: 'true',
-                                },
-                            },
-                        },
-                    },
-                    groups: {
-                        myGroups: {
-                            developers: {
-                                id: 123,
-                                name: 'developers',
-                                allow_reference: true,
-                                delete_at: 0,
-                            },
-                        },
-                    },
-                },
-            };
-            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@channel'}, {key: '@all'}, {key: '@here'}, {key: '@a123'}];
             assert.deepEqual(results, expected);
         });
@@ -141,32 +180,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: false,
                 mentionHighlightDisabled: true,
             };
-            const state = {
-                entities: {
-                    users: {
-                        currentUserId: 'a123',
-                        profiles: {
-                            a123: {
-                                username: 'a123',
-                                notify_props: {
-                                    channel: 'true',
-                                },
-                            },
-                        },
-                    },
-                    groups: {
-                        myGroups: {
-                            developers: {
-                                id: 123,
-                                name: 'developers',
-                                allow_reference: true,
-                                delete_at: 0,
-                            },
-                        },
-                    },
-                },
-            };
-            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@a123'}, {key: '@developers'}];
             assert.deepEqual(results, expected);
         });
@@ -176,32 +190,7 @@ describe('Selectors.Search', () => {
                 disable_group_highlight: true,
                 mentionHighlightDisabled: true,
             };
-            const state = {
-                entities: {
-                    users: {
-                        currentUserId: 'a123',
-                        profiles: {
-                            a123: {
-                                username: 'a123',
-                                notify_props: {
-                                    channel: 'true',
-                                },
-                            },
-                        },
-                    },
-                    groups: {
-                        myGroups: {
-                            developers: {
-                                id: 123,
-                                name: 'developers',
-                                allow_reference: true,
-                                delete_at: 0,
-                            },
-                        },
-                    },
-                },
-            };
-            const results = Selectors.makeGetMentionKeysForPost(state, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
+            const results = Selectors.makeGetMentionKeysForPost(state, channel1, postProps.disable_group_highlight, postProps.mentionHighlightDisabled);
             const expected = [{key: '@a123'}];
             assert.deepEqual(results, expected);
         });
