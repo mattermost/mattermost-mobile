@@ -18,10 +18,12 @@ function mapStateToProps(state, ownProps) {
     const {auth_service: service} = ownProps.currentUser;
 
     const firstNameDisabled = (service === 'ldap' && config.LdapFirstNameAttributeSet === 'true') ||
-        (service === 'saml' && config.SamlFirstNameAttributeSet === 'true');
+        (service === 'saml' && config.SamlFirstNameAttributeSet === 'true') ||
+        (['gitlab', 'google', 'office365'].includes(service));
 
     const lastNameDisabled = (service === 'ldap' && config.LdapLastNameAttributeSet === 'true') ||
-        (service === 'saml' && config.SamlLastNameAttributeSet === 'true');
+        (service === 'saml' && config.SamlLastNameAttributeSet === 'true') ||
+        (['gitlab', 'google', 'office365'].includes(service));
 
     const nicknameDisabled = (service === 'ldap' && config.LdapNicknameAttributeSet === 'true') ||
         (service === 'saml' && config.SamlNicknameAttributeSet === 'true');
