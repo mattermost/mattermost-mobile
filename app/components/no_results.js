@@ -70,16 +70,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
             fontSize: 20,
-            fontWeight: 'bold',
+            fontWeight: '600',
             marginVertical: 15,
         },
         description: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
-            fontSize: 17,
+            fontSize: 16,
             textAlign: 'center',
         },
         icon: {
-            color: theme.linkColor,
+            color: theme.buttonBg,
         },
         iconContainer: {
             textAlign: 'center',
