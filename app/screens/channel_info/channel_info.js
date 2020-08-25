@@ -15,6 +15,7 @@ import StatusBar from '@components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddMembers from './add_members';
+import NotificationPreference from './notification_preference';
 import Archive from './archive';
 import ChannelInfoHeader from './channel_info_header';
 import ConvertPrivate from './convert_private';
@@ -44,6 +45,7 @@ export default class ChannelInfo extends PureComponent {
         isBot: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
+        channelMember: PropTypes.object.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -109,7 +111,7 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (style, channelIsArchived) => {
-        const {currentChannel, currentUserId, isLandscape, theme} = this.props;
+        const {currentChannel, currentUserId, isLandscape, theme, channelMember} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -137,6 +139,12 @@ export default class ChannelInfo extends PureComponent {
                 <Separator theme={theme}/>
                 <IgnoreMentions
                     channelId={currentChannel.id}
+                    isLandscape={isLandscape}
+                    theme={theme}
+                />
+                <Separator theme={theme}/>
+                <NotificationPreference
+                    channelMember={channelMember}
                     isLandscape={isLandscape}
                     theme={theme}
                 />
