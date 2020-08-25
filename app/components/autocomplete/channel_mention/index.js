@@ -52,7 +52,6 @@ function mapStateToProps(state, ownProps) {
         matchTerm,
         requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state),
-        serverVersion: state.entities.general.serverVersion,
         isLandscape: isLandscape(state),
     };
 }
