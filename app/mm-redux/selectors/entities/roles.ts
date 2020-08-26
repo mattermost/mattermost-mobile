@@ -156,7 +156,7 @@ export const getMyChannelPermissions = reselect.createSelector(
                     for (const permission of roles[roleName].permissions) {
                         permissions.add(permission);
                     }
-                    roleFound = true && (teamRoleFound || teamId === undefined);
+                    roleFound = true && (teamRoleFound || !teamId);
                 }
             }
         }
