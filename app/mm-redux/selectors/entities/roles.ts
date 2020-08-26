@@ -104,7 +104,7 @@ export const getMyCurrentChannelPermissions = reselect.createSelector(
                     for (const permission of roles[roleName].permissions) {
                         permissions.add(permission);
                     }
-                    roleFound = true && teamRoleFound;
+                    roleFound = teamRoleFound;
                 }
             }
         }
@@ -144,8 +144,10 @@ export const getMyChannelPermissions = reselect.createSelector(
     getMyChannelRoles,
     getRoles,
     getMyTeamPermissions,
-    (state, options: PermissionsOptions) => options.channel,
-    (myChannelRoles, roles, {permissions: teamPermissions, roleFound: teamRoleFound}, channelId) => {
+    (state, options: PermissionsOptions) => options,
+    (myChannelRoles, roles, {permissions: teamPermissions, roleFound: teamRoleFound}, options: PermissionsOptions) => {
+        const channelId = options.channel;
+        const teamId = options.team;
         const permissions = new Set<string>();
         let roleFound = false;
         if (myChannelRoles[channelId!]) {
@@ -154,7 +156,7 @@ export const getMyChannelPermissions = reselect.createSelector(
                     for (const permission of roles[roleName].permissions) {
                         permissions.add(permission);
                     }
-                    roleFound = true && teamRoleFound;
+                    roleFound = teamRoleFound || !teamId;
                 }
             }
         }
