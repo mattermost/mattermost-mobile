@@ -104,7 +104,7 @@ export const getMyCurrentChannelPermissions = reselect.createSelector(
                     for (const permission of roles[roleName].permissions) {
                         permissions.add(permission);
                     }
-                    roleFound = true && teamRoleFound;
+                    roleFound = teamRoleFound;
                 }
             }
         }
@@ -156,7 +156,7 @@ export const getMyChannelPermissions = reselect.createSelector(
                     for (const permission of roles[roleName].permissions) {
                         permissions.add(permission);
                     }
-                    roleFound = true && (teamRoleFound || !teamId);
+                    roleFound = teamRoleFound || !teamId;
                 }
             }
         }
