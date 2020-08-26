@@ -40,22 +40,22 @@ export default class NotificationPreference extends PureComponent<NotificationPr
         let defaultMsg = '';
         switch (notifyLevel) {
         case ViewTypes.NotificationLevels.DEFAULT: {
-            textId = 'channel_header.notificationPreference.default';
+            textId = t('channel_header.notificationPreference.default');
             defaultMsg = 'Default';
             break;
         }
         case ViewTypes.NotificationLevels.ALL: {
-            textId = 'channel_header.notificationPreference.all';
+            textId = t('channel_header.notificationPreference.all');
             defaultMsg = 'All';
             break;
         }
         case ViewTypes.NotificationLevels.MENTION: {
-            textId = 'channel_header.notificationPreference.mention';
+            textId = t('channel_header.notificationPreference.mention');
             defaultMsg = 'Mentions';
             break;
         }
         case ViewTypes.NotificationLevels.NONE: {
-            textId = 'channel_header.notificationPreference.none';
+            textId = t('channel_header.notificationPreference.none');
             defaultMsg = 'Never';
             break;
         }

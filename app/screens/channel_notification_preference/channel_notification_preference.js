@@ -18,6 +18,7 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
+import {t} from '@utils/i18n';
 
 export default class ChannelNotificationPreference extends PureComponent {
     static propTypes = {
@@ -65,7 +66,7 @@ export default class ChannelNotificationPreference extends PureComponent {
                 intl,
                 error,
                 {
-                    id: 'channel_notifications.preference.save_error',
+                    id: t('channel_notifications.preference.save_error'),
                     defaultMessage: "We couldn't save notification preference. Please check your connection and try again.",
                 },
             );
@@ -83,19 +84,19 @@ export default class ChannelNotificationPreference extends PureComponent {
         const style = getStyleSheet(theme);
 
         const items = [{
-            textId: 'channel_notifications.preference.global_default',
+            textId: t('channel_notifications.preference.global_default'),
             defaultMsg: 'Global default (Mentions)',
             notificationType: ViewTypes.NotificationLevels.DEFAULT,
         }, {
-            textId: 'channel_notifications.preference.all_activity',
+            textId: t('channel_notifications.preference.all_activity'),
             defaultMsg: 'For all activity',
             notificationType: ViewTypes.NotificationLevels.ALL,
         }, {
-            textId: 'channel_notifications.preference.only_mentions',
+            textId: t('channel_notifications.preference.only_mentions'),
             defaultMsg: 'Only mentions and direct messages',
             notificationType: ViewTypes.NotificationLevels.MENTION,
         }, {
-            textId: 'channel_notifications.preference.never',
+            textId: t('channel_notifications.preference.never'),
             defaultMsg: 'Never',
             notificationType: ViewTypes.NotificationLevels.NONE,
         }];
