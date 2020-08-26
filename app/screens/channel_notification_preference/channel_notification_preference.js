@@ -25,7 +25,9 @@ export default class ChannelNotificationPreference extends PureComponent {
         actions: PropTypes.shape({
             updateChannelNotifyProps: PropTypes.func.isRequired,
         }),
-        channelMember: PropTypes.object.isRequired,
+        channelId: PropTypes.string.isRequired,
+        userId: PropTypes.string.isRequired,
+        notifyProps: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
     };
@@ -37,15 +39,13 @@ export default class ChannelNotificationPreference extends PureComponent {
     constructor(props) {
         super(props);
 
-        const channelNotifyProps = props.channelMember && props.channelMember.notify_props;
-
         this.state = {
-            notificationLevel: channelNotifyProps.push || ViewTypes.NotificationLevels.DEFAULT,
+            notificationLevel: props.notifyProps?.push || ViewTypes.NotificationLevels.DEFAULT,
         };
     }
 
     handlePress = preventDoubleTap(async (newNotificationLevel) => {
-        const {actions, channelMember} = this.props;
+        const {actions, channelId, userId} = this.props;
         const {notificationLevel} = this.state;
 
         if (newNotificationLevel === notificationLevel) {
@@ -59,7 +59,7 @@ export default class ChannelNotificationPreference extends PureComponent {
 
         const props = {push: newNotificationLevel};
 
-        const {error} = await actions.updateChannelNotifyProps(channelMember.user_id, channelMember.channel_id, props);
+        const {error} = await actions.updateChannelNotifyProps(userId, channelId, props);
         if (error) {
             const {intl} = this.context;
             alertErrorWithFallback(

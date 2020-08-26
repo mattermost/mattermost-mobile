@@ -10,7 +10,7 @@ import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
 import {General} from '@mm-redux/constants';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getCurrentChannel, getCurrentChannelStats, getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, getStatusForUserId} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
@@ -54,7 +54,6 @@ function mapStateToProps(state) {
         isBot,
         isLandscape: isLandscape(state),
         isTeammateGuest,
-        channelMember: getMyCurrentChannelMembership(state),
         status,
         theme: getTheme(state),
     };

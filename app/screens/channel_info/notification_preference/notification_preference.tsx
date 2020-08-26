@@ -6,17 +6,18 @@ import {intlShape} from 'react-intl';
 
 import {goToScreen} from '@actions/navigation';
 import {ViewTypes} from '@constants';
-import {ChannelMembership} from '@mm-redux/types/channels';
+import {ChannelNotifyProps} from '@mm-redux/types/channels';
 import {Theme} from '@mm-redux/types/preferences';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
-import Separator from '@screens/channel_info/separator';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface NotificationPreferenceProps {
-     channelMember: ChannelMembership;
-     isLandscape: boolean;
-     theme: Theme;
+    channelId: string;
+    userId: string;
+    notifyProps: ChannelNotifyProps;
+    isLandscape: boolean;
+    theme: Theme;
 }
 
 export default class NotificationPreference extends PureComponent<NotificationPreferenceProps> {
@@ -26,11 +27,10 @@ export default class NotificationPreference extends PureComponent<NotificationPr
 
     goToChannelNotificationPreference = preventDoubleTap(() => {
         const {intl} = this.context;
-        const {channelMember} = this.props;
         const screen = 'ChannelNotificationPreference';
         const title = intl.formatMessage({id: 'channel_header.notificationPreference', defaultMessage: 'Mobile notifications'});
 
-        goToScreen(screen, title, {channelMember});
+        goToScreen(screen, title, this.props);
     });
 
     notificationLevelToText = (notifyLevel: string) => {
@@ -65,24 +65,19 @@ export default class NotificationPreference extends PureComponent<NotificationPr
     }
 
     render() {
-        const {isLandscape, theme, channelMember} = this.props;
-
-        const pushNotifyProps = channelMember && channelMember.notify_props;
-        const pushNotifyLevel = pushNotifyProps.push || ViewTypes.NotificationLevels.DEFAULT;
+        const {isLandscape, theme, notifyProps} = this.props;
+        const pushNotifyLevel = notifyProps.push || ViewTypes.NotificationLevels.DEFAULT;
 
         return (
-            <>
-                <Separator theme={theme}/>
-                <ChannelInfoRow
-                    action={this.goToChannelNotificationPreference}
-                    defaultMessage='Mobile notifications'
-                    detail={this.notificationLevelToText(pushNotifyLevel)}
-                    icon='mobile-phone'
-                    textId={t('channel_header.notificationPreference')}
-                    theme={theme}
-                    isLandscape={isLandscape}
-                />
-            </>
+            <ChannelInfoRow
+                action={this.goToChannelNotificationPreference}
+                defaultMessage='Mobile notifications'
+                detail={this.notificationLevelToText(pushNotifyLevel)}
+                icon='mobile-phone'
+                textId={t('channel_header.notificationPreference')}
+                theme={theme}
+                isLandscape={isLandscape}
+            />
         );
     }
 }

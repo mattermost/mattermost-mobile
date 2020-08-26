@@ -14,17 +14,10 @@ function makeProps(pushNotificationLevel) {
         actions: {
             updateChannelNotifyProps: jest.fn(),
         },
-        channelMember: {
-            user_id: 'user_id',
-            channel_id: 'channel_id',
-            notify_props: {
-                push: pushNotificationLevel,
-            },
-            roles: 'system_user',
-            msg_count: 0,
-            mention_count: 0,
-            scheme_user: false,
-            scheme_admin: false,
+        channelId: 'channel_id',
+        userId: 'user_id',
+        notifyProps: {
+            push: pushNotificationLevel,
         },
         theme: Preferences.THEMES.default,
         isLandscape: false,
@@ -68,8 +61,8 @@ describe('ChannelNotificationPreference', () => {
 
         expect(props.actions.updateChannelNotifyProps).toHaveBeenCalledTimes(1);
         expect(props.actions.updateChannelNotifyProps).toBeCalledWith(
-            props.channelMember.user_id,
-            props.channelMember.channel_id,
+            props.userId,
+            props.channelId,
             {push: ViewTypes.NotificationLevels.NONE},
         );
     });

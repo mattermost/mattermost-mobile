@@ -2,11 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
+import {getMyCurrentChannelMembership} from '@mm-redux/selectors/entities/channels';
 
 import NotificationPreference from './notification_preference';
 
-function mapStateToProps() {
-    return {};
+function mapStateToProps(state) {
+    const channelMember = getMyCurrentChannelMembership(state);
+
+    return {
+        channelId: channelMember && channelMember.channel_id,
+        userId: channelMember && channelMember.user_id,
+        notifyProps: channelMember && channelMember.notify_props,
+    };
 }
 
 export default connect(mapStateToProps)(NotificationPreference);
