@@ -167,12 +167,9 @@ export const getAssociatedGroupsByName: (state: GlobalState, teamID: string, cha
     (groups) => {
         const groupsByName: Dictionary<Group> = {};
 
-        for (const id in groups) {
-            if (groups.hasOwnProperty(id)) {
-                const group = groups[id];
-                groupsByName[group.name] = group;
-            }
-        }
+        Object.values(groups).forEach((group) => {
+            groupsByName[group.name] = group;
+        });
 
         return groupsByName;
     },
@@ -183,12 +180,9 @@ export const getAllGroupsForReferenceByName: (state: GlobalState) => NameMappedO
     (groups) => {
         const groupsByName: Dictionary<Group> = {};
 
-        for (const id in groups) {
-            if (groups.hasOwnProperty(id)) {
-                const group = groups[id];
-                groupsByName[group.name] = group;
-            }
-        }
+        Object.values(groups).forEach((group) => {
+            groupsByName[group.name] = group;
+        });
 
         return groupsByName;
     },
