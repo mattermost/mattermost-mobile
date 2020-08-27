@@ -55,7 +55,7 @@ export function hasEmojisOnly(message, customEmojis) {
         return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
     }
 
-    const chunks = message.trim().split(' ').filter((m) => m && m.length > 0);
+    const chunks = message.trim().replace(/\n/g, ' ').split(' ').filter((m) => m && m.length > 0);
 
     if (chunks.length === 0) {
         return {isEmojiOnly: false, shouldRenderJumboEmoji: false};
