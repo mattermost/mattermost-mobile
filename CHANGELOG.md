@@ -21,9 +21,7 @@
 ### Bug Fixes
 
 #### All apps
- - Fixed an issue where the server url was not rebuilt without query string and/or hash with GitLab SSO.
  - Fixed an issue where the app crashed on a channel that had lot of images and attachments.
- - Fixed an issue where an "Hair on fire" emoji caused the app to crash.
  - Fixed an issue where YouTube videos rendered as OpenGraph objects but also displayed play buttons when posted using bit.ly links.
  - Fixed an issue where the permission to delete other users' posts did not function independently of deleting own posts.
  - Fixed an issue where archiving a channel while in the permalink view cleared the permalink view content.
@@ -32,7 +30,6 @@
 
 #### Android specific
  - Fixed an issue where users were unable to upload files with spaces in the file name.
- - Fixed an issue where the app crashed when receiving a push notification when having special characters in the Nickname field.
 
 #### iOS specific
  - Fixed an issue where users were unable to swipe to close the left-hand side after closing the keyboard.
