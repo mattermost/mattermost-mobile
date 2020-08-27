@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
  
 ### Bug Fixes
- - Fixed an issue where the server url was not rebuilt without query string and/or hash with GitLab SSO.
+ - Fixed an issue where GitLab SSO was appending a # sign causing the app to fail on further requests.
  - Fixed an issue where an "Hair on fire" emoji caused the app to crash.
  - Fixed an issue where the app crashed when receiving a push notification when having special characters in the Nickname field.
 
