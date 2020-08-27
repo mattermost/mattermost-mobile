@@ -9,7 +9,7 @@
   "about.teamEditionSt": "Всі спілкування вашої команди в одному місці, з миттєвим пошуком та доступом звідусюди.",
   "about.teamEditiont0": "",
   "about.teamEditiont1": "",
-  "about.title": "",
+  "about.title": "About {appTitle}",
   "announcment_banner.dont_show_again": "Не показувати знову",
   "api.channel.add_member.added": "{addedUsername} додано до каналу за {username}.",
   "archivedChannelMessage": "Ви переглядаєте **архівований канал**. Нові повідомлення не можуть бути опубліковані.",
