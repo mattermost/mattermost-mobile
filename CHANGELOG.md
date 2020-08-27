@@ -21,6 +21,7 @@
 ### Bug Fixes
 
 #### All apps
+ - Fixed an issue where the server url was not rebuilt without query string and/or hash with GitLab SSO.
  - Fixed an issue where the app crashed on a channel that had lot of images and attachments.
  - Fixed an issue where an "Hair on fire" emoji caused the app to crash.
  - Fixed an issue where YouTube videos rendered as OpenGraph objects but also displayed play buttons when posted using bit.ly links.
