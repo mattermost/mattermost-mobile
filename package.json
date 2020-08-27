@@ -15,7 +15,7 @@
     "@react-native-community/netinfo": "5.9.6",
     "@react-navigation/native": "5.7.3",
     "@react-navigation/stack": "5.9.0",
-    "@rudderstack/rudder-sdk-react-native": "0.1.2",
+    "@rudderstack/rudder-sdk-react-native": "0.1.4",
     "@sentry/react-native": "1.7.1",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#f6ab98dede6ce4b4e7adea140ac77249bfb2d6ce",
