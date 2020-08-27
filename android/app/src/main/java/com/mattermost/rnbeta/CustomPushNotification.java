@@ -532,7 +532,12 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private String removeSenderNameFromMessage(String message, String senderName) {
-        return message.replaceFirst(senderName, "").replaceFirst(": ", "").trim();
+        Integer index = message.indexOf(senderName);
+        if (index == 0) {
+            message = message.substring(senderName.length());
+        }
+
+        return message.replaceFirst(": ", "").trim();
     }
 
     private void notificationReceiptDelivery(String ackId, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
