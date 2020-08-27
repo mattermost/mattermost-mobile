@@ -1,8 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AtMention should match snapshot, no highlight 1`] = `
-<Text>
-  @John.Smith
+<Text
+  style={Object {}}
+>
+  <Text
+    style={
+      Array [
+        Object {
+          "color": "#ff0000",
+        },
+        Object {
+          "backgroundColor": "yellow",
+        },
+      ]
+    }
+  >
+    @John.Smith
+  </Text>
 </Text>
 `;
 
@@ -10,9 +25,17 @@ exports[`AtMention should match snapshot, with highlight 1`] = `
 <Text
   onLongPress={[Function]}
   onPress={[Function]}
+  style={Object {}}
 >
   <Text
-    style={null}
+    style={
+      Array [
+        null,
+        Object {
+          "backgroundColor": "yellow",
+        },
+      ]
+    }
   >
     @John.Smith
   </Text>
@@ -24,12 +47,18 @@ exports[`AtMention should match snapshot, without highlight 1`] = `
 <Text
   onLongPress={[Function]}
   onPress={[Function]}
+  style={Object {}}
 >
   <Text
     style={
-      Object {
-        "color": "#ff0000",
-      }
+      Array [
+        Object {
+          "color": "#ff0000",
+        },
+        Object {
+          "backgroundColor": "yellow",
+        },
+      ]
     }
   >
     @Victor.Welch

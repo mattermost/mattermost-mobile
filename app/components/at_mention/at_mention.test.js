@@ -12,6 +12,7 @@ describe('AtMention', () => {
         teammateNameDisplay: '',
         mentionName: 'John.Smith',
         mentionStyle: {color: '#ff0000'},
+        textStyle: {backgroundColor: 'yellow'},
         theme: {},
     };
 
