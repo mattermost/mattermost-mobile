@@ -74,7 +74,7 @@
   "edit_post.editPost": "Modifica post...",
   "edit_post.save": "Salva",
   "file_attachment.download": "Scarica",
-  "file_upload.fileAbove": "File sopra i {max}MB non possono essere caricati: {filename}",
+  "file_upload.fileAbove": "I file devono essere meno di {max}",
   "get_post_link_modal.title": "Copia collegamento",
   "integrations.add": "Aggiungi",
   "intro_messages.anyMember": " Tutti i membri possono entrare e leggere questo canale.",
@@ -626,8 +626,10 @@
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {new} other {more new}} {count, plural, one {message} other {messages}}",
   "mobile.android.back_handler_exit": "Premi di nuovo indietro per uscire",
   "mobile.post_textbox.groups.title": "Conferma invio notifica di gruppo",
-  "mobile.post_textbox.one_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} inviarea una notifica ad almento {totalMembers} persone. Sicuro di voler continuare?",
+  "mobile.post_textbox.one_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone. Sicuro di voler continuare?",
   "mobile.post_textbox.one_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?",
-  "mobile.post_textbox.multi_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} inviarea una notifica ad almento {totalMembers} persone. Sicuro di voler continuare?",
-  "mobile.post_textbox.multi_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?"
+  "mobile.post_textbox.multi_group.message.without_timezones": "Utilizzando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone. Sicuro di voler continuare?",
+  "mobile.post_textbox.multi_group.message.with_timezones": "Usando {mentions} e {finalMention} invierai una notifica ad almeno {totalMembers} persone in {timezones, number}{timezones,plural,one {timezone} other {timezones}}. Sicuro di voler procedere?",
+  "mobile.user_removed.title": "Rimosso da {channelName}",
+  "mobile.user_removed.message": "Sei stato rimosso dal canale."
 }
