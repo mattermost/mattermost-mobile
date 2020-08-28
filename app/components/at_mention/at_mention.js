@@ -161,10 +161,13 @@ export default class AtMention extends React.PureComponent {
             } else {
                 const pattern = new RegExp('(all|channel|here)\\.?', 'i');
                 const mentionMatch = pattern.exec(mentionName);
+
                 if (mentionMatch) {
+                    highlighted = false;
                     mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                     suffix = mentionName.replace(mention, '');
                 } else {
+                    highlighted = true;
                     mention = mentionName;
                 }
             }
