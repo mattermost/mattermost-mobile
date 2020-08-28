@@ -632,5 +632,6 @@
   "mobile.more_messages_button.text": "{count} {isInitialMessage, select, true {yeni} other {daha yeni}} {count, plural, one {ileti} other {ileti}}",
   "mobile.user_removed.title": "{channelName} kanalından çıkarıldı",
   "mobile.user_removed.message": "Kanaldan çıkarıldınız.",
-  "mobile.emoji_picker.search.not_found_description": "Yazımı denetleyin ya da başka bir arama yapmayı deneyin."
+  "mobile.emoji_picker.search.not_found_description": "Yazımı denetleyin ya da başka bir arama yapmayı deneyin.",
+  "mobile.emoji_picker.search.not_found_title": "\"{searchTerm}\" ile eşleşen bir sonuç bulunamadı"
 }
