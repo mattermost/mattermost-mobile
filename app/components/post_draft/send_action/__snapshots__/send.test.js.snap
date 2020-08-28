@@ -8,6 +8,7 @@ exports[`SendAction should change theme backgroundColor to 0.3 opacity 1`] = `
       "paddingRight": 8,
     }
   }
+  testID="disabled_send_button"
 >
   <View
     style={
@@ -44,6 +45,7 @@ exports[`SendAction should match snapshot 1`] = `
       "paddingRight": 8,
     }
   }
+  testID="send_button"
   type="opacity"
 >
   <View
@@ -76,6 +78,7 @@ exports[`SendAction should render theme backgroundColor 1`] = `
       "paddingRight": 8,
     }
   }
+  testID="send_button"
   type="opacity"
 >
   <View

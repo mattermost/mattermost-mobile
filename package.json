@@ -112,6 +112,7 @@
     "babel-plugin-module-resolver": "4.0.0",
     "babel-plugin-transform-remove-console": "6.9.4",
     "deep-freeze": "0.0.1",
+    "detox": "17.4.4",
     "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "1.15.3",
     "enzyme-to-json": "3.5.0",
@@ -160,6 +161,8 @@
     "test:watch": "jest --watch --runInBand --detectOpenHandles",
     "test:coverage": "jest --coverage",
     "updatesnapshot": "jest --updateSnapshot",
-    "mmjstool": "mmjstool"
+    "mmjstool": "mmjstool",
+    "e2e:android": "cd detox && npm run e2e:android-build && npm run e2e:android-test && cd ..",
+    "e2e:ios": "cd detox && npm run e2e:ios-test && cd .."
   }
 }

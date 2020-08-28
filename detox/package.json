@@ -1,0 +1,35 @@
+{
+  "name": "mattermost-mobile-e2e",
+  "description": "End-to-end testing for Mattermost Mobile",
+  "repository": "git@github.com:mattermost/mattermost-mobile.git",
+  "author": "Mattermost, Inc.",
+  "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "7.10.4",
+    "@babel/plugin-transform-runtime": "7.11.0",
+    "@babel/preset-env": "7.11.0",
+    "axios": "0.20.0",
+    "babel-jest": "26.3.0",
+    "babel-plugin-module-resolver": "4.0.0",
+    "detox": "17.4.4",
+    "jest": "26.4.2",
+    "jest-circus": "26.4.2",
+    "jest-cli": "26.4.2",
+    "merge-deep": "3.0.2",
+    "uuid": "8.3.0"
+  },
+  "scripts": {
+    "e2e:android-create-emulator": "avdmanager create avd -n detox_emu_api_30 -k 'system-images;android-30;google_apis;x86' -g google_apis -d 'pixel'",
+    "e2e:android-build": "detox build -c android.emu.debug",
+    "e2e:android-test": "detox test -c android.emu.debug",
+    "e2e:android-build-release": "detox build -c android.emu.release",
+    "e2e:android-test-release": "detox test -c android.emu.release",
+    "e2e:ios-test": "IOS=true detox test -c ios.sim.debug",
+    "e2e:ios-build-release": "detox build -c ios.sim.release",
+    "e2e:ios-test-release": "IOS=true detox test -c ios.sim.release"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.js?$": "babel-jest"
+    }
+  }
+}

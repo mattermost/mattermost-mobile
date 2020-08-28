@@ -339,6 +339,7 @@ export default class Login extends PureComponent {
 
             proceed = (
                 <Button
+                    testID='signin_button'
                     onPress={this.preSignIn}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
@@ -384,7 +385,7 @@ export default class Login extends PureComponent {
                         <Image
                             source={require('@assets/images/logo.png')}
                         />
-                        <View>
+                        <View testID='login_screen'>
                             <Text style={GlobalStyles.header}>
                                 {this.props.config.SiteName}
                             </Text>
@@ -396,6 +397,7 @@ export default class Login extends PureComponent {
                         </View>
                         <ErrorText error={this.state.error}/>
                         <TextInput
+                            testID='username_input'
                             autoCapitalize='none'
                             autoCorrect={false}
                             blurOnSubmit={false}
@@ -411,6 +413,7 @@ export default class Login extends PureComponent {
                             underlineColorAndroid='transparent'
                         />
                         <TextInput
+                            testID='password_input'
                             autoCapitalize='none'
                             autoCorrect={false}
                             disableFullscreenUI={true}
