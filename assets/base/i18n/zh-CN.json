@@ -382,7 +382,7 @@
   "mobile.search.from_modifier_description": "从指定用户查找消息",
   "mobile.search.from_modifier_title": "用户名",
   "mobile.search.in_modifier_description": "在指定频道寻找消息",
-  "mobile.search.in_modifier_title": "channel-name",
+  "mobile.search.in_modifier_title": "频道名称",
   "mobile.search.jump": "转跳至最近的消息",
   "mobile.search.no_results": "未找到结果",
   "mobile.search.on_modifier_description": "搜索指定日期的消息",
@@ -443,7 +443,7 @@
   "post_body.check_for_out_of_channel_mentions.message_last": "? 他们将可以查看所有消息历史。",
   "post_body.check_for_out_of_channel_mentions.message.multiple": "未收到此提及因为他们不在此频道。您是否想要 ",
   "post_body.check_for_out_of_channel_mentions.message.one": "未收到此提及因为他们不在此频道。您是否想要 ",
-  "post_body.commentedOn": "在{name}的消息评论了：",
+  "post_body.commentedOn": "评论了{name}的消息： ",
   "post_body.deleted": "(消息被删除)",
   "post_info.auto_responder": "自动回复",
   "post_info.bot": "机器人",
@@ -630,5 +630,8 @@
   "mobile.unsupported_server.ok": "确定",
   "mobile.post_textbox.groups.title": "确认发送推送给组",
   "mobile.more_messages_button.text": "{count} 条消息",
-  "mobile.emoji_picker.search.not_found_description": "检查拼写后再尝试。"
+  "mobile.emoji_picker.search.not_found_description": "检查拼写后再尝试。",
+  "mobile.user_removed.title": "已移出{channelName}",
+  "mobile.user_removed.message": "您被移出频道。",
+  "mobile.emoji_picker.search.not_found_title": "未找到“{searchTerm}”的结果"
 }

@@ -630,5 +630,8 @@
   "mobile.post_textbox.multi_group.message.without_timezones": "Al utilizar {mentions} y {finalMention} estás a punto de enviar notificaciones al menos a {totalMembers} personas. ¿Estás seguro?",
   "mobile.post_textbox.multi_group.message.with_timezones": "Al utilizar {mentions} y {finalMention} estás a punto de enviar notificaciones al menos a {totalMembers} personas en {timezones, number} {timezones, plural, one {zona horaria} other {zonas horarias}}. ¿Estás seguro?",
   "mobile.post_textbox.groups.title": "Confirma el envío de notificaciones a grupos",
-  "mobile.emoji_picker.search.not_found_description": "Revisar la ortografía o intente otra búsqueda."
+  "mobile.emoji_picker.search.not_found_description": "Revisar la ortografía o intente otra búsqueda.",
+  "mobile.user_removed.title": "Eliminado de {channelName}",
+  "mobile.user_removed.message": "Fuiste eliminado del canal.",
+  "mobile.emoji_picker.search.not_found_title": "No hay resultados para \"{searchTerm}\""
 }
