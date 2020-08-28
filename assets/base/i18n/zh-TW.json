@@ -629,5 +629,6 @@
   "mobile.post_textbox.groups.title": "確認發送至群組的通知",
   "mobile.more_messages_button.text": "{count} 筆新訊息",
   "mobile.message_length.message_split_left": "訊息超過長度限制",
-  "mobile.android.back_handler_exit": "再按一次退回以離開"
+  "mobile.android.back_handler_exit": "再按一次退回以離開",
+  "mobile.emoji_picker.search.not_found_description": "檢查拼字或嘗試其他搜尋。"
 }
