@@ -74,6 +74,10 @@ post-install:
 	@./node_modules/.bin/patch-package
 	@./node_modules/.bin/jetify
 
+	@if [ $(IOS_APP_GROUP) ]; then \
+		sed -i'' -e 's|"group.com.mattermost.rnbeta"|"${IOS_APP_GROUP}"|g' node_modules/react-native-mmkv-storage/ios/MMKVStorage.m; \
+	fi
+
 	@rm -f node_modules/intl/.babelrc
 	@# Hack to get react-intl and its dependencies to work with react-native
 	@# Based off of https://github.com/este/este/blob/master/gulp/native-fix.js
