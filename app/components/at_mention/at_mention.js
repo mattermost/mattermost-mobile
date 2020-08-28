@@ -3,17 +3,16 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
+import {showModal} from '@actions/navigation';
 import {displayUsername} from '@mm-redux/utils/user_utils';
-
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CustomPropTypes from '@constants/custom_prop_types';
 import mattermostManaged from 'app/mattermost_managed';
-import BottomSheet from 'app/utils/bottom_sheet';
-import {showModal} from 'app/actions/navigation';
+import BottomSheet from '@utils/bottom_sheet';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
@@ -142,37 +141,53 @@ export default class AtMention extends React.PureComponent {
     render() {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
         const {user} = this.state;
+        const {backgroundColor, ...styleText} = StyleSheet.flatten(textStyle);
+        let canPress = false;
         let highlighted;
+        let mention;
+        let suffix;
 
-        if (!user.username) {
+        if (user?.username) {
+            suffix = this.props.mentionName.substring(user.username.length);
+            highlighted = mentionKeys.some((item) => item.key === user.username);
+            mention = displayUsername(user, teammateNameDisplay);
+            canPress = true;
+        } else {
             const group = this.getGroupFromMentionName();
             if (group.allow_reference) {
                 highlighted = mentionKeys.some((item) => item.key === group.name);
-                return (
-                    <Text
-                        style={textStyle}
-                    >
-                        <Text style={highlighted ? null : mentionStyle}>
-                            {`@${group.name}`}
-                        </Text>
-                    </Text>
-                );
-            }
+                mention = group.name;
+                suffix = this.props.mentionName.substring(group.name.length);
+            } else {
+                const pattern = new RegExp(/(all|channel|here)\.?/, 'i');
+                const mentionMatch = pattern.exec(mentionName);
 
-            return <Text style={textStyle}>{'@' + mentionName}</Text>;
+                if (mentionMatch) {
+                    highlighted = false;
+                    mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
+                    suffix = mentionName.replace(mention, '');
+                } else {
+                    highlighted = true;
+                    mention = mentionName;
+                }
+            }
         }
 
-        const suffix = this.props.mentionName.substring(user.username.length);
-        highlighted = mentionKeys.some((item) => item.key === user.username);
+        let onPress;
+        let onLongPress;
+        if (canPress) {
+            onLongPress = this.handleLongPress;
+            onPress = isSearchResult ? onPostPress : this.goToUserProfile;
+        }
 
         return (
             <Text
-                style={textStyle}
-                onPress={isSearchResult ? onPostPress : this.goToUserProfile}
-                onLongPress={this.handleLongPress}
+                style={styleText}
+                onPress={onPress}
+                onLongPress={onLongPress}
             >
-                <Text style={highlighted ? null : mentionStyle}>
-                    {'@' + displayUsername(user, teammateNameDisplay)}
+                <Text style={[highlighted ? null : mentionStyle, {backgroundColor}]}>
+                    {'@' + mention}
                 </Text>
                 {suffix}
             </Text>

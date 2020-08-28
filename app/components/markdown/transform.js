@@ -281,12 +281,10 @@ export function highlightMentions(ast, mentionKeys) {
         } else if (node.type === 'at_mention') {
             const matches = mentionKeys.some((mention) => {
                 const mentionName = '@' + node.mentionName;
+                const flags = mention.caseSensitive ? '' : 'i';
+                const pattern = new RegExp(`${escapeRegex(mention.key)}\\.?`, flags);
 
-                if (mention.caseSensitive) {
-                    return mention.key === mentionName;
-                }
-
-                return mention.key.toLowerCase() === mentionName.toLowerCase();
+                return pattern.test(mentionName);
             });
 
             if (!matches) {
