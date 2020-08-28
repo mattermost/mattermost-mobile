@@ -23,6 +23,7 @@
 #### All apps
  - Fixed an issue where the app crashed on a channel that had lot of images and attachments.
  - Fixed an issue where YouTube videos rendered as OpenGraph objects but also displayed play buttons when posted using bit.ly links.
+ - Fixed an issue where at-mention notifications followed by a period were not highlighted.
  - Fixed an issue where the permission to delete other users' posts did not function independently of deleting own posts.
  - Fixed an issue where archiving a channel while in the permalink view cleared the permalink view content.
  - Fixed an issue where edits to “Full Name” in Mattermost profile got overwritten by the setting from the GitLab / Google / Office365 Single Sign-On providers.
@@ -32,6 +33,7 @@
  - Fixed an issue where users were unable to upload files with spaces in the file name.
 
 #### iOS specific
+ - Fixed an issue where using keyboard dictation sent a blank message.
  - Fixed an issue where users were unable to swipe to close the left-hand side after closing the keyboard.
  - Fixed an issue where the channel info screen ``This channel has guests`` text was out of safe area.
 
