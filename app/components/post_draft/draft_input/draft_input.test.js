@@ -12,6 +12,8 @@ jest.mock('react-native-image-picker', () => ({
     launchCamera: jest.fn(),
 }));
 
+jest.useFakeTimers();
+
 describe('DraftInput', () => {
     const baseProps = {
         registerTypingAnimation: jest.fn(),
@@ -95,10 +97,12 @@ describe('DraftInput', () => {
                 getValue: () => message,
                 setValue: jest.fn(),
                 changeDraft: jest.fn(),
+                resetTextInput: jest.fn(),
             },
         };
 
-        instance.sendMessage();
+        instance.handleSendMessage();
+        jest.runOnlyPendingTimers();
         expect(Alert.alert).toBeCalled();
         expect(Alert.alert).toHaveBeenCalledWith('Confirm sending notifications to entire channel', expect.anything(), expect.anything());
     });
@@ -118,9 +122,11 @@ describe('DraftInput', () => {
                 getValue: () => message,
                 setValue: jest.fn(),
                 changeDraft: jest.fn(),
+                resetTextInput: jest.fn(),
             },
         };
-        instance.sendMessage();
+        instance.handleSendMessage();
+        jest.runOnlyPendingTimers();
         expect(Alert.alert).toBeCalled();
     });
 
@@ -139,10 +145,12 @@ describe('DraftInput', () => {
                 getValue: () => message,
                 setValue: jest.fn(),
                 changeDraft: jest.fn(),
+                resetTextInput: jest.fn(),
             },
         };
 
-        instance.sendMessage();
+        instance.handleSendMessage();
+        jest.runOnlyPendingTimers();
         expect(Alert.alert).not.toBeCalled();
     });
 
@@ -162,10 +170,12 @@ describe('DraftInput', () => {
                 getValue: () => message,
                 setValue: jest.fn(),
                 changeDraft: jest.fn(),
+                resetTextInput: jest.fn(),
             },
         };
 
-        instance.sendMessage();
+        instance.handleSendMessage();
+        jest.runOnlyPendingTimers();
         expect(Alert.alert).not.toHaveBeenCalled();
     });
 
@@ -185,10 +195,12 @@ describe('DraftInput', () => {
                 getValue: () => message,
                 setValue: jest.fn(),
                 changeDraft: jest.fn(),
+                resetTextInput: jest.fn(),
             },
         };
 
-        instance.sendMessage();
+        instance.handleSendMessage();
+        jest.runOnlyPendingTimers();
         expect(Alert.alert).not.toHaveBeenCalled();
     });
 });
