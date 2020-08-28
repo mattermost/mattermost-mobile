@@ -10,15 +10,14 @@ import {
     View,
 } from 'react-native';
 
-import {ViewTypes} from '@constants';
-
-import StatusBar from 'app/components/status_bar';
-import SectionItem from 'app/screens/settings/section_item';
-import {preventDoubleTap} from 'app/utils/tap';
-import {alertErrorWithFallback} from 'app/utils/general';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
+import StatusBar from 'app/components/status_bar';
+import {ViewTypes} from '@constants';
+import SectionItem from 'app/screens/settings/section_item';
+import {alertErrorWithFallback} from 'app/utils/general';
 import {t} from '@utils/i18n';
+import {preventDoubleTap} from 'app/utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelNotificationPreference extends PureComponent {
     static propTypes = {
@@ -26,10 +25,10 @@ export default class ChannelNotificationPreference extends PureComponent {
             updateChannelNotifyProps: PropTypes.func.isRequired,
         }),
         channelId: PropTypes.string.isRequired,
-        userId: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool.isRequired,
         notifyProps: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
+        userId: PropTypes.string.isRequired,
     };
 
     static contextTypes = {

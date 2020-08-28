@@ -10,9 +10,9 @@ function mapStateToProps(state) {
     const channelMember = getMyCurrentChannelMembership(state);
 
     return {
-        channelId: channelMember && channelMember.channel_id,
-        userId: channelMember && channelMember.user_id,
-        notifyProps: channelMember && channelMember.notify_props,
+        channelId: channelMember?.channel_id,
+        userId: channelMember?.user_id,
+        notifyProps: channelMember?.notify_props,
     };
 }
 

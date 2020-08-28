@@ -65,8 +65,12 @@ export default class NotificationPreference extends PureComponent<NotificationPr
     }
 
     render() {
-        const {isLandscape, theme, notifyProps} = this.props;
+        const {isLandscape, theme, notifyProps, userId, channelId} = this.props;
         const pushNotifyLevel = notifyProps.push || ViewTypes.NotificationLevels.DEFAULT;
+
+        if (!userId || !channelId) {
+            return null;
+        }
 
         return (
             <ChannelInfoRow
