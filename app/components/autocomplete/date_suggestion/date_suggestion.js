@@ -165,6 +165,8 @@ const getDateFontSize = () => {
 };
 
 const calendarTheme = memoizeResult((theme) => ({
+    arrowHeight: 13,
+    arrowWidth: 8,
     calendarBackground: theme.centerChannelBg,
     monthTextColor: changeOpacity(theme.centerChannelColor, 0.8),
     dayTextColor: theme.centerChannelColor,
