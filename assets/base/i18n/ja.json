@@ -74,7 +74,7 @@
   "edit_post.editPost": "投稿を編集する...",
   "edit_post.save": "保存する",
   "file_attachment.download": "ダウンロードする",
-  "file_upload.fileAbove": "{max}MBを越えるファイルはアップロードできません: {filename}",
+  "file_upload.fileAbove": "ファイルは {max}MB 以下でなくてはなりません",
   "get_post_link_modal.title": "リンクをコピーする",
   "integrations.add": "追加",
   "intro_messages.anyMember": " このチャンネルには誰でも参加して投稿を閲覧することができます。",
@@ -629,5 +629,8 @@
   "mobile.post_textbox.one_group.message.without_timezones": "{mention} を利用すると {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
   "mobile.post_textbox.one_group.message.with_timezones": "{mention} を利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
   "mobile.post_textbox.multi_group.message.without_timezones": "{mentions} や {finalMention} を利用すると {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
-  "mobile.post_textbox.multi_group.message.with_timezones": "{mentions} や {finalMention} を利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？"
+  "mobile.post_textbox.multi_group.message.with_timezones": "{mentions} や {finalMention} を利用すると {timezones, number} {timezones, plural, one {タイムゾーン} other {タイムゾーン}} の {totalMembers} 人へ通知を送信することになります。本当にこの操作を行いますか？",
+  "mobile.user_removed.title": "{channelName} から削除されました",
+  "mobile.user_removed.message": "あなたはチャンネルから削除されました。",
+  "mobile.emoji_picker.search.not_found_description": "スペルを確認し、再度検索してください。"
 }
