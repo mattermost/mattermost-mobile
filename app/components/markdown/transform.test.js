@@ -2751,6 +2751,30 @@ describe('Components.Markdown.transform', () => {
                     }],
                 }],
             },
+        }, {
+            name: 'Mention followed by a period',
+            input: 'This is a mention for @channel.',
+            mentionKeys: [{key: 'channel'}],
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'This is a mention for ',
+                    }, {
+                        type: 'mention_highlight',
+                        children: [{
+                            type: 'at_mention',
+                            _mentionName: 'channel.',
+                            children: [{
+                                type: 'text',
+                                literal: '@channel.',
+                            }],
+                        }],
+                    }],
+                }],
+            },
         }];
 
         for (const test of tests) {
