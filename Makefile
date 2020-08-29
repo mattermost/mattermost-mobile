@@ -222,7 +222,7 @@ i18n-checks:
 	rm -rf tmp
 
 	# Address weblate behavior which does not remove whole translation item when translation string is set to empty
-	mkdir -p tmp/fake-webapp-dir/
+	mkdir -p tmp/fake-webapp-dir/i18n/
 	npm run mmjstool -- i18n clean-empty --webapp-dir tmp/fake-webapp-dir --mobile-dir . --check
 	rm -rf tmp
 
