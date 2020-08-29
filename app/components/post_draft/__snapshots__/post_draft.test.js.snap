@@ -315,6 +315,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               "paddingTop": 6,
             }
           }
+          testID="post_input"
           underlineColorAndroid="transparent"
         />
         <View
@@ -519,6 +520,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 "paddingRight": 8,
               }
             }
+            testID="disabled_send_button"
           >
             <View
               style={

@@ -2,15 +2,13 @@
 // See LICENSE.txt for license information.
 import * as reselect from 'reselect';
 import {GlobalState} from '@mm-redux/types/store';
-import {Dictionary} from '@mm-redux/types/utilities';
+import {Dictionary, NameMappedObjects} from '@mm-redux/types/utilities';
 import {Group} from '@mm-redux/types/groups';
 import {filterGroupsMatchingTerm} from '@mm-redux/utils/group_utils';
 import {getCurrentUserLocale} from '@mm-redux/selectors/entities/i18n';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {UserMentionKey} from '@mm-redux/selectors/entities/users';
-import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getTeam} from '@mm-redux/selectors/entities/teams';
-import {Permissions} from '@mm-redux/constants';
 
 const emptyList: any[] = [];
 const emptySyncables = {
@@ -72,15 +70,6 @@ export function getAssociatedGroupsForReference(state: GlobalState, teamId: stri
     const team = getTeam(state, teamId);
     const channel = getChannel(state, channelId);
     const locale = getCurrentUserLocale(state);
-
-    if (!haveIChannelPermission(state, {
-        permission: Permissions.USE_GROUP_MENTIONS,
-        channel: channelId,
-        team: teamId,
-        default: true,
-    })) {
-        return emptyList;
-    }
 
     let groupsForReference = [];
     if (team && team.group_constrained && channel && channel.group_constrained) {
@@ -173,24 +162,8 @@ export const getAllAssociatedGroupsForReference = reselect.createSelector(
     },
 );
 
-export const getMyAllowReferencedGroups = reselect.createSelector(
-    getMyGroups,
-    (myGroups) => {
-        return Object.values(myGroups).filter((group) => group.allow_reference && group.delete_at === 0);
-    },
-);
-
-export const getCurrentUserGroupMentionKeys = reselect.createSelector(
-    getMyAllowReferencedGroups,
-    (groups: Array<Group>) => {
-        const keys: UserMentionKey[] = [];
-        groups.forEach((group) => keys.push({key: `@${group.name}`}));
-        return keys;
-    },
-);
-
-export const getGroupsByName = reselect.createSelector(
-    getAllGroups,
+export const getAssociatedGroupsByName: (state: GlobalState, teamID: string, channelId: string) => NameMappedObjects<Group> = reselect.createSelector(
+    getAssociatedGroupsForReference,
     (groups) => {
         const groupsByName: Dictionary<Group> = {};
 
@@ -199,5 +172,51 @@ export const getGroupsByName = reselect.createSelector(
         });
 
         return groupsByName;
+    },
+);
+
+export const getAllGroupsForReferenceByName: (state: GlobalState) => NameMappedObjects<Group> = reselect.createSelector(
+    getAllAssociatedGroupsForReference,
+    (groups) => {
+        const groupsByName: Dictionary<Group> = {};
+
+        Object.values(groups).forEach((group) => {
+            groupsByName[group.name] = group;
+        });
+
+        return groupsByName;
+    },
+);
+
+export const getMyAllowReferencedGroups = reselect.createSelector(
+    getMyGroups,
+    (myGroups) => {
+        return Object.values(myGroups).filter((group) => group.allow_reference && group.delete_at === 0);
+    },
+);
+
+export const getMyGroupMentionKeys: (state: GlobalState) => UserMentionKey[] = reselect.createSelector(
+    getMyAllowReferencedGroups,
+    (groups: Array<Group>) => {
+        const keys: UserMentionKey[] = [];
+        groups.forEach((group) => keys.push({key: `@${group.name}`}));
+        return keys;
+    },
+);
+
+export const getMyGroupsAssociatedToChannelForReference: (state: GlobalState, teamId: string, channelId: string) => Group[] = reselect.createSelector(
+    getMyGroups,
+    getAssociatedGroupsByName,
+    (myGroups, groups) => {
+        return Object.values(myGroups).filter((group) => group.allow_reference && group.delete_at === 0 && groups[group.name]);
+    },
+);
+
+export const getMyGroupMentionKeysForChannel: (state: GlobalState, teamId: string, channelId: string) => UserMentionKey[] = reselect.createSelector(
+    getMyGroupsAssociatedToChannelForReference,
+    (groups: Array<Group>) => {
+        const keys: UserMentionKey[] = [];
+        groups.forEach((group) => keys.push({key: `@${group.name}`}));
+        return keys;
     },
 );

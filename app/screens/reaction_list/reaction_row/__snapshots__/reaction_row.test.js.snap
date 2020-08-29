@@ -88,6 +88,12 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
     <Connect(Emoji)
       emojiName="smile"
       size={24}
+      textStyle={
+        Object {
+          "color": "#000",
+          "fontWeight": "bold",
+        }
+      }
     />
   </View>
 </View>

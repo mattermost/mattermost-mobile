@@ -1,0 +1,12 @@
+{
+    "presets": ["@babel/preset-env"],
+    "plugins": [
+        "@babel/plugin-transform-runtime",
+        ["module-resolver", {
+            "root": ["."],
+            "alias": {
+                "@support": "./e2e/support"
+            }
+        }]
+    ]
+}

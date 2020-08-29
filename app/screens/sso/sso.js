@@ -114,10 +114,11 @@ class SSO extends PureComponent {
         // Check whether we need to set a sub-path
         parsedUrl.set('pathname', original.pathname || '');
 
-        parsedUrl.set('query', '');
-        Client4.setUrl(parsedUrl.href);
+        // Rebuild the server url without query string and/or hash
+        const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
+        Client4.setUrl(url);
 
-        CookieManager.get(parsedUrl.href, true).then((res) => {
+        CookieManager.get(url, true).then((res) => {
             const mmtoken = res.MMAUTHTOKEN;
             const csrf = res.MMCSRF;
             const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
