@@ -155,8 +155,10 @@
 }
 
 -(NSString *)getToken {
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *appGroupId = [bundle objectForInfoDictionaryKey:@"AppGroupIdentifier"];
     NSDictionary *options = @{
-        @"accessGroup": APP_GROUP_ID
+        @"accessGroup": appGroupId
     };
     NSString* serverUrl = [self getServerUrl];
 
