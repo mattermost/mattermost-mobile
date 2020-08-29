@@ -222,15 +222,7 @@ i18n-checks:
 	rm -rf tmp
 
 	# Address weblate behavior which does not remove whole translation item when translation string is set to empty
-	for f in assets/base/i18n/*.json; do \
-		if [ $$(grep ': ""' $$f -c) -gt 0 ]; then \
-			if [ $$f != "assets/base/i18n/en.json" ]; then \
-				echo $$f; \
-				grep -n ': ""' $$f; \
-				exit 1; \
-			fi; \
-		fi; \
-	done
+	npm run mmjstool -- i18n clean-empty --check
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
