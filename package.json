@@ -162,6 +162,8 @@
     "test:coverage": "jest --coverage",
     "updatesnapshot": "jest --updateSnapshot",
     "mmjstool": "mmjstool",
+    "i18n-extract": "npm run mmjstool -- i18n extract-mobile",
+    "i18n-clean-empty": "npm run mmjstool -- i18n clean-empty --mobile-dir .",
     "e2e:android": "cd detox && npm run e2e:android-build && npm run e2e:android-test && cd ..",
     "e2e:ios": "cd detox && npm run e2e:ios-test && cd .."
   }

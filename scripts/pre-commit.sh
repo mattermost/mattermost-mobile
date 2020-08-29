@@ -27,4 +27,6 @@ if [ -n "$jsfiles" ]; then
     fi
 fi
 
+scripts/precommit/i18n.sh
+
 exit 0
