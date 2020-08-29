@@ -222,7 +222,9 @@ i18n-checks:
 	rm -rf tmp
 
 	# Address weblate behavior which does not remove whole translation item when translation string is set to empty
-	npm run mmjstool -- i18n clean-empty --check
+	mkdir -p tmp/fake-webapp-dir/
+	npm run mmjstool -- i18n clean-empty --webapp-dir tmp/fake-webapp-dir --mobile-dir . --check
+	rm -rf tmp
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
