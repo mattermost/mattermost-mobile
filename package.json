@@ -130,7 +130,7 @@
     "jetifier": "1.6.6",
     "jsdom-global": "3.0.2",
     "metro-react-native-babel-preset": "0.62.0",
-    "mmjstool": "github:mattermost/mattermost-utilities#086f4ffdca4e31a0be22f6bcdfa093ed83fb29e",
+    "mmjstool": "github:mattermost/mattermost-utilities#519b99a4e51e6c67a0dbd46a6efdff27dc835aaa",
     "mock-async-storage": "2.2.0",
     "mock-socket": "9.0.3",
     "nock": "13.0.4",
