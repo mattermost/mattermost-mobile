@@ -11,7 +11,7 @@ if [ -n "$jsfiles" ]; then
     for js in $jsfiles; do
         echo "$js"
         e=$(node_modules/.bin/eslint --quiet --fix $js)
-        if [[ -n "$e" ]]; then
+        if [ -n "$e" ]; then
             echo "ERROR: Check eslint hints."
             echo "$e"
             exit 1 # reject
@@ -20,7 +20,7 @@ if [ -n "$jsfiles" ]; then
 
     echo "Checking for TSC"
     tsc=$(node_modules/.bin/tsc --noEmit)
-    if [[ -n "$tsc" ]]; then
+    if [ -n "$tsc" ]; then
         echo "ERROR: Check TSC hints."
         echo "$tsc"
         exit 1 # reject
