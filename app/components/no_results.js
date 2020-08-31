@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, Text, View} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -12,6 +13,7 @@ export default class NoResults extends PureComponent {
     static propTypes = {
         description: PropTypes.string,
         iconName: PropTypes.string,
+        iconType: PropTypes.oneOf(['' /* image */, 'ion', 'material-community']),
         image: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
         theme: PropTypes.object.isRequired,
         title: PropTypes.string.isRequired,
@@ -21,6 +23,7 @@ export default class NoResults extends PureComponent {
         const {
             description,
             iconName,
+            iconType,
             image,
             theme,
             title,
@@ -36,13 +39,23 @@ export default class NoResults extends PureComponent {
                 />
             );
         } else if (iconName) {
-            icon = (
-                <IonIcon
-                    size={64}
-                    name={iconName}
-                    style={style.icon}
-                />
-            );
+            if (iconType === 'ion') {
+                icon = (
+                    <IonIcon
+                        size={110}
+                        name={iconName}
+                        style={style.icon}
+                    />
+                );
+            } else if (iconType === 'material-community') {
+                icon = (
+                    <MaterialCommunityIcons
+                        size={100}
+                        name={iconName}
+                        style={style.icon}
+                    />
+                );
+            }
         }
 
         return (
@@ -66,26 +79,32 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             justifyContent: 'center',
             paddingHorizontal: 15,
+            marginLeft: 40,
+            marginRight: 40,
+            marginBottom: 40,
         },
         title: {
-            color: changeOpacity(theme.centerChannelColor, 0.8),
+            color: changeOpacity(theme.centerChannelColor, 1),
             fontSize: 20,
             fontWeight: '600',
             marginVertical: 15,
         },
         description: {
-            color: changeOpacity(theme.centerChannelColor, 0.8),
+            color: changeOpacity(theme.centerChannelColor, 1),
             fontSize: 16,
             textAlign: 'center',
+            lineHeight: 24,
         },
         icon: {
             color: theme.buttonBg,
         },
         iconContainer: {
-            textAlign: 'center',
-            borderRadius: 64,
+            height: 120,
+            width: 120,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 60,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            padding: 20,
         },
     };
 });
