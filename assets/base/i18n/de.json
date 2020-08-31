@@ -621,5 +621,8 @@
   "mobile.server_upgrade.learn_more": "Mehr erfahren",
   "mobile.server_upgrade.dismiss": "Verwerfen",
   "mobile.unsupported_server.ok": "OK",
-  "mobile.post_textbox.multi_group.message.with_timezones": "Wenn Sie {mentions} und {finalMention} verwenden, werden Sie Benachrichtigungen an mindestens {totalMembers} Menschen in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Sind Sie sich sicher, Sie wollen dies tun?"
+  "mobile.post_textbox.multi_group.message.with_timezones": "Wenn Sie {mentions} und {finalMention} verwenden, werden Sie Benachrichtigungen an mindestens {totalMembers} Menschen in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Sind Sie sich sicher, Sie wollen dies tun?",
+  "mobile.emoji_picker.search.not_found_title": "Keine Ergebnisse gefunden für \"{searchTerm}\"",
+  "mobile.emoji_picker.search.not_found_description": "Prüfen Sie die Schreibweise oder probieren Sie eine andere Suche.",
+  "mobile.android.back_handler_exit": "Erneut zurück drücken zum Verlassen"
 }
