@@ -42,7 +42,7 @@ export default class NoResults extends PureComponent {
             if (iconType === 'ion') {
                 icon = (
                     <IonIcon
-                        size={110}
+                        size={72}
                         name={iconName}
                         style={style.icon}
                     />
@@ -50,7 +50,7 @@ export default class NoResults extends PureComponent {
             } else if (iconType === 'material-community') {
                 icon = (
                     <MaterialCommunityIcons
-                        size={100}
+                        size={72}
                         name={iconName}
                         style={style.icon}
                     />
@@ -78,9 +78,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15,
-            marginLeft: 40,
-            marginRight: 40,
+            marginLeft: 32,
+            marginRight: 32,
             marginBottom: 40,
         },
         title: {
@@ -104,6 +103,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: 60,
+            marginBottom: 4,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
     };
