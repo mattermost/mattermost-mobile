@@ -146,6 +146,7 @@ export default class AtMention extends React.PureComponent {
         let highlighted;
         let mention;
         let suffix;
+        let suffixElement;
 
         if (user?.username) {
             suffix = this.props.mentionName.substring(user.username.length);
@@ -180,6 +181,15 @@ export default class AtMention extends React.PureComponent {
             onPress = isSearchResult ? onPostPress : this.goToUserProfile;
         }
 
+        if (suffix) {
+            const suffixStyle = {...styleText, color: this.props.theme.centerChannelColor};
+            suffixElement = (
+                <Text style={suffixStyle}>
+                    {suffix}
+                </Text>
+            );
+        }
+
         return (
             <Text
                 style={styleText}
@@ -189,7 +199,7 @@ export default class AtMention extends React.PureComponent {
                 <Text style={[highlighted ? null : mentionStyle, {backgroundColor}]}>
                     {'@' + mention}
                 </Text>
-                {suffix}
+                {suffixElement}
             </Text>
         );
     }
