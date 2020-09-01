@@ -4,24 +4,43 @@
 import {connect} from 'react-redux';
 
 import {convertChannelToPrivate} from '@mm-redux/actions/channels';
-import {General} from '@mm-redux/constants';
+import {General, Permissions} from '@mm-redux/constants';
+import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
+import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {isAdmin as checkIsAdmin} from '@mm-redux/utils/user_utils';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import ConvertPrivate from './convert_private';
 
 function mapStateToProps(state) {
     const currentChannel = getCurrentChannel(state);
+    const channelId = currentChannel?.id || '';
+    const currentTeamId = getCurrentTeamId(state);
     const isDefaultChannel = currentChannel.name === General.DEFAULT_CHANNEL;
     const isPublicChannel = currentChannel.type === General.OPEN_CHANNEL;
     const roles = getCurrentUserRoles(state) || '';
     const isAdmin = checkIsAdmin(roles);
-    const canConvert = !isDefaultChannel && isPublicChannel && isAdmin;
+    let canConvert = !isDefaultChannel && isPublicChannel;
+    if (isMinimumServerVersion(getServerVersion(state), 5, 28)) {
+        canConvert = canConvert && haveIChannelPermission(
+            state,
+            {
+                channel: channelId,
+                team: currentTeamId,
+                permission: Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
+                default: isAdmin,
+            },
+        );
+    } else {
+        canConvert = canConvert && isAdmin;
+    }
 
     return {
         canConvert,
-        channelId: currentChannel?.id || '',
+        channelId,
         displayName: (currentChannel?.display_name || '').trim(),
     };
 }
