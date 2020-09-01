@@ -174,6 +174,10 @@ export default class Uploads extends PureComponent {
     };
 
     handleUploadFiles = async (files) => {
+        if (this.props.screenId !== EphemeralStore.getNavigationTopComponentId()) {
+            return;
+        }
+
         let exceed = false;
 
         const totalFiles = files.length;
