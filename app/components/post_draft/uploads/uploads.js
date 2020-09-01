@@ -150,27 +150,29 @@ export default class Uploads extends PureComponent {
     };
 
     handlePasteFiles = (error, files) => {
-        if (this.props.screenId === EphemeralStore.getNavigationTopComponentId()) {
-            if (error) {
-                this.showPasteFilesErrorDialog();
-                return;
-            }
-
-            const {maxFileSize} = this.props;
-            const availableCount = MAX_FILE_COUNT - this.props.files.length;
-            if (files.length > availableCount) {
-                this.handleFileMaxWarning();
-                return;
-            }
-
-            const largeFile = files.find((image) => image.fileSize > maxFileSize);
-            if (largeFile) {
-                this.handleFileSizeWarning();
-                return;
-            }
-
-            this.handleUploadFiles(files);
+        if (this.props.screenId !== EphemeralStore.getNavigationTopComponentId()) {
+            return;
         }
+
+        if (error) {
+            this.showPasteFilesErrorDialog();
+            return;
+        }
+
+        const {maxFileSize} = this.props;
+        const availableCount = MAX_FILE_COUNT - this.props.files.length;
+        if (files.length > availableCount) {
+            this.handleFileMaxWarning();
+            return;
+        }
+
+        const largeFile = files.find((image) => image.fileSize > maxFileSize);
+        if (largeFile) {
+            this.handleFileSizeWarning();
+            return;
+        }
+
+        this.handleUploadFiles(files);
     };
 
     handleUploadFiles = async (files) => {
