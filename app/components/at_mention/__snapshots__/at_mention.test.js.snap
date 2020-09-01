@@ -37,7 +37,6 @@ exports[`AtMention should match snapshot, with highlight 1`] = `
   >
     @John.Smith
   </Text>
-  
 </Text>
 `;
 
@@ -61,6 +60,5 @@ exports[`AtMention should match snapshot, without highlight 1`] = `
   >
     @Victor.Welch
   </Text>
-  
 </Text>
 `;
