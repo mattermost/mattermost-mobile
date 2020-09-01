@@ -21,11 +21,12 @@ function mapStateToProps(state) {
     const currentTeamId = getCurrentTeamId(state);
     const isDefaultChannel = currentChannel.name === General.DEFAULT_CHANNEL;
     const isPublicChannel = currentChannel.type === General.OPEN_CHANNEL;
+    const isChannelConvertible = !isDefaultChannel && isPublicChannel;
     const roles = getCurrentUserRoles(state) || '';
     const isAdmin = checkIsAdmin(roles);
-    let canConvert = !isDefaultChannel && isPublicChannel;
+    let canConvert = isChannelConvertible && isAdmin;
     if (isMinimumServerVersion(getServerVersion(state), 5, 28)) {
-        canConvert = canConvert && haveIChannelPermission(
+        canConvert = isChannelConvertible && haveIChannelPermission(
             state,
             {
                 channel: channelId,
@@ -34,8 +35,6 @@ function mapStateToProps(state) {
                 default: isAdmin,
             },
         );
-    } else {
-        canConvert = canConvert && isAdmin;
     }
 
     return {
