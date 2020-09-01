@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {Platform, SectionList} from 'react-native';
 
 import {RequestStatus} from '@mm-redux/constants';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {debounce} from '@mm-redux/actions/helpers';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
@@ -37,7 +36,6 @@ export default class ChannelMention extends PureComponent {
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
-        serverVersion: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
     };
@@ -61,11 +59,7 @@ export default class ChannelMention extends PureComponent {
     }
 
     runSearch = debounce((currentTeamId, matchTerm) => {
-        if (isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
-            this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
-            return;
-        }
-        this.props.actions.searchChannels(currentTeamId, matchTerm);
+        this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
     }, 200);
 
     componentWillReceiveProps(nextProps) {
@@ -97,13 +91,12 @@ export default class ChannelMention extends PureComponent {
         myMembers !== this.props.myMembers)) {
             const sections = [];
             if (isSearch) {
-                if (publicChannels.length) {
+                if (directAndGroupMessages.length) {
                     sections.push({
-                        id: t('suggestion.search.public'),
-                        defaultMessage: 'Public Channels',
-                        data: publicChannels.filter((cId) => myMembers[cId]),
-                        key: 'publicChannels',
-                        hideLoadingIndicator: true,
+                        id: t('suggestion.search.direct'),
+                        defaultMessage: 'Direct Messages',
+                        data: directAndGroupMessages,
+                        key: 'directAndGroupMessages',
                     });
                 }
 
@@ -117,12 +110,13 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
 
-                if (directAndGroupMessages.length && isMinimumServerVersion(this.props.serverVersion, 5, 4)) {
+                if (publicChannels.length) {
                     sections.push({
-                        id: t('suggestion.search.direct'),
-                        defaultMessage: 'Direct Messages',
-                        data: directAndGroupMessages,
-                        key: 'directAndGroupMessages',
+                        id: t('suggestion.search.public'),
+                        defaultMessage: 'Public Channels',
+                        data: publicChannels.filter((cId) => myMembers[cId]),
+                        key: 'publicChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
             } else {
