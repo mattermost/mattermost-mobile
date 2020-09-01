@@ -159,7 +159,7 @@ export default class AtMention extends React.PureComponent {
                 mention = group.name;
                 suffix = this.props.mentionName.substring(group.name.length);
             } else {
-                const pattern = new RegExp(/\b(all|channel|here)(\.|_)?\b/, 'i');
+                const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
                 const mentionMatch = pattern.exec(mentionName);
 
                 if (mentionMatch) {
