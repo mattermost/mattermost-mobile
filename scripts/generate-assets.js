@@ -13,7 +13,7 @@ function leftMergeDirs(rootA, rootB, dest, path) {
     const pathB = rootB + path;
 
     try {
-        fs.mkdirSync(dest + path);
+        fs.mkdirSync(dest + path, {recursive: true});
     } catch (e) {
         if (e.code !== 'EEXIST') {
             console.error('Failed to create destination dir ' + dest + path);
@@ -81,6 +81,10 @@ function leftMergeDirs(rootA, rootB, dest, path) {
             }
         }
     }
+}
+
+if (fs.existsSync('dist')) {
+    fs.rmdirSync('dist', {recursive: true});
 }
 
 // Assumes dist/assets exists and is empty
