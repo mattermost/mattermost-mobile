@@ -552,8 +552,6 @@
   "mobile.sidebar_settings.permanent": "Barre latérale permanente",
   "mobile.share_extension.too_long_title": "Le message est trop long",
   "mobile.share_extension.too_long_message": "Nombre de caractères : {count}/{max}",
-  "mobile.server_ssl.error.title": "",
-  "mobile.server_ssl.error.text": "",
   "mobile.server_link.unreachable_team.error": "Ce lien correspond à une équipe supprimée ou appartenant à une équipe à laquelle vous n'avez pas accès.",
   "mobile.server_link.unreachable_channel.error": "Ce lien correspond à un canal supprimé ou appartenant à un canal auquel vous n'avez pas accès.",
   "mobile.server_link.error.title": "Erreur de lien",
@@ -587,9 +585,6 @@
   "mobile.files_paste.error_dismiss": "Rejeter",
   "mobile.files_paste.error_description": "Une erreur s'est produite lors de l'opération de collage du(des) fichier(s). Veuillez réessayer.",
   "mobile.file_upload.unsupportedMimeType": "Seules les images BMP, JPG ou PNG peuvent être utilisées comme photos de profil.",
-  "mobile.failed_network_action.teams_title": "",
-  "mobile.failed_network_action.teams_description": "",
-  "mobile.failed_network_action.teams_channel_description": "",
   "mobile.extension.team_required": "Vous devez appartenir à une équipe avant de pouvoir partager des fichiers.",
   "mobile.edit_profile.remove_profile_photo": "Supprimer la photo",
   "mobile.display_settings.sidebar": "Barre latérale",
@@ -615,10 +610,7 @@
   "channel.isGuest": "Cet utilisateur est un utilisateur invité",
   "channel.hasGuests": "Ce groupe dispose d'utilisateurs invités",
   "channel.channelHasGuests": "Ce canal dispose d'utilisateurs invités",
-  "suggestion.mention.groups": "",
   "mobile.server_upgrade.learn_more": "En savoir plus",
   "mobile.server_upgrade.dismiss": "Rejeter",
-  "mobile.post_textbox.groups.title": "",
-  "mobile.unsupported_server.ok": "OK",
-  "mobile.emoji_picker.search.not_found_description": ""
+  "mobile.unsupported_server.ok": "OK"
 }
