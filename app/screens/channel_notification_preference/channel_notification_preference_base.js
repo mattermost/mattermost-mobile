@@ -37,22 +37,22 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
     getItems = () => {
         const {notificationLevel} = this.state;
         return [{
-            id: 'channel_notifications.preference.global_default',
+            id: t('channel_notifications.preference.global_default'),
             defaultMessage: 'Global default (Mentions)',
             value: ViewTypes.NotificationLevels.DEFAULT,
             checked: notificationLevel === ViewTypes.NotificationLevels.DEFAULT,
         }, {
-            id: 'channel_notifications.preference.all_activity',
+            id: t('channel_notifications.preference.all_activity'),
             defaultMessage: 'For all activity',
             value: ViewTypes.NotificationLevels.ALL,
             checked: notificationLevel === ViewTypes.NotificationLevels.ALL,
         }, {
-            id: 'channel_notifications.preference.only_mentions',
+            id: t('channel_notifications.preference.only_mentions'),
             defaultMessage: 'Only mentions and direct messages',
             value: ViewTypes.NotificationLevels.MENTION,
             checked: notificationLevel === ViewTypes.NotificationLevels.MENTION,
         }, {
-            id: 'channel_notifications.preference.never',
+            id: t('channel_notifications.preference.never'),
             defaultMessage: 'Never',
             value: ViewTypes.NotificationLevels.NONE,
             checked: notificationLevel === ViewTypes.NotificationLevels.NONE,
