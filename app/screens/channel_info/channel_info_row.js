@@ -25,7 +25,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
+    const {action, defaultMessage, detail, icon, iconSize, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -34,11 +34,15 @@ function channelInfoRow(props) {
     const style = getStyleSheet(theme);
 
     let iconElement = null;
+    let iSize = iconSize;
+    if (!iSize) {
+        iSize = 15;
+    }
     if (image == null) {
         iconElement = (
             <Icon
                 name={icon}
-                size={15}
+                size={iSize}
                 color={iconColor || changeOpacity(theme.centerChannelColor, 0.5)}
                 style={style.leftIcon}
             />
