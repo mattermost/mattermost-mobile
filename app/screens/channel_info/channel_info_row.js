@@ -104,6 +104,7 @@ channelInfoRow.propTypes = {
     ]),
     icon: PropTypes.string,
     iconColor: PropTypes.string,
+    iconSize: PropTypes.number,
     image: PropTypes.number,
     imageTintColor: PropTypes.string,
     isLandscape: PropTypes.bool,
