@@ -52,9 +52,11 @@ exports[`AtMention should match snapshot, without highlight 1`] = `
 >
   <Text
     style={
-      Object {
-        "color": "#ff0000",
-      }
+      Array [
+        Object {
+          "color": "#ff0000",
+        },
+      ]
     }
   >
     @Victor.Welch
