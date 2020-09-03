@@ -190,7 +190,7 @@ export default class AtMention extends React.PureComponent {
             );
         }
 
-        let mentionTextStyle = [mentionStyle];
+        const mentionTextStyle = [mentionStyle];
         if (highlighted) {
             mentionTextStyle.push({backgroundColor});
         }
