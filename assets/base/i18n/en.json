@@ -17,7 +17,7 @@
   "channel_header.addMembers": "Add Members",
   "channel_header.directchannel.you": "{displayname} (you) ",
   "channel_header.manageMembers": "Manage Members",
-  "channel_header.notificationPreference": "Mobile notifications",
+  "channel_header.notificationPreference": "Mobile Notifications",
   "channel_header.notificationPreference.all": "All",
   "channel_header.notificationPreference.default": "Default",
   "channel_header.notificationPreference.mention": "Mentions",

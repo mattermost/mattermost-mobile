@@ -44,7 +44,6 @@ function channelInfoRow(props) {
                 name={icon}
                 size={iSize}
                 color={iconColor || changeOpacity(theme.centerChannelColor, 0.5)}
-                style={style.leftIcon}
             />
         );
     } else {
@@ -76,7 +75,9 @@ function channelInfoRow(props) {
 
     const RowComponent = (
         <View style={[style.container, padding(isLandscape)]}>
-            {iconElement}
+            <View style={style.iconContainer}>
+                {iconElement}
+            </View>
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
                 id={textId}
@@ -139,6 +140,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 15,
             fontSize: 15,
             paddingVertical: 15,
+        },
+        iconContainer: {
+            width: 17,
+            height: 17,
+            justifyContent: 'center',
+            alignItems: 'center',
         },
         leftIcon: {
             width: 17,

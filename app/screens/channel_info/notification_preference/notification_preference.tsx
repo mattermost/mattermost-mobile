@@ -28,7 +28,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
     goToChannelNotificationPreference = preventDoubleTap(() => {
         const {intl} = this.context;
         const screen = 'ChannelNotificationPreference';
-        const title = intl.formatMessage({id: 'channel_header.notificationPreference', defaultMessage: 'Mobile notifications'});
+        const title = intl.formatMessage({id: 'channel_header.notificationPreference', defaultMessage: 'Mobile Notifications'});
 
         goToScreen(screen, title, this.props);
     });
@@ -75,7 +75,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
         return (
             <ChannelInfoRow
                 action={this.goToChannelNotificationPreference}
-                defaultMessage='Mobile notifications'
+                defaultMessage='Mobile Notifications'
                 detail={this.notificationLevelToText(pushNotifyLevel)}
                 icon='mobile'
                 iconSize={20}

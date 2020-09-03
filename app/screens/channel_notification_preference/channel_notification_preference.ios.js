@@ -28,27 +28,32 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                     defaultMessage='Send Notifications'
                     style={style.header}
                 />
-                <ScrollView alwaysBounceVertical={false}>
-                    {items.map((item) => (
-                        <View key={item.id}>
-                            <View style={style.divider}/>
-                            <SectionItem
-                                label={(
-                                    <FormattedText
-                                        id={item.id}
-                                        defaultMessage={item.defaultMessage}
-                                    />
-                                )}
-                                action={this.handlePress}
-                                actionType='select'
-                                actionValue={item.value}
-                                selected={item.checked}
-                                theme={theme}
-                                isLandscape={isLandscape}
-                            />
-                        </View>),
-                    )}
-                    <View style={style.divider}/>
+                <ScrollView
+                    contentContainerStyle={style.scrollView}
+                    alwaysBounceVertical={false}
+                >
+                    <View style={style.contentContainer}>
+                        {items.map((item) => (
+                            <View key={item.id}>
+                                <View style={style.divider}/>
+                                <SectionItem
+                                    label={(
+                                        <FormattedText
+                                            id={item.id}
+                                            defaultMessage={item.defaultMessage}
+                                        />
+                                    )}
+                                    action={this.handlePress}
+                                    actionType='select'
+                                    actionValue={item.value}
+                                    selected={item.checked}
+                                    theme={theme}
+                                    isLandscape={isLandscape}
+                                />
+                            </View>),
+                        )}
+                        <View style={style.divider}/>
+                    </View>
                 </ScrollView>
             </View>
         );
@@ -73,6 +78,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 1,
             width: '100%',
             marginLeft: 16,
+        },
+        scrollView: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
+        },
+        contentContainer: {
+            backgroundColor: changeOpacity(theme.centerChannelBg, 1),
         },
     };
 });
