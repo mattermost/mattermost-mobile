@@ -190,13 +190,20 @@ export default class AtMention extends React.PureComponent {
             );
         }
 
+        let mentionTextStyle;
+        if (highlighted) {
+            mentionTextStyle = [mentionStyle, {backgroundColor}];
+        } else {
+            mentionTextStyle = mentionStyle;
+        }
+
         return (
             <Text
                 style={styleText}
                 onPress={onPress}
                 onLongPress={onLongPress}
             >
-                <Text style={[highlighted ? null : mentionStyle, {backgroundColor}]}>
+                <Text style={mentionTextStyle}>
                     {'@' + mention}
                 </Text>
                 {suffixElement}

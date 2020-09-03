@@ -7,7 +7,9 @@ exports[`AtMention should match snapshot, no highlight 1`] = `
   <Text
     style={
       Array [
-        null,
+        Object {
+          "color": "#ff0000",
+        },
         Object {
           "backgroundColor": "yellow",
         },
@@ -28,7 +30,9 @@ exports[`AtMention should match snapshot, with highlight 1`] = `
   <Text
     style={
       Array [
-        null,
+        Object {
+          "color": "#ff0000",
+        },
         Object {
           "backgroundColor": "yellow",
         },
@@ -48,14 +52,9 @@ exports[`AtMention should match snapshot, without highlight 1`] = `
 >
   <Text
     style={
-      Array [
-        Object {
-          "color": "#ff0000",
-        },
-        Object {
-          "backgroundColor": "yellow",
-        },
-      ]
+      Object {
+        "color": "#ff0000",
+      }
     }
   >
     @Victor.Welch
