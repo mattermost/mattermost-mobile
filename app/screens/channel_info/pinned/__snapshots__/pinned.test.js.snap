@@ -3,7 +3,7 @@
 exports[`ChannelInfo -> Pinned should match snapshot 1`] = `
 <channelInfoRow
   action={[Function]}
-  defaultMessage="Pinned Posts"
+  defaultMessage="Pinned Messages"
   detail={0}
   image={1}
   isLandscape={false}

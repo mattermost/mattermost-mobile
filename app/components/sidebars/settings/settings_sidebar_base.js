@@ -95,7 +95,7 @@ export default class SettingsSidebarBase extends PureComponent {
     goToFlaggedScreen = (intl) => {
         this.openModal(
             'FlaggedPosts',
-            intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Flagged Posts'}),
+            intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Saved Messages'}),
         );
     };
 
@@ -218,9 +218,9 @@ export default class SettingsSidebarBase extends PureComponent {
                             theme={theme}
                         />
                         <DrawerItem
-                            defaultMessage='Flagged Posts'
+                            defaultMessage='Saved Messages'
                             i18nId='search_header.title3'
-                            iconName='ios-flag'
+                            iconName='ios-bookmark-outline'
                             iconType='ion'
                             onPress={this.goToFlagged}
                             separator={false}
