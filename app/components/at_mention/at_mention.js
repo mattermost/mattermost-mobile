@@ -139,7 +139,7 @@ export default class AtMention extends React.PureComponent {
     }
 
     render() {
-        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
+        const {isSearchResult, mentionName, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
         const {user} = this.state;
         const {backgroundColor, ...styleText} = StyleSheet.flatten(textStyle);
         let canPress = false;
@@ -150,7 +150,7 @@ export default class AtMention extends React.PureComponent {
 
         if (user?.username) {
             suffix = this.props.mentionName.substring(user.username.length);
-            highlighted = mentionKeys.some((item) => item.key === user.username);
+            highlighted = mentionKeys.some((item) => item.key.includes(user.username));
             mention = displayUsername(user, teammateNameDisplay);
             canPress = true;
         } else {
@@ -162,13 +162,12 @@ export default class AtMention extends React.PureComponent {
             } else {
                 const pattern = new RegExp(/\b(all|channel|here)(?:\.\B|_\b|\b)/, 'i');
                 const mentionMatch = pattern.exec(mentionName);
+                highlighted = true;
 
                 if (mentionMatch) {
-                    highlighted = false;
                     mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                     suffix = mentionName.replace(mention, '');
                 } else {
-                    highlighted = true;
                     mention = mentionName;
                 }
             }
@@ -190,7 +189,7 @@ export default class AtMention extends React.PureComponent {
             );
         }
 
-        const mentionTextStyle = [mentionStyle];
+        const mentionTextStyle = [];
         if (highlighted) {
             mentionTextStyle.push({backgroundColor});
         }

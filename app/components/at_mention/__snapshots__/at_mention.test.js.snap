@@ -8,9 +8,6 @@ exports[`AtMention should match snapshot, no highlight 1`] = `
     style={
       Array [
         Object {
-          "color": "#ff0000",
-        },
-        Object {
           "backgroundColor": "yellow",
         },
       ]
@@ -31,9 +28,6 @@ exports[`AtMention should match snapshot, with highlight 1`] = `
     style={
       Array [
         Object {
-          "color": "#ff0000",
-        },
-        Object {
           "backgroundColor": "yellow",
         },
       ]
@@ -51,13 +45,7 @@ exports[`AtMention should match snapshot, without highlight 1`] = `
   style={Object {}}
 >
   <Text
-    style={
-      Array [
-        Object {
-          "color": "#ff0000",
-        },
-      ]
-    }
+    style={Array []}
   >
     @Victor.Welch
   </Text>
