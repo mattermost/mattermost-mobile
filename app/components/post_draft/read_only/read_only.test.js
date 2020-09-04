@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import TestRenderer from 'react-test-renderer';
-import {IntlProvider} from 'react-intl';
 
 import Preferences from '@mm-redux/constants/preferences';
+import {renderWithIntl} from 'test/testing_library';
 
 import ReadOnly from './index';
 
@@ -20,11 +19,3 @@ describe('PostDraft ReadOnly', () => {
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });
-
-function renderWithIntl(component) {
-    return TestRenderer.create(
-        <IntlProvider locale='en'>
-            {component}
-        </IntlProvider>,
-    );
-}

@@ -2,14 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import TestRenderer from 'react-test-renderer';
-import {IntlProvider} from 'react-intl';
-import {Provider} from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import Preferences from '@mm-redux/constants/preferences';
 import intitialState from '@store/initial_state';
+import {renderWithReduxIntl} from 'test/testing_library';
 
 import PostDraft from './post_draft';
 
@@ -41,10 +39,6 @@ const state = {
 };
 const store = mockStore(state);
 
-jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
-}));
-
 describe('PostDraft', () => {
     const baseProps = {
         canPost: true,
@@ -52,83 +46,102 @@ describe('PostDraft', () => {
         channelIsArchived: false,
         channelIsReadOnly: false,
         deactivatedChannel: false,
-        registerTypingAnimation: jest.fn(),
+        registerTypingAnimation: () => jest.fn(),
         rootId: '',
         screenId: 'NavigationScreen1',
         theme: Preferences.THEMES.default,
     };
 
     test('Should render the DraftInput', () => {
-        const wrapper = renderWithRedux(
+        const {getByTestId, queryByText, toJSON} = renderWithReduxIntl(
             <PostDraft
                 {...baseProps}
             />,
+            store,
         );
 
-        expect(wrapper.toJSON()).toMatchSnapshot();
-        const element = wrapper.root.find((el) => el.type === 'TextInput');
-        expect(element).toBeTruthy();
+        expect(toJSON()).toMatchSnapshot();
+        expect(getByTestId('post_input')).toBeTruthy();
+        expect(queryByText('Close Channel')).toBeNull();
     });
 
     test('Should render the Archived for channelIsArchived', () => {
-        const wrapper = renderWithRedux(
+        const {queryByTestId, getByText, toJSON} = renderWithReduxIntl(
             <PostDraft
                 {...baseProps}
                 channelIsArchived={true}
             />,
+            store,
         );
 
-        expect(wrapper.toJSON()).toMatchSnapshot();
-        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'archived channel');
-        expect(element).toBeTruthy();
+        expect(toJSON()).toMatchSnapshot();
+
+        // Should not render text input
+        expect(queryByTestId('post_input')).toBeNull();
+
+        // Should match text description
+        expect(getByText('You are viewing an ')).toBeTruthy();
+        expect(getByText('archived channel')).toBeTruthy();
+        expect(getByText('. New messages cannot be posted.')).toBeTruthy();
+        expect(getByText('Close Channel')).toBeTruthy();
     });
 
     test('Should render the Archived for deactivatedChannel', () => {
-        const wrapper = renderWithRedux(
+        const {queryByTestId, getByText, toJSON} = renderWithReduxIntl(
             <PostDraft
                 {...baseProps}
                 deactivatedChannel={true}
             />,
+            store,
         );
 
-        expect(wrapper.toJSON()).toMatchSnapshot();
-        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'archived channel');
-        expect(element).toBeTruthy();
+        expect(toJSON()).toMatchSnapshot();
+
+        // Should not render text input
+        expect(queryByTestId('post_input')).toBeNull();
+
+        // Should match text description
+        expect(getByText('You are viewing an ')).toBeTruthy();
+        expect(getByText('archived channel')).toBeTruthy();
+        expect(getByText('. New messages cannot be posted.')).toBeTruthy();
+        expect(getByText('Close Channel')).toBeTruthy();
     });
 
     test('Should render the ReadOnly for channelIsReadOnly', () => {
-        const wrapper = renderWithRedux(
+        const {queryByTestId, getByText, queryByText, toJSON} = renderWithReduxIntl(
             <PostDraft
                 {...baseProps}
                 channelIsReadOnly={true}
             />,
+            store,
         );
 
-        expect(wrapper.toJSON()).toMatchSnapshot();
-        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'This channel is read-only.');
-        expect(element).toBeTruthy();
+        expect(toJSON()).toMatchSnapshot();
+
+        // Should not render text input
+        expect(queryByTestId('post_input')).toBeNull();
+
+        // Should match text description
+        expect(getByText('This channel is read-only.')).toBeTruthy();
+        expect(queryByText('Close Channel')).toBeNull();
     });
 
     test('Should render the ReadOnly for canPost', () => {
-        const wrapper = renderWithRedux(
+        const {queryByTestId, getByText, queryByText, toJSON} = renderWithReduxIntl(
             <PostDraft
                 {...baseProps}
                 canPost={false}
             />,
+            store,
         );
 
-        expect(wrapper.toJSON()).toMatchSnapshot();
-        const element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === 'This channel is read-only.');
-        expect(element).toBeTruthy();
+        expect(toJSON()).toMatchSnapshot();
+
+        // Should not render text input
+        expect(queryByTestId('post_input')).toBeNull();
+
+        // Should match text description
+        expect(getByText('This channel is read-only.')).toBeTruthy();
+        expect(queryByText('Close Channel')).toBeNull();
     });
 });
-
-function renderWithRedux(component) {
-    return TestRenderer.create(
-        <Provider store={store}>
-            <IntlProvider locale='en'>
-                {component}
-            </IntlProvider>
-        </Provider>,
-    );
-}

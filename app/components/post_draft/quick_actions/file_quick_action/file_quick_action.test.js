@@ -11,9 +11,6 @@ import Preferences from '@mm-redux/constants/preferences';
 import FileQuickAction from './index';
 
 jest.mock('react-intl');
-jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
-}));
 
 describe('FileQuickAction', () => {
     const formatMessage = jest.fn();

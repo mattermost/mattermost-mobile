@@ -15,9 +15,6 @@ jest.mock('@utils/theme', () => {
         changeOpacity: jest.fn(),
     };
 });
-jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
-}));
 
 describe('edit_profile', () => {
     const actions = {

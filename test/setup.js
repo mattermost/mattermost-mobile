@@ -177,6 +177,10 @@ jest.mock('react-native-cookies', () => ({
     })),
 }));
 
+jest.mock('react-native-image-picker', () => ({
+    launchCamera: jest.fn(),
+}));
+
 jest.mock('react-native-navigation', () => {
     const RNN = jest.requireActual('react-native-navigation');
     return {
