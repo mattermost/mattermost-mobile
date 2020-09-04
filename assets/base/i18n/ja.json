@@ -244,6 +244,7 @@
   "mobile.emoji_picker.places": "場所",
   "mobile.emoji_picker.recent": "最近使用したもの",
   "mobile.emoji_picker.search.not_found_description": "スペルを確認し、再度検索してください。",
+  "mobile.emoji_picker.search.not_found_title": "\"{searchTerm}\" に対する結果が見つかりませんでした",
   "mobile.emoji_picker.symbols": "シンボル",
   "mobile.error_handler.button": "再起動",
   "mobile.error_handler.description": "\nアプリケーションを再開するために再起動をクリックしてください。再起動した後、設定メニューから問題を報告してください。\n",
