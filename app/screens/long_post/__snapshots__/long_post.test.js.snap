@@ -35,7 +35,7 @@ LongPost {
   "navigationEventListener": undefined,
   "props": Object {
     "actions": Object {
-      "loadThreadIfNecessary": [MockFunction],
+      "getPostThread": [MockFunction],
       "selectPost": [MockFunction],
     },
     "intl": Object {
@@ -147,7 +147,7 @@ LongPost {
       "_element": <LongPost
         actions={
           Object {
-            "loadThreadIfNecessary": [MockFunction],
+            "getPostThread": [MockFunction],
             "selectPost": [MockFunction],
           }
         }

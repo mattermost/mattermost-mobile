@@ -30,7 +30,7 @@ export default class ChannelPostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
-            loadThreadIfNecessary: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired,
             increasePostVisibility: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
@@ -106,7 +106,7 @@ export default class ChannelPostList extends PureComponent {
         const rootId = (post.root_id || post.id);
 
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId);
+        actions.getPostThread(rootId);
         actions.selectPost(rootId);
 
         const screen = 'Thread';
