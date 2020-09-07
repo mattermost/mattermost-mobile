@@ -1,10 +1,10 @@
 #!/bin/sh
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  echo "Installing gems"
-  bundle install &> /dev/null
+  echo "Installing Gems"
+  npm run ios-gems &> /dev/null
   echo "Getting Cocoapods dependencies"
-  cd ios && bundle exec pod install && cd .. &> /dev/null
+  npm run pod-install &> /dev/null
 fi
 
 ASSETS=$(node scripts/generate-assets.js)
