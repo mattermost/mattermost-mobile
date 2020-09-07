@@ -28,6 +28,7 @@ import urlParse from 'url-parse';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
+import AppVersion from '@components/app_version';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
@@ -559,6 +560,7 @@ export default class SelectServer extends PureComponent {
                             </View>
                         </View>
                     </TouchableWithoutFeedback>
+                    <AppVersion/>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         );
