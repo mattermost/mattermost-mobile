@@ -1,5 +1,4 @@
 fastlane_version '2.71.0'
-
 fastlane_require 'aws-sdk-s3'
 fastlane_require 'erb'
 fastlane_require 'json'
@@ -46,10 +45,6 @@ end
 
 after_all do |lane|
   if ENV['CIRCLECI'] != 'true'
-    if lane.to_s == 'build'
-      submit_to_store
-    end
-
     if ENV['RESET_GIT_BRANCH'] == 'true'
       branch = ENV['BRANCH_TO_BUILD'] || 'master'
       package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
@@ -174,106 +169,106 @@ lane :configure do
   configured = true
 end
 
-desc 'Build the app for Android and iOS'
-lane :build do |options|
-  configure
-  set_app_version
-  set_app_build_number
-
-  # Build the android app
-  self.runner.current_platform = :android
-  build
-
-  # Build the ios app
-  self.runner.current_platform = :ios
-  build
-end
-
 desc 'Upload file to s3'
 lane :upload_file_to_s3 do |options|
-  os_type = options[:os_type]
-  file = options[:file]
-  file_plist = ""
-
-  if file.nil? || file.empty?
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
-    filename = app_name.gsub(" ", "_")
-
-    if os_type == 'Android'
-      file = "#{filename}.apk"
-    elsif os_type == 'iOS'
-      file = "#{filename}.ipa"
-      file_plist = "#{filename}.plist"
-    end
+  os_type = options[:os_type].downcase
+  extension = os_type == "android" ? "*.apk" : "*.ipa"
+  build_folder_path = Dir[File.expand_path('..')].first
+  files = []
+  
+  unless options[:file].nil? || options[:file].empty?
+    files.push("#{build_folder_path}/#{options[:file]}")
+  else
+    files = Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f}
   end
 
-  build_folder_path = Dir[File.expand_path('..')].first
-  file_path = "#{build_folder_path}/#{file}"
-
-  unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty? || file_path.nil?
-    s3_region = ENV['AWS_REGION']
-    s3_bucket = ENV['AWS_BUCKET_NAME']
-    s3_folder = ''
-
+  unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty? || files.length == 0
     version_number = ''
     build_number = ''
+    pr_file = ''
+    plist_file = ''
 
     if is_build_pr
-      s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}"
+      pr_file = File.basename(files.first)
+      plist_file = "#{File.basename(files.first, '.*')}.plist"
     else
-      if os_type == 'Android'
-        version_number = android_get_version_name(gradle_file: './android/app/build.gradle')
-        build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
-      elsif os_type == 'iOS'
-        version_number = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
-        build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
-      end
-
-      s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+      version_number = os_type == "android" ? 
+        android_get_version_name(gradle_file: './android/app/build.gradle') :
+        get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+      build_number = os_type == "android" ?
+        android_get_version_code(gradle_file: './android/app/build.gradle') :
+        get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
     end
 
+    s3_region = ENV['AWS_REGION']
+    s3_bucket_name = ENV['AWS_BUCKET_NAME']
+    s3_folder = is_build_pr ?
+      "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}" :
+      "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+    
     s3 = Aws::S3::Resource.new(region: s3_region)
-    file_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{file}")
-    file_obj.upload_file("#{file_path}")
+    s3_bucket = s3.bucket(s3_bucket)
+    mutex = Mutex.new
+    threads = []
+    file_number = 0
+    total_files = files.length
+    links = []
+    total_files.times do |i|
+      threads[i] = Thread.new {
+        until files.empty?
+          mutex.synchronize do
+            file_number += 1
+            Thread.current["file_number"] = file_number
+          end
+          file = files.pop rescue nil
+          next unless file
+
+          filename = File.basename(file)
+          puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
+          s3_file = s3_bucket.object("#{s3_folder}/#{filename}")
+          s3_file.upload_file("#{file}")
+          links.push(s3_file.public_url)
+        end
+      }
+    end
+    threads.each { |t| t.join }
 
     if is_build_pr
       if os_type == 'Android'
-        install_url = "https://#{s3_bucket}/#{s3_folder}/#{file}"
+        install_url = "https://#{s3_bucket_name}/#{s3_folder}/#{pr_file}"
       elsif os_type == 'iOS'
         current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
         plist_template = File.read('plist.erb')
         plist_body = ERB.new(plist_template).result(binding)
 
-        plist_obj = s3.bucket(s3_bucket).object("#{s3_folder}/#{file_plist}")
+        plist_obj = s3_bucket.object("#{s3_folder}/#{file_plist}")
         plist_obj.put(body: plist_body)
 
-        install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket}/#{s3_folder}/#{file_plist}"
+        install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{file_plist}"
       end
 
       qa_build_message({
-                           :os_type => os_type,
-                           :install_url => install_url
-                       })
+                            :os_type => os_type,
+                            :install_url => install_url
+                        })
     end
-
-    public_link = "https://#{s3_bucket}/#{s3_folder}/#{file}"
-    if file == 'Mattermost-simulator-x86_64.app.zip'
+  
+    if options[:file] == 'Mattermost-simulator-x86_64.app.zip'
       pretext = '#### New iOS build for VM/Simulator'
-      msg = "Download link: #{public_link}"
+      msg = "Download link: #{links.first}"
       send_message_to_mattermost({
-                                     :version_number => version_number,
-                                     :build_number => build_number,
-                                     :pretext => pretext,
-                                     :title => '',
-                                     :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
-                                     :msg => msg,
-                                     :default_payloads => [],
-                                     :success => true,
-                                 })
+                                      :version_number => version_number,
+                                      :build_number => build_number,
+                                      :pretext => pretext,
+                                      :title => '',
+                                      :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
+                                      :msg => msg,
+                                      :default_payloads => [],
+                                      :success => true,
+                                  })
     end
 
-    UI.success("S3 bucket @#{s3_bucket}, object @#{s3_folder}/#{file}")
-    UI.success("S3 public path: #{public_link}")
+    UI.message("S3 public paths:\n#{links.join("\n")}")
   end
 end
 
@@ -285,8 +280,15 @@ lane :github do
     version = android_get_version_name(gradle_file: './android/app/build.gradle')
     build = android_get_version_code(gradle_file: './android/app/build.gradle')
     changelog = File.read("metadata/changelog")
-    changelog.concat("* Android [Mattermost.apk](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.apk)\n")
-    changelog.concat("* iOS [Mattermost.ipa](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
+    android = [
+      "    * [Mattermost arm64-v8a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-arm64-v8a.apk)",
+      "    * [Mattermost armeabi-v7a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-armeabi-v7a.apk)",
+      "    * [Mattermost Universal](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-universal.apk)",
+      "    * [Mattermost x86](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86.apk)",
+      "    * [Mattermost x86_64](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86_64.apk)",
+    ]
+    changelog.concat("* Android\n#{android.join("\n")}\n")
+    changelog.concat("* iOS\n    * [Mattermost](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
 
     github_release = set_github_release(
       repository_name: "mattermost/mattermost-mobile",
@@ -334,7 +336,7 @@ platform :ios do
     ENV['APP_NAME'] = 'Mattermost'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost-mobile'
+    ENV['APP_SCHEME'] = 'mattermost'
 
     update_identifiers
     replace_assets
@@ -352,7 +354,7 @@ platform :ios do
     ENV['APP_NAME'] = 'Mattermost'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost-mobile'
+    ENV['APP_SCHEME'] = 'mattermost'
 
     update_identifiers
     replace_assets
@@ -602,7 +604,7 @@ platform :android do
     ENV['APP_NAME'] = 'Mattermost'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost-mobile'
+    ENV['APP_SCHEME'] = 'mattermost'
 
     update_identifiers
     replace_assets
@@ -739,20 +741,37 @@ platform :android do
     gradle(
         task: 'app:assemble',
         build_type: config_mode,
-        project_dir: 'android/'
+        project_dir: 'android/',
+        properties: {
+          'separateApk' => ENV["SEPARATE_APKS"] || false,
+          'universalApk' => ENV["SEPARATE_APKS"] || false,
+        }
     )
   end
 
   def move_apk_to_root
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
-    new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.apk"
-    apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
-
-    unless apk_path.nil?
-      sh "mv #{apk_path} #{new_apk_path}"
-      lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH] = new_apk_path
+    apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
+    outputJson = load_config_json(lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH])
+    paths = []
+    apks.each do |apk|
+      filename = File.basename(apk)
+      output = outputJson.find { |o| o["path"] === filename }
+      unless output.nil?
+        filterName = output["apkData"]["filterName"]
+        name = "#{app_name_sub}"
+        unless filterName.nil? || filterName.empty?
+          name += "-#{filterName}"
+        end
+        new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
+        paths.push(new_apk_path)
+        sh "mv #{apk} #{new_apk_path}"
+        UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
+      end
     end
+
+    lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
   end
 
   def link_sentry_android
@@ -814,23 +833,23 @@ def send_message_to_mattermost(options)
 end
 
 def submit_to_testflight(ipa_path)
-  app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
-  app_name_sub = app_name.gsub(" ", "_")
+  ipa = (Dir.glob(ipa_path).select { |f| File.file? f}).first
 
-  if(File.file?(ipa_path))
-    UI.success("ipa file #{ipa_path}")
+  if !ipa.nil?
+    UI.success("ipa file #{ipa}")
     pilot(
-        ipa: ipa_path
+        ipa: ipa
     )
   else
-    UI.user_error! "ipa file does not exist #{ipa_path}"
+    UI.user_error! "ipa file does not exist #{ipa}"
     return
   end
 
+  filename = File.basename(ipa)
   version_number = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
   build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
   s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-  public_link = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}/#{app_name_sub}.ipa"
+  public_link = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}/#{filename}"
 
 
   # Send a build message to Mattermost
@@ -855,34 +874,35 @@ def submit_to_testflight(ipa_path)
 end
 
 def submit_to_google_play(apk_path)
-  app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
-  app_name_sub = app_name.gsub(" ", "_")
+  apks = Dir.glob(apk_path).select { |f| File.file? f}
+  filenames = apks.map {|f| File.basename(f)}
 
-  if(File.file?(apk_path))
-    UI.success("apk file #{apk_path}")
+  if(apks.length > 0)
     unless ENV['SUPPLY_JSON_KEY'].nil? || ENV['SUPPLY_JSON_KEY'].empty?
       supply(
+          package_name: ENV['MAIN_APP_IDENTIFIER'] || ENV['SUPPLY_PACKAGE_NAME'],
           track: ENV['SUPPLY_TRACK'] || 'alpha',
-          apk: apk_path
+          apk_paths: apks
       )
     end
   else
-    UI.user_error! "apk file does not exist #{apk_path}"
+    UI.user_error! "There are no apks in #{apk_path}"
     return
   end
 
   version_number = android_get_version_name(gradle_file: './android/app/build.gradle')
   build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
   s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-  public_link = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}/#{app_name_sub}.apk"
+  public_path = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}"
+  links = (filenames.map { |f| "* #{public_path}/#{f}"}).join("\n")
 
   # Send a build message to Mattermost
   pretext = '#### New Android released ready to be published'
-  msg = "Release has been cut and is on the Beta track ready to be published.\nDownload link: #{public_link}"
+  msg = "Release has been cut and is on the Beta track ready to be published.\nDownload links:\n#{links}"
 
   if ENV['BETA_BUILD'] == 'true'
     pretext = '#### New Android beta published to Google Play'
-    msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload link: #{public_link}"
+    msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload links:\n#{links}"
   end
 
   send_message_to_mattermost({
@@ -895,21 +915,6 @@ def submit_to_google_play(apk_path)
                                  :default_payloads => [],
                                  :success => true,
                              })
-end
-
-def submit_to_store
-  apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
-  ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
-
-  # Submit to Google Play if required
-  if !apk_path.nil? && ENV['SUBMIT_ANDROID_TO_GOOGLE_PLAY'] == 'true'
-    submit_to_google_play(apk_path)
-  end
-
-  # Submit to TestFlight if required
-  if !ipa_path.nil? && ENV['SUBMIT_IOS_TO_TESTFLIGHT'] == 'true'
-    submit_to_testflight(ipa_path)
-  end
 end
 
 def qa_build_message(options)
