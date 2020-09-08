@@ -42,7 +42,7 @@
     "react-native-cookies": "github:mattermost/react-native-cookies#b35bafc388ae09c83bd875e887daf6a0755e0b40",
     "react-native-device-info": "5.6.5",
     "react-native-document-picker": "3.5.4",
-    "react-native-elements": "2.3.0",
+    "react-native-elements": "2.3.2",
     "react-native-exception-handler": "2.10.8",
     "react-native-fast-image": "8.3.2",
     "react-native-file-viewer": "2.1.1",
