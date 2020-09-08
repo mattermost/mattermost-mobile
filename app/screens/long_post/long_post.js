@@ -41,11 +41,10 @@ Animatable.initializeRegistryWithDefinitions({
 export default class LongPost extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            loadThreadIfNecessary: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelName: PropTypes.string,
-        isPermalink: PropTypes.bool,
         inThreadView: PropTypes.bool,
         managedConfig: PropTypes.object,
         onHashtagPress: PropTypes.func,
@@ -84,7 +83,7 @@ export default class LongPost extends PureComponent {
             rootId,
         };
 
-        actions.loadThreadIfNecessary(rootId);
+        actions.getPostThread(rootId);
         actions.selectPost(rootId);
 
         goToScreen(screen, title, passProps);

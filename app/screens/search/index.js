@@ -4,6 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {loadChannelsByTeamName} from '@actions/views/channel';
+import {getPostThread} from '@actions/views/post';
+import {handleSearchDraftChanged} from '@actions/views/search';
 import {selectFocusedPostId, selectPost} from '@mm-redux/actions/posts';
 import {clearSearch, removeSearchTerms, searchPostsWithParams, getMorePostsForSearch} from '@mm-redux/actions/search';
 import {getCurrentChannelId, filterPostIds} from '@mm-redux/selectors/entities/channels';
@@ -14,12 +17,9 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-
-import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
-import {handleSearchDraftChanged} from 'app/actions/views/search';
-import {isLandscape} from 'app/selectors/device';
-import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
-import {getDeviceUtcOffset, getUtcOffsetForTimeZone} from 'app/utils/timezone';
+import {isLandscape} from '@selectors/device';
+import {makePreparePostIdsForSearchPosts} from '@selectors/post_list';
+import {getDeviceUtcOffset, getUtcOffsetForTimeZone} from '@utils/timezone';
 
 import Search from './search';
 
@@ -76,7 +76,7 @@ function mapDispatchToProps(dispatch) {
             clearSearch,
             handleSearchDraftChanged,
             loadChannelsByTeamName,
-            loadThreadIfNecessary,
+            getPostThread,
             removeSearchTerms,
             selectFocusedPostId,
             searchPostsWithParams,
