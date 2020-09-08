@@ -139,12 +139,17 @@ export default class AtMention extends React.PureComponent {
     }
 
     render() {
-        const {isSearchResult, mentionName, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
+        const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
         const {user} = this.state;
         const {backgroundColor, ...styleText} = StyleSheet.flatten(textStyle);
+        const mentionTextStyle = [];
+
         let canPress = false;
         let highlighted;
+        let isMention = false;
         let mention;
+        let onLongPress;
+        let onPress;
         let suffix;
         let suffixElement;
 
@@ -152,11 +157,13 @@ export default class AtMention extends React.PureComponent {
             suffix = this.props.mentionName.substring(user.username.length);
             highlighted = mentionKeys.some((item) => item.key.includes(user.username));
             mention = displayUsername(user, teammateNameDisplay);
+            isMention = true;
             canPress = true;
         } else {
             const group = this.getGroupFromMentionName();
             if (group.allow_reference) {
                 highlighted = mentionKeys.some((item) => item.key === group.name);
+                isMention = true;
                 mention = group.name;
                 suffix = this.props.mentionName.substring(group.name.length);
             } else {
@@ -167,14 +174,13 @@ export default class AtMention extends React.PureComponent {
                 if (mentionMatch) {
                     mention = mentionMatch.length > 1 ? mentionMatch[1] : mentionMatch[0];
                     suffix = mentionName.replace(mention, '');
+                    isMention = true;
                 } else {
                     mention = mentionName;
                 }
             }
         }
 
-        let onPress;
-        let onLongPress;
         if (canPress) {
             onLongPress = this.handleLongPress;
             onPress = isSearchResult ? onPostPress : this.goToUserProfile;
@@ -189,7 +195,10 @@ export default class AtMention extends React.PureComponent {
             );
         }
 
-        const mentionTextStyle = [];
+        if (isMention) {
+            mentionTextStyle.push(mentionStyle);
+        }
+
         if (highlighted) {
             mentionTextStyle.push({backgroundColor});
         }
