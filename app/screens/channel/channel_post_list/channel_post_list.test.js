@@ -12,7 +12,7 @@ describe('ChannelPostList', () => {
     const baseProps = {
         actions: {
             loadPostsIfNecessaryWithRetry: jest.fn(),
-            loadThreadIfNecessary: jest.fn(),
+            getPostThread: jest.fn(),
             increasePostVisibility: jest.fn(),
             selectPost: jest.fn(),
             recordLoadTime: jest.fn(),

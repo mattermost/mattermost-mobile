@@ -14,7 +14,7 @@ describe('PinnedPosts', () => {
         actions: {
             clearSearch: jest.fn(),
             loadChannelsByTeamName: jest.fn(),
-            loadThreadIfNecessary: jest.fn(),
+            getPostThread: jest.fn(),
             getPinnedPosts: jest.fn(),
             selectFocusedPostId: jest.fn(),
             selectPost: jest.fn(),
