@@ -22,8 +22,6 @@
   "channel_header.notificationPreference.default": "Default",
   "channel_header.notificationPreference.mention": "Mentions",
   "channel_header.notificationPreference.none": "Never",
-  "channel_header.directchannel.you": "{displayname} (you) ",
-  "channel_header.manageMembers": "Manage Members",
   "channel_header.pinnedPosts": "Pinned Messages",
   "channel_header.viewMembers": "View Members",
   "channel_info.header": "Header:",
