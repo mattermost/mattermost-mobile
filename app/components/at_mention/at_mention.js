@@ -162,7 +162,7 @@ export default class AtMention extends React.PureComponent {
         } else {
             const group = this.getGroupFromMentionName();
             if (group.allow_reference) {
-                highlighted = mentionKeys.some((item) => item.key === group.name);
+                highlighted = mentionKeys.some((item) => item.key === `@${group.name}`);
                 isMention = true;
                 mention = group.name;
                 suffix = this.props.mentionName.substring(group.name.length);
