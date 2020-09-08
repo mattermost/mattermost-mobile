@@ -75,14 +75,14 @@ export function makeGetPostIdsForThread(): (b: GlobalState, a: $ID<Post>) => Arr
 
             if (rootPost) {
                 thread.push(rootPost);
-            }
 
-            const postsArray = Object.values(posts).filter((p) => p.root_id === rootPost.id);
-            if (postsArray.length) {
-                thread.push(...postsArray);
-            }
+                const postsArray = Object.values(posts).filter((p) => p.root_id === rootPost.id);
+                if (postsArray.length) {
+                    thread.push(...postsArray);
+                }
 
-            thread.sort(comparePosts);
+                thread.sort(comparePosts);
+            }
 
             return thread.map((post) => post.id);
         },
