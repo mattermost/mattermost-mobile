@@ -52,7 +52,7 @@ export default class ConvertPrivate extends PureComponent<ConvertPrivateProps> {
         } else {
             Alert.alert(
                 '',
-                formatMessage({id: t('mobile.channel_info.convert_success'), defaultMessage: '{displayName} is now a private channel.'}, displayName),
+                formatMessage({id: t('mobile.channel_info.convert_success'), defaultMessage: '{displayName} is now a private channel.'}, {displayName}),
             );
         }
     });
