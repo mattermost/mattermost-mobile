@@ -36,7 +36,7 @@ export default class PinnedPosts extends PureComponent {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             loadChannelsByTeamName: PropTypes.func.isRequired,
-            loadThreadIfNecessary: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired,
             getPinnedPosts: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
@@ -104,7 +104,7 @@ export default class PinnedPosts extends PureComponent {
             rootId,
         };
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId);
+        actions.getPostThread(rootId);
         actions.selectPost(rootId);
         goToScreen(screen, title, passProps);
     };

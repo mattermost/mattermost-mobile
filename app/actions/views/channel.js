@@ -31,7 +31,7 @@ import {getChannelByName as selectChannelByName, getChannelsIdForTeam} from '@mm
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {lastChannelIdForTeam, loadSidebarDirectMessagesProfiles} from '@actions/helpers/channels';
-import {getPosts, getPostsBefore, getPostsSince, getPostThread, loadUnreadChannelPosts} from '@actions/views/post';
+import {getPosts, getPostsBefore, getPostsSince, loadUnreadChannelPosts} from '@actions/views/post';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
@@ -108,18 +108,6 @@ export function fetchPostActionWithRetry(action, maxTries = MAX_RETRIES) {
         dispatch(setChannelRetryFailed(true));
 
         return null;
-    };
-}
-
-export function loadThreadIfNecessary(rootId) {
-    return (dispatch, getState) => {
-        const state = getState();
-        const {posts, postsInThread} = state.entities.posts;
-        const threadPosts = postsInThread[rootId];
-
-        if (!posts[rootId] || !threadPosts) {
-            dispatch(getPostThread(rootId));
-        }
     };
 }
 

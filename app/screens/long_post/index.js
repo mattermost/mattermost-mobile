@@ -4,13 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {getPostThread} from '@actions/views/channel';
 import {selectPost} from '@mm-redux/actions/posts';
 import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {isLandscape} from '@selectors/device';
 
-import {loadThreadIfNecessary} from 'app/actions/views/channel';
-import {isLandscape} from 'app/selectors/device';
 import LongPost from './long_post';
 
 function makeMapStateToProps() {
@@ -32,7 +32,7 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            loadThreadIfNecessary,
+            getPostThread,
             selectPost,
         }, dispatch),
     };
