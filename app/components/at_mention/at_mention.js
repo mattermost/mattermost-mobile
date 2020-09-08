@@ -141,9 +141,9 @@ export default class AtMention extends React.PureComponent {
     render() {
         const {isSearchResult, mentionName, mentionStyle, onPostPress, teammateNameDisplay, textStyle, mentionKeys} = this.props;
         const {user} = this.state;
-        const {backgroundColor, ...styleText} = StyleSheet.flatten(textStyle);
         const mentionTextStyle = [];
 
+        let backgroundColor;
         let canPress = false;
         let highlighted;
         let isMention = false;
@@ -152,6 +152,13 @@ export default class AtMention extends React.PureComponent {
         let onPress;
         let suffix;
         let suffixElement;
+        let styleText;
+
+        if (textStyle) {
+            const {backgroundColor: bg, ...otherStyles} = StyleSheet.flatten(textStyle);
+            backgroundColor = bg;
+            styleText = otherStyles;
+        }
 
         if (user?.username) {
             suffix = this.props.mentionName.substring(user.username.length);
