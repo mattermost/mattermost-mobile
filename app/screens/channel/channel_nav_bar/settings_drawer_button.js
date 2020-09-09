@@ -17,7 +17,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {intlShape} from 'react-intl';
 
-class SettingDrawerButton extends PureComponent {
+export class SettingDrawerButton extends PureComponent {
     static propTypes = {
         openSidebar: PropTypes.func.isRequired,
         theme: PropTypes.object,

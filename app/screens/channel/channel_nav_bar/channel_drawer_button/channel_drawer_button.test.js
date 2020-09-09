@@ -126,4 +126,25 @@ describe('ChannelDrawerButton', () => {
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(-1);
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(0));
     });
+
+    test('Should be accessible', () => {
+        const wrapper = shallowWithIntl(
+            <ChannelDrawerButton {...baseProps}/>,
+        );
+        expect(wrapper.props().accessible).toBeTruthy();
+    });
+
+    test('Should have the correct accessibilityHint', () => {
+        const wrapper = shallowWithIntl(
+            <ChannelDrawerButton {...baseProps}/>,
+        );
+        expect(wrapper.props().accessibilityHint).toEqual('Opens the channels and teams drawer');
+    });
+
+    test('Should have the correct accessibilityLabel', () => {
+        const wrapper = shallowWithIntl(
+            <ChannelDrawerButton {...baseProps}/>,
+        );
+        expect(wrapper.props().accessibilityLabel).toEqual('Channels and teams');
+    });
 });

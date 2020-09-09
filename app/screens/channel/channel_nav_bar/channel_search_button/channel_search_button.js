@@ -52,7 +52,7 @@ export default class ChannelSearchButton extends PureComponent {
 
         const buttonHint = {
             id: t('navbar.search.hint'),
-            defaultMessage: 'Opens the post search modal',
+            defaultMessage: 'Opens the channel search modal',
             description: 'Accessibility helper for explaining what the search button in the channel header will do.',
         };
         const accessibilityHint = formatMessage(buttonHint);
