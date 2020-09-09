@@ -4,12 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {loadChannelsByTeamName} from '@actions/views/channel';
+import {getPostThread} from '@actions/views/post';
 import {selectFocusedPostId, selectPost} from '@mm-redux/actions/posts';
 import {clearSearch, getPinnedPosts} from '@mm-redux/actions/search';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
-import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
-import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
+import {makePreparePostIdsForSearchPosts} from '@selectors/post_list';
 
 import PinnedPosts from './pinned_posts';
 
@@ -32,7 +32,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             clearSearch,
             loadChannelsByTeamName,
-            loadThreadIfNecessary,
+            getPostThread,
             getPinnedPosts,
             selectFocusedPostId,
             selectPost,

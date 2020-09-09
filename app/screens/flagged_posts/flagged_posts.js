@@ -36,7 +36,7 @@ export default class FlaggedPosts extends PureComponent {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             loadChannelsByTeamName: PropTypes.func.isRequired,
-            loadThreadIfNecessary: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired,
             getFlaggedPosts: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
@@ -103,7 +103,7 @@ export default class FlaggedPosts extends PureComponent {
         };
 
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId);
+        actions.getPostThread(rootId);
         actions.selectPost(rootId);
         goToScreen(screen, title, passProps);
     };
@@ -140,10 +140,10 @@ export default class FlaggedPosts extends PureComponent {
             <NoResults
                 description={formatMessage({
                     id: 'mobile.flagged_posts.empty_description',
-                    defaultMessage: 'Flags are a way to mark messages for follow up. Your flags are personal, and cannot be seen by other users.',
+                    defaultMessage: 'Saved messages are only visible to you. Mark messages for follow-up or save something for later by long-pressing a message and choosing Save from the menu.',
                 })}
-                iconName='ios-flag'
-                title={formatMessage({id: 'mobile.flagged_posts.empty_title', defaultMessage: 'No Flagged Posts'})}
+                iconName='ios-bookmark-outline'
+                title={formatMessage({id: 'mobile.flagged_posts.empty_title', defaultMessage: 'No Saved messages yet'})}
                 theme={theme}
             />
         );

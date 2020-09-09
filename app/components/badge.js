@@ -11,6 +11,7 @@ import {
     View,
     ViewPropTypes,
 } from 'react-native';
+import {CHANNEL_ITEM_LARGE_BADGE_MAX_WIDTH, CHANNEL_ITEM_SMALL_BADGE_MAX_WIDTH, LARGE_BADGE_MAX_WIDTH, SMALL_BADGE_MAX_WIDTH} from '@constants/view';
 
 export default class Badge extends PureComponent {
     static defaultProps = {
@@ -27,6 +28,7 @@ export default class Badge extends PureComponent {
         countStyle: Text.propTypes.style,
         minHeight: PropTypes.number,
         minWidth: PropTypes.number,
+        isChannelItem: PropTypes.bool,
         onPress: PropTypes.func,
     };
 
@@ -78,6 +80,12 @@ export default class Badge extends PureComponent {
     onLayout = (e) => {
         if (!this.layoutReady) {
             let width;
+            let maxWidth;
+            if (this.props.isChannelItem) {
+                maxWidth = this.props.count > 99 ? CHANNEL_ITEM_LARGE_BADGE_MAX_WIDTH : CHANNEL_ITEM_SMALL_BADGE_MAX_WIDTH;
+            } else {
+                maxWidth = this.props.count > 99 ? LARGE_BADGE_MAX_WIDTH : SMALL_BADGE_MAX_WIDTH;
+            }
 
             if (e.nativeEvent.layout.width <= e.nativeEvent.layout.height) {
                 width = e.nativeEvent.layout.height;
@@ -86,11 +94,13 @@ export default class Badge extends PureComponent {
             }
             width = Math.max(this.props.count < 10 ? width : width + 10, this.props.minWidth);
             const borderRadius = width / 2;
+
             this.setNativeProps({
                 style: {
                     width,
                     borderRadius,
                     opacity: 1,
+                    maxWidth,
                 },
             });
             this.layoutReady = true;
@@ -106,11 +116,7 @@ export default class Badge extends PureComponent {
                 <View
                     style={[styles.text, this.props.countStyle]}
                     onLayout={this.onLayout}
-                >
-                    <View style={styles.verticalAlign}>
-                        <View style={[styles.unreadIndicator, {backgroundColor: this.props.countStyle.color}]}/>
-                    </View>
-                </View>
+                />
             );
         } else {
             let mentionCount = count;

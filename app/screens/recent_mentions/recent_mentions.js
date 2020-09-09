@@ -36,13 +36,11 @@ export default class RecentMentions extends PureComponent {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
             loadChannelsByTeamName: PropTypes.func.isRequired,
-            loadThreadIfNecessary: PropTypes.func.isRequired,
+            getPostThread: PropTypes.func.isRequired,
             getRecentMentions: PropTypes.func.isRequired,
             selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
-        didFail: PropTypes.bool,
-        isLoading: PropTypes.bool,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
     };
@@ -99,7 +97,7 @@ export default class RecentMentions extends PureComponent {
         };
 
         Keyboard.dismiss();
-        actions.loadThreadIfNecessary(rootId);
+        actions.getPostThread(rootId);
         actions.selectPost(rootId);
         goToScreen(screen, title, passProps);
     };
@@ -142,10 +140,11 @@ export default class RecentMentions extends PureComponent {
             <NoResults
                 description={formatMessage({
                     id: 'mobile.recent_mentions.empty_description',
-                    defaultMessage: 'Messages containing your username and other words that trigger mentions will appear here.',
+                    defaultMessage: 'Messages where someone mentions you or includes your trigger words are saved here.',
                 })}
-                iconName='ios-at'
-                title={formatMessage({id: 'mobile.recent_mentions.empty_title', defaultMessage: 'No Recent Mentions'})}
+                iconName='at'
+                iconType='material-community'
+                title={formatMessage({id: 'mobile.recent_mentions.empty_title', defaultMessage: 'No Mentions yet'})}
                 theme={theme}
             />
         );

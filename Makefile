@@ -1,6 +1,5 @@
 .PHONY: pre-run pre-build clean
 .PHONY: check-style
-.PHONY: i18n-extract-ci
 .PHONY: start stop
 .PHONY: run run-ios run-android
 .PHONY: build build-ios build-android unsigned-ios unsigned-android ios-sim-x86_64
@@ -161,20 +160,20 @@ run-android: | check-device-android pre-run prepare-android-build ## Runs the ap
 		fi; \
     fi
 
-build: | stop pre-build check-style i18n-extract-ci ## Builds the app for Android & iOS
+build: | stop pre-build check-style ## Builds the app for Android & iOS
 	$(call start_packager)
 	@echo "Building App"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build
 	$(call stop_packager)
 
 
-build-ios: | stop pre-build check-style i18n-extract-ci ## Builds the iOS app
+build-ios: | stop pre-build check-style ## Builds the iOS app
 	$(call start_packager)
 	@echo "Building iOS app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane ios build
 	$(call stop_packager)
 
-build-android: | stop pre-build check-style i18n-extract-ci prepare-android-build ## Build the Android app
+build-android: | stop pre-build check-style prepare-android-build ## Build the Android app
 	$(call start_packager)
 	@echo "Building Android app"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane android build
@@ -197,7 +196,7 @@ unsigned-android: stop pre-build check-style prepare-android-build ## Build an u
 test: | pre-run check-style ## Runs tests
 	@npm test
 
-build-pr: | can-build-pr stop pre-build check-style i18n-extract-ci ## Build a PR from the mattermost-mobile repo
+build-pr: | can-build-pr stop pre-build check-style ## Build a PR from the mattermost-mobile repo
 	$(call start_packager)
 	@echo "Building App from PR ${PR_ID}"
 	@cd fastlane && BABEL_ENV=production NODE_ENV=production bundle exec fastlane build_pr pr:PR-${PR_ID}
@@ -208,18 +207,6 @@ can-build-pr:
 		echo a PR number needs to be specified; \
 		exit 1; \
 	fi
-
-i18n-extract: ## Extract strings for translation from the source code
-	npm run mmjstool -- i18n extract-mobile
-
-i18n-extract-ci:
-	mkdir -p tmp
-	cp assets/base/i18n/en.json tmp/en.json
-	mkdir -p tmp/fake-webapp-dir/i18n/
-	echo '{}' > tmp/fake-webapp-dir/i18n/en.json
-	npm run mmjstool -- i18n extract-mobile --webapp-dir tmp/fake-webapp-dir --mobile-dir .
-	diff tmp/en.json assets/base/i18n/en.json
-	rm -rf tmp
 
 ## Help documentation https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:

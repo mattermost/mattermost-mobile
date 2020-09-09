@@ -50,7 +50,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
         if (this.state.drawerOpened && this.drawerRef?.current) {
             this.drawerRef.current.closeDrawer();
         } else if (this.drawerSwiper && DeviceTypes.IS_TABLET) {
-            this.resetDrawer(true);
+            this.resetDrawer();
         }
     };
 
@@ -124,6 +124,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
 
         return (
             <DrawerLayout
+                testID={this.props.testID}
                 ref={this.drawerRef}
                 renderNavigationView={this.renderNavigationView}
                 onDrawerClose={this.handleDrawerClose}

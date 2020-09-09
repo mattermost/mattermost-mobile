@@ -156,6 +156,9 @@ export default class MainSidebarBase extends Component {
 
     onSearchEnds = () => {
         this.setState({searching: false});
+        if (this.drawerRef?.current) {
+            this.drawerRef.current.canClose = true;
+        }
     };
 
     onSearchStart = () => {

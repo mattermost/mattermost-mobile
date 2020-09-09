@@ -28,6 +28,12 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       emojiName="smile"
       padding={5}
       size={16}
+      textStyle={
+        Object {
+          "color": "#000",
+          "fontWeight": "bold",
+        }
+      }
     />
     <Text
       style={
@@ -50,6 +56,12 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
     emojiName="smile"
     padding={5}
     size={16}
+    textStyle={
+      Object {
+        "color": "#000",
+        "fontWeight": "bold",
+      }
+    }
   />
   <Text
     style={

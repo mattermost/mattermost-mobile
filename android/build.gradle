@@ -66,5 +66,8 @@ allprojects {
         maven { 
             url ("https://dl.bintray.com/rudderstack/rudderstack")
         }
+        maven {
+            url "$rootDir/../node_modules/detox/Detox-android"
+        }
     }
 }
