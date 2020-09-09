@@ -74,6 +74,8 @@ export default class PostInput extends PureComponent {
         if (Platform.OS === 'android') {
             Keyboard.removeListener('keyboardDidHide', this.handleAndroidKeyboard);
         }
+
+        this.changeDraft(this.getValue());
     }
 
     blur = () => {
