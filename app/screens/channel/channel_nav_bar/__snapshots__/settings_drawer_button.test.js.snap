@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ChannelSearchButton should match, full snapshot 1`] = `
+exports[`SettingDrawerButton should match, full snapshot 1`] = `
 <ForwardRef
   accessibilityHint="Opens the more options right hand sidebar"
   accessibilityLabel="More Options"
