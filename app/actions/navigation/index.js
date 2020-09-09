@@ -13,8 +13,6 @@ import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
 import {NavigationTypes} from '@constants';
 
-const CHANNEL_SCREEN = 'Channel';
-
 function getThemeFromState() {
     const state = Store.redux?.getState() || {};
 
@@ -29,8 +27,8 @@ export function resetToChannel(passProps = {}) {
     const stack = {
         children: [{
             component: {
-                id: CHANNEL_SCREEN,
-                name: CHANNEL_SCREEN,
+                id: NavigationTypes.CHANNEL_SCREEN,
+                name: NavigationTypes.CHANNEL_SCREEN,
                 passProps,
                 options: {
                     layout: {
@@ -87,6 +85,8 @@ export function resetToChannel(passProps = {}) {
 
 export function resetToSelectServer(allowOtherServers) {
     const theme = Preferences.THEMES.default;
+
+    EphemeralStore.clearNavigationComponents();
 
     Navigation.setRoot({
         root: {
@@ -149,6 +149,8 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
             },
         },
     };
+
+    EphemeralStore.clearNavigationComponents();
 
     Navigation.setRoot({
         root: {
@@ -427,7 +429,7 @@ export function closeMainSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(CHANNEL_SCREEN, {
+    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
         sideMenu: {
             left: {visible: false},
         },
@@ -439,7 +441,7 @@ export function enableMainSideMenu(enabled, visible = true) {
         return;
     }
 
-    Navigation.mergeOptions(CHANNEL_SCREEN, {
+    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
         sideMenu: {
             left: {enabled, visible},
         },
@@ -452,7 +454,7 @@ export function openSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(CHANNEL_SCREEN, {
+    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
         sideMenu: {
             right: {visible: true},
         },
@@ -465,7 +467,7 @@ export function closeSettingsSideMenu() {
     }
 
     Keyboard.dismiss();
-    Navigation.mergeOptions(CHANNEL_SCREEN, {
+    Navigation.mergeOptions(NavigationTypes.CHANNEL_SCREEN, {
         sideMenu: {
             right: {visible: false},
         },
