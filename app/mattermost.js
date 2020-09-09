@@ -124,7 +124,9 @@ export function componentDidAppearListener({componentId}) {
 }
 
 export function componentDidDisappearListener({componentId}) {
-    EphemeralStore.removeNavigationComponentId(componentId);
+    if (componentId !== NavigationTypes.CHANNEL_SCREEN) {
+        EphemeralStore.removeNavigationComponentId(componentId);
+    }
 
     if (componentId === 'MainSidebar') {
         EventEmitter.emit(NavigationTypes.MAIN_SIDEBAR_DID_CLOSE);
