@@ -4,8 +4,18 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {updateChannelNotifyProps} from '@mm-redux/actions/channels';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {isLandscape} from 'app/selectors/device';
 
 import ChannelNotificationPreference from './channel_notification_preference';
+
+function mapStateToProps(state) {
+    const theme = getTheme(state);
+    return {
+        theme,
+        isLandscape: isLandscape(state),
+    };
+}
 
 const mapDispatchToProps = (dispatch) => ({
     actions: bindActionCreators({
@@ -13,4 +23,4 @@ const mapDispatchToProps = (dispatch) => ({
     }, dispatch),
 });
 
-export default connect(null, mapDispatchToProps)(ChannelNotificationPreference);
+export default connect(mapStateToProps, mapDispatchToProps)(ChannelNotificationPreference);
