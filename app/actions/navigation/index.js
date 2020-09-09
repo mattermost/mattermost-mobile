@@ -86,6 +86,8 @@ export function resetToChannel(passProps = {}) {
 export function resetToSelectServer(allowOtherServers) {
     const theme = Preferences.THEMES.default;
 
+    EphemeralStore.clearNavigationComponents();
+
     Navigation.setRoot({
         root: {
             stack: {
@@ -147,6 +149,8 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
             },
         },
     };
+
+    EphemeralStore.clearNavigationComponents();
 
     Navigation.setRoot({
         root: {
