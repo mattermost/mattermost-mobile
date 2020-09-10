@@ -14,6 +14,8 @@
     <string name="allowOtherServers_description">Allow the user to change the above server URL.</string>
     <string name="username_title">Default Username</string>
     <string name="username_description">Set the username or email address to use to authenticate against the Mattermost Server.</string>
+    <string name="timeout_title">Default Request Timeout</string>
+    <string name="timeout_description">How long in milliseconds the mobile app should wait for the server to respond.</string>
     <string name="vendor_title">EMM Vendor or Company Name</string>
     <string name="vendor_description">Name of the EMM vendor or company deploying the app. Used in help text when prompting for passcodes so users are aware why the app is being protected.</string>
 </resources>

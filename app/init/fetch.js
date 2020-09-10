@@ -20,10 +20,16 @@ import mattermostManaged from 'app/mattermost_managed';
 
 export const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
 export const HEADER_TOKEN = 'Token';
+const DEFAULT_TIMEOUT = 5000;
 
 let managedConfig;
 
 mattermostManaged.addEventListener('managedConfigDidChange', (config) => {
+    if (config.timeout !== managedConfig?.timeout) {
+        initFetchConfig();
+        return;
+    }
+
     managedConfig = config;
 });
 
@@ -150,11 +156,16 @@ Client4.doFetchWithResponse = async (url, options) => {
 const initFetchConfig = async () => {
     const fetchConfig = {
         auto: true,
-        timeout: 5000, // Set the base timeout for every request to 5s
+        timeout: DEFAULT_TIMEOUT, // Set the base timeout for every request to 5s
     };
 
     try {
         managedConfig = await mattermostManaged.getConfig();
+
+        if (managedConfig?.timeout) {
+            const timeout = parseInt(managedConfig.timeout, 10);
+            fetchConfig.timeout = timeout || DEFAULT_TIMEOUT;
+        }
     } catch {
         // no managed config
     }
