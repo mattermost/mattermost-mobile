@@ -36,6 +36,9 @@
  - Fixed an issue where using keyboard dictation sent a blank message.
  - Fixed an issue where users were unable to swipe to close the left-hand side after closing the keyboard.
  - Fixed an issue where the channel info screen ``This channel has guests`` text was out of safe area.
+ 
+### Known Issues
+ - Some Android devices running Android 11 may notice some choppiness in certain animations.
 
 ## 1.34.1 Release
 - Release Date: August 27, 2020
