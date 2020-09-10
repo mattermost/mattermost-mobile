@@ -48,7 +48,7 @@
             android:title="@string/timeout_title"
             android:description="@string/timeout_description"
             android:restrictionType="string"
-            android:defaultValue="5000" />
+            android:defaultValue="10000" />
     <restriction
             android:key="vendor"
             android:title="@string/vendor_title"

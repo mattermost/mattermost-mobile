@@ -20,7 +20,7 @@ import mattermostManaged from 'app/mattermost_managed';
 
 export const HEADER_X_CLUSTER_ID = 'X-Cluster-Id';
 export const HEADER_TOKEN = 'Token';
-const DEFAULT_TIMEOUT = 5000;
+const DEFAULT_TIMEOUT = 10000;
 
 let managedConfig;
 
