@@ -25,11 +25,10 @@ const DEFAULT_TIMEOUT = 10000;
 let managedConfig;
 
 mattermostManaged.addEventListener('managedConfigDidChange', (config) => {
-    if (config.timeout !== managedConfig?.timeout) {
+    if (config?.timeout !== managedConfig?.timeout) {
         initFetchConfig();
         return;
     }
-
     managedConfig = config;
 });
 
