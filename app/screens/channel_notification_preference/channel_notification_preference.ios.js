@@ -11,6 +11,7 @@ import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ChannelNotificationPreferenceBase from './channel_notification_preference_base';
 
 export default class ChannelNotificationPreferenceIos extends ChannelNotificationPreferenceBase {
@@ -30,7 +31,7 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                     <FormattedText
                         id='channel_notifications.preference.header'
                         defaultMessage='Send Notifications'
-                        style={style.header}
+                        style={[style.header, padding(isLandscape)]}
                     />
                     <ScrollView
                         contentContainerStyle={style.scrollView}
