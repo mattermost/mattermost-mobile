@@ -6,7 +6,7 @@ import {
     ScrollView,
     View,
 } from 'react-native';
-
+import SafeAreaView from 'app/components/safe_area_view';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import SectionItem from 'app/screens/settings/section_item';
@@ -21,41 +21,46 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
         const items = this.getItems();
 
         return (
-            <View style={style.container}>
-                <StatusBar/>
-                <FormattedText
-                    id='channel_notifications.preference.header'
-                    defaultMessage='Send Notifications'
-                    style={style.header}
-                />
-                <ScrollView
-                    contentContainerStyle={style.scrollView}
-                    alwaysBounceVertical={false}
-                >
-                    <View style={style.contentContainer}>
-                        {items.map((item) => (
-                            <View key={item.id}>
-                                <View style={style.divider}/>
-                                <SectionItem
-                                    label={(
-                                        <FormattedText
-                                            id={item.id}
-                                            defaultMessage={item.defaultMessage}
-                                        />
-                                    )}
-                                    action={this.handlePress}
-                                    actionType='select'
-                                    actionValue={item.value}
-                                    selected={item.checked}
-                                    theme={theme}
-                                    isLandscape={isLandscape}
-                                />
-                            </View>),
-                        )}
-                        <View style={style.divider}/>
-                    </View>
-                </ScrollView>
-            </View>
+            <SafeAreaView
+                excludeHeader={true}
+                excludeFooter={true}
+            >
+                <View style={style.container}>
+                    <StatusBar/>
+                    <FormattedText
+                        id='channel_notifications.preference.header'
+                        defaultMessage='Send Notifications'
+                        style={style.header}
+                    />
+                    <ScrollView
+                        contentContainerStyle={style.scrollView}
+                        alwaysBounceVertical={false}
+                    >
+                        <View style={style.contentContainer}>
+                            {items.map((item) => (
+                                <View key={item.id}>
+                                    <View style={style.divider}/>
+                                    <SectionItem
+                                        label={(
+                                            <FormattedText
+                                                id={item.id}
+                                                defaultMessage={item.defaultMessage}
+                                            />
+                                        )}
+                                        action={this.handlePress}
+                                        actionType='select'
+                                        actionValue={item.value}
+                                        selected={item.checked}
+                                        theme={theme}
+                                        isLandscape={isLandscape}
+                                    />
+                                </View>),
+                            )}
+                            <View style={style.divider}/>
+                        </View>
+                    </ScrollView>
+                </View>
+            </SafeAreaView>
         );
     }
 }
