@@ -33,9 +33,11 @@ export default class RemoveMarkdown extends React.PureComponent {
                 del: Renderer.forwardChildren,
                 code: Renderer.forwardChildren,
                 link: Renderer.forwardChildren,
+                image: this.renderNull,
                 atMention: Renderer.forwardChildren,
                 channelLink: Renderer.forwardChildren,
                 emoji: this.renderNull,
+                hashtag: Renderer.forwardChildren,
 
                 paragraph: Renderer.forwardChildren,
                 heading: Renderer.forwardChildren,
@@ -55,6 +57,9 @@ export default class RemoveMarkdown extends React.PureComponent {
                 table: this.renderNull,
                 table_row: this.renderNull,
                 table_cell: this.renderNull,
+
+                mention_highlight: Renderer.forwardChildren,
+                editedIndicator: Renderer.forwardChildren,
             },
         });
     };
