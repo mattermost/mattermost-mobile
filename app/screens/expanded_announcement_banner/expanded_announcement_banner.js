@@ -6,12 +6,12 @@ import React from 'react';
 import {ScrollView, View} from 'react-native';
 import Button from 'react-native-button';
 
-import FormattedText from 'app/components/formatted_text';
-import Markdown from 'app/components/markdown';
-import SafeAreaView from 'app/components/safe_area_view';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {popTopScreen} from 'app/actions/navigation';
+import {popTopScreen} from '@actions/navigation';
+import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+import SafeAreaView from '@components/safe_area_view';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ExpandedAnnouncementBanner extends React.PureComponent {
     static propTypes = {
@@ -20,6 +20,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
         }).isRequired,
         allowDismissal: PropTypes.bool.isRequired,
         bannerText: PropTypes.string.isRequired,
+        isLandscape: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     }
 
@@ -38,10 +39,11 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
     };
 
     render() {
-        const style = getStyleSheet(this.props.theme);
+        const {allowDismissal, isLandscape, theme} = this.props;
+        const style = getStyleSheet(theme);
 
         let dismissButton = null;
-        if (this.props.allowDismissal) {
+        if (allowDismissal) {
             dismissButton = (
                 <View style={style.dismissContainer}>
                     <Button
@@ -59,7 +61,10 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
         }
 
         return (
-            <SafeAreaView useLandscapeMargin={true}>
+            <SafeAreaView
+                excludeHeader={true}
+                useLandscapeMargin={isLandscape}
+            >
                 <View style={style.container}>
                     <ScrollView
                         style={style.scrollContainer}
@@ -67,9 +72,9 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
                     >
                         <Markdown
                             baseTextStyle={style.baseTextStyle}
-                            blockStyles={getMarkdownBlockStyles(this.props.theme)}
+                            blockStyles={getMarkdownBlockStyles(theme)}
                             onChannelLinkPress={this.handleChannelLinkPress}
-                            textStyles={getMarkdownTextStyles(this.props.theme)}
+                            textStyles={getMarkdownTextStyles(theme)}
                             value={this.props.bannerText}
                         />
                     </ScrollView>
