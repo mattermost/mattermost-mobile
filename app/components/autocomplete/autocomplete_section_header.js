@@ -16,7 +16,7 @@ export default class AutocompleteSectionHeader extends PureComponent {
         loading: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
-        isFirstSection: PropTypes.bool,
+        isFirstSection: PropTypes.string,
     };
 
     static defaultProps = {
@@ -36,8 +36,8 @@ export default class AutocompleteSectionHeader extends PureComponent {
             <View style={style.sectionWrapper}>
                 <View style={sectionStyles}>
                     <FormattedText
-                        id={id.toUpperCase()}
-                        defaultMessage={defaultMessage.toUpperCase()}
+                        id={id}
+                        defaultMessage={defaultMessage}
                         style={style.sectionText}
                     />
                     {loading &&
@@ -67,6 +67,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         sectionText: {
             fontSize: 12,
             fontWeight: '600',
+            textTransform: 'uppercase',
             color: changeOpacity(theme.centerChannelColor, 0.56),
             paddingTop: 16,
             paddingBottom: 8,
