@@ -206,7 +206,12 @@ export default class EditChannelInfo extends PureComponent {
             saving,
         } = this.props;
         const {keyboardVisible, keyboardPosition} = this.state;
-        const autocompleteOffset = Platform.OS === 'ios' ? keyboardPosition : 0;
+        const bottomStyle = {
+            bottom: Platform.select({
+                ios: keyboardPosition,
+                android: 0,
+            }),
+        };
         const style = getStyleSheet(theme);
 
         const displayHeaderOnly = channelType === General.DM_CHANNEL ||
@@ -358,7 +363,7 @@ export default class EditChannelInfo extends PureComponent {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAwareScrollView>
-                <View style={[style.autocompleteContainer, {bottom: autocompleteOffset}]}>
+                <View style={[style.autocompleteContainer, bottomStyle]}>
                     <Autocomplete
                         cursorPosition={header.length}
                         maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
