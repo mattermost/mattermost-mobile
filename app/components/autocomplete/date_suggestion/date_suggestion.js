@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Dimensions, Platform, StyleSheet} from 'react-native';
+import {Dimensions, Platform, StyleSheet, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList, LocaleConfig} from 'react-native-calendars';
 import {intlShape} from 'react-intl';
@@ -46,11 +46,26 @@ export default class DateSuggestion extends PureComponent {
         this.setCalendarLocale();
     }
 
+    onLayout = (e) => {
+        this.setState({calendarWidth: e.nativeEvent.layout.width});
+    };
+
     componentDidUpdate(prevProps) {
-        const {locale, matchTerm} = this.props;
+        const {locale, matchTerm, enableDateSuggestion} = this.props;
+        const {mentionComplete} = this.state;
 
         if ((matchTerm !== prevProps.matchTerm && matchTerm === null) || this.state.mentionComplete) {
             this.resetComponent();
+        }
+
+        if (matchTerm === null || mentionComplete || !enableDateSuggestion) {
+            this.setCalendarActive(false);
+            return;
+        }
+
+        if (matchTerm !== null) {
+            this.props.onResultCountChange(1);
+            this.setCalendarActive(true);
         }
 
         if (locale !== prevProps.locale) {
@@ -58,21 +73,8 @@ export default class DateSuggestion extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {mentionComplete} = this.state;
-        if (nextProps.matchTerm === null || mentionComplete || !this.props.enableDateSuggestion) {
-            this.setState({
-                active: false,
-            });
-            return;
-        }
-
-        if (nextProps.matchTerm !== null) {
-            this.props.onResultCountChange(1);
-            this.setState({
-                active: true,
-            });
-        }
+    setCalendarActive = (active) => {
+        this.setState({active});
     }
 
     completeMention = (day) => {
@@ -136,7 +138,7 @@ export default class DateSuggestion extends PureComponent {
     };
 
     render() {
-        const {active} = this.state;
+        const {active, calendarWidth} = this.state;
         const {theme} = this.props;
 
         if (!active) {
@@ -149,22 +151,29 @@ export default class DateSuggestion extends PureComponent {
         const calendarStyle = calendarTheme(theme);
 
         return (
-            <CalendarList
+            <View
+                onLayout={this.onLayout}
                 style={styles.calList}
-                current={currentDate}
-                maxDate={currentDate}
-                pastScrollRange={24}
-                futureScrollRange={0}
-                scrollingEnabled={true}
-                pagingEnabled={true}
-                hideArrows={false}
-                horizontal={true}
-                showScrollIndicator={true}
-                onDayPress={this.completeMention}
-                showWeekNumbers={false}
-                theme={calendarStyle}
-                keyboardShouldPersistTaps='always'
-            />
+            >
+                {Boolean(calendarWidth) &&
+                <CalendarList
+                    current={currentDate}
+                    maxDate={currentDate}
+                    pastScrollRange={24}
+                    futureScrollRange={0}
+                    scrollingEnabled={true}
+                    calendarWidth={calendarWidth}
+                    pagingEnabled={true}
+                    hideArrows={false}
+                    horizontal={true}
+                    showScrollIndicator={true}
+                    onDayPress={this.completeMention}
+                    showWeekNumbers={false}
+                    theme={calendarStyle}
+                    keyboardShouldPersistTaps='always'
+                />
+                }
+            </View>
         );
     }
 }
@@ -217,5 +226,6 @@ const styles = StyleSheet.create({
     calList: {
         height: 1700,
         paddingTop: 5,
+        width: '100%',
     },
 });
