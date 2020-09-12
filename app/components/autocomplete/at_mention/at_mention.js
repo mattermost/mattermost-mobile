@@ -207,12 +207,14 @@ export default class AtMention extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
+        const isFirstSection = section.id === this.state.sections[0].id;
         return (
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
                 theme={this.props.theme}
                 isLandscape={this.props.isLandscape}
+                isFirstSection={isFirstSection}
             />
         );
     };

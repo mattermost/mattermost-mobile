@@ -16,6 +16,7 @@ export default class AutocompleteSectionHeader extends PureComponent {
         loading: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        isFirstSection: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -23,11 +24,17 @@ export default class AutocompleteSectionHeader extends PureComponent {
     };
 
     render() {
-        const {defaultMessage, id, loading, theme, isLandscape} = this.props;
+        const {defaultMessage, id, loading, theme, isLandscape, isFirstSection} = this.props;
         const style = getStyleFromTheme(theme);
+        const sectionStyles = [style.section, padding(isLandscape)];
+
+        if (!isFirstSection) {
+            sectionStyles.push(style.borderTop);
+        }
+
         return (
             <View style={style.sectionWrapper}>
-                <View style={[style.section, padding(isLandscape)]}>
+                <View style={sectionStyles}>
                     <FormattedText
                         id={id.toUpperCase()}
                         defaultMessage={defaultMessage.toUpperCase()}
@@ -47,12 +54,14 @@ export default class AutocompleteSectionHeader extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        borderTop: {
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+        },
         section: {
             justifyContent: 'center',
             position: 'relative',
             top: -1,
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
             flexDirection: 'row',
         },
         sectionText: {
