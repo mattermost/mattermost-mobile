@@ -25,7 +25,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
+    const {action, defaultMessage, detail, icon, iconSize, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -34,13 +34,16 @@ function channelInfoRow(props) {
     const style = getStyleSheet(theme);
 
     let iconElement = null;
+    let iSize = iconSize;
+    if (!iSize) {
+        iSize = 15;
+    }
     if (image == null) {
         iconElement = (
             <Icon
                 name={icon}
-                size={15}
+                size={iSize}
                 color={iconColor || changeOpacity(theme.centerChannelColor, 0.5)}
-                style={style.leftIcon}
             />
         );
     } else {
@@ -72,7 +75,9 @@ function channelInfoRow(props) {
 
     const RowComponent = (
         <View style={[style.container, padding(isLandscape)]}>
-            {iconElement}
+            <View style={style.iconContainer}>
+                {iconElement}
+            </View>
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
                 id={textId}
@@ -100,6 +105,7 @@ channelInfoRow.propTypes = {
     ]),
     icon: PropTypes.string,
     iconColor: PropTypes.string,
+    iconSize: PropTypes.number,
     image: PropTypes.number,
     imageTintColor: PropTypes.string,
     isLandscape: PropTypes.bool,
@@ -134,6 +140,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 15,
             fontSize: 15,
             paddingVertical: 15,
+        },
+        iconContainer: {
+            width: 17,
+            height: 17,
+            justifyContent: 'center',
+            alignItems: 'center',
         },
         leftIcon: {
             width: 17,

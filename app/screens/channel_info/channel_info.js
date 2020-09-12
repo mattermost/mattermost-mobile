@@ -15,6 +15,7 @@ import StatusBar from '@components/status_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddMembers from './add_members';
+import NotificationPreference from './notification_preference';
 import Archive from './archive';
 import ChannelInfoHeader from './channel_info_header';
 import ConvertPrivate from './convert_private';
@@ -137,6 +138,11 @@ export default class ChannelInfo extends PureComponent {
                 <Separator theme={theme}/>
                 <IgnoreMentions
                     channelId={currentChannel.id}
+                    isLandscape={isLandscape}
+                    theme={theme}
+                />
+                <Separator theme={theme}/>
+                <NotificationPreference
                     isLandscape={isLandscape}
                     theme={theme}
                 />
