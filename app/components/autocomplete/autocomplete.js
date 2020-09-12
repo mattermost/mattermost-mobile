@@ -191,7 +191,6 @@ export default class Autocomplete extends PureComponent {
 
         if (isSearch) {
             wrapperStyles.push(style.base, style.searchContainer, {height: maxListHeight});
-            containerStyles.push(style.content);
         } else {
             const containerStyle = {bottom: offsetY};
             containerStyles.push(style.base, containerStyle);
@@ -272,14 +271,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             overflow: 'hidden',
             borderRadius: 4,
         },
-        content: {
-            flex: 1,
-        },
         hidden: {
             display: 'none',
         },
         searchContainer: {
-            flex: 1,
             ...Platform.select({
                 android: {
                     top: 46,
