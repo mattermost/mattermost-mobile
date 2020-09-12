@@ -28,6 +28,7 @@ export default class AtMentionItem extends PureComponent {
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isCurrentUser: PropTypes.bool.isRequired,
+        showFullName: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -40,11 +41,24 @@ export default class AtMentionItem extends PureComponent {
         onPress(username);
     };
 
+    renderNameBlock = () => {
+        let name = '';
+        const {showFullName, firstName, lastName, nickname} = this.props;
+        const hasNickname = nickname.length > 0;
+
+        if (showFullName === 'true') {
+            name += `${firstName} ${lastName} `;
+        }
+
+        if (hasNickname) {
+            name += `(${nickname})`;
+        }
+
+        return name;
+    }
+
     render() {
         const {
-            firstName,
-            lastName,
-            nickname,
             userId,
             username,
             theme,
@@ -55,8 +69,7 @@ export default class AtMentionItem extends PureComponent {
         } = this.props;
 
         const style = getStyleFromTheme(theme);
-        const hasFullName = firstName.length > 0 && lastName.length > 0;
-        const hasNickname = nickname.length > 0;
+        const name = this.renderNameBlock();
 
         return (
             <TouchableWithFeedback
@@ -88,8 +101,7 @@ export default class AtMentionItem extends PureComponent {
                         style={style.rowFullname}
                         numberOfLines={1}
                     >
-                        {hasFullName && `${firstName} ${lastName} `}
-                        {hasNickname && `(${nickname}) `}
+                        {name}
                         {isCurrentUser &&
                         <FormattedText
                             id='suggestion.mention.you'
