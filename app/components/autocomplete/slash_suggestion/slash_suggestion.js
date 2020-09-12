@@ -223,6 +223,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         listView: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
+            paddingTop: 8,
         },
     };
 });
