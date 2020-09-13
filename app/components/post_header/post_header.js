@@ -8,15 +8,15 @@ import {
     View,
 } from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
-import FormattedTime from 'app/components/formatted_time';
-import FormattedDate from 'app/components/formatted_date';
-import ReplyIcon from 'app/components/reply_icon';
-import Tag, {BotTag, GuestTag} from 'app/components/tag';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {emptyFunction} from 'app/utils/general';
-import {t} from 'app/utils/i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import FormattedTime from '@components/formatted_time';
+import FormattedDate from '@components/formatted_date';
+import Tag, {BotTag, GuestTag} from '@components/tag';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {emptyFunction} from '@utils/general';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class PostHeader extends PureComponent {
     static propTypes = {
@@ -233,9 +233,9 @@ export default class PostHeader extends PureComponent {
                     style={style.replyIconContainer}
                     type={'opacity'}
                 >
-                    <ReplyIcon
-                        height={16}
-                        width={16}
+                    <CompassIcon
+                        name='reply-outline'
+                        size={18}
                         color={theme.linkColor}
                     />
                     {!isSearchResult &&

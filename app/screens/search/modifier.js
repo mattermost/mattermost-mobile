@@ -4,12 +4,11 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, TouchableHighlight, View} from 'react-native';
-import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-export const MODIFIER_LABEL_HEIGHT = 58;
+export const MODIFIER_LABEL_HEIGHT = 68;
 
 export default class Modifier extends PureComponent {
     static propTypes = {
@@ -42,11 +41,12 @@ export default class Modifier extends PureComponent {
                 <View style={style.modifierItemContainer}>
                     <View style={[style.modifierItemWrapper, padding(isLandscape)]}>
                         <View style={style.modifierItemLabelContainer}>
-                            <View style={style.modifierLabelIconContainer}>
-                                <AwesomeIcon
-                                    style={style.modifierLabelIcon}
-                                    name='plus-square-o'
-                                />
+                            <View style={style.modifierLabelValueContainer}>
+                                <Text
+                                    style={style.modifierLabelValue}
+                                >
+                                    {item.value.toUpperCase()}
+                                </Text>
                             </View>
                             <Text
                                 style={style.modifierItemLabel}
@@ -81,16 +81,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flexDirection: 'row',
         },
-        modifierLabelIconContainer: {
+        modifierLabelValueContainer: {
             alignItems: 'center',
             marginRight: 5,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 4,
+            paddingHorizontal: 4,
         },
-        modifierLabelIcon: {
-            fontSize: 16,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
+        modifierLabelValue: {
+            fontSize: 10,
+            color: theme.centerChannelColor,
         },
         modifierItemLabel: {
-            fontSize: 14,
+            fontSize: 15,
             color: theme.centerChannelColor,
         },
         modifierItemDescription: {

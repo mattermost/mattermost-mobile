@@ -3,8 +3,8 @@
 
 import React, {ReactNode} from 'react';
 import {SafeAreaView, View} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome5';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -18,7 +18,7 @@ const ReadOnlyChannnel = ({theme}: ReadOnlyProps): ReactNode => {
     return (
         <SafeAreaView style={style.background}>
             <View style={style.container}>
-                <Icon
+                <CompassIcon
                     name='glasses'
                     style={style.icon}
                     color={theme.centerChannelColor}

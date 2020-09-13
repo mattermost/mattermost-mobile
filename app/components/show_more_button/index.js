@@ -3,13 +3,14 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import FormattedText from 'app/components/formatted_text';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {t} from 'app/utils/i18n';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {t} from '@utils/i18n';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ShowMoreButton extends PureComponent {
     static propTypes = {
@@ -24,18 +25,22 @@ export default class ShowMoreButton extends PureComponent {
     };
 
     renderButton(showMore, style) {
-        let sign = '+';
         let textId = t('post_info.message.show_more');
         let textMessage = 'Show More';
+        let iconName = 'plus';
         if (!showMore) {
-            sign = '-';
             textId = t('post_info.message.show_less');
             textMessage = 'Show Less';
+            iconName = 'minus';
         }
 
         return (
             <View style={style.button}>
-                <Text style={style.sign}>{sign}</Text>
+                <CompassIcon
+                    name={iconName}
+                    size={18}
+                    style={style.sign}
+                />
                 <FormattedText
                     id={textId}
                     defaultMessage={textMessage}
@@ -126,13 +131,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme, showMore) => {
         },
         sign: {
             color: theme.linkColor,
-            fontSize: 16,
-            fontWeight: '600',
-            marginRight: 8,
+            marginRight: 7,
         },
         text: {
             color: theme.linkColor,
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: '600',
         },
         dividerRight: {

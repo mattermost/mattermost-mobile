@@ -13,21 +13,20 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import Octicons from 'react-native-vector-icons/Octicons';
 
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
-import Emoji from 'app/components/emoji';
-import FormattedText from 'app/components/formatted_text';
-import {DeviceTypes} from 'app/constants';
-import {emptyFunction} from 'app/utils/general';
+import CompassIcon from '@components/compass_icon';
+import Emoji from '@components/emoji';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes} from '@constants';
+import {emptyFunction} from '@utils/general';
 import {
     makeStyleSheetFromTheme,
     changeOpacity,
-} from 'app/utils/theme';
-import {compareEmojis} from 'app/utils/emoji_utils';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+} from '@utils/theme';
+import {compareEmojis} from '@utils/emoji_utils';
 import EmojiPickerRow from './emoji_picker_row';
 
 const EMOJI_SIZE = 30;
@@ -431,7 +430,7 @@ export default class EmojiPicker extends PureComponent {
                     onPress={onPress}
                     style={styles.sectionIconContainer}
                 >
-                    <FontAwesomeIcon
+                    <CompassIcon
                         name={section.icon}
                         size={17}
                         style={[styles.sectionIcon, (index === this.state.currentSectionIndex && styles.sectionIconHighlight)]}
@@ -475,9 +474,9 @@ export default class EmojiPicker extends PureComponent {
             <View style={[styles.flex, styles.flexCenter]}>
                 <View style={styles.flexCenter}>
                     <View style={styles.notFoundIcon}>
-                        <Octicons
-                            name='search'
-                            size={60}
+                        <CompassIcon
+                            name='magnify'
+                            size={72}
                             color={theme.buttonBg}
                         />
                     </View>

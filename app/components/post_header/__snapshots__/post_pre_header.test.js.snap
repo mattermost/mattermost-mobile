@@ -27,18 +27,13 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
       }
     }
   >
-    <Image
-      id="flagIcon"
-      source={
-        Object {
-          "testUri": "../../../dist/assets/images/post_header/flag.png",
-        }
-      }
+    <Icon
+      allowFontScaling={false}
+      name="flag-outline"
+      size={14}
       style={
         Object {
-          "height": 11,
-          "tintColor": "#2389d7",
-          "width": 11,
+          "color": "#2389d7",
         }
       }
     />
@@ -96,18 +91,13 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
       }
     }
   >
-    <Image
-      id="pinIcon"
-      source={
-        Object {
-          "testUri": "../../../dist/assets/images/post_header/pin.png",
-        }
-      }
+    <Icon
+      allowFontScaling={false}
+      name="pin-outline"
+      size={14}
       style={
         Object {
-          "height": 11,
-          "tintColor": "#2389d7",
-          "width": 11,
+          "color": "#2389d7",
         }
       }
     />
@@ -118,18 +108,13 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
         }
       }
     />
-    <Image
-      id="flagIcon"
-      source={
-        Object {
-          "testUri": "../../../dist/assets/images/post_header/flag.png",
-        }
-      }
+    <Icon
+      allowFontScaling={false}
+      name="flag-outline"
+      size={14}
       style={
         Object {
-          "height": 11,
-          "tintColor": "#2389d7",
-          "width": 11,
+          "color": "#2389d7",
         }
       }
     />
@@ -185,18 +170,13 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
       }
     }
   >
-    <Image
-      id="pinIcon"
-      source={
-        Object {
-          "testUri": "../../../dist/assets/images/post_header/pin.png",
-        }
-      }
+    <Icon
+      allowFontScaling={false}
+      name="pin-outline"
+      size={14}
       style={
         Object {
-          "height": 11,
-          "tintColor": "#2389d7",
-          "width": 11,
+          "color": "#2389d7",
         }
       }
     />
@@ -250,18 +230,13 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
       }
     }
   >
-    <Image
-      id="flagIcon"
-      source={
-        Object {
-          "testUri": "../../../dist/assets/images/post_header/flag.png",
-        }
-      }
+    <Icon
+      allowFontScaling={false}
+      name="flag-outline"
+      size={14}
       style={
         Object {
-          "height": 11,
-          "tintColor": "#2389d7",
-          "width": 11,
+          "color": "#2389d7",
         }
       }
     />
@@ -315,18 +290,13 @@ exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
       }
     }
   >
-    <Image
-      id="pinIcon"
-      source={
-        Object {
-          "testUri": "../../../dist/assets/images/post_header/pin.png",
-        }
-      }
+    <Icon
+      allowFontScaling={false}
+      name="pin-outline"
+      size={14}
       style={
         Object {
-          "height": 11,
-          "tintColor": "#2389d7",
-          "width": 11,
+          "color": "#2389d7",
         }
       }
     />

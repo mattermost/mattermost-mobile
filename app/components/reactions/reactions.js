@@ -3,15 +3,11 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Image,
-    View,
-} from 'react-native';
+import {View} from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
-import addReactionIcon from '@assets/images/icons/reaction.png';
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -48,7 +44,7 @@ export default class Reactions extends PureComponent {
         const screen = 'AddReaction';
         const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
 
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
             const passProps = {
                 closeButton: source,
                 onEmojiPress: this.handleAddReactionToPost,
@@ -140,8 +136,9 @@ export default class Reactions extends PureComponent {
                     style={[styles.reaction]}
                     type={'opacity'}
                 >
-                    <Image
-                        source={addReactionIcon}
+                    <CompassIcon
+                        name='emoticon-plus-outline'
+                        size={24}
                         style={styles.addReaction}
                     />
                 </TouchableWithFeedback>
@@ -175,9 +172,7 @@ export default class Reactions extends PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         addReaction: {
-            tintColor: changeOpacity(theme.centerChannelColor, 0.5),
-            width: 23,
-            height: 23,
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         reaction: {
             alignItems: 'center',

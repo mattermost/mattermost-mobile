@@ -4,11 +4,12 @@ exports[`ShowMoreButton should match, button snapshot 1`] = `
 <View
   style={Object {}}
 >
-  <Text
+  <Icon
+    allowFontScaling={false}
+    name="plus"
+    size={18}
     style={Object {}}
-  >
-    +
-  </Text>
+  />
   <FormattedText
     defaultMessage="Show More"
     id="post_info.message.show_more"
@@ -21,11 +22,12 @@ exports[`ShowMoreButton should match, button snapshot 2`] = `
 <View
   style={Object {}}
 >
-  <Text
+  <Icon
+    allowFontScaling={false}
+    name="minus"
+    size={18}
     style={Object {}}
-  >
-    -
-  </Text>
+  />
   <FormattedText
     defaultMessage="Show Less"
     id="post_info.message.show_less"
@@ -119,25 +121,24 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
           }
         }
       >
-        <Text
+        <Icon
+          allowFontScaling={false}
+          name="plus"
+          size={18}
           style={
             Object {
               "color": "#2389d7",
-              "fontSize": 16,
-              "fontWeight": "600",
-              "marginRight": 8,
+              "marginRight": 7,
             }
           }
-        >
-          +
-        </Text>
+        />
         <FormattedText
           defaultMessage="Show More"
           id="post_info.message.show_more"
           style={
             Object {
               "color": "#2389d7",
-              "fontSize": 13,
+              "fontSize": 15,
               "fontWeight": "600",
             }
           }

@@ -4,62 +4,70 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     View,
     StyleSheet,
 } from 'react-native';
 
-import audioIcon from '@assets/images/icons/audio.png';
-import codeIcon from '@assets/images/icons/code.png';
-import excelIcon from '@assets/images/icons/excel.png';
-import genericIcon from '@assets/images/icons/generic.png';
-import imageIcon from '@assets/images/icons/image.png';
-import patchIcon from '@assets/images/icons/patch.png';
-import pdfIcon from '@assets/images/icons/pdf.png';
-import pptIcon from '@assets/images/icons/ppt.png';
-import textIcon from '@assets/images/icons/text.png';
-import videoIcon from '@assets/images/icons/video.png';
-import wordIcon from '@assets/images/icons/word.png';
-import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from '@constants/attachment';
 import * as Utils from '@mm-redux/utils/file_utils';
-import {changeOpacity} from '@utils/theme';
 
-const ICON_PATH_FROM_FILE_TYPE = {
-    audio: audioIcon,
-    code: codeIcon,
-    image: imageIcon,
-    other: genericIcon,
-    patch: patchIcon,
-    pdf: pdfIcon,
-    presentation: pptIcon,
-    spreadsheet: excelIcon,
-    text: textIcon,
-    video: videoIcon,
-    word: wordIcon,
+import CompassIcon from '@components/compass_icon';
+
+const BLUE_ICON = '#338AFF';
+const RED_ICON = '#ED522A';
+const GREEN_ICON = '#1CA660';
+const GRAY_ICON = '#999999';
+const FAILED_ICON_NAME_AND_COLOR = ['jumbo-attachment-image-broken', GRAY_ICON];
+const ICON_NAME_AND_COLOR_FROM_FILE_TYPE = {
+    audio: ['jumbo-attachment-audio', BLUE_ICON],
+    code: ['jumbo-attachment-code', BLUE_ICON],
+    image: ['jumbo-attachment-image', BLUE_ICON],
+    smallImage: ['image-outline', BLUE_ICON],
+    other: ['jumbo-attachment-generic', BLUE_ICON],
+    patch: ['jumbo-attachment-patch', BLUE_ICON],
+    pdf: ['jumbo-attachment-pdf', RED_ICON],
+    presentation: ['jumbo-attachment-powerpoint', RED_ICON],
+    spreadsheet: ['jumbo-attachment-excel', GREEN_ICON],
+    text: ['jumbo-attachment-text', GRAY_ICON],
+    video: ['jumbo-attachment-video', BLUE_ICON],
+    word: ['jumbo-attachment-word', BLUE_ICON],
+    zip: ['jumbo-attachment-zip', BLUE_ICON],
 };
 
 export default class FileAttachmentIcon extends PureComponent {
     static propTypes = {
         backgroundColor: PropTypes.string,
-        file: PropTypes.object.isRequired,
-        iconHeight: PropTypes.number,
-        iconWidth: PropTypes.number,
+        failed: PropTypes.bool,
+        defaultImage: PropTypes.bool,
+        smallImage: PropTypes.bool,
+        file: PropTypes.object,
         onCaptureRef: PropTypes.func,
-        wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number,
+        iconColor: PropTypes.string,
+        iconSize: PropTypes.number,
         theme: PropTypes.object,
     };
 
     static defaultProps = {
-        iconHeight: ATTACHMENT_ICON_HEIGHT,
-        iconWidth: ATTACHMENT_ICON_WIDTH,
-        wrapperHeight: ATTACHMENT_ICON_HEIGHT,
-        wrapperWidth: ATTACHMENT_ICON_WIDTH,
+        failed: false,
+        defaultImage: false,
+        smallImage: false,
+        iconSize: 48,
     };
 
-    getFileIconPath(file) {
+    getFileIconNameAndColor(file) {
+        if (this.props.failed) {
+            return FAILED_ICON_NAME_AND_COLOR;
+        }
+
+        if (this.props.defaultImage) {
+            if (this.props.smallImage) {
+                return ICON_NAME_AND_COLOR_FROM_FILE_TYPE.smallImage;
+            }
+
+            return ICON_NAME_AND_COLOR_FROM_FILE_TYPE.image;
+        }
+
         const fileType = Utils.getFileType(file);
-        return ICON_PATH_FROM_FILE_TYPE[fileType] || ICON_PATH_FROM_FILE_TYPE.other;
+        return ICON_NAME_AND_COLOR_FROM_FILE_TYPE[fileType] || ICON_NAME_AND_COLOR_FROM_FILE_TYPE.other;
     }
 
     handleCaptureRef = (ref) => {
@@ -71,18 +79,20 @@ export default class FileAttachmentIcon extends PureComponent {
     };
 
     render() {
-        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth, theme} = this.props;
-        const source = this.getFileIconPath(file);
+        const {backgroundColor, file, iconSize, theme, iconColor} = this.props;
+        const [iconName, defaultIconColor] = this.getFileIconNameAndColor(file);
+        const color = iconColor || defaultIconColor;
         const bgColor = backgroundColor || theme.centerChannelBg || 'transparent';
 
         return (
             <View
                 ref={this.handleCaptureRef}
-                style={[styles.fileIconWrapper, {backgroundColor: bgColor, height: wrapperHeight, width: wrapperWidth}]}
+                style={[styles.fileIconWrapper, {backgroundColor: bgColor}]}
             >
-                <Image
-                    style={{maxHeight: iconHeight, maxWidth: iconWidth, tintColor: changeOpacity(theme.centerChannelColor, 20)}}
-                    source={source}
+                <CompassIcon
+                    name={iconName}
+                    size={iconSize}
+                    color={color}
                 />
             </View>
         );
@@ -91,6 +101,8 @@ export default class FileAttachmentIcon extends PureComponent {
 
 const styles = StyleSheet.create({
     fileIconWrapper: {
+        flex: 1,
+        borderRadius: 4,
         alignItems: 'center',
         justifyContent: 'center',
     },

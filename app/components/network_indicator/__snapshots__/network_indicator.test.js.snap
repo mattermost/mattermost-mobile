@@ -57,7 +57,7 @@ exports[`AttachmentFooter matches snapshot 1`] = `
       <Icon
         allowFontScaling={false}
         color="#FFFFFF"
-        name="md-checkmark"
+        name="check"
         size={20}
       />
     </View>

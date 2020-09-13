@@ -38,11 +38,11 @@ exports[`ChannelTitle should match snapshot 1`] = `
     <Icon
       allowFontScaling={false}
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />
@@ -88,11 +88,11 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
     <Icon
       allowFontScaling={false}
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />
@@ -163,11 +163,11 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
     <Icon
       allowFontScaling={false}
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />
@@ -221,11 +221,11 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
     <Icon
       allowFontScaling={false}
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />

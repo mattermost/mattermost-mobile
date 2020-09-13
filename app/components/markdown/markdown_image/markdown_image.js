@@ -11,10 +11,9 @@ import {
     Text,
     View,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
 import Clipboard from '@react-native-community/clipboard';
 
-import brokenImageIcon from '@assets/images/icons/brokenimage.png';
+import CompassIcon from '@components/compass_icon';
 import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import FormattedText from '@components/formatted_text';
@@ -215,9 +214,9 @@ export default class MarkdownImage extends ImageViewPort {
             }
         } else if (this.state.failed) {
             image = (
-                <FastImage
-                    source={brokenImageIcon}
-                    style={style.brokenImageIcon}
+                <CompassIcon
+                    name='jumbo-attachment-image-broken'
+                    size={24}
                 />
             );
         }

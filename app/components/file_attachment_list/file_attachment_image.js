@@ -8,10 +8,11 @@ import {
     StyleSheet,
 } from 'react-native';
 
-import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ProgressiveImage from '@components/progressive_image';
 import {Client4} from '@mm-redux/client';
 import {changeOpacity} from '@utils/theme';
+
+import FileAttachmentIcon from './file_attachment_icon';
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
 const SMALL_IMAGE_MAX_WIDTH = 48;
@@ -36,10 +37,9 @@ export default class FileAttachmentImage extends PureComponent {
         theme: PropTypes.object,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
-        wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number,
         isSingleImage: PropTypes.bool,
         imageDimensions: PropTypes.object,
+        backgroundColor: PropTypes.string,
     };
 
     static defaultProps = {
@@ -72,11 +72,8 @@ export default class FileAttachmentImage extends PureComponent {
 
     imageProps = (file) => {
         const imageProps = {};
-        const {failed} = this.state;
 
-        if (failed) {
-            imageProps.defaultSource = brokenImageIcon;
-        } else if (file.localPath) {
+        if (file.localPath) {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
@@ -104,7 +101,10 @@ export default class FileAttachmentImage extends PureComponent {
                 style={[
                     wrapperStyle,
                     style.smallImageBorder,
-                    {borderColor: changeOpacity(theme.centerChannelColor, 0.4)},
+                    {
+                        borderColor: changeOpacity(theme.centerChannelColor, 0.4),
+                        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+                    },
                 ]}
             >
                 {this.boxPlaceholder()}
@@ -116,6 +116,7 @@ export default class FileAttachmentImage extends PureComponent {
                         onError={this.handleError}
                         resizeMode={'contain'}
                         resizeMethod={resizeMethod}
+                        isSmallImage={true}
                         {...this.imageProps(file)}
                     />
                 </View>
@@ -124,12 +125,25 @@ export default class FileAttachmentImage extends PureComponent {
     };
 
     render() {
+        const {failed} = this.state;
         const {
             file,
             imageDimensions,
             resizeMethod,
             resizeMode,
+            backgroundColor,
+            theme,
         } = this.props;
+
+        if (failed) {
+            return (
+                <FileAttachmentIcon
+                    failed={failed}
+                    backgroundColor={backgroundColor}
+                    theme={theme}
+                />
+            );
+        }
 
         if (file.height <= SMALL_IMAGE_MAX_HEIGHT || file.width <= SMALL_IMAGE_MAX_WIDTH) {
             return this.renderSmallImage();
@@ -150,6 +164,7 @@ export default class FileAttachmentImage extends PureComponent {
                     onError={this.handleError}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
+                    backgroundColor={backgroundColor}
                     {...imageProps}
                 />
             </View>
@@ -169,7 +184,6 @@ const style = StyleSheet.create({
         paddingBottom: '100%',
     },
     smallImageBorder: {
-        borderWidth: 1,
         borderRadius: 5,
     },
     smallImageOverlay: {

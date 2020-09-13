@@ -6,9 +6,9 @@ import PropTypes from 'prop-types';
 import {Alert, StyleSheet, View} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {showModal, dismissModal} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
 import ReactionPicker from '@components/reaction_picker';
 import SlideUpPanel from '@components/slide_up_panel';
 import {BOTTOM_MARGIN} from '@components/slide_up_panel/slide_up_panel';
@@ -94,7 +94,7 @@ export default class PostOptions extends PureComponent {
 
         if (canReply) {
             const key = 'reply';
-            const icon = 'reply';
+            const icon = 'reply-outline';
             const message = {id: t('mobile.post_info.reply'), defaultMessage: 'Reply'};
             const onPress = this.handleReply;
 
@@ -109,7 +109,7 @@ export default class PostOptions extends PureComponent {
 
         if (canCopyPermalink) {
             const key = 'permalink';
-            const icon = 'link';
+            const icon = 'link-variant';
             const message = {id: t('get_post_link_modal.title'), defaultMessage: 'Copy Link'};
             const onPress = this.handleCopyPermalink;
 
@@ -124,7 +124,7 @@ export default class PostOptions extends PureComponent {
 
         if (canCopyText) {
             const key = 'copy';
-            const icon = 'copy';
+            const icon = 'content-copy';
             const message = {id: t('mobile.post_info.copy_text'), defaultMessage: 'Copy Text'};
             const onPress = this.handleCopyText;
 
@@ -139,7 +139,7 @@ export default class PostOptions extends PureComponent {
 
         if (canDelete) {
             const key = 'delete';
-            const icon = 'trash';
+            const icon = 'trash-can-outline';
             const message = {id: t('post_info.del'), defaultMessage: 'Delete'};
             const onPress = this.handlePostDelete;
             const destructive = true;
@@ -155,7 +155,7 @@ export default class PostOptions extends PureComponent {
 
         if (canEdit && (canEditUntil === -1 || canEditUntil > Date.now())) {
             const key = 'edit';
-            const icon = 'edit';
+            const icon = 'pencil-outline';
             const message = {id: t('post_info.edit'), defaultMessage: 'Edit'};
             const onPress = this.handlePostEdit;
 
@@ -175,7 +175,7 @@ export default class PostOptions extends PureComponent {
         let key;
         let message;
         let onPress;
-        const icon = 'flag';
+        const icon = 'flag-outline';
 
         if (isFlagged) {
             key = 'unflag';
@@ -200,7 +200,7 @@ export default class PostOptions extends PureComponent {
         let key;
         let message;
         let onPress;
-        const icon = 'pin';
+        const icon = 'pin-outline';
 
         if (post.is_pinned) {
             key = 'unpin';
@@ -223,7 +223,7 @@ export default class PostOptions extends PureComponent {
             return (
                 <PostOption
                     key='markUnread'
-                    icon='bookmark'
+                    icon='bookmark-outline'
                     text={formatMessage({id: 'mobile.post_info.mark_unread', defaultMessage: 'Mark as Unread'})}
                     onPress={this.handleMarkUnread}
                     isLandscape={isLandscape}
@@ -253,7 +253,7 @@ export default class PostOptions extends PureComponent {
         const {theme} = this.props;
         const {formatMessage} = this.context.intl;
 
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
             const screen = 'AddReaction';
             const title = formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
             const passProps = {
@@ -355,7 +355,7 @@ export default class PostOptions extends PureComponent {
         const {theme, post} = this.props;
         const {intl} = this.context;
 
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
             const screen = 'EditPost';
             const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
             const passProps = {

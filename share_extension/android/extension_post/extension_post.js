@@ -17,7 +17,6 @@ import {
     View,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import LocalAuth from 'react-native-local-auth';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -26,8 +25,8 @@ import {Client4} from '@mm-redux/client';
 import {Preferences} from '@mm-redux/constants';
 import {getFormattedFileSize, lookupMimeType} from '@mm-redux/utils/file_utils';
 
+import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import PaperPlane from '@components/post_draft/send_action/paper_plane';
 import {MAX_FILE_COUNT, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {getCurrentServerUrl, getAppCredentials} from '@init/credentials';
 import {getExtensionFromMime} from '@utils/file';
@@ -310,7 +309,7 @@ export default class ExtensionPost extends PureComponent {
             onPress={this.onClose}
         >
             <View style={styles.left}>
-                <MaterialIcon
+                <CompassIcon
                     name='close'
                     style={styles.closeButton}
                 />
@@ -557,10 +556,10 @@ export default class ExtensionPost extends PureComponent {
             onPress={this.onPost}
         >
             <View style={styles.left}>
-                <PaperPlane
+                <CompassIcon
+                    name='send'
+                    size={20}
                     color={defaultTheme.sidebarHeaderTextColor}
-                    height={20}
-                    width={20}
                 />
             </View>
         </TouchableOpacity>

@@ -65,8 +65,8 @@ describe('PostPreHeader', () => {
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find('#flagIcon').exists()).toEqual(true);
-        expect(wrapper.find('#pinIcon').exists()).toEqual(false);
+        expect(wrapper.find({name: 'flag-outline'}).exists()).toEqual(true);
+        expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(false);
         expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.flagged');
     });
 
@@ -80,8 +80,8 @@ describe('PostPreHeader', () => {
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find('#flagIcon').exists()).toEqual(false);
-        expect(wrapper.find('#pinIcon').exists()).toEqual(true);
+        expect(wrapper.find({name: 'flag-outline'}).exists()).toEqual(false);
+        expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(true);
         expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.pinned');
     });
 
@@ -96,8 +96,8 @@ describe('PostPreHeader', () => {
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find('#flagIcon').exists()).toEqual(true);
-        expect(wrapper.find('#pinIcon').exists()).toEqual(true);
+        expect(wrapper.find({name: 'flag-outline'}).exists()).toEqual(true);
+        expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(true);
         expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.pinned_flagged');
     });
 
@@ -113,8 +113,8 @@ describe('PostPreHeader', () => {
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find('#flagIcon').exists()).toEqual(true);
-        expect(wrapper.find('#pinIcon').exists()).toEqual(false);
+        expect(wrapper.find({name: 'flag-outline'}).exists()).toEqual(true);
+        expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(false);
         expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.flagged');
     });
 
@@ -130,8 +130,8 @@ describe('PostPreHeader', () => {
             <PostPreHeader {...props}/>,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
-        expect(wrapper.find('#flagIcon').exists()).toEqual(false);
-        expect(wrapper.find('#pinIcon').exists()).toEqual(true);
+        expect(wrapper.find({name: 'flag-outline'}).exists()).toEqual(false);
+        expect(wrapper.find({name: 'pin-outline'}).exists()).toEqual(true);
         expect(wrapper.find('FormattedText').first().props().id).toEqual('mobile.post_pre_header.pinned');
     });
 

@@ -117,6 +117,7 @@
 		<string>FontAwesome5_Brands.ttf</string>
 		<string>FontAwesome5_Regular.ttf</string>
 		<string>FontAwesome5_Solid.ttf</string>
+		<string>compass-icons.ttf</string>
 		<string>Mattermost-Regular.otf</string>
 	</array>
 	<key>UIBackgroundModes</key>

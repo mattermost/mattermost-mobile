@@ -28,14 +28,13 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
           "flexDirection": "column",
           "justifyContent": "center",
           "position": "relative",
-          "top": -1,
         }
       }
     >
       <Icon
         allowFontScaling={false}
-        name="search"
-        size={18}
+        name="magnify"
+        size={24}
         style={
           Object {
             "backgroundColor": "#1153ab",
