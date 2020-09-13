@@ -1,0 +1,113 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ImagePreview should match snapshot 1`] = `
+<React.Fragment>
+  <Gallery
+    errorComponent={[Function]}
+    flatListProps={
+      Object {
+        "windowSize": 3,
+      }
+    }
+    imageComponent={[Function]}
+    images={
+      Array [
+        Object {
+          "caption": "Caption 1",
+          "data": "data",
+          "source": "source",
+        },
+        Object {
+          "caption": "Caption 2",
+          "data": "data",
+          "source": "source",
+        },
+      ]
+    }
+    initialPage={0}
+    onPageSelected={[Function]}
+    onSingleTapConfirmed={[Function]}
+    onSwipedVertical={[Function]}
+    pageMargin={2}
+    removeClippedSubviews={true}
+    scrollViewStyle={Object {}}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  />
+  <ForwardRef(AnimatedComponentWrapper)
+    style={
+      Array [
+        Object {
+          "bottom": 0,
+          "opacity": 1,
+        },
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#000",
+          "height": 99,
+          "justifyContent": "center",
+          "position": "absolute",
+          "width": "100%",
+        },
+      ]
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={2}
+      style={
+        Object {
+          "color": "white",
+          "fontSize": 14,
+          "marginBottom": 10,
+        }
+      }
+    >
+      
+    </Text>
+  </ForwardRef(AnimatedComponentWrapper)>
+  <Downloader
+    deviceHeight={400}
+    deviceWidth={300}
+    file={
+      Object {
+        "caption": "Caption 1",
+        "data": "data",
+        "source": "source",
+      }
+    }
+    force={false}
+    onCancelPress={[Function]}
+    onDownloadCancel={[Function]}
+    onDownloadStart={[Function]}
+    onDownloadSuccess={[Function]}
+    prompt={false}
+    saveToCameraRoll={true}
+    show={false}
+  />
+</React.Fragment>
+`;
+
+exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
+<ForwardRef
+  onPress={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "height": 44,
+      "justifyContent": "center",
+      "width": 48,
+    }
+  }
+>
+  <Icon
+    allowFontScaling={false}
+    color="#fff"
+    name="download-outline"
+    size={26}
+  />
+</ForwardRef>
+`;

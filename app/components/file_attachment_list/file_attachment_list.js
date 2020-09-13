@@ -7,8 +7,8 @@ import {StyleSheet, View} from 'react-native';
 
 import ImageViewPort from '@components/image_viewport';
 import {Client4} from '@mm-redux/client';
-import {isDocument, isGif, isVideo} from '@utils/file';
-import {getViewPortWidth, previewImageAtIndex} from '@utils/images';
+import {isDocument, isGif, isImage, isVideo} from '@utils/file';
+import {getViewPortWidth, openGalleryAtIndex} from '@utils/images';
 import {preventDoubleTap} from '@utils/tap';
 
 import FileAttachment from './file_attachment';
@@ -34,7 +34,6 @@ export default class FileAttachmentList extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        this.items = [];
         this.filesForGallery = this.getFilesForGallery(props);
 
         this.buildGalleryFiles().then((results) => {
@@ -57,7 +56,7 @@ export default class FileAttachmentList extends ImageViewPort {
 
     attachmentManifest = (attachments) => {
         return attachments.reduce((info, file) => {
-            if (this.isImage(file)) {
+            if (isImage(file)) {
                 info.imageAttachments.push(file);
             } else {
                 info.nonImageAttachments.push(file);
@@ -72,13 +71,8 @@ export default class FileAttachmentList extends ImageViewPort {
         if (this.filesForGallery && this.filesForGallery.length) {
             for (let i = 0; i < this.filesForGallery.length; i++) {
                 const file = this.filesForGallery[i];
-                const caption = file.name;
-
-                if (isDocument(file) || isVideo(file) || (!file.has_preview_image && !isGif(file))) {
-                    results.push({
-                        caption,
-                        data: file,
-                    });
+                if (isDocument(file) || isVideo(file) || (!isImage(file))) {
+                    results.push(file);
                     continue;
                 }
 
@@ -90,9 +84,8 @@ export default class FileAttachmentList extends ImageViewPort {
                 }
 
                 results.push({
-                    caption,
-                    source: {uri},
-                    data: file,
+                    ...file,
+                    uri,
                 });
             }
         }
@@ -114,17 +107,11 @@ export default class FileAttachmentList extends ImageViewPort {
         return results;
     };
 
-    handleCaptureRef = (ref, idx) => {
-        this.items[idx] = ref;
-    };
-
     handlePreviewPress = preventDoubleTap((idx) => {
-        previewImageAtIndex(this.items, idx, this.galleryFiles);
+        openGalleryAtIndex(idx, this.galleryFiles);
     });
 
-    isImage = (file) => (file.has_preview_image || isGif(file));
-
-    isSingleImage = (files) => (files.length === 1 && this.isImage(files[0]));
+    isSingleImage = (files) => (files.length === 1 && isImage(files[0]));
 
     renderItems = (items, moreImagesCount, includeGutter = false) => {
         const {canDownloadFiles, isReplyPost, onLongPress, theme} = this.props;
@@ -134,11 +121,6 @@ export default class FileAttachmentList extends ImageViewPort {
         const containerWithGutter = [container, styles.gutter];
 
         return items.map((file, idx) => {
-            const f = {
-                caption: file.name,
-                data: file,
-            };
-
             if (moreImagesCount && idx === MAX_VISIBLE_ROW_IMAGES - 1) {
                 nonVisibleImagesCount = moreImagesCount;
             }
@@ -155,10 +137,9 @@ export default class FileAttachmentList extends ImageViewPort {
                     <FileAttachment
                         key={file.id}
                         canDownloadFiles={canDownloadFiles}
-                        file={f}
+                        file={file}
                         id={file.id}
                         index={this.attachmentIndex(file.id)}
-                        onCaptureRef={this.handleCaptureRef}
                         onPreviewPress={this.handlePreviewPress}
                         onLongPress={onLongPress}
                         theme={theme}

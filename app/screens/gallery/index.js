@@ -5,10 +5,9 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
+import {getDimensions} from '@selectors/device';
 
-import {getDimensions} from 'app/selectors/device';
-
-import ImagePreview from './image_preview';
+import ImagePreview from './gallery';
 
 function mapStateToProps(state) {
     return {

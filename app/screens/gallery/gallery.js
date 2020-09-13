@@ -7,7 +7,6 @@ import {
     Alert,
     Animated,
     Platform,
-    SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
@@ -17,35 +16,29 @@ import {
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import Icon from 'react-native-vector-icons/Ionicons';
-import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
 import Gallery from 'react-native-image-gallery';
 import DeviceInfo from 'react-native-device-info';
 import FastImage from 'react-native-fast-image';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
 import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import {DeviceTypes, NavigationTypes} from 'app/constants';
-import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
+import {getLocalFilePathFromFile, isDocument, isVideo, isImage} from 'app/utils/file';
 import {emptyFunction} from 'app/utils/general';
 import {calculateDimensions} from 'app/utils/images';
 import {t} from 'app/utils/i18n';
 import BottomSheet from 'app/utils/bottom_sheet';
-import {
-    dismissModal,
-    mergeNavigationOptions,
-} from 'app/actions/navigation';
+import {mergeNavigationOptions, popTopScreen} from 'app/actions/navigation';
 
 import Downloader from './downloader';
 import VideoPreview from './video_preview';
 
 const {VIDEOS_PATH} = DeviceTypes;
-const {View: AnimatedView} = Animated;
-const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
-const HEADER_HEIGHT = 48;
 const ANIM_CONFIG = {duration: 300, userNativeDriver: true};
 
 export default class ImagePreview extends PureComponent {
@@ -55,10 +48,7 @@ export default class ImagePreview extends PureComponent {
         deviceHeight: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
         files: PropTypes.array,
-        getItemMeasures: PropTypes.func.isRequired,
         index: PropTypes.number.isRequired,
-        origin: PropTypes.object,
-        target: PropTypes.object,
         theme: PropTypes.object.isRequired,
     };
 
@@ -73,80 +63,99 @@ export default class ImagePreview extends PureComponent {
     constructor(props) {
         super(props);
 
-        const options = {
-            layout: {
-                backgroundColor: '#000',
-            },
-        };
-        mergeNavigationOptions(props.componentId, options);
-
-        this.openAnim = new Animated.Value(0);
         this.headerFooterAnim = new Animated.Value(1);
-        this.documents = [];
 
         this.state = {
             index: props.index,
-            origin: props.origin,
             showDownloader: false,
-            target: props.target,
+            showHeaderFooter: true,
         };
 
         this.headerRef = React.createRef();
     }
 
     componentDidMount() {
-        this.startOpenAnimation();
+        this.cancelTopBar = setTimeout(() => {
+            this.initHeader();
+        }, Platform.OS === 'ios' ? 350 : 0);
     }
 
     componentWillUnmount() {
         StatusBar.setHidden(false, 'fade');
+        if (this.cancelTopBar) {
+            clearTimeout(this.cancelTopBar);
+        }
     }
 
-    setDocumentRef = (ref) => {
-        this.documents[this.state.index] = ref;
+    initHeader = async () => {
+        const {formatMessage} = this.context.intl;
+        const {files} = this.props;
+        const {index} = this.state;
+        const closeButton = await MaterialIcon.getImageSource('close', 24, '#ffffff');
+        const sharedElementTransitions = [];
+        const file = files[index];
+        if (isImage(file) && index < 4) {
+            sharedElementTransitions.push({
+                fromId: `gallery-${file.id}`,
+                toId: `image-${file.id}`,
+                interpolation: 'accelerateDecelerate',
+            });
+        }
+
+        let title;
+        if (files.length > 1) {
+            title = formatMessage({id: 'mobile.gallery.title', defaultMessage: '{index} of {total}'}, {
+                index: index + 1,
+                total: files.length,
+            });
+        }
+        const options = {
+            layout: {
+                backgroundColor: '#000',
+                componentBackgroundColor: '#000',
+            },
+            topBar: {
+                visible: true,
+                background: {
+                    color: '#000',
+                },
+                title: {
+                    text: title,
+                },
+                backButton: {
+                    visible: true,
+                    icon: closeButton,
+                },
+            },
+            animations: {
+                pop: {
+                    sharedElementTransitions,
+                },
+            },
+        };
+
+        mergeNavigationOptions(this.props.componentId, options);
     }
 
     setDownloaderRef = (ref) => {
         this.downloaderRef = ref;
     }
 
-    animateOpenAnimToValue = (toValue, onComplete) => {
-        Animated.timing(this.openAnim, {
-            ...ANIM_CONFIG,
-            toValue,
-        }).start(() => {
-            this.setState({animating: false});
-            if (onComplete) {
-                onComplete();
-            }
-        });
-    };
-
     close = () => {
-        const {getItemMeasures, componentId} = this.props;
-        const {index} = this.state;
-
-        this.setState({animating: true});
+        const {componentId} = this.props;
         const options = {
-            layout: {
-                backgroundColor: 'transparent',
+            topBar: {
+                visible: true,
             },
         };
+
         mergeNavigationOptions(componentId, options);
-
-        getItemMeasures(index, (origin) => {
-            if (origin) {
-                this.setState(origin);
-            }
-
-            this.animateOpenAnimToValue(0, () => {
-                dismissModal();
-            });
-        });
+        StatusBar.setHidden(false, 'fade');
+        popTopScreen(componentId);
     };
 
-    handleChangeImage = (index) => {
-        this.setState({index});
+    handlePageSelected = (index) => {
+        this.setState({index}, this.initHeader);
     };
 
     handleSwipedVertical = (evt, gestureState) => {
@@ -157,6 +166,18 @@ export default class ImagePreview extends PureComponent {
 
     handleTapped = () => {
         const {showHeaderFooter} = this.state;
+        const options = {
+            topBar: {
+                background: {
+                    color: '#000',
+                },
+                visible: !showHeaderFooter,
+            },
+        };
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(showHeaderFooter, 'slide');
+        }
+        mergeNavigationOptions(this.props.componentId, options);
         this.setHeaderAndFooterVisible(!showHeaderFooter);
     };
 
@@ -173,17 +194,6 @@ export default class ImagePreview extends PureComponent {
         const file = files[index];
 
         return file;
-    };
-
-    getFullscreenOpacity = () => {
-        const {target} = this.props;
-
-        return {
-            opacity: this.openAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, target.opacity],
-            }),
-        };
     };
 
     getHeaderFooterStyle = () => {
@@ -235,11 +245,12 @@ export default class ImagePreview extends PureComponent {
         );
     };
 
+    // TODO: Remove
     renderDownloadButton = () => {
         const {canDownloadFiles} = this.props;
         const file = this.getCurrentFile();
 
-        if (file?.data?.localPath) {
+        if (file?.localPath) {
             // we already have the file locally we don't need to download it
             return null;
         }
@@ -257,7 +268,7 @@ export default class ImagePreview extends PureComponent {
                             color='#fff'
                         />
                     );
-                } else if (file.source || isVideo(file.data)) {
+                } else if (file.source || isVideo(file)) {
                     icon = (
                         <Icon
                             name='download-outline'
@@ -306,85 +317,30 @@ export default class ImagePreview extends PureComponent {
         const footer = this.getHeaderFooterStyle();
         return (
             <Animated.View style={[{bottom: footer.start, opacity: footer.opacity}, style.footerContainer]}>
-                <LinearGradient
-                    style={style.footer}
-                    start={{x: 0.0, y: 0.0}}
-                    end={{x: 0.0, y: 0.9}}
-                    colors={['transparent', '#000000']}
-                    pointerEvents='none'
+                <Text
+                    style={style.filename}
+                    numberOfLines={2}
+                    ellipsizeMode='tail'
                 >
-                    <Text
-                        style={style.filename}
-                        numberOfLines={2}
-                        ellipsizeMode='tail'
-                    >
-                        {(files[index] && files[index].caption) || ''}
-                    </Text>
-                </LinearGradient>
+                    {(files[index] && files[index].name) || ''}
+                </Text>
             </Animated.View>
         );
     };
 
-    renderGallery = () => {
-        return (
-            <Gallery
-                errorComponent={this.renderOtherItems}
-                imageComponent={this.renderImageComponent}
-                images={this.props.files}
-                initialPage={this.state.index}
-                onPageSelected={this.handleChangeImage}
-                onSingleTapConfirmed={this.handleTapped}
-                onSwipedVertical={this.handleSwipedVertical}
-                pageMargin={2}
-                style={style.flex}
-            />
-        );
-    };
-
-    renderHeader = () => {
-        const {files} = this.props;
-        const {index} = this.state;
-        const header = this.getHeaderFooterStyle();
-
-        return (
-            <AnimatedView style={[style.headerContainer, {top: header.start, opacity: header.opacity}]}>
-                <View style={style.header}>
-                    <View style={style.headerControls}>
-                        <TouchableOpacity
-                            onPress={this.close}
-                            style={style.headerIcon}
-                        >
-                            <Icon
-                                name='md-close'
-                                size={26}
-                                color='#fff'
-                            />
-                        </TouchableOpacity>
-                        <Text style={style.title}>
-                            {`${index + 1}/${files.length}`}
-                        </Text>
-                        {this.renderDownloadButton()}
-                    </View>
-                </View>
-            </AnimatedView>
-        );
-    };
-
-    renderImageComponent = (imageProps, imageDimensions) => {
-        if (imageDimensions) {
+    renderImageComponent = (file) => {
+        if (file?.uri) {
             const {deviceHeight, deviceWidth} = this.props;
-            const {height, width} = imageDimensions;
-            const {style, source} = imageProps;
-            const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
-            const flattenStyle = StyleSheet.flatten(style);
+            const {height, width, uri} = file;
+            const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 60 : 20;
             const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
-            const imageStyle = {...flattenStyle, ...calculatedDimensions};
 
             return (
-                <View style={[style, {justifyContent: 'center', alignItems: 'center'}]}>
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                     <FastImage
-                        source={source}
-                        style={imageStyle}
+                        source={{uri}}
+                        style={calculatedDimensions}
+                        nativeID={`gallery-${file.id}`}
                     />
                 </View>
             );
@@ -397,14 +353,16 @@ export default class ImagePreview extends PureComponent {
         const {files} = this.props;
         const file = files[index];
 
-        if (file.data) {
-            if (isDocument(file.data)) {
+        if (file) {
+            if (isImage(file)) {
+                return this.renderImageComponent(file);
+            } else if (isDocument(file)) {
                 return this.renderAttachmentDocument(file);
-            } else if (isVideo(file.data)) {
+            } else if (isVideo(file)) {
                 return this.renderVideoPreview(file);
             }
 
-            return this.renderAttachmentIcon(file.data);
+            return this.renderAttachmentIcon(file);
         }
 
         return <View/>;
@@ -417,7 +375,7 @@ export default class ImagePreview extends PureComponent {
         return (
             <VideoPreview
                 file={file}
-                onFullScreen={this.setHeaderAndFooterVisible}
+                onFullScreen={this.handleTapped}
                 deviceHeight={deviceHeight - statusBar}
                 deviceWidth={deviceWidth}
                 theme={theme}
@@ -442,10 +400,6 @@ export default class ImagePreview extends PureComponent {
         }
 
         this.setState({showHeaderFooter: show});
-        if (Platform.OS === 'ios') {
-            StatusBar.setHidden(!show, 'slide');
-        }
-
         Animated.timing(this.headerFooterAnim, {
             ...ANIM_CONFIG,
             toValue,
@@ -514,7 +468,7 @@ export default class ImagePreview extends PureComponent {
         }
         }
 
-        if (isVideo(file.data)) {
+        if (isVideo(file)) {
             const path = getLocalFilePathFromFile(VIDEOS_PATH, file);
             const exist = await RNFetchBlob.fs.exists(path);
             if (exist) {
@@ -544,7 +498,7 @@ export default class ImagePreview extends PureComponent {
             BottomSheet.showBottomSheetWithOptions({
                 options,
                 cancelButtonIndex: options.length - 1,
-                title: file.caption,
+                title: file.name,
                 anchor: this.headerRef.current ? findNodeHandle(this.headerRef.current) : null,
             }, (buttonIndex) => {
                 actions[buttonIndex]();
@@ -573,31 +527,28 @@ export default class ImagePreview extends PureComponent {
         );
     };
 
-    startOpenAnimation = () => {
-        this.animateOpenAnimToValue(1);
-    };
-
     render() {
-        const opacity = this.getFullscreenOpacity();
-
         return (
-            <AnimatedSafeAreaView style={[style.container, opacity]}>
-                <AnimatedView style={style.container}>
-                    {this.renderGallery()}
-                    {this.renderHeader()}
-                    {this.renderFooter()}
-                </AnimatedView>
+            <>
+                <Gallery
+                    errorComponent={this.renderOtherItems}
+                    imageComponent={this.renderImageComponent}
+                    images={this.props.files}
+                    initialPage={this.state.index}
+                    onPageSelected={this.handlePageSelected}
+                    onSingleTapConfirmed={this.handleTapped}
+                    onSwipedVertical={this.handleSwipedVertical}
+                    pageMargin={2}
+                    style={style.flex}
+                />
+                {this.renderFooter()}
                 {this.renderDownloader()}
-            </AnimatedSafeAreaView>
+            </>
         );
     }
 }
 
 const style = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000',
-    },
     flex: {
         flex: 1,
     },
@@ -608,45 +559,20 @@ const style = StyleSheet.create({
     fullWidth: {
         width: '100%',
     },
-    headerContainer: {
-        position: 'absolute',
-        height: HEADER_HEIGHT,
-        width: '100%',
-        overflow: 'hidden',
-    },
-    header: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        height: HEADER_HEIGHT,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-    },
-    headerControls: {
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        flexDirection: 'row',
-    },
     headerIcon: {
         height: 44,
         width: 48,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    title: {
-        flex: 1,
-        marginHorizontal: 10,
-        color: 'white',
-        fontSize: 15,
-        textAlign: 'center',
-    },
     footerContainer: {
-        minHeight: 32,
-        maxHeight: 64,
+        height: 99,
         justifyContent: 'center',
-        overflow: 'hidden',
+        // overflow: 'hidden',
         position: 'absolute',
         width: '100%',
+        alignItems: 'center',
+        backgroundColor: '#000',
     },
     footer: {
         maxHeight: 64,

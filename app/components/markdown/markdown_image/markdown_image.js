@@ -22,7 +22,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {CustomPropTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
-import {calculateDimensions, getViewPortWidth, isGifTooLarge, previewImageAtIndex} from '@utils/images';
+import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
 import {normalizeProtocol} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
@@ -56,13 +56,28 @@ export default class MarkdownImage extends ImageViewPort {
         };
     }
 
-    setImageRef = (ref) => {
-        this.imageRef = ref;
-    }
+    getFileInfo = () => {
+        const {originalHeight, originalWidth} = this.state;
+        const link = this.getSource();
+        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+        const extension = filename.split('.').pop();
 
-    setItemRef = (ref) => {
-        this.itemRef = ref;
-    }
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+        }
+
+        return {
+            id: filename,
+            name: filename,
+            extension,
+            has_preview_image: true,
+            uri: link,
+            localPath: link,
+            width: originalWidth,
+            height: originalHeight,
+        };
+    };
 
     getSource = () => {
         let uri = this.props.source;
@@ -135,32 +150,9 @@ export default class MarkdownImage extends ImageViewPort {
     };
 
     handlePreviewImage = () => {
-        const {
-            originalHeight,
-            originalWidth,
-        } = this.state;
-        const link = this.getSource();
-        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const extension = filename.split('.').pop();
+        const files = [this.getFileInfo()];
 
-        if (extension === filename) {
-            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-            filename = `${filename}${ext}`;
-        }
-
-        const files = [{
-            caption: filename,
-            dimensions: {
-                width: originalWidth,
-                height: originalHeight,
-            },
-            source: {link},
-            data: {
-                localPath: link,
-            },
-        }];
-
-        previewImageAtIndex([this.itemRef], 0, files);
+        openGalleryAtIndex(0, files);
     };
 
     render() {
@@ -169,9 +161,8 @@ export default class MarkdownImage extends ImageViewPort {
         }
 
         let image = null;
-        const {originalHeight, originalWidth} = this.state;
-        const uri = this.getSource();
-        const {height, width} = calculateDimensions(originalHeight, originalWidth, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
+        const fileInfo = this.getFileInfo();
+        const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
 
         if (width && height) {
             if (Platform.OS === 'android' && (width > ANDROID_MAX_WIDTH || height > ANDROID_MAX_HEIGHT)) {
@@ -194,8 +185,8 @@ export default class MarkdownImage extends ImageViewPort {
             } else {
                 // React Native complains if we try to pass resizeMode as a style
                 let source = null;
-                if (uri) {
-                    source = {uri};
+                if (fileInfo.uri) {
+                    source = {uri: fileInfo.uri};
                 }
 
                 image = (
@@ -205,7 +196,7 @@ export default class MarkdownImage extends ImageViewPort {
                         style={{width, height}}
                     >
                         <ProgressiveImage
-                            ref={this.setImageRef}
+                            id={fileInfo.id}
                             defaultSource={source}
                             resizeMode='contain'
                             style={{width, height}}
@@ -234,10 +225,7 @@ export default class MarkdownImage extends ImageViewPort {
         }
 
         return (
-            <View
-                ref={this.setItemRef}
-                style={style.container}
-            >
+            <View style={style.container}>
                 {image}
             </View>
         );

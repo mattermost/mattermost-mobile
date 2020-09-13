@@ -49,7 +49,7 @@
     "react-native-gesture-handler": "1.7.0",
     "react-native-haptic-feedback": "1.10.0",
     "react-native-hw-keyboard-event": "0.0.4",
-    "react-native-image-gallery": "github:mattermost/react-native-image-gallery#c1a9f7118e90cc87d47620bc0584c9cac4b0cf38",
+    "react-native-image-gallery": "github:mattermost/react-native-image-gallery#559c595c97dd3edf60bef174a08588238bf496db",
     "react-native-image-picker": "2.3.3",
     "react-native-keyboard-aware-scrollview": "2.1.0",
     "react-native-keyboard-tracking-view": "5.7.0",

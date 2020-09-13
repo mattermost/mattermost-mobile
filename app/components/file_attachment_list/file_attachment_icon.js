@@ -44,7 +44,6 @@ export default class FileAttachmentIcon extends PureComponent {
         file: PropTypes.object.isRequired,
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
-        onCaptureRef: PropTypes.func,
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
         theme: PropTypes.object,
@@ -62,14 +61,6 @@ export default class FileAttachmentIcon extends PureComponent {
         return ICON_PATH_FROM_FILE_TYPE[fileType] || ICON_PATH_FROM_FILE_TYPE.other;
     }
 
-    handleCaptureRef = (ref) => {
-        const {onCaptureRef} = this.props;
-
-        if (onCaptureRef) {
-            onCaptureRef(ref);
-        }
-    };
-
     render() {
         const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth, theme} = this.props;
         const source = this.getFileIconPath(file);
@@ -77,7 +68,6 @@ export default class FileAttachmentIcon extends PureComponent {
 
         return (
             <View
-                ref={this.handleCaptureRef}
                 style={[styles.fileIconWrapper, {backgroundColor: bgColor, height: wrapperHeight, width: wrapperWidth}]}
             >
                 <Image

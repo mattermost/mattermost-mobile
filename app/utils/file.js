@@ -145,7 +145,7 @@ export const getAllowedServerMaxFileSize = (config) => {
 };
 
 export const isGif = (file) => {
-    let mime = file.mime_type || file.type || '';
+    let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     }
@@ -153,8 +153,10 @@ export const isGif = (file) => {
     return mime === 'image/gif';
 };
 
+export const isImage = (file) => (file?.has_preview_image || isGif(file));
+
 export const isDocument = (file) => {
-    let mime = file.mime_type || file.type || '';
+    let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     }
@@ -163,7 +165,7 @@ export const isDocument = (file) => {
 };
 
 export const isVideo = (file) => {
-    let mime = file.mime_type || file.type || '';
+    let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
     }
@@ -238,8 +240,8 @@ function populateMaps() {
 }
 
 export function getLocalFilePathFromFile(dir, file) {
-    if (dir && file && file.data && file.data.id && file.data.extension) {
-        return `${dir}/${file.data.id}.${file.data.extension}`;
+    if (dir && file?.id && file?.extension) {
+        return `${dir}/${file.id}.${file.extension}`;
     }
 
     return null;

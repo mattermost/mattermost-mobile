@@ -43,8 +43,8 @@ export default class VideoPreview extends PureComponent {
 
         let path = null;
         const {file} = props;
-        if (file && file.data && file.data.localPath) {
-            path = file.data.localPath;
+        if (file?.localPath) {
+            path = file.localPath;
         }
 
         this.state = {
@@ -99,7 +99,7 @@ export default class VideoPreview extends PureComponent {
 
     onDownloadSuccess = () => {
         const {file} = this.props;
-        const path = file.data.localPath || getLocalFilePathFromFile(VIDEOS_PATH, file);
+        const path = file.localPath || getLocalFilePathFromFile(VIDEOS_PATH, file);
 
         this.setState({showDownloader: false, path});
     };

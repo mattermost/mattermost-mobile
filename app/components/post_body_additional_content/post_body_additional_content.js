@@ -20,7 +20,7 @@ import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import CustomPropTypes from '@constants/custom_prop_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {calculateDimensions, getViewPortWidth, previewImageAtIndex} from '@utils/images';
+import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink} from '@utils/url';
 
 const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
@@ -111,6 +111,29 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         return null;
     };
 
+    getFileInfo = () => {
+        let {link} = this.props;
+        const {originalHeight, originalWidth, uri} = this.state;
+        const {expandedLink} = this.props;
+        if (expandedLink) {
+            link = expandedLink;
+        }
+
+        const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+        const extension = filename.split('.').pop();
+
+        return {
+            id: filename,
+            name: filename,
+            extension,
+            has_preview_image: true,
+            uri,
+            localPath: uri,
+            width: originalWidth,
+            height: originalHeight,
+        };
+    };
+
     getImageSize = (path) => {
         const {link, metadata} = this.props;
         let img;
@@ -172,31 +195,10 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         this.setState({linkLoadError: true});
     };
 
-    handlePreviewImage = (imageRef) => {
-        let {link} = this.props;
-        const {expandedLink} = this.props;
-        if (expandedLink) {
-            link = expandedLink;
-        }
-        const {
-            originalHeight,
-            originalWidth,
-            uri,
-        } = this.state;
-        const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const files = [{
-            caption: filename,
-            source: {uri},
-            dimensions: {
-                width: originalWidth,
-                height: originalHeight,
-            },
-            data: {
-                localPath: uri,
-            },
-        }];
+    handlePreviewImage = () => {
+        const files = [this.getFileInfo()];
 
-        previewImageAtIndex([imageRef], 0, files);
+        openGalleryAtIndex(0, files);
     };
 
     isImage = (specificLink) => {
@@ -290,6 +292,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
     renderImage = (link) => {
         const imageMetadata = this.props.metadata?.images?.[link];
+        const fileInfo = this.getFileInfo();
         const {width, height, uri} = this.state;
 
         if (!imageMetadata) {
@@ -298,6 +301,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
         return (
             <PostAttachmentImage
+                id={fileInfo.id}
                 height={height || MAX_IMAGE_HEIGHT}
                 imageMetadata={imageMetadata}
                 onImagePress={this.handlePreviewImage}

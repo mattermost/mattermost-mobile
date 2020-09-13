@@ -285,6 +285,7 @@
   "mobile.files_paste.error_title": "Paste failed",
   "mobile.flagged_posts.empty_description": "Saved messages are only visible to you. Mark messages for follow-up or save something for later by long-pressing a message and choosing Save from the menu.",
   "mobile.flagged_posts.empty_title": "No Saved messages yet",
+  "mobile.gallery.title": "{index} of {total}",
   "mobile.help.title": "Help",
   "mobile.image_preview.save": "Save Image",
   "mobile.image_preview.save_video": "Save Video",

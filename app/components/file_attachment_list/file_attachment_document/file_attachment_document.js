@@ -102,8 +102,7 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     downloadAndPreviewFile = async (file) => {
-        const {data} = file;
-        const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
+        const path = `${DOCUMENTS_PATH}/${file.id}-${file.name}`;
 
         this.setState({didCancel: false});
 
@@ -120,7 +119,7 @@ export default class FileAttachmentDocument extends PureComponent {
             }
 
             const options = {
-                session: data.id,
+                session: file.id,
                 timeout: 10000,
                 indicator: true,
                 overwrite: true,
@@ -128,7 +127,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 certificate,
             };
 
-            const mime = data.mime_type.split(';')[0];
+            const mime = file.mime_type.split(';')[0];
             let openDocument = this.openDocument;
             if (TEXT_PREVIEW_FORMATS.includes(mime)) {
                 openDocument = this.previewTextFile;
@@ -139,7 +138,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 openDocument(file, 0);
             } else {
                 this.setState({downloading: true});
-                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(data.id));
+                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id));
                 this.downloadTask.progress((received, total) => {
                     const progress = Math.round((received / total) * 100);
                     if (this.mounted) {
@@ -188,9 +187,8 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     previewTextFile = (file, delay = 2000) => {
-        const {data} = file;
         const prefix = Platform.OS === 'android' ? 'file:/' : '';
-        const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
+        const path = `${DOCUMENTS_PATH}/${file.id}-${file.name}`;
         const readFile = RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
         setTimeout(async () => {
             try {
@@ -198,7 +196,7 @@ export default class FileAttachmentDocument extends PureComponent {
 
                 const content = await readFile;
                 const screen = 'TextPreview';
-                const title = file.caption;
+                const title = file.name;
                 const passProps = {
                     content,
                 };
@@ -223,12 +221,11 @@ export default class FileAttachmentDocument extends PureComponent {
         // shown nicely and smooth
         setTimeout(() => {
             if (!this.state.didCancel && !this.state.preview && this.mounted) {
-                const {data} = file;
-                const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
+                const path = `${DOCUMENTS_PATH}/${file.id}-${file.name}`;
                 this.setState({preview: true});
                 this.setStatusBarColor('dark-content');
                 FileViewer.open(path, {
-                    displayName: file.caption,
+                    displayName: file.name,
                     onDismiss: this.onDonePreviewingFile,
                     showOpenWithDialog: true,
                     showAppsSuggestions: true,
@@ -247,7 +244,7 @@ export default class FileAttachmentDocument extends PureComponent {
                             id: 'mobile.document_preview.failed_description',
                             defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n',
                         }, {
-                            fileType: data.extension.toUpperCase(),
+                            fileType: file.extension.toUpperCase(),
                         }),
                         [{
                             text: intl.formatMessage({
@@ -327,7 +324,7 @@ export default class FileAttachmentDocument extends PureComponent {
         return (
             <FileAttachmentIcon
                 backgroundColor={backgroundColor}
-                file={file.data}
+                file={file}
                 theme={theme}
                 iconHeight={iconHeight}
                 iconWidth={iconWidth}

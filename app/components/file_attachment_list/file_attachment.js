@@ -14,7 +14,7 @@ import {
 import * as Utils from '@mm-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {isDocument, isGif} from 'app/utils/file';
+import {isDocument, isImage} from 'app/utils/file';
 import {calculateDimensions} from 'app/utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -28,7 +28,6 @@ export default class FileAttachment extends PureComponent {
         file: PropTypes.object.isRequired,
         id: PropTypes.string.isRequired,
         index: PropTypes.number.isRequired,
-        onCaptureRef: PropTypes.func,
         onLongPress: PropTypes.func,
         onPreviewPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
@@ -42,14 +41,6 @@ export default class FileAttachment extends PureComponent {
         wrapperWidth: 300,
     };
 
-    handleCaptureRef = (ref) => {
-        const {onCaptureRef, index} = this.props;
-
-        if (onCaptureRef) {
-            onCaptureRef(ref, index);
-        }
-    };
-
     handlePreviewPress = () => {
         if (this.documentElement) {
             this.documentElement.handlePreviewPress();
@@ -60,10 +51,9 @@ export default class FileAttachment extends PureComponent {
 
     renderFileInfo() {
         const {file, onLongPress, theme} = this.props;
-        const {data} = file;
         const style = getStyleSheet(theme);
 
-        if (!data || !data.id) {
+        if (!file?.id) {
             return null;
         }
 
@@ -80,7 +70,7 @@ export default class FileAttachment extends PureComponent {
                         ellipsizeMode='tail'
                         style={style.fileName}
                     >
-                        {file.caption.trim()}
+                        {file.name.trim()}
                     </Text>
                     <View style={style.fileDownloadContainer}>
                         <Text
@@ -88,7 +78,7 @@ export default class FileAttachment extends PureComponent {
                             ellipsizeMode='tail'
                             style={style.fileInfo}
                         >
-                            {`${Utils.getFormattedFileSize(data)}`}
+                            {`${Utils.getFormattedFileSize(file)}`}
                         </Text>
                     </View>
                 </React.Fragment>
@@ -144,12 +134,11 @@ export default class FileAttachment extends PureComponent {
             isSingleImage,
             nonVisibleImagesCount,
         } = this.props;
-        const {data} = file;
         const style = getStyleSheet(theme);
 
         let fileAttachmentComponent;
-        if ((data && data.has_preview_image) || file.loading || isGif(data)) {
-            const imageDimensions = this.getImageDimensions(data);
+        if (isImage(file) || file.loading) {
+            const imageDimensions = this.getImageDimensions(file);
 
             fileAttachmentComponent = (
                 <TouchableWithFeedback
@@ -160,8 +149,7 @@ export default class FileAttachment extends PureComponent {
                     style={{width: imageDimensions?.width}}
                 >
                     <FileAttachmentImage
-                        file={data || {}}
-                        onCaptureRef={this.handleCaptureRef}
+                        file={file || {}}
                         theme={theme}
                         isSingleImage={isSingleImage}
                         imageDimensions={imageDimensions}
@@ -169,7 +157,7 @@ export default class FileAttachment extends PureComponent {
                     {this.renderMoreImagesOverlay(nonVisibleImagesCount, theme)}
                 </TouchableWithFeedback>
             );
-        } else if (isDocument(data)) {
+        } else if (isDocument(file)) {
             fileAttachmentComponent = (
                 <View style={[style.fileWrapper]}>
                     <View style={style.iconWrapper}>
@@ -194,8 +182,7 @@ export default class FileAttachment extends PureComponent {
                             type={'opacity'}
                         >
                             <FileAttachmentIcon
-                                file={data}
-                                onCaptureRef={this.handleCaptureRef}
+                                file={file}
                                 theme={theme}
                             />
                         </TouchableWithFeedback>

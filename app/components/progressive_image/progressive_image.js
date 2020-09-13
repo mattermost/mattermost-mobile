@@ -15,6 +15,7 @@ const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 
 export default class ProgressiveImage extends PureComponent {
     static propTypes = {
+        id: PropTypes.string,
         isBackgroundImage: PropTypes.bool,
         children: CustomPropTypes.Children,
         defaultSource: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.number]), // this should be provided by the component
@@ -53,6 +54,7 @@ export default class ProgressiveImage extends PureComponent {
     render() {
         const {
             defaultSource,
+            id,
             imageStyle,
             imageUri,
             isBackgroundImage,
@@ -70,7 +72,7 @@ export default class ProgressiveImage extends PureComponent {
             DefaultComponent = ImageBackground;
             ImageComponent = AnimatedImageBackground;
         } else {
-            DefaultComponent = Animated.Image;
+            DefaultComponent = AnimatedFastImage;
             ImageComponent = AnimatedFastImage;
         }
 
@@ -99,6 +101,7 @@ export default class ProgressiveImage extends PureComponent {
                         resizeMode={resizeMode}
                         resizeMethod={resizeMethod}
                         onError={onError}
+                        nativeID={`image-${id}`}
                     >
                         {this.props.children}
                     </DefaultComponent>
@@ -129,6 +132,7 @@ export default class ProgressiveImage extends PureComponent {
                     style={[imageStyle, {tintColor: theme.centerChannelColor, opacity: defaultOpacity}]}
                 />
                 <ImageComponent
+                    nativeID={`image-${id}`}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
                     onError={onError}

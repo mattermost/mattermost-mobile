@@ -123,7 +123,7 @@ export default class Downloader extends PureComponent {
                         useDownloadManager: true,
                         notification: true,
                         path: dest,
-                        title: `${file.caption}`,
+                        title: `${file.name}`,
                         mime: data.mime_type,
                         description: data.name,
                         mediaScannable: true,

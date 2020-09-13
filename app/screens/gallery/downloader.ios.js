@@ -232,7 +232,6 @@ export default class Downloader extends PureComponent {
 
     startDownload = async () => {
         const {file, downloadPath, prompt, saveToCameraRoll} = this.props;
-        const {data} = file;
 
         try {
             if (this.state.didCancel) {
@@ -240,9 +239,9 @@ export default class Downloader extends PureComponent {
             }
 
             const certificate = await mattermostBucket.getPreference('cert');
-            const imageUrl = Client4.getFileUrl(data.id);
+            const imageUrl = Client4.getFileUrl(file.id);
             const options = {
-                session: data.id,
+                session: file.id,
                 timeout: 10000,
                 indicator: true,
                 overwrite: true,
@@ -263,7 +262,7 @@ export default class Downloader extends PureComponent {
                 options.path = getLocalFilePathFromFile(downloadPath, file);
             } else {
                 options.fileCache = true;
-                options.appendExt = data.extension;
+                options.appendExt = file.extension;
             }
 
             this.downloadTask = RNFetchBlob.config(options).fetch('GET', imageUrl);

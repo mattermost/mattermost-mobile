@@ -50,32 +50,32 @@ describe('getExtensionFromContentDisposition', () => {
     });
 
     it('should return the path for the file', () => {
-        const data = {
+        const file = {
             id: generateId(),
             name: 'Some Video file.mp4',
             extension: 'mp4',
         };
 
-        const localFile = getLocalFilePathFromFile('Videos', {data});
-        expect(localFile).toBe(`Videos/${data.id}.${data.extension}`);
+        const localFile = getLocalFilePathFromFile('Videos', file);
+        expect(localFile).toBe(`Videos/${file.id}.${file.extension}`);
     });
 
     it('should return the null as the path if it does not have an id set', () => {
-        const data = {
+        const file = {
             name: 'Some Video file.mp4',
             extension: 'mp4',
         };
 
-        const localFile = getLocalFilePathFromFile('Videos', {data});
+        const localFile = getLocalFilePathFromFile('Videos', file);
         expect(localFile).toBeNull();
     });
 
     it('should return the null as the path if it does not have an extension set', () => {
-        const data = {
+        const file = {
             id: generateId(),
             name: 'Some Video file.mp4',
         };
-        const localFile = getLocalFilePathFromFile('Videos', {data});
+        const localFile = getLocalFilePathFromFile('Videos', file);
         expect(localFile).toBeNull();
     });
 });

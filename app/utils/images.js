@@ -3,7 +3,7 @@
 
 import {Dimensions, Keyboard} from 'react-native';
 
-import {showModalOverCurrentContext} from '@actions/navigation';
+import {goToScreen} from '@actions/navigation';
 import {DeviceTypes} from '@constants';
 import {
     IMAGE_MAX_HEIGHT,
@@ -12,8 +12,7 @@ import {
     VIEWPORT_IMAGE_OFFSET,
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
-
-let previewComponents;
+import {isImage} from './file';
 
 export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
@@ -77,39 +76,67 @@ export function getViewPortWidth(isReplyPost, permanentSidebar = false) {
     return portraitPostWidth;
 }
 
-export function previewImageAtIndex(components, index, files) {
-    previewComponents = components;
-    const component = components[index];
-    if (component) {
-        component.measure((rx, ry, width, height, x, y) => {
-            Keyboard.dismiss();
-            requestAnimationFrame(() => {
-                const screen = 'ImagePreview';
-                const passProps = {
-                    index,
-                    origin: {x, y, width, height},
-                    target: {x: 0, y: 0, opacity: 1},
-                    files,
-                    getItemMeasures,
-                };
-                showModalOverCurrentContext(screen, passProps);
+export function openGalleryAtIndex(index, files) {
+    Keyboard.dismiss();
+    requestAnimationFrame(() => {
+        const screen = 'Gallery';
+        const passProps = {
+            index,
+            files,
+        };
+        const windowHeight = Dimensions.get('window').height;
+        const sharedElementTransitions = [];
+        const contentPush = {};
+        const contentPop = {};
+        const file = files[index];
+
+        if (isImage(file)) {
+            sharedElementTransitions.push({
+                fromId: `image-${file.id}`,
+                toId: `gallery-${file.id}`,
+                interpolation: 'accelerateDecelerate',
             });
-        });
-    }
-}
+        } else {
+            contentPush.y = {
+                from: windowHeight,
+                to: 0,
+                duration: 300,
+                interpolation: 'decelerate',
+            };
 
-function getItemMeasures(index, cb) {
-    const activeComponent = previewComponents[index];
+            contentPop.y = {
+                translationY: {
+                    from: 0,
+                    to: -windowHeight,
+                    duration: 300,
+                },
+            };
+        }
 
-    if (!activeComponent) {
-        cb(null);
-        return;
-    }
+        const options = {
+            layout: {
+                backgroundColor: 'transparent',
+                componentBackgroundColor: '#000',
+            },
+            topBar: {
+                background: {
+                    color: '#000',
+                },
+                visible: false,
+            },
+            animations: {
+                push: {
+                    waitForRender: true,
+                    sharedElementTransitions,
+                    content: contentPush,
+                },
+                pop: {
+                    content: contentPop,
+                },
+            },
+        };
 
-    activeComponent.measure((rx, ry, width, height, x, y) => {
-        cb({
-            origin: {x, y, width, height},
-        });
+        goToScreen(screen, '', passProps, options);
     });
 }
 
