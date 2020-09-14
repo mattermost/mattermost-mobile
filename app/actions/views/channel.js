@@ -210,13 +210,15 @@ export function handleSelectChannel(channelId) {
 
 export function handleSelectChannelByName(channelName, teamName, errorHandler) {
     return async (dispatch, getState) => {
-        const state = getState();
+        let state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
         const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const {error, data: channel} = response;
         const currentChannelId = getCurrentChannelId(state);
+
+        state = getState();
         const reachable = getChannelReachable(state, channelName, teamName);
 
         if (!reachable && errorHandler) {
