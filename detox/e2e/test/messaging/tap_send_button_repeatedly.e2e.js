@@ -34,9 +34,7 @@ describe('Messaging', () => {
         const disabledSendButton = await element(by.id('disabled_send_button'));
         await expect(disabledSendButton).toBeVisible();
         await expect(disabledSendButton).toExist();
-        await disabledSendButton.tap();
-        await disabledSendButton.tap();
-        await disabledSendButton.tap();
+        await disabledSendButton.multiTap(3);
 
         // # Check that message is successfully posted
         await expect(element(by.text(message))).toExist();
