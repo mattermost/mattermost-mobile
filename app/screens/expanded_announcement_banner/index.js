@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {dismissBanner} from '@actions/views/announcement';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-
-import {dismissBanner} from 'app/actions/views/announcement';
+import {isLandscape} from '@selectors/device';
 
 import ExpandedAnnouncementBanner from './expanded_announcement_banner';
 
@@ -17,6 +17,7 @@ function mapStateToProps(state) {
     return {
         allowDismissal: config.AllowBannerDismissal === 'true',
         bannerText: config.BannerText,
+        isLandscape: isLandscape(state),
         theme: getTheme(state),
     };
 }
