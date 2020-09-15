@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import TestRenderer from 'react-test-renderer';
-import {IntlProvider} from 'react-intl';
 import moment from 'moment-timezone';
+
+import {renderWithIntl} from 'test/testing_library';
 
 import FormattedTime from './formatted_time';
 
@@ -18,45 +18,44 @@ describe('FormattedTime', () => {
     it('should render correctly', () => {
         console.error = jest.fn();
 
-        let wrapper = renderWithIntl(
+        const viewOne = renderWithIntl(
             <FormattedTime {...baseProps}/>,
         );
-        let element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '7:02 PM');
 
-        expect(wrapper.baseElement).toMatchSnapshot();
-        expect(element).toBeTruthy();
+        expect(viewOne.toJSON()).toMatchSnapshot();
+        expect(viewOne.getByText('7:02 PM')).toBeTruthy();
 
-        wrapper = renderWithIntl(
+        const viewTwo = renderWithIntl(
             <FormattedTime
                 {...baseProps}
                 hour12={false}
             />,
         );
 
-        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '19:02');
-        expect(element).toBeTruthy();
+        expect(viewTwo.toJSON()).toMatchSnapshot();
+        expect(viewTwo.getByText('19:02')).toBeTruthy();
     });
 
     it('should support localization', () => {
         moment.locale('es');
-        let wrapper = renderWithIntl(
+        const esView = renderWithIntl(
             <FormattedTime {...baseProps}/>,
             'es',
         );
 
-        let element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '7:02 PM');
-        expect(element).toBeTruthy();
+        expect(esView.toJSON()).toMatchSnapshot();
+        expect(esView.getByText('7:02 PM')).toBeTruthy();
 
         moment.locale('ko');
-        wrapper = renderWithIntl(
+        const koViewOne = renderWithIntl(
             <FormattedTime {...baseProps}/>,
             'ko',
         );
 
-        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '오후 7:02');
-        expect(element).toBeTruthy();
+        expect(koViewOne.toJSON()).toMatchSnapshot();
+        expect(koViewOne.getByText('오후 7:02')).toBeTruthy();
 
-        wrapper = renderWithIntl(
+        const koViewTwo = renderWithIntl(
             <FormattedTime
                 {...baseProps}
                 hour12={false}
@@ -64,13 +63,13 @@ describe('FormattedTime', () => {
             'ko',
         );
 
-        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '19:02');
-        expect(element).toBeTruthy();
+        expect(koViewTwo.toJSON()).toMatchSnapshot();
+        expect(koViewTwo.getByText('19:02')).toBeTruthy();
     });
 
     it('should fallback to default short format for unsupported locale of react-intl ', () => {
         moment.locale('es');
-        let wrapper = renderWithIntl(
+        const viewOne = renderWithIntl(
             <FormattedTime
                 {...baseProps}
                 timeZone='NZ-CHAT'
@@ -78,10 +77,10 @@ describe('FormattedTime', () => {
             'es',
         );
 
-        let element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '8:47 AM');
-        expect(element).toBeTruthy();
+        expect(viewOne.toJSON()).toMatchSnapshot();
+        expect(viewOne.getByText('8:47 AM')).toBeTruthy();
 
-        wrapper = renderWithIntl(
+        const viewTwo = renderWithIntl(
             <FormattedTime
                 {...baseProps}
                 timeZone='NZ-CHAT'
@@ -90,11 +89,7 @@ describe('FormattedTime', () => {
             'es',
         );
 
-        element = wrapper.root.find((el) => el.type === 'Text' && el.children && el.children[0] === '8:47');
-        expect(element).toBeTruthy();
+        expect(viewTwo.toJSON()).toMatchSnapshot();
+        expect(viewTwo.getByText('8:47')).toBeTruthy();
     });
 });
-
-function renderWithIntl(component, locale = 'en') {
-    return TestRenderer.create(<IntlProvider locale={locale}>{component}</IntlProvider>);
-}

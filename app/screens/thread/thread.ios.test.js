@@ -14,9 +14,6 @@ import {TYPING_VISIBLE} from '@constants/post_draft';
 import ThreadIOS from './thread.ios';
 
 jest.mock('react-intl');
-jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
-}));
 
 describe('thread', () => {
     const baseProps = {

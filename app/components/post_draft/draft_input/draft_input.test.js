@@ -8,10 +8,6 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import Preferences from '@mm-redux/constants/preferences';
 import DraftInput from './draft_input';
 
-jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
-}));
-
 jest.useFakeTimers();
 
 describe('DraftInput', () => {

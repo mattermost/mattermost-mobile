@@ -9,10 +9,6 @@ import ProfilePictureButton from './profile_picture_button.js';
 
 import {Client4} from '@mm-redux/client';
 
-jest.mock('react-native-image-picker', () => ({
-    launchCamera: jest.fn(),
-}));
-
 describe('profile_picture_button', () => {
     const baseProps = {
         theme: Preferences.THEMES.default,

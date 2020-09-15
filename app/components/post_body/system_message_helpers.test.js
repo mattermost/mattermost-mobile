@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import renderer from 'react-test-renderer';
 import {Posts} from '@mm-redux/constants';
+import {renderWithRedux} from 'test/testing_library';
 
 import * as SystemMessageHelpers from './system_message_helpers';
 
@@ -34,7 +34,9 @@ describe('renderSystemMessage', () => {
             postType: Posts.POST_TYPES.HEADER_CHANGE,
         };
         const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
-        expect(renderedMessage).toMatchSnapshot();
+        const {getByText, toJSON} = renderWithRedux(renderedMessage);
+        expect(toJSON()).toMatchSnapshot();
+        expect(getByText('{username} updated the channel header from: {oldHeader} to: {newHeader}')).toBeTruthy();
     });
 
     test('uses renderer for Channel Display Name update', () => {
@@ -49,7 +51,9 @@ describe('renderSystemMessage', () => {
         };
 
         const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
-        expect(renderedMessage).toMatchSnapshot();
+        const {getByText, toJSON} = renderWithRedux(renderedMessage);
+        expect(toJSON()).toMatchSnapshot();
+        expect(getByText('{username} updated the channel display name from: {oldDisplayName} to: {newDisplayName}')).toBeTruthy();
     });
 
     test('uses renderer for Channel Purpose update', () => {
@@ -64,9 +68,9 @@ describe('renderSystemMessage', () => {
         };
 
         const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
-        const tree = renderer.create(renderedMessage).toJSON();
-        expect(tree).toMatchSnapshot();
-        expect(tree.type).toEqual('Text');
+        const {getByText, toJSON} = renderWithRedux(renderedMessage);
+        expect(toJSON()).toMatchSnapshot();
+        expect(getByText('{username} updated the channel purpose from: {oldPurpose} to: {newPurpose}')).toBeTruthy();
     });
 
     test('uses renderer for archived channel', () => {
@@ -80,6 +84,9 @@ describe('renderSystemMessage', () => {
 
         const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
         expect(renderedMessage).toMatchSnapshot();
+        const {getByText, toJSON} = renderWithRedux(renderedMessage);
+        expect(toJSON()).toMatchSnapshot();
+        expect(getByText('{username} archived the channel')).toBeTruthy();
     });
 
     test('uses renderer for OLD archived channel without a username', () => {
@@ -90,7 +97,9 @@ describe('renderSystemMessage', () => {
         };
 
         const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
-        expect(renderedMessage).toMatchSnapshot();
+        const {getByText, toJSON} = renderWithRedux(renderedMessage);
+        expect(toJSON()).toMatchSnapshot();
+        expect(getByText('{username} archived the channel')).toBeTruthy();
     });
 
     test('uses renderer for unarchived channel', () => {
@@ -103,7 +112,9 @@ describe('renderSystemMessage', () => {
         };
 
         let renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
-        expect(renderedMessage).toMatchSnapshot();
+        const viewOne = renderWithRedux(renderedMessage);
+        expect(viewOne.toJSON()).toMatchSnapshot();
+        expect(viewOne.getByText('{username} unarchived the channel')).toBeTruthy();
 
         const noUserInPostBodyProps = {
             ...basePostBodyProps,
@@ -112,7 +123,9 @@ describe('renderSystemMessage', () => {
         };
 
         renderedMessage = SystemMessageHelpers.renderSystemMessage(noUserInPostBodyProps, mockStyles, mockIntl);
-        expect(renderedMessage).toMatchSnapshot();
+        const viewTwo = renderWithRedux(renderedMessage);
+        expect(viewTwo.toJSON()).toBeNull();
+        expect(viewTwo.queryByText('{username} archived the channel')).toBeFalsy();
     });
 
     test('is null for non-qualifying system messages', () => {
