@@ -277,7 +277,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         searchContainer: {
             ...Platform.select({
                 android: {
-                    top: 46,
+                    top: 42,
                 },
                 ios: {
                     top: 55,

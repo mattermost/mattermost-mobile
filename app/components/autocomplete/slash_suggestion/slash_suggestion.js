@@ -224,6 +224,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
             paddingTop: 8,
+            borderRadius: 4,
         },
     };
 });

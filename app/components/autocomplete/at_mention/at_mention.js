@@ -282,6 +282,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
         },
     };
 });

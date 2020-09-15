@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Dimensions, Platform, StyleSheet, View} from 'react-native';
+import {Dimensions, Platform, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList, LocaleConfig} from 'react-native-calendars';
 import {intlShape} from 'react-intl';
@@ -10,7 +10,7 @@ import {intlShape} from 'react-intl';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
-import {changeOpacity} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
@@ -140,6 +140,7 @@ export default class DateSuggestion extends PureComponent {
     render() {
         const {active, calendarWidth} = this.state;
         const {theme} = this.props;
+        const styles = getStyleFromTheme(theme);
 
         if (!active) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
@@ -222,10 +223,13 @@ const calendarTheme = memoizeResult((theme) => ({
     },
 }));
 
-const styles = StyleSheet.create({
-    calList: {
-        height: 1700,
-        paddingTop: 5,
-        width: '100%',
-    },
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        calList: {
+            paddingTop: 5,
+            width: '100%',
+            borderRadius: 4,
+            backgroundColor: theme.centerChannelBg,
+        },
+    };
 });

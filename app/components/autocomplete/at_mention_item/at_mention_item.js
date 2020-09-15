@@ -28,7 +28,7 @@ export default class AtMentionItem extends PureComponent {
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isCurrentUser: PropTypes.bool.isRequired,
-        showFullName: PropTypes.bool,
+        showFullName: PropTypes.string,
     };
 
     static defaultProps = {
