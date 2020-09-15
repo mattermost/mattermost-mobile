@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Channel from './channel';
+import Post from './post';
 import Setup from './setup';
 import System from './system';
 import Team from './team';
@@ -9,6 +10,7 @@ import User from './user';
 
 export {
     Channel,
+    Post,
     Setup,
     System,
     Team,

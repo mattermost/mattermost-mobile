@@ -41,6 +41,23 @@ export const apiCreateChannel = async ({teamId = null, type = 'O', prefix = 'cha
 };
 
 /**
+ * Get a channel by name and team name.
+ * See https://api.mattermost.com/#tag/channels/paths/~1teams~1name~1{team_name}~1channels~1name~1{channel_name}/get
+ * @param {string} teamName - team name
+ * @param {string} channelName - channel name
+ * @return {Object} returns {channel} on success or {error, status} on error
+ */
+export const apiGetChannelByName = async (teamName, channelName) => {
+    try {
+        const response = await client.get(`/api/v4/teams/name/${teamName}/channels/name/${channelName}`);
+
+        return {channel: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Add user to channel.
  * See https://api.mattermost.com/#tag/channels/paths/~1channels~1{channel_id}~1members/post
  * @param {string} userId - The ID of user to add into the channel
@@ -76,6 +93,7 @@ function generateRandomChannel(teamId, type, prefix) {
 export const Channel = {
     apiAddUserToChannel,
     apiCreateChannel,
+    apiGetChannelByName,
 };
 
 export default Channel;
