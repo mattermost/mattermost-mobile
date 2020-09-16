@@ -33,7 +33,7 @@ export default class AutocompleteSectionHeader extends PureComponent {
         }
 
         return (
-            <View>
+            <View style={style.sectionWrapper}>
                 <View style={sectionStyles}>
                     <FormattedText
                         id={id}
@@ -73,6 +73,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingBottom: 8,
             paddingHorizontal: 16,
             flex: 1,
+        },
+        sectionWrapper: {
+            backgroundColor: theme.centerChannelBg,
         },
     };
 });
