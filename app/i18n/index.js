@@ -18,6 +18,11 @@ function loadTranslation(locale) {
         let localeData;
         let momentData;
         switch (locale) {
+        case 'bg':
+            translations = require('@assets/i18n/bg.json');
+            localeData = require('react-intl/locale-data/bg');
+            momentData = require('moment/locale/bg');
+            break;
         case 'de':
             translations = require('@assets/i18n/de.json');
             localeData = require('react-intl/locale-data/de');
