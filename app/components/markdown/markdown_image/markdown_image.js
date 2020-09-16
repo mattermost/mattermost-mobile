@@ -22,6 +22,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {CustomPropTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
+import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
 import {normalizeProtocol} from '@utils/url';
 
@@ -33,11 +34,13 @@ const ANDROID_MAX_WIDTH = 4096;
 export default class MarkdownImage extends ImageViewPort {
     static propTypes = {
         children: PropTypes.node,
-        imagesMetadata: PropTypes.object,
-        linkDestination: PropTypes.string,
-        isReplyPost: PropTypes.bool,
-        source: PropTypes.string.isRequired,
+        disable: PropTypes.bool,
         errorTextStyle: CustomPropTypes.Style,
+        imagesMetadata: PropTypes.object,
+        isReplyPost: PropTypes.bool,
+        linkDestination: PropTypes.string,
+        postId: PropTypes.string,
+        source: PropTypes.string.isRequired,
     };
 
     static contextTypes = {
@@ -47,11 +50,12 @@ export default class MarkdownImage extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        const dimensions = props.imagesMetadata?.[props.source];
+        const metadata = props.imagesMetadata?.[props.source];
+        this.fileId = generateId();
         this.state = {
-            originalHeight: dimensions?.height || 0,
-            originalWidth: dimensions?.width || 0,
-            failed: false,
+            originalHeight: metadata?.height || 0,
+            originalWidth: metadata?.width || 0,
+            failed: isGifTooLarge(metadata),
             uri: null,
         };
     }
@@ -68,12 +72,12 @@ export default class MarkdownImage extends ImageViewPort {
         }
 
         return {
-            id: filename,
+            id: this.fileId,
             name: filename,
             extension,
             has_preview_image: true,
+            post_id: this.props.postId,
             uri: link,
-            localPath: link,
             width: originalWidth,
             height: originalHeight,
         };
@@ -150,21 +154,27 @@ export default class MarkdownImage extends ImageViewPort {
     };
 
     handlePreviewImage = () => {
-        const files = [this.getFileInfo()];
+        if (this.props.disable) {
+            return;
+        }
 
+        const files = [this.getFileInfo()];
         openGalleryAtIndex(0, files);
     };
 
     render() {
-        if (isGifTooLarge(this.props.imagesMetadata?.[this.props.source])) {
-            return null;
-        }
-
         let image = null;
         const fileInfo = this.getFileInfo();
         const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
 
-        if (width && height) {
+        if (this.state.failed) {
+            image = (
+                <FastImage
+                    source={brokenImageIcon}
+                    style={style.brokenImageIcon}
+                />
+            );
+        } else if (width && height) {
             if (Platform.OS === 'android' && (width > ANDROID_MAX_WIDTH || height > ANDROID_MAX_HEIGHT)) {
                 // Android has a cap on the max image size that can be displayed
 
@@ -204,13 +214,6 @@ export default class MarkdownImage extends ImageViewPort {
                     </TouchableWithFeedback>
                 );
             }
-        } else if (this.state.failed) {
-            image = (
-                <FastImage
-                    source={brokenImageIcon}
-                    style={style.brokenImageIcon}
-                />
-            );
         }
 
         if (image && this.props.linkDestination) {

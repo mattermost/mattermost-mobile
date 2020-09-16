@@ -73,6 +73,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
                         <Markdown
                             baseTextStyle={style.baseTextStyle}
                             blockStyles={getMarkdownBlockStyles(theme)}
+                            disableGallery={true}
                             onChannelLinkPress={this.handleChannelLinkPress}
                             textStyles={getMarkdownTextStyles(theme)}
                             value={this.props.bannerText}

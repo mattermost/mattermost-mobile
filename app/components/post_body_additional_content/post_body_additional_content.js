@@ -20,6 +20,7 @@ import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import CustomPropTypes from '@constants/custom_prop_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
+import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink} from '@utils/url';
 
@@ -73,6 +74,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             }
         }
 
+        this.fileId = generateId();
         this.state = {
             linkLoadError: false,
             linkLoaded: false,
@@ -114,7 +116,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     getFileInfo = () => {
         let {link} = this.props;
         const {originalHeight, originalWidth, uri} = this.state;
-        const {expandedLink} = this.props;
+        const {expandedLink, postId} = this.props;
         if (expandedLink) {
             link = expandedLink;
         }
@@ -123,12 +125,12 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         const extension = filename.split('.').pop();
 
         return {
-            id: filename,
+            id: this.fileId,
             name: filename,
             extension,
             has_preview_image: true,
+            post_id: postId,
             uri,
-            localPath: uri,
             width: originalWidth,
             height: originalHeight,
         };
@@ -354,7 +356,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     };
 
     renderOpenGraph = (isYouTube, isImage) => {
-        const {isReplyPost, link, metadata, openGraphData, showLinkPreviews, theme} = this.props;
+        const {isReplyPost, link, metadata, openGraphData, postId, showLinkPreviews, theme} = this.props;
 
         if (isYouTube || (isImage && !openGraphData)) {
             return null;
@@ -379,6 +381,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                     isReplyPost={isReplyPost}
                     link={link}
                     openGraphData={openGraphData}
+                    postId={postId}
                     imagesMetadata={metadata.images}
                     theme={theme}
                 />

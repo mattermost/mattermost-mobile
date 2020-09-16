@@ -53,6 +53,7 @@ export default class Markdown extends PureComponent {
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
+        postId: PropTypes.string,
         textStyles: PropTypes.object,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string.isRequired,
@@ -60,6 +61,7 @@ export default class Markdown extends PureComponent {
         disableAtMentions: PropTypes.bool,
         disableChannelLink: PropTypes.bool,
         disableAtChannelMentionHighlight: PropTypes.bool,
+        disableGallery: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -70,6 +72,7 @@ export default class Markdown extends PureComponent {
         disableAtMentions: false,
         disableChannelLink: false,
         disableAtChannelMentionHighlight: false,
+        disableGallery: false,
     };
 
     constructor(props) {
@@ -179,9 +182,10 @@ export default class Markdown extends PureComponent {
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
+                    disable={this.props.disableGallery}
                     imagesMetadata={this.props.imagesMetadata}
+                    postId={this.props.postId}
                     source={src}
-                    textStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.link]}
                 >
                     {reactChildren}
                 </MarkdownTableImage>
@@ -190,11 +194,13 @@ export default class Markdown extends PureComponent {
 
         return (
             <MarkdownImage
+                disable={this.props.disableGallery}
+                errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
                 linkDestination={linkDestination}
                 imagesMetadata={this.props.imagesMetadata}
                 isReplyPost={this.props.isReplyPost}
+                postId={this.props.postId}
                 source={src}
-                errorTextStyle={[this.computeTextStyle(this.props.baseTextStyle, context), this.props.textStyles.error]}
             >
                 {reactChildren}
             </MarkdownImage>

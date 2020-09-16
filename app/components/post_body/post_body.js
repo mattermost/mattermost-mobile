@@ -340,6 +340,7 @@ export default class PostBody extends PureComponent {
             onHashtagPress,
             onPermalinkPress,
             onPress,
+            post,
             postProps,
             postType,
             replyBarStyle,
@@ -413,6 +414,7 @@ export default class PostBody extends PureComponent {
                         onHashtagPress={onHashtagPress}
                         onPermalinkPress={onPermalinkPress}
                         onPostPress={onPress}
+                        postId={post.id}
                         textStyles={textStyles}
                         value={message}
                         mentionKeys={mentionKeys}

@@ -9,6 +9,7 @@ import FastImage from 'react-native-fast-image';
 import {TABLET_WIDTH} from '@components/sidebars/drawer_layout';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {DeviceTypes} from '@constants';
+import {generateId} from '@utils/file';
 import {openGalleryAtIndex, calculateDimensions} from '@utils/images';
 import {getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -25,12 +26,14 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
         openGraphData: PropTypes.object,
+        postId: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
         super(props);
 
+        this.fileId = generateId();
         this.state = this.getBestImageUrlAndDimensions(props.openGraphData);
     }
 
@@ -162,12 +165,12 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         const extension = filename.split('.').pop();
 
         const files = [{
-            id: filename,
+            id: this.fileId,
             name: filename,
             extension,
             has_preview_image: true,
+            post_id: this.props.postId,
             uri,
-            localPath: uri,
             width: originalWidth,
             height: originalHeight,
         }];
@@ -201,7 +204,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             return null;
         }
 
-        const {height, imageUrl, openGraphImageUrl, width} = this.state;
+        const {height, imageUrl, width} = this.state;
 
         let source;
         if (imageUrl) {
@@ -222,7 +225,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         style={[style.image, {width, height}]}
                         source={source}
                         resizeMode='contain'
-                        nativeID={`image-${this.getFilename(openGraphImageUrl)}`}
+                        nativeID={`image-${this.fileId}`}
                     />
                 </TouchableWithFeedback>
             </View>

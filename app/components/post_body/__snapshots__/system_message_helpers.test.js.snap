@@ -99,6 +99,7 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
 <Connect(Markdown)
   baseTextStyle={Object {}}
   disableAtChannelMentionHighlight={true}
+  disableGallery={true}
   onPostPress={[MockFunction]}
   textStyles={Object {}}
   value="{username} archived the channel"

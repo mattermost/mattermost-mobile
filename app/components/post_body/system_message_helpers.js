@@ -31,6 +31,7 @@ const renderMessage = (postBodyProps, styles, intl, localeHolder, values, skipMa
         <Markdown
             baseTextStyle={messageStyle}
             disableAtChannelMentionHighlight={true}
+            disableGallery={true}
             onPostPress={onPress}
             textStyles={textStyles}
             value={intl.formatMessage(localeHolder, values)}

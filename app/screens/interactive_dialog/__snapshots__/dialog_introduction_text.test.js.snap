@@ -37,6 +37,7 @@ exports[`DialogIntroductionText should render the introduction text correctly 1`
     }
     disableAtMentions={true}
     disableChannelLink={true}
+    disableGallery={true}
     disableHashtags={true}
     textStyles={
       Object {

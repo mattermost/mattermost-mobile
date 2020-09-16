@@ -211,6 +211,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     baseTextStyle={baseTextStyle}
                                     textStyles={textStyles}
                                     blockStyles={blockStyles}
+                                    disableGallery={true}
                                     value={header}
                                     onChannelLinkPress={popToRoot}
                                     disableAtChannelMentionHighlight={true}

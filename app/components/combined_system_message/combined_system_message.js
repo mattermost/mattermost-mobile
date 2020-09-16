@@ -315,6 +315,7 @@ export default class CombinedSystemMessage extends React.PureComponent {
         return (
             <Markdown
                 baseTextStyle={style.baseText}
+                disableGallery={true}
                 textStyles={textStyles}
                 value={formattedMessage}
             />

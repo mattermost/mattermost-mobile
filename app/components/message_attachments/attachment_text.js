@@ -95,6 +95,7 @@ export default class AttachmentText extends PureComponent {
                             baseTextStyle={baseTextStyle}
                             textStyles={textStyles}
                             blockStyles={blockStyles}
+                            disableGallery={true}
                             imagesMetadata={metadata?.images}
                             value={value}
                             onPermalinkPress={onPermalinkPress}

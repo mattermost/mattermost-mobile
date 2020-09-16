@@ -79,7 +79,6 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('SidebarSettings', () => wrapper(require('app/screens/settings/sidebar').default), () => require('app/screens/settings/sidebar').default);
     Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default), () => require('app/screens/sso').default);
     Navigation.registerComponent('Table', () => wrapper(require('app/screens/table').default), () => require('app/screens/table').default);
-    Navigation.registerComponent('TableImage', () => wrapper(require('app/screens/table_image').default), () => require('app/screens/table_image').default);
     Navigation.registerComponent('TermsOfService', () => wrapper(require('app/screens/terms_of_service').default), () => require('app/screens/terms_of_service').default);
     Navigation.registerComponent('TextPreview', () => wrapper(require('app/screens/text_preview').default), () => require('app/screens/text_preview').default);
     Navigation.registerComponent('ThemeSettings', () => wrapper(require('app/screens/settings/theme').default), () => require('app/screens/settings/theme').default);

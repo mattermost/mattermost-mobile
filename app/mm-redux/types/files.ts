@@ -6,6 +6,7 @@ import {Dictionary} from './utilities';
 export type FileInfo = {
     id: string;
     user_id: string;
+    post_id: string;
     create_at: number;
     update_at: number;
     delete_at: number;
@@ -17,8 +18,8 @@ export type FileInfo = {
     height: number;
     has_preview_image: boolean;
     clientId: string;
-    localPath?: string | null;
-    uri?: string | null;
+    localPath?: string;
+    uri?: string;
     loading?: boolean;
 };
 export type FilesState = {

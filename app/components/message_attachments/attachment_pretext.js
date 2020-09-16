@@ -38,6 +38,7 @@ export default class AttachmentPreText extends PureComponent {
                     baseTextStyle={baseTextStyle}
                     textStyles={textStyles}
                     blockStyles={blockStyles}
+                    disableGallery={true}
                     imagesMetadata={metadata?.images}
                     value={value}
                     onPermalinkPress={onPermalinkPress}

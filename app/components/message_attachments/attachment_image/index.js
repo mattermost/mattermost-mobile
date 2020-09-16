@@ -5,10 +5,11 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View} from 'react-native';
 
-import ProgressiveImage from 'app/components/progressive_image';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {isGifTooLarge, openGalleryAtIndex, calculateDimensions} from 'app/utils/images';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import ProgressiveImage from '@components/progressive_image';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {generateId} from '@utils/file';
+import {isGifTooLarge, openGalleryAtIndex, calculateDimensions} from '@utils/images';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const VIEWPORT_IMAGE_OFFSET = 100;
 const VIEWPORT_IMAGE_CONTAINER_OFFSET = 10;
@@ -19,12 +20,14 @@ export default class AttachmentImage extends PureComponent {
         deviceWidth: PropTypes.number.isRequired,
         imageMetadata: PropTypes.object,
         imageUrl: PropTypes.string,
+        postId: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
     constructor(props) {
         super(props);
 
+        this.fileId = generateId();
         this.state = {
             hasImage: Boolean(props.imageUrl),
             imageUri: null,
@@ -52,7 +55,7 @@ export default class AttachmentImage extends PureComponent {
     }
 
     getFileInfo = () => {
-        const {imageUrl} = this.props;
+        const {imageUrl, postId} = this.props;
         const {
             imageUri: uri,
             originalHeight,
@@ -68,12 +71,12 @@ export default class AttachmentImage extends PureComponent {
         }
 
         return {
-            id: filename,
+            id: this.fileId,
             name: filename,
             extension,
             has_preview_image: true,
+            post_id: postId,
             uri,
-            localPath: uri,
             width: originalWidth,
             height: originalHeight,
         };
@@ -128,6 +131,7 @@ export default class AttachmentImage extends PureComponent {
         if (imageUri) {
             progressiveImage = (
                 <ProgressiveImage
+                    id={this.fileId}
                     imageStyle={style.attachmentMargin}
                     style={{height, width}}
                     imageUri={imageUri}

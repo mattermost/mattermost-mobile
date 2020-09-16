@@ -42,14 +42,14 @@
             "@mm-redux/*": ["app/mm-redux/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
-            "@store/*": ["app/store"],
+            "@store/*": ["app/store/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
             "*": ["./*", "node_modules/*"]
         }
     },
-    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "detox/**/*"],
+    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "detox/**/*", "types/**/*"],
     "exclude": [
         "node_modules",
         "build",

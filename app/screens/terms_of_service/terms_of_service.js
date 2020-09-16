@@ -261,6 +261,7 @@ export default class TermsOfService extends PureComponent {
                         disableHashtags={true}
                         disableAtMentions={true}
                         disableChannelLink={true}
+                        disableGallery={true}
                     />
                 </ScrollView>
             </React.Fragment>

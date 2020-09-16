@@ -118,6 +118,7 @@ export default class MessageAttachment extends PureComponent {
                         deviceWidth={deviceWidth}
                         imageUrl={attachment.image_url}
                         imageMetadata={metadata?.images?.[attachment.image_url]}
+                        postId={postId}
                         theme={theme}
                     />
                     }
