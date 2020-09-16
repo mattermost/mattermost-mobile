@@ -52,7 +52,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
     };
 
     renderHasGuestText = (style) => {
-        const {type, hasGuests, isTeammateGuest} = this.props;
+        const {type, hasGuests, isLandscape, isTeammateGuest} = this.props;
         if (!hasGuests) {
             return null;
         }
@@ -74,7 +74,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             defaultMessage = 'This channel has guests';
         }
         return (
-            <View style={style.section}>
+            <View style={[style.section, padding(isLandscape, -15)]}>
                 <View style={style.row}>
                     <FormattedText
                         style={style.header}

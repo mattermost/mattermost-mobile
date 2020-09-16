@@ -3,9 +3,10 @@
 
 import * as reselect from 'reselect';
 import {GlobalState} from '@mm-redux/types/store';
+import {Channel} from '@mm-redux/types/channels';
 import {UserMentionKey} from './users';
 import {getCurrentUserMentionKeys} from '@mm-redux/selectors/entities/users';
-import {getCurrentUserGroupMentionKeys} from '@mm-redux/selectors/entities/groups';
+import {getMyGroupMentionKeys, getMyGroupMentionKeysForChannel} from '@mm-redux/selectors/entities/groups';
 
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
@@ -19,29 +20,30 @@ export const getCurrentSearchForCurrentTeam = reselect.createSelector(
 
 export const getAllUserMentionKeys: (state: GlobalState) => UserMentionKey[] = reselect.createSelector(
     getCurrentUserMentionKeys,
-    (state: GlobalState) => getCurrentUserGroupMentionKeys(state),
+    (state: GlobalState) => getMyGroupMentionKeys(state),
     (userMentionKeys, groupMentionKeys) => {
         return userMentionKeys.concat(groupMentionKeys);
     },
 );
 
-export const makeGetMentionKeysForPost: (state: GlobalState, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => UserMentionKey[] = reselect.createSelector(
-    getAllUserMentionKeys,
-    getCurrentUserMentionKeys,
-    (state: GlobalState, disableGroupHighlight: boolean) => disableGroupHighlight,
-    (state: GlobalState, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => mentionHighlightDisabled,
-    (allMentionKeys, mentionKeysWithoutGroups, disableGroupHighlight = false, mentionHighlightDisabled = false) => {
-        let mentionKeys = allMentionKeys;
-        if (disableGroupHighlight) {
-            mentionKeys = mentionKeysWithoutGroups;
-        }
+export function makeGetMentionKeysForPost(): (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => UserMentionKey[] {
+    return reselect.createSelector(
+        getCurrentUserMentionKeys,
+        (state: GlobalState, channel: Channel) => (channel?.id ? getMyGroupMentionKeysForChannel(state, channel?.team_id, channel?.id) : getMyGroupMentionKeys(state)),
+        (state: GlobalState, channel: Channel, disableGroupHighlight: boolean) => disableGroupHighlight,
+        (state: GlobalState, channel: Channel, disableGroupHighlight: boolean, mentionHighlightDisabled: boolean) => mentionHighlightDisabled,
+        (mentionKeysWithoutGroups, groupMentionKeys, disableGroupHighlight = false, mentionHighlightDisabled = false) => {
+            let mentionKeys = mentionKeysWithoutGroups;
+            if (!disableGroupHighlight) {
+                mentionKeys = mentionKeys.concat(groupMentionKeys);
+            }
 
-        if (mentionHighlightDisabled) {
-            const CHANNEL_MENTIONS = ['@all', '@channel', '@here'];
-            mentionKeys = mentionKeys.filter((value) => !CHANNEL_MENTIONS.includes(value.key));
-        }
+            if (mentionHighlightDisabled) {
+                const CHANNEL_MENTIONS = ['@all', '@channel', '@here'];
+                mentionKeys = mentionKeys.filter((value) => !CHANNEL_MENTIONS.includes(value.key));
+            }
 
-        return mentionKeys;
-    },
-);
-
+            return mentionKeys;
+        },
+    );
+}

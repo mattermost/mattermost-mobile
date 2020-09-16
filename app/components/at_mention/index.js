@@ -9,7 +9,7 @@ import {getAllUserMentionKeys} from '@mm-redux/selectors/entities/search';
 
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {getGroupsByName} from '@mm-redux/selectors/entities/groups';
+import {getAllGroupsForReferenceByName} from '@mm-redux/selectors/entities/groups';
 
 import AtMention from './at_mention';
 
@@ -19,7 +19,7 @@ function mapStateToProps(state, ownProps) {
         usersByUsername: getUsersByUsername(state),
         mentionKeys: ownProps.mentionKeys || getAllUserMentionKeys(state),
         teammateNameDisplay: getTeammateNameDisplaySetting(state),
-        groupsByName: getGroupsByName(state),
+        groupsByName: getAllGroupsForReferenceByName(state),
     };
 }
 

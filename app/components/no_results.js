@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Image, Text, View} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -12,6 +13,7 @@ export default class NoResults extends PureComponent {
     static propTypes = {
         description: PropTypes.string,
         iconName: PropTypes.string,
+        iconType: PropTypes.oneOf(['' /* image */, 'ion', 'material-community']),
         image: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
         theme: PropTypes.object.isRequired,
         title: PropTypes.string.isRequired,
@@ -21,6 +23,7 @@ export default class NoResults extends PureComponent {
         const {
             description,
             iconName,
+            iconType,
             image,
             theme,
             title,
@@ -36,18 +39,30 @@ export default class NoResults extends PureComponent {
                 />
             );
         } else if (iconName) {
-            icon = (
-                <IonIcon
-                    size={44}
-                    color={changeOpacity(theme.centerChannelColor, 0.4)}
-                    name={iconName}
-                />
-            );
+            if (iconType === 'ion') {
+                icon = (
+                    <IonIcon
+                        size={72}
+                        name={iconName}
+                        style={style.icon}
+                    />
+                );
+            } else if (iconType === 'material-community') {
+                icon = (
+                    <MaterialCommunityIcons
+                        size={72}
+                        name={iconName}
+                        style={style.icon}
+                    />
+                );
+            }
         }
 
         return (
             <View style={style.container}>
-                {icon}
+                <View style={style.iconContainer}>
+                    {icon}
+                </View>
                 <Text style={style.title}>{title}</Text>
                 {description &&
                 <Text style={style.description}>{description}</Text>
@@ -63,18 +78,33 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
-            paddingHorizontal: 15,
+            marginLeft: 32,
+            marginRight: 32,
+            marginBottom: 40,
         },
         title: {
-            color: changeOpacity(theme.centerChannelColor, 0.4),
+            color: changeOpacity(theme.centerChannelColor, 1),
             fontSize: 20,
             fontWeight: '600',
             marginVertical: 15,
         },
         description: {
-            color: changeOpacity(theme.centerChannelColor, 0.4),
-            fontSize: 17,
+            color: changeOpacity(theme.centerChannelColor, 1),
+            fontSize: 16,
             textAlign: 'center',
+            lineHeight: 24,
+        },
+        icon: {
+            color: theme.buttonBg,
+        },
+        iconContainer: {
+            height: 120,
+            width: 120,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 60,
+            marginBottom: 4,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
     };
 });

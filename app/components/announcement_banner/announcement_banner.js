@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     Animated,
+    InteractionManager,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -67,15 +68,25 @@ export default class AnnouncementBanner extends PureComponent {
 
     toggleBanner = (show = true) => {
         const value = show ? 38 : 0;
-        Animated.timing(this.state.bannerHeight, {
-            toValue: value,
-            duration: 350,
-            useNativeDriver: false,
-        }).start();
+        if (show && !this.state.visible) {
+            this.setState({visible: show});
+        }
+
+        InteractionManager.runAfterInteractions(() => {
+            Animated.timing(this.state.bannerHeight, {
+                toValue: value,
+                duration: 350,
+                useNativeDriver: false,
+            }).start(() => {
+                if (this.state.visible !== show) {
+                    this.setState({visible: show});
+                }
+            });
+        });
     };
 
     render() {
-        if (!this.props.bannerEnabled) {
+        if (!this.state.visible) {
             return null;
         }
 

@@ -8,7 +8,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
   <KeyboardAvoidingView
     behavior="padding"
     enabled={false}
-    keyboardVerticalOffset={50}
+    keyboardVerticalOffset={80}
     style={
       Object {
         "flex": 1,

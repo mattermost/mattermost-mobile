@@ -49,6 +49,7 @@ export function mapStateToProps(state, ownProps) {
             state,
             {
                 channel: channel.id,
+                team: channel.team_id,
                 permission: Permissions.USE_CHANNEL_MENTIONS,
                 default: true,
             },
@@ -62,6 +63,7 @@ export function mapStateToProps(state, ownProps) {
                 channel: channel.id,
                 team: channel.team_id,
                 permission: Permissions.USE_GROUP_MENTIONS,
+                default: true,
             },
         );
 

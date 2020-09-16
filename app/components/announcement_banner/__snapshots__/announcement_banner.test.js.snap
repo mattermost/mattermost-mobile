@@ -61,4 +61,63 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
 </ForwardRef(AnimatedComponentWrapper)>
 `;
 
-exports[`AnnouncementBanner should match snapshot 2`] = `null`;
+exports[`AnnouncementBanner should match snapshot 2`] = `
+<ForwardRef(AnimatedComponentWrapper)
+  style={
+    Array [
+      Object {
+        "overflow": "hidden",
+        "paddingHorizontal": 10,
+        "position": "absolute",
+        "top": 0,
+        "width": "100%",
+      },
+      Object {
+        "backgroundColor": "#ddd",
+        "height": 0,
+      },
+    ]
+  }
+>
+  <ForwardRef
+    onPress={[Function]}
+    style={
+      Array [
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+        },
+        null,
+      ]
+    }
+  >
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        Array [
+          Object {
+            "flex": 1,
+            "fontSize": 14,
+            "marginRight": 5,
+          },
+          Object {
+            "color": "#fff",
+          },
+        ]
+      }
+    >
+      <RemoveMarkdown
+        value="Banner Text"
+      />
+    </Text>
+    <Icon
+      allowFontScaling={false}
+      color="#fff"
+      name="info"
+      size={16}
+    />
+  </ForwardRef>
+</ForwardRef(AnimatedComponentWrapper)>
+`;

@@ -1,23 +1,61 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] = `
-<Connect(Markdown)
-  baseTextStyle={Object {}}
-  disableAtChannelMentionHighlight={true}
-  onPostPress={[MockFunction]}
-  textStyles={Object {}}
-  value="{username} updated the channel display name from: {oldDisplayName} to: {newDisplayName}"
-/>
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {},
+          Array [
+            undefined,
+          ],
+        ]
+      }
+    >
+      {username} updated the channel display name from: {oldDisplayName} to: {newDisplayName}
+    </Text>
+  </Text>
+</View>
 `;
 
 exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
-<Connect(Markdown)
-  baseTextStyle={Object {}}
-  disableAtChannelMentionHighlight={true}
-  onPostPress={[MockFunction]}
-  textStyles={Object {}}
-  value="{username} updated the channel header from: {oldHeader} to: {newHeader}"
-/>
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {},
+          Array [
+            undefined,
+          ],
+        ]
+      }
+    >
+      {username} updated the channel header from: {oldHeader} to: {newHeader}
+    </Text>
+  </Text>
+</View>
 `;
 
 exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
@@ -29,13 +67,32 @@ exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
 `;
 
 exports[`renderSystemMessage uses renderer for OLD archived channel without a username 1`] = `
-<Connect(Markdown)
-  baseTextStyle={Object {}}
-  disableAtChannelMentionHighlight={true}
-  onPostPress={[MockFunction]}
-  textStyles={Object {}}
-  value="{username} archived the channel"
-/>
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {},
+          Array [
+            undefined,
+          ],
+        ]
+      }
+    >
+      {username} archived the channel
+    </Text>
+  </Text>
+</View>
 `;
 
 exports[`renderSystemMessage uses renderer for archived channel 1`] = `
@@ -48,14 +105,60 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
 />
 `;
 
-exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
-<Connect(Markdown)
-  baseTextStyle={Object {}}
-  disableAtChannelMentionHighlight={true}
-  onPostPress={[MockFunction]}
-  textStyles={Object {}}
-  value="{username} unarchived the channel"
-/>
+exports[`renderSystemMessage uses renderer for archived channel 2`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {},
+          Array [
+            undefined,
+          ],
+        ]
+      }
+    >
+      {username} archived the channel
+    </Text>
+  </Text>
+</View>
 `;
 
-exports[`renderSystemMessage uses renderer for unarchived channel 2`] = `null`;
+exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+      },
+    ]
+  }
+>
+  <Text>
+    <Text
+      style={
+        Array [
+          Object {},
+          Array [
+            undefined,
+          ],
+        ]
+      }
+    >
+      {username} unarchived the channel
+    </Text>
+  </Text>
+</View>
+`;

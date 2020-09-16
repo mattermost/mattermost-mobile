@@ -1,3 +1,43 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FormattedTime should render correctly 1`] = `undefined`;
+exports[`FormattedTime should fallback to default short format for unsupported locale of react-intl  1`] = `
+<Text>
+  8:47 AM
+</Text>
+`;
+
+exports[`FormattedTime should fallback to default short format for unsupported locale of react-intl  2`] = `
+<Text>
+  8:47
+</Text>
+`;
+
+exports[`FormattedTime should render correctly 1`] = `
+<Text>
+  7:02 PM
+</Text>
+`;
+
+exports[`FormattedTime should render correctly 2`] = `
+<Text>
+  19:02
+</Text>
+`;
+
+exports[`FormattedTime should support localization 1`] = `
+<Text>
+  7:02 PM
+</Text>
+`;
+
+exports[`FormattedTime should support localization 2`] = `
+<Text>
+  오후 7:02
+</Text>
+`;
+
+exports[`FormattedTime should support localization 3`] = `
+<Text>
+  19:02
+</Text>
+`;

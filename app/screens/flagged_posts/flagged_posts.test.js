@@ -15,7 +15,7 @@ describe('FlaggedPosts', () => {
         actions: {
             clearSearch: jest.fn(),
             loadChannelsByTeamName: jest.fn(),
-            loadThreadIfNecessary: jest.fn(),
+            getPostThread: jest.fn(),
             getFlaggedPosts: jest.fn(),
             selectFocusedPostId: jest.fn(),
             selectPost: jest.fn(),

@@ -15,27 +15,24 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
-import {General} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {getLastPostIndex} from '@mm-redux/utils/post_list';
-
-import FormattedText from 'app/components/formatted_text';
-import Loading from 'app/components/loading';
-import PostList from 'app/components/post_list';
-import PostListRetry from 'app/components/post_list_retry';
-import SafeAreaView from 'app/components/safe_area_view';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
-
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
 import {
     resetToChannel,
     goToScreen,
     dismissModal,
     dismissAllModals,
     popToRoot,
-} from 'app/actions/navigation';
+} from '@actions/navigation';
+import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
+import PostList from '@components/post_list';
+import PostListRetry from '@components/post_list_retry';
+import SafeAreaView from '@components/safe_area_view';
+import {marginHorizontal as margin} from '@components/safe_area_view/iphone_x_spacing';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getLastPostIndex} from '@mm-redux/utils/post_list';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -63,7 +60,6 @@ export default class Permalink extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
-            loadThreadIfNecessary: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
@@ -76,7 +72,6 @@ export default class Permalink extends PureComponent {
         isPermalink: PropTypes.bool,
         myMembers: PropTypes.object.isRequired,
         onClose: PropTypes.func,
-        onPress: PropTypes.func,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -84,7 +79,6 @@ export default class Permalink extends PureComponent {
     };
 
     static defaultProps = {
-        onPress: () => true,
         postIds: [],
     };
 
@@ -92,50 +86,10 @@ export default class Permalink extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-        const newState = {};
-        if (nextProps.focusedPostId !== prevState.focusedPostIdState) {
-            newState.focusedPostIdState = nextProps.focusedPostId;
-        }
-
-        if (nextProps.channelId && nextProps.channelId !== prevState.channelIdState) {
-            newState.channelIdState = nextProps.channelId;
-        }
-
-        if (nextProps.channelName && nextProps.channelName !== prevState.channelNameState) {
-            newState.channelNameState = nextProps.channelName;
-        }
-
-        if (nextProps.postIds && nextProps.postIds.length > 0 && nextProps.postIds !== prevState.postIdsState) {
-            newState.postIdsState = nextProps.postIds;
-        }
-
-        if (nextProps.focusedPostId !== prevState.focusedPostIdState) {
-            let loading = true;
-            if (nextProps.postIds && nextProps.postIds.length >= 10) {
-                loading = false;
-            }
-
-            newState.loading = loading;
-        }
-
-        if (Object.keys(newState).length === 0) {
-            return null;
-        }
-
-        return newState;
-    }
-
     constructor(props) {
         super(props);
 
-        const {
-            postIds,
-            channelId,
-            channelName,
-            focusedPostId,
-            error,
-        } = props;
+        const {error, postIds} = props;
         let loading = true;
 
         if (postIds && postIds.length >= 10) {
@@ -143,14 +97,10 @@ export default class Permalink extends PureComponent {
         }
 
         this.state = {
-            title: channelName,
+            title: '',
             loading,
             error: error || '',
             retry: false,
-            channelIdState: channelId,
-            channelNameState: channelName,
-            focusedPostIdState: focusedPostId,
-            postIdsState: postIds,
         };
     }
 
@@ -159,14 +109,15 @@ export default class Permalink extends PureComponent {
 
         this.mounted = true;
 
-        if (this.state.loading) {
-            this.loadPosts(this.props);
+        if (this.state.loading && this.props.focusedPostId) {
+            this.initialLoad = true;
+            this.loadPosts();
         }
     }
 
     componentDidUpdate() {
-        if (this.state.loading) {
-            this.loadPosts(this.props);
+        if (this.state.loading && this.props.focusedPostId && !this.initialLoad) {
+            this.loadPosts();
         }
     }
 
@@ -195,7 +146,7 @@ export default class Permalink extends PureComponent {
             rootId,
         };
 
-        actions.loadThreadIfNecessary(rootId);
+        actions.getPostThread(rootId);
         actions.selectPost(rootId);
 
         goToScreen(screen, title, passProps);
@@ -225,23 +176,17 @@ export default class Permalink extends PureComponent {
     };
 
     handlePress = () => {
-        const {channelIdState} = this.state;
-
         if (this.viewRef) {
             this.viewRef.growOut().then(() => {
-                this.jumpToChannel(channelIdState);
+                this.jumpToChannel(this.props.channelId);
             });
         }
     };
 
     jumpToChannel = async (channelId) => {
         if (channelId) {
-            const {actions, channelTeamId, currentTeamId, onClose} = this.props;
-            const currentChannelId = this.props.channelId;
-            const {
-                handleSelectChannel,
-                handleTeamChange,
-            } = actions;
+            const {actions, channelId: currentChannelId, channelTeamId, currentTeamId, onClose} = this.props;
+            const {handleSelectChannel, handleTeamChange} = actions;
 
             actions.selectPost('');
 
@@ -269,16 +214,22 @@ export default class Permalink extends PureComponent {
         }
     };
 
-    loadPosts = async (props) => {
+    loadPosts = async () => {
         const {intl} = this.context;
-        const {actions, channelId, currentUserId, focusedPostId, isPermalink, postIds} = props;
+        const {actions, channelId, currentUserId, focusedPostId, isPermalink, postIds} = this.props;
         const {formatMessage} = intl;
         let focusChannelId = channelId;
+
+        if (this.mounted && !this.initialLoad) {
+            this.setState({loading: false});
+        }
 
         if (focusedPostId) {
             const post = await actions.getPostThread(focusedPostId, false);
             if (post.error && (!postIds || !postIds.length)) {
-                if (this.mounted && isPermalink && post.error.message.toLowerCase() !== 'network request failed') {
+                const error = post.error.message.toLowerCase() === 'network request failed';
+                const connectionError = post.error.details?.message?.toLowerCase() === 'could not connect to the server.';
+                if (this.mounted && isPermalink && !error && !connectionError) {
                     this.setState({
                         error: formatMessage({
                             id: 'permalink.error.access',
@@ -290,7 +241,7 @@ export default class Permalink extends PureComponent {
                         }),
                     });
                 } else if (this.mounted) {
-                    this.setState({error: post.error.message, retry: true});
+                    this.setState({error: post.error.message, retry: true, loading: false});
                 }
 
                 return;
@@ -309,7 +260,8 @@ export default class Permalink extends PureComponent {
 
             await actions.getPostsAround(focusChannelId, focusedPostId, 10);
 
-            if (this.mounted) {
+            if (this.initialLoad) {
+                this.initialLoad = false;
                 this.setState({loading: false});
             }
         }
@@ -317,8 +269,8 @@ export default class Permalink extends PureComponent {
 
     retry = () => {
         if (this.mounted) {
+            this.initialLoad = false;
             this.setState({loading: true, error: null, retry: false});
-            this.loadPosts(this.props);
         }
     };
 
@@ -340,19 +292,8 @@ export default class Permalink extends PureComponent {
     };
 
     render() {
-        const {
-            currentUserId,
-            focusedPostId,
-            theme,
-            isLandscape,
-        } = this.props;
-        const {
-            error,
-            retry,
-            loading,
-            postIdsState,
-            title,
-        } = this.state;
+        const {channelName, currentUserId, focusedPostId, isLandscape, postIds, theme} = this.props;
+        const {error, loading, retry, title} = this.state;
         const style = getStyleSheet(theme);
 
         let postList;
@@ -384,8 +325,8 @@ export default class Permalink extends PureComponent {
                     onHashtagPress={this.handleHashtagPress}
                     onPermalinkPress={this.handlePermalinkPress}
                     onPostPress={this.goToThread}
-                    postIds={postIdsState}
-                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIdsState) : -1}
+                    postIds={postIds}
+                    lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds || []) : -1}
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     highlightPinnedOrFlagged={false}
@@ -430,7 +371,7 @@ export default class Permalink extends PureComponent {
                                     style={style.title}
                                 >
                                     {this.archivedIcon()}
-                                    {title}
+                                    {title || channelName}
                                 </Text>
                             </View>
                         </View>

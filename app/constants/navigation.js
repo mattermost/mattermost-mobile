@@ -18,4 +18,6 @@ const NavigationTypes = keyMirror({
     BLUR_POST_DRAFT: null,
 });
 
+NavigationTypes.CHANNEL_SCREEN = 'Channel';
+
 export default NavigationTypes;

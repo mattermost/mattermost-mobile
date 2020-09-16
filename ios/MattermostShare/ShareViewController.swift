@@ -92,7 +92,7 @@ class ShareViewController: SLComposeServiceViewController {
   func loadData() {
     if sessionToken == nil || serverURL == nil {
       showErrorMessage(title: "", message: "Authentication required: Please first login using the app.", VC: self)
-    } else if store.getCurrentTeamId() == "" {
+    } else if store.getCurrentTeamId() == "" || store.getMyTeams().count == 0 {
       showErrorMessage(title: "", message: "You must belong to a team before you can share files.", VC: self)
     } else {
       extractDataFromContext()

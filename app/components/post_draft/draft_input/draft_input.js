@@ -158,9 +158,12 @@ export default class DraftInput extends PureComponent {
         return messageLength > 0;
     };
 
-    doSubmitMessage = () => {
+    doSubmitMessage = (message = null) => {
         const {createPost, currentUserId, channelId, files, handleClearFiles, rootId} = this.props;
-        const value = this.input.current?.getValue() || '';
+        let value = message;
+        if (!value) {
+            value = this.input.current?.getValue() || '';
+        }
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -235,10 +238,10 @@ export default class DraftInput extends PureComponent {
             return;
         }
 
+        const value = this.input.current.getValue();
         this.input.current.resetTextInput();
 
         requestAnimationFrame(() => {
-            const value = this.input.current.getValue();
             if (!this.isSendButtonEnabled()) {
                 this.input.current.setValue(value);
                 return;
@@ -265,12 +268,12 @@ export default class DraftInput extends PureComponent {
                 const accept = () => {
                     // Remove only failed files
                     handleClearFailedFiles(channelId, rootId);
-                    this.sendMessage();
+                    this.sendMessage(value);
                 };
 
                 DraftUtils.alertAttachmentFail(formatMessage, accept, cancel);
             } else {
-                this.sendMessage();
+                this.sendMessage(value);
             }
         });
     }
@@ -376,8 +379,7 @@ export default class DraftInput extends PureComponent {
         this.showingPermalink = false;
     };
 
-    sendMessage = () => {
-        const value = this.input.current?.getValue() || '';
+    sendMessage = (value = '') => {
         const {channelMemberCountsByGroup, enableConfirmNotificationsToChannel, groupsWithAllowReference, membersCount, useGroupMentions, useChannelMentions} = this.props;
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
         const notificationsToGroups = enableConfirmNotificationsToChannel && useGroupMentions;
@@ -393,10 +395,10 @@ export default class DraftInput extends PureComponent {
             if (memberNotifyCount > 0) {
                 this.showSendToGroupsAlert(Array.from(groupMentionsSet), memberNotifyCount, channelTimezoneCount, value);
             } else {
-                this.doSubmitMessage();
+                this.doSubmitMessage(value);
             }
         } else {
-            this.doSubmitMessage();
+            this.doSubmitMessage(value);
         }
     };
 

@@ -33,6 +33,7 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('ChannelAddMembers', () => wrapper(require('app/screens/channel_add_members').default), () => require('app/screens/channel_add_members').default);
     Navigation.registerComponent('ChannelInfo', () => wrapper(require('app/screens/channel_info').default), () => require('app/screens/channel_info').default);
     Navigation.registerComponent('ChannelMembers', () => wrapper(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
+    Navigation.registerComponent('ChannelNotificationPreference', () => wrapper(require('app/screens/channel_notification_preference').default), () => require('app/screens/channel_notification_preference').default);
     Navigation.registerComponent('ClientUpgrade', () => wrapper(require('app/screens/client_upgrade').default), () => require('app/screens/client_upgrade').default);
     Navigation.registerComponent('ClockDisplaySettings', () => wrapper(require('app/screens/settings/clock_display').default), () => require('app/screens/settings/clock_display').default);
     Navigation.registerComponent('Code', () => wrapper(require('app/screens/code').default), () => require('app/screens/code').default);

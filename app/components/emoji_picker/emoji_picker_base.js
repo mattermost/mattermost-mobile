@@ -251,6 +251,8 @@ export default class EmojiPicker extends PureComponent {
 
         let listComponent;
         if (searchTerm) {
+            const contentContainerStyle = filteredEmojis.length ? null : styles.flex;
+
             listComponent = (
                 <FlatList
                     data={filteredEmojis}
@@ -261,7 +263,7 @@ export default class EmojiPicker extends PureComponent {
                     pageSize={10}
                     renderItem={this.flatListRenderItem}
                     ListEmptyComponent={this.renderEmptyList}
-                    contentContainerStyle={styles.flex}
+                    contentContainerStyle={contentContainerStyle}
                     style={styles.flatList}
                 />
             );

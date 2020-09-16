@@ -25,7 +25,7 @@ export default class EmojiPicker extends EmojiPickerBase {
 
         const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
 
-        let keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 50 : 30;
+        let keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 80 : 60;
         if (isLandscape) {
             keyboardOffset = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 10;
         }
