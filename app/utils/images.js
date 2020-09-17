@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dimensions, Keyboard} from 'react-native';
+import {Dimensions, Keyboard, Platform} from 'react-native';
 
 import {goToScreen} from '@actions/navigation';
 import {DeviceTypes} from '@constants';
@@ -104,13 +104,19 @@ export function openGalleryAtIndex(index, files) {
                 interpolation: 'decelerate',
             };
 
-            contentPop.y = {
-                translationY: {
+            if (Platform.OS === 'ios') {
+                contentPop.translationY = {
                     from: 0,
                     to: -windowHeight,
                     duration: 300,
-                },
-            };
+                };
+            } else {
+                contentPop.y = {
+                    from: 0,
+                    to: windowHeight,
+                    duration: 300,
+                };
+            }
         }
 
         const options = {
@@ -128,7 +134,9 @@ export function openGalleryAtIndex(index, files) {
                 push: {
                     waitForRender: true,
                     sharedElementTransitions,
-                    content: contentPush,
+                    ...Platform.select({ios: {
+                        content: contentPush,
+                    }}),
                 },
                 pop: {
                     content: contentPop,
