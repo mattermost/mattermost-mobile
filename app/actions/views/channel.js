@@ -7,6 +7,7 @@ import {ViewTypes} from 'app/constants';
 
 import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
+    addChannelMember,
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
     leaveChannel as serviceLeaveChannel,
@@ -183,6 +184,15 @@ export function handleSelectChannel(channelId) {
         const member = myMembers[channelId];
 
         if (channel) {
+            if (!member) {
+                console.log('joining channel', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
+                const currentUserId = getCurrentUserId(state);
+                const {error} = await dispatch(addChannelMember(channelId, currentUserId));
+                if (error) {
+                    return error;
+                }
+            }
+
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
             let previousChannelId = null;
@@ -205,6 +215,7 @@ export function handleSelectChannel(channelId) {
 
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
+        return null;
     };
 }
 
@@ -236,7 +247,10 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         }
 
         if (channel && currentChannelId !== channel.id) {
-            dispatch(handleSelectChannel(channel.id));
+            const {err} = await dispatch(handleSelectChannel(channel.id));
+            if (err) {
+                return {err};
+            }
         }
 
         return null;
