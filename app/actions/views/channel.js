@@ -247,7 +247,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         }
 
         if (channel && currentChannelId !== channel.id) {
-            const {err} = await dispatch(handleSelectChannel(channel.id));
+            const err = await dispatch(handleSelectChannel(channel.id));
             if (err) {
                 return {err};
             }
