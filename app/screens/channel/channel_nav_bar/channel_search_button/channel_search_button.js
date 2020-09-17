@@ -13,6 +13,8 @@ import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import {showSearchModal} from 'app/actions/navigation';
+import {t} from 'app/utils/i18n';
+import {intlShape} from 'react-intl';
 
 export default class ChannelSearchButton extends PureComponent {
     static propTypes = {
@@ -20,6 +22,10 @@ export default class ChannelSearchButton extends PureComponent {
             clearSearch: PropTypes.func.isRequired,
         }).isRequired,
         theme: PropTypes.object,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     handlePress = preventDoubleTap(async () => {
@@ -35,11 +41,31 @@ export default class ChannelSearchButton extends PureComponent {
             theme,
         } = this.props;
 
+        const {formatMessage} = this.context.intl;
+
+        const buttonDescriptor = {
+            id: t('navbar.search.button'),
+            defaultMessage: 'Search',
+            description: 'Accessibility helper for search button in channel header.',
+        };
+        const accessibilityLabel = formatMessage(buttonDescriptor);
+
+        const buttonHint = {
+            id: t('navbar.search.hint'),
+            defaultMessage: 'Opens the channel search modal',
+            description: 'Accessibility helper for explaining what the search button in the channel header will do.',
+        };
+        const accessibilityHint = formatMessage(buttonHint);
+
         const style = getStyle(theme);
 
         return (
             <View style={style.container}>
                 <TouchableOpacity
+                    accessible={true}
+                    accessibilityHint={accessibilityHint}
+                    accessibilityLabel={accessibilityLabel}
+                    accessibilityRole='button'
                     onPress={this.handlePress}
                     style={style.flex}
                 >

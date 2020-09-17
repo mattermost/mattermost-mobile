@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SettingDrawerButton should match, full snapshot 1`] = `
+<ForwardRef
+  accessibilityHint="Opens the more options right hand sidebar"
+  accessibilityLabel="More Options"
+  accessibilityRole="button"
+  accessible={true}
+  onPress={[Function]}
+  style={
+    Object {
+      "width": 44,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "column",
+        "justifyContent": "center",
+        "marginLeft": 8,
+      }
+    }
+  >
+    <Icon
+      allowFontScaling={false}
+      color="#ffffff"
+      name="ellipsis-vertical"
+      size={25}
+    />
+  </View>
+</ForwardRef>
+`;
