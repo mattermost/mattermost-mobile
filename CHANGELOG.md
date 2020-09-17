@@ -14,6 +14,7 @@
 ### Improvements
  - Added **Channel Settings > Notification Preferences** to add the ability to edit mobile push notification settings at the channel level.
  - Server URL now autofills when opening the app from the mobile landing page.
+ - Added support for accessibility to the channel header buttons.
  - Refactored the post draft component, including writing and posting messages, attaching images, using the autocomplete functionality, showing alerts from group mentions and channel wide mentions, and executing slash commands.
  - Improved the empty state screen for Recent Mentions.
  - Re-styled Read Only channels.
