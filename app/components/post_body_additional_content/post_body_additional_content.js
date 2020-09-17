@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {intlShape} from 'react-intl';
+import parseUrl from 'url-parse';
 
 import ImageViewPort from '@components/image_viewport';
 import PostAttachmentImage from '@components/post_attachment_image';
@@ -121,8 +122,15 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             link = expandedLink;
         }
 
-        const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const extension = filename.split('.').pop();
+        const url = decodeURIComponent(link);
+        let filename = parseUrl(url.substr(url.lastIndexOf('/'))).pathname.replace('/', '');
+        let extension = filename.split('.').pop();
+
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+            extension = ext;
+        }
 
         return {
             id: this.fileId,

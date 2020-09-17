@@ -4,6 +4,7 @@
 import React, {useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import parseUrl from 'url-parse';
 
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -54,13 +55,14 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: Ma
 
     const getFileInfo = () => {
         const {height, width} = metadata;
-        const link = getImageSource();
-        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const extension = filename.split('.').pop();
+        const link = decodeURIComponent(getImageSource());
+        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        let extension = filename.split('.').pop();
 
         if (extension === filename) {
             const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
             filename = `${filename}${ext}`;
+            extension = ext;
         }
 
         return {

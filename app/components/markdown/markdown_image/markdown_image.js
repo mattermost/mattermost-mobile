@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Clipboard from '@react-native-community/clipboard';
+import parseUrl from 'url-parse';
 
 import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 import ImageViewPort from '@components/image_viewport';
@@ -62,13 +63,14 @@ export default class MarkdownImage extends ImageViewPort {
 
     getFileInfo = () => {
         const {originalHeight, originalWidth} = this.state;
-        const link = this.getSource();
-        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const extension = filename.split('.').pop();
+        const link = decodeURIComponent(this.getSource());
+        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        let extension = filename.split('.').pop();
 
         if (extension === filename) {
             const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
             filename = `${filename}${ext}`;
+            extension = ext;
         }
 
         return {

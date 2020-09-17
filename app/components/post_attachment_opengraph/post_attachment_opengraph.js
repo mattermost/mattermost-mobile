@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Linking, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import parseUrl from 'url-parse';
 
 import {TABLET_WIDTH} from '@components/sidebars/drawer_layout';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -92,8 +93,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         };
     };
 
-    getFilename = (link) => {
-        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+    getFilename = (uri) => {
+        const link = decodeURIComponent(uri);
+        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
         const extension = filename.split('.').pop();
 
         if (extension === filename) {
