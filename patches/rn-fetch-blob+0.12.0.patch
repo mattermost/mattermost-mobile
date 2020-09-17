@@ -428,6 +428,19 @@ index 77bbe7a..c0292ec 100644
 -  df
 +  df,
  }
+diff --git a/node_modules/rn-fetch-blob/index.d.ts b/node_modules/rn-fetch-blob/index.d.ts
+index 58dc9e1..7a2bc3f 100644
+--- a/node_modules/rn-fetch-blob/index.d.ts
++++ b/node_modules/rn-fetch-blob/index.d.ts
+@@ -627,6 +627,8 @@ export interface RNFetchBlobConfig {
+      * Fix IOS request timeout issue #368 by change default request setting to defaultSessionConfiguration, and make backgroundSessionConfigurationWithIdentifier optional
+      */
+     IOSBackgroundTask?: boolean;
++
++    certificate?: string;
+ }
+ 
+ export interface AddAndroidDownloads {
 diff --git a/node_modules/rn-fetch-blob/index.js b/node_modules/rn-fetch-blob/index.js
 index 8ab5e96..66b0b60 100644
 --- a/node_modules/rn-fetch-blob/index.js
