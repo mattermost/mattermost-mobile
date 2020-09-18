@@ -205,6 +205,10 @@ jest.mock('react-native-navigation', () => {
     };
 });
 
+jest.mock('react-native-share', () => ({
+    default: jest.fn(),
+}));
+
 jest.mock('app/actions/navigation', () => ({
     resetToChannel: jest.fn(),
     resetToSelectServer: jest.fn(),
@@ -222,6 +226,15 @@ jest.mock('app/actions/navigation', () => ({
     dismissAllModals: jest.fn(() => Promise.resolve()),
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
+
+jest.mock('app/utils/file', () => {
+    const file = jest.requireActual('../app/utils/file');
+
+    return {
+        ...file,
+        generateId: jest.fn().mockReturnValue('123'),
+    };
+});
 
 let logs = [];
 let warns = [];
