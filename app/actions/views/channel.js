@@ -9,6 +9,7 @@ import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
+    joinChannel,
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
 import {savePreferences} from '@mm-redux/actions/preferences';
@@ -22,6 +23,7 @@ import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
+    getMyChannelMemberships,
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -236,6 +238,17 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         }
 
         if (channel && currentChannelId !== channel.id) {
+            if (channel.type === General.OPEN_CHANNEL) {
+                const myMemberships = getMyChannelMemberships(state);
+                if (!myMemberships[channel.id]) {
+                    const currentUserId = getCurrentUserId(state);
+                    console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
+                    const result = await dispatch(joinChannel(currentUserId, teamName, channel.id));
+                    if (result.error || !result.data || !result.data.channel) {
+                        return {error};
+                    }
+                }
+            }
             dispatch(handleSelectChannel(channel.id));
         }
 
