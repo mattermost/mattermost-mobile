@@ -1,16 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ImagePreview should match snapshot 1`] = `
+exports[`Gallery should match snapshot 1`] = `
 <React.Fragment>
-  <Gallery
-    errorComponent={[Function]}
-    flatListProps={
-      Object {
-        "windowSize": 3,
-      }
-    }
-    imageComponent={[Function]}
-    images={
+  <GalleryViewer
+    files={
       Array [
         Object {
           "caption": "Caption 1",
@@ -24,54 +17,45 @@ exports[`ImagePreview should match snapshot 1`] = `
         },
       ]
     }
-    initialPage={0}
+    footerVisible={true}
+    height={400}
+    initialIndex={0}
+    isLandscape={false}
+    onClose={[Function]}
     onPageSelected={[Function]}
-    onSingleTapConfirmed={[Function]}
-    onSwipedVertical={[Function]}
-    pageMargin={2}
-    removeClippedSubviews={true}
-    scrollViewStyle={Object {}}
-    style={
+    onTap={[Function]}
+    theme={
       Object {
-        "flex": 1,
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
       }
     }
+    width={300}
   />
-  <ForwardRef(AnimatedComponentWrapper)
-    style={
-      Array [
-        Object {
-          "bottom": 0,
-          "opacity": 1,
-        },
-        Object {
-          "alignItems": "center",
-          "backgroundColor": "#000",
-          "height": 99,
-          "justifyContent": "center",
-          "position": "absolute",
-          "width": "100%",
-        },
-      ]
-    }
-  >
-    <Text
-      ellipsizeMode="tail"
-      numberOfLines={2}
-      style={
-        Object {
-          "color": "white",
-          "fontSize": 14,
-          "marginBottom": 10,
-        }
-      }
-    >
-      
-    </Text>
-  </ForwardRef(AnimatedComponentWrapper)>
-  <Downloader
-    deviceHeight={400}
-    deviceWidth={300}
+  <InjectIntl(Footer)
     file={
       Object {
         "caption": "Caption 1",
@@ -79,35 +63,6 @@ exports[`ImagePreview should match snapshot 1`] = `
         "source": "source",
       }
     }
-    force={false}
-    onCancelPress={[Function]}
-    onDownloadCancel={[Function]}
-    onDownloadStart={[Function]}
-    onDownloadSuccess={[Function]}
-    prompt={false}
-    saveToCameraRoll={true}
-    show={false}
   />
 </React.Fragment>
-`;
-
-exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
-<ForwardRef
-  onPress={[Function]}
-  style={
-    Object {
-      "alignItems": "center",
-      "height": 44,
-      "justifyContent": "center",
-      "width": 48,
-    }
-  }
->
-  <Icon
-    allowFontScaling={false}
-    color="#fff"
-    name="download-outline"
-    size={26}
-  />
-</ForwardRef>
 `;

@@ -45,7 +45,14 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('ExpandedAnnouncementBanner', () => wrapper(require('app/screens/expanded_announcement_banner').default), () => require('app/screens/expanded_announcement_banner').default);
     Navigation.registerComponent('FlaggedPosts', () => wrapper(require('app/screens/flagged_posts').default), () => require('app/screens/flagged_posts').default);
     Navigation.registerComponent('ForgotPassword', () => wrapper(require('app/screens/forgot_password').default), () => require('app/screens/forgot_password').default);
-    Navigation.registerComponent('Gallery', () => wrapper(require('app/screens/gallery').default), () => require('app/screens/gallery').default);
+    Navigation.registerComponent('Gallery', () => {
+        const screen = wrapper(require('app/screens/gallery').default);
+        if (Platform.OS === 'android') {
+            return gestureHandlerRootHOC(screen);
+        }
+
+        return screen;
+    }, () => require('app/screens/gallery').default);
     Navigation.registerComponent('InteractiveDialog', () => wrapper(require('app/screens/interactive_dialog').default), () => require('app/screens/interactive_dialog').default);
     Navigation.registerComponent('Login', () => wrapper(require('app/screens/login').default), () => require('app/screens/login').default);
     Navigation.registerComponent('LoginOptions', () => wrapper(require('app/screens/login_options').default), () => require('app/screens/login_options').default);
@@ -80,7 +87,6 @@ export function registerScreens(store, Provider) {
     Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default), () => require('app/screens/sso').default);
     Navigation.registerComponent('Table', () => wrapper(require('app/screens/table').default), () => require('app/screens/table').default);
     Navigation.registerComponent('TermsOfService', () => wrapper(require('app/screens/terms_of_service').default), () => require('app/screens/terms_of_service').default);
-    Navigation.registerComponent('TextPreview', () => wrapper(require('app/screens/text_preview').default), () => require('app/screens/text_preview').default);
     Navigation.registerComponent('ThemeSettings', () => wrapper(require('app/screens/settings/theme').default), () => require('app/screens/settings/theme').default);
     Navigation.registerComponent('Thread', () => wrapper(require('app/screens/thread').default), () => require('app/screens/thread').default);
     Navigation.registerComponent('TimezoneSettings', () => wrapper(require('app/screens/settings/timezone').default), () => require('app/screens/settings/timezone').default);

@@ -4,9 +4,11 @@
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
 import {Animated, StyleSheet} from 'react-native';
 import {injectIntl} from 'react-intl';
-import {useClipboard} from '@react-native-community/clipboard';
+import Clipboard from '@react-native-community/clipboard';
 
+import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
 import {Client4} from '@mm-redux/client';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import type {CallbackFunctionWithoutArguments, DownloadRef, FooterProps, FooterRef, ShowToast, ToastRef} from 'types/screens/gallery';
 
@@ -29,7 +31,6 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const downloadingOpacitity = useRef(new Animated.Value(0)).current;
     const downloadRef = useRef<DownloadRef>(null);
     const toastRef = useRef<ToastRef>();
-    const [, setClipboard] = useClipboard();
 
     const animate = (value: Animated.Value, show: boolean, callback?: () => void): Animated.CompositeAnimation => {
         const animation = Animated.timing(value, {
@@ -48,7 +49,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
             const {formatMessage} = props.intl;
             const message = formatMessage({id: 'mobile.public_link.copied', defaultMessage: 'Public link copied'});
             const res = await Client4.getFilePublicLink(props.file.id);
-            setClipboard(res.link);
+            Clipboard.setString(res.link);
             showToast(message, undefined, callback);
         } catch (e) {
             // eslint-disable-next-line no-console
@@ -62,15 +63,30 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
         callback();
     };
 
+    const isVisible = () => visible;
+
     const showToast: ShowToast = (text, duration, callback) => {
         toastRef.current?.show(text, duration, callback);
     };
 
-    const startDownload = async () => {
+    const openOrShare = (share: boolean, callback: (path?: string) => void) => {
+        animate(opacity, false, () => {
+            animate(downloadingOpacitity, true, async () => {
+                const path = await downloadRef.current?.start(props.file, share);
+                animate(opacity, true);
+                callback(path);
+            });
+        });
+    };
+
+    const startDownload = async (): Promise<string | undefined> => {
+        let path;
         if (downloadRef.current) {
-            await downloadRef.current.start(props.file);
+            path = await downloadRef.current.start(props.file);
         }
         setDownloading(false);
+
+        return path;
     };
 
     const toggle = () => {
@@ -103,7 +119,16 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
         return () => animation?.stop();
     }, [downloading]);
 
+    useEffect(() => {
+        EventEmitter.on(ATTACHMENT_DOWNLOAD, openOrShare);
+
+        return () => {
+            EventEmitter.off(ATTACHMENT_DOWNLOAD, openOrShare);
+        };
+    });
+
     useImperativeHandle(ref, () => ({
+        isVisible,
         toggle,
     }), [visible]);
 
@@ -128,7 +153,10 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
                 <Toast ref={toastRef}/>
             </Animated.View>
             <Animated.View style={[{transform: [{translateY: downloadingY}], opacity: downloadingOpacitity}, styles.footer]}>
-                <DownloadFile ref={downloadRef}/>
+                <DownloadFile
+                    ref={downloadRef}
+                    intl={props.intl}
+                />
             </Animated.View>
         </>
     );

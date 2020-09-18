@@ -47,6 +47,7 @@ export default class FileAttachmentIcon extends PureComponent {
         wrapperHeight: PropTypes.number,
         wrapperWidth: PropTypes.number,
         theme: PropTypes.object,
+        tintColor: PropTypes.string,
     };
 
     static defaultProps = {
@@ -62,16 +63,16 @@ export default class FileAttachmentIcon extends PureComponent {
     }
 
     render() {
-        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth, theme} = this.props;
+        const {backgroundColor, file, iconHeight, iconWidth, wrapperHeight, wrapperWidth, theme, tintColor} = this.props;
         const source = this.getFileIconPath(file);
-        const bgColor = backgroundColor || theme.centerChannelBg || 'transparent';
+        const bgColor = backgroundColor || theme?.centerChannelBg || 'transparent';
 
         return (
             <View
                 style={[styles.fileIconWrapper, {backgroundColor: bgColor, height: wrapperHeight, width: wrapperWidth}]}
             >
                 <Image
-                    style={{maxHeight: iconHeight, maxWidth: iconWidth, tintColor: changeOpacity(theme.centerChannelColor, 20)}}
+                    style={{maxHeight: iconHeight, maxWidth: iconWidth, tintColor: tintColor || changeOpacity(theme.centerChannelColor, 20)}}
                     source={source}
                 />
             </View>

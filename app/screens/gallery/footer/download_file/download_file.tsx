@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
-import {Platform, StyleSheet, Text, View, ViewStyle} from 'react-native';
+import {intlShape} from 'react-intl';
+import {Alert, Platform, StyleSheet, Text, View, ViewStyle} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import RNFetchBlob, {FetchBlobResponse, RNFetchBlobConfig, StatefulPromise} from 'rn-fetch-blob';
 import Share from 'react-native-share';
@@ -19,6 +20,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import type {DownloadRef} from 'types/screens/gallery';
 
 type DownloadFileProps = {
+    intl: typeof intlShape;
     isLandscape: boolean;
     theme: Theme,
 }
@@ -43,11 +45,12 @@ const styles = StyleSheet.create({
     },
 });
 
-const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({isLandscape, theme}: DownloadFileProps, ref) => {
+const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({intl, isLandscape, theme}: DownloadFileProps, ref) => {
     const containerStyles: Array<ViewStyle> = [styles.container];
     let downloadTask = useRef<StatefulPromise<FetchBlobResponse>>().current;
     const [progress, setProgress] = useState(0);
-    const start = async (file: FileInfo): Promise<void> => {
+    const [visible, setVisible] = useState(false);
+    const start = async (file: FileInfo, share = true): Promise<string | undefined> => {
         const localPath = getLocalPath(file);
         let uri;
         let certificate;
@@ -76,27 +79,62 @@ const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({isLandscape, t
             if (exist) {
                 path = localPath;
             } else {
+                setVisible(true);
                 downloadTask = RNFetchBlob.config(options).fetch('GET', uri);
                 downloadTask.progress((received: number, total: number) => {
                     setProgress(parseFloat((received / total).toFixed(1)));
                 });
                 const response = await downloadTask;
                 path = response.path();
+                file.localPath = path;
             }
+        } catch (e) {
+            if (downloadTask) {
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.downloader.failed_title',
+                        defaultMessage: 'Download failed',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.downloader.failed_description',
+                        defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n',
+                    }),
+                    [{
+                        text: intl.formatMessage({
+                            id: 'mobile.server_upgrade.button',
+                            defaultMessage: 'OK',
+                        }),
+                    }],
+                );
 
-            await Share.open({
+                if (path) {
+                    RNFetchBlob.fs.unlink(path);
+                    file.localPath = undefined;
+                }
+                path = undefined;
+            }
+        } finally {
+            setVisible(false);
+            downloadTask = undefined;
+        }
+
+        if (path && share) {
+            Share.open({
                 url: `file://${path}`,
                 showAppsToView: true,
+            }).catch(() => {
+                // do nothing
             });
-        } catch (e) {
-            // should we show an error, maybe just throw?
         }
+
+        return path;
     };
 
     useEffect(() => {
         return () => {
             if (downloadTask) {
                 downloadTask.cancel();
+                setVisible(false);
             }
         };
     }, []);
@@ -107,6 +145,10 @@ const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({isLandscape, t
 
     if (isLandscape) {
         containerStyles.push(styles.containerLandscape);
+    }
+
+    if (!visible) {
+        return null;
     }
 
     let label = <Text style={styles.saving}>{`${progress * 100}%`}</Text>;

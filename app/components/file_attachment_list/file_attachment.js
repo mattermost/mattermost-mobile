@@ -41,13 +41,39 @@ export default class FileAttachment extends PureComponent {
         wrapperWidth: 300,
     };
 
+    state = {
+        resizeMode: 'cover',
+    };
+
+    componentWillUnmount() {
+        if (this.transition) {
+            clearTimeout(this.transition);
+        }
+    }
+
+    handlePress = () => {
+        this.props.onPreviewPress(this.props.index);
+    };
+
     handlePreviewPress = () => {
         if (this.documentElement) {
             this.documentElement.handlePreviewPress();
+        } else if (isImage(this.props.file)) {
+            this.transitionImage();
         } else {
             this.props.onPreviewPress(this.props.index);
         }
     };
+
+    transitionImage = () => {
+        this.setState({resizeMode: 'stretch'}, () => {
+            this.props.onPreviewPress(this.props.index);
+            this.transition = setTimeout(() => {
+                this.setState({resizeMode: 'cover'});
+                clearTimeout(this.transition);
+            }, 500);
+        });
+    }
 
     renderFileInfo() {
         const {file, onLongPress, theme} = this.props;
@@ -59,7 +85,7 @@ export default class FileAttachment extends PureComponent {
 
         return (
             <TouchableWithFeedback
-                onPress={this.handlePreviewPress}
+                onPress={this.handlePress}
                 onLongPress={onLongPress}
                 type={'opacity'}
                 style={style.attachmentContainer}
@@ -153,6 +179,7 @@ export default class FileAttachment extends PureComponent {
                         theme={theme}
                         isSingleImage={isSingleImage}
                         imageDimensions={imageDimensions}
+                        resizeMode={this.state.resizeMode}
                     />
                     {this.renderMoreImagesOverlay(nonVisibleImagesCount, theme)}
                 </TouchableWithFeedback>

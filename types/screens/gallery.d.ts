@@ -3,6 +3,7 @@
 
 import {intlShape} from 'react-intl';
 import {StyleProp, ViewStyle} from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import type {FileInfo} from '@mm-redux/types/files';
 import type {Theme} from '@mm-redux/types/preferences';
@@ -41,7 +42,7 @@ export interface DetailsProps {
 }
 
 export interface DownloadRef {
-    start(file: FileInfo): Promise<void>;
+    start(file: FileInfo, share?: boolean): Promise<string | undefined>;
 }
 
 export interface FooterProps {
@@ -51,6 +52,31 @@ export interface FooterProps {
 
 export interface FooterRef {
     toggle(): boolean;
+    isVisible(): boolean;
+}
+
+export interface GalleryProps {
+    files: Array<FileInfo>;
+    footerVisible: boolean;
+    height: number;
+    initialIndex: number;
+    isLandscape: boolean;
+    onClose: CallbackFunctionWithoutArguments;
+    onPageSelected: (index: number) => void;
+    onTap: CallbackFunctionWithoutArguments;
+    width: number;
+    theme: Theme;
+}
+
+export interface GalleryItemProps {
+    file: FileInfo;
+    deviceHeight: number;
+    deviceWidth: number;
+    intl?: typeof intlShape;
+    isActive?: boolean;
+    onDoubleTap?: CallbackFunctionWithoutArguments;
+    style?: StyleProp<Animated.AnimateStyle>;
+    theme?: Theme;
 }
 
 export interface ManagedConfig {

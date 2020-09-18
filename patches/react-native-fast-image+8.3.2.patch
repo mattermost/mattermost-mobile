@@ -50,10 +50,10 @@ index 0000000..a302394
 +    }
 +}
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
-index 2214f04..bfb9895 100644
+index e659a61..1bdf34e 100644
 --- a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
 +++ b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
-@@ -45,6 +45,7 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
+@@ -43,6 +43,7 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
          OkHttpClient client = OkHttpClientProvider
                  .getOkHttpClient()
                  .newBuilder()
@@ -61,3 +61,18 @@ index 2214f04..bfb9895 100644
                  .addInterceptor(createInterceptor(progressListener))
                  .build();
          OkHttpUrlLoader.Factory factory = new OkHttpUrlLoader.Factory(client);
+diff --git a/node_modules/react-native-fast-image/dist/index.d.ts b/node_modules/react-native-fast-image/dist/index.d.ts
+index 0b1afd5..2226715 100644
+--- a/node_modules/react-native-fast-image/dist/index.d.ts
++++ b/node_modules/react-native-fast-image/dist/index.d.ts
+@@ -89,6 +89,10 @@ export interface FastImageProps extends AccessibilityProps {
+      * Render children within the image.
+      */
+     children?: React.ReactNode;
++    /**
++     * Native ID to used with shared elements transition
++     */
++    nativeID?: string;
+ }
+ interface FastImageStaticProperties {
+     resizeMode: typeof resizeMode;

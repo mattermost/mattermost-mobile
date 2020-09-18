@@ -61,8 +61,9 @@ function handleSetTempUploadFileForPostDraft(state, action) {
     }
 
     const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
+    const prevFiles = state[action.channelId]?.files || {};
     const files = [
-        ...state[action.channelId].files,
+        ...prevFiles,
         ...tempFiles,
     ];
 

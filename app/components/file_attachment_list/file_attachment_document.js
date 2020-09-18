@@ -17,29 +17,21 @@ import {CircularProgress} from 'react-native-circular-progress';
 import {intlShape} from 'react-intl';
 import tinyColor from 'tinycolor2';
 
+import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {AttachmentTypes, DeviceTypes} from '@constants/';
 import {getFileUrl} from '@mm-redux/utils/file_utils';
-
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {DeviceTypes} from 'app/constants/';
+import {getLocalFilePathFromFile} from '@utils/file';
+import {changeOpacity} from '@utils/theme';
 import mattermostBucket from 'app/mattermost_bucket';
-import {changeOpacity} from 'app/utils/theme';
-import {goToScreen} from 'app/actions/navigation';
-
-import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
-const TEXT_PREVIEW_FORMATS = [
-    'application/json',
-    'application/x-x509-ca-cert',
-    'text/plain',
-];
 const circularProgressWidth = 4;
 
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
         backgroundColor: PropTypes.string,
-        canDownloadFiles: PropTypes.bool.isRequired,
+        canDownloadFiles: PropTypes.bool,
         iconHeight: PropTypes.number,
         iconWidth: PropTypes.number,
         file: PropTypes.object.isRequired,
@@ -50,10 +42,10 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     static defaultProps = {
-        iconHeight: ATTACHMENT_ICON_HEIGHT,
-        iconWidth: ATTACHMENT_ICON_WIDTH,
-        wrapperHeight: ATTACHMENT_ICON_HEIGHT,
-        wrapperWidth: ATTACHMENT_ICON_WIDTH,
+        iconHeight: AttachmentTypes.ATTACHMENT_ICON_HEIGHT,
+        iconWidth: AttachmentTypes.ATTACHMENT_ICON_WIDTH,
+        wrapperHeight: AttachmentTypes.ATTACHMENT_ICON_HEIGHT,
+        wrapperWidth: AttachmentTypes.ATTACHMENT_ICON_WIDTH,
     };
 
     static contextTypes = {
@@ -73,6 +65,10 @@ export default class FileAttachmentDocument extends PureComponent {
 
     componentWillUnmount() {
         this.mounted = false;
+
+        if (this.openTimeout) {
+            clearTimeout(this.openTimeout);
+        }
     }
 
     cancelDownload = () => {
@@ -102,7 +98,7 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     downloadAndPreviewFile = async (file) => {
-        const path = `${DOCUMENTS_PATH}/${file.id}-${file.name}`;
+        const path = getLocalFilePathFromFile(DOCUMENTS_PATH, file);
 
         this.setState({didCancel: false});
 
@@ -127,15 +123,9 @@ export default class FileAttachmentDocument extends PureComponent {
                 certificate,
             };
 
-            const mime = file.mime_type.split(';')[0];
-            let openDocument = this.openDocument;
-            if (TEXT_PREVIEW_FORMATS.includes(mime)) {
-                openDocument = this.previewTextFile;
-            }
-
             const exist = await RNFetchBlob.fs.exists(path);
             if (exist) {
-                openDocument(file, 0);
+                this.openDocument(file, 0);
             } else {
                 this.setState({downloading: true});
                 this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id));
@@ -152,7 +142,7 @@ export default class FileAttachmentDocument extends PureComponent {
                         progress: 100,
                     }, () => {
                         // need to wait a bit for the progress circle UI to update to the give progress
-                        openDocument(file);
+                        this.openDocument(file);
                     });
                 }
             }
@@ -186,28 +176,6 @@ export default class FileAttachmentDocument extends PureComponent {
         }
     };
 
-    previewTextFile = (file, delay = 2000) => {
-        const prefix = Platform.OS === 'android' ? 'file:/' : '';
-        const path = `${DOCUMENTS_PATH}/${file.id}-${file.name}`;
-        const readFile = RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
-        setTimeout(async () => {
-            try {
-                this.setState({downloading: false, progress: 0});
-
-                const content = await readFile;
-                const screen = 'TextPreview';
-                const title = file.name;
-                const passProps = {
-                    content,
-                };
-
-                goToScreen(screen, title, passProps);
-            } catch (error) {
-                RNFetchBlob.fs.unlink(path);
-            }
-        }, delay);
-    };
-
     onDonePreviewingFile = () => {
         if (this.mounted) {
             this.setState({progress: 0, downloading: false, preview: false});
@@ -219,9 +187,9 @@ export default class FileAttachmentDocument extends PureComponent {
         // The animation for the progress circle takes about 2 seconds to finish
         // therefore we are delaying the opening of the document to have the UI
         // shown nicely and smooth
-        setTimeout(() => {
+        this.openTimeout = setTimeout(() => {
             if (!this.state.didCancel && !this.state.preview && this.mounted) {
-                const path = `${DOCUMENTS_PATH}/${file.id}-${file.name}`;
+                const path = getLocalFilePathFromFile(DOCUMENTS_PATH, file);
                 this.setState({preview: true});
                 this.setStatusBarColor('dark-content');
                 FileViewer.open(path, {

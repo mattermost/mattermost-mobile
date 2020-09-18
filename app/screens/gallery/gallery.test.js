@@ -2,25 +2,30 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
-
-// import RNFetchBlob from 'rn-fetch-blob';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 
-// import BottomSheet from 'app/utils/bottom_sheet';
-
-import ImagePreview from './gallery';
+import Gallery from './gallery';
 
 jest.useFakeTimers();
-jest.mock('react-intl');
 jest.mock('react-native-file-viewer', () => ({
     open: jest.fn(),
 }));
 
-describe('ImagePreview', () => {
+jest.mock('react-native-reanimated', () => {
+    const Reanimated = require('react-native-reanimated/mock');
+
+    // The mock for `call` immediately calls the callback which is incorrect
+    // So we override it with a no-op
+    Reanimated.default.call = () => jest.fn();
+
+    return Reanimated;
+});
+
+describe('Gallery', () => {
     const baseProps = {
         canDownloadFiles: true,
         deviceHeight: 400,
@@ -35,27 +40,16 @@ describe('ImagePreview', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
-            <ImagePreview {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
+        const wrapper = shallowWithIntl(
+            <Gallery {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('should match snapshot, renderDownloadButton', () => {
-        const wrapper = shallow(
-            <ImagePreview {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
-        );
-
-        expect(wrapper.instance().renderDownloadButton()).toMatchSnapshot();
-    });
-
     test('should match state on handleChangeImage', () => {
-        const wrapper = shallow(
-            <ImagePreview {...baseProps}/>,
-            {context: {intl: {formatMessage: jest.fn()}}},
+        const wrapper = shallowWithIntl(
+            <Gallery {...baseProps}/>,
         );
 
         wrapper.setState({index: 0});
@@ -68,11 +62,10 @@ describe('ImagePreview', () => {
         const mergeNavigationOptions = jest.spyOn(NavigationActions, 'mergeNavigationOptions');
         const popTopScreen = jest.spyOn(NavigationActions, 'popTopScreen');
 
-        const wrapper = shallow(
-            <ImagePreview
+        const wrapper = shallowWithIntl(
+            <Gallery
                 {...baseProps}
             />,
-            {context: {intl: {formatMessage: jest.fn()}}},
         );
 
         wrapper.instance().close();

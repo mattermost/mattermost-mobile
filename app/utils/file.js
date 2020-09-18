@@ -6,13 +6,12 @@ import RNFetchBlob from 'rn-fetch-blob';
 import mimeDB from 'mime-db';
 
 import {DeviceTypes} from '@constants';
-import {lookupMimeType} from '@mm-redux/utils/file_utils';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
 
-export const SUPPORTED_DOCS_FORMAT = [
+export const GENERAL_SUPPORTED_DOCS_FORMAT = [
     'application/json',
     'application/msword',
     'application/pdf',
@@ -27,6 +26,16 @@ export const SUPPORTED_DOCS_FORMAT = [
     'text/csv',
     'text/plain',
 ];
+
+const SUPPORTED_DOCS_FORMAT = Platform.select({
+    android: GENERAL_SUPPORTED_DOCS_FORMAT,
+    ios: [
+        ...GENERAL_SUPPORTED_DOCS_FORMAT,
+        'application/vnd.apple.pages',
+        'application/vnd.apple.numbers',
+        'application/vnd.apple.keynote',
+    ],
+});
 
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
@@ -116,6 +125,15 @@ export async function deleteFileCache() {
     return true;
 }
 
+export function lookupMimeType(filename) {
+    if (!Object.keys(extensions).length) {
+        populateMaps();
+    }
+
+    const ext = filename.split('.').pop()?.toLowerCase();
+    return types[ext] || 'application/octet-stream';
+}
+
 export function buildFileUploadData(file) {
     const re = /heic/i;
     const uri = file.uri;
@@ -149,7 +167,7 @@ export const isGif = (file) => {
     let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
-    } else {
+    } else if (!mime && file?.name) {
         mime = lookupMimeType(file.name);
     }
 
@@ -162,6 +180,8 @@ export const isDocument = (file) => {
     let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
+    } else if (!mime && file?.name) {
+        mime = lookupMimeType(file.name);
     }
 
     return SUPPORTED_DOCS_FORMAT.includes(mime);
@@ -171,7 +191,7 @@ export const isVideo = (file) => {
     let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
-    } else {
+    } else if (!mime && file?.name) {
         mime = lookupMimeType(file.name);
     }
 

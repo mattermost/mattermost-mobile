@@ -61,7 +61,7 @@ const Actions = (props: ActionsProps) => {
             <Action
                 action={props.downloadAction}
                 style={styles.download}
-                visible={props.canDownloadFiles && !props.file.localPath}
+                visible={props.canDownloadFiles}
             >
                 <Material
                     name='export-variant'

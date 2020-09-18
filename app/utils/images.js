@@ -116,19 +116,24 @@ export function openGalleryAtIndex(index, files) {
                     to: windowHeight,
                     duration: 300,
                 };
+                contentPop.alpha = {
+                    from: 1,
+                    to: 0,
+                    duration: 100,
+                };
             }
         }
 
         const options = {
             layout: {
-                backgroundColor: 'transparent',
+                backgroundColor: '#000',
                 componentBackgroundColor: '#000',
             },
             topBar: {
                 background: {
                     color: '#000',
                 },
-                visible: false,
+                visible: Platform.OS === 'android',
             },
             animations: {
                 push: {

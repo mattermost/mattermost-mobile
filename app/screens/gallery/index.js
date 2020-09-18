@@ -4,17 +4,15 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {canDownloadFilesOnMobile} from '@mm-redux/selectors/entities/general';
 import {getDimensions} from '@selectors/device';
 
-import ImagePreview from './gallery';
+import Gallery from './gallery';
 
 function mapStateToProps(state) {
     return {
         ...getDimensions(state),
-        canDownloadFiles: canDownloadFilesOnMobile(state),
         theme: getTheme(state),
     };
 }
 
-export default connect(mapStateToProps)(ImagePreview);
+export default connect(mapStateToProps)(Gallery);
