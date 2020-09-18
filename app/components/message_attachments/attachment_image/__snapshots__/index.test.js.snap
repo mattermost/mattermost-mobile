@@ -32,7 +32,7 @@ exports[`AttachmentImage it matches snapshot 1`] = `
     }
   >
     <Connect(ProgressiveImage)
-      id="uid63df217d-e3e2-4a34-b4e6-ebc7e21d5d6f"
+      id="123"
       imageStyle={
         Object {
           "marginBottom": 5,
