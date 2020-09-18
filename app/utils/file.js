@@ -5,6 +5,7 @@ import {Platform} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import mimeDB from 'mime-db';
 
+import {DeviceTypes} from '@constants';
 import {lookupMimeType} from '@mm-redux/utils/file_utils';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
@@ -148,6 +149,8 @@ export const isGif = (file) => {
     let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
+    } else {
+        mime = lookupMimeType(file.name);
     }
 
     return mime === 'image/gif';
@@ -168,6 +171,8 @@ export const isVideo = (file) => {
     let mime = file?.mime_type || file?.type || '';
     if (mime && mime.includes(';')) {
         mime = mime.split(';')[0];
+    } else {
+        mime = lookupMimeType(file.name);
     }
 
     return SUPPORTED_VIDEO_FORMAT.includes(mime);
@@ -239,12 +244,45 @@ function populateMaps() {
     });
 }
 
-export function getLocalFilePathFromFile(dir, file) {
-    if (dir && file?.id && file?.extension) {
-        return `${dir}/${file.id}.${file.extension}`;
+export const hashCode = (str) => {
+    let hash = 0;
+    let i;
+    let chr;
+    if (!str || str.length === 0) {
+        return hash;
     }
 
-    return null;
+    for (i = 0; i < str.length; i++) {
+        chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+};
+
+export function getLocalFilePathFromFile(dir, file) {
+    if (dir) {
+        if (file?.name) {
+            const [filename, extension] = file.name.split('.');
+            return `${dir}/${filename}-${hashCode(file.id)}.${extension}`;
+        } else if (file?.id && file?.extension) {
+            return `${dir}/${file.id}.${file.extension}`;
+        }
+    }
+
+    return undefined;
+}
+
+export function getLocalPath(file) {
+    if (file.localPath) {
+        return file.localPath;
+    } else if (isVideo(file)) {
+        return getLocalFilePathFromFile(DeviceTypes.VIDEOS_PATH, file);
+    } else if (isImage(file)) {
+        return getLocalFilePathFromFile(DeviceTypes.IMAGES_PATH, file);
+    }
+
+    return getLocalFilePathFromFile(DeviceTypes.DOCUMENTS_PATH, file);
 }
 
 export function getExtensionFromContentDisposition(contentDisposition) {
