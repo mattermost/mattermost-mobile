@@ -27,12 +27,16 @@ export default class Reaction extends PureComponent {
         onPress(emojiName, highlight);
     }
 
+    handleOnLongPress = () => {
+        const {emojiName, onLongPress} = this.props;
+        onLongPress(emojiName);
+    }
+
     render() {
         const {
             count,
             emojiName,
             highlight,
-            onLongPress,
             theme,
         } = this.props;
         const styles = getStyleSheet(theme);
@@ -40,7 +44,7 @@ export default class Reaction extends PureComponent {
         return (
             <TouchableWithFeedback
                 onPress={this.handlePress}
-                onLongPress={onLongPress}
+                onLongPress={this.handleOnLongPress}
                 delayLongPress={350}
                 style={[styles.reaction, (highlight && styles.highlight)]}
                 type={'opacity'}

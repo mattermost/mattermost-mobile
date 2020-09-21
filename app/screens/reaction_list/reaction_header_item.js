@@ -11,10 +11,6 @@ import {
 import Emoji from 'app/components/emoji';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import FormattedText from 'app/components/formatted_text';
-
-import {ALL_EMOJIS} from 'app/constants/emoji';
-
 export default class ReactionHeaderItem extends PureComponent {
     static propTypes = {
         count: PropTypes.number.isRequired,
@@ -33,19 +29,6 @@ export default class ReactionHeaderItem extends PureComponent {
         const {count, emojiName, theme} = this.props;
         const styles = getStyleSheet(theme);
 
-        if (emojiName === ALL_EMOJIS) {
-            return (
-                <React.Fragment>
-                    <FormattedText
-                        id='mobile.reaction_header.all_emojis'
-                        defaultMessage={'All'}
-                        style={styles.text}
-                    />
-                    <Text style={styles.text}>{count}</Text>
-                </React.Fragment>
-            );
-        }
-
         return (
             <React.Fragment>
                 <Emoji
@@ -60,13 +43,13 @@ export default class ReactionHeaderItem extends PureComponent {
     };
 
     render() {
-        const {emojiName, highlight, theme} = this.props;
+        const {highlight, theme} = this.props;
         const styles = getStyleSheet(theme);
 
         return (
             <TouchableOpacity
                 onPress={this.handleOnPress}
-                style={[styles.reaction, (highlight ? styles.highlight : styles.regular), (emojiName === ALL_EMOJIS && styles.allText)]}
+                style={[styles.reaction, (highlight ? styles.highlight : styles.regular)]}
             >
                 {this.renderContent()}
             </TouchableOpacity>

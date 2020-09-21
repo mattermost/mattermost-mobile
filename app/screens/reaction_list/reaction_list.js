@@ -16,14 +16,11 @@ import {
     getReactionsByName,
     getSortedReactionsForHeader,
     getUniqueUserIds,
-    sortReactions,
 } from 'app/utils/reaction';
 import {dismissModal} from 'app/actions/navigation';
 
 import ReactionHeader from './reaction_header';
 import ReactionRow from './reaction_row';
-
-import {ALL_EMOJIS} from 'app/constants/emoji';
 
 export default class ReactionList extends PureComponent {
     static propTypes = {
@@ -35,6 +32,7 @@ export default class ReactionList extends PureComponent {
         teammateNameDisplay: PropTypes.string,
         userProfiles: PropTypes.array,
         isLandscape: PropTypes.bool.isRequired,
+        emoji: PropTypes.string.isRequired,
     };
 
     static defaultProps = {
@@ -47,15 +45,14 @@ export default class ReactionList extends PureComponent {
 
     constructor(props) {
         super(props);
-        const {reactions, userProfiles} = props;
+        const {reactions, userProfiles, emoji} = props;
         const reactionsByName = getReactionsByName(reactions);
 
         this.state = {
             allUserIds: getUniqueUserIds(reactions),
             reactions,
             reactionsByName,
-            selected: ALL_EMOJIS,
-            sortedReactions: sortReactions(reactionsByName),
+            selected: emoji,
             sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
             userProfiles,
             userProfilesById: generateUserProfilesById(userProfiles),
@@ -72,7 +69,6 @@ export default class ReactionList extends PureComponent {
                 allUserIds: getUniqueUserIds(reactions),
                 reactions,
                 reactionsByName,
-                sortedReactions: sortReactions(reactionsByName),
                 sortedReactionsForHeader: getSortedReactionsForHeader(reactionsByName),
             };
         }
@@ -142,11 +138,10 @@ export default class ReactionList extends PureComponent {
         const {
             reactionsByName,
             selected,
-            sortedReactions,
             userProfilesById,
         } = this.state;
         const style = getStyleSheet(theme);
-        const reactions = selected === ALL_EMOJIS ? sortedReactions : reactionsByName[selected];
+        const reactions = reactionsByName[selected];
 
         return reactions.map(({emoji_name: emojiName, user_id: userId}) => (
             <View

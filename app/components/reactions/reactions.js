@@ -77,12 +77,13 @@ export default class Reactions extends PureComponent {
         }, 300);
     };
 
-    showReactionList = () => {
+    showReactionList = (emoji) => {
         const {postId} = this.props;
 
         const screen = 'ReactionList';
         const passProps = {
             postId,
+            emoji,
         };
 
         if (!this.onPressDetected) {
