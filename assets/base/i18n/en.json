@@ -411,7 +411,6 @@
   "mobile.push_notification_reply.button": "Send",
   "mobile.push_notification_reply.placeholder": "Write a reply...",
   "mobile.push_notification_reply.title": "Reply",
-  "mobile.reaction_header.all_emojis": "All",
   "mobile.recent_mentions.empty_description": "Messages where someone mentions you or includes your trigger words are saved here.",
   "mobile.recent_mentions.empty_title": "No Mentions yet",
   "mobile.rename_channel.display_name_maxLength": "Channel name must be less than {maxLength, number} characters",

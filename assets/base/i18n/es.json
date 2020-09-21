@@ -563,7 +563,6 @@
   "mobile.routes.user_profile.edit": "Editar",
   "mobile.routes.channelInfo.unarchive_channel": "Restaurar Canal",
   "mobile.routes.channelInfo.groupManaged": "Los miembros son gestionados por grupos enlazados",
-  "mobile.reaction_header.all_emojis": "Todos",
   "mobile.push_notification_reply.title": "Responder",
   "mobile.push_notification_reply.placeholder": "Escribe una respuesta...",
   "mobile.push_notification_reply.button": "Enviar",

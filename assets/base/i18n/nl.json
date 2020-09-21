@@ -563,7 +563,6 @@
   "mobile.routes.user_profile.edit": "Bewerken",
   "mobile.routes.channelInfo.unarchive_channel": "Kanaal Dearchiveren",
   "mobile.routes.channelInfo.groupManaged": "Leden worden beheerd door gekoppelde groepen",
-  "mobile.reaction_header.all_emojis": "Allen",
   "mobile.push_notification_reply.title": "Antwoord",
   "mobile.push_notification_reply.placeholder": "Schrijf een antwoord...",
   "mobile.push_notification_reply.button": "Verzenden",

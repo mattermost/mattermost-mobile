@@ -556,7 +556,6 @@
   "mobile.routes.user_profile.edit": "Edytuj",
   "mobile.routes.channelInfo.unarchive_channel": "Archiwizuj kanał",
   "mobile.routes.channelInfo.groupManaged": "Członkowie są zarządzani przez grupy połączone",
-  "mobile.reaction_header.all_emojis": "Wszystko",
   "mobile.push_notification_reply.title": "Odpowiedź",
   "mobile.push_notification_reply.placeholder": "Napisz odpowiedź...",
   "mobile.push_notification_reply.button": "Wyślij",

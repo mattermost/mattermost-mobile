@@ -399,7 +399,6 @@
   "mobile.routes.user_profile.edit": "편집",
   "mobile.routes.channelInfo.unarchive_channel": "채널 보관",
   "mobile.routes.channelInfo.groupManaged": "연결된 그룹에 의해 관리되는 구성원",
-  "mobile.reaction_header.all_emojis": "모두",
   "mobile.push_notification_reply.title": "답글",
   "mobile.push_notification_reply.placeholder": "댓글을 쓰세요...",
   "mobile.push_notification_reply.button": "보내기",

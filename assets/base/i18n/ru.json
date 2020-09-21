@@ -563,7 +563,6 @@
   "mobile.routes.user_profile.edit": "Изменить",
   "mobile.routes.channelInfo.unarchive_channel": "Разархивировать канал",
   "mobile.routes.channelInfo.groupManaged": "Участники управляются связанными группами",
-  "mobile.reaction_header.all_emojis": "Все",
   "mobile.push_notification_reply.title": "Ответить",
   "mobile.push_notification_reply.placeholder": "Ответить...",
   "mobile.push_notification_reply.button": "Отправить",

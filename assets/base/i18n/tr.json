@@ -566,7 +566,6 @@
   "mobile.routes.user_profile.edit": "Düzenle",
   "mobile.routes.channelInfo.unarchive_channel": "Kanalı Arşivden Çıkar",
   "mobile.routes.channelInfo.groupManaged": "Üyeler ilişkilendirilmiş gruplar tarafından yönetilir",
-  "mobile.reaction_header.all_emojis": "Tümü",
   "mobile.push_notification_reply.title": "Yanıtla",
   "mobile.push_notification_reply.placeholder": "Yanıt yazın...",
   "mobile.push_notification_reply.button": "Gönder",

@@ -563,7 +563,6 @@
   "mobile.routes.user_profile.edit": "Editați",
   "mobile.routes.channelInfo.unarchive_channel": "Dezarhivează canalul",
   "mobile.routes.channelInfo.groupManaged": "Membrii sunt gestionați de grupuri legate",
-  "mobile.reaction_header.all_emojis": "Toate",
   "mobile.push_notification_reply.title": "Răspuns",
   "mobile.push_notification_reply.placeholder": "Scrie un răspuns...",
   "mobile.push_notification_reply.button": "Trimite",
