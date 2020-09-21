@@ -125,8 +125,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         row: {
             height: 40,
             paddingVertical: 8,
+            paddingTop: 4,
             paddingHorizontal: 16,
             flexDirection: 'row',
+            alignItems: 'center',
         },
         rowPicture: {
             marginRight: 10,

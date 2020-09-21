@@ -255,7 +255,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         listView: {
             paddingTop: 16,
-            paddingBottom: 8,
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
         },

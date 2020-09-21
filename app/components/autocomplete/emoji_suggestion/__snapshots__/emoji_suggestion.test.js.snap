@@ -3044,7 +3044,6 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
       Object {
         "backgroundColor": "#ffffff",
         "borderRadius": 4,
-        "paddingBottom": 8,
         "paddingTop": 16,
       },
       Object {
