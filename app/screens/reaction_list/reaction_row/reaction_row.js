@@ -19,11 +19,8 @@ import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {showModal} from 'app/actions/navigation';
 
-import Emoji from 'app/components/emoji';
-
 export default class ReactionRow extends React.PureComponent {
     static propTypes = {
-        emojiName: PropTypes.string.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
@@ -65,7 +62,6 @@ export default class ReactionRow extends React.PureComponent {
 
     render() {
         const {
-            emojiName,
             teammateNameDisplay,
             user,
             isLandscape,
@@ -110,13 +106,6 @@ export default class ReactionRow extends React.PureComponent {
                         {displayUsername(user, teammateNameDisplay)}
                     </Text>
                 </Text>
-                <View style={style.emoji}>
-                    <Emoji
-                        emojiName={emojiName}
-                        textStyle={style.emojiText}
-                        size={24}
-                    />
-                </View>
             </View>
         );
     }
@@ -150,15 +139,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         displayName: {
             fontSize: 14,
             color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-        emoji: {
-            alignItems: 'center',
-            width: '13%',
-            justifyContent: 'center',
-        },
-        emojiText: {
-            color: '#000',
-            fontWeight: 'bold',
         },
     };
 });

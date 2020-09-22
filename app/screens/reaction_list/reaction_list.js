@@ -3,13 +3,15 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {intlShape} from 'react-intl';
 
 import SlideUpPanel from 'app/components/slide_up_panel';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {getEmojiByName} from 'app/utils/emoji_utils';
+
 import {
     generateUserProfilesById,
     getMissingUserIds,
@@ -149,7 +151,6 @@ export default class ReactionList extends PureComponent {
                 style={style.rowContainer}
             >
                 <ReactionRow
-                    emojiName={emojiName}
                     teammateNameDisplay={teammateNameDisplay}
                     theme={theme}
                     user={userProfilesById[userId]}
@@ -176,6 +177,7 @@ export default class ReactionList extends PureComponent {
     };
 
     render() {
+        const emojiAliases = getEmojiByName(this.state.selected).aliases.length > 1 ? getEmojiByName(this.state.selected).aliases.map((alias) => `:${alias}:  `) : `:${getEmojiByName(this.state.selected).aliases[0]}:`;
         const {theme} = this.props;
         const style = getStyleSheet(theme);
 
@@ -189,6 +191,11 @@ export default class ReactionList extends PureComponent {
                     headerHeight={37.5}
                     theme={theme}
                 >
+                    <View style={style.emojiAliasContainer}>
+                        <Text style={style.emojiAlias}>
+                            {emojiAliases}
+                        </Text>
+                    </View>
                     {this.renderReactionRows()}
                 </SlideUpPanel>
             </View>
@@ -211,6 +218,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         separator: {
             height: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+        },
+        emojiAliasContainer: {
+            marginTop: 15,
+            marginBottom: 15,
+            marginLeft: 10,
+        },
+        emojiAlias: {
+            fontSize: 12,
+            fontWeight: '600',
+            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
     };
 });
