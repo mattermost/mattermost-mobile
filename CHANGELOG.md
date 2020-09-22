@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixed an issue where the app crashed when tapping on "Show More" on a long post and then tapping on the thread.
+ - Fixed an issue where the app crashed when tapping on "Show More" on a long post and then tapping on the post to go to the thread.
 
 ## 1.35.0 Release
 - Release Date: September 16, 2020
