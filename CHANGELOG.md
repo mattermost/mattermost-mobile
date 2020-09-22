@@ -10,7 +10,7 @@
  - iPhone 5s devices and later with iOS 11+ is required.
 
 ### Bug Fixes
- - Fixed an issue where the app crashed due to an invalid import of ``getPostThread``.
+ - Fixed an issue where the app crashed when tapping on "Show More" and then tapping on the thread.
 
 ## 1.35.0 Release
 - Release Date: September 16, 2020
