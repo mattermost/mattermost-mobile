@@ -73,7 +73,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             justifyContent: 'center',
             paddingHorizontal: 15,
-            paddingBottom: 100,
+            paddingBottom: 15,
         },
         title: {
             color: changeOpacity(theme.centerChannelColor, 0.8),
