@@ -6,8 +6,11 @@ import {toChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Messaging', () => {
+    let newChannel;
+
     beforeAll(async () => {
-        const {user} = await Setup.apiInit();
+        const {user, channel} = await Setup.apiInit();
+        newChannel = channel;
 
         await toChannelScreen(user);
     });
@@ -25,5 +28,24 @@ describe('Messaging', () => {
         await element(by.id('send_button')).tap();
 
         await expect(element(by.text(text))).toExist();
+    });
+
+    it('MM-T3187 Unread channels sort at top', async () => {
+        // # Open channel drawer (with at least one unread channel)
+        await element(by.id('channel_drawer_button')).tap();
+
+        // # Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
+        await expect(element(by.text('UNREADS'))).toBeVisible();
+
+        // # Tap an unread channel to view it
+        await element(by.text(newChannel.display_name)).tap();
+
+        // # Open channel drawer again
+        await element(by.id('channel_drawer_button')).tap();
+
+        // * Channel you just read is no longer listed in Unreads
+        await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
+        await expect(element(by.text('UNREADS'))).not.toBeVisible();
+        await expect(element(by.text(newChannel.display_name)).atIndex(1)).toBeVisible();
     });
 });
