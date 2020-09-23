@@ -109,10 +109,10 @@ const ViewTypes = keyMirror({
 });
 
 const RequiredServer = {
-    FULL_VERSION: 5.19,
+    FULL_VERSION: '5.19.3',
     MAJOR_VERSION: 5,
     MIN_VERSION: 19,
-    PATCH_VERSION: 0,
+    PATCH_VERSION: 3,
 };
 
 export default {
