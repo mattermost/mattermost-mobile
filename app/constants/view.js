@@ -112,7 +112,7 @@ const RequiredServer = {
     FULL_VERSION: 5.25,
     MAJOR_VERSION: 5,
     MIN_VERSION: 25,
-    PATCH_VERSION: 0,
+    PATCH_VERSION: 5,
 };
 
 export default {
