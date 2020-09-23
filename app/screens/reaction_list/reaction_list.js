@@ -155,7 +155,6 @@ export default class ReactionList extends PureComponent {
                     theme={theme}
                     user={userProfilesById[userId]}
                 />
-                <View style={style.separator}/>
             </View>
         ));
     };
@@ -214,10 +213,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         rowContainer: {
             justifyContent: 'center',
             height: 45,
-        },
-        separator: {
-            height: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
         emojiAliasContainer: {
             marginTop: 15,

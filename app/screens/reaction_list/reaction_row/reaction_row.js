@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import {getFullName} from '@mm-redux/utils/user_utils';
 
 import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
@@ -21,7 +21,6 @@ import {showModal} from 'app/actions/navigation';
 
 export default class ReactionRow extends React.PureComponent {
     static propTypes = {
-        teammateNameDisplay: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
@@ -62,7 +61,6 @@ export default class ReactionRow extends React.PureComponent {
 
     render() {
         const {
-            teammateNameDisplay,
             user,
             isLandscape,
             theme,
@@ -98,12 +96,12 @@ export default class ReactionRow extends React.PureComponent {
                     ellipsizeMode='tail'
                     numberOfLines={1}
                 >
-                    <Text style={style.username}>
-                        {usernameDisplay}
+                    <Text style={style.displayName}>
+                        {getFullName(user)}
                     </Text>
                     <Text>{'  '}</Text>
-                    <Text style={style.displayName}>
-                        {displayUsername(user, teammateNameDisplay)}
+                    <Text style={style.username}>
+                        {usernameDisplay}
                     </Text>
                 </Text>
             </View>
@@ -131,12 +129,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: '74%',
             flexDirection: 'row',
         },
-        username: {
+        displayName: {
             fontSize: 14,
             paddingRight: 5,
             color: theme.centerChannelColor,
         },
-        displayName: {
+        username: {
             fontSize: 14,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
