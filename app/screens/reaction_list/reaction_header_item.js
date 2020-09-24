@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    View,
     Text,
     TouchableOpacity,
 } from 'react-native';
@@ -18,6 +19,7 @@ export default class ReactionHeaderItem extends PureComponent {
         highlight: PropTypes.bool.isRequired,
         onPress: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
+        onLayout: PropTypes.func.isRequired,
     };
 
     handleOnPress = () => {
@@ -43,16 +45,18 @@ export default class ReactionHeaderItem extends PureComponent {
     };
 
     render() {
-        const {highlight, theme} = this.props;
+        const {highlight, theme, onLayout} = this.props;
         const styles = getStyleSheet(theme);
 
         return (
-            <TouchableOpacity
-                onPress={this.handleOnPress}
-                style={[styles.reaction, (highlight ? styles.highlight : styles.regular)]}
-            >
-                {this.renderContent()}
-            </TouchableOpacity>
+            <View onLayout={onLayout}>
+                <TouchableOpacity
+                    onPress={this.handleOnPress}
+                    style={[styles.reaction, (highlight ? styles.highlight : styles.regular)]}
+                >
+                    {this.renderContent()}
+                </TouchableOpacity>
+            </View>
         );
     }
 }

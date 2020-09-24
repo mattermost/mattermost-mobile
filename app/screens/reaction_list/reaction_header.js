@@ -16,6 +16,13 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 import ReactionHeaderItem from './reaction_header_item';
 
 export default class ReactionHeader extends PureComponent {
+    constructor() {
+        super();
+        this.state = {
+            layout: {},
+        };
+    }
+
     static propTypes = {
         forwardedRef: PropTypes.object,
         selected: PropTypes.string.isRequired,
@@ -29,6 +36,19 @@ export default class ReactionHeader extends PureComponent {
         this.props.onSelectReaction(emoji);
     };
 
+    handleOnLayout = (event, reaction) => {
+        this.setState({
+            layout: {
+                ...this.state.layout,
+                [reaction.name]: event.nativeEvent.layout,
+            },
+        });
+
+        if (this.state.layout[this.props.selected]) {
+            this.scrollViewRef.scrollTo({x: this.state.layout[this.props.selected].x});
+        }
+    }
+
     renderReactionHeaderItems = () => {
         const {selected, reactions, theme} = this.props;
 
@@ -40,6 +60,7 @@ export default class ReactionHeader extends PureComponent {
                 highlight={selected === reaction.name}
                 onPress={this.handleOnPress}
                 theme={theme}
+                onLayout={(e) => this.handleOnLayout(e, reaction)}
             />
         ));
     };
@@ -58,6 +79,9 @@ export default class ReactionHeader extends PureComponent {
                         horizontal={true}
                         overScrollMode='never'
                         style={padding(this.props.isLandscape, -10)}
+                        ref={(ref) => {
+                            this.scrollViewRef = ref;
+                        }}
                     >
                         {this.renderReactionHeaderItems()}
                     </ScrollView>
