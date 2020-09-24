@@ -4,7 +4,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
-import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, or, set, sub, useCode} from 'react-native-reanimated';
+import Animated, {abs, add, and, call, clockRunning, cond, debug, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, or, set, stopClock, sub, useCode} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash';
 import {isImage, isVideo} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -74,6 +74,7 @@ const GalleryViewer = (props: GalleryProps) => {
 
     const clock = useRef(useClock()).current;
     const zoomClock = useRef(useClock()).current;
+    const unzoomClock = useRef(useClock()).current;
 
     const index = useRef(useValue(initialIndex)).current;
     const offsetX = useRef(useValue(snapPoints[initialIndex])).current;
@@ -221,17 +222,23 @@ const GalleryViewer = (props: GalleryProps) => {
     );
 
     useCode(() => [
-        cond(or(eq(doubleTap.state, State.UNDETERMINED), eq(pinch.state, State.END)), [
+        cond(eq(doubleTap.state, State.BEGAN), [
             set(zoomed, greaterThan(scale, 1)),
         ]),
         cond(eq(doubleTap.state, State.END), [
-            cond(eq(zoomed, 1),
+            cond(eq(zoomed, 1), [
                 set(scale, timing({clock: zoomClock, from: scale, to: 1})),
+                cond(not(clockRunning(zoomClock)), [
+                    vec.set(translate, 0),
+                    set(doubleTap.state, 0),
+                ]),
+            ]),
+            cond(eq(zoomed, 0), [
                 set(scale, timing({clock: zoomClock, from: scale, to: 3})),
-            ),
-            cond(not(clockRunning(zoomClock)), [
-                vec.set(translate, 0),
-                set(doubleTap.state, 0),
+                cond(not(clockRunning(zoomClock)), [
+                    vec.set(translate, 0),
+                    set(doubleTap.state, 0),
+                ]),
             ]),
         ]),
     ], []);

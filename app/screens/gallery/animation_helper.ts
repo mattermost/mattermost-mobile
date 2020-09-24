@@ -133,6 +133,9 @@ export const usePinch = ({
                         set(translationX, 0),
                         set(translationY, pan.translation.y),
                     ]),
+                    cond(greaterThan(scaleOffset, 1), [
+                        vec.set(translation, pan.translation),
+                    ]),
                 ],
             ),
             cond(isPinchBegan, vec.set(origin, adjustedFocal)),
