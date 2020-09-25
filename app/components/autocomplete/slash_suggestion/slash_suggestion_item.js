@@ -40,7 +40,7 @@ export default class SlashSuggestionItem extends PureComponent {
         return (
             <TouchableWithFeedback
                 onPress={this.completeSuggestion}
-                style={[padding(isLandscape)]}
+                style={padding(isLandscape)}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                 type={'native'}
             >
