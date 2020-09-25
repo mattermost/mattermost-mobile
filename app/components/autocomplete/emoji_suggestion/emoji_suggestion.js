@@ -11,12 +11,11 @@ import {
 } from 'react-native';
 import Fuse from 'fuse.js';
 
-import AutocompleteDivider from '@components/autocomplete/autocomplete_divider';
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {BuiltInEmojis} from '@utils/emojis';
 import {getEmojiByName, compareEmojis} from '@utils/emoji_utils';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 const EMOJI_REGEX = /(^|\s|^\+|^-)(:([^:\s]*))$/i;
 const EMOJI_REGEX_WITHOUT_PREFIX = /\B(:([^:\s]*))$/i;
@@ -150,21 +149,23 @@ export default class EmojiSuggestion extends PureComponent {
 
     renderItem = ({item}) => {
         const style = getStyleFromTheme(this.props.theme);
-
+        const completeSuggestion = () => this.completeSuggestion(item);
         return (
             <TouchableWithFeedback
-                onPress={() => this.completeSuggestion(item)}
-                style={style.row}
-                type={'opacity'}
+                onPress={completeSuggestion}
+                underlayColor={changeOpacity(this.props.theme.buttonBg, 0.08)}
+                type={'native'}
             >
-                <View style={style.emoji}>
-                    <Emoji
-                        emojiName={item}
-                        textStyle={style.emojiText}
-                        size={20}
-                    />
+                <View style={style.row}>
+                    <View style={style.emoji}>
+                        <Emoji
+                            emojiName={item}
+                            textStyle={style.emojiText}
+                            size={24}
+                        />
+                    </View>
+                    <Text style={style.emojiName}>{`:${item}:`}</Text>
                 </View>
-                <Text style={style.emojiName}>{`:${item}:`}</Text>
             </TouchableWithFeedback>
         );
     };
@@ -199,12 +200,14 @@ export default class EmojiSuggestion extends PureComponent {
                     return values;
                 }, []);
                 const data = results.sort(sorter);
+                this.props.onResultCountChange(data.length);
                 this.setState({
                     active: data.length > 0,
                     dataSource: data,
                 });
             }, 100);
         } else {
+            this.props.onResultCountChange(emojis.length);
             this.setState({
                 active: emojis.length > 0,
                 dataSource: emojis.sort(sorter),
@@ -229,7 +232,6 @@ export default class EmojiSuggestion extends PureComponent {
                 data={this.state.dataSource}
                 keyExtractor={this.keyExtractor}
                 renderItem={this.renderItem}
-                ItemSeparatorComponent={AutocompleteDivider}
                 pageSize={10}
                 initialListSize={10}
                 nestedScrollEnabled={nestedScrollEnabled}
@@ -244,7 +246,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginRight: 5,
         },
         emojiName: {
-            fontSize: 13,
+            fontSize: 15,
             color: theme.centerChannelColor,
         },
         emojiText: {
@@ -252,14 +254,17 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold',
         },
         listView: {
+            paddingTop: 16,
             backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
         },
         row: {
-            height: 40,
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg,
+            overflow: 'hidden',
+            paddingBottom: 8,
+            paddingHorizontal: 16,
+            height: 40,
         },
     };
 });
