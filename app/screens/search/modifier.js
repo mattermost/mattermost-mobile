@@ -87,6 +87,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             borderRadius: 4,
             paddingHorizontal: 4,
+            paddingVertical: 2,
+            fontWeight: '600',
         },
         modifierLabelValue: {
             fontSize: 10,

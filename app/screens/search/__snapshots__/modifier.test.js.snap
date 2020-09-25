@@ -41,8 +41,10 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
               "alignItems": "center",
               "backgroundColor": "rgba(61,60,64,0.08)",
               "borderRadius": 4,
+              "fontWeight": "600",
               "marginRight": 5,
               "paddingHorizontal": 4,
+              "paddingVertical": 2,
             }
           }
         >
