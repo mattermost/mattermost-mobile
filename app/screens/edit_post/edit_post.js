@@ -281,6 +281,7 @@ export default class EditPost extends PureComponent {
                         value={message}
                         nestedScrollEnabled={true}
                         onVisible={this.onAutocompleteVisible}
+                        offsetY={8}
                         style={style.autocomplete}
                     />
                 </KeyboardTrackingView>
