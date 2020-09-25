@@ -91,12 +91,13 @@ export default class ChannelMention extends PureComponent {
         myMembers !== this.props.myMembers)) {
             const sections = [];
             if (isSearch) {
-                if (directAndGroupMessages.length) {
+                if (publicChannels.length) {
                     sections.push({
-                        id: t('suggestion.search.direct'),
-                        defaultMessage: 'Direct Messages',
-                        data: directAndGroupMessages,
-                        key: 'directAndGroupMessages',
+                        id: t('suggestion.search.public'),
+                        defaultMessage: 'Public Channels',
+                        data: publicChannels.filter((cId) => myMembers[cId]),
+                        key: 'publicChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
@@ -110,13 +111,12 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
 
-                if (publicChannels.length) {
+                if (directAndGroupMessages.length) {
                     sections.push({
-                        id: t('suggestion.search.public'),
-                        defaultMessage: 'Public Channels',
-                        data: publicChannels.filter((cId) => myMembers[cId]),
-                        key: 'publicChannels',
-                        hideLoadingIndicator: true,
+                        id: t('suggestion.search.direct'),
+                        defaultMessage: 'Direct Messages',
+                        data: directAndGroupMessages,
+                        key: 'directAndGroupMessages',
                     });
                 }
             } else {
