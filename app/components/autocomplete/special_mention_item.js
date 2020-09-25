@@ -42,25 +42,27 @@ export default class SpecialMentionItem extends PureComponent {
         return (
             <TouchableWithFeedback
                 onPress={this.completeMention}
-                style={style.row}
-                type={'opacity'}
+                underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                type={'native'}
             >
-                <View style={style.rowPicture}>
-                    <Icon
-                        name='users'
-                        style={style.rowIcon}
-                    />
+                <View style={style.row}>
+                    <View style={style.rowPicture}>
+                        <Icon
+                            name='users'
+                            style={style.rowIcon}
+                        />
+                    </View>
+                    <Text style={style.textWrapper}>
+                        <Text style={style.rowUsername}>{`@${completeHandle}`}</Text>
+                        <Text style={style.rowUsername}>{' - '}</Text>
+                        <FormattedText
+                            id={id}
+                            defaultMessage={defaultMessage}
+                            values={values}
+                            style={style.rowFullname}
+                        />
+                    </Text>
                 </View>
-                <Text style={style.textWrapper}>
-                    <Text style={style.rowUsername}>{`@${completeHandle}`}</Text>
-                    <Text style={style.rowUsername}>{' - '}</Text>
-                    <FormattedText
-                        id={id}
-                        defaultMessage={defaultMessage}
-                        values={values}
-                        style={style.rowFullname}
-                    />
-                </Text>
             </TouchableWithFeedback>
         );
     }
@@ -68,10 +70,11 @@ export default class SpecialMentionItem extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
+            height: 40,
             paddingVertical: 8,
+            paddingHorizontal: 9,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
         },
         rowPicture: {
             marginHorizontal: 8,
@@ -81,10 +84,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         rowIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
-            fontSize: 14,
+            fontSize: 18,
         },
         rowUsername: {
-            fontSize: 13,
+            fontSize: 15,
             color: theme.centerChannelColor,
         },
         rowFullname: {
