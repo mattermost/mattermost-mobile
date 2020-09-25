@@ -71,7 +71,7 @@ export default class FileAttachment extends PureComponent {
             this.transition = setTimeout(() => {
                 this.setState({resizeMode: 'cover'});
                 clearTimeout(this.transition);
-            }, 500);
+            }, 450);
         });
     }
 

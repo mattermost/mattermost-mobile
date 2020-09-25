@@ -4,7 +4,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
-import Animated, {abs, add, and, call, clockRunning, cond, debug, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, or, set, stopClock, sub, useCode} from 'react-native-reanimated';
+import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash';
 import {isImage, isVideo} from '@utils/file';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -74,7 +74,6 @@ const GalleryViewer = (props: GalleryProps) => {
 
     const clock = useRef(useClock()).current;
     const zoomClock = useRef(useClock()).current;
-    const unzoomClock = useRef(useClock()).current;
 
     const index = useRef(useValue(initialIndex)).current;
     const offsetX = useRef(useValue(snapPoints[initialIndex])).current;
@@ -201,10 +200,6 @@ const GalleryViewer = (props: GalleryProps) => {
             ),
             cond(and(eq(pan.state, State.END), neq(translateY, 0)), [
                 cond(greaterOrEq(abs(translateY), 150), [
-                    cond(greaterOrEq(translateY, 0),
-                        set(translateY, timing({clock, from: translateY, to: height})),
-                        set(translateY, timing({clock, from: translateY, to: -height})),
-                    ),
                     cond(not(clockRunning(clock)), call([], props.onClose)),
                 ], set(translateY, timing({from: translateY, to: 0}))),
             ]),
