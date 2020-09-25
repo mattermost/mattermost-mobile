@@ -144,12 +144,14 @@ export default class ChannelInfo extends PureComponent {
                 />
                 <Separator theme={theme}/>
                 {!isDirectMessage &&
-                <NotificationPreference
-                    isLandscape={isLandscape}
-                    theme={theme}
-                />
+                <>
+                    <NotificationPreference
+                        isLandscape={isLandscape}
+                        theme={theme}
+                    />
+                    <Separator theme={theme}/>
+                </>
                 }
-                <Separator theme={theme}/>
                 <Pinned
                     channelId={currentChannel.id}
                     isLandscape={isLandscape}

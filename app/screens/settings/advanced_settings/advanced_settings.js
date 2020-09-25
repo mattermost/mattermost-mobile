@@ -117,7 +117,7 @@ class AdvancedSettings extends Component {
             <View>
                 <SettingsItem
                     defaultMessage='Throw JavaScript Exception'
-                    iconName='fire'
+                    iconName='alert-circle-outline'
                     onPress={Sentry.crash}
                     separator={false}
                     showArrow={false}
@@ -127,8 +127,7 @@ class AdvancedSettings extends Component {
                 <View style={style.divider}/>
                 <SettingsItem
                     defaultMessage='Throw Native Exception'
-                    iconName='md-nuclear'
-                    iconType='ion'
+                    iconName='alert-outline'
                     onPress={Sentry.nativeCrash}
                     separator={false}
                     showArrow={false}

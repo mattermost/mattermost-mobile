@@ -71,9 +71,7 @@ function channelInfoRow(props) {
 
     const RowComponent = (
         <View style={[style.container, padding(isLandscape)]}>
-            <View style={style.iconContainer}>
-                {iconElement}
-            </View>
+            {iconElement}
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
                 id={textId}
@@ -101,7 +99,6 @@ channelInfoRow.propTypes = {
     ]),
     icon: PropTypes.string,
     iconColor: PropTypes.string,
-    iconSize: PropTypes.number,
     image: PropTypes.number,
     imageTintColor: PropTypes.string,
     isLandscape: PropTypes.bool,
@@ -136,12 +133,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 15,
             fontSize: 15,
             paddingVertical: 15,
-        },
-        iconContainer: {
-            width: 17,
-            height: 17,
-            justifyContent: 'center',
-            alignItems: 'center',
         },
         rightIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.32),
