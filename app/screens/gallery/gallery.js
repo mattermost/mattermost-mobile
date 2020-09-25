@@ -3,16 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Platform,
-    StatusBar,
-    StyleSheet,
-    View,
-} from 'react-native';
+import {Platform, StatusBar} from 'react-native';
 import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
 import {isImage} from 'app/utils/file';
 import {mergeNavigationOptions, popTopScreen} from 'app/actions/navigation';
 
@@ -86,8 +80,8 @@ export default class Gallery extends PureComponent {
         }
         const options = {
             layout: {
-                backgroundColor: '#000',
-                componentBackgroundColor: '#000',
+                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
             },
             topBar: {
                 visible: this.footer.current?.getWrappedInstance().isVisible(),
@@ -146,38 +140,6 @@ export default class Gallery extends PureComponent {
         mergeNavigationOptions(this.props.componentId, options);
     };
 
-    getCurrentFile = () => {
-        const {files} = this.props;
-        const {index} = this.state;
-        const file = files[index];
-
-        return file;
-    };
-
-    renderAttachmentIcon = (file) => {
-        return (
-            <View style={[style.flex, {width: this.props.deviceWidth}, style.center]}>
-                <FileAttachmentIcon
-                    backgroundColor='transparent'
-                    file={file}
-                    theme={this.props.theme}
-                    iconHeight={200}
-                    iconWidth={200}
-                    wrapperHeight={200}
-                    wrapperWidth={200}
-                />
-            </View>
-        );
-    };
-
-    renderOtherItems = ({item}) => {
-        if (item) {
-            return this.renderAttachmentIcon(item);
-        }
-
-        return <View/>;
-    };
-
     render() {
         const {deviceHeight, deviceWidth, files, theme} = this.props;
         const {index, footerVisible} = this.state;
@@ -206,13 +168,3 @@ export default class Gallery extends PureComponent {
         );
     }
 }
-
-const style = StyleSheet.create({
-    flex: {
-        justifyContent: 'center',
-    },
-    center: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});

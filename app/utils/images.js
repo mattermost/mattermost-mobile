@@ -126,8 +126,8 @@ export function openGalleryAtIndex(index, files) {
 
         const options = {
             layout: {
-                backgroundColor: '#000',
-                componentBackgroundColor: '#000',
+                backgroundColor: 'transparent',
+                componentBackgroundColor: 'transparent',
             },
             topBar: {
                 background: {
