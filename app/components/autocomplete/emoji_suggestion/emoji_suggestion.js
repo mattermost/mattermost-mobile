@@ -149,10 +149,10 @@ export default class EmojiSuggestion extends PureComponent {
 
     renderItem = ({item}) => {
         const style = getStyleFromTheme(this.props.theme);
-
+        const completeSuggestion = () => this.completeSuggestion(item);
         return (
             <TouchableWithFeedback
-                onPress={() => this.completeSuggestion(item)}
+                onPress={completeSuggestion}
                 underlayColor={changeOpacity(this.props.theme.buttonBg, 0.08)}
                 type={'native'}
             >
