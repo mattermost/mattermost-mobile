@@ -23,7 +23,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "11.0.0"
+      xcode: "12.0.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
 
@@ -44,7 +44,6 @@ commands:
       for:
         type: string
     steps:
-      - ruby-setup
       - restore_cache:
           name: Restore Fastlane cache
           key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
@@ -115,7 +114,7 @@ commands:
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
       - run:
           name: Getting cocoapods dependencies
-          command: npm run ios-gems && npm run pod-install
+          command: npm run pod-install
       - save_cache:
           name: Save cocoapods specs and pods cache
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
@@ -202,12 +201,6 @@ commands:
     steps:
       - store_artifacts:
           path: ~/mattermost-mobile/<<parameters.filename>>
-
-  ruby-setup:
-    steps:
-      - run:
-          name: Set Ruby Version
-          command: echo "ruby-2.6.3" > ~/.ruby-version
 
 jobs:
   test:
@@ -358,7 +351,6 @@ jobs:
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - ruby-setup
       - npm-dependencies
       - pods-dependencies
       - assets
@@ -383,7 +375,6 @@ jobs:
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - ruby-setup
       - npm-dependencies
       - pods-dependencies
       - assets
@@ -408,7 +399,6 @@ jobs:
       name: android
       resource_class: medium
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
@@ -419,7 +409,6 @@ jobs:
       name: android
       resource_class: medium
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
@@ -428,7 +417,6 @@ jobs:
   deploy-ios-release:
     executor: ios
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
@@ -437,7 +425,6 @@ jobs:
   deploy-ios-beta:
     executor: ios
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
@@ -448,7 +435,6 @@ jobs:
       name: android
       resource_class: medium
     steps:
-      - ruby-setup
       - attach_workspace:
           at: ~/
       - run:
