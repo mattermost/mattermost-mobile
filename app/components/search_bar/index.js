@@ -311,6 +311,7 @@ export default class Search extends PureComponent {
                     ]}
                 >
                     <SearchBar
+                        testID={'search_bar'}
                         autoCapitalize={this.props.autoCapitalize}
                         autoCorrect={false}
                         autoFocus={this.props.autoFocus}

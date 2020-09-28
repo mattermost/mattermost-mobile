@@ -597,6 +597,7 @@ export default class Search extends PureComponent {
 
         const sectionsData = [{
             value: 'from:',
+            testID: 'search_from',
             modifier: `from:${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.from_modifier_description',
@@ -604,6 +605,7 @@ export default class Search extends PureComponent {
             }),
         }, {
             value: 'in:',
+            testID: 'search_in',
             modifier: `in:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.in_modifier_description',
@@ -615,6 +617,7 @@ export default class Search extends PureComponent {
         if (this.props.enableDateSuggestion) {
             sectionsData.push({
                 value: 'on:',
+                testID: 'search_on',
                 modifier: 'on: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.on_modifier_description',
@@ -623,6 +626,7 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'after:',
+                testID: 'search_after',
                 modifier: 'after: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.after_modifier_description',
@@ -631,6 +635,7 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'before:',
+                testID: 'search_before',
                 modifier: 'before: YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.before_modifier_description',

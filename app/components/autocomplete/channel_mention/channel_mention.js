@@ -218,6 +218,7 @@ export default class ChannelMention extends PureComponent {
 
         return (
             <SectionList
+                testID='autocomplete_channel_mention'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
                 style={[style.listView, {maxHeight: maxListHeight}]}

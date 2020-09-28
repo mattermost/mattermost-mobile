@@ -132,6 +132,7 @@ export default class DateSuggestion extends PureComponent {
 
         return (
             <CalendarList
+                testID={'autocomplete_date_suggestion'}
                 style={styles.calList}
                 current={currentDate}
                 maxDate={currentDate}

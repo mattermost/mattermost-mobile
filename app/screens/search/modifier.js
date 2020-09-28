@@ -35,6 +35,7 @@ export default class Modifier extends PureComponent {
 
         return (
             <TouchableHighlight
+                testID={item.testID}
                 key={item.modifier}
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.handlePress}

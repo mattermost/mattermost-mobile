@@ -54,3 +54,18 @@ export async function toChannelScreen(user) {
     await fulfillSelectServerScreen(serverUrl);
     await fulfillLoginScreen(user);
 }
+
+// ****************************************************************
+// Search Screen
+// ****************************************************************
+
+/**
+ * fulfillLoginScreen enters credential on Login screen and then tap "Sign in" button to log in.
+ * @param {Object} user - user to login with username and password
+ */
+export async function toSearchScreen(user) {
+    await fulfillSelectServerScreen(serverUrl);
+    await fulfillLoginScreen(user);
+
+    await element(by.id('search_button')).tap();
+}

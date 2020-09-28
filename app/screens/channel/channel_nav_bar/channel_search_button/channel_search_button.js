@@ -62,6 +62,7 @@ export default class ChannelSearchButton extends PureComponent {
         return (
             <View style={style.container}>
                 <TouchableOpacity
+                    testID={'search_button'}
                     accessible={true}
                     accessibilityHint={accessibilityHint}
                     accessibilityLabel={accessibilityLabel}
