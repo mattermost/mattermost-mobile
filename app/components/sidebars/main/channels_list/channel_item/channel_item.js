@@ -181,6 +181,7 @@ export default class ChannelItem extends PureComponent {
                             style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
+                            testID='channel_item_display_name'
                         >
                             {channelDisplayName}
                         </Text>

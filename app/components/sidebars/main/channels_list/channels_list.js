@@ -129,7 +129,10 @@ export default class ChannelsList extends PureComponent {
         const leftComponent = onShowTeams ? <SwitchTeamsButton onShowTeams={onShowTeams}/> : null;
 
         const title = (
-            <View style={[styles.searchContainer, padding(isLandscape)]}>
+            <View
+                style={[styles.searchContainer, padding(isLandscape)]}
+                testID='channels_list'
+            >
                 <SearchBar
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
