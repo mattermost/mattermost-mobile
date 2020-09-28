@@ -20,6 +20,7 @@ import {
     getUniqueUserIds,
 } from 'app/utils/reaction';
 import {dismissModal} from 'app/actions/navigation';
+import DeviceInfo from 'react-native-device-info';
 
 import ReactionHeader from './reaction_header';
 import ReactionRow from './reaction_row';
@@ -177,7 +178,7 @@ export default class ReactionList extends PureComponent {
 
     render() {
         const emojiAliases = getEmojiByName(this.state.selected).aliases.length > 1 ? getEmojiByName(this.state.selected).aliases.map((alias) => `:${alias}:  `) : `:${getEmojiByName(this.state.selected).aliases[0]}:`;
-        const {theme} = this.props;
+        const {theme, isLandscape} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -190,7 +191,7 @@ export default class ReactionList extends PureComponent {
                     headerHeight={37.5}
                     theme={theme}
                 >
-                    <View style={style.emojiAliasContainer}>
+                    <View style={[style.emojiAliasContainer, generateTableLandscapePadding(isLandscape)]}>
                         <Text style={style.emojiAlias}>
                             {emojiAliases}
                         </Text>
@@ -202,22 +203,32 @@ export default class ReactionList extends PureComponent {
     }
 }
 
+const generateTableLandscapePadding = (isLandscape) => {
+    if (isLandscape && DeviceInfo.isTablet()) {
+        return {
+            paddingLeft: '5.5%',
+        };
+    } else if (isLandscape) {
+        return {
+            paddingLeft: '5%',
+        };
+    }
+    return '';
+};
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {
             flex: 1,
-        },
-        headerContainer: {
-            height: 37.5,
         },
         rowContainer: {
             justifyContent: 'center',
             height: 45,
         },
         emojiAliasContainer: {
-            marginTop: 15,
-            marginBottom: 15,
-            marginLeft: 10,
+            height: 28,
+            marginTop: 10,
+            paddingLeft: DeviceInfo.isTablet() ? '5%' : '3.5%',
         },
         emojiAlias: {
             fontSize: 12,

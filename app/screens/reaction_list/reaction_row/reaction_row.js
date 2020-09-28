@@ -76,12 +76,12 @@ export default class ReactionRow extends React.PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
-                <View style={[style.profileContainer, padding(isLandscape)]}>
-                    <TouchableOpacity
-                        key={user.id}
-                        onPress={preventDoubleTap(this.goToUserProfile)}
-                    >
+            <TouchableOpacity
+                key={user.id}
+                onPress={preventDoubleTap(this.goToUserProfile)}
+            >
+                <View style={style.container}>
+                    <View style={[style.profileContainer, padding(isLandscape)]}>
                         <View style={style.profile}>
                             <ProfilePicture
                                 userId={id}
@@ -89,22 +89,23 @@ export default class ReactionRow extends React.PureComponent {
                                 size={24}
                             />
                         </View>
-                    </TouchableOpacity>
+                    </View>
+                    <Text
+                        style={style.textContainer}
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                    >
+                        <Text style={style.displayName}>
+                            {getFullName(user)}
+                        </Text>
+                        <Text>{'  '}</Text>
+                        <Text style={style.username}>
+                            {usernameDisplay}
+                        </Text>
+                    </Text>
                 </View>
-                <Text
-                    style={style.textContainer}
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                >
-                    <Text style={style.displayName}>
-                        {getFullName(user)}
-                    </Text>
-                    <Text>{'  '}</Text>
-                    <Text style={style.username}>
-                        {usernameDisplay}
-                    </Text>
-                </Text>
-            </View>
+            </TouchableOpacity>
+
         );
     }
 }
