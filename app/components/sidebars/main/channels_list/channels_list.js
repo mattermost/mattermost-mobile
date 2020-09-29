@@ -131,7 +131,6 @@ export default class ChannelsList extends PureComponent {
         const title = (
             <View
                 style={[styles.searchContainer, padding(isLandscape)]}
-                testID='channels_list'
             >
                 <SearchBar
                     ref={this.setSearchBarRef}
@@ -161,6 +160,7 @@ export default class ChannelsList extends PureComponent {
         return (
             <View
                 style={styles.container}
+                testID='channels_list'
             >
                 <View style={styles.headerContainer}>
                     {title}

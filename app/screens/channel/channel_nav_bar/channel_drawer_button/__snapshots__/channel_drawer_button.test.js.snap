@@ -25,7 +25,7 @@ exports[`ChannelDrawerButton should match, full snapshot 1`] = `
         },
       ]
     }
-    testID="channel_drawer_button"
+    testID="channel_drawer.button"
   >
     <View>
       <View
@@ -65,7 +65,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
         },
       ]
     }
-    testID="channel_drawer_button"
+    testID="channel_drawer.button"
   >
     <View>
       <Icon
