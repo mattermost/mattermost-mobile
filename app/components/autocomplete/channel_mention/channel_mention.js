@@ -184,6 +184,7 @@ export default class ChannelMention extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
+        const isFirstSection = section.id === this.state.sections[0].id;
         return (
             <AutocompleteSectionHeader
                 id={section.id}
@@ -191,6 +192,7 @@ export default class ChannelMention extends PureComponent {
                 loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
                 isLandscape={this.props.isLandscape}
+                isFirstSection={isFirstSection}
             />
         );
     };
@@ -236,6 +238,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
         },
     };
 });

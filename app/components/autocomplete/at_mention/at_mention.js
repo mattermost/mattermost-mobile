@@ -9,7 +9,6 @@ import {RequestStatus} from '@mm-redux/constants';
 
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AtMentionItem from 'app/components/autocomplete/at_mention_item';
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
 import GroupMentionItem from 'app/components/autocomplete/at_mention_group/at_mention_group';
@@ -67,7 +66,7 @@ export default class AtMention extends PureComponent {
                 mentionComplete: false,
                 sections: [],
             });
-
+            this.props.onResultCountChange(0);
             return;
         }
 
@@ -208,12 +207,14 @@ export default class AtMention extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
+        const isFirstSection = section.id === this.state.sections[0].id;
         return (
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
                 theme={this.props.theme}
                 isLandscape={this.props.isLandscape}
+                isFirstSection={isFirstSection}
             />
         );
     };
@@ -271,7 +272,6 @@ export default class AtMention extends PureComponent {
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
-                ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
             />
@@ -283,6 +283,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
         },
     };
 });
