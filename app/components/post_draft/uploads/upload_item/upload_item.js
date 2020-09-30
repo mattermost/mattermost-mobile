@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     },
     progressText: {
         color: 'white',
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 'bold',
     },
     filePreview: {
