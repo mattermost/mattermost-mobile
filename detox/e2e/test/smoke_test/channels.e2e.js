@@ -38,17 +38,22 @@ describe('Unread channels', () => {
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(2)).toHaveText(zChannel.display_name);
 
         // # Tap an unread channel to view it
+        await element(by.text(aChannel.display_name)).tap();
+        await element(by.id('channel_drawer.button')).tap();
         await element(by.text(newChannel.display_name)).tap();
+        await element(by.id('channel_drawer.button')).tap();
+        await element(by.text(zChannel.display_name)).tap();
 
         // # Open channel drawer again
         await element(by.id('channel_drawer.button')).tap();
 
         // * Channel you just read is no longer listed in Unreads
-        await expect(element(by.text('UNREADS'))).toBeVisible();
+        await expect(element(by.text('UNREADS'))).not.toBeVisible();
         await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(0)).toHaveText(aChannel.display_name);
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(1)).toHaveText(zChannel.display_name);
+        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(1)).toHaveText(newChannel.display_name);
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(2)).toHaveText('Off-Topic');
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(3)).toHaveText(newChannel.display_name);
+        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(3)).toHaveText('Town Square');
+        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(4)).toHaveText(zChannel.display_name);
     });
 });
