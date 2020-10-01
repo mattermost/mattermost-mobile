@@ -3,16 +3,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 import {Client4} from '@mm-redux/client';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import FileAttachmentImage from '@components/file_attachment_list/file_attachment_image';
 import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
-import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
+import ProgressBar from '@components/progress_bar';
+import {buildFileUploadData, encodeHeaderURIStringToUTF8, isImage} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import ImageCacheManager from '@utils/image_cache_manager';
 
@@ -103,18 +103,7 @@ export default class UploadItem extends PureComponent {
     };
 
     handleUploadProgress = (loaded, total) => {
-        this.setState({progress: Math.floor((loaded / total) * 100)});
-    };
-
-    isImageType = () => {
-        const {file} = this.props;
-
-        if (file.has_preview_image || file.mime_type === 'image/gif' ||
-            (file.localPath && file.type && file.type.includes('image'))) {
-            return true;
-        }
-
-        return false;
+        this.setState({progress: Math.floor((loaded / total))});
     };
 
     downloadAndUploadFile = async (file) => {
@@ -165,18 +154,6 @@ export default class UploadItem extends PureComponent {
         this.uploadPromise.then(this.handleUploadCompleted).catch(this.handleUploadError);
     };
 
-    renderProgress = (fill) => {
-        const realFill = Number(fill.toFixed(0));
-
-        return (
-            <View>
-                <Text style={styles.progressText}>
-                    {`${realFill}%`}
-                </Text>
-            </View>
-        );
-    };
-
     render() {
         const {
             channelId,
@@ -187,7 +164,7 @@ export default class UploadItem extends PureComponent {
         const {progress} = this.state;
         let filePreviewComponent;
 
-        if (this.isImageType()) {
+        if (isImage(file)) {
             filePreviewComponent = (
                 <TouchableOpacity onPress={this.handlePress}>
                     <View style={styles.filePreview}>
@@ -229,16 +206,10 @@ export default class UploadItem extends PureComponent {
                     }
                     {file.loading && !file.failed &&
                     <View style={styles.progressCircleContent}>
-                        <AnimatedCircularProgress
-                            size={36}
-                            fill={progress}
-                            width={2}
-                            backgroundColor='rgba(255, 255, 255, 0.5)'
-                            tintColor='white'
-                            rotation={0}
-                        >
-                            {this.renderProgress}
-                        </AnimatedCircularProgress>
+                        <ProgressBar
+                            progress={progress}
+                            color={this.props.theme.buttonBg}
+                        />
                     </View>
                     }
                 </View>
@@ -269,14 +240,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         height: 56,
         width: 56,
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         position: 'absolute',
         borderRadius: 4,
-    },
-    progressText: {
-        color: 'white',
-        fontSize: 11,
-        fontWeight: 'bold',
     },
     filePreview: {
         width: 56,
