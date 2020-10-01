@@ -14,14 +14,10 @@ describe('Unread channels', () => {
         const {user, channel, team} = await Setup.apiInit();
         newChannel = channel;
 
-        let ch;
-
-        ch = await Channel.apiCreateChannel({type: 'O', prefix: 'a-channel', teamId: team.id});
-        aChannel = ch.channel;
+        ({channel: aChannel} = await Channel.apiCreateChannel({type: 'O', prefix: 'a-channel', teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, aChannel.id);
 
-        ch = await Channel.apiCreateChannel({type: 'O', prefix: 'z-channel', teamId: team.id});
-        zChannel = ch.channel;
+        ({channel: zChannel} = await Channel.apiCreateChannel({type: 'O', prefix: 'z-channel', teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, zChannel.id);
 
         await toChannelScreen(user);
