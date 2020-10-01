@@ -36,8 +36,9 @@ export default class Autocomplete extends PureComponent {
         valueEvent: PropTypes.string,
         cursorPositionEvent: PropTypes.string,
         nestedScrollEnabled: PropTypes.bool,
-        expandDown: PropTypes.bool,
         onVisible: PropTypes.func,
+        offsetY: PropTypes.number,
+        onKeyboardOffsetChanged: PropTypes.func,
         style: ViewPropTypes.style,
     };
 
@@ -47,6 +48,8 @@ export default class Autocomplete extends PureComponent {
         enableDateSuggestion: false,
         nestedScrollEnabled: false,
         onVisible: emptyFunction,
+        onKeyboardOffsetChanged: emptyFunction,
+        offsetY: 80,
     };
 
     static getDerivedStateFromProps(props, state) {
@@ -149,10 +152,12 @@ export default class Autocomplete extends PureComponent {
     keyboardDidShow = (e) => {
         const {height} = e.endCoordinates;
         this.setState({keyboardOffset: height});
+        this.props.onKeyboardOffsetChanged(height);
     };
 
     keyboardDidHide = () => {
         this.setState({keyboardOffset: 0});
+        this.props.onKeyboardOffsetChanged(0);
     };
 
     maxListHeight() {
@@ -166,41 +171,36 @@ export default class Autocomplete extends PureComponent {
                 offset = 90;
             }
 
-            maxHeight = this.props.deviceHeight - offset - this.state.keyboardOffset;
+            maxHeight = (this.props.deviceHeight / 2) - offset;
         }
 
         return maxHeight;
     }
 
     render() {
-        const {theme, isSearch, expandDown} = this.props;
+        const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
+        const {theme, isSearch, offsetY} = this.props;
         const style = getStyleFromTheme(theme);
-
+        const maxListHeight = this.maxListHeight();
         const wrapperStyles = [];
-        const containerStyles = [];
+        const containerStyles = [style.borders];
+
+        if (Platform.OS === 'ios') {
+            wrapperStyles.push(style.shadow);
+        }
+
         if (isSearch) {
-            wrapperStyles.push(style.base, style.searchContainer);
-            containerStyles.push(style.content);
+            wrapperStyles.push(style.base, style.searchContainer, {height: maxListHeight});
         } else {
-            const containerStyle = expandDown ? style.containerExpandDown : style.container;
+            const containerStyle = {bottom: offsetY};
             containerStyles.push(style.base, containerStyle);
         }
 
-        // We always need to render something, but we only draw the borders when we have results to show
-        const {atMentionCount, channelMentionCount, emojiCount, commandCount, dateCount, cursorPosition, value} = this.state;
-        if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount > 0) {
-            if (this.props.isSearch) {
-                wrapperStyles.push(style.bordersSearch);
-            } else {
-                containerStyles.push(style.borders);
-            }
+        // Hide when there are no active autocompletes
+        if (atMentionCount + channelMentionCount + emojiCount + commandCount + dateCount === 0) {
+            wrapperStyles.push(style.hidden);
+            containerStyles.push(style.hidden);
         }
-
-        if (this.props.style) {
-            containerStyles.push(this.props.style);
-        }
-
-        const maxListHeight = this.maxListHeight();
 
         return (
             <View style={wrapperStyles}>
@@ -261,39 +261,37 @@ export default class Autocomplete extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         base: {
-            left: 0,
-            overflow: 'hidden',
+            left: 8,
             position: 'absolute',
-            right: 0,
+            right: 8,
         },
         borders: {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderBottomWidth: 0,
+            overflow: 'hidden',
+            borderRadius: 4,
         },
-        bordersSearch: {
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
-        },
-        container: {
-            bottom: 0,
-        },
-        containerExpandDown: {
-            top: 0,
-        },
-        content: {
-            flex: 1,
+        hidden: {
+            display: 'none',
         },
         searchContainer: {
-            flex: 1,
             ...Platform.select({
                 android: {
-                    top: 46,
+                    top: 42,
                 },
                 ios: {
-                    top: 44,
+                    top: 55,
                 },
             }),
+        },
+        shadow: {
+            shadowColor: '#000',
+            shadowOpacity: 0.12,
+            shadowRadius: 8,
+            shadowOffset: {
+                width: 0,
+                height: 8,
+            },
         },
     };
 });
