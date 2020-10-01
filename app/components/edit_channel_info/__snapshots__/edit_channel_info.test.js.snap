@@ -276,6 +276,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                 },
               ]
             }
+            testID="edit_channel.header.input"
             textAlignVertical="top"
             underlineColorAndroid="transparent"
             value="header"
