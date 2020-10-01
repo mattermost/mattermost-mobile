@@ -40,10 +40,10 @@ const getStyles = makeStyleSheetFromTheme(({deviceHeight, deviceWidth, theme}: G
     },
     button: {
         backgroundColor: theme?.buttonBg,
+        borderRadius: 4,
         marginTop: 16,
     },
     buttonShape: {
-        borderRadius: 4,
         paddingHorizontal: 20,
         paddingVertical: 16,
     },
