@@ -48,10 +48,10 @@ describe('Autocomplete', () => {
 
     it('should render slash_suggestion component', async () => {
         // # Type "/" to activate slash command suggestions
-        await expect(element(by.id('autocomplete_slash_suggestion'))).not.toExist();
+        await expect(element(by.id('autocomplete.slash_suggestion'))).not.toExist();
         await element(by.id('post_input')).typeText('/');
 
         // * Expect slash suggestions to render
-        await expect(element(by.id('autocomplete_slash_suggestion'))).toExist();
+        await expect(element(by.id('autocomplete.slash_suggestion'))).toExist();
     });
 });

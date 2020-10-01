@@ -204,7 +204,7 @@ export default class SlashSuggestion extends PureComponent {
 
         return (
             <FlatList
-                testID='autocomplete_slash_suggestion'
+                testID='autocomplete.slash_suggestion'
                 keyboardShouldPersistTaps='always'
                 style={[style.listView, {maxHeight: maxListHeight}]}
                 extraData={this.state}

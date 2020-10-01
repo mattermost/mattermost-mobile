@@ -35,10 +35,10 @@ describe('Autocomplete', () => {
     });
 
     it('should render date_suggestion component', async () => {
-        await expect(element(by.id('autocomplete_date_suggestion'))).not.toExist();
+        await expect(element(by.id('autocomplete.date_suggestion'))).not.toExist();
 
         // # Tap "before:" modifier
         await element(by.id('search_before')).tap();
-        await expect(element(by.id('autocomplete_date_suggestion'))).toExist();
+        await expect(element(by.id('autocomplete.date_suggestion'))).toExist();
     });
 });

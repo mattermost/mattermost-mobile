@@ -2,14 +2,7 @@
 // See LICENSE.txt for license information.
 
 export const getResponseFromError = (err) => {
-    let data;
-    let status;
-
-    const {response} = err;
-    if (response) {
-        data = response.data;
-        status = response.status;
-    }
+    const {response: {data, status}} = err;
 
     return {error: data, status};
 };
