@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ExtensionPost should render file uploads disabled message when canUploadFiles is false 1`] = `null`;

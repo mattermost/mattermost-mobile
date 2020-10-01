@@ -24,6 +24,7 @@ describe('ExtensionPost', () => {
         channels: {},
         currentUserId: 'current-user-id',
         getTeamChannels: jest.fn(),
+        canUploadFiles: true,
         maxFileSize: 1024,
         navigation: {
             setOptions: jest.fn(),
@@ -39,6 +40,7 @@ describe('ExtensionPost', () => {
     );
 
     const instance = wrapper.instance();
+    instance.renderErrorMessage = jest.fn();
 
     const postMessage = (message) => {
         wrapper.setState({value: message});
@@ -64,5 +66,12 @@ describe('ExtensionPost', () => {
         postMessage(exactLengthMessage);
 
         expect(Alert.alert).not.toHaveBeenCalled();
+    });
+
+    test('should render file uploads disabled message when canUploadFiles is false', () => {
+        wrapper.setState({loaded: true});
+        wrapper.setProps({canUploadFiles: false});
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(instance.renderErrorMessage).toHaveBeenCalledWith('File uploads from mobile are disabled. Please contact your System Admin for more details.');
     });
 });
