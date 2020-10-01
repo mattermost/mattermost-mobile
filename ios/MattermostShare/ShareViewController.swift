@@ -97,7 +97,7 @@ class ShareViewController: SLComposeServiceViewController {
     } else if store.getCurrentTeamId() == "" || store.getMyTeams().count == 0 {
       showErrorMessage(title: "", message: "You must belong to a team before you can share files.", VC: self)
     } else if !canUploadFiles {
-      showErrorMessage(title: "", message: "File uploads are disabled from mobile. Please contact your System Admin for more details.", VC: self)
+      showErrorMessage(title: "", message: "File uploads from mobile are disabled. Please contact your System Admin for more details.", VC: self)
     } else {
       extractDataFromContext()
     }
