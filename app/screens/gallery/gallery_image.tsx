@@ -13,9 +13,10 @@ import {GalleryItemProps} from 'types/screens/gallery';
 const AnimatedImage = Animated.createAnimatedComponent(FastImage);
 
 const GalleryImage = ({file, deviceHeight, deviceWidth, style}: GalleryItemProps) => {
-    const {height, width, uri} = file;
+    const {height, width, uri: imageUri, localPath} = file;
     const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 60 : 20;
     const calculatedDimensions = calculateDimensions(height, width, deviceWidth, deviceHeight - statusBar);
+    const uri = localPath || imageUri;
 
     return (
         <AnimatedImage

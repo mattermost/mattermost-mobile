@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
@@ -25,6 +25,7 @@ export default class UploadItem extends PureComponent {
         channelId: PropTypes.string.isRequired,
         file: PropTypes.object.isRequired,
         handleRemoveFile: PropTypes.func.isRequired,
+        onPress: PropTypes.func,
         retryFileUpload: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -50,6 +51,10 @@ export default class UploadItem extends PureComponent {
         if (prevFile.failed !== file.failed && file.loading) {
             this.downloadAndUploadFile(file);
         }
+    }
+
+    handlePress = () => {
+        this.props.onPress(this.props.file);
     }
 
     handleRetryFileUpload = (file) => {
@@ -184,24 +189,28 @@ export default class UploadItem extends PureComponent {
 
         if (this.isImageType()) {
             filePreviewComponent = (
-                <View style={styles.filePreview}>
-                    <FileAttachmentImage
-                        file={file}
-                        theme={theme}
-                        resizeMode='center'
-                    />
-                </View>
+                <TouchableOpacity onPress={this.handlePress}>
+                    <View style={styles.filePreview}>
+                        <FileAttachmentImage
+                            file={file}
+                            theme={theme}
+                            resizeMode='cover'
+                        />
+                    </View>
+                </TouchableOpacity>
             );
         } else {
             filePreviewComponent = (
-                <View style={styles.filePreview}>
-                    <FileAttachmentIcon
-                        file={file}
-                        theme={theme}
-                        wrapperHeight={53}
-                        wrapperWidth={53}
-                    />
-                </View>
+                <TouchableOpacity onPress={this.handlePress}>
+                    <View style={styles.filePreview}>
+                        <FileAttachmentIcon
+                            file={file}
+                            theme={theme}
+                            wrapperHeight={53}
+                            wrapperWidth={53}
+                        />
+                    </View>
+                </TouchableOpacity>
             );
         }
 
