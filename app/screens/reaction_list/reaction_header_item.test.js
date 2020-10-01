@@ -8,8 +8,6 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import ReactionHeaderItem from './reaction_header_item';
 
-import {ALL_EMOJIS} from 'app/constants/emoji';
-
 describe('ReactionHeaderItem', () => {
     const baseProps = {
         count: 3,
@@ -35,7 +33,7 @@ describe('ReactionHeaderItem', () => {
 
         expect(wrapper.instance().renderContent()).toMatchSnapshot();
 
-        wrapper.setProps({emojiName: ALL_EMOJIS});
+        wrapper.setProps({emojiName: 'smile'});
         expect(wrapper.instance().renderContent()).toMatchSnapshot();
     });
 

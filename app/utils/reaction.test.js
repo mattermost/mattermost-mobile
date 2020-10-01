@@ -8,8 +8,6 @@ import {
     getUniqueUserIds,
 } from 'app/utils/reaction';
 
-import {ALL_EMOJIS} from 'app/constants/emoji';
-
 describe('getMissingUserIds', () => {
     const testCases = [{
         name: 'Null inputs',
@@ -91,12 +89,11 @@ describe('getReactionsByName', () => {
 describe('getSortedReactionsForHeader', () => {
     const testCases = [{
         name: 'Null input',
-        output: [{count: 0, name: ALL_EMOJIS}],
+        output: [],
     }, {
         name: 'Should match reactions for header, single',
         reactionsByName: {'+1': [{emoji_name: '+1', name: 'thumbs_up', post_id: 'post_id_1', user_id: 'user_id_1'}]},
         output: [
-            {count: 1, name: ALL_EMOJIS},
             {
                 count: 1,
                 name: '+1',
@@ -117,7 +114,6 @@ describe('getSortedReactionsForHeader', () => {
             ],
         },
         output: [
-            {count: 3, name: ALL_EMOJIS},
             {
                 count: 2,
                 name: '+1',

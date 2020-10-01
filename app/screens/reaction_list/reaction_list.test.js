@@ -23,6 +23,7 @@ describe('ReactionList', () => {
         userProfiles: [{id: 'user_id_1', username: 'username_1'}, {id: 'user_id_2', username: 'username_2'}],
         componentId: 'component-id',
         isLandscape: false,
+        emoji: 'smile',
     };
 
     test('should match snapshot', () => {
@@ -50,7 +51,6 @@ describe('ReactionList', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        wrapper.setState({selected: 'smile'});
         wrapper.instance().handleOnSelectReaction('+1');
         expect(wrapper.state('selected')).toEqual('+1');
     });

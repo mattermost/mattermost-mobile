@@ -45,59 +45,27 @@ exports[`ReactionList should match snapshot 1`] = `
   >
     <View
       style={
-        Object {
-          "height": 45,
-          "justifyContent": "center",
-        }
+        Array [
+          Object {
+            "height": 28,
+            "marginTop": 10,
+            "paddingLeft": "3.5%",
+          },
+          "",
+        ]
       }
     >
-      <Connect(ReactionRow)
-        emojiName="+1"
-        teammateNameDisplay="username"
-        theme={
-          Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
-            "buttonColor": "#ffffff",
-            "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
-            "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
-            "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
-            "sidebarHeaderTextColor": "#ffffff",
-            "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
-            "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
-            "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
-          }
-        }
-        user={
-          Object {
-            "id": "user_id_2",
-            "username": "username_2",
-          }
-        }
-      />
-      <View
+      <Text
         style={
           Object {
-            "backgroundColor": "rgba(61,60,64,0.2)",
-            "height": 1,
+            "color": "rgba(61,60,64,0.5)",
+            "fontSize": 12,
+            "fontWeight": "600",
           }
         }
-      />
+      >
+        :smile:
+      </Text>
     </View>
     <View
       style={
@@ -108,7 +76,6 @@ exports[`ReactionList should match snapshot 1`] = `
       }
     >
       <Connect(ReactionRow)
-        emojiName="smile"
         teammateNameDisplay="username"
         theme={
           Object {
@@ -146,14 +113,6 @@ exports[`ReactionList should match snapshot 1`] = `
           }
         }
       />
-      <View
-        style={
-          Object {
-            "backgroundColor": "rgba(61,60,64,0.2)",
-            "height": 1,
-          }
-        }
-      />
     </View>
   </Connect(SlideUpPanel)>
 </View>
@@ -170,63 +129,6 @@ Array [
     }
   >
     <Connect(ReactionRow)
-      emojiName="+1"
-      teammateNameDisplay="username"
-      theme={
-        Object {
-          "awayIndicator": "#ffbc42",
-          "buttonBg": "#166de0",
-          "buttonColor": "#ffffff",
-          "centerChannelBg": "#ffffff",
-          "centerChannelColor": "#3d3c40",
-          "codeTheme": "github",
-          "dndIndicator": "#f74343",
-          "errorTextColor": "#fd5960",
-          "linkColor": "#2389d7",
-          "mentionBg": "#ffffff",
-          "mentionBj": "#ffffff",
-          "mentionColor": "#145dbf",
-          "mentionHighlightBg": "#ffe577",
-          "mentionHighlightLink": "#166de0",
-          "newMessageSeparator": "#ff8800",
-          "onlineIndicator": "#06d6a0",
-          "sidebarBg": "#145dbf",
-          "sidebarHeaderBg": "#1153ab",
-          "sidebarHeaderTextColor": "#ffffff",
-          "sidebarText": "#ffffff",
-          "sidebarTextActiveBorder": "#579eff",
-          "sidebarTextActiveColor": "#ffffff",
-          "sidebarTextHoverBg": "#4578bf",
-          "sidebarUnreadText": "#ffffff",
-          "type": "Mattermost",
-        }
-      }
-      user={
-        Object {
-          "id": "user_id_2",
-          "username": "username_2",
-        }
-      }
-    />
-    <View
-      style={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "height": 1,
-        }
-      }
-    />
-  </View>,
-  <View
-    style={
-      Object {
-        "height": 45,
-        "justifyContent": "center",
-      }
-    }
-  >
-    <Connect(ReactionRow)
-      emojiName="smile"
       teammateNameDisplay="username"
       theme={
         Object {
@@ -261,14 +163,6 @@ Array [
         Object {
           "id": "user_id_1",
           "username": "username_1",
-        }
-      }
-    />
-    <View
-      style={
-        Object {
-          "backgroundColor": "rgba(61,60,64,0.2)",
-          "height": 1,
         }
       }
     />

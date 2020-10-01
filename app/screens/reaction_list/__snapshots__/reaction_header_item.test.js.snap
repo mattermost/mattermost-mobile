@@ -1,53 +1,54 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReactionHeaderItem should match snapshot 1`] = `
-<ForwardRef
-  onPress={[Function]}
-  style={
-    Array [
-      Object {
-        "alignItems": "center",
-        "flexDirection": "row",
-        "height": 35,
-        "marginBottom": 5,
-        "marginRight": 6,
-        "marginTop": 3,
-        "paddingHorizontal": 6,
-        "paddingVertical": 2,
-      },
-      Object {
-        "borderBottomWidth": 2,
-        "borderColor": "transparent",
-      },
-      false,
-    ]
-  }
->
-  <React.Fragment>
-    <Connect(Emoji)
-      emojiName="smile"
-      padding={5}
-      size={16}
-      textStyle={
+<View>
+  <ForwardRef
+    onPress={[Function]}
+    style={
+      Array [
         Object {
-          "color": "#000",
-          "fontWeight": "bold",
-        }
-      }
-    />
-    <Text
-      style={
+          "alignItems": "center",
+          "flexDirection": "row",
+          "height": 35,
+          "marginBottom": 5,
+          "marginRight": 6,
+          "marginTop": 3,
+          "paddingHorizontal": 6,
+          "paddingVertical": 2,
+        },
         Object {
-          "color": "#166de0",
-          "fontSize": 16,
-          "marginLeft": 4,
+          "borderBottomWidth": 2,
+          "borderColor": "transparent",
+        },
+      ]
+    }
+  >
+    <React.Fragment>
+      <Connect(Emoji)
+        emojiName="smile"
+        padding={5}
+        size={16}
+        textStyle={
+          Object {
+            "color": "#000",
+            "fontWeight": "bold",
+          }
         }
-      }
-    >
-      3
-    </Text>
-  </React.Fragment>
-</ForwardRef>
+      />
+      <Text
+        style={
+          Object {
+            "color": "#166de0",
+            "fontSize": 16,
+            "marginLeft": 4,
+          }
+        }
+      >
+        3
+      </Text>
+    </React.Fragment>
+  </ForwardRef>
+</View>
 `;
 
 exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
@@ -79,14 +80,14 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
 
 exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
 <React.Fragment>
-  <FormattedText
-    defaultMessage="All"
-    id="mobile.reaction_header.all_emojis"
-    style={
+  <Connect(Emoji)
+    emojiName="smile"
+    padding={5}
+    size={16}
+    textStyle={
       Object {
-        "color": "#166de0",
-        "fontSize": 16,
-        "marginLeft": 4,
+        "color": "#000",
+        "fontWeight": "bold",
       }
     }
   />

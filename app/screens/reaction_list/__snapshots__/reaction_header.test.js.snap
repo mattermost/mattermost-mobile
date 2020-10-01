@@ -23,6 +23,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
         count={2}
         emojiName="smile"
         highlight={true}
+        onLayout={[Function]}
         onPress={[Function]}
         theme={
           Object {
@@ -58,6 +59,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
         count={1}
         emojiName="+1"
         highlight={false}
+        onLayout={[Function]}
         onPress={[Function]}
         theme={
           Object {
@@ -100,6 +102,7 @@ Array [
     count={2}
     emojiName="smile"
     highlight={true}
+    onLayout={[Function]}
     onPress={[Function]}
     theme={
       Object {
@@ -135,6 +138,7 @@ Array [
     count={1}
     emojiName="+1"
     highlight={false}
+    onLayout={[Function]}
     onPress={[Function]}
     theme={
       Object {
