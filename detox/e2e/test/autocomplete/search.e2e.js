@@ -13,19 +13,19 @@ describe('Autocomplete', () => {
 
     beforeEach(async () => {
         await device.reloadReactNative();
-        await element(by.id('search_button')).tap();
+        await element(by.id('channel.search.button')).tap();
     });
 
     it('should render at_mention component', async () => {
-        await expect(element(by.id('autocomplete_at_mention'))).not.toExist();
+        await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await element(by.id('search_from')).tap();
-        await expect(element(by.id('autocomplete_at_mention'))).toExist();
+        await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
     });
 
     it('should render channel_mention component', async () => {
-        await expect(element(by.id('autocomplete_channel_mention'))).not.toExist();
+        await expect(element(by.id('autocomplete.channel_mention.list'))).not.toExist();
         await element(by.id('search_in')).tap();
-        await expect(element(by.id('autocomplete_channel_mention'))).toExist();
+        await expect(element(by.id('autocomplete.channel_mention.list'))).toExist();
     });
 
     it('should render date_suggestion component', async () => {
@@ -33,22 +33,4 @@ describe('Autocomplete', () => {
         await element(by.id('search_before')).tap();
         await expect(element(by.id('autocomplete_date_suggestion'))).toExist();
     });
-
-    // it('should render channel_mention component', async () => {
-    //     await element(by.id('search_bar')).tap();
-
-    //     await expect(element(by.id('autocomplete_channel_mention'))).not.toExist();
-    //     await element(by.id('search_bar')).typeText('in:');
-
-    //     await expect(element(by.id('autocomplete_channel_mention'))).toExist();
-    // });
-
-    // it('should render date_suggestion component', async () => {
-    //     await element(by.id('search_bar')).tap();
-
-    //     await expect(element(by.id('autocomplete_date_suggestion'))).not.toExist();
-    //     await element(by.id('search_bar')).typeText('before:');
-
-    //     await expect(element(by.id('autocomplete_date_suggestion'))).toExist();
-    // });
 });

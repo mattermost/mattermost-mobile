@@ -151,6 +151,7 @@ export default class ChannelTitle extends PureComponent {
 
         return (
             <TouchableOpacity
+                testID={'channel.title.button'}
                 style={style.container}
                 onPress={onPress}
             >
