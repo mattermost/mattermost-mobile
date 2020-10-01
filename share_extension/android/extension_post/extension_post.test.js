@@ -71,7 +71,6 @@ describe('ExtensionPost', () => {
     test('should render file uploads disabled message when canUploadFiles is false', () => {
         wrapper.setState({loaded: true});
         wrapper.setProps({canUploadFiles: false});
-        expect(wrapper.getElement()).toMatchSnapshot();
         expect(instance.renderErrorMessage).toHaveBeenCalledWith('File uploads from mobile are disabled. Please contact your System Admin for more details.');
     });
 });
