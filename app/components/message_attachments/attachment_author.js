@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Linking, Text, View} from 'react-native';
+import {Alert, Linking, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import PropTypes from 'prop-types';
+import {intlShape} from 'react-intl';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -16,10 +17,27 @@ export default class AttachmentAuthor extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     openLink = () => {
         const {link} = this.props;
-        if (link && Linking.canOpenURL(link)) {
-            Linking.openURL(link);
+        const {intl} = this.context;
+
+        if (link) {
+            Linking.openURL(link).catch(() => {
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.link.error.title',
+                        defaultMessage: 'Error',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.link.error.text',
+                        defaultMessage: 'Unable to open the link.',
+                    }),
+                );
+            });
         }
     };
 
