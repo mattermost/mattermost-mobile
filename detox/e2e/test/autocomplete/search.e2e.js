@@ -18,7 +18,7 @@ describe('Autocomplete', () => {
         await element(by.id('channel.search.button')).tap();
     });
 
-    it('should render at_mention component', async () => {
+    it('MM-T3393_1 should render at_mention component', async () => {
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
 
         // # Tap "from:" modifier
@@ -26,7 +26,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
     });
 
-    it('should render channel_mention component', async () => {
+    it('MM-T3393_2 should render channel_mention component', async () => {
         await expect(element(by.id('autocomplete.channel_mention.list'))).not.toExist();
 
         // # Tap "in:" modifier
@@ -34,7 +34,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.channel_mention.list'))).toExist();
     });
 
-    it('should render date_suggestion component', async () => {
+    it('MM-T3393_3 should render date_suggestion component', async () => {
         await expect(element(by.id('autocomplete.date_suggestion'))).not.toExist();
 
         // # Tap "before:" modifier

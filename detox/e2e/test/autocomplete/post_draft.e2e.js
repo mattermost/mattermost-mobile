@@ -19,7 +19,7 @@ describe('Autocomplete', () => {
         await element(by.id('post_input')).tap();
     });
 
-    it('should render emoji_suggestion component', async () => {
+    it('MM-T3392_1 should render emoji_suggestion component', async () => {
         // # Type ":" to activate emoji suggestions
         await expect(element(by.id('autocomplete.emoji_suggestion.list'))).not.toExist();
         await element(by.id('post_input')).typeText(':');
@@ -28,7 +28,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.emoji_suggestion.list'))).toExist();
     });
 
-    it('should render at_mention component', async () => {
+    it('MM-T3392_2 should render at_mention component', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await element(by.id('post_input')).typeText('@');
@@ -37,7 +37,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
     });
 
-    it('should render channel_mention component', async () => {
+    it('MM-T3392_3 should render channel_mention component', async () => {
         // # Type "~" to activate channel mention autocomplete
         await expect(element(by.id('autocomplete.channel_mention.list'))).not.toExist();
         await element(by.id('post_input')).typeText('~');
@@ -46,7 +46,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.channel_mention.list'))).toExist();
     });
 
-    it('should render slash_suggestion component', async () => {
+    it('MM-T3392_4 should render slash_suggestion component', async () => {
         // # Type "/" to activate slash command suggestions
         await expect(element(by.id('autocomplete.slash_suggestion'))).not.toExist();
         await element(by.id('post_input')).typeText('/');

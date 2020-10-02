@@ -11,7 +11,7 @@ describe('Autocomplete', () => {
         await toChannelScreen(user);
     });
 
-    it('should render autocomplete in channel header edit screen', async () => {
+    it('MM-T3390 should render autocomplete in channel header edit screen', async () => {
         // # Open channel info modal
         await element(by.id('channel.title.button')).tap();
 

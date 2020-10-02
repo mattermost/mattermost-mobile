@@ -11,7 +11,7 @@ describe('Autocomplete', () => {
         await toChannelScreen(user);
     });
 
-    it('should render autocomplete in post edit screen', async () => {
+    it('MM-T3391 should render autocomplete in post edit screen', async () => {
         const message = Date.now().toString();
 
         // # Type a message
