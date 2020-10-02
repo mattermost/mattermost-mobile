@@ -172,7 +172,7 @@
     "e2e:android": "cd detox && npm run e2e:android-build && npm run e2e:android-test && cd ..",
     "e2e:ios": "cd detox && npm run e2e:ios-test && cd ..",
     "build:ios": "./scripts/build.sh ipa",
-    "build:ios-usigned": "./scripts/build.sh ipa unsigned",
+    "build:ios-unsigned": "./scripts/build.sh ipa unsigned",
     "build:ios-sim": "./scripts/build.sh ipa simulator",
     "build:android": "./scripts/build.sh apk",
     "build:android-unsigned": "./scripts/build.sh apk unsigned"
