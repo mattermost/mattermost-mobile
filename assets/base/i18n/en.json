@@ -276,6 +276,7 @@
   "mobile.file_upload.browse": "Browse Files",
   "mobile.file_upload.camera_photo": "Take Photo",
   "mobile.file_upload.camera_video": "Take Video",
+  "mobile.file_upload.disabled": "File uploads from mobile are disabled. Please contact your System Admin for more details.",
   "mobile.file_upload.library": "Photo Library",
   "mobile.file_upload.max_warning": "Uploads limited to 5 files maximum.",
   "mobile.file_upload.unsupportedMimeType": "Only BMP, JPG or PNG images may be used for profile pictures.",
