@@ -23,6 +23,8 @@ describe('Autocomplete', () => {
 
         // # Tap "from:" modifier
         await element(by.id('search_from')).tap();
+
+        // * Expect at mention to render
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
     });
 
@@ -31,6 +33,8 @@ describe('Autocomplete', () => {
 
         // # Tap "in:" modifier
         await element(by.id('search_in')).tap();
+
+        // * Expect channel mention to render
         await expect(element(by.id('autocomplete.channel_mention.list'))).toExist();
     });
 
@@ -39,6 +43,8 @@ describe('Autocomplete', () => {
 
         // # Tap "before:" modifier
         await element(by.id('search_before')).tap();
+
+        // * Expect date suggestion to render
         await expect(element(by.id('autocomplete.date_suggestion'))).toExist();
     });
 });
