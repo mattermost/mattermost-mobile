@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {System} from '@support/server_api';
+import {Ldap, System} from '@support/server_api';
 import {serverUrl} from '@support/test_config';
 import ldapUsers from '@support/fixtures/ldap_users.json';
 
@@ -14,6 +14,9 @@ describe('Smoke Tests', () => {
 
         // # Enable LDAP
         await System.apiUpdateConfig({LdapSettings: {Enable: true}});
+
+        // * Check that LDAP server can connect and is synchronized with Mattermost server
+        await Ldap.apiRequireLDAPServer();
     });
 
     it('MM-T3180 Log in - LDAP', async () => {
