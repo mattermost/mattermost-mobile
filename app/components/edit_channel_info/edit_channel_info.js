@@ -241,6 +241,7 @@ export default class EditChannelInfo extends PureComponent {
             <React.Fragment>
                 <StatusBar/>
                 <KeyboardAwareScrollView
+                    testID='channel_scroll'
                     ref={this.scroll}
                     style={style.container}
                     keyboardShouldPersistTaps={'always'}
@@ -262,6 +263,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
+                                            testID='input_channel_name'
                                             ref={this.nameInput}
                                             value={displayName}
                                             onChangeText={this.onDisplayNameChangeText}
@@ -294,6 +296,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
+                                            testID='input_channel_purpose'
                                             ref={this.purposeInput}
                                             value={purpose}
                                             onChangeText={this.onPurposeChangeText}
@@ -336,6 +339,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
+                                    testID='input_channel_header'
                                     ref={this.headerInput}
                                     value={header}
                                     onChangeText={this.onHeaderChangeText}
