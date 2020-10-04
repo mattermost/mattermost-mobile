@@ -1,12 +1,12 @@
 # Mattermost Mobile
 
 - **Minimum Server versions:** Current ESR version (5.19)
-- **Supported iOS versions:** 11+
-- **Supported Android versions:** 7.0+
+- **Supported iOS versions:** iOS 11+
+- **Supported Android versions:** Android 7.0+
 
-Mattermost is an open source Slack-alternative used by thousands of companies around the world in 14 languages. Learn more at [https://about.mattermost.com](https://about.mattermost.com).
+Mattermost is an open source Slack-alternative used by thousands of companies around the world in around 14 languages. Learn more at [https://about.mattermost.com](https://about.mattermost.com).
 
-You can download our apps from the [App Store](https://about.mattermost.com/mattermost-ios-app/) or [Google Play Store](https://about.mattermost.com/mattermost-android-app/), or [build them yourself](https://developers.mattermost.com/contribute/mobile/build-your-own/). 
+You can also download our apps from the [App Store](https://about.mattermost.com/mattermost-ios-app/) or [Google Play Store](https://about.mattermost.com/mattermost-android-app/), or [build them yourself](https://developers.mattermost.com/contribute/mobile/build-your-own/). 
 
 We plan on releasing monthly updates with new features - check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what features are currently supported! 
 
@@ -45,7 +45,7 @@ You can leave the Beta testing program at any time:
 
 # Frequently Asked Questions
 
-### How is data handled on mobile devices after a user account is deactivated?
+### How is data handled on mobile devices after a user's account is deactivated?
 
 App data is wiped from the device when a user logs out of the app. If the user is logged in when the account is deactivated, then within one minute the system logs the user out, and as a result all app data is wiped from the device.
 
