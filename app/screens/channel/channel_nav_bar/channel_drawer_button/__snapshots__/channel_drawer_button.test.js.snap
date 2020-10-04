@@ -12,6 +12,7 @@ exports[`ChannelDrawerButton should match, full snapshot 1`] = `
       "width": 10,
     }
   }
+  testID="channel_drawer_button"
 >
   <View
     style={
@@ -51,6 +52,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
       "width": 55,
     }
   }
+  testID="channel_drawer_button"
 >
   <View
     style={
