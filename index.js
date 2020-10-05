@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import 'react-native/Libraries/Core/InitializeCore';
-import { DeviceEventEmitter, Platform, Text } from 'react-native';
+import {DeviceEventEmitter, Platform, Text} from 'react-native';
 import 'react-native-gesture-handler';
 
 import LocalConfig from '@assets/config';
@@ -43,7 +43,7 @@ const setFontFamily = () => {
     };
     Text.render = function render(props, ...args) {
         const oldProps = props;
-        let newProps = { ...props, style: [defaultFontFamily.style, props.style] };
+        let newProps = {...props, style: [defaultFontFamily.style, props.style]};
         try {
             return Reflect.apply(TextRender, this, [newProps, ...args]);
         } finally {
@@ -62,8 +62,8 @@ if (Platform.OS === 'android') {
         const metricsSubscription = DeviceEventEmitter.addListener('nativeMetrics', (metrics) => {
             telemetry.setAppStartTime(metrics.appReload);
             telemetry.include([
-                { name: 'start:process_packages', startTime: metrics.processPackagesStart, endTime: metrics.processPackagesEnd },
-                { name: 'start:content_appeared', startTime: metrics.appReload, endTime: metrics.appContentAppeared },
+                {name: 'start:process_packages', startTime: metrics.processPackagesStart, endTime: metrics.processPackagesEnd},
+                {name: 'start:content_appeared', startTime: metrics.appReload, endTime: metrics.appContentAppeared},
             ]);
             telemetry.start(['start:overall'], metrics.appReload);
 
