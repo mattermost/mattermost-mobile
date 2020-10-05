@@ -37,6 +37,11 @@ export default class SlashSuggestionItem extends PureComponent {
 
         const style = getStyleFromTheme(theme);
 
+        let suggestionText = suggestion;
+        if (suggestionText[0] === '/') {
+            suggestionText = suggestionText.substring(1);
+        }
+
         return (
             <TouchableWithFeedback
                 onPress={this.completeSuggestion}
@@ -54,7 +59,7 @@ export default class SlashSuggestionItem extends PureComponent {
                         />
                     </View>
                     <View style={style.suggestionContainer}>
-                        <Text style={style.suggestionName}>{`${suggestion.substring(1)} ${hint}`}</Text>
+                        <Text style={style.suggestionName}>{`${suggestionText} ${hint}`}</Text>
                         <Text
                             ellipsizeMode='tail'
                             numberOfLines={1}
