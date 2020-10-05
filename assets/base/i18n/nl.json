@@ -484,6 +484,7 @@
   "mobile.server_upgrade.dismiss": "Afwijzen",
   "mobile.server_upgrade.learn_more": "Meer informatie",
   "mobile.server_upgrade.title": "Server-upgrade is vereist",
+  "mobile.server_url.empty": "Geef een geldige server URL op",
   "mobile.server_url.invalid_format": "URL moet beginnen met http:// of https://",
   "mobile.session_expired": "Sessie verlopen: meld je aan om door te gaan met het ontvangen van berichten. Sessies voor {siteName} zijn geconfigureerd om elke {daysCount, number} {daysCount, plural, one {day} other {days}} te verlopen.",
   "mobile.set_status.away": "Afwezig",
