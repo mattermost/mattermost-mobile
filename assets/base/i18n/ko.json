@@ -22,7 +22,7 @@
   "channel_header.manageMembers": "회원 관리",
   "channel_header.notificationPreference": "모바일 푸시 알림",
   "channel_header.notificationPreference.all": "모두",
-  "channel_header.notificationPreference.default": "기본",
+  "channel_header.notificationPreference.default": "기본값",
   "channel_header.notificationPreference.none": "알림 사용 안함",
   "channel_header.pinnedPosts": "포스트 고정",
   "channel_header.viewMembers": "회원 보기",
