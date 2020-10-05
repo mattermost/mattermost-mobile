@@ -32,13 +32,14 @@ export default class SlashSuggestionItem extends PureComponent {
             hint,
             theme,
             suggestion,
+            complete,
             isLandscape,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
 
         let suggestionText = suggestion;
-        if (suggestionText[0] === '/') {
+        if (suggestionText[0] === '/' && complete.split(' ').length === 1) {
             suggestionText = suggestionText.substring(1);
         }
 
