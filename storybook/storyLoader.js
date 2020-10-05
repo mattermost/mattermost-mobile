@@ -1,15 +1,13 @@
-// Auto-generated file created by react-native-storybook-loader
-// Do not edit.
-//
-// https://github.com/elderfo/react-native-storybook-loader.git
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 function loadStories() {
-  require("../app/components/app_icon.stories");
+    require('../app/components/app_icon.stories');
 }
 
-const stories = ["../app/components/app_icon.stories"];
+const stories = ['../app/components/app_icon.stories'];
 
 module.exports = {
-  loadStories,
-  stories,
+    loadStories,
+    stories,
 };
