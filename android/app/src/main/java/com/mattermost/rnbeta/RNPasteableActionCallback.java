@@ -82,7 +82,12 @@ public class RNPasteableActionCallback implements ActionMode.Callback {
             return null;
         }
 
-        String text = item.getText().toString();
+        CharSequence chars = item.getText();
+        if (chars == null) {
+            return null;
+        }
+
+        String text = chars.toString(); 
         if (text.length() > 0) {
             return null;
         }
