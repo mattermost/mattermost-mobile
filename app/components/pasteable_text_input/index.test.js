@@ -12,6 +12,8 @@ import {PasteableTextInput} from './index';
 const nativeEventEmitter = new NativeEventEmitter();
 
 describe('PasteableTextInput', () => {
+    const emit = jest.spyOn(EventEmitter, 'emit');
+
     test('should render pasteable text input', () => {
         const onPaste = jest.fn();
         const text = 'My Text';
@@ -24,12 +26,11 @@ describe('PasteableTextInput', () => {
     test('should call onPaste props if native onPaste trigger', () => {
         const event = {someData: 'data'};
         const text = 'My Text';
-        const onPaste = jest.spyOn(EventEmitter, 'emit');
         shallow(
             <PasteableTextInput>{text}</PasteableTextInput>,
         );
         nativeEventEmitter.emit('onPaste', event);
-        expect(onPaste).toHaveBeenCalledWith(PASTE_FILES, null, event);
+        expect(emit).toHaveBeenCalledWith(PASTE_FILES, null, event);
     });
 
     test('should remove onPaste listener when unmount', () => {
@@ -42,5 +43,17 @@ describe('PasteableTextInput', () => {
         component.instance().subscription.remove = mockRemove;
         component.instance().componentWillUnmount();
         expect(mockRemove).toHaveBeenCalled();
+    });
+
+    test('should emit PASTE_FILES event only for last subscription', () => {
+        const component1 = shallow(<PasteableTextInput/>);
+        const instance1 = component1.instance();
+        const component2 = shallow(<PasteableTextInput/>);
+        const instance2 = component2.instance();
+
+        instance1.onPaste();
+        expect(emit).not.toHaveBeenCalled();
+        instance2.onPaste();
+        expect(emit).toHaveBeenCalledTimes(1);
     });
 });
