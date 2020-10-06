@@ -24,6 +24,31 @@ describe('On boarding', () => {
         await expect(element(by.id('connect_button'))).toBeVisible();
     });
 
+    it('should show error on empty server URL', async () => {
+        await expect(element(by.id('select_server_screen'))).toBeVisible();
+
+        // Enter an empty server URL
+        await element(by.id('server_url_input')).typeText(' ');
+
+        // Tap anywhere to hide keyboard
+        await element(by.text('Enter Server URL')).tap();
+
+        // Verify that the error message does not exist
+        await waitFor(element(by.id('error_text'))).not.toExist().withTimeout(timeouts.HALF_SEC);
+
+        // Tap connect button
+        await element(by.id('connect_button')).tap();
+
+        // Explicitly wait on Android before verifying error message
+        if (isAndroid()) {
+            await wait(timeouts.ONE_MIN);
+        }
+
+        // Verify error message
+        await waitFor(element(by.id('error_text'))).toBeVisible().withTimeout(timeouts.ONE_MIN);
+        await expect(element(by.id('error_text'))).toHaveText('Please enter a valid server URL');
+    });
+
     it('should show error on invalid server URL', async () => {
         await expect(element(by.id('select_server_screen'))).toBeVisible();
 
