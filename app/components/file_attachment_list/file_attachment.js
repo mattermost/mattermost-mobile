@@ -58,22 +58,10 @@ export default class FileAttachment extends PureComponent {
     handlePreviewPress = () => {
         if (this.documentElement) {
             this.documentElement.handlePreviewPress();
-        } else if (isImage(this.props.file)) {
-            this.transitionImage();
         } else {
             this.props.onPreviewPress(this.props.index);
         }
     };
-
-    transitionImage = () => {
-        this.setState({resizeMode: 'stretch'}, () => {
-            this.props.onPreviewPress(this.props.index);
-            this.transition = setTimeout(() => {
-                this.setState({resizeMode: 'cover'});
-                clearTimeout(this.transition);
-            }, 450);
-        });
-    }
 
     renderFileInfo() {
         const {file, onLongPress, theme} = this.props;

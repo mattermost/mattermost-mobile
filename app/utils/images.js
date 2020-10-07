@@ -94,7 +94,7 @@ export function openGalleryAtIndex(index, files) {
             sharedElementTransitions.push({
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
-                interpolation: 'accelerateDecelerate',
+                interpolation: 'overshoot',
             });
         } else {
             contentPush.y = {
@@ -126,8 +126,8 @@ export function openGalleryAtIndex(index, files) {
 
         const options = {
             layout: {
-                backgroundColor: 'transparent',
-                componentBackgroundColor: 'transparent',
+                backgroundColor: '#000',
+                componentBackgroundColor: '#000',
             },
             topBar: {
                 background: {

@@ -4,97 +4,216 @@
 import React from 'react';
 import {Platform} from 'react-native';
 import {ThemeProvider} from 'react-native-elements';
+import {Provider} from 'react-redux';
 
 import {Navigation} from 'react-native-navigation';
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 
-let Root;
-export function registerScreens(store, Provider) {
-    // TODO consolidate this with app/utils/wrap_context_provider
+import RootWrapper from '@components/root';
+let store;
 
-    if (!Root) {
-        Root = require('app/components/root').default;
-    }
-
-    const wrapper = (Comp, excludeEvents = true) => (props) => ( // eslint-disable-line react/display-name
-        <Provider store={store}>
-            <ThemeProvider>
-                <Root excludeEvents={excludeEvents}>
-                    <Comp {...props}/>
-                </Root>
-            </ThemeProvider>
-        </Provider>
-    );
-
-    Navigation.registerComponent('About', () => wrapper(require('app/screens/about').default), () => require('app/screens/about').default);
-    Navigation.registerComponent('AddReaction', () => wrapper(require('app/screens/add_reaction').default), () => require('app/screens/add_reaction').default);
-    Navigation.registerComponent('AdvancedSettings', () => wrapper(require('app/screens/settings/advanced_settings').default), () => require('app/screens/settings/advanced_settings').default);
-    Navigation.registerComponent('Channel', () => wrapper(require('app/screens/channel').default, false), () => require('app/screens/channel').default);
-    Navigation.registerComponent('ChannelAddMembers', () => wrapper(require('app/screens/channel_add_members').default), () => require('app/screens/channel_add_members').default);
-    Navigation.registerComponent('ChannelInfo', () => wrapper(require('app/screens/channel_info').default), () => require('app/screens/channel_info').default);
-    Navigation.registerComponent('ChannelMembers', () => wrapper(require('app/screens/channel_members').default), () => require('app/screens/channel_members').default);
-    Navigation.registerComponent('ChannelNotificationPreference', () => wrapper(require('app/screens/channel_notification_preference').default), () => require('app/screens/channel_notification_preference').default);
-    Navigation.registerComponent('ClientUpgrade', () => wrapper(require('app/screens/client_upgrade').default), () => require('app/screens/client_upgrade').default);
-    Navigation.registerComponent('ClockDisplaySettings', () => wrapper(require('app/screens/settings/clock_display').default), () => require('app/screens/settings/clock_display').default);
-    Navigation.registerComponent('Code', () => wrapper(require('app/screens/code').default), () => require('app/screens/code').default);
-    Navigation.registerComponent('CreateChannel', () => wrapper(require('app/screens/create_channel').default), () => require('app/screens/create_channel').default);
-    Navigation.registerComponent('DisplaySettings', () => wrapper(require('app/screens/settings/display_settings').default), () => require('app/screens/settings/display_settings').default);
-    Navigation.registerComponent('EditChannel', () => wrapper(require('app/screens/edit_channel').default), () => require('app/screens/edit_channel').default);
-    Navigation.registerComponent('EditPost', () => wrapper(require('app/screens/edit_post').default), () => require('app/screens/edit_post').default);
-    Navigation.registerComponent('EditProfile', () => wrapper(require('app/screens/edit_profile').default), () => require('app/screens/edit_profile').default);
-    Navigation.registerComponent('ExpandedAnnouncementBanner', () => wrapper(require('app/screens/expanded_announcement_banner').default), () => require('app/screens/expanded_announcement_banner').default);
-    Navigation.registerComponent('FlaggedPosts', () => wrapper(require('app/screens/flagged_posts').default), () => require('app/screens/flagged_posts').default);
-    Navigation.registerComponent('ForgotPassword', () => wrapper(require('app/screens/forgot_password').default), () => require('app/screens/forgot_password').default);
-    Navigation.registerComponent('Gallery', () => {
-        const screen = wrapper(require('app/screens/gallery').default);
-        if (Platform.OS === 'android') {
-            return gestureHandlerRootHOC(screen);
-        }
-
-        return screen;
-    }, () => require('app/screens/gallery').default);
-    Navigation.registerComponent('InteractiveDialog', () => wrapper(require('app/screens/interactive_dialog').default), () => require('app/screens/interactive_dialog').default);
-    Navigation.registerComponent('Login', () => wrapper(require('app/screens/login').default), () => require('app/screens/login').default);
-    Navigation.registerComponent('LoginOptions', () => wrapper(require('app/screens/login_options').default), () => require('app/screens/login_options').default);
-    Navigation.registerComponent('LongPost', () => wrapper(require('app/screens/long_post').default), () => require('app/screens/long_post').default);
-    Navigation.registerComponent('MFA', () => wrapper(require('app/screens/mfa').default), () => require('app/screens/mfa').default);
-    Navigation.registerComponent('MoreChannels', () => wrapper(require('app/screens/more_channels').default), () => require('app/screens/more_channels').default);
-    Navigation.registerComponent('MoreDirectMessages', () => wrapper(require('app/screens/more_dms').default), () => require('app/screens/more_dms').default);
+const withGestures = (screen) => {
     if (Platform.OS === 'android') {
-        Navigation.registerComponent('Notification', () => gestureHandlerRootHOC(wrapper(require('app/screens/notification').default), {flex: undefined, height: 100}), () => require('app/screens/notification').default);
-    } else {
-        Navigation.registerComponent('Notification', () => wrapper(require('app/screens/notification').default), () => require('app/screens/notification').default);
+        return gestureHandlerRootHOC(screen);
     }
-    Navigation.registerComponent('NotificationSettings', () => wrapper(require('app/screens/settings/notification_settings').default), () => require('app/screens/settings/notification_settings').default);
-    Navigation.registerComponent('NotificationSettingsAutoResponder', () => wrapper(require('app/screens/settings/notification_settings_auto_responder').default), () => require('app/screens/settings/notification_settings_auto_responder').default);
-    Navigation.registerComponent('NotificationSettingsEmail', () => wrapper(require('app/screens/settings/notification_settings_email').default), () => require('app/screens/settings/notification_settings_email').default);
-    Navigation.registerComponent('NotificationSettingsMentions', () => wrapper(require('app/screens/settings/notification_settings_mentions').default), () => require('app/screens/settings/notification_settings_mentions').default);
-    Navigation.registerComponent('NotificationSettingsMentionsKeywords', () => wrapper(require('app/screens/settings/notification_settings_mentions_keywords').default), () => require('app/screens/settings/notification_settings_mentions_keywords').default);
-    Navigation.registerComponent('NotificationSettingsMobile', () => wrapper(require('app/screens/settings/notification_settings_mobile').default), () => require('app/screens/settings/notification_settings_mobile').default);
-    Navigation.registerComponent('OptionsModal', () => wrapper(require('app/screens/options_modal').default), () => require('app/screens/options_modal').default);
-    Navigation.registerComponent('Permalink', () => wrapper(require('app/screens/permalink').default), () => require('app/screens/permalink').default);
-    Navigation.registerComponent('PinnedPosts', () => wrapper(require('app/screens/pinned_posts').default), () => require('app/screens/pinned_posts').default);
-    Navigation.registerComponent('PostOptions', () => gestureHandlerRootHOC(wrapper(require('app/screens/post_options').default)), () => require('app/screens/post_options').default);
-    Navigation.registerComponent('ReactionList', () => gestureHandlerRootHOC(wrapper(require('app/screens/reaction_list').default)), () => require('app/screens/reaction_list').default);
-    Navigation.registerComponent('RecentMentions', () => wrapper(require('app/screens/recent_mentions').default), () => require('app/screens/recent_mentions').default);
-    Navigation.registerComponent('Search', () => wrapper(require('app/screens/search').default), () => require('app/screens/search').default);
-    Navigation.registerComponent('SelectorScreen', () => wrapper(require('app/screens/selector_screen').default), () => require('app/screens/selector_screen').default);
-    Navigation.registerComponent('SelectServer', () => wrapper(require('app/screens/select_server').default, false), () => require('app/screens/select_server').default);
-    Navigation.registerComponent('SelectTeam', () => wrapper(require('app/screens/select_team').default), () => require('app/screens/select_team').default);
-    Navigation.registerComponent('SelectTimezone', () => wrapper(require('app/screens/settings/timezone/select_timezone').default), () => require('app/screens/settings/timezone/select_timezone').default);
-    Navigation.registerComponent('Settings', () => wrapper(require('app/screens/settings/general').default), () => require('app/screens/settings/general').default);
-    Navigation.registerComponent('SidebarSettings', () => wrapper(require('app/screens/settings/sidebar').default), () => require('app/screens/settings/sidebar').default);
-    Navigation.registerComponent('SSO', () => wrapper(require('app/screens/sso').default), () => require('app/screens/sso').default);
-    Navigation.registerComponent('Table', () => wrapper(require('app/screens/table').default), () => require('app/screens/table').default);
-    Navigation.registerComponent('TermsOfService', () => wrapper(require('app/screens/terms_of_service').default), () => require('app/screens/terms_of_service').default);
-    Navigation.registerComponent('ThemeSettings', () => wrapper(require('app/screens/settings/theme').default), () => require('app/screens/settings/theme').default);
-    Navigation.registerComponent('Thread', () => wrapper(require('app/screens/thread').default), () => require('app/screens/thread').default);
-    Navigation.registerComponent('TimezoneSettings', () => wrapper(require('app/screens/settings/timezone').default), () => require('app/screens/settings/timezone').default);
-    Navigation.registerComponent('ErrorTeamsList', () => wrapper(require('app/screens/error_teams_list').default), () => require('app/screens/error_teams_list').default);
-    Navigation.registerComponent('UserProfile', () => wrapper(require('app/screens/user_profile').default), () => require('app/screens/user_profile').default);
 
-    if (Platform.OS === 'android') {
-        Navigation.registerComponentWithRedux('MainSidebar', () => require('app/components/sidebars/main').default, Provider, store);
-        Navigation.registerComponentWithRedux('SettingsSidebar', () => require('app/components/sidebars/settings').default, Provider, store);
+    return screen;
+};
+
+// eslint-disable-next-line react/display-name
+const withReduxProvider = (Screen, excludeEvents = true) => (props) => (
+    <Provider store={store}>
+        <ThemeProvider>
+            <RootWrapper excludeEvents={excludeEvents}>
+                <Screen {...props}/>
+            </RootWrapper>
+        </ThemeProvider>
+    </Provider>
+);
+
+Navigation.setLazyComponentRegistrator((screenName) => {
+    let screen;
+    let extraStyles;
+    switch (screenName) {
+    case 'About':
+        screen = require('@screens/about').default;
+        break;
+    case 'AddReaction':
+        screen = require('@screens/add_reaction').default;
+        break;
+    case 'AdvancedSettings':
+        screen = require('@screens/settings/advanced_settings').default;
+        break;
+    case 'ChannelAddMembers':
+        screen = require('@screens/channel_add_members').default;
+        break;
+    case 'ChannelInfo':
+        screen = require('@screens/channel_info').default;
+        break;
+    case 'ChannelMembers':
+        screen = require('@screens/channel_members').default;
+        break;
+    case 'ChannelNotificationPreference':
+        screen = require('@screens/channel_notification_preference').default;
+        break;
+    case 'ClientUpgrade':
+        screen = require('@screens/client_upgrade').default;
+        break;
+    case 'ClockDisplaySettings':
+        screen = require('@screens/settings/clock_display').default;
+        break;
+    case 'Code':
+        screen = require('@screens/code').default;
+        break;
+    case 'CreateChannel':
+        screen = require('@screens/create_channel').default;
+        break;
+    case 'DisplaySettings':
+        screen = require('@screens/settings/display_settings').default;
+        break;
+    case 'EditChannel':
+        screen = require('@screens/edit_channel').default;
+        break;
+    case 'EditPost':
+        screen = require('@screens/edit_post').default;
+        break;
+    case 'EditProfile':
+        screen = require('@screens/edit_profile').default;
+        break;
+    case 'ErrorTeamsList':
+        screen = require('@screens/error_teams_list').default;
+        break;
+    case 'ExpandedAnnouncementBanner':
+        screen = require('@screens/expanded_announcement_banner').default;
+        break;
+    case 'FlaggedPosts':
+        screen = require('@screens/flagged_posts').default;
+        break;
+    case 'ForgotPassword':
+        screen = require('@screens/forgot_password').default;
+        break;
+    case 'Gallery':
+        screen = require('@screens/gallery').default;
+        break;
+    case 'InteractiveDialog':
+        screen = require('@screens/interactive_dialog').default;
+        break;
+    case 'Login':
+        screen = require('@screens/login').default;
+        break;
+    case 'LoginOptions':
+        screen = require('@screens/login_options').default;
+        break;
+    case 'LongPost':
+        screen = require('@screens/long_post').default;
+        break;
+    case 'MainSidebar':
+        screen = require('app/components/sidebars/main').default;
+        break;
+    case 'MFA':
+        screen = require('@screens/mfa').default;
+        break;
+    case 'MoreChannels':
+        screen = require('@screens/more_channels').default;
+        break;
+    case 'MoreDirectMessages':
+        screen = require('@screens/more_dms').default;
+        break;
+    case 'Notification':
+        extraStyles = Platform.select({android: {flex: undefined, height: 100}});
+        screen = require('@screens/notification').default;
+        break;
+    case 'NotificationSettings':
+        screen = require('@screens/settings/notification_settings').default;
+        break;
+    case 'NotificationSettingsAutoResponder':
+        screen = require('@screens/settings/notification_settings_auto_responder').default;
+        break;
+    case 'NotificationSettingsEmail':
+        screen = require('@screens/settings/notification_settings_email').default;
+        break;
+    case 'NotificationSettingsMentions':
+        screen = require('@screens/settings/notification_settings_mentions').default;
+        break;
+    case 'NotificationSettingsMentionsKeywords':
+        screen = require('@screens/settings/notification_settings_mentions_keywords').default;
+        break;
+    case 'NotificationSettingsMobile':
+        screen = require('@screens/settings/notification_settings_mobile').default;
+        break;
+    case 'OptionsModal':
+        screen = require('@screens/options_modal').default;
+        break;
+    case 'Permalink':
+        screen = require('@screens/permalink').default;
+        break;
+    case 'PinnedPosts':
+        screen = require('@screens/pinned_posts').default;
+        break;
+    case 'PostOptions':
+        screen = require('@screens/post_options').default;
+        break;
+    case 'ReactionList':
+        screen = require('@screens/reaction_list').default;
+        break;
+    case 'RecentMentions':
+        screen = require('@screens/recent_mentions').default;
+        break;
+    case 'Search':
+        screen = require('@screens/search').default;
+        break;
+    case 'SelectorScreen':
+        screen = require('@screens/selector_screen').default;
+        break;
+    case 'SelectTeam':
+        screen = require('@screens/select_team').default;
+        break;
+    case 'SelectTimezone':
+        screen = require('@screens/settings/timezone/select_timezone').default;
+        break;
+    case 'Settings':
+        screen = require('@screens/settings/general').default;
+        break;
+    case 'SettingsSidebar':
+        screen = require('app/components/sidebars/settings').default;
+        break;
+    case 'SidebarSettings':
+        screen = require('@screens/settings/sidebar').default;
+        break;
+    case 'SSO':
+        screen = require('@screens/sso').default;
+        break;
+    case 'Table':
+        screen = require('@screens/table').default;
+        break;
+    case 'TermsOfService':
+        screen = require('@screens/terms_of_service').default;
+        break;
+    case 'ThemeSettings':
+        screen = require('@screens/settings/theme').default;
+        break;
+    case 'Thread':
+        screen = require('@screens/thread').default;
+        break;
+    case 'TimezoneSettings':
+        screen = require('@screens/settings/timezone').default;
+        break;
+    case 'UserProfile':
+        screen = require('@screens/user_profile').default;
+        break;
     }
+
+    if (screen) {
+        Navigation.registerComponent(screenName, () => withGestures(withReduxProvider(screen)), extraStyles, () => screen);
+    }
+});
+
+export function registerScreens(reduxStore) {
+    store = reduxStore;
+
+    const channelScreen = require('@screens/channel').default;
+    const serverScreen = require('@screens/select_server').default;
+
+    Navigation.registerComponent('Channel', () => withReduxProvider(channelScreen, false), () => channelScreen);
+    Navigation.registerComponent('SelectServer', () => withReduxProvider(serverScreen, false), () => serverScreen);
 }

@@ -80,8 +80,8 @@ export default class Gallery extends PureComponent {
         }
         const options = {
             layout: {
-                backgroundColor: 'transparent',
-                componentBackgroundColor: 'transparent',
+                backgroundColor: '#000',
+                componentBackgroundColor: '#000',
             },
             topBar: {
                 visible: this.footer.current?.getWrappedInstance().isVisible(),
@@ -108,7 +108,12 @@ export default class Gallery extends PureComponent {
 
     close = () => {
         const {componentId} = this.props;
+        const color = Platform.select({android: 'transparent', ios: '#000'});
         const options = {
+            layout: {
+                backgroundColor: color,
+                componentBackgroundColor: color,
+            },
             topBar: {
                 visible: true,
             },
