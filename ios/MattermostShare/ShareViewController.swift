@@ -29,6 +29,7 @@ class ShareViewController: SLComposeServiceViewController {
   private var teamsVC: TeamsViewController = TeamsViewController()
   
   private var maxMessageSize: Int = 0
+  private var canUploadFiles: Bool = true
   
   required init?(coder aDecoder: NSCoder) {
       super.init(coder: aDecoder)
@@ -37,6 +38,7 @@ class ShareViewController: SLComposeServiceViewController {
       sessionToken = store.getToken()
       serverURL = store.getServerUrl()
       maxMessageSize = Int(store.getMaxPostSize())
+      canUploadFiles = store.getCanUploadFiles()
   }
 
   // MARK: - Lifecycle methods
@@ -94,6 +96,8 @@ class ShareViewController: SLComposeServiceViewController {
       showErrorMessage(title: "", message: "Authentication required: Please first login using the app.", VC: self)
     } else if store.getCurrentTeamId() == "" || store.getMyTeams().count == 0 {
       showErrorMessage(title: "", message: "You must belong to a team before you can share files.", VC: self)
+    } else if !canUploadFiles {
+      showErrorMessage(title: "", message: "File uploads from mobile are disabled. Please contact your System Admin for more details.", VC: self)
     } else {
       extractDataFromContext()
     }

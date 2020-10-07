@@ -301,8 +301,12 @@ describe('Actions.Channels', () => {
     });
 
     it('getChannelByNameAndTeamName', async () => {
-        nock(Client4.getTeamsRoute()).
-            get(`/name/${TestHelper.basicTeam.name}/channels/name/${TestHelper.basicChannel.name}?include_deleted=false`).
+        nock(Client4.getBaseRoute()).
+            get(`/teams/name/${TestHelper.basicTeam.name}`).
+            reply(200, TestHelper.basicTeam);
+
+        nock(Client4.getBaseRoute()).
+            get(`/teams/${TestHelper.basicTeam.id}/channels/name/${TestHelper.basicChannel.name}?include_deleted=false`).
             reply(200, TestHelper.basicChannel);
 
         await store.dispatch(Actions.getChannelByNameAndTeamName(TestHelper.basicTeam.name, TestHelper.basicChannel.name));

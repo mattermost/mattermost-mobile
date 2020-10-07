@@ -32,7 +32,8 @@ function mapStateToProps(state) {
     let status;
     let isBot = false;
     let isTeammateGuest = false;
-    if (currentChannel.type === General.DM_CHANNEL) {
+    const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
+    if (isDirectMessage) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
         status = getStatusForUserId(state, teammateId);
@@ -54,6 +55,7 @@ function mapStateToProps(state) {
         isBot,
         isLandscape: isLandscape(state),
         isTeammateGuest,
+        isDirectMessage,
         status,
         theme: getTheme(state),
     };

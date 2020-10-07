@@ -206,6 +206,19 @@ export default class SelectServer extends PureComponent {
             return;
         }
 
+        if (!this.state.url || this.state.url.trim() === '') {
+            this.setState({
+                error: {
+                    intl: {
+                        id: t('mobile.server_url.empty'),
+                        defaultMessage: 'Please enter a valid server URL',
+                    },
+                },
+            });
+
+            return;
+        }
+
         if (!isValidUrl(this.sanitizeUrl(this.state.url))) {
             this.setState({
                 error: {

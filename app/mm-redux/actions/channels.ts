@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '../constants';
-import {ChannelTypes, PreferenceTypes, UserTypes} from '@mm-redux/action_types';
+import {ChannelTypes, PreferenceTypes, TeamTypes, UserTypes} from '@mm-redux/action_types';
 import {savePreferences, deletePreferences} from './preferences';
 import {compareNotifyProps, getChannelsIdForTeam, getChannelByName} from '@mm-redux/utils/channel_utils';
 import {
@@ -396,9 +396,24 @@ export function updateChannelNotifyProps(userId: string, channelId: string, prop
 
 export function getChannelByNameAndTeamName(teamName: string, channelName: string, includeDeleted = false): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        let data;
+        // The getChannelByNameForTeamName server endpoint had permission issues
+        // which were fixed in v5.28. We use a different endpoint here until
+        // the minimum server version required is 5.28 or greater.
+        let team;
         try {
-            data = await Client4.getChannelByNameAndTeamName(teamName, channelName, includeDeleted);
+            team = await Client4.getTeamByName(teamName);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(batchActions([
+                {type: TeamTypes.GET_TEAMS_FAILURE, error},
+                logError(error),
+            ]));
+            return {error};
+        }
+
+        let channel;
+        try {
+            channel = await Client4.getChannelByName(team.id, channelName, includeDeleted);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
             dispatch(batchActions([
@@ -408,12 +423,18 @@ export function getChannelByNameAndTeamName(teamName: string, channelName: strin
             return {error};
         }
 
-        dispatch({
-            type: ChannelTypes.RECEIVED_CHANNEL,
-            data,
-        });
+        dispatch(batchActions([
+            {
+                type: TeamTypes.RECEIVED_TEAM,
+                data: team,
+            },
+            {
+                type: ChannelTypes.RECEIVED_CHANNEL,
+                data: channel,
+            },
+        ]));
 
-        return {data};
+        return {data: channel};
     };
 }
 
