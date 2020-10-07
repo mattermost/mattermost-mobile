@@ -75,6 +75,10 @@ describe('Gallery', () => {
         expect(mergeNavigationOptions).toHaveBeenCalledWith(
             baseProps.componentId,
             {
+                layout: {
+                    backgroundColor: '#000',
+                    componentBackgroundColor: '#000',
+                },
                 topBar: {
                     visible: true,
                 },
