@@ -73,10 +73,11 @@ export const filterMembersInChannel = createSelector(
         let profiles;
         if (matchTerm) {
             profiles = profilesInChannel.filter((p) => {
+                const fullName = `${p.first_name.toLowerCase()} ${p.last_name.toLowerCase()}`;
                 return (p.delete_at === 0 && (
                     p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm) ||
-                    `${p.first_name.toLowerCase()} ${p.last_name.toLowerCase()}`.includes(matchTerm) ||
+                    fullName.includes(matchTerm) ||
                     p.nickname.toLowerCase().includes(matchTerm)));
             });
         } else {
@@ -99,11 +100,12 @@ export const filterMembersNotInChannel = createSelector(
         let profiles;
         if (matchTerm) {
             profiles = profilesNotInChannel.filter((p) => {
+                const fullName = `${p.first_name.toLowerCase()} ${p.last_name.toLowerCase()}`;
                 return (
                     p.username.toLowerCase().includes(matchTerm) ||
                     p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) ||
-                    `${p.first_name.toLowerCase()} ${p.last_name.toLowerCase()}`.includes(matchTerm) ||
+                    fullName.includes(matchTerm) ||
                     p.last_name.toLowerCase().includes(matchTerm) ||
                     p.nickname.toLowerCase().includes(matchTerm)
                 ) && p.delete_at === 0;
