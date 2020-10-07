@@ -76,6 +76,7 @@ export const filterMembersInChannel = createSelector(
                 return (p.delete_at === 0 && (
                     p.username.toLowerCase().includes(matchTerm) || p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) || p.last_name.toLowerCase().includes(matchTerm) ||
+                    `${p.first_name.toLowerCase()} ${p.last_name.toLowerCase()}`.includes(matchTerm) ||
                     p.nickname.toLowerCase().includes(matchTerm)));
             });
         } else {
@@ -102,6 +103,7 @@ export const filterMembersNotInChannel = createSelector(
                     p.username.toLowerCase().includes(matchTerm) ||
                     p.email.toLowerCase().includes(matchTerm) ||
                     p.first_name.toLowerCase().includes(matchTerm) ||
+                    `${p.first_name.toLowerCase()} ${p.last_name.toLowerCase()}`.includes(matchTerm) ||
                     p.last_name.toLowerCase().includes(matchTerm) ||
                     p.nickname.toLowerCase().includes(matchTerm)
                 ) && p.delete_at === 0;
