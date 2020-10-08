@@ -207,6 +207,21 @@
     return DEFAULT_SERVER_MAX_POST_SIZE;
 }
 
+-(BOOL)getCanUploadFiles {
+    NSDictionary *config = [self getConfig];
+    NSDictionary *license = [self getLicense];
+    if (config != nil && license != nil) {
+        NSString *enableFileAttachments = [config objectForKey:@"EnableFileAttachments"];
+        NSString *isLicensed = [license objectForKey:@"IsLicensed"];
+        NSString *compliance = [license objectForKey:@"Compliance"];
+        NSString *enableMobileFileUpload = [config objectForKey:@"EnableMobileFileUpload"];
+        return ![enableFileAttachments isEqual:@"false"] &&
+           ([isLicensed isEqual:@"false"] || [compliance isEqual:@"false"] || ![enableMobileFileUpload isEqual:@"false"]);
+    }
+      
+    return YES;
+}
+
 -(void)updateEntities:(NSString *)content {
     [self.bucket writeToFile:@"entities" content:content];
 }
@@ -270,6 +285,10 @@
 
 -(NSDictionary *)getConfig {
   return [[self.entities objectForKey:@"general"] objectForKey:@"config"];
+}
+
+-(NSDictionary *)getLicense {
+  return [[self.entities objectForKey:@"general"] objectForKey:@"license"];
 }
 
 -(NSDictionary *)getMyPreferences {

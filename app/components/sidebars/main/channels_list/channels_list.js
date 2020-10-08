@@ -129,7 +129,9 @@ export default class ChannelsList extends PureComponent {
         const leftComponent = onShowTeams ? <SwitchTeamsButton onShowTeams={onShowTeams}/> : null;
 
         const title = (
-            <View style={[styles.searchContainer, padding(isLandscape)]}>
+            <View
+                style={[styles.searchContainer, padding(isLandscape)]}
+            >
                 <SearchBar
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
@@ -158,6 +160,7 @@ export default class ChannelsList extends PureComponent {
         return (
             <View
                 style={styles.container}
+                testID='channels_list'
             >
                 <View style={styles.headerContainer}>
                     {title}
