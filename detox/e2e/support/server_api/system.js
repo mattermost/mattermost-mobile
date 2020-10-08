@@ -22,6 +22,20 @@ import defaultServerConfig from './default_config.json';
 // ****************************************************************
 
 /**
+ * Check system health.
+ * See https://api.mattermost.com/#tag/system/paths/~1system~1ping/get
+ * @return {Object} returns {data} on success or {error, status} on error
+ */
+export const apiCheckSystemHealth = async () => {
+    try {
+        const response = await client.get('/api/v4/system/ping?get_server_status=true');
+        return {data: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get configuration.
  * See https://api.mattermost.com/#tag/system/paths/~1config/get
  */
@@ -65,6 +79,7 @@ const getDefaultConfig = () => {
 };
 
 export const System = {
+    apiCheckSystemHealth,
     apiGetConfig,
     apiUpdateConfig,
 };
