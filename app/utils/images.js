@@ -107,7 +107,7 @@ export function openGalleryAtIndex(index, files) {
             if (Platform.OS === 'ios') {
                 contentPop.translationY = {
                     from: 0,
-                    to: -windowHeight,
+                    to: windowHeight,
                     duration: 300,
                 };
             } else {
