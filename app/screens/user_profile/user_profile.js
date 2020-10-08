@@ -264,7 +264,6 @@ export default class UserProfile extends PureComponent {
                     defaultMessage={l.defaultMessage}
                     textId={l.textId}
                     icon={l.icon}
-                    iconType={l.iconType}
                     theme={this.props.theme}
                     iconSize={l.iconSize}
                 />

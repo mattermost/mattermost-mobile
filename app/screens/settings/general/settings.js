@@ -230,7 +230,6 @@ class Settings extends PureComponent {
                             defaultMessage='Check for Upgrade'
                             i18nId={t('mobile.settings.modal.check_for_upgrade')}
                             iconName='update'
-                            iconType='material'
                             onPress={this.goToClientUpgrade}
                             showArrow={showArrow}
                             theme={theme}

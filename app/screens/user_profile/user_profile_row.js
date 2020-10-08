@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import VectorIcon from '@components/vector_icon';
 import FormattedText from '@components/formatted_text';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -59,7 +58,7 @@ function createTouchableComponent(children, action) {
 }
 
 function userProfileRow(props) {
-    const {action, defaultMessage, detail, icon, iconType, textId, togglable, theme, iconSize, shouldRender = true, isLandscape} = props;
+    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconSize, shouldRender = true, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -67,25 +66,14 @@ function userProfileRow(props) {
 
     const style = createStyleSheet(theme);
 
-    let iconComponent;
-    if (iconType) {
-        iconComponent = (
-            <VectorIcon
-                name={icon}
-                size={iconSize}
-                type={iconType}
-                style={style.leftIcon}
-            />
-        );
-    } else {
-        iconComponent = (
-            <CompassIcon
-                name={icon}
-                size={iconSize}
-                style={style.leftIcon}
-            />
-        );
-    }
+    const iconComponent = (
+        <CompassIcon
+            name={icon}
+            size={iconSize}
+            style={style.leftIcon}
+        />
+    );
+
     const RowComponent = (
         <View style={style.wrapper}>
             <View style={[style.container, padding(isLandscape, +15)]}>
@@ -122,7 +110,6 @@ userProfileRow.propTypes = {
         PropTypes.bool,
     ]),
     icon: PropTypes.string.isRequired,
-    iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
     iconColor: PropTypes.string,
     iconSize: PropTypes.number,
     textId: PropTypes.string.isRequired,

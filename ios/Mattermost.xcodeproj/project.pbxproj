@@ -20,7 +20,6 @@
 		499F7A5F2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 499F7A5E2354F49F00E7AF6E /* UIPasteboard+GetImageInfo.m */; };
 		499F7A622354F4CC00E7AF6E /* NSData+MimeType.m in Sources */ = {isa = PBXBuildFile; fileRef = 499F7A602354F4CC00E7AF6E /* NSData+MimeType.m */; };
 		499F7A652354F51900E7AF6E /* OnPasteEventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 499F7A642354F51900E7AF6E /* OnPasteEventManager.m */; };
-		499F7AF1235511FD00E7AF6E /* Mattermost-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 499F7AF0235511FC00E7AF6E /* Mattermost-Regular.otf */; };
 		49B4C050230C981C006E919E /* libUploadAttachments.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FABE04522137F2A00D0F595 /* libUploadAttachments.a */; };
 		531BEBC62513E93C00BC05B1 /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
 		531BEBC72513E93C00BC05B1 /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
@@ -690,7 +689,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				499F7AF1235511FD00E7AF6E /* Mattermost-Regular.otf in Resources */,
 				7F151D41221B069200FAD8F3 /* 0155-keys.png in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				7F0F4B0A24BA173900E14C60 /* LaunchScreen.storyboard in Resources */,
