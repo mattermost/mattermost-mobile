@@ -84,7 +84,7 @@ export default class MoreChannels extends PureComponent {
             id: 'create-pub-channel',
             text: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
             showAsAction: 'always',
-            testID: 'public_channels.create.button'
+            testID: 'public_channels.create.button',
         };
 
         this.leftButton = {

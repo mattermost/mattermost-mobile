@@ -50,8 +50,8 @@ describe('Channels', () => {
         const expectedPurpose = 'This sentence has\nmultiple lines';
 
         // * Expect a redirection to the created channel
-        await expect(element(by.text('Beginning of ' + expectedChannelName))).toBeVisible();
-        await element(by.text(expectedChannelName)).tap();
+        await expect(element(by.id('channel_intro.beginning.text'))).toHaveText('Beginning of ' + expectedChannelName);
+        await element(by.id('channel_base.title')).tap();
 
         // * Expect to see channel header and purpose in channel info
         await expect(element(by.text(expectedChannelHeader))).toBeVisible();
