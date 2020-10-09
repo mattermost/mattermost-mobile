@@ -7,6 +7,7 @@ import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGes
 import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash';
 import {isImage, isVideo} from '@utils/file';
+import {calculateDimensions} from '@utils/images';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {GalleryProps} from 'types/screens/gallery';
@@ -85,6 +86,15 @@ const GalleryViewer = (props: GalleryProps) => {
 
     const minVec = vec.min(vec.multiply(-0.5, canvas, sub(scale, 1)), 0);
     const maxVec = vec.max(vec.minus(minVec), 0);
+
+    const currentFile = files[currentIndex];
+    const imgHeight = currentFile.height || height;
+    const imgWidth = currentFile.width || width;
+    const calculatedDimensions = calculateDimensions(imgHeight, imgWidth, width, height);
+    const imgCanvas = vec.create(calculatedDimensions.width, calculatedDimensions.height);
+    const minImgVec = vec.min(vec.multiply(-0.5, imgCanvas, sub(scale, 1)), 0);
+    const maxImgVec = vec.max(vec.minus(minImgVec), 0);
+
     const snapTo = useMemo(() => clamp(
         snapPoint(translateX, pan.velocity.x, snapPoints),
         multiply(add(index, 1), -width),
@@ -182,7 +192,7 @@ const GalleryViewer = (props: GalleryProps) => {
         shouldEnableGestures([initialIndex]);
     }, []);
 
-    usePinch({center, pan, pinch, translate, scale, minVec, maxVec, translationX, translationY});
+    usePinch({center, pan, pinch, translate, scale, minVec, maxVec, minImgVec, maxImgVec, translationX, translationY});
 
     useCode(
         () => [
@@ -199,12 +209,12 @@ const GalleryViewer = (props: GalleryProps) => {
                 ]),
             ),
             cond(and(eq(pan.state, State.END), neq(translateY, 0)), [
-                cond(greaterOrEq(abs(translateY), 150), [
+                cond(greaterOrEq(abs(translateY), 50), [
                     cond(not(clockRunning(clock)), call([], props.onClose)),
                 ], set(translateY, timing({from: translateY, to: 0}))),
             ]),
             cond(and(eq(pan.state, State.END), neq(translationX, 0)), [
-                set(translateX, timing({clock, from: translateX, to: snapTo})),
+                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 250})),
                 set(offsetX, translateX),
                 cond(not(clockRunning(clock)), [
                     vec.set(translate, 0),
@@ -252,7 +262,7 @@ const GalleryViewer = (props: GalleryProps) => {
             <Animated.View style={StyleSheet.absoluteFill}>
                 <PanGestureHandler
                     ref={panRef}
-                    minDist={10}
+                    minDist={5}
                     avgTouches={true}
                     simultaneousHandlers={pinchRef}
                     {...pan.gestureHandler}

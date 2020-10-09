@@ -87,6 +87,8 @@ interface UsePinchParams {
     pinch: ReturnType<typeof pinchGestureHandler>;
     maxVec: Vector;
     minVec: Vector;
+    maxImgVec: Vector;
+    minImgVec: Vector;
     scale: Animated.Value<number>;
     translate: Vector<Animated.Value<number>>;
     translationX: Animated.Value<number>;
@@ -97,6 +99,8 @@ export const usePinch = ({
     center,
     maxVec,
     minVec,
+    maxImgVec,
+    minImgVec,
     pinch,
     pan,
     scale,
@@ -184,12 +188,12 @@ export const usePinch = ({
             cond(shouldDecay, [
                 vec.set(
                     offset,
-                    vec.clamp(decayVector(offset, pan.velocity, clock), minVec, maxVec),
+                    vec.clamp(decayVector(offset, pan.velocity, clock), minImgVec, maxImgVec),
                 ),
             ]),
             set(scale, multiply(pinch.scale, scaleOffset)),
             vec.set(translate, vec.add(translation, offset)),
         ],
-        [],
+        [minImgVec],
     );
 };
