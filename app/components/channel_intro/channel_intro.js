@@ -211,7 +211,10 @@ class ChannelIntro extends PureComponent {
 
         return (
             <View>
-                <Text testID='channel_intro.beginning.text' style={style.channelTitle}>
+                <Text
+                    testID='channel_intro.beginning.text'
+                    style={style.channelTitle}
+                >
                     {intl.formatMessage({
                         id: 'intro_messages.beginning',
                         defaultMessage: 'Beginning of {name}',
