@@ -116,7 +116,6 @@ export default class FileAttachmentImage extends PureComponent {
                         onError={this.handleError}
                         resizeMode={'contain'}
                         resizeMethod={resizeMethod}
-                        isSmallImage={true}
                         {...this.imageProps(file)}
                     />
                 </View>
@@ -164,7 +163,6 @@ export default class FileAttachmentImage extends PureComponent {
                     onError={this.handleError}
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
-                    backgroundColor={backgroundColor}
                     {...imageProps}
                 />
             </View>

@@ -6,16 +6,16 @@ import PropTypes from 'prop-types';
 import {Animated, ImageBackground, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
+import thumb from '@assets/images/thumb.png';
 import CustomPropTypes from '@constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 
 export default class ProgressiveImage extends PureComponent {
     static propTypes = {
         isBackgroundImage: PropTypes.bool,
-        isSmallImage: PropTypes.bool,
         children: CustomPropTypes.Children,
         defaultSource: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.number]), // this should be provided by the component
         imageUri: PropTypes.string,
@@ -26,14 +26,12 @@ export default class ProgressiveImage extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         tintDefaultSource: PropTypes.bool,
-        backgroundColor: PropTypes.string,
     };
 
     static defaultProps = {
         style: {},
         defaultSource: undefined,
         resizeMode: 'contain',
-        backgroundColor: 'transparent',
     };
 
     constructor(props) {
@@ -41,12 +39,10 @@ export default class ProgressiveImage extends PureComponent {
 
         this.state = {
             intensity: new Animated.Value(0),
-            imageLoaded: false,
         };
     }
 
     onLoadImageEnd = () => {
-        this.setState({imageLoaded: true});
         Animated.timing(this.state.intensity, {
             duration: 300,
             toValue: 100,
@@ -60,28 +56,36 @@ export default class ProgressiveImage extends PureComponent {
             imageStyle,
             imageUri,
             isBackgroundImage,
-            isSmallImage,
             onError,
             resizeMode,
             resizeMethod,
             style,
             theme,
             tintDefaultSource,
-            backgroundColor,
         } = this.props;
+
+        let DefaultComponent;
+        let ImageComponent;
+        if (isBackgroundImage) {
+            DefaultComponent = ImageBackground;
+            ImageComponent = AnimatedImageBackground;
+        } else {
+            DefaultComponent = Animated.Image;
+            ImageComponent = AnimatedFastImage;
+        }
 
         const styles = getStyleSheet(theme);
 
         if (isBackgroundImage) {
             return (
                 <View style={[styles.defaultImageContainer, style]}>
-                    <ImageBackground
+                    <DefaultComponent
                         source={{uri: imageUri}}
                         resizeMode={'cover'}
                         style={[StyleSheet.absoluteFill, imageStyle]}
                     >
                         {this.props.children}
-                    </ImageBackground>
+                    </DefaultComponent>
                 </View>
             );
         }
@@ -89,7 +93,7 @@ export default class ProgressiveImage extends PureComponent {
         if (defaultSource) {
             return (
                 <View style={[styles.defaultImageContainer, style]}>
-                    <Animated.Image
+                    <DefaultComponent
                         source={defaultSource}
                         style={[StyleSheet.absoluteFill, imageStyle, tintDefaultSource ? styles.defaultImageTint : null]}
                         resizeMode={resizeMode}
@@ -97,7 +101,7 @@ export default class ProgressiveImage extends PureComponent {
                         onError={onError}
                     >
                         {this.props.children}
-                    </Animated.Image>
+                    </DefaultComponent>
                 </View>
             );
         }
@@ -106,33 +110,25 @@ export default class ProgressiveImage extends PureComponent {
             inputRange: [20, 100],
             outputRange: [0.2, 1],
         });
+        const defaultOpacity = this.state.intensity.interpolate({
+            inputRange: [0, 100],
+            outputRange: [0.5, 0],
+        });
 
-        const iconColor = changeOpacity(theme.centerChannelColor, 0.32);
-        let iconSize;
-        let containerStyle;
-        if (isSmallImage) {
-            iconSize = 24;
-            containerStyle = {
-                width: iconSize,
-                height: iconSize,
-            };
-        } else {
-            containerStyle = {backgroundColor: changeOpacity(theme.centerChannelColor, 0.08)};
-        }
+        const containerStyle = {
+            backgroundColor: changeOpacity(theme.centerChannelColor, defaultOpacity),
+        };
 
         return (
             <Animated.View style={[styles.defaultImageContainer, style, containerStyle]}>
-                {!this.state.imageLoaded &&
-                <FileAttachmentIcon
-                    defaultImage={true}
-                    smallImage={isSmallImage}
-                    iconColor={iconColor}
-                    iconSize={iconSize}
-                    backgroundColor={backgroundColor}
-                    theme={theme}
+                <DefaultComponent
+                    resizeMode={resizeMode}
+                    resizeMethod={resizeMethod}
+                    onError={onError}
+                    source={thumb}
+                    style={[imageStyle, {tintColor: theme.centerChannelColor, opacity: defaultOpacity}]}
                 />
-                }
-                <AnimatedFastImage
+                <ImageComponent
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
                     onError={onError}
@@ -141,7 +137,7 @@ export default class ProgressiveImage extends PureComponent {
                     onLoadEnd={this.onLoadImageEnd}
                 >
                     {this.props.children}
-                </AnimatedFastImage>
+                </ImageComponent>
             </Animated.View>
         );
     }
