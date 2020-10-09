@@ -13,22 +13,22 @@ describe('Channels', () => {
     });
 
     it('MM-T3201 Create public channel', async () => {
-        // go to channel sidebar list
+        // # Go to channel sidebar list
         await element(by.id('channel_drawer_button')).tap();
 
-        // tap on + public channels
+        // # Tap on + public channels
         await element(by.id('action_button_sidebar.channels')).tap();
 
-        // expect a list of public channels, initially empty
+        // * Expect a list of public channels, initially empty
         await expect(element(by.text('No more channels to join'))).toBeVisible();
 
-        // tap to create new channel
+        // # Tap to create new channel
         await element(by.text('CREATE')).tap();
 
-        // expect a new screen to create a new public channel
+        // * Expect a new screen to create a new public channel
         await expect(element(by.text('New Public Channel'))).toBeVisible();
 
-        // fill data
+        // # Fill data
         await element(by.id('edit_channel.name.input')).typeText('a');
         await element(by.text('CREATE')).tap();
 
@@ -49,11 +49,11 @@ describe('Channels', () => {
         const expectedChannelName = 'abc';
         const expectedPurpose = 'This sentence has\nmultiple lines';
 
-        // expect a redirection to the created channel
+        // * Expect a redirection to the created channel
         await expect(element(by.text('Beginning of ' + expectedChannelName))).toBeVisible();
         await element(by.text(expectedChannelName)).tap();
 
-        // expect to see channel header and purpose in channel info
+        // * Expect to see channel header and purpose in channel info
         await expect(element(by.text(expectedChannelHeader))).toBeVisible();
         await expect(element(by.text(expectedPurpose))).toBeVisible();
     });
