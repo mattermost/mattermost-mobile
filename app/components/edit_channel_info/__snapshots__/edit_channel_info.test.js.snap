@@ -17,7 +17,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
         "flex": 1,
       }
     }
-    testID="channel_scroll"
+    testID="edit_channel.scroll"
   >
     <TouchableWithoutFeedback
       onPress={[Function]}
@@ -90,7 +90,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "paddingHorizontal": 15,
                 }
               }
-              testID="input_channel_name"
+              testID="edit_channel.name.input"
               underlineColorAndroid="transparent"
               value="display_name"
             />
@@ -174,7 +174,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   },
                 ]
               }
-              testID="input_channel_purpose"
+              testID="edit_channel.purpose.input"
               textAlignVertical="top"
               underlineColorAndroid="transparent"
               value="purpose"
@@ -279,7 +279,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                 },
               ]
             }
-            testID="input_channel_header"
+            testID="edit_channel.header.input"
             textAlignVertical="top"
             underlineColorAndroid="transparent"
             value="header"

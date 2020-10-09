@@ -29,20 +29,20 @@ describe('Channels', () => {
         await expect(element(by.text('New Public Channel'))).toBeVisible();
 
         // fill data
-        await element(by.id('input_channel_name')).typeText('a');
+        await element(by.id('edit_channel.name.input')).typeText('a');
         await element(by.text('CREATE')).tap();
 
         // the `Create` button is not tappable until at least 2 characters have been entered
-        await expect(element(by.id('input_channel_name'))).toBeVisible();
+        await expect(element(by.id('edit_channel.name.input'))).toBeVisible();
 
-        await element(by.id('input_channel_name')).typeText('bc');
-        await element(by.id('input_channel_purpose')).typeText('This sentence has');
-        await element(by.id('input_channel_purpose')).tapReturnKey();
-        await element(by.id('input_channel_purpose')).typeText('multiple lines');
-        await element(by.id('channel_scroll')).scroll(200, 'down');
-        await expect(element(by.id('input_channel_header'))).toBeVisible();
+        await element(by.id('edit_channel.name.input')).typeText('bc');
+        await element(by.id('edit_channel.purpose.input')).typeText('This sentence has');
+        await element(by.id('edit_channel.purpose.input')).tapReturnKey();
+        await element(by.id('edit_channel.purpose.input')).typeText('multiple lines');
+        await element(by.id('edit_channel.scroll')).scroll(200, 'down');
+        await expect(element(by.id('edit_channel.header.input'))).toBeVisible();
         const expectedChannelHeader = 'I 🌮 love 🌮 tacos 🌮';
-        await element(by.id('input_channel_header')).replaceText(expectedChannelHeader);
+        await element(by.id('edit_channel.header.input')).replaceText(expectedChannelHeader);
 
         await element(by.text('CREATE')).tap();
 
