@@ -23,14 +23,14 @@ describe('Channels', () => {
         await expect(element(by.text('No more channels to join'))).toBeVisible();
 
         // # Tap to create new channel
-        await element(by.text('CREATE')).tap();
+        await element(by.id('public_channels.create.button')).tap();
 
         // * Expect a new screen to create a new public channel
         await expect(element(by.text('New Public Channel'))).toBeVisible();
 
         // # Fill data
         await element(by.id('edit_channel.name.input')).typeText('a');
-        await element(by.text('CREATE')).tap();
+        await element(by.id('edit_channel.create.button')).tap();
 
         // the `Create` button is not tappable until at least 2 characters have been entered
         await expect(element(by.id('edit_channel.name.input'))).toBeVisible();
@@ -44,7 +44,7 @@ describe('Channels', () => {
         const expectedChannelHeader = 'I 🌮 love 🌮 tacos 🌮';
         await element(by.id('edit_channel.header.input')).replaceText(expectedChannelHeader);
 
-        await element(by.text('CREATE')).tap();
+        await element(by.id('edit_channel.create.button')).tap();
 
         const expectedChannelName = 'abc';
         const expectedPurpose = 'This sentence has\nmultiple lines';

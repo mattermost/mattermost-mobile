@@ -47,6 +47,7 @@ export default class CreateChannel extends PureComponent {
         id: 'create-channel',
         enabled: false,
         showAsAction: 'always',
+        testID: 'edit_channel.create.button'
     };
 
     constructor(props, context) {
