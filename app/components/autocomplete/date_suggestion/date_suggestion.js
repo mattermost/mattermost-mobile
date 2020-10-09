@@ -158,7 +158,7 @@ export default class DateSuggestion extends PureComponent {
             >
                 {Boolean(calendarWidth) &&
                 <CalendarList
-                    testID={'autocomplete.date_suggestion'}
+                    testID='autocomplete.date_suggestion'
                     current={currentDate}
                     maxDate={currentDate}
                     pastScrollRange={24}

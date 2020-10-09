@@ -65,7 +65,7 @@ exports[`EditPost should match snapshot 1`] = `
               },
             ]
           }
-          testID="edit_post"
+          testID="edit_post.input"
           underlineColorAndroid="transparent"
         />
       </View>

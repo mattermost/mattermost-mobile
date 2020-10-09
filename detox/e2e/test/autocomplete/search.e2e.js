@@ -22,7 +22,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
 
         // # Tap "from:" modifier
-        await element(by.id('search_from')).tap();
+        await element(by.id('search_from.section')).tap();
 
         // * Expect at mention to render
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
@@ -32,7 +32,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.channel_mention.list'))).not.toExist();
 
         // # Tap "in:" modifier
-        await element(by.id('search_in')).tap();
+        await element(by.id('search_in.section')).tap();
 
         // * Expect channel mention to render
         await expect(element(by.id('autocomplete.channel_mention.list'))).toExist();
@@ -42,7 +42,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.date_suggestion'))).not.toExist();
 
         // # Tap "before:" modifier
-        await element(by.id('search_before')).tap();
+        await element(by.id('search_before.section')).tap();
 
         // * Expect date suggestion to render
         await expect(element(by.id('autocomplete.date_suggestion'))).toExist();

@@ -28,7 +28,7 @@ describe('Autocomplete', () => {
 
         // # Open autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
-        await element(by.id('edit_post')).typeText(' @');
+        await element(by.id('edit_post.input')).typeText(' @');
 
         // * Expect at_mention autocomplete to render
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
