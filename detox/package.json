@@ -5,17 +5,17 @@
   "author": "Mattermost, Inc.",
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "7.10.4",
-    "@babel/plugin-transform-runtime": "7.11.0",
-    "@babel/preset-env": "7.11.0",
+    "@babel/plugin-transform-runtime": "7.11.5",
+    "@babel/preset-env": "7.11.5",
     "axios": "0.20.0",
-    "babel-jest": "26.3.0",
+    "babel-jest": "26.5.2",
     "babel-plugin-module-resolver": "4.0.0",
-    "detox": "17.4.4",
-    "jest": "26.4.2",
-    "jest-circus": "26.4.2",
-    "jest-cli": "26.4.2",
+    "detox": "17.8.3",
+    "jest": "26.5.2",
+    "jest-circus": "26.5.2",
+    "jest-cli": "26.5.2",
     "merge-deep": "3.0.2",
-    "uuid": "8.3.0"
+    "uuid": "8.3.1"
   },
   "scripts": {
     "e2e:android-create-emulator": "avdmanager create avd -n detox_emu_api_30 -k 'system-images;android-30;google_apis;x86' -g google_apis -d 'pixel'",
