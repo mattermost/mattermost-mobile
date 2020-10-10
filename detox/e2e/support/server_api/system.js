@@ -3,7 +3,6 @@
 
 import merge from 'deepmerge';
 import jestExpect from 'expect';
-import fs from 'fs';
 import path from 'path';
 
 import testConfig from '@support/test_config';
@@ -166,14 +165,10 @@ async function getClientLicense() {
         return {license};
     }
 
-    const absPath = path.resolve(__dirname, '../../support/fixtures/mattermost-license.txt');
-    if (!fs.existsSync(absPath)) {
-        return {license};
-    }
-
     // Upload a license if server is currently not loaded with license
     const response = await apiUploadLicense();
     if (response.error) {
+        console.warn(response.error.message);
         return {license};
     }
 
