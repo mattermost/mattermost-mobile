@@ -54,14 +54,17 @@ describe('Smoke Tests', () => {
     });
 });
 
-async function ensureUserHasTeam(user) {
-    await User.apiLogin(user);
-    await User.apiAdminLogin();
-    const {user: userProfile} = await User.apiGetUserByUsername(user.username);
-    const {teams} = await Team.apiGetTeamMembersForUser(userProfile.id);
+async function ensureUserHasTeam(ldapUser) {
+    // # Login as LDAP user to sync with the server
+    await User.apiLogin(ldapUser);
 
-    if (!teams || !teams.length) {
+    // # Login as sysadmin and ensure LDAP user is member of at least one team
+    await User.apiAdminLogin();
+    const {user} = await User.apiGetUserByUsername(ldapUser.username);
+    const {teams} = await Team.apiGetTeamMembersForUser(user.id);
+
+    if (!teams?.length) {
         const {team} = await Setup.apiInit();
-        await Team.apiAddUserToTeam(userProfile.id, team.id);
+        await Team.apiAddUserToTeam(user.id, team.id);
     }
 }
