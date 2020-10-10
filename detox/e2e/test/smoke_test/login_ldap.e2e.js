@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Ldap, System} from '@support/server_api';
+import {Ldap, Setup, System, Team, User} from '@support/server_api';
 import {serverUrl} from '@support/test_config';
 import ldapUsers from '@support/fixtures/ldap_users.json';
 
@@ -17,6 +17,8 @@ describe('Smoke Tests', () => {
 
         // * Check that LDAP server can connect and is synchronized with Mattermost server
         await Ldap.apiRequireLDAPServer();
+
+        await ensureUserHasTeam(testOne);
     });
 
     it('MM-T3180 Log in - LDAP', async () => {
@@ -51,3 +53,15 @@ describe('Smoke Tests', () => {
         await expect(element(by.id('channel_screen'))).toBeVisible();
     });
 });
+
+async function ensureUserHasTeam(user) {
+    await User.apiLogin(user);
+    await User.apiAdminLogin();
+    const {user: userProfile} = await User.apiGetUserByUsername(user.username);
+    const {teams} = await Team.apiGetTeamMembersForUser(userProfile.id);
+
+    if (!teams || !teams.length) {
+        const {team} = await Setup.apiInit();
+        await Team.apiAddUserToTeam(userProfile.id, team.id);
+    }
+}

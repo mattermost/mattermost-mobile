@@ -147,10 +147,10 @@ export const apiRequireLicenseForFeature = async (key = '') => {
 };
 
 /**
- * Upload server license.
- * @param {string} absFilePath - absolute path of a license file
+ * Upload server license with file expected at "/detox/e2e/support/fixtures/mattermost-license.txt"
  */
-export const apiUploadLicense = async (absFilePath) => {
+export const apiUploadLicense = async () => {
+    const absFilePath = path.resolve(__dirname, '../../support/fixtures/mattermost-license.txt');
     const response = await apiUploadFile('license', absFilePath, {url: '/api/v4/license', method: 'POST'});
 
     return response;
@@ -171,8 +171,13 @@ async function getClientLicense() {
         return {license};
     }
 
-    await apiUploadLicense(absPath);
+    // Upload a license if server is currently not loaded with license
+    const response = await apiUploadLicense();
+    if (response.error) {
+        return {license};
+    }
 
+    // Get an updated client license
     const out = await apiGetClientLicense();
     return {license: out.license};
 }
