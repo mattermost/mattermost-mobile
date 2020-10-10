@@ -91,6 +91,7 @@ coverage
 
 # E2E testing
 mattermost-license.txt
+*.mattermost-license
 
 # Bundle artifact
 *.jsbundle

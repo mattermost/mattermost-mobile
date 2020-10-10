@@ -26,6 +26,10 @@ If testing against a server other than the default local instance, you may set t
 };
 
 export const apiUploadFile = async (name, absFilePath, requestOptions = {}) => {
+    if (!fs.existsSync(absFilePath)) {
+        return {error: {message: `Name: ${name}. File does not exist at ${absFilePath}`}};
+    }
+
     const formData = new FormData();
     formData.append(name, fs.createReadStream(absFilePath));
 
