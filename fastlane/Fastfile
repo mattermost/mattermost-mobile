@@ -207,7 +207,7 @@ lane :upload_file_to_s3 do |options|
       "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
     
     s3 = Aws::S3::Resource.new(region: s3_region)
-    s3_bucket = s3.bucket(s3_bucket)
+    s3_bucket = s3.bucket(s3_bucket_name)
     mutex = Mutex.new
     threads = []
     file_number = 0
