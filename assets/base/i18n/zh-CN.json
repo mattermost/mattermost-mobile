@@ -562,6 +562,7 @@
   "mobile.routes.user_profile.edit": "编辑",
   "mobile.routes.channelInfo.unarchive_channel": "取消归档频道",
   "mobile.routes.channelInfo.groupManaged": "成员由关联组管理",
+  "mobile.reaction_header.all_emojis": "全部",
   "mobile.push_notification_reply.title": "回复",
   "mobile.push_notification_reply.placeholder": "撰写回复...",
   "mobile.push_notification_reply.button": "发送",

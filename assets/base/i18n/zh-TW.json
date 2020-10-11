@@ -562,6 +562,7 @@
   "mobile.routes.user_profile.edit": "編輯",
   "mobile.routes.channelInfo.unarchive_channel": "解除頻道封存",
   "mobile.routes.channelInfo.groupManaged": "成員由連結群組管理",
+  "mobile.reaction_header.all_emojis": "全部",
   "mobile.push_notification_reply.title": "回覆",
   "mobile.push_notification_reply.placeholder": "輸入回覆...",
   "mobile.push_notification_reply.button": "送出",

@@ -560,6 +560,7 @@
   "mobile.routes.user_profile.edit": "Modifier",
   "mobile.routes.channelInfo.unarchive_channel": "Archiver le canal",
   "mobile.routes.channelInfo.groupManaged": "Les membres sont gérés par groupes liés.",
+  "mobile.reaction_header.all_emojis": "Tous",
   "mobile.push_notification_reply.title": "Répondre",
   "mobile.push_notification_reply.placeholder": "Écrire une réponse...",
   "mobile.push_notification_reply.button": "Envoyer",

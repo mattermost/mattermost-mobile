@@ -569,6 +569,7 @@
   "mobile.routes.user_profile.edit": "Editar",
   "mobile.routes.channelInfo.unarchive_channel": "Desarquivar Canal",
   "mobile.routes.channelInfo.groupManaged": "Membros são gerenciados por grupos vinculados",
+  "mobile.reaction_header.all_emojis": "Todos",
   "mobile.push_notification_reply.title": "Responder",
   "mobile.push_notification_reply.placeholder": "Escrever uma resposta...",
   "mobile.push_notification_reply.button": "Enviar",

@@ -562,6 +562,7 @@
   "mobile.routes.user_profile.edit": "Bearbeiten",
   "mobile.routes.channelInfo.unarchive_channel": "Kanal wiederherstellen",
   "mobile.routes.channelInfo.groupManaged": "Mitglieder werden von verknüpften Gruppen verwaltet",
+  "mobile.reaction_header.all_emojis": "Alle",
   "mobile.push_notification_reply.title": "Antworten",
   "mobile.push_notification_reply.placeholder": "Eine Antwort schreiben...",
   "mobile.push_notification_reply.button": "Senden",

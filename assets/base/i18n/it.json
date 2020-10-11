@@ -562,6 +562,7 @@
   "mobile.routes.user_profile.edit": "Modifica",
   "mobile.routes.channelInfo.unarchive_channel": "Archivia Canale",
   "mobile.routes.channelInfo.groupManaged": "I membri sono gestiti dai gruppi collegati",
+  "mobile.reaction_header.all_emojis": "Tutti",
   "mobile.push_notification_reply.title": "Rispondi",
   "mobile.push_notification_reply.placeholder": "Scrivi una risposta...",
   "mobile.push_notification_reply.button": "Invia",
