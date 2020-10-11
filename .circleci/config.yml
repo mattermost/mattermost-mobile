@@ -113,6 +113,9 @@ commands:
           name: Restore cocoapods specs and pods
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
       - run:
+          name: Bundle install
+          command: cd ios && bundle install
+      - run:
           name: Getting cocoapods dependencies
           command: npm run pod-install
       - save_cache:
