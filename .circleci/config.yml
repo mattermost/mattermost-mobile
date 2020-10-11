@@ -13,10 +13,9 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     docker:
-      - image: circleci/android:api-27-node
+      - image: circleci/android:api-29-node
     working_directory: ~/mattermost-mobile
     resource_class: <<parameters.resource_class>>
-    shell: /bin/bash --login -o pipefail
 
   ios:
     environment:
@@ -114,8 +113,8 @@ commands:
           name: Restore cocoapods specs and pods
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
       - run:
-          name: Bundle install
-          command: cd ios && bundle install
+          name: iOS gems
+          command: npm run ios-gems
       - run:
           name: Getting cocoapods dependencies
           command: npm run pod-install
@@ -152,7 +151,7 @@ commands:
           working_directory: fastlane
           name: Run fastlane to build android
           no_output_timeout: 30m
-          command: bundle exec fastlane android build
+          command: export TERM=xterm && bundle exec fastlane android build
 
   build-ios:
     description: "Build the iOS app"
@@ -170,7 +169,7 @@ commands:
           no_output_timeout: 30m
           command: |
             HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
-            bundle exec fastlane ios build
+            export TERM=xterm && bundle exec fastlane ios build
 
   deploy-to-store:
     description: "Deploy build to store"
