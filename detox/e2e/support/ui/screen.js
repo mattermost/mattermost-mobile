@@ -54,3 +54,9 @@ export async function toChannelScreen(user) {
     await fulfillSelectServerScreen(serverUrl);
     await fulfillLoginScreen(user);
 }
+
+export async function logoutUser() {
+    await element(by.id('sidebar.settings.button')).tap();
+    await element(by.text('Logout')).tap();
+    await waitFor(element(by.id('select_server_screen'))).toBeVisible();
+}

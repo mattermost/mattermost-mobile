@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {toChannelScreen} from '@support/ui/screen';
-
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Autocomplete', () => {
@@ -16,6 +15,11 @@ describe('Autocomplete', () => {
 
         // # Enter search screen
         await element(by.id('channel.search.button')).tap();
+    });
+
+    afterAll(async () => {
+        await device.reloadReactNative();
+        await logoutUser();
     });
 
     it('MM-T3393_1 should render at_mention component', async () => {
@@ -41,8 +45,8 @@ describe('Autocomplete', () => {
     it('MM-T3393_3 should render date_suggestion component', async () => {
         await expect(element(by.id('autocomplete.date_suggestion'))).not.toExist();
 
-        // # Tap "before:" modifier
-        await element(by.id('search_before.section')).tap();
+        // # Tap "on:" modifier
+        await element(by.id('search_on.section')).tap();
 
         // * Expect date suggestion to render
         await expect(element(by.id('autocomplete.date_suggestion'))).toExist();

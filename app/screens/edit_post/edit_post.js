@@ -47,6 +47,7 @@ export default class EditPost extends PureComponent {
 
     leftButton = {
         id: 'close-edit-post',
+        testID: 'close-edit-post',
     };
 
     rightButton = {

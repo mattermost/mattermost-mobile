@@ -188,6 +188,7 @@ describe('@actions/navigation', () => {
                 backButton: {
                     color: theme.sidebarHeaderTextColor,
                     title: '',
+                    testID: 'screen.back-button',
                 },
                 background: {
                     color: theme.sidebarHeaderBg,

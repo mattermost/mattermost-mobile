@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {toChannelScreen} from '@support/ui/screen';
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 
 import {Setup, Channel} from '@support/server_api';
 
@@ -21,6 +21,10 @@ describe('Unread channels', () => {
         await Channel.apiAddUserToChannel(user.id, zChannel.id);
 
         await toChannelScreen(user);
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('MM-T3187 Unread channels sort at top', async () => {
@@ -51,5 +55,6 @@ describe('Unread channels', () => {
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(2)).toHaveText('Off-Topic');
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(3)).toHaveText('Town Square');
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(4)).toHaveText(zChannel.display_name);
+        await element(by.text(aChannel.display_name)).tap();
     });
 });

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {toChannelScreen} from '@support/ui/screen';
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 
 import {Setup} from '@support/server_api';
 
@@ -10,6 +10,10 @@ describe('Messaging', () => {
         const {user} = await Setup.apiInit();
 
         await toChannelScreen(user);
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('should post a message on tap to paper send button', async () => {

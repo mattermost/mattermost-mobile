@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {toChannelScreen} from '@support/ui/screen';
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 
 import {Setup} from '@support/server_api';
 
@@ -12,11 +12,15 @@ describe('Autocomplete', () => {
     });
 
     beforeEach(async () => {
-        await device.reloadReactNative();
-
         // # Select post draft
         await expect(element(by.id('channel_screen'))).toBeVisible();
+        await element(by.id('post_input')).clearText();
         await element(by.id('post_input')).tap();
+    });
+
+    afterAll(async () => {
+        await element(by.id('post_input')).clearText();
+        await logoutUser();
     });
 
     it('MM-T3392_1 should render emoji_suggestion component', async () => {

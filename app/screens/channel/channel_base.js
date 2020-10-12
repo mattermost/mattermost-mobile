@@ -183,6 +183,7 @@ export default class ChannelBase extends PureComponent {
                     leftButtons: [{
                         id: 'close-info',
                         icon: source,
+                        testID: 'screen.channel_info.close',
                     }],
                 },
             };
