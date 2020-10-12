@@ -39,7 +39,10 @@ export default class Modifier extends PureComponent {
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.handlePress}
             >
-                <View style={style.modifierItemContainer}>
+                <View
+                    testID={item.testID}
+                    style={style.modifierItemContainer}
+                >
                     <View style={[style.modifierItemWrapper, padding(isLandscape)]}>
                         <View style={style.modifierItemLabelContainer}>
                             <View style={style.modifierLabelIconContainer}>
