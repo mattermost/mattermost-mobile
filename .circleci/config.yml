@@ -103,7 +103,7 @@ commands:
           paths:
             - node_modules
       - run:
-          name: "Run post install scripts"
+          name: "Patch dependencies"
           command: npx patch-package
 
   pods-dependencies:
@@ -313,7 +313,7 @@ jobs:
           for: android
       - gradle-dependencies
       - run:
-          name: Jetify android libraries
+          name: Jetify Android libraries
           command: ./node_modules/.bin/jetify
       - run:
           working_directory: fastlane
