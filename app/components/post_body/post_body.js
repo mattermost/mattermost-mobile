@@ -71,7 +71,7 @@ export default class PostBody extends PureComponent {
         shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
         location: PropTypes.string,
-        mentionKeys: PropTypes.array.isRequired,
+        mentionKeys: PropTypes.array,
     };
 
     static defaultProps = {
@@ -79,6 +79,7 @@ export default class PostBody extends PureComponent {
         onFailedPostPress: emptyFunction,
         onPress: emptyFunction,
         replyBarStyle: [],
+        mentionKeys: [],
         message: '',
         postProps: {},
     };

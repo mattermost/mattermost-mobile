@@ -129,36 +129,42 @@ export default class List extends PureComponent {
                 action: canJoinPublicChannels ? this.goToMoreChannels : null,
                 id: t('sidebar.channels'),
                 defaultMessage: 'PUBLIC CHANNELS',
+                testID: 'sidebar.channel_list.more_public',
             };
         case SidebarSectionTypes.PRIVATE:
             return {
                 action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
                 id: t('sidebar.pg'),
                 defaultMessage: 'PRIVATE CHANNELS',
+                testID: 'sidebar.channel_list.create_private',
             };
         case SidebarSectionTypes.DIRECT:
             return {
                 action: this.goToDirectMessages,
                 id: t('sidebar.direct'),
                 defaultMessage: 'DIRECT MESSAGES',
+                testID: 'sidebar.channel_list.create_direct',
             };
         case SidebarSectionTypes.RECENT_ACTIVITY:
             return {
                 action: this.showCreateChannelOptions,
                 id: t('sidebar.types.recent'),
                 defaultMessage: 'RECENT ACTIVITY',
+                testID: 'sidebar.channel_list.recent.create_options',
             };
         case SidebarSectionTypes.ALPHA:
             return {
                 action: this.showCreateChannelOptions,
                 id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
+                testID: 'sidebar.channel_list.channels.create_options',
             };
         default:
             return {
                 action: this.showCreateChannelOptions,
                 id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
+                testID: 'sidebar.channel_list.channels.create_options',
             };
         }
     };
@@ -295,11 +301,12 @@ export default class List extends PureComponent {
         this.setState({width: width - 40});
     };
 
-    renderSectionAction = (styles, action, anchor) => {
+    renderSectionAction = (styles, action, testID, anchor) => {
         return (
             <TouchableHighlight
                 style={styles.actionContainer}
                 onPress={action}
+                testID={testID}
                 underlayColor={'transparent'}
                 hitSlop={styles.hitSlop}
             >
@@ -332,6 +339,7 @@ export default class List extends PureComponent {
             action,
             defaultMessage,
             id,
+            testID,
         } = section;
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
@@ -345,7 +353,7 @@ export default class List extends PureComponent {
                     <View style={styles.separatorContainer}>
                         <View style={styles.separator}/>
                     </View>
-                    {action && this.renderSectionAction(styles, action, anchor)}
+                    {action && this.renderSectionAction(styles, action, testID, anchor)}
                 </View>
             </React.Fragment>
         );

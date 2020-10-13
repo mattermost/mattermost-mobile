@@ -85,6 +85,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='archive'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                    testID='channel_icon.archive'
                     type='mattermost'
                 />
             );
@@ -93,6 +94,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='bot'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: (size - 1), left: -1.5, top: -1}]}
+                    testID='channel_icon.bot'
                     type='mattermost'
                 />
             );
@@ -101,6 +103,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='draft'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                    testID='channel_icon.draft'
                     type='mattermost'
                 />
             );
@@ -109,6 +112,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='public'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                    testID='channel_icon.public'
                     type='mattermost'
                 />
             );
@@ -117,13 +121,17 @@ export default class ChannelIcon extends React.PureComponent {
                 <Icon
                     name='private'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                    testID='channel_icon.private'
                     type='mattermost'
                 />
             );
         } else if (type === General.GM_CHANNEL) {
             icon = (
                 <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size + 1, height: size + 1}]}>
-                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 4)}]}>
+                    <Text
+                        style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 4)}]}
+                        testID='channel_icon.gm_member_count'
+                    >
                         {membersCount}
                     </Text>
                 </View>
@@ -135,6 +143,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <Icon
                         name='away-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.awayIndicator}]}
+                        testID='channel_icon.away'
                         type='mattermost'
                     />
                 );
@@ -144,6 +153,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <Icon
                         name='dnd-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.dndIndicator}]}
+                        testID='channel_icon.dnd'
                         type='mattermost'
                     />
                 );
@@ -153,6 +163,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <Icon
                         name='online-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.onlineIndicator}]}
+                        testID='channel_icon.online'
                         type='mattermost'
                     />
                 );
@@ -162,6 +173,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <Icon
                         name='offline-avatar'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: offlineColor}]}
+                        testID='channel_icon.offline'
                         type='mattermost'
                     />
                 );
