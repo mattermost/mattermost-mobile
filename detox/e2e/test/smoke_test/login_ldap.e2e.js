@@ -7,13 +7,14 @@ import ldapUsers from '@support/fixtures/ldap_users.json';
 
 describe('Smoke Tests', () => {
     const testOne = ldapUsers['test-1'];
+    let config;
 
     beforeAll(async () => {
         // * Verify that the server has license with LDAP feature
         await System.apiRequireLicenseForFeature('LDAP');
 
         // # Enable LDAP
-        await System.apiUpdateConfig({LdapSettings: {Enable: true}});
+        ({config} = await System.apiUpdateConfig({LdapSettings: {Enable: true}}));
 
         // * Check that LDAP server can connect and is synchronized with Mattermost server
         await Ldap.apiRequireLDAPServer();
@@ -38,13 +39,13 @@ describe('Smoke Tests', () => {
         await element(by.id('username_input')).replaceText(testOne.username);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // # Type in password
         await element(by.id('password_input')).replaceText(testOne.password);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // # Tap "Sign in" button
         await element(by.text('Sign in')).tap();
