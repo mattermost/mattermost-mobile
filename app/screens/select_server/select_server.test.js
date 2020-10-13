@@ -3,7 +3,18 @@
 import React from 'react';
 
 import SelectServer from './select_server.js';
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {renderWithReduxIntl} from 'test/testing_library';
+import {fireEvent, waitFor} from '@testing-library/react-native';
+
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        events: jest.fn(() => ({
+            bindComponent: jest.fn(() => {
+                return {remove: jest.fn()};
+            }),
+        })),
+    },
+}));
 
 describe('SelectServer', () => {
     const actions = {
@@ -23,13 +34,60 @@ describe('SelectServer', () => {
         serverUrl: '',
     };
 
-    test('should match snapshot empty URL string', async () => {
-        const wrapper = shallowWithIntl(
+    test('should match error when URL is empty string', async () => {
+        const {getByTestId, getByText} = renderWithReduxIntl(
             <SelectServer {...baseProps}/>,
         );
-        wrapper.instance().handleConnect();
-        expect(wrapper.state().error).not.toBeNull();
-        expect(wrapper.state().error.intl.id).toMatch('mobile.server_url.empty');
-        expect(wrapper.getElement()).toMatchSnapshot();
+
+        const button = getByText('Connect');
+        fireEvent.press(button);
+
+        await waitFor(() => expect(getByTestId('error_text')).toBeTruthy());
+        expect(getByText('Please enter a valid server URL')).toBeTruthy();
+    });
+
+    test('should match error when URL is only spaces', async () => {
+        const {getByTestId, getByText} = renderWithReduxIntl(
+            <SelectServer {...baseProps}/>,
+        );
+
+        const urlInput = getByTestId('server_url_input');
+        fireEvent.changeText(urlInput, '  ');
+
+        const button = getByText('Connect');
+        fireEvent.press(button);
+
+        await waitFor(() => expect(getByTestId('error_text')).toBeTruthy());
+        expect(getByText('Please enter a valid server URL')).toBeTruthy();
+    });
+
+    test('should match error when URL does not start with http:// or https://', async () => {
+        const {getByTestId, getByText} = renderWithReduxIntl(
+            <SelectServer {...baseProps}/>,
+        );
+
+        const urlInput = getByTestId('server_url_input');
+        fireEvent.changeText(urlInput, 'ht://invalid:8065');
+
+        const button = getByText('Connect');
+        fireEvent.press(button);
+
+        await waitFor(() => expect(getByTestId('error_text')).toBeTruthy());
+        expect(getByText('URL must start with http:// or https://')).toBeTruthy();
+    });
+
+    test('should not show error when valid URL is entered', async () => {
+        const {getByTestId, getByText, queryByTestId} = renderWithReduxIntl(
+            <SelectServer {...baseProps}/>,
+        );
+
+        const urlInput = getByTestId('server_url_input');
+        fireEvent.changeText(urlInput, 'http://localhost:8065');
+
+        const button = getByText('Connect');
+        fireEvent.press(button);
+
+        expect(queryByTestId('error_text')).toBeNull();
+        await waitFor(() => expect(getByText('Connecting...')).toBeTruthy());
     });
 });
