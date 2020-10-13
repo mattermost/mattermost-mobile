@@ -14,7 +14,10 @@
     "jest": "26.4.2",
     "jest-circus": "26.4.2",
     "jest-cli": "26.4.2",
+    "jest-html-reporters": "2.1.0",
+    "jest-junit": "12.0.0",
     "merge-deep": "3.0.2",
+    "sanitize-filename": "1.6.3",
     "uuid": "8.3.0"
   },
   "scripts": {
@@ -22,10 +25,10 @@
     "e2e:android-build": "detox build -c android.emu.debug",
     "e2e:android-test": "detox test -c android.emu.debug",
     "e2e:android-build-release": "detox build -c android.emu.release",
-    "e2e:android-test-release": "detox test -c android.emu.release",
+    "e2e:android-test-release": "detox test -c android.emu.release --record-logs failing --take-screenshots failing",
     "e2e:ios-test": "IOS=true detox test -c ios.sim.debug",
     "e2e:ios-build-release": "detox build -c ios.sim.release",
-    "e2e:ios-test-release": "IOS=true detox test -c ios.sim.release"
+    "e2e:ios-test-release": "IOS=true detox test -c ios.sim.release --record-logs failing --take-screenshots failing"
   },
   "jest": {
     "transform": {
