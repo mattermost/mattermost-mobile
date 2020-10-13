@@ -29,6 +29,7 @@ export default class AtMentionItem extends PureComponent {
         isLandscape: PropTypes.bool.isRequired,
         isCurrentUser: PropTypes.bool.isRequired,
         showFullName: PropTypes.string,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -66,6 +67,7 @@ export default class AtMentionItem extends PureComponent {
             isLandscape,
             isGuest,
             isCurrentUser,
+            testID,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
@@ -73,6 +75,7 @@ export default class AtMentionItem extends PureComponent {
 
         return (
             <TouchableWithFeedback
+                testID={testID}
                 key={userId}
                 onPress={this.completeMention}
                 style={padding(isLandscape)}

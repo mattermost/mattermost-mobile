@@ -222,6 +222,7 @@ export default class AtMention extends PureComponent {
     renderItem = ({item}) => {
         return (
             <AtMentionItem
+                testID={`autocomplete.at_mention.item.${item}`}
                 onPress={this.completeMention}
                 userId={item}
             />
