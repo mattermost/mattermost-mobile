@@ -90,6 +90,8 @@ coverage
 .tmp
 
 # E2E testing
+mattermost-license.txt
+*.mattermost-license
 detox/artifacts
 
 # Bundle artifact
