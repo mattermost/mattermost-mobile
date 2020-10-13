@@ -1,6 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import FormData from 'form-data';
+import fs from 'fs';
+
+import client from './client';
+
 export const getResponseFromError = (err) => {
     const {response} = err;
     if (!response) {
@@ -18,4 +23,25 @@ If testing against a server other than the default local instance, you may set t
     console.warn(data); // eslint-disable-line no-console
 
     return {error: data, status};
+};
+
+export const apiUploadFile = async (name, absFilePath, requestOptions = {}) => {
+    if (!fs.existsSync(absFilePath)) {
+        return {error: {message: `File upload error. "${name}" file does not exist at ${absFilePath}`}};
+    }
+
+    const formData = new FormData();
+    formData.append(name, fs.createReadStream(absFilePath));
+
+    try {
+        const response = await client.request({
+            ...requestOptions,
+            data: formData,
+            headers: formData.getHeaders(),
+        });
+
+        return response;
+    } catch (err) {
+        return getResponseFromError(err);
+    }
 };

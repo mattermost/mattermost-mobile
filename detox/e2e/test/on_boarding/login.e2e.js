@@ -7,15 +7,17 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Setup, System} from '@support/server_api';
 import {serverUrl} from '@support/test_config';
 import {fulfillSelectServerScreen} from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
 
 describe('On boarding', () => {
+    let config;
     let user;
 
     beforeAll(async () => {
+        ({config} = await System.apiGetConfig());
         ({user} = await Setup.apiInit());
     });
 
@@ -89,7 +91,7 @@ describe('On boarding', () => {
         await element(by.id('username_input')).typeText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
@@ -103,7 +105,7 @@ describe('On boarding', () => {
         await element(by.id('password_input')).typeText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
@@ -122,13 +124,13 @@ describe('On boarding', () => {
         await element(by.id('username_input')).replaceText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Enter invalid password
         await element(by.id('password_input')).replaceText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
@@ -147,13 +149,13 @@ describe('On boarding', () => {
         await element(by.id('username_input')).replaceText(user.username);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Enter valid password
         await element(by.id('password_input')).replaceText(user.password);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
