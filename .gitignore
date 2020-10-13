@@ -89,6 +89,10 @@ ios/sentry.properties
 coverage
 .tmp
 
+# E2E testing
+mattermost-license.txt
+*.mattermost-license
+
 # Bundle artifact
 *.jsbundle
 

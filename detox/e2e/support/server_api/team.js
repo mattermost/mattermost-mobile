@@ -59,6 +59,22 @@ export const apiAddUserToTeam = async (userId, teamId) => {
     }
 };
 
+/**
+ * Get team members for user.
+ * See https://api.mattermost.com/#tag/teams/paths/~1users~1{user_id}~1teams~1members/get
+ * @param {string} userId
+ * @return {Object} returns {teams} on success or {error, status} on error
+ */
+export const apiGetTeamMembersForUser = async (userId = 'me') => {
+    try {
+        const response = await client.get(`/api/v4/users/${userId}/teams`);
+
+        return {teams: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 function generateRandomTeam(type, prefix) {
     const randomId = getRandomId();
 
@@ -72,6 +88,7 @@ function generateRandomTeam(type, prefix) {
 export const Team = {
     apiAddUserToTeam,
     apiCreateTeam,
+    apiGetTeamMembersForUser,
 };
 
 export default Team;

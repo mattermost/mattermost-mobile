@@ -1,11 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Setup} from '@support/server_api';
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {Setup, System} from '@support/server_api';
 import {serverUrl} from '@support/test_config';
 
 describe('Smoke Tests', () => {
     it('MM-T3179 Log in - Email / password', async () => {
+        const {config} = await System.apiGetConfig();
         const {user} = await Setup.apiInit();
 
         // * Verify that it starts with the Select Server screen
@@ -24,13 +31,13 @@ describe('Smoke Tests', () => {
         await element(by.id('username_input')).replaceText(user.username);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // # Type in password
         await element(by.id('password_input')).replaceText(user.password);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // # Tap "Sign in" button
         await element(by.text('Sign in')).tap();
