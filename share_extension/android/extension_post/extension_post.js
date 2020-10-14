@@ -47,7 +47,7 @@ const iconForExtension = {
     xls: 'jumbo-attachment-excel',
     xlsx: 'jumbo-attachment-excel',
     zip: 'jumbo-attachment-zip',
-    generic: 'jumbo-attachment-generic'
+    generic: 'jumbo-attachment-generic',
 };
 const ShareExtension = NativeModules.MattermostShare;
 const INPUT_HEIGHT = 150;
@@ -499,7 +499,7 @@ export default class ExtensionPost extends PureComponent {
                     </View>
                 );
             } else {
-                const iconName = iconForExtension[file.extension] || iconForExtension['generic'];
+                const iconName = iconForExtension[file.extension] || iconForExtension.generic;
 
                 component = (
                     <View

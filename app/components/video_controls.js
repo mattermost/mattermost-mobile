@@ -31,6 +31,7 @@ export default class VideoControls extends PureComponent {
         isLoading: PropTypes.bool,
         isFullScreen: PropTypes.bool,
         mainColor: PropTypes.string,
+        controlButtonBg: PropTypes.string,
         onFullScreen: PropTypes.func,
         onPaused: PropTypes.func,
         onReplay: PropTypes.func,
@@ -216,6 +217,7 @@ export default class VideoControls extends PureComponent {
         return (
             <TouchableOpacity
                 onPress={pressAction}
+                style={[styles.controlButton, {backgroundColor: this.props.controlButtonBg}]}
             >
                 <CompassIcon
                     name={iconName}
@@ -292,6 +294,10 @@ const styles = StyleSheet.create({
     },
     progressColumnContainer: {
         flex: 1,
+    },
+    controlButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     fullScreenContainer: {
         alignSelf: 'stretch',
