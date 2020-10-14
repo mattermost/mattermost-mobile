@@ -3,9 +3,10 @@
 import {Platform} from 'react-native';
 import {getStorybookUI, configure} from '@storybook/react-native';
 
-import {loadStories} from './storyLoader';
+// load react-native addons for storybook rn
+import '@storybook/addon-ondevice-knobs/register';
 
-import './rn-addons';
+import {loadStories} from './storyLoader';
 
 // import stories
 configure(() => {
