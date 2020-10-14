@@ -7,7 +7,7 @@ import {Provider} from 'react-redux';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {resetToChannel, resetToSelectServer, goToScreen} from '@actions/navigation';
+import {resetToChannel, resetToSelectServer} from '@actions/navigation';
 import {setDeepLinkURL} from '@actions/views/root';
 import {loadMe, logout} from '@actions/views/user';
 import telemetry from 'app/telemetry';
@@ -43,11 +43,6 @@ const init = async () => {
     });
 
     registerScreens(store, Provider);
-
-    if (__DEV__) {
-        const DevMenu = require('react-native-dev-menu');
-        DevMenu.addItem('StoryBook', () => goToScreen('StoryBook', 'StoryBook'));
-    }
 
     if (!EphemeralStore.appStarted) {
         launchAppAndAuthenticateIfNeeded(credentials);
