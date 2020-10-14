@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {toChannelScreen} from '@support/ui/screen';
+import jestExpect from 'expect';
 
 import {Setup} from '@support/server_api';
 
@@ -30,7 +31,7 @@ describe('Channels', () => {
 
         // # Fill data
         await element(by.id('edit_channel.name.input')).typeText('a');
-        await element(by.id('edit_channel.create.button')).tap();
+        await attemptToTapButton('edit_channel.create.button');
 
         // * Expect to be in the same screen since the channel name must be longer
         await expect(element(by.id('edit_channel.name.input'))).toBeVisible();
@@ -58,3 +59,13 @@ describe('Channels', () => {
         await expect(element(by.text(expectedPurpose))).toBeVisible();
     });
 });
+
+async function attemptToTapButton(id) {
+    if (device.getPlatform() === 'ios') {
+        const attributes = await element(by.id(id)).getAttributes();
+        jestExpect(attributes.visible).toEqual(true);
+        jestExpect(attributes.enabled).toEqual(false);
+    } else {
+        await element(by.id(id)).tap();
+    }
+}
