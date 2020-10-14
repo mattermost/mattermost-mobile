@@ -35,26 +35,19 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import mattermostManaged from 'app/mattermost_managed';
 
-import {
-    ExcelSvg,
-    GenericSvg,
-    PdfSvg,
-    PptSvg,
-    ZipSvg,
-} from 'share_extension/common/icons';
-
 import ChannelButton from './channel_button';
 import TeamButton from './team_button';
 
 const defaultTheme = Preferences.THEMES.default;
-const extensionSvg = {
-    csv: ExcelSvg,
-    pdf: PdfSvg,
-    ppt: PptSvg,
-    pptx: PptSvg,
-    xls: ExcelSvg,
-    xlsx: ExcelSvg,
-    zip: ZipSvg,
+const iconForExtension = {
+    csv: 'jumbo-attachment-excel',
+    pdf: 'jumbo-attachment-pdf',
+    ppt: 'jumbo-attachment-powerpoint',
+    pptx: 'jumbo-attachment-powerpoint',
+    xls: 'jumbo-attachment-excel',
+    xlsx: 'jumbo-attachment-excel',
+    zip: 'jumbo-attachment-zip',
+    generic: 'jumbo-attachment-generic'
 };
 const ShareExtension = NativeModules.MattermostShare;
 const INPUT_HEIGHT = 150;
@@ -506,10 +499,7 @@ export default class ExtensionPost extends PureComponent {
                     </View>
                 );
             } else {
-                let SvgIcon = extensionSvg[file.extension];
-                if (!SvgIcon) {
-                    SvgIcon = GenericSvg;
-                }
+                const iconName = iconForExtension[file.extension] || iconForExtension['generic'];
 
                 component = (
                     <View
@@ -518,9 +508,9 @@ export default class ExtensionPost extends PureComponent {
                     >
                         <View style={styles.otherWrapper}>
                             <View style={styles.fileIcon}>
-                                <SvgIcon
-                                    width={19}
-                                    height={48}
+                                <CompassIcon
+                                    name={iconName}
+                                    size={32}
                                 />
                             </View>
                         </View>
