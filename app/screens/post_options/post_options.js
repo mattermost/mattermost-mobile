@@ -179,11 +179,11 @@ export default class PostOptions extends PureComponent {
 
         if (isFlagged) {
             key = 'unflag';
-            message = {id: t('mobile.post_info.unflag'), defaultMessage: 'Unflag'};
+            message = {id: t('mobile.post_info.unflag'), defaultMessage: 'Unsave'};
             onPress = this.handleUnflagPost;
         } else {
             key = 'flagged';
-            message = {id: t('mobile.post_info.flag'), defaultMessage: 'Flag'};
+            message = {id: t('mobile.post_info.flag'), defaultMessage: 'Save'};
             onPress = this.handleFlagPost;
         }
 
