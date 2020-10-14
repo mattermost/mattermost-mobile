@@ -151,4 +151,17 @@ describe('Autocomplete', () => {
         // * Expect at mention autocomplete not to contain associated user suggestion
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).not.toExist();
     });
+
+    it('MM-T3409_10 should stop suggesting user when keyword is not associated with any user', async () => {
+        // # Type "@" to activate at mention autocomplete
+        await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
+        await postInput.typeText('@');
+        await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
+
+        // # Type keyword not associated with any user
+        await postInput.typeText(Date.now().toString());
+
+        // * Expect at mention autocomplete not to contain associated user suggestion
+        await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).not.toExist();
+    });
 });
