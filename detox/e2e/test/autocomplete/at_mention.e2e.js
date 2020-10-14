@@ -1,6 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
 import {toChannelScreen} from '@support/ui/screen';
 
 import {Setup} from '@support/server_api';
@@ -23,7 +29,7 @@ describe('Autocomplete', () => {
         await postInput.tap();
     });
 
-    it('MM-Txxxx should suggest user based on username', async () => {
+    it('MM-T3409_1 should suggest user based on username', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -36,7 +42,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should suggest user based on nickname', async () => {
+    it('MM-T3409_2 should suggest user based on nickname', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -49,7 +55,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should suggest user based on first name', async () => {
+    it('MM-T3409_3 should suggest user based on first name', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -62,7 +68,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should suggest user based on last name', async () => {
+    it('MM-T3409_4 should suggest user based on last name', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -75,7 +81,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should suggest user based on lowercase first name', async () => {
+    it('MM-T3409_5 should suggest user based on lowercase first name', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -88,7 +94,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should suggest user based on lowercase last name', async () => {
+    it('MM-T3409_6 should suggest user based on lowercase last name', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -101,7 +107,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should suggest user based on full name with space', async () => {
+    it('MM-T3409_7 should suggest user based on full name with space', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -114,7 +120,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should suggest user based on partial full name with space', async () => {
+    it('MM-T3409_8 should suggest user based on partial full name with space', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
@@ -127,7 +133,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).toExist();
     });
 
-    it('MM-Txxxx should stop suggesting user after full name with trailing space', async () => {
+    it('MM-T3409_9 should stop suggesting user after full name with trailing space', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
