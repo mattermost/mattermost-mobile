@@ -82,7 +82,7 @@ export default class FileAttachmentIcon extends PureComponent {
         const {backgroundColor, file, iconSize, theme, iconColor} = this.props;
         const [iconName, defaultIconColor] = this.getFileIconNameAndColor(file);
         const color = iconColor || defaultIconColor;
-        const bgColor = backgroundColor || theme.centerChannelBg || 'transparent';
+        const bgColor = backgroundColor || theme?.centerChannelBg || 'transparent';
 
         return (
             <View
