@@ -175,7 +175,7 @@ export default class PostOptions extends PureComponent {
         let key;
         let message;
         let onPress;
-        const icon = 'flag-outline';
+        const icon = 'bookmark-outline';
 
         if (isFlagged) {
             key = 'unflag';

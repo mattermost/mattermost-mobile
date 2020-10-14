@@ -74,7 +74,7 @@ export default class PostPreHeader extends PureComponent {
                     }
                     {isFlagged && !skipFlaggedHeader &&
                     <CompassIcon
-                        name='flag-outline'
+                        name='bookmark-outline'
                         size={14}
                         style={style.icon}
                     />
