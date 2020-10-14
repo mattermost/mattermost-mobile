@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, FlatList, Platform, RefreshControl, StyleSheet} from 'react-native';
+import {Alert, DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {Posts} from '@mm-redux/constants';
@@ -497,7 +497,13 @@ export default class PostList extends PureComponent {
         if (!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) {
             return;
         }
-
+        const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
+            if (isViewable) {
+                acc[item] = true;
+            }
+            return acc;
+        }, {});
+        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
         this.onViewableItemsChangedListener(viewableItems);
     }
 

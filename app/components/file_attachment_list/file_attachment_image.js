@@ -40,6 +40,7 @@ export default class FileAttachmentImage extends PureComponent {
         isSingleImage: PropTypes.bool,
         imageDimensions: PropTypes.object,
         backgroundColor: PropTypes.string,
+        inViewPort: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -78,6 +79,8 @@ export default class FileAttachmentImage extends PureComponent {
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
             imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.miniPreview = file.mini_preview;
+            imageProps.inViewPort = this.props.inViewPort;
         }
         return imageProps;
     };

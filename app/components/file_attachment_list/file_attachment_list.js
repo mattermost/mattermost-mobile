@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 
 import ImageViewPort from '@components/image_viewport';
 import {Client4} from '@mm-redux/client';
@@ -25,6 +25,7 @@ export default class FileAttachmentList extends ImageViewPort {
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         isReplyPost: PropTypes.bool,
+        miniPreview: PropTypes.string,
     };
 
     static defaultProps = {
@@ -33,12 +34,24 @@ export default class FileAttachmentList extends ImageViewPort {
 
     constructor(props) {
         super(props);
-
+        this.state = {
+            inViewPort: false,
+        };
         this.items = [];
         this.filesForGallery = this.getFilesForGallery(props);
 
         this.buildGalleryFiles().then((results) => {
             this.galleryFiles = results;
+        });
+    }
+
+    componentDidMount() {
+        this.onScrollEnd = DeviceEventEmitter.addListener('scrolled', (viewableItems) => {
+            if (this.props.postId in viewableItems) {
+                this.setState({
+                    inViewPort: true,
+                });
+            }
         });
     }
 
@@ -48,6 +61,12 @@ export default class FileAttachmentList extends ImageViewPort {
             this.buildGalleryFiles().then((results) => {
                 this.galleryFiles = results;
             });
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.onScrollEnd && this.onScrollEnd.remove) {
+            this.onScrollEnd.remove();
         }
     }
 
@@ -165,6 +184,7 @@ export default class FileAttachmentList extends ImageViewPort {
                         isSingleImage={isSingleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         wrapperWidth={getViewPortWidth(isReplyPost, this.hasPermanentSidebar())}
+                        inViewPort={this.state.inViewPort}
                     />
                 </View>
             );
