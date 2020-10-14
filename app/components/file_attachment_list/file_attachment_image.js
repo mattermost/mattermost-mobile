@@ -40,6 +40,7 @@ export default class FileAttachmentImage extends PureComponent {
         wrapperWidth: PropTypes.number,
         isSingleImage: PropTypes.bool,
         imageDimensions: PropTypes.object,
+        inViewPort: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -73,7 +74,7 @@ export default class FileAttachmentImage extends PureComponent {
     imageProps = (file) => {
         const imageProps = {};
         const {failed} = this.state;
-
+        const {inViewPort} = this.props;
         if (failed) {
             imageProps.defaultSource = brokenImageIcon;
         } else if (file.localPath) {
@@ -81,6 +82,8 @@ export default class FileAttachmentImage extends PureComponent {
         } else if (file.id) {
             imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
             imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.miniPreview = file.mini_preview;
+            imageProps.inViewPort = inViewPort;
         }
         return imageProps;
     };

@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated, ImageBackground, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {lookupMimeType} from '@mm-redux/utils/file_utils';
 
 import thumb from '@assets/images/thumb.png';
 import CustomPropTypes from '@constants/custom_prop_types';
@@ -26,6 +27,9 @@ export default class ProgressiveImage extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         tintDefaultSource: PropTypes.bool,
+        miniPreview: PropTypes.string,
+        inViewPort: PropTypes.bool,
+        filename: PropTypes.string,
     };
 
     static defaultProps = {
@@ -39,7 +43,14 @@ export default class ProgressiveImage extends PureComponent {
 
         this.state = {
             intensity: new Animated.Value(0),
+            mimeType: props.filename ? lookupMimeType(props.filename) : '',
         };
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.inViewPort !== this.props.inViewPort && this.props.inViewPort) {
+            this.onLoadImageEnd();
+        }
     }
 
     onLoadImageEnd = () => {
@@ -62,6 +73,7 @@ export default class ProgressiveImage extends PureComponent {
             style,
             theme,
             tintDefaultSource,
+            miniPreview,
         } = this.props;
 
         let DefaultComponent;
@@ -118,6 +130,38 @@ export default class ProgressiveImage extends PureComponent {
         const containerStyle = {
             backgroundColor: changeOpacity(theme.centerChannelColor, defaultOpacity),
         };
+        if (miniPreview) {
+            // show blurred preview image unless component comes in viewport
+            return (
+                <Animated.View style={[styles.defaultImageContainer, style, containerStyle]}>
+                    <ImageComponent
+                        resizeMode={resizeMode}
+                        resizeMethod={resizeMethod}
+                        onError={onError}
+                        source={{uri: `data:${this.state.mimeType};base64,${miniPreview}`}}
+                        style={[
+                            StyleSheet.absoluteFill,
+                            imageStyle,
+                        ]}
+                    >
+                        {this.props.children}
+                    </ImageComponent>
+                    <ImageComponent
+                        resizeMode={resizeMode}
+                        resizeMethod={resizeMethod}
+                        onError={onError}
+                        source={{uri: imageUri}}
+                        style={[
+                            StyleSheet.absoluteFill,
+                            imageStyle,
+                            {opacity}]
+                        }
+                    >
+                        {this.props.children}
+                    </ImageComponent>
+                </Animated.View>
+            );
+        }
 
         return (
             <Animated.View style={[styles.defaultImageContainer, style, containerStyle]}>
