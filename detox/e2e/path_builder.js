@@ -13,7 +13,7 @@ class CustomPathBuilder {
     }
 
     buildPathForTestArtifact(artifactName, testSummary = null) {
-        const fullName = testSummary?.fullName || '';
+        const fullName = (testSummary && testSummary.fullName) || '';
         const segments = [this.rootDir, sanitize(fullName), sanitize(artifactName)];
         return path.join(...segments.filter(Boolean));
     }
