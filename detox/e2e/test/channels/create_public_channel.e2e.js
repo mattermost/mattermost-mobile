@@ -14,7 +14,7 @@ describe('Channels', () => {
 
     it('MM-T3201 Create public channel', async () => {
         // # Go to channel sidebar list
-        await element(by.id('channel_drawer_button')).tap();
+        await element(by.id('channel_drawer.button')).tap();
 
         // # Tap on + public channels
         await element(by.id('action_button_sidebar.channels')).tap();
@@ -32,7 +32,7 @@ describe('Channels', () => {
         await element(by.id('edit_channel.name.input')).typeText('a');
         await element(by.id('edit_channel.create.button')).tap();
 
-        // the `Create` button is not tappable until at least 2 characters have been entered
+        // * Expect to be in the same screen since the channel name must be longer
         await expect(element(by.id('edit_channel.name.input'))).toBeVisible();
 
         await element(by.id('edit_channel.name.input')).typeText('bc');
@@ -51,7 +51,7 @@ describe('Channels', () => {
 
         // * Expect a redirection to the created channel
         await expect(element(by.id('channel_intro.beginning.text'))).toHaveText('Beginning of ' + expectedChannelName);
-        await element(by.id('channel_base.title')).tap();
+        await element(by.id('channel.title.button')).tap();
 
         // * Expect to see channel header and purpose in channel info
         await expect(element(by.text(expectedChannelHeader))).toBeVisible();

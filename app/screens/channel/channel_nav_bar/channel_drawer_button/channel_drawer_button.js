@@ -125,7 +125,6 @@ export default class ChannelDrawerButton extends PureComponent {
 
         return (
             <TouchableOpacity
-                testID='channel_drawer_button'
                 accessible={true}
                 accessibilityHint={accessibilityHint}
                 accessibilityLabel={accessibilityLabel}
