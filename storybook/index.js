@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {AppRegistry, Platform} from 'react-native';
+import {Platform} from 'react-native';
 import {getStorybookUI, configure} from '@storybook/react-native';
 
 import {loadStories} from './storyLoader';
@@ -20,9 +20,5 @@ const StorybookUIRoot = getStorybookUI({
     onDeviceUI: true,
     resetStorybook: true,
 });
-
-// If you are using React Native vanilla and after installation you don't see your app name here, write it manually.
-// If you use Expo you can safely remove this line.
-AppRegistry.registerComponent('Mattermost', () => StorybookUIRoot);
 
 export default StorybookUIRoot;
