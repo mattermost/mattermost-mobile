@@ -67,12 +67,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 24,
             height: 25,
         },
-        removeIcon: {
-            position: 'relative',
-            top: Platform.select({
-                ios: 1,
-                android: 0,
-            }),
-        },
     };
 });

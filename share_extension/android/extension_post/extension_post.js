@@ -58,6 +58,7 @@ export default class ExtensionPost extends PureComponent {
         channels: PropTypes.object.isRequired,
         currentUserId: PropTypes.string.isRequired,
         getTeamChannels: PropTypes.func.isRequired,
+        canUploadFiles: PropTypes.bool.isRequired,
         maxFileSize: PropTypes.number.isRequired,
         navigation: PropTypes.object.isRequired,
         teamId: PropTypes.string.isRequired,
@@ -369,7 +370,7 @@ export default class ExtensionPost extends PureComponent {
     };
 
     onClose = (data) => {
-        ShareExtension.close(data.nativeEvent ? null : data);
+        ShareExtension.close(data?.nativeEvent ? null : data);
     };
 
     onPost = () => {
@@ -544,6 +545,7 @@ export default class ExtensionPost extends PureComponent {
             delayPressIn={0}
             pressColorAndroid='rgba(0, 0, 0, .32)'
             onPress={this.onPost}
+            disabled={!this.props.canUploadFiles}
         >
             <View style={styles.left}>
                 <CompassIcon
@@ -612,6 +614,14 @@ export default class ExtensionPost extends PureComponent {
             });
 
             return this.renderErrorMessage(teamRequired);
+        }
+
+        if (!this.props.canUploadFiles) {
+            const uploadsDisabled = formatMessage({
+                id: 'mobile.file_upload.disabled',
+                defaultMessage: 'File uploads from mobile are disabled. Please contact your System Admin for more details.',
+            });
+            return this.renderErrorMessage(uploadsDisabled);
         }
 
         if (this.token && this.url) {

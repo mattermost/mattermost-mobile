@@ -11,25 +11,23 @@ import {toChannelScreen} from '@support/ui/screen';
 
 import {Setup} from '@support/server_api';
 
-describe('Messaging', () => {
+describe('Autocomplete', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
-
         await toChannelScreen(user);
     });
 
-    it('should post a message on tap to paper send button', async () => {
-        await expect(element(by.id('channel_screen'))).toBeVisible();
-        await expect(element(by.id('post_input'))).toExist();
-        await expect(element(by.id('send_button'))).not.toExist();
-        await element(by.id('post_input')).tap();
+    it('MM-T3390 should render autocomplete in channel header edit screen', async () => {
+        // # Open channel info modal
+        await element(by.id('channel.title.button')).tap();
 
-        const text = Date.now().toString();
-        await element(by.id('post_input')).typeText(text);
+        // # Open edit channel menu
+        await element(by.text('Edit Channel')).tap();
 
-        await expect(element(by.id('send_button'))).toBeVisible();
-        await element(by.id('send_button')).tap();
+        // # Activate at_mention autocomplete
+        await element(by.id('edit_channel.header.input')).typeText('@');
 
-        await expect(element(by.text(text))).toExist();
+        // * Expect autocomplete to render
+        await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
     });
 });

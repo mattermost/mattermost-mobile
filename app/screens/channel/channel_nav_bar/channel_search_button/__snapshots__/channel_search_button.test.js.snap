@@ -19,6 +19,7 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="channel.search.button"
   >
     <View
       style={

@@ -336,6 +336,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
+                                    testID={'edit_channel.header.input'}
                                     ref={this.headerInput}
                                     value={header}
                                     onChangeText={this.onHeaderChangeText}

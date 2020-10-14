@@ -7,14 +7,28 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup, System} from '@support/server_api';
+import {Ldap, Setup, System, Team, User} from '@support/server_api';
 import {serverUrl} from '@support/test_config';
+import ldapUsers from '@support/fixtures/ldap_users.json';
 
 describe('Smoke Tests', () => {
-    it('MM-T3179 Log in - Email / password', async () => {
-        const {config} = await System.apiGetConfig();
-        const {user} = await Setup.apiInit();
+    const testOne = ldapUsers['test-1'];
+    let config;
 
+    beforeAll(async () => {
+        // * Verify that the server has license with LDAP feature
+        await System.apiRequireLicenseForFeature('LDAP');
+
+        // # Enable LDAP
+        ({config} = await System.apiUpdateConfig({LdapSettings: {Enable: true}}));
+
+        // * Check that LDAP server can connect and is synchronized with Mattermost server
+        await Ldap.apiRequireLDAPServer();
+
+        await ensureUserHasTeam(testOne);
+    });
+
+    it('MM-T3180 Log in - LDAP', async () => {
         // * Verify that it starts with the Select Server screen
         await expect(element(by.id('select_server_screen'))).toBeVisible();
 
@@ -28,13 +42,13 @@ describe('Smoke Tests', () => {
         await expect(element(by.id('login_screen'))).toBeVisible();
 
         // # Type in username
-        await element(by.id('username_input')).replaceText(user.username);
+        await element(by.id('username_input')).replaceText(testOne.username);
 
         // # Tap anywhere to hide keyboard
         await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // # Type in password
-        await element(by.id('password_input')).replaceText(user.password);
+        await element(by.id('password_input')).replaceText(testOne.password);
 
         // # Tap anywhere to hide keyboard
         await element(by.text(config.TeamSettings.SiteName)).tap();
@@ -46,3 +60,18 @@ describe('Smoke Tests', () => {
         await expect(element(by.id('channel_screen'))).toBeVisible();
     });
 });
+
+async function ensureUserHasTeam(ldapUser) {
+    // # Login as LDAP user to sync with the server
+    await User.apiLogin(ldapUser);
+
+    // # Login as sysadmin and ensure LDAP user is member of at least one team
+    await User.apiAdminLogin();
+    const {user} = await User.apiGetUserByUsername(ldapUser.username);
+    const {teams} = await Team.apiGetTeamMembersForUser(user.id);
+
+    if (!teams?.length) {
+        const {team} = await Setup.apiInit();
+        await Team.apiAddUserToTeam(user.id, team.id);
+    }
+}

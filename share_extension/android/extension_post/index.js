@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {getAllChannels, getCurrentChannel, getDefaultChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getConfig, canUploadFilesOnMobile} from '@mm-redux/selectors/entities/general';
 
 import {getTeamChannels} from 'share_extension/android/actions';
 import {getAllowedServerMaxFileSize} from 'app/utils/file';
@@ -25,6 +25,7 @@ function mapStateToProps(state) {
         channelId: channel?.id,
         channels: getAllChannels(state),
         currentUserId: getCurrentUserId(state),
+        canUploadFiles: canUploadFilesOnMobile(state),
         maxFileSize: getAllowedServerMaxFileSize(config),
         teamId: getCurrentTeamId(state),
     };

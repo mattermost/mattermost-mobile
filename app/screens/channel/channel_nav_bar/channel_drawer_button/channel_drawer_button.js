@@ -131,7 +131,10 @@ export default class ChannelDrawerButton extends PureComponent {
                 onPress={this.handlePress}
                 style={containerStyle}
             >
-                <View style={[style.wrapper]}>
+                <View
+                    style={[style.wrapper]}
+                    testID='channel_drawer.button'
+                >
                     <View>
                         {icon}
                         {badge}

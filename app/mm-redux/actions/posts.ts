@@ -101,7 +101,7 @@ export function receivedPostsSince(posts: Array<Post>, channelId: string) {
 }
 
 // receivedPostsInChannel should be dispatched when receiving a list of ordered posts within a channel when the
-// the adjacent posts are not known.
+// adjacent posts are not known.
 export function receivedPostsInChannel(posts: CombinedPostList, channelId: string, recent = false, oldest = false) {
     return {
         type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
