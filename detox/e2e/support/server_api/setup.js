@@ -4,7 +4,6 @@
 import Channel from './channel';
 import Team from './team';
 import User from './user';
-import {getResponseFromError} from './common';
 
 /**
  * Creates new user, channel and team for test isolation.
@@ -16,22 +15,18 @@ export const apiInit = async ({
     teamOptions = {type: 'O', prefix: 'team'},
     userOptions = {prefix: 'user'},
 } = {}) => {
-    try {
-        const {team} = await Team.apiCreateTeam(teamOptions);
-        const {channel} = await Channel.apiCreateChannel({...channelOptions, teamId: team.id});
-        const {user} = await User.apiCreateUser(userOptions);
+    const {team} = await Team.apiCreateTeam(teamOptions);
+    const {channel} = await Channel.apiCreateChannel({...channelOptions, teamId: team.id});
+    const {user} = await User.apiCreateUser(userOptions);
 
-        await Team.apiAddUserToTeam(user.id, team.id);
-        await Channel.apiAddUserToChannel(user.id, channel.id);
+    await Team.apiAddUserToTeam(user.id, team.id);
+    await Channel.apiAddUserToChannel(user.id, channel.id);
 
-        return {
-            channel,
-            team,
-            user,
-        };
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return {
+        channel,
+        team,
+        user,
+    };
 };
 
 export const Setup = {

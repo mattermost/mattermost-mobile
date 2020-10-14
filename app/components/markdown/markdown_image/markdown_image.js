@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
+    Alert,
     Linking,
     Platform,
     StyleSheet,
@@ -103,11 +104,19 @@ export default class MarkdownImage extends ImageViewPort {
 
     handleLinkPress = () => {
         const url = normalizeProtocol(this.props.linkDestination);
+        const {intl} = this.context;
 
-        Linking.canOpenURL(url).then((supported) => {
-            if (supported) {
-                Linking.openURL(url);
-            }
+        Linking.openURL(url).catch(() => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
         });
     };
 

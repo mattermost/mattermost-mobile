@@ -265,6 +265,7 @@ export default class AtMention extends PureComponent {
 
         return (
             <SectionList
+                testID='autocomplete.at_mention.list'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
                 style={[style.listView, {maxHeight: maxListHeight}]}

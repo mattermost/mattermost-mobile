@@ -38,7 +38,6 @@ export default class UploadRemove extends PureComponent {
                         name='close-circle'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                         size={21}
-                        style={style.removeIcon}
                     />
                 </View>
             </TouchableWithFeedback>
@@ -64,13 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 android: 4.75,
             }),
             backgroundColor: theme.centerChannelBg,
-        },
-        removeIcon: {
-            position: 'relative',
-            top: Platform.select({
-                ios: 1,
-                android: 0,
-            }),
         },
     };
 });
