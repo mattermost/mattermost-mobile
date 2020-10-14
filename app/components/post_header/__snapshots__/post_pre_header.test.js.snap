@@ -46,7 +46,7 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
     }
   >
     <FormattedText
-      defaultMessage="Flagged"
+      defaultMessage="Saved"
       id="mobile.post_pre_header.flagged"
       style={
         Object {
@@ -127,7 +127,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
     }
   >
     <FormattedText
-      defaultMessage="Pinned and Flagged"
+      defaultMessage="Pinned and Saved"
       id="mobile.post_pre_header.pinned_flagged"
       style={
         Object {
@@ -249,7 +249,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
     }
   >
     <FormattedText
-      defaultMessage="Flagged"
+      defaultMessage="Saved"
       id="mobile.post_pre_header.flagged"
       style={
         Object {

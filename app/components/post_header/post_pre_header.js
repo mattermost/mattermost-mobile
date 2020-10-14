@@ -41,7 +41,7 @@ export default class PostPreHeader extends PureComponent {
         if (isPinnedAndFlagged) {
             text = {
                 id: t('mobile.post_pre_header.pinned_flagged'),
-                defaultMessage: 'Pinned and Flagged',
+                defaultMessage: 'Pinned and Saved',
             };
         } else if (isPinned && !skipPinnedHeader) {
             text = {
@@ -51,7 +51,7 @@ export default class PostPreHeader extends PureComponent {
         } else if (isFlagged && !skipFlaggedHeader) {
             text = {
                 id: t('mobile.post_pre_header.flagged'),
-                defaultMessage: 'Flagged',
+                defaultMessage: 'Saved',
             };
         }
 
