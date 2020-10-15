@@ -114,7 +114,7 @@ export default class Leave extends PureComponent<LeaveProps> {
                 <ChannelInfoRow
                     action={this.handleClose}
                     defaultMessage={defaultMessage}
-                    icon='times'
+                    icon='close'
                     iconColor='#CA3B27'
                     textColor='#CA3B27'
                     textId={i18nId}
@@ -128,7 +128,7 @@ export default class Leave extends PureComponent<LeaveProps> {
                 <ChannelInfoRow
                     action={this.handleLeave}
                     defaultMessage='Leave Channel'
-                    icon='sign-out'
+                    icon='exit-to-app'
                     iconColor='#CA3B27'
                     textColor='#CA3B27'
                     textId={t('navbar.leave')}

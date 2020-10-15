@@ -14,6 +14,7 @@ const Files: Dictionary<string[]> = {
     TEXT_TYPES: ['txt', 'rtf'],
     VIDEO_TYPES: ['mp4', 'avi', 'webm', 'mkv', 'wmv', 'mpg', 'mov', 'flv'],
     WORD_TYPES: ['doc', 'docx'],
+    ZIP_TYPES: ['zip'],
 };
 
 export default Files;

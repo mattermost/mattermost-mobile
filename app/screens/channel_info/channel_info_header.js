@@ -159,7 +159,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     <ChannelIcon
                         isInfo={true}
                         membersCount={memberCount - 1}
-                        size={16}
+                        size={24}
                         status={status}
                         theme={theme}
                         type={type}

@@ -8,13 +8,13 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import Badge from 'app/components/badge';
-import TeamIcon from 'app/components/team_icon';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import Badge from '@components/badge';
+import CompassIcon from '@components/compass_icon';
+import TeamIcon from '@components/team_icon';
+import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
@@ -65,8 +65,8 @@ export default class TeamsListItem extends React.PureComponent {
         if (teamId === currentTeamId) {
             current = (
                 <View style={styles.checkmarkContainer}>
-                    <IonIcon
-                        name='md-checkmark'
+                    <CompassIcon
+                        name='check'
                         style={styles.checkmark}
                     />
                 </View>

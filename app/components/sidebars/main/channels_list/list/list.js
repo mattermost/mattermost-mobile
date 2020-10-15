@@ -14,22 +14,21 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesomePro from 'react-native-vector-icons/Ionicons';
-import EventEmitter from '@mm-redux/utils/event_emitter';
 
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {General} from '@mm-redux/constants';
 import {debounce} from '@mm-redux/actions/helpers';
 
-import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
-import {DeviceTypes, ListTypes, NavigationTypes} from 'app/constants';
-import {SidebarSectionTypes} from 'app/constants/view';
+import CompassIcon from '@components/compass_icon';
+import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import {paddingLeft} from '@components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
+import {SidebarSectionTypes} from '@constants/view';
 
-import BottomSheet from 'app/utils/bottom_sheet';
-import {t} from 'app/utils/i18n';
-import {preventDoubleTap} from 'app/utils/tap';
-import {showModal} from 'app/actions/navigation';
+import BottomSheet from '@utils/bottom_sheet';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {showModal} from '@actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -72,7 +71,7 @@ export default class List extends PureComponent {
             onScrollBeginDrag: this.scrollBeginDrag,
         };
 
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
@@ -304,8 +303,8 @@ export default class List extends PureComponent {
                 underlayColor={'transparent'}
                 hitSlop={styles.hitSlop}
             >
-                <FontAwesomePro
-                    name='ios-add-circle-outline'
+                <CompassIcon
+                    name='plus'
                     ref={anchor ? this.combinedActionsRef : null}
                     style={styles.action}
                 />

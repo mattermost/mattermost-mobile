@@ -11,16 +11,16 @@ export default makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             height: 68,
         },
+        linkContainer: {
+            marginHorizontal: 15,
+            color: theme.linkColor,
+        },
         iconContainer: {
-            width: 42,
-            height: 68,
-            alignItems: 'center',
-            justifyContent: 'center',
             marginHorizontal: 15,
         },
         icon: {
             color: theme.buttonBg,
-            fontSize: 25,
+            fontSize: 24,
         },
         wrapper: {
             flex: 1,
