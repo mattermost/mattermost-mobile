@@ -6,16 +6,6 @@ import SelectServer from './select_server.js';
 import {renderWithReduxIntl} from 'test/testing_library';
 import {fireEvent, waitFor} from '@testing-library/react-native';
 
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        events: jest.fn(() => ({
-            bindComponent: jest.fn(() => {
-                return {remove: jest.fn()};
-            }),
-        })),
-    },
-}));
-
 describe('SelectServer', () => {
     const actions = {
         getPing: jest.fn(),
