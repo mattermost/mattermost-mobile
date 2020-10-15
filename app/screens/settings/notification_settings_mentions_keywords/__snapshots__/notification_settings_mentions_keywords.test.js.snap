@@ -5,7 +5,9 @@ NotificationSettingsMentionsKeywords {
   "context": Object {},
   "handleSubmit": [Function],
   "keywordsRef": [Function],
-  "navigationEventListener": undefined,
+  "navigationEventListener": Object {
+    "remove": [MockFunction],
+  },
   "onKeywordsChangeText": [Function],
   "props": Object {
     "componentId": "component-id",
