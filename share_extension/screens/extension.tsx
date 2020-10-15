@@ -2,26 +2,35 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Alert, NativeModules} from 'react-native';
+import {Alert, NativeModules, View} from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {captureException, initializeSentry, LOGGER_EXTENSION} from 'app/utils/sentry';
+import FormattedText from '@components/formatted_text';
+import {captureException, initializeSentry, LOGGER_EXTENSION} from '@utils/sentry';
 
 import Navigation from './navigation';
 
-const ShareExtension = NativeModules.MattermostShare;
+const NativeShareExtension = NativeModules.MattermostShare;
 
-export default class ShareApp extends PureComponent {
+export default class ShareExtension extends PureComponent {
     static contextTypes = {
         intl: intlShape,
     };
 
-    constructor(props) {
-        super(props);
+    static getDerivedStateFromError(error: Error) {
+        // Update state so the next render will show the fallback UI.
+        return {hasError: error};
+    }
+
+    state = {
+        hasError: undefined,
+    };
+
+    componentDidMount() {
         initializeSentry();
     }
 
-    componentDidCatch(error) {
+    componentDidCatch(error: Error) {
         const {intl, store} = this.context;
         const {formatMessage} = intl;
 
@@ -48,9 +57,20 @@ export default class ShareApp extends PureComponent {
         );
     }
 
-    close = () => ShareExtension.close(null)
+    close = () => NativeShareExtension.close(null)
 
     render() {
+        if (this.state.hasError) {
+            return (
+                <View>
+                    <FormattedText
+                        defaultMessage='Something went wrong'
+                        id='mobile.failed_network_action.teams_title'
+                    />
+                </View>
+            );
+        }
+
         return <Navigation/>;
     }
 }
