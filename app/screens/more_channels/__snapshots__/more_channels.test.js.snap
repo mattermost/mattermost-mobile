@@ -77,7 +77,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           
         <Icon
           allowFontScaling={false}
-          name="caret-down"
+          name="menu-down"
           size={12}
         />
       </Text>

@@ -12,10 +12,11 @@ exports[`edit_profile should match snapshot 1`] = `
 >
   <Connect(ProfilePicture)
     edit={false}
+    iconSize={104}
     imageUri={null}
-    size={150}
+    size={153}
     statusBorderWidth={6}
-    statusSize={40}
+    statusSize={36}
   />
 </View>
 `;

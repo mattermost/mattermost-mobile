@@ -233,7 +233,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
         <Icon
           allowFontScaling={false}
           name="camera"
-          size={18}
+          size={24}
           style={
             Object {
               "color": "#4E8ACC",
@@ -279,7 +279,7 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
         <Icon
           allowFontScaling={false}
           name="photo"
-          size={18}
+          size={24}
           style={
             Object {
               "color": "#4E8ACC",

@@ -36,7 +36,7 @@ exports[`ChannelInfo -> Archive should match snapshot for Archive Channel 1`] = 
   <channelInfoRow
     action={[Function]}
     defaultMessage="Archive Channel"
-    icon="archive"
+    icon="archive-outline"
     iconColor="#CA3B27"
     isLandscape={false}
     rightArrow={false}
@@ -113,12 +113,10 @@ exports[`ChannelInfo -> Archive should match snapshot for Unarchive Channel 1`] 
   <channelInfoRow
     action={[Function]}
     defaultMessage="Unarchive Channel"
-    icon="archive"
-    iconColor="#CA3B27"
+    icon="archive-arrow-up-outline"
     isLandscape={false}
     rightArrow={false}
     shouldRender={true}
-    textColor="#CA3B27"
     textId="mobile.routes.channelInfo.unarchive_channel"
     theme={
       Object {

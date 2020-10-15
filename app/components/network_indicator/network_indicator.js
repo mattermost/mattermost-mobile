@@ -12,18 +12,19 @@ import {
     View,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
 import {RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import FormattedText from 'app/components/formatted_text';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {DeviceTypes, ViewTypes} from '@constants';
 import {INDICATOR_BAR_HEIGHT} from '@constants/view';
+import networkConnectionListener, {checkConnection} from '@utils/network';
+import {t} from '@utils/i18n';
+
 import mattermostBucket from 'app/mattermost_bucket';
 import PushNotifications from 'app/push_notifications';
-import networkConnectionListener, {checkConnection} from 'app/utils/network';
-import {t} from 'app/utils/i18n';
 
 const MAX_WEBSOCKET_RETRIES = 3;
 const CONNECTION_RETRY_SECONDS = 5;
@@ -371,9 +372,9 @@ export default class NetworkIndicator extends PureComponent {
                 defaultMessage = 'Connected';
                 action = (
                     <View style={styles.actionContainer}>
-                        <IonIcon
+                        <CompassIcon
                             color='#FFFFFF'
-                            name='md-checkmark'
+                            name='check'
                             size={20}
                         />
                     </View>

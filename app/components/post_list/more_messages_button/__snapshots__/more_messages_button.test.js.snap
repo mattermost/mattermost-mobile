@@ -69,9 +69,10 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           }
         }
       >
-        <VectorIcon
-          name="md-arrow-up"
-          size={14}
+        <Icon
+          allowFontScaling={false}
+          name="arrow-up"
+          size={12}
           style={
             Object {
               "alignSelf": "center",
@@ -80,7 +81,6 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
               "fontWeight": "bold",
             }
           }
-          type="ion"
         />
       </View>
       <View
@@ -118,9 +118,10 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
             }
           }
         >
-          <VectorIcon
-            name="md-close"
-            size={14}
+          <Icon
+            allowFontScaling={false}
+            name="close"
+            size={12}
             style={
               Object {
                 "alignSelf": "center",
@@ -129,7 +130,6 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
                 "fontWeight": "bold",
               }
             }
-            type="ion"
           />
         </View>
       </TouchableWithFeedbackIOS>

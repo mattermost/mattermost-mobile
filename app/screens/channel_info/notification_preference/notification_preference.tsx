@@ -77,8 +77,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
                 action={this.goToChannelNotificationPreference}
                 defaultMessage='Mobile Notifications'
                 detail={this.notificationLevelToText(pushNotifyLevel)}
-                icon='mobile'
-                iconSize={20}
+                icon='cellphone'
                 textId={t('channel_header.notificationPreference')}
                 theme={theme}
                 isLandscape={isLandscape}

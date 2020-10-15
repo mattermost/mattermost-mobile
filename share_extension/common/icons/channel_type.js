@@ -5,17 +5,18 @@ import React from 'react';
 import {
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {Preferences} from '@mm-redux/constants';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import CompassIcon from '@components/compass_icon';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const defaultTheme = Preferences.THEMES.default;
 
 export function PublicChannel() {
     return (
         <View style={style.container}>
-            <Icon
+            <CompassIcon
                 name='globe'
                 style={style.icon}
             />
@@ -26,7 +27,7 @@ export function PublicChannel() {
 export function PrivateChannel() {
     return (
         <View style={style.container}>
-            <Icon
+            <CompassIcon
                 name='lock'
                 style={style.icon}
             />
@@ -37,8 +38,8 @@ export function PrivateChannel() {
 export function DirectChannel() {
     return (
         <View style={style.container}>
-            <Icon
-                name='user'
+            <CompassIcon
+                name='account-outline'
                 style={style.icon}
             />
         </View>
@@ -48,8 +49,8 @@ export function DirectChannel() {
 export function GroupChannel() {
     return (
         <View style={style.container}>
-            <Icon
-                name='users'
+            <CompassIcon
+                name='account-group-outline'
                 style={style.icon}
             />
         </View>

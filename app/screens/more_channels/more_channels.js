@@ -5,30 +5,30 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Keyboard, Platform, View, Text} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
 import {debounce} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import BottomSheet from 'app/utils/bottom_sheet';
-import CustomList from 'app/components/custom_list';
-import ChannelListRow from 'app/components/custom_list/channel_list_row';
-import FormattedText from 'app/components/formatted_text';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import Loading from 'app/components/loading';
-import SearchBar from 'app/components/search_bar';
-import StatusBar from 'app/components/status_bar';
-import {NavigationTypes} from 'app/constants';
-import {alertErrorWithFallback, emptyFunction} from 'app/utils/general';
-import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
+import {goToScreen, dismissModal, setButtons} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import CustomList from '@components/custom_list';
+import ChannelListRow from '@components/custom_list/channel_list_row';
+import FormattedText from '@components/formatted_text';
+import KeyboardLayout from '@components/layout/keyboard_layout';
+import Loading from '@components/loading';
+import SearchBar from '@components/search_bar';
+import StatusBar from '@components/status_bar';
+import {NavigationTypes} from '@constants';
+import {alertErrorWithFallback, emptyFunction} from '@utils/general';
+import BottomSheet from '@utils/bottom_sheet';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
+} from '@utils/theme';
 
 export default class MoreChannels extends PureComponent {
     static propTypes = {
@@ -443,8 +443,8 @@ export default class MoreChannels extends PureComponent {
                         >
                             {typeOfChannels === 'public' ? publicChannelsText : archivedChannelsText}
                             {'  '}
-                            <Icon
-                                name={'caret-down'}
+                            <CompassIcon
+                                name='menu-down'
                             />
                         </Text>
                     </View>
