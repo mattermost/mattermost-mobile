@@ -295,9 +295,10 @@ export default class List extends PureComponent {
         this.setState({width: width - 40});
     };
 
-    renderSectionAction = (styles, action, anchor) => {
+    renderSectionAction = (styles, action, anchor, id) => {
         return (
             <TouchableHighlight
+                testID={'action_button_' + id}
                 style={styles.actionContainer}
                 onPress={action}
                 underlayColor={'transparent'}
@@ -345,7 +346,7 @@ export default class List extends PureComponent {
                     <View style={styles.separatorContainer}>
                         <View style={styles.separator}/>
                     </View>
-                    {action && this.renderSectionAction(styles, action, anchor)}
+                    {action && this.renderSectionAction(styles, action, anchor, id)}
                 </View>
             </React.Fragment>
         );
