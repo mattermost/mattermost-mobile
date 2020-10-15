@@ -32,7 +32,9 @@ LongPost {
   "goToThread": [Function],
   "handleClose": [Function],
   "handlePress": [Function],
-  "navigationEventListener": undefined,
+  "navigationEventListener": Object {
+    "remove": [MockFunction],
+  },
   "props": Object {
     "actions": Object {
       "getPostThread": [MockFunction],
