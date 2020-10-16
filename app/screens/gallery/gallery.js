@@ -167,7 +167,6 @@ export default class Gallery extends PureComponent {
                 <Footer
                     ref={this.footer}
                     file={files[index]}
-                    postId={files[0].post_id}
                 />
             </>
         );

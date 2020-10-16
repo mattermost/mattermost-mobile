@@ -142,7 +142,7 @@ export default class FlaggedPosts extends PureComponent {
                     id: 'mobile.flagged_posts.empty_description',
                     defaultMessage: 'Saved messages are only visible to you. Mark messages for follow-up or save something for later by long-pressing a message and choosing Save from the menu.',
                 })}
-                iconName='ios-bookmark-outline'
+                iconName='bookmark-outline'
                 title={formatMessage({id: 'mobile.flagged_posts.empty_title', defaultMessage: 'No Saved messages yet'})}
                 theme={theme}
             />

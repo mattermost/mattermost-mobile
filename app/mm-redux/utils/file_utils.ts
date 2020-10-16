@@ -44,6 +44,7 @@ export function getFileType(file: FileInfo): string {
         'word',
         'presentation',
         'patch',
+        'zip',
     ];
     return fileTypes.find((fileType) => {
         const constForFileTypeExtList = `${fileType}_types`.toUpperCase();

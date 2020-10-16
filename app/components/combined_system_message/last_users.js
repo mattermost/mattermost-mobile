@@ -104,7 +104,6 @@ export default class LastUsers extends React.PureComponent {
         return (
             <Markdown
                 baseTextStyle={style.baseText}
-                disableGallery={true}
                 textStyles={textStyles}
                 value={formattedMessage}
             />

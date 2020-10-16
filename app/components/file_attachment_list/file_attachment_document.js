@@ -18,7 +18,7 @@ import tinyColor from 'tinycolor2';
 import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import ProgressBar from '@components/progress_bar';
-import {AttachmentTypes, DeviceTypes} from '@constants/';
+import {DeviceTypes} from '@constants/';
 import {getFileUrl} from '@mm-redux/utils/file_utils';
 import {getLocalFilePathFromFile} from '@utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -28,21 +28,10 @@ const {DOCUMENTS_PATH} = DeviceTypes;
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
         backgroundColor: PropTypes.string,
-        canDownloadFiles: PropTypes.bool,
-        iconHeight: PropTypes.number,
-        iconWidth: PropTypes.number,
+        canDownloadFiles: PropTypes.bool.isRequired,
         file: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
-        wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number,
-    };
-
-    static defaultProps = {
-        iconHeight: AttachmentTypes.ATTACHMENT_ICON_HEIGHT,
-        iconWidth: AttachmentTypes.ATTACHMENT_ICON_WIDTH,
-        wrapperHeight: AttachmentTypes.ATTACHMENT_ICON_HEIGHT,
-        wrapperWidth: AttachmentTypes.ATTACHMENT_ICON_WIDTH,
     };
 
     static contextTypes = {
@@ -123,7 +112,7 @@ export default class FileAttachmentDocument extends PureComponent {
                 this.setState({downloading: true});
                 this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id));
                 this.downloadTask.progress((received, total) => {
-                    const progress = Math.round((received / total));
+                    const progress = parseFloat((received / total).toFixed(1));
                     if (this.mounted) {
                         this.setState({progress});
                     }
@@ -132,9 +121,8 @@ export default class FileAttachmentDocument extends PureComponent {
                 await this.downloadTask;
                 if (this.mounted) {
                     this.setState({
-                        progress: 100,
+                        progress: 1,
                     }, () => {
-                        // need to wait a bit for the progress circle UI to update to the give progress
                         this.openDocument(file);
                     });
                 }
@@ -160,7 +148,7 @@ export default class FileAttachmentDocument extends PureComponent {
             return;
         }
 
-        if (downloading && progress < 100) {
+        if (downloading && progress < 1) {
             this.cancelDownload();
         } else if (downloading) {
             this.resetViewState();
@@ -221,13 +209,7 @@ export default class FileAttachmentDocument extends PureComponent {
             this.setState({
                 progress: 0,
                 didCancel: true,
-            }, () => {
-                // need to wait a bit for the progress circle UI to update to the give progress
-                setTimeout(() => {
-                    if (this.mounted) {
-                        this.setState({downloading: false});
-                    }
-                }, 2000);
+                downloading: false,
             });
         }
     };
@@ -275,17 +257,13 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     renderFileAttachmentIcon = () => {
-        const {backgroundColor, iconHeight, iconWidth, file, theme, wrapperHeight, wrapperWidth} = this.props;
+        const {backgroundColor, file, theme} = this.props;
 
         return (
             <FileAttachmentIcon
                 backgroundColor={backgroundColor}
                 file={file}
                 theme={theme}
-                iconHeight={iconHeight}
-                iconWidth={iconWidth}
-                wrapperHeight={wrapperHeight}
-                wrapperWidth={wrapperWidth}
             />
         );
     }
@@ -298,9 +276,9 @@ export default class FileAttachmentDocument extends PureComponent {
             fileAttachmentComponent = (
                 <>
                     {this.renderFileAttachmentIcon()}
-                    <View style={[StyleSheet.absoluteFill, {justifyContent: 'flex-end', height: this.props.iconHeight, width: this.props.iconWidth, top: 6}]}>
+                    <View style={[StyleSheet.absoluteFill, {justifyContent: 'flex-end', height: 48, width: 48, top: 6}]}>
                         <ProgressBar
-                            progress={progress}
+                            progress={progress || 0.1}
                             color={theme.buttonBg}
                         />
                     </View>

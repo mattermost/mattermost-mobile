@@ -9,7 +9,7 @@ import {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channe
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
-import {getTeammateNameDisplaySetting} from '@mm-redux/selectors/entities/preferences';
+import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isFromWebhook} from '@mm-redux/utils/post_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {isLandscape} from '@selectors/device';
@@ -49,6 +49,7 @@ function mapStateToProps(state: GlobalState, ownProps: FooterProps) {
         displayName,
         isLandscape: isLandscape(state),
         ownPost,
+        theme: getTheme(state),
     };
 }
 

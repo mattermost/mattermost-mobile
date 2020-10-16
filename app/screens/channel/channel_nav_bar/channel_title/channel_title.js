@@ -9,12 +9,13 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
 import {General} from '@mm-redux/constants';
-import FormattedText from 'app/components/formatted_text';
+
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
 
 export default class ChannelTitle extends PureComponent {
     static propTypes = {
@@ -42,8 +43,8 @@ export default class ChannelTitle extends PureComponent {
         let content = null;
         if (this.props.isArchived) {
             content = (
-                <Icon
-                    name='archive'
+                <CompassIcon
+                    name='archive-outline'
                     style={[style.archiveIcon]}
                 />
             );
@@ -130,9 +131,9 @@ export default class ChannelTitle extends PureComponent {
         let icon;
         if (channelDisplayName) {
             icon = (
-                <Icon
+                <CompassIcon
                     style={style.icon}
-                    size={12}
+                    size={24}
                     name='chevron-down'
                 />
             );
@@ -141,16 +142,17 @@ export default class ChannelTitle extends PureComponent {
         let mutedIcon;
         if (isChannelMuted) {
             mutedIcon = (
-                <Icon
+                <CompassIcon
                     style={[style.icon, style.muted]}
-                    size={15}
-                    name='bell-slash-o'
+                    size={24}
+                    name='bell-off-outline'
                 />
             );
         }
 
         return (
             <TouchableOpacity
+                testID={'channel.title.button'}
                 style={style.container}
                 onPress={onPress}
             >
@@ -188,7 +190,7 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         },
         icon: {
             color: theme.sidebarHeaderTextColor,
-            marginHorizontal: 5,
+            marginHorizontal: 1,
         },
         text: {
             color: theme.sidebarHeaderTextColor,

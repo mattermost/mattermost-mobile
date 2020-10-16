@@ -28,6 +28,7 @@ export interface ActionsProps {
 
 export interface AvatarProps {
     avatarUri?: string;
+    theme: Theme;
 }
 
 export interface CallbackFunctionWithoutArguments {
@@ -97,6 +98,7 @@ export interface SummaryProps {
     isDirectChannel: boolean;
     isLandscape: boolean;
     ownPost: boolean;
+    theme: Theme;
 }
 
 export interface ToastProps {

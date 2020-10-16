@@ -7,11 +7,11 @@ import {
     Text,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
-import FormattedText from 'app/components/formatted_text';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class SpecialMentionItem extends PureComponent {
     static propTypes = {
@@ -47,8 +47,8 @@ export default class SpecialMentionItem extends PureComponent {
             >
                 <View style={style.row}>
                     <View style={style.rowPicture}>
-                        <Icon
-                            name='users'
+                        <CompassIcon
+                            name='account-group-outline'
                             style={style.rowIcon}
                         />
                     </View>

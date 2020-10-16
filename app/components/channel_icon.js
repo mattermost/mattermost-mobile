@@ -10,9 +10,8 @@ import {
 
 import {General} from '@mm-redux/constants';
 
-import Icon from 'app/components/vector_icon';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ChannelIcon extends React.PureComponent {
     static propTypes = {
@@ -82,42 +81,37 @@ export default class ChannelIcon extends React.PureComponent {
         let icon;
         if (isArchived) {
             icon = (
-                <Icon
-                    name='archive'
+                <CompassIcon
+                    name='archive-outline'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='mattermost'
                 />
             );
         } else if (isBot) {
             icon = (
-                <Icon
-                    name='bot'
-                    style={[style.icon, unreadIcon, activeIcon, {fontSize: (size - 1), left: -1.5, top: -1}]}
-                    type='mattermost'
+                <CompassIcon
+                    name='robot-happy'
+                    style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: -1.5, top: -1}]}
                 />
             );
         } else if (hasDraft) {
             icon = (
-                <Icon
-                    name='draft'
+                <CompassIcon
+                    name='pencil-outline'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='mattermost'
                 />
             );
         } else if (type === General.OPEN_CHANNEL) {
             icon = (
-                <Icon
-                    name='public'
+                <CompassIcon
+                    name='globe'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
-                    type='mattermost'
                 />
             );
         } else if (type === General.PRIVATE_CHANNEL) {
             icon = (
-                <Icon
-                    name='private'
+                <CompassIcon
+                    name='lock-outline'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
-                    type='mattermost'
                 />
             );
         } else if (type === General.GM_CHANNEL) {
@@ -132,37 +126,33 @@ export default class ChannelIcon extends React.PureComponent {
             switch (status) {
             case General.AWAY:
                 icon = (
-                    <Icon
-                        name='away-avatar'
+                    <CompassIcon
+                        name='clock'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.awayIndicator}]}
-                        type='mattermost'
                     />
                 );
                 break;
             case General.DND:
                 icon = (
-                    <Icon
-                        name='dnd-avatar'
+                    <CompassIcon
+                        name='minus-circle'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.dndIndicator}]}
-                        type='mattermost'
                     />
                 );
                 break;
             case General.ONLINE:
                 icon = (
-                    <Icon
-                        name='online-avatar'
+                    <CompassIcon
+                        name='check-circle'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.onlineIndicator}]}
-                        type='mattermost'
                     />
                 );
                 break;
             default:
                 icon = (
-                    <Icon
-                        name='offline-avatar'
+                    <CompassIcon
+                        name='circle-outline'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: offlineColor}]}
-                        type='mattermost'
                     />
                 );
                 break;
@@ -180,7 +170,7 @@ export default class ChannelIcon extends React.PureComponent {
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            marginRight: 12,
+            marginRight: 8,
             alignItems: 'center',
         },
         icon: {

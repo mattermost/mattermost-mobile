@@ -5,7 +5,9 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import CompassIcon from '@components/compass_icon';
 import type {AvatarProps} from 'types/screens/gallery';
+import { changeOpacity } from '@mm-redux/utils/theme_utils';
 
 const styles = StyleSheet.create({
     avatarContainer: {
@@ -21,15 +23,28 @@ const styles = StyleSheet.create({
     },
 });
 
-const Avatar = ({avatarUri}: AvatarProps) => {
-    const source = avatarUri ? {uri: avatarUri} : require('@assets/images/profile.jpg');
+const Avatar = ({avatarUri, theme}: AvatarProps) => {
+    let element;
+    if (avatarUri) {
+        element = (
+            <FastImage
+                source={{uri: avatarUri}}
+                style={[styles.avatar, styles.avatarRadius]}
+            />
+        );
+    } else {
+        element = (
+            <CompassIcon
+                name='account-outline'
+                size={32}
+                color={changeOpacity(theme.centerChannelColor, 0.48)}
+            />
+        );
+    }
 
     return (
         <View style={[styles.avatarContainer, styles.avatarRadius]}>
-            <FastImage
-                source={source}
-                style={[styles.avatar, styles.avatarRadius]}
-            />
+            {element}
         </View>
     );
 };

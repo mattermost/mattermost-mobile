@@ -157,19 +157,30 @@
     }
   },
   "scripts": {
-    "start": "node ./node_modules/react-native/local-cli/cli.js start",
-    "check": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . && npm run tsc",
-    "fix": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet . --fix",
-    "postinstall": "make post-install",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "check": "npm run lint && npm run tsc",
+    "clean": "./scripts/clean.sh",
+    "ios-gems": "cd ios && bundle install",
+    "fix": "npm run lint -- --fix",
+    "lint": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet .",
+    "pod-install": "cd ios && bundle exec pod install",
+    "postinstall": "patch-package && ./scripts/postinstall.sh",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "test": "jest --forceExit --runInBand --detectOpenHandles",
-    "test:watch": "jest --watch --runInBand --detectOpenHandles",
+    "test:watch": "npm test -- --watch",
     "test:coverage": "jest --coverage",
     "updatesnapshot": "jest --updateSnapshot",
     "mmjstool": "mmjstool",
     "i18n-extract": "npm run mmjstool -- i18n extract-mobile",
     "i18n-clean-empty": "npm run mmjstool -- i18n clean-empty --mobile-dir .",
     "e2e:android": "cd detox && npm run e2e:android-build && npm run e2e:android-test && cd ..",
-    "e2e:ios": "cd detox && npm run e2e:ios-test && cd .."
+    "e2e:ios": "cd detox && npm run e2e:ios-test && cd ..",
+    "build:ios": "./scripts/build.sh ipa",
+    "build:ios-unsigned": "./scripts/build.sh ipa unsigned",
+    "build:ios-sim": "./scripts/build.sh ipa simulator",
+    "build:android": "./scripts/build.sh apk",
+    "build:android-unsigned": "./scripts/build.sh apk unsigned"
   }
 }

@@ -53,8 +53,9 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, onDouble
     const videoEnded = () => {
         setPaused(true);
         controlsRef.current?.showControls(false);
-        requestAnimationFrame(() => {
+        const requested = requestAnimationFrame(() => {
             videoRef.current?.seek(0);
+            cancelAnimationFrame(requested);
         });
     };
 

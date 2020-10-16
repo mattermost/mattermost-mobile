@@ -174,7 +174,7 @@ export const isGif = (file) => {
     return mime === 'image/gif';
 };
 
-export const isImage = (file) => (file?.has_preview_image || isGif(file));
+export const isImage = (file) => (file?.has_preview_image || isGif(file) || file?.type?.startsWith('image/'));
 
 export const isDocument = (file) => {
     let mime = file?.mime_type || file?.type || '';

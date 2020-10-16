@@ -37,7 +37,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "quoteBlockIcon": Object {
             "color": undefined,
-            "padding": 5,
           },
         }
       }
@@ -173,7 +172,6 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "quoteBlockIcon": Object {
             "color": undefined,
-            "padding": 5,
           },
         }
       }
@@ -370,7 +368,6 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
           "quoteBlockIcon": Object {
             "color": undefined,
-            "padding": 5,
           },
         }
       }

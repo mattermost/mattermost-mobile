@@ -15,6 +15,7 @@ import ProgressBar from '@components/progress_bar';
 import {buildFileUploadData, encodeHeaderURIStringToUTF8, isImage} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import ImageCacheManager from '@utils/image_cache_manager';
+import {changeOpacity} from '@utils/theme';
 
 import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
@@ -103,7 +104,8 @@ export default class UploadItem extends PureComponent {
     };
 
     handleUploadProgress = (loaded, total) => {
-        this.setState({progress: Math.floor((loaded / total))});
+        const progress = parseFloat((loaded / total).toFixed(1));
+        this.setState({progress});
     };
 
     downloadAndUploadFile = async (file) => {
@@ -183,8 +185,7 @@ export default class UploadItem extends PureComponent {
                         <FileAttachmentIcon
                             file={file}
                             theme={theme}
-                            wrapperHeight={53}
-                            wrapperWidth={53}
+                            backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                         />
                     </View>
                 </TouchableOpacity>
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
     },
     progressCircleContent: {
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
         height: 56,
         width: 56,
         justifyContent: 'flex-end',

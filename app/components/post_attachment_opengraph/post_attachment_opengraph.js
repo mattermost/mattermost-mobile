@@ -206,12 +206,12 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             return null;
         }
 
-        const {height, imageUrl, width} = this.state;
+        const {height, openGraphImageUrl, width} = this.state;
 
         let source;
-        if (imageUrl) {
+        if (openGraphImageUrl) {
             source = {
-                uri: imageUrl,
+                uri: openGraphImageUrl,
             };
         }
 

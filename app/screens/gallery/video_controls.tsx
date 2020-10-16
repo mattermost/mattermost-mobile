@@ -3,9 +3,9 @@
 
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {Animated, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 import Slider from 'react-native-slider';
 
+import CompassIcon from '@components/compass_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {CallbackFunctionWithoutArguments} from 'types/screens/gallery';
 
@@ -74,12 +74,12 @@ const getStyles = makeStyleSheetFromTheme((isLandscape: boolean) => ({
     },
 }));
 
-const getControlIconAndAspectRatio = (paused: boolean) => {
+const getControlIconName = (paused: boolean) => {
     if (!paused) {
-        return {icon: require('@assets/images/video_player/pause.png'), aspectRatio: 0.83};
+        return 'pause';
     }
 
-    return {icon: require('@assets/images/video_player/play.png'), aspectRatio: 0.83};
+    return 'play';
 };
 
 const humanizeVideoDuration = (seconds: number) => {
@@ -166,7 +166,7 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
         return null;
     }
 
-    const {icon, aspectRatio} = getControlIconAndAspectRatio(props.paused);
+    const iconName = getControlIconName(props.paused);
     return (
         <Animated.View
             pointerEvents='box-none'
@@ -177,9 +177,10 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
                     style={styles.controlButton}
                     onPress={playPause}
                 >
-                    <FastImage
-                        source={icon}
-                        style={[styles.controlIcon, {aspectRatio}]}
+                    <CompassIcon
+                        name={iconName}
+                        size={72}
+                        color='#fff'
                     />
                 </TouchableOpacity>
             </View>

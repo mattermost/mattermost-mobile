@@ -141,11 +141,8 @@ const GalleryVideo = (props: GalleryFileProps) => {
             <View style={styles.container}>
                 <FileIcon
                     file={file}
-                    iconHeight={120}
-                    iconWidth={120}
-                    wrapperHeight={120}
-                    wrapperWidth={120}
-                    tintColor={theme?.buttonBg}
+                    iconSize={120}
+                    iconColor={theme?.buttonBg}
                 />
                 <Text
                     numberOfLines={1}

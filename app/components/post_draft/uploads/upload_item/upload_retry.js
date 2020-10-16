@@ -4,8 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {StyleSheet} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 
 export default class UploadRetry extends PureComponent {
@@ -25,10 +25,10 @@ export default class UploadRetry extends PureComponent {
             <TouchableWithFeedback
                 style={style.failed}
                 onPress={this.handleOnPress}
-                type={'opacity'}
+                type='opacity'
             >
-                <Icon
-                    name='md-refresh'
+                <CompassIcon
+                    name='refresh'
                     size={25}
                     color='#fff'
                 />

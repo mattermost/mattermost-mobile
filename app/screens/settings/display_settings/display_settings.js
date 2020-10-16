@@ -76,6 +76,7 @@ export default class DisplaySettings extends PureComponent {
         const {theme, enableTimezone, enableTheme, isLandscape} = this.props;
         const {showClockDisplaySettings} = this.state;
         const style = getStyleSheet(theme);
+        const showArrow = Platform.OS === 'ios';
 
         let clockDisplayModal;
         if (Platform.OS === 'android') {
@@ -95,11 +96,10 @@ export default class DisplaySettings extends PureComponent {
                 <SettingsItem
                     defaultMessage='Timezone'
                     i18nId='mobile.advanced_settings.timezone'
-                    iconName='ios-globe'
-                    iconType='ion'
+                    iconName='globe'
                     onPress={this.goToTimezoneSettings}
                     separator={false}
-                    showArrow={false}
+                    showArrow={showArrow}
                     theme={theme}
                     isLandscape={isLandscape}
                 />
@@ -112,11 +112,10 @@ export default class DisplaySettings extends PureComponent {
                 <SettingsItem
                     defaultMessage='Sidebar'
                     i18nId='mobile.display_settings.sidebar'
-                    iconName='columns'
-                    iconType='fontawesome'
+                    iconName='dock-left'
                     onPress={this.goToSidebarSettings}
                     separator={true}
-                    showArrow={false}
+                    showArrow={showArrow}
                     theme={theme}
                     isLandscape={isLandscape}
                 />
@@ -133,11 +132,10 @@ export default class DisplaySettings extends PureComponent {
                         <SettingsItem
                             defaultMessage='Theme'
                             i18nId='mobile.display_settings.theme'
-                            iconName='ios-color-palette'
-                            iconType='ion'
+                            iconName='palette-outline'
                             onPress={this.goToThemeSettings}
                             separator={true}
-                            showArrow={false}
+                            showArrow={showArrow}
                             theme={theme}
                             isLandscape={isLandscape}
                         />
@@ -145,11 +143,10 @@ export default class DisplaySettings extends PureComponent {
                     <SettingsItem
                         defaultMessage='Clock Display'
                         i18nId='mobile.advanced_settings.clockDisplay'
-                        iconName='ios-time'
-                        iconType='ion'
+                        iconName='clock-outline'
                         onPress={this.goToClockDisplaySettings}
                         separator={disableClockDisplaySeparator}
-                        showArrow={false}
+                        showArrow={showArrow}
                         theme={theme}
                         isLandscape={isLandscape}
                     />
@@ -166,14 +163,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flex: 1,
+            backgroundColor: theme.centerChannelBg,
         },
         wrapper: {
-            flex: 1,
             ...Platform.select({
                 ios: {
+                    flex: 1,
                     paddingTop: 35,
                 },
             }),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),

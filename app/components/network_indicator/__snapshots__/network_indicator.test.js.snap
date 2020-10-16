@@ -54,10 +54,9 @@ exports[`AttachmentFooter matches snapshot 1`] = `
         }
       }
     >
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         color="#FFFFFF"
-        name="md-checkmark"
+        name="check"
         size={20}
       />
     </View>

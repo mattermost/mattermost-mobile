@@ -3,9 +3,9 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import FastImage from 'react-native-fast-image';
 import parseUrl from 'url-parse';
 
+import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import EphemeralStore from '@store/ephemeral_store';
@@ -26,10 +26,6 @@ const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
         flex: 1,
-    },
-    brokenImageIcon: {
-        width: 24,
-        height: 24,
     },
 });
 
@@ -93,9 +89,9 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source}: Ma
     let image;
     if (failed) {
         image = (
-            <FastImage
-                source={require('@assets/images/icons/brokenimage.png')}
-                style={styles.brokenImageIcon}
+            <CompassIcon
+                name='jumbo-attachment-image-broken'
+                size={24}
             />
         );
     } else {

@@ -5,6 +5,7 @@ import {System, User} from '@support/server_api';
 
 beforeAll(async () => {
     // Login as sysadmin and reset server configuration
+    await System.apiCheckSystemHealth();
     await User.apiAdminLogin();
     await System.apiUpdateConfig();
 

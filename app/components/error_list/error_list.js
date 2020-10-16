@@ -9,10 +9,10 @@ import {
     View,
     TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import Config from '@assets/config.json';
 import FormattedText from '@components/formatted_text';
+import CompassIcon from '@components/compass_icon';
 
 import GeneralError from './general_error';
 
@@ -98,7 +98,7 @@ export default class ErrorList extends PureComponent {
                 onPress={() => this.props.actions.clearErrors()}
             >
                 <View style={style.closeButton}>
-                    <Icon
+                    <CompassIcon
                         name='close'
                         size={10}
                         color='#fff'

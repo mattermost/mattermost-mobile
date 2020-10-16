@@ -3,10 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, View} from 'react-native';
+import {View} from 'react-native';
 
-import flagIcon from '@assets/images/post_header/flag.png';
-import pinIcon from '@assets/images/post_header/pin.png';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -42,7 +41,7 @@ export default class PostPreHeader extends PureComponent {
         if (isPinnedAndFlagged) {
             text = {
                 id: t('mobile.post_pre_header.pinned_flagged'),
-                defaultMessage: 'Pinned and Flagged',
+                defaultMessage: 'Pinned and Saved',
             };
         } else if (isPinned && !skipPinnedHeader) {
             text = {
@@ -52,7 +51,7 @@ export default class PostPreHeader extends PureComponent {
         } else if (isFlagged && !skipFlaggedHeader) {
             text = {
                 id: t('mobile.post_pre_header.flagged'),
-                defaultMessage: 'Flagged',
+                defaultMessage: 'Saved',
             };
         }
 
@@ -64,9 +63,9 @@ export default class PostPreHeader extends PureComponent {
             <View style={[style.container, (isConsecutive && style.consecutive)]}>
                 <View style={style.iconsContainer}>
                     {isPinned && !skipPinnedHeader &&
-                    <Image
-                        id='pinIcon'
-                        source={pinIcon}
+                    <CompassIcon
+                        name='pin-outline'
+                        size={14}
                         style={style.icon}
                     />
                     }
@@ -74,9 +73,9 @@ export default class PostPreHeader extends PureComponent {
                     <View style={style.iconsSeparator}/>
                     }
                     {isFlagged && !skipFlaggedHeader &&
-                    <Image
-                        id='flagIcon'
-                        source={flagIcon}
+                    <CompassIcon
+                        name='bookmark-outline'
+                        size={14}
                         style={style.icon}
                     />
                     }
@@ -113,9 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 35,
         },
         icon: {
-            height: 11,
-            tintColor: theme.linkColor,
-            width: 11,
+            color: theme.linkColor,
         },
         iconsSeparator: {
             marginRight: 5,

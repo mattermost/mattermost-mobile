@@ -1,8 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PostDraft ReadOnly Should match snapshot 1`] = `
-<RCTSafeAreaView
-  emulateUnlessSupported={true}
+<ForwardRef(SafeAreaView)
   style={
     Object {
       "backgroundColor": "rgba(61,60,64,0.04)",
@@ -21,7 +20,20 @@ exports[`PostDraft ReadOnly Should match snapshot 1`] = `
       }
     }
   >
-    <Text
+    <CompassIcon
+      color="#3d3c40"
+      name="glasses"
+      style={
+        Object {
+          "fontSize": 20,
+          "lineHeight": 22,
+          "opacity": 0.56,
+        }
+      }
+    />
+    <FormattedText
+      defaultMessage="This channel is read-only."
+      id="mobile.create_post.read_only"
       style={
         Object {
           "color": "#3d3c40",
@@ -31,9 +43,7 @@ exports[`PostDraft ReadOnly Should match snapshot 1`] = `
           "opacity": 0.56,
         }
       }
-    >
-      This channel is read-only.
-    </Text>
+    />
   </View>
-</RCTSafeAreaView>
+</ForwardRef(SafeAreaView)>
 `;

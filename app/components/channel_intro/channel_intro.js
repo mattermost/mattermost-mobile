@@ -8,20 +8,20 @@ import {
     View,
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {General} from '@mm-redux/constants';
 
-import {showModal} from 'app/actions/navigation';
-import ProfilePicture from 'app/components/profile_picture';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {BotTag, GuestTag} from 'app/components/tag';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {isGuest} from 'app/utils/users';
+import {showModal} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import ProfilePicture from '@components/profile_picture';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {BotTag, GuestTag} from '@components/tag';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
+import {isGuest} from '@utils/users';
 
 class ChannelIntro extends PureComponent {
     static propTypes = {
@@ -47,7 +47,7 @@ class ChannelIntro extends PureComponent {
         };
 
         if (!this.closeButton) {
-            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+            this.closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         }
 
         const options = {
@@ -91,6 +91,7 @@ class ChannelIntro extends PureComponent {
                 <ProfilePicture
                     userId={member.id}
                     size={64}
+                    iconSize={48}
                     statusBorderWidth={2}
                     statusSize={25}
                 />
@@ -211,7 +212,10 @@ class ChannelIntro extends PureComponent {
 
         return (
             <View>
-                <Text style={style.channelTitle}>
+                <Text
+                    testID='channel_intro.beginning.text'
+                    style={style.channelTitle}
+                >
                     {intl.formatMessage({
                         id: 'intro_messages.beginning',
                         defaultMessage: 'Beginning of {name}',

@@ -44,7 +44,10 @@ const Summary = (props: SummaryProps) => {
     return (
         <View style={[containerStyles, paddingHorizontal(props.isLandscape)]}>
             <View style={styles.details}>
-                <Avatar avatarUri={props.avatarUri}/>
+                <Avatar
+                    avatarUri={props.avatarUri}
+                    theme={props.theme}
+                />
                 <Details
                     channel={props.channelName}
                     isDirect={props.isDirectChannel}
