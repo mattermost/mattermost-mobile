@@ -262,7 +262,6 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
       }
       id="fileId"
       index={0}
-      isSingleImage={false}
       onPreviewPress={[Function]}
       theme={
         Object {
@@ -908,7 +907,6 @@ exports[`FileAttachmentList should match snapshot with non-image attachment 1`] 
       }
       id="fileId"
       index={0}
-      isSingleImage={false}
       onPreviewPress={[Function]}
       theme={
         Object {
