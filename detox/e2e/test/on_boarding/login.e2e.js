@@ -39,7 +39,7 @@ describe('On boarding', () => {
 
         // Enter invalid server URL
         const input = element(by.id('server_url_input'));
-        input.clearText();
+        await input.clearText();
         await input.typeText('http://invalid:8065');
 
         // Tap anywhere to hide keyboard

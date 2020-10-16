@@ -48,6 +48,6 @@ describe('Autocomplete', () => {
         // * Expect at_mention autocomplete to render
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
 
-        await element(by.id('close-edit-post')).tap();
+        await element(by.id('edit-post.close')).tap();
     });
 });

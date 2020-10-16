@@ -29,7 +29,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
 
         // Go to previous screen
-        await element(by.id('screen.back-button')).tap();
+        await element(by.id('screen.back.button')).tap();
 
         // close channel info screen
         await element(by.id('screen.channel_info.close')).tap();

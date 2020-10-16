@@ -1,6 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
 import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 
@@ -40,7 +46,7 @@ describe('Channel Info Header', () => {
         await element(by.id('channel.title.button')).tap();
 
         // * Verify GM member count is 3
-        await expect(element(by.id('channel_icon.gm_member_count'))).toHaveText('3');
+        await expect(element(by.id('channel_icon.gm_member_count')).atIndex(0)).toHaveText('3');
 
         // # Close channel info screen
         await element(by.id('screen.channel_info.close')).tap();
