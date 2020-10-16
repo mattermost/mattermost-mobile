@@ -8,7 +8,7 @@ import Foundation
 }
 
 @objc @objcMembers public class UploadSessionManager: NSObject {
-    private let bucket = MattermostBucket().bucket(byName: APP_GROUP_ID)
+    private let bucket = MattermostBucket().bucket(byName: Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String)
     
     public class var shared :UploadSessionManager {
         struct Singleton {
@@ -60,7 +60,8 @@ import Foundation
     
     public func tempContainerURL() -> URL? {
         let filemgr = FileManager.default
-        let containerURL = filemgr.containerURL(forSecurityApplicationGroupIdentifier: APP_GROUP_ID)
+        let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String
+        let containerURL = filemgr.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
         guard let tempDirectoryURL = containerURL?.appendingPathComponent("shareTempItems") else {return nil}
         var isDirectory = ObjCBool(false)
         let exists = filemgr.fileExists(atPath: tempDirectoryURL.path, isDirectory: &isDirectory)

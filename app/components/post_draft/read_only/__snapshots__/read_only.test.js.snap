@@ -20,11 +20,9 @@ exports[`PostDraft ReadOnly Should match snapshot 1`] = `
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       color="#3d3c40"
       name="glasses"
-      size={12}
       style={
         Object {
           "fontSize": 20,

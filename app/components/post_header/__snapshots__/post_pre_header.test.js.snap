@@ -27,8 +27,7 @@ exports[`PostPreHeader should match snapshot when flagged and not pinned 1`] = `
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="bookmark-outline"
       size={14}
       style={
@@ -91,8 +90,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="pin-outline"
       size={14}
       style={
@@ -108,8 +106,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged 1`] = `
         }
       }
     />
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="bookmark-outline"
       size={14}
       style={
@@ -170,8 +167,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="pin-outline"
       size={14}
       style={
@@ -230,8 +226,7 @@ exports[`PostPreHeader should match snapshot when pinned and flagged but skippin
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="bookmark-outline"
       size={14}
       style={
@@ -290,8 +285,7 @@ exports[`PostPreHeader should match snapshot when pinned and not flagged 1`] = `
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="pin-outline"
       size={14}
       style={

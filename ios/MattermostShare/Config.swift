@@ -1,5 +1,6 @@
 let configurationKey = "com.apple.configuration.managed"
 
 func getManagedConfig() -> [String : Any] {
-  return UserDefaults.init(suiteName: APP_GROUP_ID)?.dictionary(forKey: configurationKey) ?? [:]
+  let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String
+  return UserDefaults.init(suiteName: appGroupId)?.dictionary(forKey: configurationKey) ?? [:]
 }

@@ -158,10 +158,8 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
             this is administration
           </Text>
         </View>
-        <Icon
-          allowFontScaling={false}
+        <CompassIcon
           name="check"
-          size={12}
           style={
             Object {
               "color": "#2389d7",

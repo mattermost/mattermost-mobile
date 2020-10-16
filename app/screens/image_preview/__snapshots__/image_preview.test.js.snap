@@ -105,8 +105,7 @@ exports[`ImagePreview should match snapshot 1`] = `
               }
             }
           >
-            <Icon
-              allowFontScaling={false}
+            <CompassIcon
               color="#fff"
               name="close"
               size={24}
@@ -136,8 +135,7 @@ exports[`ImagePreview should match snapshot 1`] = `
               }
             }
           >
-            <Icon
-              allowFontScaling={false}
+            <CompassIcon
               color="#fff"
               name="download-outline"
               size={24}
@@ -256,8 +254,7 @@ exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
     }
   }
 >
-  <Icon
-    allowFontScaling={false}
+  <CompassIcon
     color="#fff"
     name="download-outline"
     size={24}

@@ -13,8 +13,7 @@ exports[`AttachmentButton should match snapshot 1`] = `
   }
   type="opacity"
 >
-  <Icon
-    allowFontScaling={false}
+  <CompassIcon
     color="rgba(61,60,64,0.9)"
     name="plus"
     size={30}
