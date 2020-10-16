@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable react/no-multi-comp */
+
 import * as ReactNative from 'react-native';
 import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
@@ -110,8 +112,31 @@ jest.doMock('react-native', () => {
     }, ReactNative);
 });
 
+jest.mock('react-native-vector-icons/MaterialIcons', () => ({
+    getImageSource: jest.fn().mockResolvedValue({}),
+}));
 jest.mock('react-native-vector-icons/MaterialCommunityIcons');
 jest.mock('react-native-vector-icons/FontAwesome5');
+jest.mock('react-native-vector-icons', () => {
+    const React = require('React');
+    const PropTypes = jest.requireActual('prop-types');
+    class CompassIcon extends React.PureComponent {
+        render() {
+            return React.createElement('Icon', this.props);
+        }
+    }
+    CompassIcon.propTypes = {
+        name: PropTypes.string,
+        size: PropTypes.number,
+        style: PropTypes.oneOfType([PropTypes.array, PropTypes.number, PropTypes.object]),
+    };
+    CompassIcon.getImageSource = jest.fn().mockResolvedValue({});
+    return {
+        createIconSet: () => CompassIcon,
+
+        createIconSetFromFontello: () => CompassIcon,
+    };
+});
 
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');

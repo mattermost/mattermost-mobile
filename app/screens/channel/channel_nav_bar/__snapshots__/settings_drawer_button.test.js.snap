@@ -24,8 +24,7 @@ exports[`SettingDrawerButton should match, full snapshot 1`] = `
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       color="#ffffff"
       name="dots-vertical"
       size={25}

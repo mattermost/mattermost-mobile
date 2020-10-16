@@ -1,10 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UserStatus should match snapshot, away status 1`] = `
-<Icon
-  allowFontScaling={false}
+<CompassIcon
   name="clock"
-  size={12}
   style={
     Object {
       "color": "#ffbc42",
@@ -15,10 +13,8 @@ exports[`UserStatus should match snapshot, away status 1`] = `
 `;
 
 exports[`UserStatus should match snapshot, dnd status 1`] = `
-<Icon
-  allowFontScaling={false}
+<CompassIcon
   name="minus-circle"
-  size={12}
   style={
     Object {
       "color": "#f74343",
@@ -29,10 +25,8 @@ exports[`UserStatus should match snapshot, dnd status 1`] = `
 `;
 
 exports[`UserStatus should match snapshot, online status 1`] = `
-<Icon
-  allowFontScaling={false}
+<CompassIcon
   name="check-circle"
-  size={12}
   style={
     Object {
       "color": "#06d6a0",
@@ -43,10 +37,8 @@ exports[`UserStatus should match snapshot, online status 1`] = `
 `;
 
 exports[`UserStatus should match snapshot, should default to offline status 1`] = `
-<Icon
-  allowFontScaling={false}
+<CompassIcon
   name="circle-outline"
-  size={12}
   style={
     Object {
       "color": "rgba(61,60,64,0.3)",

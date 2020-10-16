@@ -4,8 +4,7 @@ exports[`ShowMoreButton should match, button snapshot 1`] = `
 <View
   style={Object {}}
 >
-  <Icon
-    allowFontScaling={false}
+  <CompassIcon
     name="plus"
     size={18}
     style={Object {}}
@@ -22,8 +21,7 @@ exports[`ShowMoreButton should match, button snapshot 2`] = `
 <View
   style={Object {}}
 >
-  <Icon
-    allowFontScaling={false}
+  <CompassIcon
     name="minus"
     size={18}
     style={Object {}}
@@ -121,8 +119,7 @@ exports[`ShowMoreButton should match, full snapshot 1`] = `
           }
         }
       >
-        <Icon
-          allowFontScaling={false}
+        <CompassIcon
           name="plus"
           size={18}
           style={

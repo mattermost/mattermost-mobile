@@ -145,8 +145,7 @@ exports[`Reactions should match snapshot 1`] = `
     }
     type="opacity"
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="emoticon-plus-outline"
       size={24}
       style={
