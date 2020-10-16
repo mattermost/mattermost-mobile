@@ -326,7 +326,7 @@ platform :ios do
     update_identifiers
     replace_assets
     build_ios
-    upload_file_to_s3({:os_type => "iOS"})
+    upload_file_to_s3({:os_type => "ios"})
   end
 
   desc 'Build an unsigned ipa'
@@ -367,7 +367,7 @@ platform :ios do
     sh 'rm -rf ../build-ios/'
 
     upload_file_to_s3({
-      :os_type => "iOS",
+      :os_type => "ios",
       :file => "Mattermost-simulator-x86_64.app.zip"
     })
   end
@@ -591,7 +591,7 @@ platform :android do
     link_sentry_android
     build_android
     move_apk_to_root
-    upload_file_to_s3({:os_type => "Android"})
+    upload_file_to_s3({:os_type => "android"})
   end
 
   desc 'Build an unsigned apk'
@@ -922,10 +922,10 @@ def qa_build_message(options)
   unless ENV['MATTERMOST_WEBHOOK_URL'].nil? || ENV['MATTERMOST_WEBHOOK_URL'].empty?
     os_type = options[:os_type]
 
-    if os_type == 'Android'
+    if os_type == 'android'
       msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [Android APK Link](#{install_url})"
       mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
-    elsif os_type == 'iOS'
+    elsif os_type == 'ios'
       msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [iOS pList Link](#{install_url})"
       mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
     end
