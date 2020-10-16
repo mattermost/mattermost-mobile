@@ -234,14 +234,14 @@ lane :upload_file_to_s3 do |options|
     threads.each { |t| t.join }
 
     if is_build_pr
-      if os_type == 'Android'
+      if os_type == 'android'
         install_url = "https://#{s3_bucket_name}/#{s3_folder}/#{pr_file}"
-      elsif os_type == 'iOS'
+      elsif os_type == 'ios'
         current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
         plist_template = File.read('plist.erb')
         plist_body = ERB.new(plist_template).result(binding)
 
-        plist_obj = s3_bucket.object("#{s3_folder}/#{file_plist}")
+        plist_obj = s3_bucket.object("#{s3_folder}/#{plist_file}")
         plist_obj.put(body: plist_body)
 
         install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{file_plist}"
