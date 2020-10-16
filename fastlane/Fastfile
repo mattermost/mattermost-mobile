@@ -244,7 +244,7 @@ lane :upload_file_to_s3 do |options|
         plist_obj = s3_bucket.object("#{s3_folder}/#{plist_file}")
         plist_obj.put(body: plist_body)
 
-        install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{file_plist}"
+        install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{plist_file}"
       end
 
       qa_build_message({
