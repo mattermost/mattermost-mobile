@@ -2,8 +2,6 @@
 
 export NODE_OPTIONS=--max_old_space_size=12000
 export BUNDLE_COMMAND="ram-bundle"
-export NODE_BINARY=node
-
 if [[ "${SENTRY_ENABLED}" = "true" ]]; then
 	echo "Sentry native integration is enabled"
 

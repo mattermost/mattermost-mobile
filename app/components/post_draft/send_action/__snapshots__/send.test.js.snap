@@ -27,8 +27,7 @@ exports[`SendAction should change theme backgroundColor to 0.3 opacity 1`] = `
       ]
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       color="rgba(255,255,255,0.5)"
       name="send"
       size={24}
@@ -61,8 +60,7 @@ exports[`SendAction should match snapshot 1`] = `
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       color="#ffffff"
       name="send"
       size={24}
@@ -95,8 +93,7 @@ exports[`SendAction should render theme backgroundColor 1`] = `
       }
     }
   >
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       color="#ffffff"
       name="send"
       size={24}

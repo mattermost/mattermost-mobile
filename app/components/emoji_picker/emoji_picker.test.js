@@ -12,6 +12,8 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import {filterEmojiSearchInput} from './emoji_picker_base';
 import EmojiPicker from './emoji_picker.ios';
 
+jest.useFakeTimers();
+
 describe('components/emoji_picker/emoji_picker.ios', () => {
     const state = {
         ...initialState,
@@ -59,17 +61,17 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
     ];
 
     testCases.forEach((testCase) => {
-        test(`'${testCase.input}' should return '${testCase.output}'`, () => {
+        test(`'${testCase.input}' should return '${testCase.output}'`, async () => {
             expect(filterEmojiSearchInput(testCase.input)).toEqual(testCase.output);
         });
     });
 
-    test('should match snapshot', () => {
+    test('should match snapshot', async () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
-    test('searchEmojis should return the right values on fuse', () => {
+    test('searchEmojis should return the right values on fuse', async () => {
         const input = '1';
         const output = ['100', '1234', '1st_place_medal', '+1', '-1', 'u7121'];
 
@@ -78,7 +80,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(result).toEqual(output);
     });
 
-    test('should set rebuildEmojis to true when deviceWidth changes', () => {
+    test('should set rebuildEmojis to true when deviceWidth changes', async () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
 
@@ -90,7 +92,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(instance.rebuildEmojis).toBe(true);
     });
 
-    test('should rebuild emojis emojis when emojis change', () => {
+    test('should rebuild emojis emojis when emojis change', async () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         const renderableEmojis = jest.spyOn(instance, 'renderableEmojis');
@@ -103,7 +105,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(renderableEmojis).toHaveBeenCalledWith(baseProps.emojisBySection, baseProps.deviceWidth);
     });
 
-    test('should set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is true', () => {
+    test('should set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is true', async () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         instance.setState = jest.fn();
@@ -118,7 +120,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(instance.rebuildEmojis).toBe(false);
     });
 
-    test('should not set rebuilt emojis when rebuildEmojis is false and searchBarAnimationComplete is true', () => {
+    test('should not set rebuilt emojis when rebuildEmojis is false and searchBarAnimationComplete is true', async () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         instance.setState = jest.fn();
@@ -131,7 +133,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(instance.setState).not.toHaveBeenCalled();
     });
 
-    test('should not set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is false', () => {
+    test('should not set rebuilt emojis when rebuildEmojis is true and searchBarAnimationComplete is false', async () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();
         instance.setState = jest.fn();

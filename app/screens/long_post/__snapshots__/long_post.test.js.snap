@@ -283,8 +283,7 @@ LongPost {
                   }
                 }
               >
-                <Icon
-                  allowFontScaling={false}
+                <CompassIcon
                   color="#3d3c40"
                   name="close"
                   size={20}

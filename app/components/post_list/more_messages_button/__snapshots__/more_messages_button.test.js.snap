@@ -69,10 +69,8 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           }
         }
       >
-        <Icon
-          allowFontScaling={false}
+        <CompassIcon
           name="arrow-up"
-          size={12}
           style={
             Object {
               "alignSelf": "center",
@@ -118,10 +116,8 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
             }
           }
         >
-          <Icon
-            allowFontScaling={false}
+          <CompassIcon
             name="close"
-            size={12}
             style={
               Object {
                 "alignSelf": "center",

@@ -63,8 +63,7 @@ exports[`Permalink should match snapshot 1`] = `
             }
           }
         >
-          <Icon
-            allowFontScaling={false}
+          <CompassIcon
             color="#3d3c40"
             name="close"
             size={20}
@@ -133,10 +132,8 @@ exports[`Permalink should match snapshot 1`] = `
 
 exports[`Permalink should match snapshot 2`] = `
 <Text>
-  <Icon
-    allowFontScaling={false}
+  <CompassIcon
     name="archive-outline"
-    size={12}
     style={
       Array [
         Object {

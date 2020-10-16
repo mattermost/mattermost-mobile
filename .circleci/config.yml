@@ -13,7 +13,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     docker:
-      - image: circleci/android:api-27-node
+      - image: circleci/android:api-29-node
     working_directory: ~/mattermost-mobile
     resource_class: <<parameters.resource_class>>
 
@@ -23,7 +23,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "11.0.0"
+      xcode: "12.0.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
 
@@ -44,7 +44,6 @@ commands:
       for:
         type: string
     steps:
-      - ruby-setup
       - restore_cache:
           name: Restore Fastlane cache
           key: v1-gems-<< parameters.for >>-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
@@ -82,7 +81,7 @@ commands:
           key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
       - run:
           name: Generate assets
-          command: make dist/assets
+          command: node ./scripts/generate-assets.js
       - save_cache:
           name: Save assets cache
           key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
@@ -104,8 +103,8 @@ commands:
           paths:
             - node_modules
       - run:
-          name: "Run post install scripts"
-          command: make post-install
+          name: "Patch dependencies"
+          command: npx patch-package
 
   pods-dependencies:
     description: "Get cocoapods dependencies"
@@ -114,9 +113,11 @@ commands:
           name: Restore cocoapods specs and pods
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
       - run:
+          name: iOS gems
+          command: npm run ios-gems
+      - run:
           name: Getting cocoapods dependencies
-          working_directory: ios
-          command: pod install
+          command: npm run pod-install
       - save_cache:
           name: Save cocoapods specs and pods cache
           key: v1-cocoapods-{{ checksum "ios/Podfile.lock" }}-{{ arch }}
@@ -144,10 +145,13 @@ commands:
             echo ${STORE_ALIAS} | tee -a android/gradle.properties > /dev/null
             echo ${STORE_PASSWORD} | tee -a android/gradle.properties > /dev/null
       - run:
+          name: Jetify android libraries
+          command: ./node_modules/.bin/jetify
+      - run:
           working_directory: fastlane
           name: Run fastlane to build android
           no_output_timeout: 30m
-          command: bundle exec fastlane android build
+          command: export TERM=xterm && bundle exec fastlane android build
 
   build-ios:
     description: "Build the iOS app"
@@ -165,7 +169,7 @@ commands:
           no_output_timeout: 30m
           command: |
             HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
-            bundle exec fastlane ios build
+            export TERM=xterm && bundle exec fastlane ios build
 
   deploy-to-store:
     description: "Deploy build to store"
@@ -201,12 +205,6 @@ commands:
       - store_artifacts:
           path: ~/mattermost-mobile/<<parameters.filename>>
 
-  ruby-setup:
-    steps:
-      - run:
-          name: Set Ruby Version
-          command: echo "ruby-2.6.3" > ~/.ruby-version
-
 jobs:
   test:
     working_directory: ~/mattermost-mobile
@@ -225,19 +223,7 @@ jobs:
           command: npm test
       - run:
           name: Check i18n
-          command: |
-            mkdir -p tmp
-            cp assets/base/i18n/en.json tmp/en.json
-            mkdir -p tmp/fake-webapp-dir/i18n/
-            echo '{}' > tmp/fake-webapp-dir/i18n/en.json
-
-            npm run mmjstool -- i18n extract-mobile --webapp-dir tmp/fake-webapp-dir --mobile-dir .
-            diff tmp/en.json assets/base/i18n/en.json
-            # Address weblate behavior which does not remove whole translation item when translation string is set to empty
-            npm run mmjstool -- i18n clean-empty --webapp-dir tmp/fake-webapp-dir --mobile-dir . --check
-
-            rm -rf tmp
-
+          command: ./scripts/precommit/i18n.sh
 
   check-deps:
     parameters:
@@ -297,7 +283,7 @@ jobs:
       - build-android
       - persist
       - save:
-          filename: "Mattermost_Beta.apk"
+          filename: "*.apk"
 
   build-android-release:
     executor: android
@@ -305,7 +291,7 @@ jobs:
       - build-android
       - persist
       - save:
-          filename: "Mattermost.apk"
+          filename: "*.apk"
 
   build-android-pr:
     executor: android
@@ -314,7 +300,7 @@ jobs:
     steps:
       - build-android
       - save:
-          filename: "Mattermost_Beta.apk"
+          filename: "*.apk"
 
   build-android-unsigned:
     executor: android
@@ -327,13 +313,16 @@ jobs:
           for: android
       - gradle-dependencies
       - run:
+          name: Jetify Android libraries
+          command: ./node_modules/.bin/jetify
+      - run:
           working_directory: fastlane
           name: Run fastlane to build unsigned android
           no_output_timeout: 30m
           command: bundle exec fastlane android unsigned
       - persist
       - save:
-          filename: "Mattermost-unsigned.apk"
+          filename: "*.apk"
 
   build-ios-beta:
     executor: ios
@@ -341,7 +330,7 @@ jobs:
       - build-ios
       - persist
       - save:
-          filename: "Mattermost_Beta.ipa"
+          filename: "*.ipa"
 
   build-ios-release:
     executor: ios
@@ -349,7 +338,7 @@ jobs:
       - build-ios
       - persist
       - save:
-          filename: "Mattermost.ipa"
+          filename: "*.ipa"
 
   build-ios-pr:
     executor: ios
@@ -358,14 +347,13 @@ jobs:
     steps:
       - build-ios
       - save:
-          filename: "Mattermost_Beta.ipa"
+          filename: "*.ipa"
 
   build-ios-unsigned:
     executor: ios
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - ruby-setup
       - npm-dependencies
       - pods-dependencies
       - assets
@@ -381,16 +369,15 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - mattermost-mobile/Mattermost-unsigned.ipa
+            - mattermost-mobile/*.ipa
       - save:
-          filename: "Mattermost-unsigned.ipa"
+          filename: "*.ipa"
 
   build-ios-simulator:
     executor: ios
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - ruby-setup
       - npm-dependencies
       - pods-dependencies
       - assets
@@ -415,47 +402,42 @@ jobs:
       name: android
       resource_class: medium
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
-          file: Mattermost.apk
+          file: "*.apk"
 
   deploy-android-beta:
     executor:
       name: android
       resource_class: medium
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to Google Play"
           target: android
-          file: Mattermost_Beta.apk
+          file: "*.apk"
 
   deploy-ios-release:
     executor: ios
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
-          file: Mattermost.ipa
+          file: "*.ipa"
 
   deploy-ios-beta:
     executor: ios
     steps:
-      - ruby-setup
       - deploy-to-store:
           task: "Deploy to TestFlight"
           target: ios
-          file: Mattermost_Beta.ipa
+          file: "*.ipa"
 
   github-release:
     executor:
       name: android
       resource_class: medium
     steps:
-      - ruby-setup
       - attach_workspace:
           at: ~/
       - run:

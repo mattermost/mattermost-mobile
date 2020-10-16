@@ -531,8 +531,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           }
           type="opacity"
         >
-          <Icon
-            allowFontScaling={false}
+          <CompassIcon
             color="#2389d7"
             name="reply-outline"
             size={18}
@@ -684,8 +683,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
           }
           type="opacity"
         >
-          <Icon
-            allowFontScaling={false}
+          <CompassIcon
             color="#2389d7"
             name="reply-outline"
             size={18}
@@ -884,8 +882,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
           }
           type="opacity"
         >
-          <Icon
-            allowFontScaling={false}
+          <CompassIcon
             color="#2389d7"
             name="reply-outline"
             size={18}
