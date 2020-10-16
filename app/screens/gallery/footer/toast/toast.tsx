@@ -3,8 +3,8 @@
 
 import React, {useEffect, useImperativeHandle, useState, useRef, forwardRef} from 'react';
 import {Animated, StyleSheet, Text, View} from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
+import CompassIcon from '@components/compass_icon';
 import type {ToastProps, ToastRef, ToastState, ShowToast} from 'types/screens/gallery';
 
 const DEFAULT_DURATION = 1000;
@@ -106,9 +106,9 @@ const Toast = forwardRef<ToastRef, ToastProps>(({theme}: ToastProps, ref) => {
             pointerEvents='none'
         >
             <View style={[{backgroundColor: theme.onlineIndicator}, styles.toast]}>
-                <IonIcon
+                <CompassIcon
                     color={theme.sidebarText}
-                    name='md-checkmark'
+                    name='check'
                     size={20}
                 />
                 <View>

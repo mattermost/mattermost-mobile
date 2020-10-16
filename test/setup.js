@@ -113,11 +113,6 @@ jest.doMock('react-native', () => {
     }, ReactNative);
 });
 
-jest.mock('react-native-vector-icons/MaterialIcons', () => ({
-    getImageSource: jest.fn().mockResolvedValue({}),
-}));
-jest.mock('react-native-vector-icons/MaterialCommunityIcons');
-jest.mock('react-native-vector-icons/FontAwesome5');
 jest.mock('react-native-vector-icons', () => {
     const React = jest.requireActual('react');
     const PropTypes = jest.requireActual('prop-types');

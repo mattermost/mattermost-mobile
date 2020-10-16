@@ -5,10 +5,10 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, StatusBar} from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import {isImage} from 'app/utils/file';
-import {mergeNavigationOptions, popTopScreen} from 'app/actions/navigation';
+import {mergeNavigationOptions, popTopScreen} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import {isImage} from '@utils/file';
 
 import Footer from './footer';
 import GalleryViewer from './gallery_viewer';
@@ -59,7 +59,7 @@ export default class Gallery extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {files} = this.props;
         const index = idx;
-        const closeButton = await MaterialIcon.getImageSource('close', 24, '#ffffff');
+        const closeButton = await CompassIcon.getImageSource('close', 24, '#ffffff');
         const sharedElementTransitions = [];
         const file = files[index];
 

@@ -4,10 +4,10 @@
 import React, {forwardRef, useEffect, useRef, useState, useImperativeHandle} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert, Platform, StyleSheet, Text, View, ViewStyle} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import RNFetchBlob, {FetchBlobResponse, RNFetchBlobConfig, StatefulPromise} from 'rn-fetch-blob';
 import Share from 'react-native-share';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressBar from '@components/progress_bar';
 import {paddingHorizontal} from '@components/safe_area_view/iphone_x_spacing';
@@ -154,8 +154,8 @@ const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({intl, isLandsc
     let label = <Text style={styles.saving}>{`${progress * 100}%`}</Text>;
     if (progress >= 1) {
         label = (
-            <Icon
-                name='checkmark'
+            <CompassIcon
+                name='check'
                 size={24}
                 color='white'
                 style={{fontWeight: '600', top: -5}}
