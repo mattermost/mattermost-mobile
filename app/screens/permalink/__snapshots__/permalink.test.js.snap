@@ -135,7 +135,7 @@ exports[`Permalink should match snapshot 2`] = `
 <Text>
   <Icon
     allowFontScaling={false}
-    name="archive"
+    name="archive-outline"
     size={12}
     style={
       Array [

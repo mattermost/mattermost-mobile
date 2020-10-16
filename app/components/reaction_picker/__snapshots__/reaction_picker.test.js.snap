@@ -247,21 +247,15 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
         ]
       }
     >
-      <Image
-        height={32}
-        source={
+      <Icon
+        allowFontScaling={false}
+        name="emoticon-plus-outline"
+        size={31.2}
+        style={
           Object {
-            "testUri": "../../../dist/assets/images/icons/reaction.png",
+            "color": "#3d3c40",
           }
         }
-        style={
-          Array [
-            Object {
-              "tintColor": "#3d3c40",
-            },
-          ]
-        }
-        width={32}
       />
     </View>
   </TouchableWithoutFeedback>
@@ -515,21 +509,15 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
         ]
       }
     >
-      <Image
-        height={32}
-        source={
+      <Icon
+        allowFontScaling={false}
+        name="emoticon-plus-outline"
+        size={31.2}
+        style={
           Object {
-            "testUri": "../../../dist/assets/images/icons/reaction.png",
+            "color": "#3d3c40",
           }
         }
-        style={
-          Array [
-            Object {
-              "tintColor": "#3d3c40",
-            },
-          ]
-        }
-        width={32}
       />
     </View>
   </TouchableWithoutFeedback>

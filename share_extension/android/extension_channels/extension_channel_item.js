@@ -8,10 +8,10 @@ import {
     Text,
     View,
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {DirectChannel, GroupChannel, PublicChannel, PrivateChannel} from 'share_extension/common/icons/channel_type';
 
@@ -51,8 +51,8 @@ export default class ExtensionChannelItem extends PureComponent {
         if (isCurrent) {
             current = (
                 <View style={style.checkmarkContainer}>
-                    <IonIcon
-                        name='md-checkmark'
+                    <CompassIcon
+                        name='check'
                         style={style.checkmark}
                     />
                 </View>

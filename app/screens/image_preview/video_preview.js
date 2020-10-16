@@ -244,6 +244,7 @@ export default class VideoPreview extends PureComponent {
                     onSeeking={onSeeking}
                     onReplay={this.onReplay}
                     onFullScreen={this.onFullScreen}
+                    controlButtonBg={theme.buttonBg}
                 />
             </View>
         );

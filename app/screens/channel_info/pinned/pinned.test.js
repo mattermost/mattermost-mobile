@@ -8,11 +8,6 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import Pinned from './pinned';
 
-// Pinned expects to receive the pinIcon as a number
-jest.mock('@assets/images/channel_info/pin.png', () => {
-    return 1;
-});
-
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../../utils/theme');
     return {

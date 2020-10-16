@@ -18,7 +18,7 @@ import {PanGestureHandler} from 'react-native-gesture-handler';
 
 import {popToRoot, dismissAllModals, dismissOverlay} from '@actions/navigation';
 import logo from '@assets/images/icon.png';
-import webhookIcon from '@assets/images/icons/webhook.jpg';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import {NavigationTypes} from '@constants';
@@ -28,7 +28,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {changeOpacity} from '@utils/theme';
 
-const IMAGE_SIZE = 33;
+const IMAGE_SIZE = 32;
 const AUTO_DISMISS_TIME_MILLIS = 5000;
 
 export default class Notification extends PureComponent {
@@ -161,19 +161,28 @@ export default class Notification extends PureComponent {
         );
 
         if (data.from_webhook && config.EnablePostIconOverride === 'true' && data.use_user_icon !== 'true') {
-            const overrideIconURL = Client4.getAbsoluteUrl(data.override_icon_url); // eslint-disable-line camelcase
-            const wsIcon = data.override_icon_url ? {uri: overrideIconURL} : webhookIcon;
-            icon = (
-                <FastImage
-                    source={wsIcon}
-                    style={style.icon}
-                />
-            );
+            if (data.override_icon_url) { // eslint-disable-line camelcase
+                const source = {uri: Client4.getAbsoluteUrl(data.override_icon_url)}; // eslint-disable-line camelcase
+                icon = (
+                    <FastImage
+                        source={source}
+                        style={style.icon}
+                    />
+                );
+            } else {
+                icon = (
+                    <CompassIcon
+                        name='webhook'
+                        style={style.icon}
+                    />
+                );
+            }
         } else if (user) {
             icon = (
                 <ProfilePicture
                     userId={user.id}
                     size={IMAGE_SIZE}
+                    iconSize={24}
                 />
             );
         }

@@ -78,6 +78,7 @@ export default class UserListRow extends React.PureComponent {
                         <ProfilePicture
                             userId={id}
                             size={32}
+                            iconSize={24}
                         />
                     </View>
                     <View style={style.textContainer}>

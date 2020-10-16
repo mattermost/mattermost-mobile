@@ -246,6 +246,7 @@ NotificationSettings {
           contentContainerStyle={
             Object {
               "backgroundColor": "rgba(61,60,64,0.06)",
+              "flex": 1,
               "paddingTop": 35,
             }
           }
@@ -262,10 +263,10 @@ NotificationSettings {
           <SettingsItem
             defaultMessage="Mentions and Replies"
             i18nId="mobile.notification_settings.mentions_replies"
-            iconName="md-at"
-            iconType="ion"
+            iconName="at"
             isDestructor={false}
             isLandscape={false}
+            isLink={false}
             onPress={[Function]}
             separator={true}
             showArrow={true}
@@ -302,10 +303,10 @@ NotificationSettings {
           <SettingsItem
             defaultMessage="Mobile"
             i18nId="mobile.notification_settings.mobile"
-            iconName="md-phone-portrait"
-            iconType="ion"
+            iconName="cellphone"
             isDestructor={false}
             isLandscape={false}
+            isLink={false}
             onPress={[Function]}
             separator={true}
             showArrow={true}
@@ -342,10 +343,10 @@ NotificationSettings {
           <SettingsItem
             defaultMessage="Email"
             i18nId="mobile.notification_settings.email"
-            iconName="ios-mail"
-            iconType="ion"
+            iconName="email-outline"
             isDestructor={false}
             isLandscape={false}
+            isLink={false}
             onPress={[Function]}
             separator={false}
             showArrow={true}

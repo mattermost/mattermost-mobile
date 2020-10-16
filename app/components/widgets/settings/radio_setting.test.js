@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
+import {TouchableOpacity} from 'react-native';
 import {shallow} from 'enzyme';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {TouchableOpacity} from 'react-native';
+
+import CompassIcon from '@components/compass_icon';
 import RadioSetting from './radio_setting.js';
-import CheckMark from 'app/components/checkmark';
 
 describe('components/widgets/settings/RadioSetting', () => {
     const theme = Preferences.THEMES.default;
@@ -64,6 +65,6 @@ describe('components/widgets/settings/RadioSetting', () => {
             />,
         );
 
-        expect(wrapper.find(CheckMark)).toHaveLength(0);
+        expect(wrapper.find(CompassIcon)).toHaveLength(0);
     });
 });

@@ -9,7 +9,6 @@ import {
     ActivityIndicator,
     Alert,
     DeviceEventEmitter,
-    Image,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -29,6 +28,7 @@ import urlParse from 'url-parse';
 import {resetToChannel, goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import AppVersion from '@components/app_version';
+import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
@@ -514,8 +514,10 @@ export default class SelectServer extends PureComponent {
                         accessible={false}
                     >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                            <Image
-                                source={require('@assets/images/logo.png')}
+                            <CompassIcon
+                                name='mattermost'
+                                size={76}
+                                style={GlobalStyles.logo}
                             />
 
                             <View>

@@ -11,7 +11,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         "alignItems": "center",
         "flex": 1,
         "flexDirection": "row",
-        "height": 58,
+        "height": 68,
       }
     }
   >
@@ -39,27 +39,31 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
           style={
             Object {
               "alignItems": "center",
+              "backgroundColor": "rgba(61,60,64,0.08)",
+              "borderRadius": 4,
+              "fontWeight": "600",
               "marginRight": 5,
+              "paddingHorizontal": 4,
+              "paddingVertical": 2,
             }
           }
         >
-          <Icon
-            allowFontScaling={false}
-            name="plus-square-o"
-            size={12}
+          <Text
             style={
               Object {
-                "color": "rgba(61,60,64,0.5)",
-                "fontSize": 16,
+                "color": "#3d3c40",
+                "fontSize": 10,
               }
             }
-          />
+          >
+            IN:
+          </Text>
         </View>
         <Text
           style={
             Object {
               "color": "#3d3c40",
-              "fontSize": 14,
+              "fontSize": 15,
             }
           }
         >

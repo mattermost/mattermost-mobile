@@ -39,7 +39,8 @@ export default class UserInfo extends PureComponent {
             <TouchableOpacity onPress={onPress}>
                 <View style={style.container}>
                     <ProfilePicture
-                        size={50}
+                        size={48}
+                        iconSize={28}
                         showStatus={false}
                         userId={user.id}
                     />
