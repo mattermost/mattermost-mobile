@@ -118,7 +118,7 @@ jest.mock('react-native-vector-icons/MaterialIcons', () => ({
 jest.mock('react-native-vector-icons/MaterialCommunityIcons');
 jest.mock('react-native-vector-icons/FontAwesome5');
 jest.mock('react-native-vector-icons', () => {
-    const React = jest.requireActual('React');
+    const React = jest.requireActual('react');
     const PropTypes = jest.requireActual('prop-types');
     class CompassIcon extends React.PureComponent {
         render() {
