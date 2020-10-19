@@ -32,6 +32,7 @@ export default class Swiper extends PureComponent {
         ]),
         width: PropTypes.number,
         onScrollBegin: PropTypes.func,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -251,6 +252,7 @@ export default class Swiper extends PureComponent {
     render() {
         const {
             children,
+            testID,
             width,
         } = this.props;
 
@@ -270,6 +272,7 @@ export default class Swiper extends PureComponent {
             <View
                 style={[styles.container]}
                 onLayout={this.onLayout}
+                testID={testID}
             >
                 {this.renderScrollView(pages)}
                 {this.renderPagination()}
