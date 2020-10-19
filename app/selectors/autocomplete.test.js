@@ -24,6 +24,7 @@ describe('Selectors.Autocomplete', () => {
                 ['@Username', 'username'],
                 ['@USERNAME', 'username'],
                 ['not a match', null],
+                ['@with space', 'with space'],
             ];
 
             testCases.forEach((testCase) => {
@@ -98,6 +99,9 @@ describe('Selectors.Autocomplete', () => {
 
         profiles = filterMembersNotInChannel(state, 'example');
         expect(profiles.length).toBe(2);
+
+        profiles = filterMembersNotInChannel(state, 'test u');
+        expect(profiles.length).toBe(1);
     });
 
     it('Should return profiles in channel', () => {
@@ -136,6 +140,9 @@ describe('Selectors.Autocomplete', () => {
 
         profiles = filterMembersInChannel(state, 'example');
         expect(profiles.length).toBe(2);
+
+        profiles = filterMembersInChannel(state, 'test u');
+        expect(profiles.length).toBe(1);
     });
 
     it('Should return DMs', () => {
