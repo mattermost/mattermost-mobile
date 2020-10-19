@@ -24,6 +24,7 @@ export default class UserListRow extends React.PureComponent {
         theme: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string.isRequired,
+        testID: PropTypes.string,
         ...CustomListRow.propTypes,
     };
 
@@ -73,6 +74,7 @@ export default class UserListRow extends React.PureComponent {
                     selectable={selectable}
                     selected={selected}
                     isLandscape={isLandscape}
+                    testID={this.props.testID}
                 >
                     <View style={style.profileContainer}>
                         <ProfilePicture

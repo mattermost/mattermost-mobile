@@ -33,6 +33,7 @@ export default class CustomList extends PureComponent {
         theme: PropTypes.object.isRequired,
         shouldRenderSeparator: PropTypes.bool,
         isLandscape: PropTypes.bool.isRequired,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -148,6 +149,7 @@ export default class CustomList extends PureComponent {
                 scrollEventThrottle={60}
                 style={style.list}
                 stickySectionHeadersEnabled={true}
+                testID={this.props.testID}
             />
         );
     };
@@ -201,6 +203,7 @@ export default class CustomList extends PureComponent {
                 sections={data}
                 style={style.list}
                 stickySectionHeadersEnabled={false}
+                testID={this.props.testID}
             />
         );
     };
