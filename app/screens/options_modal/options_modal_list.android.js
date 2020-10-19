@@ -9,10 +9,10 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import IconFont from 'react-native-vector-icons/FontAwesome';
 
-import FormattedText from 'app/components/formatted_text';
-import {preventDoubleTap} from 'app/utils/tap';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {preventDoubleTap} from '@utils/tap';
 
 export default class OptionsModalList extends PureComponent {
     static propTypes = {
@@ -72,7 +72,7 @@ export default class OptionsModalList extends PureComponent {
                     >
                         {textComponent}
                         {item.icon &&
-                        <IconFont
+                        <CompassIcon
                             name={item.icon}
                             size={18}
                             style={optionIconStyle}

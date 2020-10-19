@@ -180,7 +180,13 @@ class Settings extends PureComponent {
         const style = getStyleSheet(theme);
         const showTeams = joinableTeams.length > 0;
         const showHelp = isValidUrl(config.HelpLink);
-        const showArrow = Platform.OS === 'ios';
+
+        let showArrow = false;
+        let middleDividerStyle = style.divider;
+        if (Platform.OS === 'ios') {
+            showArrow = true;
+            middleDividerStyle = style.middleDivider;
+        }
 
         return (
             <View style={style.container}>
@@ -193,8 +199,7 @@ class Settings extends PureComponent {
                     <SettingsItem
                         defaultMessage='Notifications'
                         i18nId={t('user.settings.modal.notifications')}
-                        iconName='ios-notifications'
-                        iconType='ion'
+                        iconName='bell-outline'
                         onPress={this.goToNotifications}
                         showArrow={showArrow}
                         theme={theme}
@@ -204,8 +209,7 @@ class Settings extends PureComponent {
                     <SettingsItem
                         defaultMessage='Display'
                         i18nId={t('user.settings.modal.display')}
-                        iconName='ios-apps'
-                        iconType='ion'
+                        iconName='layers-outline'
                         onPress={this.goToDisplaySettings}
                         showArrow={showArrow}
                         theme={theme}
@@ -217,8 +221,7 @@ class Settings extends PureComponent {
                         <SettingsItem
                             defaultMessage='Open teams you can join'
                             i18nId={t('mobile.select_team.join_open')}
-                            iconName='list'
-                            iconType='foundation'
+                            iconName='menu'
                             onPress={this.goToSelectTeam}
                             showArrow={showArrow}
                             theme={theme}
@@ -227,37 +230,10 @@ class Settings extends PureComponent {
                         />
                     </React.Fragment>
                     }
-                    {showHelp &&
-                    <React.Fragment>
-                        <SettingsItem
-                            defaultMessage='Help'
-                            i18nId={t('mobile.help.title')}
-                            iconName='md-help'
-                            iconType='ion'
-                            onPress={this.openHelp}
-                            showArrow={showArrow}
-                            theme={theme}
-                            separator={true}
-                            isLandscape={isLandscape}
-                        />
-                    </React.Fragment>
-                    }
-                    <SettingsItem
-                        defaultMessage='Report a Problem'
-                        i18nId={t('sidebar_right_menu.report')}
-                        iconName='exclamation'
-                        iconType='fontawesome'
-                        onPress={this.openErrorEmail}
-                        showArrow={showArrow}
-                        theme={theme}
-                        separator={true}
-                        isLandscape={isLandscape}
-                    />
                     <SettingsItem
                         defaultMessage='Advanced Settings'
                         i18nId={t('mobile.advanced_settings.title')}
-                        iconName='ios-hammer'
-                        iconType='ion'
+                        iconName='tune'
                         onPress={this.goToAdvancedSettings}
                         showArrow={showArrow}
                         theme={theme}
@@ -270,7 +246,6 @@ class Settings extends PureComponent {
                             defaultMessage='Check for Upgrade'
                             i18nId={t('mobile.settings.modal.check_for_upgrade')}
                             iconName='update'
-                            iconType='material'
                             onPress={this.goToClientUpgrade}
                             showArrow={showArrow}
                             theme={theme}
@@ -283,13 +258,37 @@ class Settings extends PureComponent {
                         defaultMessage='About {appTitle}'
                         messageValues={{appTitle: config.SiteName || 'Mattermost'}}
                         i18nId={t('about.title')}
-                        iconName='ios-information-circle'
-                        iconType='ion'
+                        iconName='information-outline'
                         onPress={this.goToAbout}
                         separator={false}
                         showArrow={showArrow}
                         theme={theme}
                         isLandscape={isLandscape}
+                    />
+                    <View style={middleDividerStyle}/>
+                    {showHelp &&
+                    <React.Fragment>
+                        <SettingsItem
+                            defaultMessage='Help'
+                            i18nId={t('mobile.help.title')}
+                            onPress={this.openHelp}
+                            showArrow={false}
+                            theme={theme}
+                            separator={true}
+                            isLandscape={isLandscape}
+                            isLink={true}
+                        />
+                    </React.Fragment>
+                    }
+                    <SettingsItem
+                        defaultMessage='Report a Problem'
+                        i18nId={t('sidebar_right_menu.report')}
+                        onPress={this.openErrorEmail}
+                        showArrow={false}
+                        theme={theme}
+                        separator={false}
+                        isLandscape={isLandscape}
+                        isLink={true}
                     />
                     <View style={style.divider}/>
                 </ScrollView>
@@ -308,6 +307,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             ...Platform.select({
                 ios: {
+                    flex: 1,
                     paddingTop: 35,
                 },
             }),
@@ -315,6 +315,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
             height: 1,
+        },
+        middleDivider: {
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.1),
+            height: 35,
         },
     };
 });

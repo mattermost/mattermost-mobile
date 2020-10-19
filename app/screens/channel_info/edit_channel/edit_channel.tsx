@@ -45,7 +45,7 @@ export default class EditChannel extends PureComponent<EditChannelProps> {
                 <ChannelInfoRow
                     action={this.handleChannelEdit}
                     defaultMessage='Edit Channel'
-                    icon='edit'
+                    icon='pencil-outline'
                     textId={t('mobile.channel_info.edit')}
                     theme={theme}
                     isLandscape={isLandscape}

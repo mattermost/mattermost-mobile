@@ -108,8 +108,8 @@ exports[`ImagePreview should match snapshot 1`] = `
             <Icon
               allowFontScaling={false}
               color="#fff"
-              name="md-close"
-              size={26}
+              name="close"
+              size={24}
             />
           </ForwardRef>
           <Text
@@ -140,7 +140,7 @@ exports[`ImagePreview should match snapshot 1`] = `
               allowFontScaling={false}
               color="#fff"
               name="download-outline"
-              size={26}
+              size={24}
             />
           </ForwardRef>
         </View>
@@ -231,7 +231,18 @@ exports[`ImagePreview should match snapshot 1`] = `
 </ForwardRef(AnimatedComponentWrapper)>
 `;
 
-exports[`ImagePreview should match snapshot and not renderDownloadButton for local files 1`] = `null`;
+exports[`ImagePreview should match snapshot and not renderDownloadButton for local files 1`] = `
+<View
+  style={
+    Object {
+      "alignItems": "center",
+      "height": 44,
+      "justifyContent": "center",
+      "width": 48,
+    }
+  }
+/>
+`;
 
 exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
 <ForwardRef
@@ -249,7 +260,7 @@ exports[`ImagePreview should match snapshot, renderDownloadButton 1`] = `
     allowFontScaling={false}
     color="#fff"
     name="download-outline"
-    size={26}
+    size={24}
   />
 </ForwardRef>
 `;

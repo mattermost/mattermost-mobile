@@ -11,6 +11,8 @@ import {renderWithReduxIntl} from 'test/testing_library';
 
 import PostDraft from './post_draft';
 
+jest.mock('app/components/compass_icon', () => 'Icon');
+
 const mockStore = configureMockStore([thunk]);
 const state = {
     ...intitialState,

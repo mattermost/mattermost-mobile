@@ -246,8 +246,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: 5,
         },
         iconWrapper: {
-            marginHorizontal: 20,
-            marginVertical: 10,
+            marginTop: 7.8,
+            marginRight: 6,
+            marginBottom: 8.2,
+            marginLeft: 8,
         },
         circularProgress: {
             width: '100%',

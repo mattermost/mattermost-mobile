@@ -108,7 +108,6 @@ export const getMarkdownBlockStyles = makeStyleSheetFromTheme((theme) => {
         },
         quoteBlockIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
-            padding: 5,
         },
     };
 });

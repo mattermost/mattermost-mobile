@@ -145,17 +145,13 @@ exports[`Reactions should match snapshot 1`] = `
     }
     type="opacity"
   >
-    <Image
-      source={
-        Object {
-          "testUri": "../../../dist/assets/images/icons/reaction.png",
-        }
-      }
+    <Icon
+      allowFontScaling={false}
+      name="emoticon-plus-outline"
+      size={24}
       style={
         Object {
-          "height": 23,
-          "tintColor": "rgba(61,60,64,0.5)",
-          "width": 23,
+          "color": "rgba(61,60,64,0.5)",
         }
       }
     />

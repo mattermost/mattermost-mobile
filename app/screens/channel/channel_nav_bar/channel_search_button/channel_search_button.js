@@ -8,13 +8,13 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
-
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {showSearchModal} from 'app/actions/navigation';
-import {t} from 'app/utils/i18n';
 import {intlShape} from 'react-intl';
+
+import {showSearchModal} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
 
 export default class ChannelSearchButton extends PureComponent {
     static propTypes = {
@@ -70,9 +70,9 @@ export default class ChannelSearchButton extends PureComponent {
                     style={style.flex}
                 >
                     <View style={style.wrapper}>
-                        <AwesomeIcon
-                            name='search'
-                            size={18}
+                        <CompassIcon
+                            name='magnify'
+                            size={24}
                             style={style.icon}
                         />
                     </View>
@@ -92,7 +92,6 @@ const getStyle = makeStyleSheetFromTheme((theme) => {
         },
         wrapper: {
             position: 'relative',
-            top: -1,
             alignItems: 'flex-end',
             flex: 1,
             flexDirection: 'column',

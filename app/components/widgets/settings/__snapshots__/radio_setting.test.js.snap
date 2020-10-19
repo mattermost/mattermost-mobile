@@ -158,10 +158,16 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
             this is administration
           </Text>
         </View>
-        <CheckMark
-          color="#2389d7"
-          height={12}
-          width={12}
+        <Icon
+          allowFontScaling={false}
+          name="check"
+          size={12}
+          style={
+            Object {
+              "color": "#2389d7",
+              "fontSize": 12,
+            }
+          }
         />
       </View>
     </ForwardRef>

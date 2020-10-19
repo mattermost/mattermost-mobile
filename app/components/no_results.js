@@ -3,18 +3,15 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image, Text, View} from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Text, View} from 'react-native';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class NoResults extends PureComponent {
     static propTypes = {
         description: PropTypes.string,
-        iconName: PropTypes.string,
-        iconType: PropTypes.oneOf(['' /* image */, 'ion', 'material-community']),
-        image: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
+        iconName: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         title: PropTypes.string.isRequired,
     };
@@ -23,45 +20,19 @@ export default class NoResults extends PureComponent {
         const {
             description,
             iconName,
-            iconType,
-            image,
             theme,
             title,
         } = this.props;
         const style = getStyleFromTheme(theme);
 
-        let icon;
-        if (image) {
-            icon = (
-                <Image
-                    source={image}
-                    style={{width: 37, height: 37, tintColor: changeOpacity(theme.centerChannelColor, 0.5)}}
-                />
-            );
-        } else if (iconName) {
-            if (iconType === 'ion') {
-                icon = (
-                    <IonIcon
-                        size={72}
-                        name={iconName}
-                        style={style.icon}
-                    />
-                );
-            } else if (iconType === 'material-community') {
-                icon = (
-                    <MaterialCommunityIcons
-                        size={72}
-                        name={iconName}
-                        style={style.icon}
-                    />
-                );
-            }
-        }
-
         return (
             <View style={style.container}>
                 <View style={style.iconContainer}>
-                    {icon}
+                    <CompassIcon
+                        size={72}
+                        name={iconName}
+                        style={style.icon}
+                    />
                 </View>
                 <Text style={style.title}>{title}</Text>
                 {description &&

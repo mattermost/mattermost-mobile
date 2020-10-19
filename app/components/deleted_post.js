@@ -4,10 +4,11 @@
 import React, {PureComponent} from 'react';
 import {View} from 'react-native';
 import PropTypes from 'prop-types';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import FormattedText from 'app/components/formatted_text';
-import AppIcon from 'app/components/app_icon';
-import {ViewTypes} from 'app/constants';
+
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {ViewTypes} from '@constants';
 
 class DeletedPost extends PureComponent {
     static propTypes = {
@@ -20,10 +21,10 @@ class DeletedPost extends PureComponent {
         return (
             <View style={style.main}>
                 <View style={style.iconContainer}>
-                    <AppIcon
+                    <CompassIcon
+                        name='mattermost'
                         color={theme.centerChannelColor}
-                        height={ViewTypes.PROFILE_PICTURE_SIZE}
-                        width={ViewTypes.PROFILE_PICTURE_SIZE}
+                        size={ViewTypes.PROFILE_PICTURE_SIZE}
                     />
                 </View>
                 <View style={style.textContainer}>

@@ -69,8 +69,8 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
       <Icon
         allowFontScaling={false}
         color="#ffffff"
-        name="md-menu"
-        size={25}
+        name="menu-variant"
+        size={24}
       />
       <Badge
         containerStyle={

@@ -54,7 +54,7 @@ export default class ManageMembers extends PureComponent<ManageMembersProps> {
                     action={this.goToChannelMembers}
                     defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                     detail={membersCount}
-                    icon='users'
+                    icon='account-multiple-outline'
                     textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                     theme={theme}
                     isLandscape={isLandscape}

@@ -10,10 +10,10 @@ import {
     StyleSheet,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {NavigationTypes} from '@constants';
 import {ICON_SIZE, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
@@ -159,7 +159,7 @@ export default class CameraQuickAction extends PureComponent {
                 style={style.icon}
                 type={'opacity'}
             >
-                <MaterialCommunityIcons
+                <CompassIcon
                     color={color}
                     name='camera-outline'
                     size={ICON_SIZE}

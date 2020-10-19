@@ -27,7 +27,7 @@ exports[`SettingDrawerButton should match, full snapshot 1`] = `
     <Icon
       allowFontScaling={false}
       color="#ffffff"
-      name="ellipsis-vertical"
+      name="dots-vertical"
       size={25}
     />
   </View>
