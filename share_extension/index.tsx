@@ -17,7 +17,7 @@ import Extension from './screens/extension';
 
 const ShareExtension = () => {
     const [init, setInit] = useState(false);
-    const hidrate = useCallback((mmkvStore?: any) => {
+    const hydrate = useCallback((mmkvStore?: any) => {
         if (mmkvStore) {
             configureStore(mmkvStore);
         }
@@ -29,9 +29,9 @@ const ShareExtension = () => {
 
     useEffect(() => {
         if (Store.redux) {
-            hidrate();
+            hydrate();
         } else {
-            getStorage().then(hidrate);
+            getStorage().then(hydrate);
         }
     }, []);
 

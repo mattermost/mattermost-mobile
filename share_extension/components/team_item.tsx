@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -20,9 +20,9 @@ interface TeamItemProps {
 const theme = Preferences.THEMES.default;
 
 const TeamItem = ({onSelect, selected, team}: TeamItemProps) => {
-    const onPress = useCallback(preventDoubleTap(() => {
+    const onPress = preventDoubleTap(() => {
         onSelect(team);
-    }), []);
+    });
 
     let current;
     if (selected) {

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React from 'react';
 import {TouchableOpacity, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 
@@ -16,9 +16,9 @@ const theme = Preferences.THEMES.default;
 
 const PostHeaderButton = () => {
     const canUploadFiles = useSelector(canUploadFilesOnMobile);
-    const onPress = useCallback(preventDoubleTap(() => {
+    const onPress = preventDoubleTap(() => {
         EventEmitter.emit(SHARE_EXTENSION_POST_EVENT);
-    }), []);
+    });
 
     return (
         <TouchableOpacity

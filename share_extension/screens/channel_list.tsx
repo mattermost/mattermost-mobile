@@ -4,7 +4,7 @@
 import {RouteProp, useFocusEffect, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {BackHandler, SectionList, StyleSheet, View} from 'react-native';
+import {BackHandler, SectionList, SectionListData, SectionListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 
 import FormattedText from '@components/formatted_text';
@@ -23,7 +23,7 @@ interface ChannnelListProps {
     intl: typeof intlShape;
 }
 
-interface ListSection {
+interface SectionData {
     defaultMessage: string;
     id: string;
     data: Channel[];
@@ -38,6 +38,8 @@ type ChannnelListParams = {
     }
 }
 
+type SectionDataHeader = (info: {section: SectionListData<Channel>}) => React.ReactElement | null;
+
 export type ChannelListRoute = RouteProp<ChannnelListParams, 'Channels'>;
 
 const theme = Preferences.THEMES.default;
@@ -47,18 +49,18 @@ const ChannelList = ({intl}: ChannnelListProps) => {
     const route = useRoute<ChannelListRoute>();
     const {currentChannelId, onSelectChannel, teamId, title} = route.params;
     const directChannels = useSelector(getExtensionSortedDirectChannels);
-    const privateChannels = useSelector((state) => getExtensionSortedPrivateChannels(state as GlobalState, teamId));
-    const publicChannels = useSelector((state) => getExtensionSortedPublicChannels(state as GlobalState, teamId));
-    const [sections, setSections] = useState<ListSection[]>();
+    const privateChannels = useSelector((state: GlobalState) => getExtensionSortedPrivateChannels(state, teamId));
+    const publicChannels = useSelector((state: GlobalState) => getExtensionSortedPublicChannels(state, teamId));
+    const [sections, setSections] = useState<SectionData[]>();
     const [term, setTerm] = useState<string>();
 
     const handleSearch = useCallback((text) => {
         throttle(setTerm(text));
     }, []);
 
-    const keyExtractor = useCallback((item: Channel) => item?.id, [sections]);
-    const renderItemSeparator = useCallback(() => (<View style={styles.separator}/>), []);
-    const renderSectionHeader = useCallback(({section}) => (
+    const keyExtractor = (item: Channel) => item?.id;
+    const renderItemSeparator = () => (<View style={styles.separator}/>);
+    const renderSectionHeader: SectionDataHeader = ({section}) => (
         <View style={[styles.titleContainer, {backgroundColor: theme.centerChannelColor}]}>
             <View style={{backgroundColor: changeOpacity(theme.centerChannelBg, 0.6), justifyContent: 'center'}}>
                 <FormattedText
@@ -68,14 +70,14 @@ const ChannelList = ({intl}: ChannnelListProps) => {
                 />
             </View>
         </View>
-    ), [sections]);
-    const renderItem = useCallback(({item}) => (
+    );
+    const renderItem = ({item}: SectionListRenderItemInfo<Channel>) => (
         <ChannelItem
             channel={item}
             onSelect={onSelectChannel}
             selected={item.id === currentChannelId}
         />
-    ), [sections]);
+    );
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -90,13 +92,13 @@ const ChannelList = ({intl}: ChannnelListProps) => {
         let publicFiltered;
 
         if (term) {
-            directFiltered = directChannels.filter((c) => c.delete_at === 0 && c.display_name.toLowerCase().includes(term.toLowerCase()));
-            privateFiletered = privateChannels.filter((c) => c.delete_at === 0 && c.display_name.toLowerCase().includes(term.toLowerCase()));
-            publicFiltered = publicChannels.filter((c) => c.delete_at === 0 && c.display_name.toLowerCase().includes(term.toLowerCase()));
+            directFiltered = directChannels.filter((c: Channel) => c.delete_at === 0 && c.display_name.toLowerCase().includes(term.toLowerCase()));
+            privateFiletered = privateChannels.filter((c: Channel) => c.delete_at === 0 && c.display_name.toLowerCase().includes(term.toLowerCase()));
+            publicFiltered = publicChannels.filter((c: Channel) => c.delete_at === 0 && c.display_name.toLowerCase().includes(term.toLowerCase()));
         } else {
-            directFiltered = directChannels.filter((c) => c.delete_at === 0);
-            privateFiletered = privateChannels.filter((c) => c.delete_at === 0);
-            publicFiltered = publicChannels.filter((c) => c.delete_at === 0);
+            directFiltered = directChannels.filter((c: Channel) => c.delete_at === 0);
+            privateFiletered = privateChannels.filter((c: Channel) => c.delete_at === 0);
+            publicFiltered = publicChannels.filter((c: Channel) => c.delete_at === 0);
         }
 
         if (publicFiltered.length) {

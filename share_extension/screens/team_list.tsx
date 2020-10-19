@@ -26,6 +26,8 @@ type TeamListParams = {
 
 type TeamListRoute = RouteProp<TeamListParams, 'Teams'>;
 
+type ListItem = (info: {item: Team}) => React.ReactElement;
+
 const theme = Preferences.THEMES.default;
 
 const TeamList = () => {
@@ -36,15 +38,15 @@ const TeamList = () => {
     const teams = useSelector(getMyTeams);
     teams.sort(sortTeamsWithLocale(locale)).map((t) => t.display_name);
 
-    const keyExtractor = useCallback((item: Team) => item?.id, [teams]);
-    const renderItemSeparator = useCallback(() => (<View style={styles.separator}/>), []);
-    const renderItem = useCallback(({item}) => (
+    const keyExtractor = (item: Team) => item?.id;
+    const renderItemSeparator = () => (<View style={styles.separator}/>);
+    const renderItem: ListItem = ({item}) => (
         <TeamItem
             selected={item.id === currentTeamId}
             onSelect={onSelectTeam}
             team={item}
         />
-    ), [teams]);
+    );
 
     useFocusEffect(
         useCallback(() => {
