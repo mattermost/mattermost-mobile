@@ -24,7 +24,7 @@ describe('Select channel', () => {
         await logoutUser();
     });
 
-    it('MM-TXXXX Select the same channel should close the sidebar', async () => {
+    it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
         // # Open channel drawer (with at least one unread channel)
         await element(by.id('channel_drawer.button')).tap();
 
@@ -37,7 +37,7 @@ describe('Select channel', () => {
         // * Selected channel should be visible
         await expect(element(by.id('channel.nav_bar.title'))).toHaveText(newChannel.display_name);
 
-        // # Open channel drawer again ad select the same channel
+        // # Open channel drawer again and select the same channel
         await element(by.id('channel_drawer.button')).tap();
         await element(by.text(newChannel.display_name).withAncestor(by.id('channels_list'))).tap();
 
