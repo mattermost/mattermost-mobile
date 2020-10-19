@@ -12,7 +12,7 @@
   "about.title": "{appTitle} 정보",
   "announcment_banner.dont_show_again": "다시 보지 않음",
   "api.channel.add_member.added": "{username}님이 {addedUsername}님을 채널에 초대했습니다.",
-  "archivedChannelMessage": "**보존 처리 된 채널**을 보고계십니다. 새 메시지를 게시 할 수 없습니다.",
+  "archivedChannelMessage": "**보관된 채널**을 보고 있습니다. 새 게시글을 올릴 수 없습니다.",
   "center_panel.archived.closeChannel": "채널 닫기",
   "channel.channelHasGuests": "이 채널에는 게스트가 있습니다.",
   "channel.hasGuests": "이 그룹 메시지는 게스트가 있습니다.",
