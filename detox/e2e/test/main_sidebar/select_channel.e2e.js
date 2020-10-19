@@ -8,6 +8,7 @@
 // *******************************************************************
 
 import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {isAndroid} from '@support/utils';
 import {Setup} from '@support/server_api';
 
 describe('Select channel', () => {
@@ -41,8 +42,11 @@ describe('Select channel', () => {
         await element(by.id('channel_drawer.button')).tap();
         await element(by.text(newChannel.display_name).withAncestor(by.id('channels_list'))).tap();
 
-        // * Selected channel should remain the same and drawer should be closed
-        await expect(element(by.id('main_sidebar'))).not.toBeVisible();
+        // * Selected channel should remain the same
+        if (isAndroid()) {
+            // * drawer should not be visible on Android
+            await expect(element(by.id('main_sidebar'))).not.toBeVisible();
+        }
         await expect(element(by.id('channel.nav_bar.title'))).toHaveText(newChannel.display_name);
     });
 });

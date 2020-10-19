@@ -14,10 +14,6 @@ describe('Autocomplete', () => {
     let user;
     let postInput;
 
-    afterAll(async () => {
-        await logoutUser();
-    });
-
     beforeAll(async () => {
         ({user} = await Setup.apiInit());
         await toChannelScreen(user);
@@ -30,6 +26,10 @@ describe('Autocomplete', () => {
         await expect(element(by.id('channel_screen'))).toBeVisible();
         postInput = await element(by.id('post_input'));
         await postInput.tap();
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('MM-T3409_1 should suggest user based on username', async () => {

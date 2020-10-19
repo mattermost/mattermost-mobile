@@ -8,6 +8,7 @@
 // *******************************************************************
 
 import {Ldap, Setup, System, Team, User} from '@support/server_api';
+import {logoutUser} from '@support/ui/screen';
 import {serverUrl} from '@support/test_config';
 import ldapUsers from '@support/fixtures/ldap_users.json';
 
@@ -26,6 +27,10 @@ describe('Smoke Tests', () => {
         await Ldap.apiRequireLDAPServer();
 
         await ensureUserHasTeam(testOne);
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('MM-T3180 Log in - LDAP', async () => {
