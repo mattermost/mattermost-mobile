@@ -8,11 +8,11 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
+
+import CompassIcon from '@components/compass_icon';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class SelectedUser extends React.PureComponent {
     static propTypes = {
@@ -54,7 +54,7 @@ export default class SelectedUser extends React.PureComponent {
                     style={style.remove}
                     onPress={this.onRemove}
                 >
-                    <Icon
+                    <CompassIcon
                         name='close'
                         size={14}
                         color={this.props.theme.centerChannelColor}

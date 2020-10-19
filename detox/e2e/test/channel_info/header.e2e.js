@@ -28,7 +28,7 @@ describe('Channel Info Header', () => {
         await expect(element(by.text('DIRECT MESSAGES'))).toBeVisible();
 
         // # Open Direct Channels screen
-        await element(by.id('sidebar.channel_list.create_direct')).tap();
+        await element(by.id('action_button_sidebar.direct')).tap();
         await expect(element(by.id('direct_channels_screen'))).toBeVisible();
 
         // # Wait for some profiles to load

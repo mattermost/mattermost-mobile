@@ -14,22 +14,21 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesomePro from 'react-native-vector-icons/Ionicons';
-import EventEmitter from '@mm-redux/utils/event_emitter';
 
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {General} from '@mm-redux/constants';
 import {debounce} from '@mm-redux/actions/helpers';
 
-import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
-import {DeviceTypes, ListTypes, NavigationTypes} from 'app/constants';
-import {SidebarSectionTypes} from 'app/constants/view';
+import CompassIcon from '@components/compass_icon';
+import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import {paddingLeft} from '@components/safe_area_view/iphone_x_spacing';
+import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
+import {SidebarSectionTypes} from '@constants/view';
 
-import BottomSheet from 'app/utils/bottom_sheet';
-import {t} from 'app/utils/i18n';
-import {preventDoubleTap} from 'app/utils/tap';
-import {showModal} from 'app/actions/navigation';
+import BottomSheet from '@utils/bottom_sheet';
+import {t} from '@utils/i18n';
+import {preventDoubleTap} from '@utils/tap';
+import {showModal} from '@actions/navigation';
 
 const VIEWABILITY_CONFIG = {
     ...ListTypes.VISIBILITY_CONFIG_DEFAULTS,
@@ -72,7 +71,7 @@ export default class List extends PureComponent {
             onScrollBeginDrag: this.scrollBeginDrag,
         };
 
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }
@@ -129,42 +128,36 @@ export default class List extends PureComponent {
                 action: canJoinPublicChannels ? this.goToMoreChannels : null,
                 id: t('sidebar.channels'),
                 defaultMessage: 'PUBLIC CHANNELS',
-                testID: 'sidebar.channel_list.more_public',
             };
         case SidebarSectionTypes.PRIVATE:
             return {
                 action: canCreatePrivateChannels ? this.goToCreatePrivateChannel : null,
                 id: t('sidebar.pg'),
                 defaultMessage: 'PRIVATE CHANNELS',
-                testID: 'sidebar.channel_list.create_private',
             };
         case SidebarSectionTypes.DIRECT:
             return {
                 action: this.goToDirectMessages,
                 id: t('sidebar.direct'),
                 defaultMessage: 'DIRECT MESSAGES',
-                testID: 'sidebar.channel_list.create_direct',
             };
         case SidebarSectionTypes.RECENT_ACTIVITY:
             return {
                 action: this.showCreateChannelOptions,
                 id: t('sidebar.types.recent'),
                 defaultMessage: 'RECENT ACTIVITY',
-                testID: 'sidebar.channel_list.recent.create_options',
             };
         case SidebarSectionTypes.ALPHA:
             return {
                 action: this.showCreateChannelOptions,
                 id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
-                testID: 'sidebar.channel_list.channels.create_options',
             };
         default:
             return {
                 action: this.showCreateChannelOptions,
                 id: t('mobile.channel_list.channels'),
                 defaultMessage: 'CHANNELS',
-                testID: 'sidebar.channel_list.channels.create_options',
             };
         }
     };
@@ -301,17 +294,17 @@ export default class List extends PureComponent {
         this.setState({width: width - 40});
     };
 
-    renderSectionAction = (styles, action, testID, anchor) => {
+    renderSectionAction = (styles, action, anchor, id) => {
         return (
             <TouchableHighlight
+                testID={'action_button_' + id}
                 style={styles.actionContainer}
                 onPress={action}
-                testID={testID}
                 underlayColor={'transparent'}
                 hitSlop={styles.hitSlop}
             >
-                <FontAwesomePro
-                    name='ios-add-circle-outline'
+                <CompassIcon
+                    name='plus'
                     ref={anchor ? this.combinedActionsRef : null}
                     style={styles.action}
                 />
@@ -335,12 +328,7 @@ export default class List extends PureComponent {
     renderSectionHeader = ({section}) => {
         const {styles, isLandscape} = this.props;
         const {intl} = this.context;
-        const {
-            action,
-            defaultMessage,
-            id,
-            testID,
-        } = section;
+        const {action, defaultMessage, id} = section;
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
 
@@ -353,7 +341,7 @@ export default class List extends PureComponent {
                     <View style={styles.separatorContainer}>
                         <View style={styles.separator}/>
                     </View>
-                    {action && this.renderSectionAction(styles, action, testID, anchor)}
+                    {action && this.renderSectionAction(styles, action, anchor, id)}
                 </View>
             </React.Fragment>
         );

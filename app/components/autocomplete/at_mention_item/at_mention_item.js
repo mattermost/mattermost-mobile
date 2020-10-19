@@ -54,7 +54,7 @@ export default class AtMentionItem extends PureComponent {
             name += `(${nickname})`;
         }
 
-        return name;
+        return name.trim();
     }
 
     render() {
@@ -97,6 +97,7 @@ export default class AtMentionItem extends PureComponent {
                         show={isGuest}
                         theme={theme}
                     />
+                    {Boolean(name.length) &&
                     <Text
                         style={style.rowFullname}
                         numberOfLines={1}
@@ -108,9 +109,10 @@ export default class AtMentionItem extends PureComponent {
                             defaultMessage='(you)'
                         />}
                     </Text>
+                    }
                     <Text
-                        numberOfLines={1}
                         style={style.rowUsername}
+                        numberOfLines={1}
                     >
                         {` @${username}`}
                     </Text>
@@ -140,6 +142,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         rowFullname: {
             fontSize: 15,
             color: theme.centerChannelColor,
+            paddingLeft: 4,
         },
         rowUsername: {
             color: theme.centerChannelColor,

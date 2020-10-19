@@ -13,17 +13,18 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import FormattedText from 'app/components/formatted_text';
-import {DeviceTypes, ListTypes, ViewTypes} from 'app/constants';
+import {showModal} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {DeviceTypes, ListTypes, ViewTypes} from '@constants';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {removeProtocol} from '@utils/url';
+import tracker from '@utils/time_tracker';
+
 import {getCurrentServerUrl} from 'app/init/credentials';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {removeProtocol} from 'app/utils/url';
-import tracker from 'app/utils/time_tracker';
 import telemetry from 'app/telemetry';
-import {showModal} from 'app/actions/navigation';
 
 import TeamsListItem from './teams_list_item';
 
@@ -56,7 +57,7 @@ export default class TeamsList extends PureComponent {
             serverUrl: '',
         };
 
-        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
 

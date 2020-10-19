@@ -8,14 +8,14 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-
-import Icon from 'react-native-vector-icons/Ionicons';
+import {intlShape} from 'react-intl';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {intlShape} from 'react-intl';
+
+import CompassIcon from '@components/compass_icon';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
 
 export class SettingDrawerButton extends PureComponent {
     static propTypes = {
@@ -57,8 +57,8 @@ export class SettingDrawerButton extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         const icon = (
-            <Icon
-                name='ellipsis-vertical'
+            <CompassIcon
+                name='dots-vertical'
                 size={25}
                 color={theme.sidebarHeaderTextColor}
             />

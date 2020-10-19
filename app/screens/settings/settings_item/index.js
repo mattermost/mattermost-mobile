@@ -4,10 +4,11 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import {paddingRight, paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
-import FormattedText from 'app/components/formatted_text';
-import VectorIcon from 'app/components/vector_icon.js';
+
+import CompassIcon from '@components/compass_icon';
+import {paddingRight, paddingLeft} from '@components/safe_area_view/iphone_x_spacing';
+import FormattedText from '@components/formatted_text';
+import {changeOpacity} from '@utils/theme';
 
 import getStyleSheet from './style';
 
@@ -17,7 +18,7 @@ export default class SettingsItem extends PureComponent {
         messageValues: PropTypes.object,
         i18nId: PropTypes.string,
         iconName: PropTypes.string,
-        iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
+        isLink: PropTypes.bool,
         isDestructor: PropTypes.bool,
         centered: PropTypes.bool,
         onPress: PropTypes.func,
@@ -32,6 +33,7 @@ export default class SettingsItem extends PureComponent {
         isDestructor: false,
         separator: true,
         isLandscape: false,
+        isLink: false,
     };
 
     renderText = () => {
@@ -41,6 +43,7 @@ export default class SettingsItem extends PureComponent {
             messageValues,
             i18nId,
             isDestructor,
+            isLink,
             theme,
         } = this.props;
         const style = getStyleSheet(theme);
@@ -53,6 +56,10 @@ export default class SettingsItem extends PureComponent {
 
         if (centered) {
             textStyle.push(style.centerLabel);
+        }
+
+        if (isLink) {
+            textStyle.push(style.linkContainer);
         }
 
         if (!i18nId) {
@@ -72,28 +79,34 @@ export default class SettingsItem extends PureComponent {
     render() {
         const {
             iconName,
-            iconType,
             onPress,
             rightComponent,
             separator,
             showArrow,
             theme,
             isLandscape,
+            isDestructor,
         } = this.props;
         const style = getStyleSheet(theme);
 
         let divider;
         if (separator) {
-            divider = (<View style={style.divider}/>);
+            divider = (
+                <View style={style.dividerContainer}>
+                    <View style={style.divider}/>
+                </View>
+            );
         }
 
         let icon;
-        if (iconType && iconName) {
-            const iconStyle = [style.icon];
+        if (iconName) {
+            const iconStyle = [style.icon, {color: changeOpacity(theme.centerChannelColor, 0.64)}];
+            if (isDestructor) {
+                iconStyle.push(style.destructor);
+            }
             icon = (
-                <VectorIcon
+                <CompassIcon
                     name={iconName}
-                    type={iconType}
                     style={iconStyle}
                 />
             );
@@ -102,8 +115,8 @@ export default class SettingsItem extends PureComponent {
         let additionalComponent;
         if (showArrow) {
             additionalComponent = (
-                <FontAwesomeIcon
-                    name='angle-right'
+                <CompassIcon
+                    name='chevron-right'
                     style={style.arrow}
                 />
             );
@@ -130,9 +143,9 @@ export default class SettingsItem extends PureComponent {
                             </View>
                             }
                         </View>
-                        {divider}
                     </View>
                 </View>
+                {divider}
             </TouchableOpacity>
         );
     }

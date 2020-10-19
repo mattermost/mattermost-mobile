@@ -1,9 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
 import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
-
 import {Setup} from '@support/server_api';
 
 describe('Autocomplete', () => {

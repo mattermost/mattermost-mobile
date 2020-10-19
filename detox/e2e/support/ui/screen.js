@@ -36,12 +36,12 @@ export async function fulfillLoginScreen(user = {}) {
     await element(by.id('username_input')).replaceText(user.username);
 
     // # Tap anywhere to hide keyboard
-    await element(by.text('Mattermost')).tap();
+    await element(by.id('login_screen')).tap({x: 10, y: 10});
 
     await element(by.id('password_input')).replaceText(user.password);
 
     // # Tap anywhere to hide keyboard
-    await element(by.text('Mattermost')).tap();
+    await element(by.id('login_screen')).tap({x: 10, y: 10});
 
     await element(by.id('signin_button')).tap();
 }

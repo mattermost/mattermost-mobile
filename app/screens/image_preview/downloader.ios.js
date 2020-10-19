@@ -6,16 +6,16 @@ import PropTypes from 'prop-types';
 import {Alert, Animated, InteractionManager, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import {CircularProgress} from 'react-native-circular-progress';
-import Icon from 'react-native-vector-icons/Ionicons';
 import {intlShape} from 'react-intl';
 import CameraRoll from '@react-native-community/cameraroll';
 
 import {Client4} from '@mm-redux/client';
 
-import FormattedText from 'app/components/formatted_text';
 import mattermostBucket from 'app/mattermost_bucket';
-import {getLocalFilePathFromFile} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {getLocalFilePathFromFile} from '@utils/file';
+import {emptyFunction} from '@utils/general';
 
 import DownloaderBottomContent from './downloader_bottom_content.js';
 
@@ -127,8 +127,8 @@ export default class Downloader extends PureComponent {
         let component;
         if (realFill === 100) {
             component = (
-                <Icon
-                    name='checkmark'
+                <CompassIcon
+                    name='check'
                     size={64}
                     color='white'
                 />
@@ -168,7 +168,7 @@ export default class Downloader extends PureComponent {
             <View>
                 <TouchableOpacity onPress={this.startDownload}>
                     <View style={styles.manualDownloadContainer}>
-                        <Icon
+                        <CompassIcon
                             name='download-outline'
                             size={48}
                             color='white'

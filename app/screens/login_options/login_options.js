@@ -16,7 +16,7 @@ import Button from 'react-native-button';
 import {goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import gitlab from '@assets/images/gitlab.png';
-import logo from '@assets/images/logo.png';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
@@ -260,8 +260,10 @@ export default class LoginOptions extends PureComponent {
                 ref={this.scrollRef}
             >
                 <StatusBar/>
-                <Image
-                    source={logo}
+                <CompassIcon
+                    name='mattermost'
+                    size={76}
+                    style={GlobalStyles.logo}
                 />
                 <Text style={GlobalStyles.header}>
                     {this.props.config.SiteName}

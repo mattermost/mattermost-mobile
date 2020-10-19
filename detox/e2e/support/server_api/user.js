@@ -111,6 +111,21 @@ export const apiGetUserById = async (userId) => {
     }
 };
 
+/**
+ * Get a user by username.
+ * See https://api.mattermost.com/#tag/users/paths/~1users~1username~1{username}/get
+ * @param {string} username
+ */
+export const apiGetUserByUsername = async (username) => {
+    try {
+        const response = await client.get(`/api/v4/users/username/${username}`);
+
+        return {user: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 function generateRandomUser(prefix) {
     const randomId = getRandomId();
 
@@ -131,6 +146,7 @@ export const User = {
     apiCreateUser,
     apiGetMe,
     apiGetUserById,
+    apiGetUserByUsername,
 };
 
 export default User;

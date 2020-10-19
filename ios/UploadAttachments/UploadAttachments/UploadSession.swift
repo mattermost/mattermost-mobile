@@ -55,7 +55,8 @@ import os.log
             os_log(OSLogType.default, "Mattermost Attached session with completionHandler identifier=%{public}@", identifier)
         }
         let sessionConfig = URLSessionConfiguration.background(withIdentifier: identifier)
-        sessionConfig.sharedContainerIdentifier = APP_GROUP_ID
+        let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String
+        sessionConfig.sharedContainerIdentifier = appGroupId
         if #available(iOS 11.0, *) {
             sessionConfig.waitsForConnectivity = true
         }
@@ -65,7 +66,8 @@ import os.log
     
     public func createURLSession(identifier: String) -> URLSession {
         let sessionConfig = URLSessionConfiguration.background(withIdentifier: identifier)
-        sessionConfig.sharedContainerIdentifier = APP_GROUP_ID
+        let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as! String
+        sessionConfig.sharedContainerIdentifier = appGroupId
         if #available(iOS 11.0, *) {
             sessionConfig.waitsForConnectivity = true
         }

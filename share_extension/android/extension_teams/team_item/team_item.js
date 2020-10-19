@@ -8,12 +8,11 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import TeamIcon from 'app/components/team_icon';
+import CompassIcon from '@components/compass_icon';
+import TeamIcon from '@components/team_icon';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class TeamItem extends PureComponent {
     static propTypes = {
@@ -40,8 +39,8 @@ export default class TeamItem extends PureComponent {
         if (team.id === currentTeamId) {
             current = (
                 <View style={styles.checkmarkContainer}>
-                    <IonIcon
-                        name='md-checkmark'
+                    <CompassIcon
+                        name='check'
                         style={styles.checkmark}
                     />
                 </View>

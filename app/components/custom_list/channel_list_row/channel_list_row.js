@@ -7,10 +7,10 @@ import {
     Text,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 
-import CustomListRow from 'app/components/custom_list/custom_list_row';
+import CompassIcon from '@components/compass_icon';
+import CustomListRow from '@components/custom_list/custom_list_row';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class ChannelListRow extends React.PureComponent {
     static propTypes = {
@@ -53,8 +53,8 @@ export default class ChannelListRow extends React.PureComponent {
             >
                 <View style={style.container}>
                     <View style={style.titleContainer}>
-                        <Icon
-                            name={this.props.isArchived ? 'archive' : 'globe'}
+                        <CompassIcon
+                            name={this.props.isArchived ? 'archive-outline' : 'globe'}
                             style={style.icon}
                         />
                         <Text style={style.displayName}>

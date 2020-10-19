@@ -68,11 +68,10 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
     testID="channel_drawer.button"
   >
     <View>
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         color="#ffffff"
-        name="md-menu"
-        size={25}
+        name="menu-variant"
+        size={24}
       />
       <Badge
         containerStyle={
