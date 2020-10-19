@@ -186,6 +186,7 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
             backButton: {
                 color: theme.sidebarHeaderTextColor,
                 title: '',
+                testID: 'screen.back.button',
             },
             background: {
                 color: theme.sidebarHeaderBg,

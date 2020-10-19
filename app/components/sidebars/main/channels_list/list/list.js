@@ -328,11 +328,7 @@ export default class List extends PureComponent {
     renderSectionHeader = ({section}) => {
         const {styles, isLandscape} = this.props;
         const {intl} = this.context;
-        const {
-            action,
-            defaultMessage,
-            id,
-        } = section;
+        const {action, defaultMessage, id} = section;
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
 

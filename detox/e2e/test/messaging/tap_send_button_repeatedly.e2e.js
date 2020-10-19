@@ -9,7 +9,7 @@
 
 import jestExpect from 'expect';
 
-import {toChannelScreen} from '@support/ui/screen';
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {Channel, Post, Setup} from '@support/server_api';
 
 describe('Messaging', () => {
@@ -20,6 +20,10 @@ describe('Messaging', () => {
         ({team, user} = await Setup.apiInit());
 
         await toChannelScreen(user);
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('MM-T109 User can\'t send the same message repeatedly', async () => {

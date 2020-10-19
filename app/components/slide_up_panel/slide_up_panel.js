@@ -271,6 +271,7 @@ export default class SlideUpPanel extends PureComponent {
                                 <Animated.View
                                     style={[styles.backdrop, backdropStyle]}
                                     pointerEvents='box-only'
+                                    testID='slide_up_panel'
                                 />
                             </PanGestureHandler>
                         </Animated.View>
