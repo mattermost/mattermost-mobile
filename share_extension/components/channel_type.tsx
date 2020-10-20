@@ -2,16 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {
-    View,
-} from 'react-native';
-
-import {Preferences} from '@mm-redux/constants';
+import {StyleSheet, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {Preferences} from '@mm-redux/constants';
 
-const defaultTheme = Preferences.THEMES.default;
+const theme = Preferences.THEMES.default;
 
 export function PublicChannel() {
     return (
@@ -57,18 +53,14 @@ export function GroupChannel() {
     );
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            height: 16,
-            marginRight: 5,
-            width: 16,
-        },
-        icon: {
-            color: theme.centerChannelColor,
-            fontSize: 16,
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        height: 16,
+        marginRight: 5,
+        width: 16,
+    },
+    icon: {
+        color: theme.centerChannelColor,
+        fontSize: 16,
+    },
 });
-
-const style = getStyleSheet(defaultTheme);
