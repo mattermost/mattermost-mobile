@@ -14,6 +14,7 @@ export default class DrawerSwiper extends Component {
         drawerWidth: PropTypes.number.isRequired,
         onPageSelected: PropTypes.func,
         showTeams: PropTypes.bool.isRequired,
+        testID: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
 
@@ -70,6 +71,7 @@ export default class DrawerSwiper extends Component {
             children,
             drawerWidth,
             showTeams,
+            testID,
             theme,
         } = this.props;
 
@@ -88,6 +90,7 @@ export default class DrawerSwiper extends Component {
                 scrollEnabled={showTeams}
                 showsPagination={showTeams}
                 keyboardShouldPersistTaps={'always'}
+                testID={testID}
             >
                 {children}
             </Swiper>
