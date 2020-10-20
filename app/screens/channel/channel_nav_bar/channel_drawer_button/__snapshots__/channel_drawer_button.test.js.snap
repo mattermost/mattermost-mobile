@@ -78,7 +78,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
             "borderRadius": 14,
             "borderWidth": 2,
             "position": "absolute",
-            "right": -13,
+            "right": -9,
             "top": -6,
           }
         }
