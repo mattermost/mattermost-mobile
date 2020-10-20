@@ -90,7 +90,6 @@ const ViewTypes = keyMirror({
     SET_LAST_UPGRADE_CHECK: null,
 
     ADD_RECENT_EMOJI: null,
-    EXTENSION_SELECTED_TEAM_ID: null,
     ANNOUNCEMENT_BANNER: null,
 
     INCREMENT_EMOJI_PICKER_PAGE: null,

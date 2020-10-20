@@ -53,7 +53,7 @@ const setFontFamily = () => {
 };
 
 if (Platform.OS === 'android') {
-    const ShareExtension = require('share_extension/android').default;
+    const ShareExtension = require('share_extension/index.tsx').default;
     const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
     setFontFamily();

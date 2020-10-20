@@ -104,6 +104,8 @@
     "@types/moment-timezone": "0.5.30",
     "@types/react": "16.9.48",
     "@types/react-native": "0.63.10",
+    "@types/react-native-video": "5.0.3",
+    "@types/react-redux": "7.1.9",
     "@types/shallow-equals": "1.0.0",
     "@typescript-eslint/eslint-plugin": "3.10.1",
     "@typescript-eslint/parser": "3.10.1",
