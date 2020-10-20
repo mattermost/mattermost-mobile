@@ -41,6 +41,7 @@ const Preferences: Dictionary<any> = {
     ADVANCED_FILTER_JOIN_LEAVE: 'join_leave',
     ADVANCED_CODE_BLOCK_ON_CTRL_ENTER: 'code_block_ctrl_enter',
     ADVANCED_SEND_ON_CTRL_ENTER: 'send_on_ctrl_enter',
+    TEAMS_ORDER: 'teams_order',
     CATEGORY_THEME: 'theme',
     THEMES: {
         default: {
