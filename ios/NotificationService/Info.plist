@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.36.0</string>
+	<string>1.37.0</string>
 	<key>CFBundleVersion</key>
 	<string>331</string>
 	<key>NSExtension</key>
