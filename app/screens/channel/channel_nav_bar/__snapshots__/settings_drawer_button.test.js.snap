@@ -12,6 +12,7 @@ exports[`SettingDrawerButton should match, full snapshot 1`] = `
       "width": 44,
     }
   }
+  testID="sidebar.settings.button"
 >
   <View
     style={

@@ -22,6 +22,7 @@ export default class CustomListRow extends React.PureComponent {
         children: CustomPropTypes.Children,
         item: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -35,6 +36,7 @@ export default class CustomListRow extends React.PureComponent {
                 touchable={Boolean(this.props.enabled && this.props.onPress)}
                 onPress={this.props.onPress}
                 style={style.touchable}
+                testID={this.props.testID}
             >
                 <View style={[style.container, padding(this.props.isLandscape)]}>
                     {this.props.selectable &&

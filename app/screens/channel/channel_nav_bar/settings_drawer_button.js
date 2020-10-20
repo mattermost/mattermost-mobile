@@ -70,6 +70,7 @@ export class SettingDrawerButton extends PureComponent {
                 accessibilityHint={accessibilityHint}
                 accessibilityLabel={accessibilityLabel}
                 accessibilityRole='button'
+                testID='sidebar.settings.button'
                 onPress={this.handlePress}
                 style={style.container}
             >
