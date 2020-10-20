@@ -202,8 +202,13 @@ commands:
       filename:
         type: string
     steps:
+      - run:
+          name: Copying artifacts
+          command: |
+            mkdir /tmp/artifacts;
+            cp ~/mattermost-mobile/<<parameters.filename>> /tmp/artifacts;
       - store_artifacts:
-          path: ~/mattermost-mobile/<<parameters.filename>>
+          path: /tmp/artifacts
 
 jobs:
   test:
