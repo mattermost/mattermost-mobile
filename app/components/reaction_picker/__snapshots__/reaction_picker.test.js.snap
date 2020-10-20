@@ -247,8 +247,7 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
         ]
       }
     >
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         name="emoticon-plus-outline"
         size={31.2}
         style={
@@ -509,8 +508,7 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
         ]
       }
     >
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         name="emoticon-plus-outline"
         size={31.2}
         style={

@@ -66,8 +66,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
     }
   >
     <View>
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         color="#ffffff"
         name="menu-variant"
         size={24}

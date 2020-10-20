@@ -31,8 +31,7 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
         }
       }
     >
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         name="magnify"
         size={24}
         style={

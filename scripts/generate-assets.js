@@ -4,6 +4,7 @@
 /* eslint-disable no-console */
 
 const fs = require('fs');
+const fsPath = require('path');
 
 // Takes the files in rootA/path, overwrites or merges them with the corresponding file in rootB/path, and places the
 // resulting file in dest/path. JSON files that exist in both places are shallowly (TODO maybe deeply) merged and all
@@ -13,7 +14,7 @@ function leftMergeDirs(rootA, rootB, dest, path) {
     const pathB = rootB + path;
 
     try {
-        fs.mkdirSync(dest + path);
+        fs.mkdirSync(dest + path, {recursive: true});
     } catch (e) {
         if (e.code !== 'EEXIST') {
             console.error('Failed to create destination dir ' + dest + path);
@@ -81,6 +82,25 @@ function leftMergeDirs(rootA, rootB, dest, path) {
             }
         }
     }
+}
+
+const rmdir = (path) => {
+    const list = fs.readdirSync(path);
+    for (let i = 0; i < list.length; i++) {
+        const filename = fsPath.join(path, list[i]);
+        const stat = fs.statSync(filename);
+
+        if (stat.isDirectory()) {
+            rmdir(filename);
+        } else {
+            fs.unlinkSync(filename);
+        }
+    }
+    fs.rmdirSync(path);
+};
+
+if (fs.existsSync('dist')) {
+    rmdir('dist');
 }
 
 // Assumes dist/assets exists and is empty

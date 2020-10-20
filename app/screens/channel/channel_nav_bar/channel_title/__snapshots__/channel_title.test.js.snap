@@ -35,8 +35,7 @@ exports[`ChannelTitle should match snapshot 1`] = `
     >
       My Channel
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
       size={24}
       style={
@@ -85,8 +84,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
     >
       Other user
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
       size={24}
       style={
@@ -160,8 +158,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
     >
       Other user
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
       size={24}
       style={
@@ -218,8 +215,7 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
         }
       />
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
       size={24}
       style={

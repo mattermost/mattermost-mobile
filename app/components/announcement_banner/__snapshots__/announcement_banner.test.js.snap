@@ -51,8 +51,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
         value="Banner Text"
       />
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       color="#fff"
       name="info-outline"
       size={16}
@@ -112,8 +111,7 @@ exports[`AnnouncementBanner should match snapshot 2`] = `
         value="Banner Text"
       />
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       color="#fff"
       name="info-outline"
       size={16}

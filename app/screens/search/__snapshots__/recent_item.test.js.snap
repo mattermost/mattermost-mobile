@@ -43,8 +43,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         }
       }
     >
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         color="rgba(61,60,64,0.6)"
         name="close-circle-outline"
         size={20}
