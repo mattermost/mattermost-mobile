@@ -743,7 +743,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
     };
 }
 
-function loadSidebar(data) {
+export function loadSidebar(data) {
     return async (dispatch, getState) => {
         const state = getState();
         const {channels, channelMembers} = data;
@@ -752,6 +752,8 @@ function loadSidebar(data) {
         if (sidebarActions.length) {
             dispatch(batchActions(sidebarActions, 'BATCH_LOAD_SIDEBAR'));
         }
+
+        return {data: true};
     };
 }
 

@@ -19,6 +19,7 @@ module.exports = {
                 '@i18n': './app/i18n',
                 '@init': './app/init',
                 '@mm-redux': './app/mm-redux',
+                '@share': './share_extension',
                 '@screens': './app/screens',
                 '@selectors': './app/selectors',
                 '@store': './app/store',
