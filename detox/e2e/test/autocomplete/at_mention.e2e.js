@@ -7,8 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {toChannelScreen} from '@support/ui/screen';
-
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Autocomplete', () => {
@@ -27,6 +26,10 @@ describe('Autocomplete', () => {
         await expect(element(by.id('channel_screen'))).toBeVisible();
         postInput = await element(by.id('post_input'));
         await postInput.tap();
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('MM-T3409_1 should suggest user based on username', async () => {
