@@ -31,27 +31,26 @@ function getNotification(channel, team, user) {
                 root_id: '',
             },
         };
-    } else {
-        return {
-            trigger: {
-                type: DetoxConstants.userNotificationTriggers.push,
-            },
-            badge: 1,
-            body: 'This is an e2e test message',
-            payload: {
-                ack_id: 'ack-e2e-test-id',
-                type: 'message',
-                version: '2',
-                channel_id: channel.id,
-                channel_name: channel.name,
-                team_id: team.id,
-                sender_id: user.id,
-                sender_name: user.name,
-                post_id: 'post-e2e-test-id',
-                root_id: '',
-            },
-        };
     }
+    return {
+        trigger: {
+            type: DetoxConstants.userNotificationTriggers.push,
+        },
+        badge: 1,
+        body: 'This is an e2e test message',
+        payload: {
+            ack_id: 'ack-e2e-test-id',
+            type: 'message',
+            version: '2',
+            channel_id: channel.id,
+            channel_name: channel.name,
+            team_id: team.id,
+            sender_id: user.id,
+            sender_name: user.name,
+            post_id: 'post-e2e-test-id',
+            root_id: '',
+        },
+    };
 }
 
 describe('in-app Notification', () => {
