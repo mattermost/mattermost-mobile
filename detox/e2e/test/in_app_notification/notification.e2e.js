@@ -8,52 +8,60 @@
 // *******************************************************************
 
 import {logoutUser, toChannelScreen} from '@support/ui/screen';
-
-import {Setup} from '@support/server_api';
 import {isAndroid, timeouts, wait} from '@support/utils';
+import {Setup} from '@support/server_api';
 
-let notification;
-if (isAndroid()) {
-    notification = {
-        payload: {
-            ack_id: 'ack-e2e-test-id',
-            type: 'message',
+const DetoxConstants = require('detox').DetoxConstants;
+
+function getNotification(channel, team, user) {
+    if (isAndroid()) {
+        return {
+            payload: {
+                ack_id: 'ack-e2e-test-id',
+                type: 'message',
+                badge: 1,
+                version: '2',
+                channel_id: channel.id,
+                channel_name: channel.name,
+                team_id: team.id,
+                sender_id: user.id,
+                sender_name: user.name,
+                message: 'This is an e2e test message',
+                post_id: 'post-e2e-test-id',
+                root_id: '',
+            },
+        };
+    } else {
+        return {
+            trigger: {
+                type: DetoxConstants.userNotificationTriggers.push,
+            },
             badge: 1,
-            version: '2',
-            channel_id: 'channel-e2e-test-id',
-            team_id: 'team-e2e-test-id',
-            sender_id: 'sender-e2e-test-id',
-            sender_name: 'E2E Sender',
-            message: 'This is an e2e test message',
-            channel_name: 'E2E Channel',
-            post_id: 'post-e2e-test-id',
-            root_id: '',
-        },
-    };
-} else {
-    notification = {
-        trigger: 'push',
-        badge: 1,
-        title: 'E2E Channel',
-        body: 'This is an e2e test message',
-        payload: {
-            ack_id: 'ack-e2e-test-id',
-            type: 'message',
-            version: '2',
-            channel_id: 'channel-e2e-test-id',
-            team_id: 'team-e2e-test-id',
-            sender_id: 'sender-e2e-test-id',
-            sender_name: 'E2E Sender',
-            channel_name: 'E2E Channel',
-            post_id: 'post-e2e-test-id',
-            root_id: '',
-        },
-    };
+            body: 'This is an e2e test message',
+            payload: {
+                ack_id: 'ack-e2e-test-id',
+                type: 'message',
+                version: '2',
+                channel_id: channel.id,
+                channel_name: channel.name,
+                team_id: team.id,
+                sender_id: user.id,
+                sender_name: user.name,
+                post_id: 'post-e2e-test-id',
+                root_id: '',
+            },
+        };
+    }
 }
 
 describe('in-app Notification', () => {
+    let testNotification;
+    let testChannel;
+
     beforeAll(async () => {
-        const {user} = await Setup.apiInit();
+        const {channel, team, user} = await Setup.apiInit();
+        testChannel = channel;
+        testNotification = getNotification(channel, team, user);
         await toChannelScreen(user);
     });
 
@@ -63,13 +71,13 @@ describe('in-app Notification', () => {
 
     it('MM-TXXXX should render an in-app notification', async () => {
         // # When a push notification is received
-        await device.sendUserNotification(notification);
+        await device.sendUserNotification(testNotification);
         await wait(timeouts.HALF_SEC);
 
         // * in-app notification shows
         await expect(element(by.id('in_app_notification'))).toBeVisible();
-        await expect(element(by.id('in_app_notification.con'))).toBeVisible();
-        await expect(element(by.id('in_app_notification.title'))).toHaveText('E2E Channel');
+        await expect(element(by.id('in_app_notification.icon'))).toBeVisible();
+        await expect(element(by.id('in_app_notification.title'))).toHaveText(testChannel.name);
         await expect(element(by.id('in_app_notification.message'))).toHaveText('This is an e2e test message');
 
         // # Wait for some profiles to load
