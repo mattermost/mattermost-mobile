@@ -5,16 +5,16 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
+    Alert,
     Linking,
     Platform,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
 import Clipboard from '@react-native-community/clipboard';
 
-import brokenImageIcon from '@assets/images/icons/brokenimage.png';
+import CompassIcon from '@components/compass_icon';
 import ImageViewPort from '@components/image_viewport';
 import ProgressiveImage from '@components/progressive_image';
 import FormattedText from '@components/formatted_text';
@@ -103,11 +103,19 @@ export default class MarkdownImage extends ImageViewPort {
 
     handleLinkPress = () => {
         const url = normalizeProtocol(this.props.linkDestination);
+        const {intl} = this.context;
 
-        Linking.canOpenURL(url).then((supported) => {
-            if (supported) {
-                Linking.openURL(url);
-            }
+        Linking.openURL(url).catch(() => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
         });
     };
 
@@ -215,9 +223,9 @@ export default class MarkdownImage extends ImageViewPort {
             }
         } else if (this.state.failed) {
             image = (
-                <FastImage
-                    source={brokenImageIcon}
-                    style={style.brokenImageIcon}
+                <CompassIcon
+                    name='jumbo-attachment-image-broken'
+                    size={24}
                 />
             );
         }

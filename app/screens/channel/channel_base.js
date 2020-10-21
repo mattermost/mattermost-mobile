@@ -5,13 +5,14 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Alert, Animated, Keyboard, StyleSheet} from 'react-native';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
 import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {showModal, showModalOverCurrentContext} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import {UPDATE_NATIVE_SCROLLVIEW, TYPING_VISIBLE} from '@constants/post_draft';
-import EventEmitter from '@mm-redux/utils/event_emitter';
+import CompassIcon from '@components/compass_icon';
 import EphemeralStore from '@store/ephemeral_store';
 import {unsupportedServer} from '@utils/supported_server';
 import {preventDoubleTap} from '@utils/tap';
@@ -177,12 +178,13 @@ export default class ChannelBase extends PureComponent {
         const {theme} = this.props;
         const screen = 'ChannelInfo';
         const title = intl.formatMessage({id: 'mobile.routes.channelInfo', defaultMessage: 'Info'});
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
             const options = {
                 topBar: {
                     leftButtons: [{
                         id: 'close-info',
                         icon: source,
+                        testID: 'screen.channel_info.close',
                     }],
                 },
             };
@@ -280,7 +282,7 @@ export default class ChannelBase extends PureComponent {
         const {isSupportedServer, isSystemAdmin, theme} = this.props;
         const screen = 'TermsOfService';
         const title = intl.formatMessage({id: 'mobile.tos_link', defaultMessage: 'Terms of Service'});
-        MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor).then((closeButton) => {
+        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((closeButton) => {
             const passProps = {
                 closeButton,
                 isSupportedServer,

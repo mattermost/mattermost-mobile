@@ -9,11 +9,10 @@ import {
     View,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
 
 import {General} from '@mm-redux/constants';
 
-import Autocomplete from 'app/components/autocomplete';
+import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -71,6 +70,7 @@ export default class EditChannelInfo extends PureComponent {
 
         this.state = {
             keyboardVisible: false,
+            keyboardPosition: 0,
         };
     }
 
@@ -174,6 +174,10 @@ export default class EditChannelInfo extends PureComponent {
         this.setState({keyboardVisible: false});
     }
 
+    onKeyboardOffsetChanged = (keyboardPosition) => {
+        this.setState({keyboardPosition});
+    }
+
     onHeaderFocus = () => {
         if (this.state.keyboardVisible) {
             this.scrollHeaderToTop();
@@ -201,8 +205,13 @@ export default class EditChannelInfo extends PureComponent {
             error,
             saving,
         } = this.props;
-        const {keyboardVisible} = this.state;
-
+        const {keyboardVisible, keyboardPosition} = this.state;
+        const bottomStyle = {
+            bottom: Platform.select({
+                ios: keyboardPosition,
+                android: 0,
+            }),
+        };
         const style = getStyleSheet(theme);
 
         const displayHeaderOnly = channelType === General.DM_CHANNEL ||
@@ -232,6 +241,7 @@ export default class EditChannelInfo extends PureComponent {
             <React.Fragment>
                 <StatusBar/>
                 <KeyboardAwareScrollView
+                    testID='edit_channel.scroll'
                     ref={this.scroll}
                     style={style.container}
                     keyboardShouldPersistTaps={'always'}
@@ -253,6 +263,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
+                                            testID='edit_channel.name.input'
                                             ref={this.nameInput}
                                             value={displayName}
                                             onChangeText={this.onDisplayNameChangeText}
@@ -285,6 +296,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
+                                            testID='edit_channel.purpose.input'
                                             ref={this.purposeInput}
                                             value={purpose}
                                             onChangeText={this.onPurposeChangeText}
@@ -327,6 +339,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
+                                    testID={'edit_channel.header.input'}
                                     ref={this.headerInput}
                                     value={header}
                                     onChangeText={this.onHeaderChangeText}
@@ -354,16 +367,18 @@ export default class EditChannelInfo extends PureComponent {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAwareScrollView>
-                <KeyboardTrackingView style={style.autocompleteContainer}>
+                <View style={[style.autocompleteContainer, bottomStyle]}>
                     <Autocomplete
                         cursorPosition={header.length}
-                        maxHeight={200}
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.onHeaderChangeText}
                         value={header}
                         nestedScrollEnabled={true}
+                        onKeyboardOffsetChanged={this.onKeyboardOffsetChanged}
+                        offsetY={8}
                         style={style.autocomplete}
                     />
-                </KeyboardTrackingView>
+                </View>
             </React.Fragment>
         );
     }
@@ -375,6 +390,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: undefined,
         },
         autocompleteContainer: {
+            position: 'absolute',
+            width: '100%',
+            flex: 1,
             justifyContent: 'flex-end',
         },
         container: {

@@ -40,9 +40,9 @@ export const CHANNEL_ITEM_LARGE_BADGE_MAX_WIDTH = 38;
 export const CHANNEL_ITEM_SMALL_BADGE_MAX_WIDTH = 32;
 export const LARGE_BADGE_MAX_WIDTH = 30;
 export const SMALL_BADGE_MAX_WIDTH = 26;
-export const MAX_BADGE_RIGHT_POSITION = -17;
-export const LARGE_BADGE_RIGHT_POSITION = -16;
-export const SMALL_BADGE_RIGHT_POSITION = -13;
+export const MAX_BADGE_RIGHT_POSITION = -13;
+export const LARGE_BADGE_RIGHT_POSITION = -11;
+export const SMALL_BADGE_RIGHT_POSITION = -9;
 
 const ViewTypes = keyMirror({
     DATA_CLEANUP: null,
@@ -90,7 +90,6 @@ const ViewTypes = keyMirror({
     SET_LAST_UPGRADE_CHECK: null,
 
     ADD_RECENT_EMOJI: null,
-    EXTENSION_SELECTED_TEAM_ID: null,
     ANNOUNCEMENT_BANNER: null,
 
     INCREMENT_EMOJI_PICKER_PAGE: null,
@@ -109,9 +108,9 @@ const ViewTypes = keyMirror({
 });
 
 const RequiredServer = {
-    FULL_VERSION: 5.19,
+    FULL_VERSION: 5.25,
     MAJOR_VERSION: 5,
-    MIN_VERSION: 19,
+    MIN_VERSION: 25,
     PATCH_VERSION: 0,
 };
 

@@ -18,7 +18,6 @@ import {
     showSearchModal,
     dismissModal,
 } from '@actions/navigation';
-import noResultsImage from '@assets/images/no_results/pin.png';
 import ChannelLoader from '@components/channel_loader';
 import DateHeader from '@components/post_list/date_header';
 import FailedNetworkAction from '@components/failed_network_action';
@@ -143,7 +142,7 @@ export default class PinnedPosts extends PureComponent {
                     id: 'mobile.pinned_posts.empty_description',
                     defaultMessage: 'Pin important messages which are visible to the whole channel. Long press on a message and choose Pin to Channel to save it here.',
                 })}
-                image={noResultsImage}
+                iconName='pin-outline'
                 title={formatMessage({id: 'mobile.pinned_posts.empty_title', defaultMessage: 'No Pinned messages yet'})}
                 theme={theme}
             />

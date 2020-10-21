@@ -1,20 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Setup} from '@support/server_api';
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {Setup, System} from '@support/server_api';
 import {serverUrl} from '@support/test_config';
-import {fulfillSelectServerScreen} from '@support/ui/screen';
+import {fulfillSelectServerScreen, logoutUser} from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
 
 describe('On boarding', () => {
+    let config;
     let user;
 
     beforeAll(async () => {
+        ({config} = await System.apiGetConfig());
         ({user} = await Setup.apiInit());
     });
 
     beforeEach(async () => {
         await device.reloadReactNative();
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('should show Select server screen on initial load', async () => {
@@ -24,11 +36,38 @@ describe('On boarding', () => {
         await expect(element(by.id('connect_button'))).toBeVisible();
     });
 
+    it('MM-T3383 should show error on empty server URL', async () => {
+        await expect(element(by.id('select_server_screen'))).toBeVisible();
+
+        // # Enter an empty server URL
+        await element(by.id('server_url_input')).typeText(' ');
+
+        // # Tap anywhere to hide keyboard
+        await element(by.text('Enter Server URL')).tap();
+
+        // * Verify that the error message does not exist
+        await waitFor(element(by.id('error_text'))).not.toExist().withTimeout(timeouts.HALF_SEC);
+
+        // # Tap connect button
+        await element(by.id('connect_button')).tap();
+
+        // # Explicitly wait on Android before verifying error message
+        if (isAndroid()) {
+            await wait(timeouts.ONE_SEC);
+        }
+
+        // * Verify error message
+        await waitFor(element(by.id('error_text'))).toBeVisible().withTimeout(timeouts.ONE_SEC);
+        await expect(element(by.id('error_text'))).toHaveText('Please enter a valid server URL');
+    });
+
     it('should show error on invalid server URL', async () => {
         await expect(element(by.id('select_server_screen'))).toBeVisible();
 
         // Enter invalid server URL
-        await element(by.id('server_url_input')).typeText('http://invalid:8065');
+        const input = element(by.id('server_url_input'));
+        await input.clearText();
+        await input.typeText('http://invalid:8065');
 
         // Tap anywhere to hide keyboard
         await element(by.text('Enter Server URL')).tap();
@@ -41,11 +80,11 @@ describe('On boarding', () => {
 
         // Explicitly wait on Android before verifying error message
         if (isAndroid()) {
-            await wait(timeouts.ONE_MIN);
+            await wait(timeouts.TWO_SEC);
         }
 
         // Verify error message
-        await waitFor(element(by.id('error_text'))).toBeVisible().withTimeout(timeouts.ONE_MIN);
+        await waitFor(element(by.id('error_text'))).toBeVisible().withTimeout(timeouts.ONE_SEC);
         await expect(element(by.id('error_text'))).toHaveText('Cannot connect to the server. Please check your server URL and internet connection.');
     });
 
@@ -83,7 +122,7 @@ describe('On boarding', () => {
         await element(by.id('username_input')).typeText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
@@ -97,7 +136,7 @@ describe('On boarding', () => {
         await element(by.id('password_input')).typeText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
@@ -116,13 +155,13 @@ describe('On boarding', () => {
         await element(by.id('username_input')).replaceText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Enter invalid password
         await element(by.id('password_input')).replaceText('any');
 
         // Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();
@@ -141,13 +180,13 @@ describe('On boarding', () => {
         await element(by.id('username_input')).replaceText(user.username);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Enter valid password
         await element(by.id('password_input')).replaceText(user.password);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text('Mattermost')).tap();
+        await element(by.text(config.TeamSettings.SiteName)).tap();
 
         // Tap "Sign in" button
         await element(by.id('signin_button')).tap();

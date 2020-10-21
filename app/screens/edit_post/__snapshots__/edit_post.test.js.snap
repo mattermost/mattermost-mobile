@@ -65,6 +65,7 @@ exports[`EditPost should match snapshot 1`] = `
               },
             ]
           }
+          testID="edit_post.input"
           underlineColorAndroid="transparent"
         />
       </View>
@@ -87,6 +88,7 @@ exports[`EditPost should match snapshot 1`] = `
       cursorPosition={0}
       maxHeight={200}
       nestedScrollEnabled={true}
+      offsetY={8}
       onChangeText={[Function]}
       onVisible={[Function]}
       style={

@@ -25,14 +25,15 @@ function mapStateToProps(state) {
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
     const currentChannelCreatorName = displayUsername(currentChannelCreator, teammateNameDisplay);
     const currentChannelStats = getCurrentChannelStats(state);
-    const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    let currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
     let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentUserId = getCurrentUserId(state);
 
     let status;
     let isBot = false;
     let isTeammateGuest = false;
-    if (currentChannel.type === General.DM_CHANNEL) {
+    const isDirectMessage = currentChannel.type === General.DM_CHANNEL;
+    if (isDirectMessage) {
         const teammateId = getUserIdFromChannelName(currentUserId, currentChannel.name);
         const teammate = getUser(state, teammateId);
         status = getStatusForUserId(state, teammateId);
@@ -45,6 +46,10 @@ function mapStateToProps(state) {
         }
     }
 
+    if (currentChannel.type === General.GM_CHANNEL) {
+        currentChannelMemberCount = currentChannel.display_name.split(',').length;
+    }
+
     return {
         currentChannel,
         currentChannelCreatorName,
@@ -54,6 +59,7 @@ function mapStateToProps(state) {
         isBot,
         isLandscape: isLandscape(state),
         isTeammateGuest,
+        isDirectMessage,
         status,
         theme: getTheme(state),
     };

@@ -32,7 +32,9 @@ LongPost {
   "goToThread": [Function],
   "handleClose": [Function],
   "handlePress": [Function],
-  "navigationEventListener": undefined,
+  "navigationEventListener": Object {
+    "remove": [MockFunction],
+  },
   "props": Object {
     "actions": Object {
       "getPostThread": [MockFunction],
@@ -281,8 +283,7 @@ LongPost {
                   }
                 }
               >
-                <Icon
-                  allowFontScaling={false}
+                <CompassIcon
                   color="#3d3c40"
                   name="close"
                   size={20}

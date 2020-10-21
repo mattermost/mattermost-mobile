@@ -101,7 +101,7 @@ if (System.getenv("SENTRY_ENABLED") == "true") {
  * Upload all the APKs to the Play Store and people will download
  * the correct one based on the CPU architecture of their device.
  */
-def enableSeparateBuildPerCPUArchitecture = false
+def enableSeparateBuildPerCPUArchitecture = project.hasProperty('separateApk') ? project.property('separateApk').toBoolean() : false
 
 /**
  * Run Proguard to shrink the Java bytecode in release builds.
@@ -132,12 +132,9 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         missingDimensionStrategy "RNNotifications.reactNativeVersion", "reactNative60"
-        versionCode 327
-        versionName "1.36.0"
+        versionCode 331
+        versionName "1.37.0"
         multiDexEnabled = true
-        ndk {
-            abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
-        }
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -155,7 +152,7 @@ android {
         abi {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
-            universalApk false  // If true, also generate a universal APK
+            universalApk enableSeparateBuildPerCPUArchitecture  // If true, also generate a universal APK
             include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
     }
@@ -184,7 +181,7 @@ android {
             def abi = output.getFilter(OutputFile.ABI)
             if (abi != null) {  // null for the universal-debug, universal-release variants
                 output.versionCodeOverride =
-                        versionCodes.get(abi) * 1048576 + defaultConfig.versionCode
+                        versionCodes.get(abi) * 1000000 + defaultConfig.versionCode
             }
         }
     }

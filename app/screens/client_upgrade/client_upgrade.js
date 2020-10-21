@@ -6,7 +6,6 @@ import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
 import {
     Alert,
-    Image,
     Linking,
     ScrollView,
     TouchableOpacity,
@@ -15,12 +14,13 @@ import {
 import {intlShape} from 'react-intl';
 
 import {popTopScreen, dismissModal} from '@actions/navigation';
-import logo from '@assets/images/logo.png';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {UpgradeTypes} from '@constants';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {GlobalStyles} from 'app/styles';
 
 export default class ClientUpgrade extends PureComponent {
     static propTypes = {
@@ -104,11 +104,7 @@ export default class ClientUpgrade extends PureComponent {
         const {downloadLink} = this.props;
         const {intl} = this.context;
 
-        Linking.canOpenURL(downloadLink).then((supported) => {
-            if (supported) {
-                return Linking.openURL(downloadLink);
-            }
-
+        Linking.openURL(downloadLink).catch(() => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
@@ -119,8 +115,6 @@ export default class ClientUpgrade extends PureComponent {
                     defaultMessage: 'An error occurred while trying to open the download link.',
                 }),
             );
-
-            return false;
         });
     };
 
@@ -268,9 +262,10 @@ export default class ClientUpgrade extends PureComponent {
                     style={styles.scrollView}
                     contentContainerStyle={styles.scrollViewContent}
                 >
-                    <Image
-                        source={logo}
-                        style={styles.image}
+                    <CompassIcon
+                        name='mattermost'
+                        size={76}
+                        style={[GlobalStyles.logo, styles.logo]}
                     />
                     {this.renderMessageContent()}
                 </ScrollView>
@@ -284,10 +279,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
         },
-        image: {
+        logo: {
             marginTop: 75,
-            width: 76,
-            height: 75,
         },
         messageButton: {
             marginBottom: 15,

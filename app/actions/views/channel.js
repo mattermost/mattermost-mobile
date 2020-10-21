@@ -9,6 +9,7 @@ import {ChannelTypes, RoleTypes, GroupTypes} from '@mm-redux/action_types';
 import {
     fetchMyChannelsAndMembers,
     getChannelByNameAndTeamName,
+    joinChannel,
     leaveChannel as serviceLeaveChannel,
 } from '@mm-redux/actions/channels';
 import {savePreferences} from '@mm-redux/actions/preferences';
@@ -22,6 +23,7 @@ import {
     getCurrentChannelId,
     getRedirectChannelNameForTeam,
     getChannelsNameMapInTeam,
+    getMyChannelMemberships,
     isManuallyUnread,
 } from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -210,13 +212,15 @@ export function handleSelectChannel(channelId) {
 
 export function handleSelectChannelByName(channelName, teamName, errorHandler) {
     return async (dispatch, getState) => {
-        const state = getState();
+        let state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
         const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
         const {error, data: channel} = response;
         const currentChannelId = getCurrentChannelId(state);
+
+        state = getState();
         const reachable = getChannelReachable(state, channelName, teamName);
 
         if (!reachable && errorHandler) {
@@ -234,6 +238,17 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         }
 
         if (channel && currentChannelId !== channel.id) {
+            if (channel.type === General.OPEN_CHANNEL) {
+                const myMemberships = getMyChannelMemberships(state);
+                if (!myMemberships[channel.id]) {
+                    const currentUserId = getCurrentUserId(state);
+                    console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
+                    const result = await dispatch(joinChannel(currentUserId, teamName, channel.id));
+                    if (result.error || !result.data || !result.data.channel) {
+                        return {error};
+                    }
+                }
+            }
             dispatch(handleSelectChannel(channel.id));
         }
 
@@ -728,7 +743,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
     };
 }
 
-function loadSidebar(data) {
+export function loadSidebar(data) {
     return async (dispatch, getState) => {
         const state = getState();
         const {channels, channelMembers} = data;
@@ -737,6 +752,8 @@ function loadSidebar(data) {
         if (sidebarActions.length) {
             dispatch(batchActions(sidebarActions, 'BATCH_LOAD_SIDEBAR'));
         }
+
+        return {data: true};
     };
 }
 

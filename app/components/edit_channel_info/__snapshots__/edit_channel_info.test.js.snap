@@ -17,6 +17,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="edit_channel.scroll"
   >
     <TouchableWithoutFeedback
       onPress={[Function]}
@@ -89,6 +90,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   "paddingHorizontal": 15,
                 }
               }
+              testID="edit_channel.name.input"
               underlineColorAndroid="transparent"
               value="display_name"
             />
@@ -172,6 +174,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                   },
                 ]
               }
+              testID="edit_channel.purpose.input"
               textAlignVertical="top"
               underlineColorAndroid="transparent"
               value="purpose"
@@ -276,6 +279,7 @@ exports[`EditChannelInfo should match snapshot 1`] = `
                 },
               ]
             }
+            testID="edit_channel.header.input"
             textAlignVertical="top"
             underlineColorAndroid="transparent"
             value="header"
@@ -309,18 +313,28 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       </View>
     </TouchableWithoutFeedback>
   </KeyboardAwareScrollView>
-  <KeyboardTrackingView
+  <View
     style={
-      Object {
-        "justifyContent": "flex-end",
-      }
+      Array [
+        Object {
+          "flex": 1,
+          "justifyContent": "flex-end",
+          "position": "absolute",
+          "width": "100%",
+        },
+        Object {
+          "bottom": 0,
+        },
+      ]
     }
   >
     <Connect(Autocomplete)
       cursorPosition={6}
       maxHeight={200}
       nestedScrollEnabled={true}
+      offsetY={8}
       onChangeText={[Function]}
+      onKeyboardOffsetChanged={[Function]}
       style={
         Object {
           "position": undefined,
@@ -328,6 +342,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
       }
       value="header"
     />
-  </KeyboardTrackingView>
+  </View>
 </React.Fragment>
 `;

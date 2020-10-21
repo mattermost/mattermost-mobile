@@ -91,12 +91,13 @@ export default class ChannelMention extends PureComponent {
         myMembers !== this.props.myMembers)) {
             const sections = [];
             if (isSearch) {
-                if (directAndGroupMessages.length) {
+                if (publicChannels.length) {
                     sections.push({
-                        id: t('suggestion.search.direct'),
-                        defaultMessage: 'Direct Messages',
-                        data: directAndGroupMessages,
-                        key: 'directAndGroupMessages',
+                        id: t('suggestion.search.public'),
+                        defaultMessage: 'Public Channels',
+                        data: publicChannels.filter((cId) => myMembers[cId]),
+                        key: 'publicChannels',
+                        hideLoadingIndicator: true,
                     });
                 }
 
@@ -110,13 +111,12 @@ export default class ChannelMention extends PureComponent {
                     });
                 }
 
-                if (publicChannels.length) {
+                if (directAndGroupMessages.length) {
                     sections.push({
-                        id: t('suggestion.search.public'),
-                        defaultMessage: 'Public Channels',
-                        data: publicChannels.filter((cId) => myMembers[cId]),
-                        key: 'publicChannels',
-                        hideLoadingIndicator: true,
+                        id: t('suggestion.search.direct'),
+                        defaultMessage: 'Direct Messages',
+                        data: directAndGroupMessages,
+                        key: 'directAndGroupMessages',
                     });
                 }
             } else {
@@ -184,6 +184,7 @@ export default class ChannelMention extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
+        const isFirstSection = section.id === this.state.sections[0].id;
         return (
             <AutocompleteSectionHeader
                 id={section.id}
@@ -191,6 +192,7 @@ export default class ChannelMention extends PureComponent {
                 loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
                 isLandscape={this.props.isLandscape}
+                isFirstSection={isFirstSection}
             />
         );
     };
@@ -218,6 +220,7 @@ export default class ChannelMention extends PureComponent {
 
         return (
             <SectionList
+                testID='autocomplete.channel_mention.list'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
                 style={[style.listView, {maxHeight: maxListHeight}]}
@@ -235,6 +238,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
         },
     };
 });

@@ -12,7 +12,7 @@ import ProfilePicture from 'app/components/profile_picture';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {BotTag, GuestTag} from 'app/components/tag';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import FormattedText from 'app/components/formatted_text';
 
 export default class AtMentionItem extends PureComponent {
@@ -28,6 +28,8 @@ export default class AtMentionItem extends PureComponent {
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isCurrentUser: PropTypes.bool.isRequired,
+        showFullName: PropTypes.string,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -40,11 +42,24 @@ export default class AtMentionItem extends PureComponent {
         onPress(username);
     };
 
+    renderNameBlock = () => {
+        let name = '';
+        const {showFullName, firstName, lastName, nickname} = this.props;
+        const hasNickname = nickname.length > 0;
+
+        if (showFullName === 'true') {
+            name += `${firstName} ${lastName} `;
+        }
+
+        if (hasNickname) {
+            name += `(${nickname})`;
+        }
+
+        return name.trim();
+    }
+
     render() {
         const {
-            firstName,
-            lastName,
-            nickname,
             userId,
             username,
             theme,
@@ -52,49 +67,59 @@ export default class AtMentionItem extends PureComponent {
             isLandscape,
             isGuest,
             isCurrentUser,
+            testID,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
-        const hasFullName = firstName.length > 0 && lastName.length > 0;
-        const hasNickname = nickname.length > 0;
+        const name = this.renderNameBlock();
 
         return (
             <TouchableWithFeedback
+                testID={testID}
                 key={userId}
                 onPress={this.completeMention}
-                style={[style.row, padding(isLandscape)]}
-                type={'opacity'}
+                style={padding(isLandscape)}
+                underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                type={'native'}
             >
-                <View style={style.rowPicture}>
-                    <ProfilePicture
-                        userId={userId}
+                <View style={style.row}>
+                    <View style={style.rowPicture}>
+                        <ProfilePicture
+                            userId={userId}
+                            theme={theme}
+                            size={24}
+                            status={null}
+                            showStatus={false}
+                        />
+                    </View>
+                    <BotTag
+                        show={isBot}
                         theme={theme}
-                        size={20}
-                        status={null}
                     />
+                    <GuestTag
+                        show={isGuest}
+                        theme={theme}
+                    />
+                    {Boolean(name.length) &&
+                    <Text
+                        style={style.rowFullname}
+                        numberOfLines={1}
+                    >
+                        {name}
+                        {isCurrentUser &&
+                        <FormattedText
+                            id='suggestion.mention.you'
+                            defaultMessage='(you)'
+                        />}
+                    </Text>
+                    }
+                    <Text
+                        style={style.rowUsername}
+                        numberOfLines={1}
+                    >
+                        {` @${username}`}
+                    </Text>
                 </View>
-                <Text style={style.rowUsername}>{`@${username}`}</Text>
-                <BotTag
-                    show={isBot}
-                    theme={theme}
-                />
-                <GuestTag
-                    show={isGuest}
-                    theme={theme}
-                />
-                {hasFullName && <Text style={style.rowUsername}>{' - '}</Text>}
-                <Text
-                    style={style.rowFullname}
-                    numberOfLines={1}
-                >
-                    {hasFullName && `${firstName} ${lastName}`}
-                    {hasNickname && ` (${nickname}) `}
-                    {isCurrentUser &&
-                    <FormattedText
-                        id='suggestion.mention.you'
-                        defaultMessage='(you)'
-                    />}
-                </Text>
             </TouchableWithFeedback>
         );
     }
@@ -103,24 +128,29 @@ export default class AtMentionItem extends PureComponent {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
+            height: 40,
             paddingVertical: 8,
+            paddingTop: 4,
+            paddingHorizontal: 16,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
         },
         rowPicture: {
-            marginHorizontal: 8,
-            width: 20,
+            marginRight: 10,
+            marginLeft: 2,
+            width: 24,
             alignItems: 'center',
             justifyContent: 'center',
         },
-        rowUsername: {
-            fontSize: 13,
-            color: theme.centerChannelColor,
-        },
         rowFullname: {
+            fontSize: 15,
             color: theme.centerChannelColor,
-            opacity: 0.6,
+            paddingLeft: 4,
+        },
+        rowUsername: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            opacity: 0.56,
             flex: 1,
         },
     };

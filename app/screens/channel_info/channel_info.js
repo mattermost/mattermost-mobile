@@ -45,6 +45,7 @@ export default class ChannelInfo extends PureComponent {
         isBot: PropTypes.bool.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTeammateGuest: PropTypes.bool.isRequired,
+        isDirectMessage: PropTypes.bool.isRequired,
         status: PropTypes.string,
         theme: PropTypes.object.isRequired,
     };
@@ -109,8 +110,8 @@ export default class ChannelInfo extends PureComponent {
         showModalOverCurrentContext(screen, passProps, options);
     };
 
-    actionsRows = (style, channelIsArchived) => {
-        const {currentChannel, currentUserId, isLandscape, theme} = this.props;
+    actionsRows = (channelIsArchived) => {
+        const {currentChannel, currentUserId, isLandscape, isDirectMessage, theme} = this.props;
 
         if (channelIsArchived) {
             return (
@@ -142,11 +143,15 @@ export default class ChannelInfo extends PureComponent {
                     theme={theme}
                 />
                 <Separator theme={theme}/>
-                <NotificationPreference
-                    isLandscape={isLandscape}
-                    theme={theme}
-                />
-                <Separator theme={theme}/>
+                {!isDirectMessage &&
+                <>
+                    <NotificationPreference
+                        isLandscape={isLandscape}
+                        theme={theme}
+                    />
+                    <Separator theme={theme}/>
+                </>
+                }
                 <Pinned
                     channelId={currentChannel.id}
                     isLandscape={isLandscape}
@@ -206,7 +211,7 @@ export default class ChannelInfo extends PureComponent {
                         status={status}
                         theme={theme}
                         type={currentChannel.type}
-                        isArchived={currentChannel.delete_at !== 0}
+                        isArchived={channelIsArchived}
                         isBot={isBot}
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
@@ -215,7 +220,7 @@ export default class ChannelInfo extends PureComponent {
                     />
                     }
                     <View style={style.rowsContainer}>
-                        {this.actionsRows(style, channelIsArchived)}
+                        {this.actionsRows(channelIsArchived)}
                     </View>
                     <View style={style.footer}>
                         <Leave

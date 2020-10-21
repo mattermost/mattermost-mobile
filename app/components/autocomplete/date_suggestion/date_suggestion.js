@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Dimensions, Platform, StyleSheet} from 'react-native';
+import {Dimensions, Platform, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {CalendarList, LocaleConfig} from 'react-native-calendars';
 import {intlShape} from 'react-intl';
@@ -10,7 +10,7 @@ import {intlShape} from 'react-intl';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 
 import {DATE_MENTION_SEARCH_REGEX, ALL_SEARCH_FLAGS_REGEX} from 'app/constants/autocomplete';
-import {changeOpacity} from 'app/utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class DateSuggestion extends PureComponent {
     static propTypes = {
@@ -37,6 +37,7 @@ export default class DateSuggestion extends PureComponent {
 
         this.state = {
             mentionComplete: false,
+            active: false,
             sections: [],
         };
     }
@@ -45,16 +46,35 @@ export default class DateSuggestion extends PureComponent {
         this.setCalendarLocale();
     }
 
+    onLayout = (e) => {
+        this.setState({calendarWidth: e.nativeEvent.layout.width});
+    };
+
     componentDidUpdate(prevProps) {
-        const {locale, matchTerm} = this.props;
+        const {locale, matchTerm, enableDateSuggestion} = this.props;
+        const {mentionComplete} = this.state;
 
         if ((matchTerm !== prevProps.matchTerm && matchTerm === null) || this.state.mentionComplete) {
             this.resetComponent();
         }
 
+        if (matchTerm === null || mentionComplete || !enableDateSuggestion) {
+            this.setCalendarActive(false);
+            return;
+        }
+
+        if (matchTerm !== null) {
+            this.props.onResultCountChange(1);
+            this.setCalendarActive(true);
+        }
+
         if (locale !== prevProps.locale) {
             this.setCalendarLocale();
         }
+    }
+
+    setCalendarActive = (active) => {
+        this.setState({active});
     }
 
     completeMention = (day) => {
@@ -118,10 +138,11 @@ export default class DateSuggestion extends PureComponent {
     };
 
     render() {
-        const {mentionComplete} = this.state;
-        const {matchTerm, enableDateSuggestion, theme} = this.props;
+        const {active, calendarWidth} = this.state;
+        const {theme} = this.props;
+        const styles = getStyleFromTheme(theme);
 
-        if (matchTerm === null || mentionComplete || !enableDateSuggestion) {
+        if (!active) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
@@ -131,22 +152,30 @@ export default class DateSuggestion extends PureComponent {
         const calendarStyle = calendarTheme(theme);
 
         return (
-            <CalendarList
+            <View
+                onLayout={this.onLayout}
                 style={styles.calList}
-                current={currentDate}
-                maxDate={currentDate}
-                pastScrollRange={24}
-                futureScrollRange={0}
-                scrollingEnabled={true}
-                pagingEnabled={true}
-                hideArrows={false}
-                horizontal={true}
-                showScrollIndicator={true}
-                onDayPress={this.completeMention}
-                showWeekNumbers={false}
-                theme={calendarStyle}
-                keyboardShouldPersistTaps='always'
-            />
+            >
+                {Boolean(calendarWidth) &&
+                <CalendarList
+                    testID='autocomplete.date_suggestion'
+                    current={currentDate}
+                    maxDate={currentDate}
+                    pastScrollRange={24}
+                    futureScrollRange={0}
+                    scrollingEnabled={true}
+                    calendarWidth={calendarWidth}
+                    pagingEnabled={true}
+                    hideArrows={false}
+                    horizontal={true}
+                    showScrollIndicator={true}
+                    onDayPress={this.completeMention}
+                    showWeekNumbers={false}
+                    theme={calendarStyle}
+                    keyboardShouldPersistTaps='always'
+                />
+                }
+            </View>
         );
     }
 }
@@ -197,9 +226,13 @@ const calendarTheme = memoizeResult((theme) => ({
     },
 }));
 
-const styles = StyleSheet.create({
-    calList: {
-        height: 1700,
-        paddingTop: 5,
-    },
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        calList: {
+            paddingTop: 5,
+            width: '100%',
+            borderRadius: 4,
+            backgroundColor: theme.centerChannelBg,
+        },
+    };
 });

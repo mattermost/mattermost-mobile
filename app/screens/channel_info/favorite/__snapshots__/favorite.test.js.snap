@@ -5,7 +5,7 @@ exports[`ChannelInfo -> Favorite should match snapshot for Favorite Channel 1`] 
   action={[Function]}
   defaultMessage="Favorite"
   detail={true}
-  icon="star-o"
+  icon="star-outline"
   isLandscape={false}
   rightArrow={true}
   shouldRender={true}
@@ -48,7 +48,7 @@ exports[`ChannelInfo -> Favorite should match snapshot for Unfavorite Channel 1`
   action={[Function]}
   defaultMessage="Favorite"
   detail={false}
-  icon="star-o"
+  icon="star-outline"
   isLandscape={false}
   rightArrow={true}
   shouldRender={true}

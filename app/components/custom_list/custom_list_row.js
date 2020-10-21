@@ -7,10 +7,11 @@ import {
     StyleSheet,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import ConditionalTouchable from 'app/components/conditional_touchable';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+
+import CompassIcon from '@components/compass_icon';
+import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
+import ConditionalTouchable from '@components/conditional_touchable';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class CustomListRow extends React.PureComponent {
     static propTypes = {
@@ -21,6 +22,7 @@ export default class CustomListRow extends React.PureComponent {
         children: CustomPropTypes.Children,
         item: PropTypes.object,
         isLandscape: PropTypes.bool.isRequired,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -34,15 +36,16 @@ export default class CustomListRow extends React.PureComponent {
                 touchable={Boolean(this.props.enabled && this.props.onPress)}
                 onPress={this.props.onPress}
                 style={style.touchable}
+                testID={this.props.testID}
             >
                 <View style={[style.container, padding(this.props.isLandscape)]}>
                     {this.props.selectable &&
                         <View style={style.selectorContainer}>
                             <View style={[style.selector, (this.props.selected && style.selectorFilled), (!this.props.enabled && style.selectorDisabled)]}>
                                 {this.props.selected &&
-                                    <Icon
+                                    <CompassIcon
                                         name='check'
-                                        size={16}
+                                        size={24}
                                         color='#fff'
                                     />
                                 }
@@ -92,7 +95,7 @@ const style = StyleSheet.create({
         backgroundColor: '#888',
     },
     selectorFilled: {
-        backgroundColor: '#378FD2',
+        backgroundColor: '#166DE0',
         borderWidth: 0,
     },
 });

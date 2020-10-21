@@ -416,43 +416,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
-            />
-            <View
-              accessible={true}
-              focusable={true}
-              onClick={[Function]}
-              onResponderGrant={[Function]}
-              onResponderMove={[Function]}
-              onResponderRelease={[Function]}
-              onResponderTerminate={[Function]}
-              onResponderTerminationRequest={[Function]}
-              onStartShouldSetResponder={[Function]}
-              style={
-                Object {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                  "opacity": 1,
-                  "padding": 10,
-                }
-              }
             >
-              <Image
-                source={
-                  Object {
-                    "testUri": "../../../dist/assets/images/icons/slash-forward-box.png",
-                  }
-                }
-                style={
-                  Array [
-                    Object {
-                      "height": 24,
-                      "opacity": 1,
-                      "tintColor": "rgba(61,60,64,0.64)",
-                      "width": 24,
-                    },
-                    null,
-                  ]
-                }
+              <Icon
+                color="rgba(61,60,64,0.64)"
+                name="at"
+                size={24}
               />
             </View>
             <View
@@ -473,7 +441,13 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
-            />
+            >
+              <Icon
+                color="rgba(61,60,64,0.64)"
+                name="slash-forward-box-outline"
+                size={24}
+              />
+            </View>
             <View
               accessible={true}
               focusable={true}
@@ -492,7 +466,13 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
-            />
+            >
+              <Icon
+                color="rgba(61,60,64,0.64)"
+                name="file-document-outline"
+                size={24}
+              />
+            </View>
             <View
               accessible={true}
               focusable={true}
@@ -511,7 +491,38 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
-            />
+            >
+              <Icon
+                color="rgba(61,60,64,0.64)"
+                name="image-outline"
+                size={24}
+              />
+            </View>
+            <View
+              accessible={true}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                Object {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "opacity": 1,
+                  "padding": 10,
+                }
+              }
+            >
+              <Icon
+                color="rgba(61,60,64,0.64)"
+                name="camera-outline"
+                size={24}
+              />
+            </View>
           </View>
           <View
             style={
@@ -539,44 +550,11 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 ]
               }
             >
-              <RNSVGSvgView
-                align="xMidYMid"
-                bbHeight={16}
-                bbWidth={19}
-                focusable={false}
-                height={16}
-                meetOrSlice={0}
-                minX={0}
-                minY={0}
-                style={
-                  Array [
-                    Object {
-                      "backgroundColor": "transparent",
-                      "borderWidth": 0,
-                    },
-                    Object {
-                      "flex": 0,
-                      "height": 16,
-                      "width": 19,
-                    },
-                  ]
-                }
-                vbHeight={14}
-                vbWidth={16}
-                width={19}
-              >
-                <RNSVGGroup>
-                  <RNSVGPath
-                    d="M1.09222552,5.76354703 L0.405413926,0.94983436 C0.379442059,0.7702001 0.452067095,0.59056584 0.594431403,0.479386798 C0.737276671,0.368693254 0.927737029,0.343932856 1.09318744,0.414815564 C3.7432798,1.54942439 12.1192069,5.13676911 15.0920238,6.40974487 C15.2723839,6.48693905 15.3892573,6.66560231 15.3892573,6.8632 C15.3892573,7.06079769 15.2723839,7.23946095 15.0920238,7.31665513 C12.0961208,8.59982635 3.6105347,12.2337789 1.0316245,13.3378013 C0.878198098,13.4033436 0.701685594,13.3810106 0.569902417,13.2785706 C0.43763828,13.1761305 0.37030381,13.0096047 0.393870874,12.8430789 L1.07875863,7.96479496 L8.93669128,6.8632 L1.09222552,5.76354703 Z"
-                    fill={2164260863}
-                    propList={
-                      Array [
-                        "fill",
-                      ]
-                    }
-                  />
-                </RNSVGGroup>
-              </RNSVGSvgView>
+              <Icon
+                color="rgba(255,255,255,0.5)"
+                name="send"
+                size={24}
+              />
             </View>
           </View>
         </View>
@@ -607,6 +585,17 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
       }
     }
   >
+    <Icon
+      color="#3d3c40"
+      name="glasses"
+      style={
+        Object {
+          "fontSize": 20,
+          "lineHeight": 22,
+          "opacity": 0.56,
+        }
+      }
+    />
     <Text
       style={
         Object {
@@ -645,6 +634,17 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
       }
     }
   >
+    <Icon
+      color="#3d3c40"
+      name="glasses"
+      style={
+        Object {
+          "fontSize": 20,
+          "lineHeight": 22,
+          "opacity": 0.56,
+        }
+      }
+    />
     <Text
       style={
         Object {

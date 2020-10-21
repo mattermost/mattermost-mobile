@@ -19,6 +19,7 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="channel.search.button"
   >
     <View
       style={
@@ -28,14 +29,12 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
           "flexDirection": "column",
           "justifyContent": "center",
           "position": "relative",
-          "top": -1,
         }
       }
     >
-      <Icon
-        allowFontScaling={false}
-        name="search"
-        size={18}
+      <CompassIcon
+        name="magnify"
+        size={24}
         style={
           Object {
             "backgroundColor": "#1153ab",

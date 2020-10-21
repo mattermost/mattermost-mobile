@@ -5,10 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
 
-import {DeviceTypes, ViewTypes} from 'app/constants';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import Icon from 'react-native-vector-icons/Ionicons';
+import CompassIcon from '@components/compass_icon';
+import {DeviceTypes, ViewTypes} from '@constants';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const {
     ANDROID_TOP_LANDSCAPE,
@@ -54,8 +53,8 @@ export default class EmptyToolbar extends PureComponent {
             <View style={[style.header, padding, {height}]}>
                 <View style={style.button_container}>
                     <View style={style.button_wrapper}>
-                        <Icon
-                            name='md-menu'
+                        <CompassIcon
+                            name='menu'
                             size={25}
                             color={theme.sidebarHeaderTextColor}
                         />
