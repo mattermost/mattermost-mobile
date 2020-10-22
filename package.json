@@ -16,7 +16,7 @@
     "@react-navigation/native": "5.7.6",
     "@react-navigation/stack": "5.9.3",
     "@rudderstack/rudder-sdk-react-native": "1.0.3",
-    "@sentry/react-native": "1.7.2",
+    "@sentry/react-native": "1.9.0",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#f6ab98dede6ce4b4e7adea140ac77249bfb2d6ce",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",

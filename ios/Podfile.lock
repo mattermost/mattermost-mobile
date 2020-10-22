@@ -346,8 +346,8 @@ PODS:
     - Rudder
   - RNScreens (2.11.0):
     - React
-  - RNSentry (1.7.2):
-    - React
+  - RNSentry (1.9.0):
+    - React-Core
     - Sentry (~> 5.2.0)
   - RNSVG (12.1.0):
     - React
@@ -655,7 +655,7 @@ SPEC CHECKSUMS:
   RNReanimated: dd8c286ab5dd4ba36d3a7fef8bff7e08711b5476
   RNRudderSdk: 5d99b1a5a582ab55d6213b38018d35e98818af63
   RNScreens: 0e91da98ab26d5d04c7b59a9b6bd694124caf88c
-  RNSentry: 2d4a0e18c6dfe93b647c360e0d15c9391d24e9d1
+  RNSentry: 1adaa43b01c6a3ab5091d4d1add66b7c58558898
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNVectorIcons: bc69e6a278b14842063605de32bec61f0b251a59
   Rudder: 57a48709b714c4746a96f4d4d00f33e78a62a5ee
