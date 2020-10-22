@@ -1,3 +1,18 @@
+diff --git a/node_modules/react-native-notifications/RNNotifications/RNNotificationsStore.m b/node_modules/react-native-notifications/RNNotifications/RNNotificationsStore.m
+index d5e953a..08d4d46 100644
+--- a/node_modules/react-native-notifications/RNNotifications/RNNotificationsStore.m
++++ b/node_modules/react-native-notifications/RNNotifications/RNNotificationsStore.m
+@@ -40,7 +40,9 @@ - (void)setPresentationCompletionHandler:(void (^)(UNNotificationPresentationOpt
+ - (void)completeAction:(NSString *)completionKey {
+     void (^completionHandler)() = (void (^)())[_actionCompletionHandlers valueForKey:completionKey];
+     if (completionHandler) {
+-        completionHandler();
++        dispatch_async(dispatch_get_main_queue(), ^{
++            completionHandler();
++        });
+         [_actionCompletionHandlers removeObjectForKey:completionKey];
+     }
+ }
 diff --git a/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml b/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml
 index 7053040..ad63eff 100644
 --- a/node_modules/react-native-notifications/android/app/src/main/AndroidManifest.xml

@@ -230,6 +230,7 @@ exports[`Reactions Should match snapshot with default emojis 1`] = `
   />
   <TouchableWithoutFeedback
     onPress={[MockFunction]}
+    testID="reaction_picker.open"
   >
     <View
       style={
@@ -491,6 +492,7 @@ exports[`Reactions Should match snapshot with default emojis 2`] = `
   />
   <TouchableWithoutFeedback
     onPress={[MockFunction]}
+    testID="reaction_picker.open"
   >
     <View
       style={

@@ -9,7 +9,6 @@
 
 import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-
 import {Setup} from '@support/server_api';
 
 describe('Channel Info Header', () => {
