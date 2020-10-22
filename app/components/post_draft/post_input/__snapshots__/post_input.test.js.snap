@@ -2,6 +2,7 @@
 
 exports[`PostInput should match, full snapshot 1`] = `
 <ForwardRef(WrappedPasteableTextInput)
+  autoCompleteType="none"
   blurOnSubmit={false}
   disableFullscreenUI={true}
   keyboardAppearance="light"
@@ -24,6 +25,7 @@ exports[`PostInput should match, full snapshot 1`] = `
       "paddingTop": 6,
     }
   }
+  textContentType="none"
   underlineColorAndroid="transparent"
 />
 `;
