@@ -21,7 +21,7 @@
     "commonmark": "github:mattermost/commonmark.js#f6ab98dede6ce4b4e7adea140ac77249bfb2d6ce",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",
     "core-js": "3.6.5",
-    "deep-equal": "2.0.3",
+    "deep-equal": "2.0.4",
     "deepmerge": "4.2.2",
     "emoji-regex": "9.2.0",
     "form-data": "3.0.0",
