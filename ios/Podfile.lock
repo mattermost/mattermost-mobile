@@ -339,7 +339,7 @@ PODS:
     - React
   - RNReactNativeHapticFeedback (1.10.0):
     - React
-  - RNReanimated (1.13.0):
+  - RNReanimated (1.13.1):
     - React
   - RNRudderSdk (1.0.0):
     - React
@@ -652,7 +652,7 @@ SPEC CHECKSUMS:
   RNLocalize: c388679af021ddd6069c215f7fdd2acf4e77ede5
   RNPermissions: e29e449d948ba1c04f3bb3bede5c662667543c49
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
-  RNReanimated: 89f5e0a04d1dd52fbf27e7e7030d8f80a646a3fc
+  RNReanimated: dd8c286ab5dd4ba36d3a7fef8bff7e08711b5476
   RNRudderSdk: 5d99b1a5a582ab55d6213b38018d35e98818af63
   RNScreens: 0e91da98ab26d5d04c7b59a9b6bd694124caf88c
   RNSentry: 2d4a0e18c6dfe93b647c360e0d15c9391d24e9d1
