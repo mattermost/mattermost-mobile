@@ -331,7 +331,6 @@
   "mobile.notice_mobile_link": "移动应用",
   "mobile.notice_platform_link": "服务器",
   "mobile.notice_text": "Mattermost 通过开源软件实现了我们的 {platform} 以及 {mobile}。",
-  "mobile.notification.in": " 在 ",
   "mobile.notification_settings.auto_responder.default_message": "你好，我现在已离开办公室并无法回复消息。",
   "mobile.notification_settings.auto_responder.enabled": "已启用",
   "mobile.notification_settings.auto_responder.footer_message": "设定在私信里自动回复的消息。在公共或私有频道下的提及不会触发自动回复。开启自动回复将设您的状态为离开办公室并停用邮件和推送通知。",

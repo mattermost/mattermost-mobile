@@ -331,7 +331,6 @@
   "mobile.notice_mobile_link": "mobiele apps",
   "mobile.notice_platform_link": "server",
   "mobile.notice_text": "Mattermost wordt mogelijk gemaakt door de open source software die gebruikt wordt in ons {platform} en {mobile}.",
-  "mobile.notification.in": " in ",
   "mobile.notification_settings.auto_responder.default_message": "Hallo, ik ben niet op kantoor en kan niet reageren op berichten.",
   "mobile.notification_settings.auto_responder.enabled": "Ingeschakeld",
   "mobile.notification_settings.auto_responder.footer_message": "Stel een aangepast bericht in dat automatisch wordt verzonden als reactie op directe berichten. Vermeldingen in openbare en persoonlijke kanalen zullen niet leiden tot het geautomatiseerde antwoord. Automatische antwoorden inschakelen stelt jouw status in op Out of Office en schakelt e-mail en push-berichten uit.",

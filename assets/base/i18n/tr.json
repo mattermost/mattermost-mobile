@@ -331,7 +331,6 @@
   "mobile.notice_mobile_link": "mobil uygulamalar",
   "mobile.notice_platform_link": "sunucu",
   "mobile.notice_text": "Mattermost kullandığımız {platform} ve {mobile} üzerinde açık kaynaklı yazılım sayesinde var.",
-  "mobile.notification.in": " içinde ",
   "mobile.notification_settings.auto_responder.default_message": "Merhaba, Ofis dışında olduğumdan iletilere yanıt veremiyorum.",
   "mobile.notification_settings.auto_responder.enabled": "Etkin",
   "mobile.notification_settings.auto_responder.footer_message": "Doğrudan İletilere otomatik olarak verilecek yanıt metnini yazın. Herkese Açık ve Özel Kanallardaki anmalar otomatik yanıtı tetiklemez. Otomatik Yanıtların ayarlanması durumunuzu Ofis Dışında olarak değiştirerek e-posta ve anında bildirimleri devre dışı bırakır.",
