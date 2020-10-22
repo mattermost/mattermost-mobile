@@ -231,8 +231,8 @@ PODS:
     - React
   - react-native-safe-area (0.5.1):
     - React
-  - react-native-safe-area-context (3.1.7):
-    - React
+  - react-native-safe-area-context (3.1.8):
+    - React-Core
   - react-native-video (5.1.0-alpha8):
     - React
     - react-native-video/Video (= 5.1.0-alpha8)
@@ -624,7 +624,7 @@ SPEC CHECKSUMS:
   react-native-notifications: 24706907104a0f00c35c4bde7e0ca76a50f730e1
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
-  react-native-safe-area-context: fcece23844742b6f7f0627c3715b806a7deff946
+  react-native-safe-area-context: 01158a92c300895d79dee447e980672dc3fb85a6
   react-native-video: 8d97379f3c2322a569f1e27542ad1a646cad9444
   react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
   React-RCTActionSheet: 53ea72699698b0b47a6421cb1c8b4ab215a774aa
