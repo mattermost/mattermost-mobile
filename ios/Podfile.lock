@@ -35,9 +35,9 @@ PODS:
   - MMKV (1.2.2):
     - MMKVCore (~> 1.2.2)
   - MMKVCore (1.2.2)
-  - Permission-Camera (2.2.0):
+  - Permission-Camera (2.2.2):
     - RNPermissions
-  - Permission-PhotoLibrary (2.2.0):
+  - Permission-PhotoLibrary (2.2.2):
     - RNPermissions
   - RCTRequired (0.63.3)
   - RCTTypeSafety (0.63.3):
@@ -335,8 +335,8 @@ PODS:
     - React
   - RNLocalize (1.4.1):
     - React
-  - RNPermissions (2.2.0):
-    - React
+  - RNPermissions (2.2.2):
+    - React-Core
   - RNReactNativeHapticFeedback (1.10.0):
     - React
   - RNReanimated (1.13.1):
@@ -600,8 +600,8 @@ SPEC CHECKSUMS:
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
   MMKV: b14909757d8b70e2aa89ff1c6d56a7b239e10a29
   MMKVCore: 6225324fe5006026bc86ef8641d567e00c6582f3
-  Permission-Camera: cc98f099e74178912b7c6b3795c3b59c246f0d7c
-  Permission-PhotoLibrary: 7c335322d84ded15089f144d75cec154565fbc66
+  Permission-Camera: 375576c57ea625c88137d2cc52ba6dfeb21db036
+  Permission-PhotoLibrary: bb20a7ac8aec0f7459558e5fbe2bd0a6f2744be3
   RCTRequired: 48884c74035a0b5b76dbb7a998bd93bcfc5f2047
   RCTTypeSafety: edf4b618033c2f1c5b7bc3d90d8e085ed95ba2ab
   RCTYouTube: 7ff7d42f5ed42d185198681e967fd2c2b661375d
@@ -650,7 +650,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: b6b359bb800ae399a9c8b27032bdbf7c18f08a08
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
   RNLocalize: c388679af021ddd6069c215f7fdd2acf4e77ede5
-  RNPermissions: e29e449d948ba1c04f3bb3bede5c662667543c49
+  RNPermissions: 067727df624665d4a6c8e2cffcc172ba608b96ed
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
   RNReanimated: dd8c286ab5dd4ba36d3a7fef8bff7e08711b5476
   RNRudderSdk: 5d99b1a5a582ab55d6213b38018d35e98818af63
