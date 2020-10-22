@@ -27,7 +27,7 @@
     "form-data": "3.0.0",
     "fuse.js": "6.4.1",
     "intl": "1.2.5",
-    "jail-monkey": "2.3.2",
+    "jail-monkey": "2.3.3",
     "mime-db": "1.45.0",
     "moment-timezone": "0.5.31",
     "prop-types": "15.7.2",
