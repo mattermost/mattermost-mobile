@@ -291,7 +291,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       <View>
         <TextInput
           allowFontScaling={true}
-          autoCompleteType="none"
+          autoCompleteType="off"
           blurOnSubmit={false}
           disableFullscreenUI={true}
           keyboardAppearance="light"

@@ -291,7 +291,7 @@ export default class PostInput extends PureComponent {
                 onEndEditing={this.handleEndEditing}
                 disableFullscreenUI={true}
                 textContentType='none'
-                autoCompleteType='none'
+                autoCompleteType='off'
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
             />
         );

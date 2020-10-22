@@ -2,7 +2,7 @@
 
 exports[`PostInput should match, full snapshot 1`] = `
 <ForwardRef(WrappedPasteableTextInput)
-  autoCompleteType="none"
+  autoCompleteType="off"
   blurOnSubmit={false}
   disableFullscreenUI={true}
   keyboardAppearance="light"
