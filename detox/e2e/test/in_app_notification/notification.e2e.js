@@ -69,6 +69,27 @@ describe('in-app Notification', () => {
     });
 
     it('MM-TXXXX should render an in-app notification', async () => {
+        const message = Date.now().toString();
+
+        // # Type a message
+        const postInput = await element(by.id('post_input'));
+        await postInput.tap();
+        await postInput.typeText(message);
+
+        // # Tap the send button
+        await element(by.id('send_button')).tap();
+
+        // # Open Add reaction screen
+        await element(by.text(message)).longPress();
+        await element(by.id('reaction_picker.open')).tap();
+        await element(by.id('screen.add_reaction.close')).tap();
+
+        if (isAndroid()) {
+            // eslint-disable-next-line no-console
+            console.log('Skipping on Android until https://github.com/wix/Detox/issues/2141');
+            return;
+        }
+
         // # When a push notification is received
         await device.sendUserNotification(testNotification);
         await wait(timeouts.HALF_SEC);
