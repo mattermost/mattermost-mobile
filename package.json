@@ -28,7 +28,7 @@
     "fuse.js": "6.4.1",
     "intl": "1.2.5",
     "jail-monkey": "2.3.2",
-    "mime-db": "1.44.0",
+    "mime-db": "1.45.0",
     "moment-timezone": "0.5.31",
     "prop-types": "15.7.2",
     "react": "16.13.1",
