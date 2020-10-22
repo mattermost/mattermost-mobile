@@ -329,7 +329,7 @@ PODS:
     - SDWebImageWebPCoder (~> 0.6.1)
   - RNFileViewer (2.1.1):
     - React
-  - RNGestureHandler (1.7.0):
+  - RNGestureHandler (1.8.0):
     - React
   - RNKeychain (4.0.5):
     - React
@@ -647,7 +647,7 @@ SPEC CHECKSUMS:
   RNDeviceInfo: e841619c3dac5495a095c5455473579ff04908d4
   RNFastImage: e19ba191922e7dab9d932a4d59d62d76660aa222
   RNFileViewer: db62d60dd19007c54b2c959b5e675a46d59f8a43
-  RNGestureHandler: b6b359bb800ae399a9c8b27032bdbf7c18f08a08
+  RNGestureHandler: 7a5833d0f788dbd107fbb913e09aa0c1ff333c39
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
   RNLocalize: 4071198b59b461f3b74eebc5fee8c50f13e39e79
   RNPermissions: 067727df624665d4a6c8e2cffcc172ba608b96ed
