@@ -7,9 +7,9 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import jestExpect from 'expect';
 
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Channels', () => {

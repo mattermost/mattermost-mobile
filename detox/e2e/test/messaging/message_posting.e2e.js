@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {logoutUser, toChannelScreen} from '@support/ui/screen';
-
 import {Setup} from '@support/server_api';
 
 describe('Messaging', () => {

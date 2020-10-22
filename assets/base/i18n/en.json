@@ -368,7 +368,6 @@
   "mobile.notification_settings.ooo_auto_responder": "Automatic Direct Message Replies",
   "mobile.notification_settings.save_failed_description": "The notification settings failed to save due to a connection issue, please try again.",
   "mobile.notification_settings.save_failed_title": "Connection issue",
-  "mobile.notification.in": " in ",
   "mobile.offlineIndicator.connected": "Connected",
   "mobile.offlineIndicator.connecting": "Connecting...",
   "mobile.offlineIndicator.offline": "No internet connection",
