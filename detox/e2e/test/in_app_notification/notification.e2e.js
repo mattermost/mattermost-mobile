@@ -68,7 +68,7 @@ describe('in-app Notification', () => {
         await logoutUser();
     });
 
-    it('MM-TXXXX should render an in-app notification', async () => {
+    it('MM-T3440 should render an in-app notification', async () => {
         const message = Date.now().toString();
 
         // # Type a message
