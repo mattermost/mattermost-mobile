@@ -87,7 +87,7 @@
     "semver": "7.3.2",
     "serialize-error": "7.0.1",
     "shallow-equals": "1.0.0",
-    "tinycolor2": "1.4.1",
+    "tinycolor2": "1.4.2",
     "url-parse": "1.4.7"
   },
   "devDependencies": {
