@@ -351,7 +351,7 @@ PODS:
     - Sentry (~> 5.2.0)
   - RNSVG (12.1.0):
     - React
-  - RNVectorIcons (7.0.0):
+  - RNVectorIcons (7.1.0):
     - React
   - Rudder (1.0.4)
   - SDWebImage (5.8.4):
@@ -657,7 +657,7 @@ SPEC CHECKSUMS:
   RNScreens: b748efec66e095134c7166ca333b628cd7e6f3e2
   RNSentry: 2d4a0e18c6dfe93b647c360e0d15c9391d24e9d1
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
-  RNVectorIcons: da6fe858f5a65d7bbc3379540a889b0b12aa5976
+  RNVectorIcons: bc69e6a278b14842063605de32bec61f0b251a59
   Rudder: 57a48709b714c4746a96f4d4d00f33e78a62a5ee
   SDWebImage: cf6922231e95550934da2ada0f20f2becf2ceba9
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
