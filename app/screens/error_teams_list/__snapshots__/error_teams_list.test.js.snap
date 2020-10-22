@@ -9,11 +9,10 @@ exports[`ErrorTeamsList should match snapshot 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
+  <Connect(FailedNetworkAction)
     errorMessage="Teams could not be loaded."
     errorTitle="Something went wrong"
     onRetry={[Function]}
-    showAction={true}
     theme={
       Object {
         "awayIndicator": "#ffbc42",
