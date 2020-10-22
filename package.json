@@ -23,7 +23,7 @@
     "core-js": "3.6.5",
     "deep-equal": "2.0.3",
     "deepmerge": "4.2.2",
-    "emoji-regex": "9.0.0",
+    "emoji-regex": "9.2.0",
     "form-data": "3.0.0",
     "fuse.js": "6.4.2",
     "intl": "1.2.5",
