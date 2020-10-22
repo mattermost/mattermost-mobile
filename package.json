@@ -12,7 +12,7 @@
     "@react-native-community/cameraroll": "4.0.0",
     "@react-native-community/clipboard": "1.2.3",
     "@react-native-community/masked-view": "0.1.10",
-    "@react-native-community/netinfo": "5.9.6",
+    "@react-native-community/netinfo": "5.9.7",
     "@react-navigation/native": "5.7.6",
     "@react-navigation/stack": "5.9.3",
     "@rudderstack/rudder-sdk-react-native": "1.0.3",

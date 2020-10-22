@@ -223,8 +223,8 @@ PODS:
   - react-native-mmkv-storage (0.3.7):
     - MMKV (= 1.2.2)
     - React
-  - react-native-netinfo (5.9.6):
-    - React
+  - react-native-netinfo (5.9.7):
+    - React-Core
   - react-native-notifications (2.1.7):
     - React
   - react-native-passcode-status (1.1.2):
@@ -620,7 +620,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: 32d1ad2c0024ca36161ae0d5c2117e2d6c441f11
   react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
   react-native-mmkv-storage: a452e035494ecb7f641ec192b2dccdb50021a826
-  react-native-netinfo: d2c312fa4b151214e1d5c8456ddb5f28ff24a576
+  react-native-netinfo: e36c1bb6df27ab84aa933679b3f5bbf9d180b18f
   react-native-notifications: 24706907104a0f00c35c4bde7e0ca76a50f730e1
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
