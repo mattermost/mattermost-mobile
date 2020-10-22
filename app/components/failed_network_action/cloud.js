@@ -16,7 +16,10 @@ export default class CloudSvg extends PureComponent {
     render() {
         const {color, height, width} = this.props;
         return (
-            <View style={{height, width, alignItems: 'flex-start'}}>
+            <View
+                style={{height, width, alignItems: 'flex-start'}}
+                testID='cloud_icon'
+            >
                 <Svg
                     width={width}
                     height={height}
