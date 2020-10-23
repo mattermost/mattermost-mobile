@@ -291,6 +291,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       <View>
         <TextInput
           allowFontScaling={true}
+          autoCompleteType="off"
           blurOnSubmit={false}
           disableFullscreenUI={true}
           keyboardAppearance="light"
@@ -316,6 +317,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             }
           }
           testID="post_input"
+          textContentType="none"
           underlineColorAndroid="transparent"
         />
         <View
