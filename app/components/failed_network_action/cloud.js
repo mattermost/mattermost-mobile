@@ -18,7 +18,7 @@ export default class CloudSvg extends PureComponent {
         return (
             <View
                 style={{height, width, alignItems: 'flex-start'}}
-                testID='cloud_icon'
+                testID='failed_network_action.cloud_icon'
             >
                 <Svg
                     width={width}

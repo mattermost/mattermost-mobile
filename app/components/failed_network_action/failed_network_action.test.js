@@ -16,20 +16,20 @@ describe('FailedNetworkAction', () => {
         errorTitle: 'Error Title',
     };
 
-    test('Cloud in potrait', async () => {
+    test('Cloud in portrait', async () => {
         const {getByTestId} = renderWithReduxIntl(
             <FailedNetworkAction {...baseProps}/>,
         );
 
-        await waitFor(() => expect(getByTestId('cloud_icon')).toBeTruthy());
+        await waitFor(() => expect(getByTestId('failed_network_action.cloud_icon')).toBeTruthy());
     });
 
-    test('Cloud NOT in Landscape', async () => {
+    test('Cloud NOT in landscape', async () => {
         const props = {...baseProps, isLandscape: true};
         const {queryByTestId} = renderWithReduxIntl(
             <FailedNetworkAction {...props}/>,
         );
 
-        await waitFor(() => expect(queryByTestId('cloud_icon')).toBeNull());
+        await waitFor(() => expect(queryByTestId('failed_network_action.cloud_icon')).toBeNull());
     });
 });
