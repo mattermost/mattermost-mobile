@@ -30,6 +30,18 @@ function transformToSet(incoming) {
     return state;
 }
 
+export function serialize(state) {
+    if (!state) {
+        return state;
+    }
+
+    if (Array.isArray(state)) {
+        return [...state];
+    }
+
+    return {...state};
+}
+
 export function transformSet(incoming, setTransforms, toStorage = true) {
     const state = {...incoming};
 
