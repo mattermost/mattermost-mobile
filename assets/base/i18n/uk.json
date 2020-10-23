@@ -296,7 +296,6 @@
   "mobile.notice_mobile_link": "мобільні додатки",
   "mobile.notice_platform_link": "сервер",
   "mobile.notice_text": "Mattermost це стало можливим за допомогою програмного забезпечення з відкритим вихідним кодом, яке використовується на наших {платформах} та {mobile}.",
-  "mobile.notification.in": "в",
   "mobile.notification_settings.auto_responder.default_message": "Привіт, я не на робочому місці і не можу відповісти на повідомлення. ",
   "mobile.notification_settings.auto_responder.enabled": "Увімкнути ",
   "mobile.notification_settings.auto_responder.footer_message": "Встановіть спеціальне повідомлення, яке автоматично надсилатиметься у відповідь на особисті повідомлення. Зауваження в загальнодоступних та приватних каналах не будуть викликати автоматичну відповідь. Увімкнення автоматичних відповідей встановлює статус Out of Office і вимикає сповіщення. ",
