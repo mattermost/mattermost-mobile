@@ -13,4 +13,5 @@ function mapStateToProps(state, ownProps) {
         isLandscape: isLandscape(state),
     };
 }
+
 export default connect(mapStateToProps)(FailedNetworkAction);
