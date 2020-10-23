@@ -330,7 +330,6 @@
   "mobile.notice_mobile_link": "mobile apps",
   "mobile.notice_platform_link": "server",
   "mobile.notice_text": "Mattermost is made possible by the open source software used in our {platform} and {mobile}.",
-  "mobile.notification.in": " in ",
   "mobile.notification_settings.auto_responder.default_message": "안녕하세요. 저는 지금 부재중이며 메시지에 응답할 수 없습니다.",
   "mobile.notification_settings.auto_responder.enabled": "활성화",
   "mobile.notification_settings.auto_responder.footer_message": "개인 메시지에 대한 응답을 자동으로 전송되는 사용자 지정 메시지를 설정합니다. 공개, 비공개 채널의 멘션은 자동 응답 기능이 실행되지 않습니다. 자동 응답을 사용하면 상태가 부재 중으로 설정되고 전자우편 알림, 푸시 알림은 해제됩니다.",
