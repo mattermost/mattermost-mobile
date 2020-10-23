@@ -46,7 +46,7 @@ describe('Select channel', () => {
         if (isAndroid()) {
             await expect(element(by.id('main_sidebar'))).not.toBeVisible();
         }
-        
+
         // * Selected channel should remain the same
         await expect(element(by.id('channel.nav_bar.title'))).toHaveText(newChannel.display_name);
     });
