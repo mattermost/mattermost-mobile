@@ -25,10 +25,6 @@ export default class FailedNetworkAction extends PureComponent {
         intl: intlShape.isRequired,
     };
 
-    static defaultProps = {
-        showAction: true,
-    };
-
     render() {
         const {formatMessage} = this.context.intl;
         const {onRetry, theme} = this.props;
