@@ -324,7 +324,6 @@
   "mobile.notice_mobile_link": "mobile Apps",
   "mobile.notice_platform_link": "Server",
   "mobile.notice_text": "Mattermost wird durch die in {platform} und {mobile} verwendete Open-Source-Software ermöglicht.",
-  "mobile.notification.in": " in ",
   "mobile.notification_settings.auto_responder.default_message": "Hallo, ich bin derzeit nicht im Büro und kann nicht auf Nachrichten antworten.",
   "mobile.notification_settings.auto_responder.enabled": "Aktiviert",
   "mobile.notification_settings.auto_responder.footer_message": "Stellen Sie eine individuelle Nachricht ein, die als Antwort auf Direktnachrichten gesendet wird. Erwähnungen in öffentlichen oder privaten Kanälen werden keine automatische Nachricht auslösen. Das Aktivieren automatische Nachrichten setzt ihren Status auf \"Nicht im Büro\" und deaktiviert E-Mail- und Push-Benachrichtigungen.",
