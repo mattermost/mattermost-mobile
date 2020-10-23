@@ -7,6 +7,7 @@ import {Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import Button from 'react-native-button';
 
+import {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Cloud from './cloud';
@@ -82,6 +83,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             justifyContent: 'center',
             paddingHorizontal: 15,
+            paddingVertical: INDICATOR_BAR_HEIGHT,
             paddingBottom: 15,
         },
         title: {
