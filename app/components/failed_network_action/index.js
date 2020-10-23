@@ -7,9 +7,8 @@ import {isLandscape} from 'app/selectors/device';
 
 import FailedNetworkAction from './failed_network_action';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
     return {
-        ...ownProps,
         isLandscape: isLandscape(state),
     };
 }
