@@ -67,6 +67,9 @@ describe('Channels', () => {
         // * Expect to see channel header and purpose in channel info
         await expect(element(by.text(expectedChannelHeader))).toBeVisible();
         await expect(element(by.text(expectedPurpose))).toBeVisible();
+
+        // # Close channel info screen
+        await element(by.id('screen.channel_info.close')).tap();
     });
 });
 

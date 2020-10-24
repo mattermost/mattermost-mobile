@@ -84,6 +84,7 @@ describe('in-app Notification', () => {
         await element(by.id('reaction_picker.open')).tap();
         await element(by.id('screen.add_reaction.close')).tap();
 
+        // # Skip on Android for now
         if (isAndroid()) {
             // eslint-disable-next-line no-console
             console.log('Skipping on Android until https://github.com/wix/Detox/issues/2141');
@@ -94,7 +95,7 @@ describe('in-app Notification', () => {
         await device.sendUserNotification(testNotification);
         await wait(timeouts.HALF_SEC);
 
-        // * in-app notification shows
+        // * Verify in-app notification is shown
         await expect(element(by.id('in_app_notification'))).toBeVisible();
         await expect(element(by.id('in_app_notification.icon'))).toBeVisible();
         await expect(element(by.id('in_app_notification.title'))).toHaveText(testChannel.name);
@@ -103,7 +104,7 @@ describe('in-app Notification', () => {
         // # Wait for some profiles to load
         await wait(5 * timeouts.ONE_SEC);
 
-        // * in-app notification hides
+        // * Verify in-app notification is hidden
         await expect(element(by.id('in_app_notification'))).not.toBeVisible();
     });
 });

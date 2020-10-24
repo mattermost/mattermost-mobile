@@ -42,11 +42,12 @@ describe('Select channel', () => {
         await element(by.id('channel_drawer.button')).tap();
         await element(by.text(newChannel.display_name).withAncestor(by.id('channels_list'))).tap();
 
-        // * Selected channel should remain the same
+        // * Drawer should not be visible on Android
         if (isAndroid()) {
-            // * drawer should not be visible on Android
             await expect(element(by.id('main_sidebar'))).not.toBeVisible();
         }
+
+        // * Selected channel should remain the same
         await expect(element(by.id('channel.nav_bar.title'))).toHaveText(newChannel.display_name);
     });
 });

@@ -46,10 +46,10 @@ describe('Messaging', () => {
         await expect(disabledSendButton).toExist();
         await disabledSendButton.multiTap(3);
 
-        // # Check that message is successfully posted
+        // * Check that message is successfully posted
         await expect(element(by.text(message))).toExist();
 
-        // # Check that no duplicate message is saved.
+        // * Check that no duplicate message is saved.
         const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
         const {posts} = await Post.apiGetPostsInChannel(channel.id);
         jestExpect(posts.length).toEqual(3);

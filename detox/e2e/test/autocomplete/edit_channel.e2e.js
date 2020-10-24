@@ -33,10 +33,10 @@ describe('Autocomplete', () => {
         // * Expect autocomplete to render
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
 
-        // Go to previous screen
+        // # Go to previous screen
         await element(by.id('screen.back.button')).tap();
 
-        // close channel info screen
+        // # Close channel info screen
         await element(by.id('screen.channel_info.close')).tap();
     });
 });

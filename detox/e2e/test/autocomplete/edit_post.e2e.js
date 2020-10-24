@@ -32,7 +32,7 @@ describe('Autocomplete', () => {
         // # Tap the send button
         await element(by.id('send_button')).tap();
 
-        // Explicitly wait on Android before verifying error message
+        // # Explicitly wait on Android before verifying error message
         if (isAndroid()) {
             await wait(timeouts.ONE_SEC);
         }
@@ -40,8 +40,11 @@ describe('Autocomplete', () => {
         // # Open edit screen
         await element(by.text(message)).longPress();
 
-        const slide = element(by.id('slide_up_panel'));
-        await slide.swipe('up');
+        // # Swipe up panel on Android
+        if (isAndroid()) {
+            const slide = element(by.id('slide_up_panel'));
+            await slide.swipe('up');
+        }
 
         const edit = element(by.text('Edit'));
         await edit.tap();
@@ -53,6 +56,7 @@ describe('Autocomplete', () => {
         // * Expect at_mention autocomplete to render
         await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
 
+        // # Close edit post screen
         await element(by.id('edit_post.close')).tap();
     });
 });
