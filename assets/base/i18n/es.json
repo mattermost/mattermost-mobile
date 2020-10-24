@@ -276,6 +276,7 @@
   "mobile.file_upload.browse": "Explorar Archivos",
   "mobile.file_upload.camera_photo": "Capturar Foto",
   "mobile.file_upload.camera_video": "Capturar Vídeo",
+  "mobile.file_upload.disabled": "La subida de archivos desde el móvil están deshabilitadas. Comuníquese con el administrador del sistema para obtener más detalles.",
   "mobile.file_upload.library": "Librería de Fotos",
   "mobile.file_upload.max_warning": "Se pueden subir un máximo de 5 archivos.",
   "mobile.file_upload.unsupportedMimeType": "Sólo pueden ser utilizadas imágenes BMP, JPG o PNG como imagen de perfil.",
