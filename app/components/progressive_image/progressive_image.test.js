@@ -90,8 +90,8 @@ describe('MiniPreview', () => {
             miniPreview: 'somebase64data',
             filename: 'file.png',
         };
-        const selectHighResImage = () => wrapper.find({testID: 'highResImage'});
         const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
+        const selectHighResImage = () => wrapper.find({testID: 'highResImage'});
         expect(selectHighResImage().length).toEqual(0);
         wrapper.setProps({
             inViewPort: true,
