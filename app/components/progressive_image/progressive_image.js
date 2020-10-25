@@ -44,13 +44,20 @@ export default class ProgressiveImage extends PureComponent {
         this.state = {
             intensity: new Animated.Value(0),
             mimeType: props.filename ? lookupMimeType(props.filename) : '',
+            showHighResImage: false,
         };
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.inViewPort !== this.props.inViewPort && this.props.inViewPort) {
-            this.onLoadImageEnd();
+            this.startLoadingOriginalImage();
         }
+    }
+
+    startLoadingOriginalImage = () => {
+        this.setState({
+            showHighResImage: true,
+        });
     }
 
     onLoadImageEnd = () => {
@@ -75,6 +82,8 @@ export default class ProgressiveImage extends PureComponent {
             tintDefaultSource,
             miniPreview,
         } = this.props;
+
+        const {showHighResImage} = this.state;
 
         let DefaultComponent;
         let ImageComponent;
@@ -143,22 +152,27 @@ export default class ProgressiveImage extends PureComponent {
                             StyleSheet.absoluteFill,
                             imageStyle,
                         ]}
+                        testID='miniPreview'
                     >
                         {this.props.children}
                     </ImageComponent>
-                    <ImageComponent
-                        resizeMode={resizeMode}
-                        resizeMethod={resizeMethod}
-                        onError={onError}
-                        source={{uri: imageUri}}
-                        style={[
-                            StyleSheet.absoluteFill,
-                            imageStyle,
-                            {opacity}]
-                        }
-                    >
-                        {this.props.children}
-                    </ImageComponent>
+                    {showHighResImage && (
+                        <ImageComponent
+                            resizeMode={resizeMode}
+                            resizeMethod={resizeMethod}
+                            onError={onError}
+                            source={{uri: imageUri}}
+                            style={[
+                                StyleSheet.absoluteFill,
+                                imageStyle,
+                                {opacity}]
+                            }
+                            testID='highResImage'
+                            onLoadEnd={this.onLoadImageEnd}
+                        >
+                            {this.props.children}
+                        </ImageComponent>
+                    )}
                 </Animated.View>
             );
         }
