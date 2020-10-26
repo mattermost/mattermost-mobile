@@ -4,6 +4,7 @@
 import {Alert, Platform} from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
+import {t} from '@utils/i18n';
 import {Posts} from '@mm-redux/constants';
 
 const INVALID_VERSIONS = ['1.29.0'];
@@ -95,4 +96,13 @@ export function validatePreviousVersion(previousVersion) {
     }
 
     return true;
+}
+
+export function permalinkBadTeam(intl) {
+    const message = {
+        id: t('mobile.server_link.unreachable_team.error'),
+        defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
+    };
+
+    alertErrorWithFallback(intl, {}, message);
 }

@@ -170,10 +170,6 @@ export default class Permalink extends PureComponent {
         // Do nothing because we're already in a modal
     };
 
-    handlePermalinkPress = () => {
-        // Do nothing because we're already in permalink view for a different post
-    };
-
     handlePress = () => {
         if (this.viewRef) {
             this.viewRef.growOut().then(() => {
@@ -322,7 +318,6 @@ export default class Permalink extends PureComponent {
                     shouldRenderReplyButton={false}
                     renderReplies={true}
                     onHashtagPress={this.handleHashtagPress}
-                    onPermalinkPress={this.handlePermalinkPress}
                     onPostPress={this.goToThread}
                     postIds={postIds}
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds || []) : -1}

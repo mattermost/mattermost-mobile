@@ -52,9 +52,8 @@ describe('channelInfo', () => {
         isLandscape: false,
         actions: {
             getChannelStats: jest.fn(),
-            loadChannelsByTeamName: jest.fn(),
             getCustomEmojisInText: jest.fn(),
-            selectFocusedPostId: jest.fn(),
+            showPermalink: jest.fn(),
             setChannelDisplayName: jest.fn(),
         },
     };

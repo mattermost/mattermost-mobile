@@ -4,12 +4,12 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectFocusedPostId} from '@mm-redux/actions/posts';
+import {closePermalink, showPermalink} from '@actions/views/permalink';
 import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from '@mm-redux/utils/post_list';
 
-import {handleSelectChannelByName, loadChannelsByTeamName, refreshChannelWithRetry} from 'app/actions/views/channel';
+import {handleSelectChannelByName, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {setDeepLinkURL} from 'app/actions/views/root';
 
 import PostList from './post_list';
@@ -37,11 +37,11 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            closePermalink,
             handleSelectChannelByName,
-            loadChannelsByTeamName,
             refreshChannelWithRetry,
-            selectFocusedPostId,
             setDeepLinkURL,
+            showPermalink,
         }, dispatch),
     };
 }
