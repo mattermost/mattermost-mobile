@@ -1,9 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SelectTeam should match snapshot for fail of teams 1`] = `
-<FailedNetworkAction
+<Connect(FailedNetworkAction)
   onRetry={[Function]}
-  showAction={true}
   theme={
     Object {
       "awayIndicator": "#ffbc42",

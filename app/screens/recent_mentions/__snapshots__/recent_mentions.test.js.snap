@@ -39,9 +39,8 @@ exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] 
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
+  <Connect(FailedNetworkAction)
     onRetry={[Function]}
-    showAction={true}
     theme={
       Object {
         "awayIndicator": "#ffbc42",
