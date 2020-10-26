@@ -84,6 +84,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <CompassIcon
                     name='archive-outline'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                    testID='channel_icon.archive'
                 />
             );
         } else if (isBot) {
@@ -91,6 +92,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <CompassIcon
                     name='robot-happy'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: -1.5, top: -1}]}
+                    testID='channel_icon.bot'
                 />
             );
         } else if (hasDraft) {
@@ -98,6 +100,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <CompassIcon
                     name='pencil-outline'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                    testID='channel_icon.draft'
                 />
             );
         } else if (type === General.OPEN_CHANNEL) {
@@ -105,6 +108,7 @@ export default class ChannelIcon extends React.PureComponent {
                 <CompassIcon
                     name='globe'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size}]}
+                    testID='channel_icon.public'
                 />
             );
         } else if (type === General.PRIVATE_CHANNEL) {
@@ -112,12 +116,17 @@ export default class ChannelIcon extends React.PureComponent {
                 <CompassIcon
                     name='lock-outline'
                     style={[style.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                    testID='channel_icon.private'
                 />
             );
         } else if (type === General.GM_CHANNEL) {
+            const fontSize = (size - 10);
             icon = (
-                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size + 1, height: size + 1}]}>
-                    <Text style={[style.group, unreadGroup, activeGroup, {fontSize: (size - 4)}]}>
+                <View style={[style.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}>
+                    <Text
+                        style={[style.group, unreadGroup, activeGroup, {fontSize}]}
+                        testID='channel_icon.gm_member_count'
+                    >
                         {membersCount}
                     </Text>
                 </View>
@@ -129,6 +138,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <CompassIcon
                         name='clock'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.awayIndicator}]}
+                        testID='channel_icon.away'
                     />
                 );
                 break;
@@ -137,6 +147,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <CompassIcon
                         name='minus-circle'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.dndIndicator}]}
+                        testID='channel_icon.dnd'
                     />
                 );
                 break;
@@ -145,6 +156,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <CompassIcon
                         name='check-circle'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: theme.onlineIndicator}]}
+                        testID='channel_icon.online'
                     />
                 );
                 break;
@@ -153,6 +165,7 @@ export default class ChannelIcon extends React.PureComponent {
                     <CompassIcon
                         name='circle-outline'
                         style={[style.icon, unreadIcon, activeIcon, {fontSize: size, color: offlineColor}]}
+                        testID='channel_icon.offline'
                     />
                 );
                 break;

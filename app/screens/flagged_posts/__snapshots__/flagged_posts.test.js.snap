@@ -39,9 +39,8 @@ exports[`FlaggedPosts should match snapshot when getFlaggedPosts failed 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
+  <Connect(FailedNetworkAction)
     onRetry={[Function]}
-    showAction={true}
     theme={
       Object {
         "awayIndicator": "#ffbc42",

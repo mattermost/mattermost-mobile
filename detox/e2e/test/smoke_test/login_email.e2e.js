@@ -8,9 +8,14 @@
 // *******************************************************************
 
 import {Setup, System} from '@support/server_api';
+import {logoutUser} from '@support/ui/screen';
 import {serverUrl} from '@support/test_config';
 
 describe('Smoke Tests', () => {
+    afterAll(async () => {
+        await logoutUser();
+    });
+
     it('MM-T3179 Log in - Email / password', async () => {
         const {config} = await System.apiGetConfig();
         const {user} = await Setup.apiInit();

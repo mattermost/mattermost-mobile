@@ -7,8 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {toChannelScreen} from '@support/ui/screen';
-
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {Setup, Channel} from '@support/server_api';
 
 describe('Unread channels', () => {
@@ -29,11 +28,15 @@ describe('Unread channels', () => {
         await toChannelScreen(user);
     });
 
+    afterAll(async () => {
+        await logoutUser();
+    });
+
     it('MM-T3187 Unread channels sort at top', async () => {
         // # Open channel drawer (with at least one unread channel)
         await element(by.id('channel_drawer.button')).tap();
 
-        // # Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
+        // * Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
         await expect(element(by.text('UNREADS'))).toBeVisible();
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(0)).toHaveText(aChannel.display_name);
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(1)).toHaveText(newChannel.display_name);
@@ -57,5 +60,6 @@ describe('Unread channels', () => {
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(2)).toHaveText('Off-Topic');
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(3)).toHaveText('Town Square');
         await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(4)).toHaveText(zChannel.display_name);
+        await element(by.text(aChannel.display_name)).tap();
     });
 });

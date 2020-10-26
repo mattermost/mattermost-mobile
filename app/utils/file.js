@@ -202,7 +202,7 @@ export const isVideo = (file) => {
  * Get the default extension for a MIME type.
  *
  * @param {string} type
- * @return {boolean|string}
+ * @return {string}
  */
 
 export function getExtensionFromMime(type) {
@@ -211,7 +211,7 @@ export function getExtensionFromMime(type) {
     }
 
     if (!type || typeof type !== 'string') {
-        return false;
+        return undefined;
     }
 
     // TODO: use media-typer
@@ -221,7 +221,7 @@ export function getExtensionFromMime(type) {
     const exts = match && extensions[match[1].toLowerCase()];
 
     if (!exts || !exts.length) {
-        return false;
+        return undefined;
     }
 
     return exts[0];

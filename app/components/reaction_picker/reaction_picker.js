@@ -81,7 +81,10 @@ export default class ReactionPicker extends PureComponent {
         return (
             <View style={[style.reactionListContainer, paddingRes]}>
                 {list}
-                <TouchableWithoutFeedback onPress={this.props.openReactionScreen}>
+                <TouchableWithoutFeedback
+                    onPress={this.props.openReactionScreen}
+                    testID='reaction_picker.open'
+                >
                     <View
                         style={[
                             style.reactionContainer,

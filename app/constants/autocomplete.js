@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const AT_MENTION_REGEX = /\B(@([^@\r\n\s]*))$/i;
+export const AT_MENTION_REGEX = /\B(@([^@\r\n]*))$/i;
 
-export const AT_MENTION_REGEX_GLOBAL = /\B(@([^@\r\n\s]*))/gi;
+export const AT_MENTION_REGEX_GLOBAL = /\B(@([^@\r\n]*))/gi;
 
 export const AT_MENTION_SEARCH_REGEX = /\bfrom:\s*(\S*)$/i;
 

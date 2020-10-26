@@ -9,7 +9,7 @@
 
 import jestExpect from 'expect';
 
-import {toChannelScreen} from '@support/ui/screen';
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {Channel, Post, Setup} from '@support/server_api';
 
 describe('Messaging', () => {
@@ -20,6 +20,10 @@ describe('Messaging', () => {
         ({team, user} = await Setup.apiInit());
 
         await toChannelScreen(user);
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('MM-T109 User can\'t send the same message repeatedly', async () => {
@@ -42,10 +46,10 @@ describe('Messaging', () => {
         await expect(disabledSendButton).toExist();
         await disabledSendButton.multiTap(3);
 
-        // # Check that message is successfully posted
+        // * Check that message is successfully posted
         await expect(element(by.text(message))).toExist();
 
-        // # Check that no duplicate message is saved.
+        // * Check that no duplicate message is saved.
         const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
         const {posts} = await Post.apiGetPostsInChannel(channel.id);
         jestExpect(posts.length).toEqual(3);

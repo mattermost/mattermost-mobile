@@ -185,7 +185,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 14,
             borderWidth: 2,
             position: 'absolute',
-            right: -7,
+
+            right: -4,
             top: 0,
         },
         mention: {

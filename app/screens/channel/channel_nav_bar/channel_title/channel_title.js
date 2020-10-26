@@ -162,6 +162,7 @@ export default class ChannelTitle extends PureComponent {
                         ellipsizeMode='tail'
                         numberOfLines={1}
                         style={style.text}
+                        testID='channel.nav_bar.title'
                     >
                         {channelDisplayName}
                     </Text>

@@ -42,6 +42,8 @@
             "@mm-redux/*": ["app/mm-redux/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
+            "@share/*": ["share_extension/*"],
+            "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],

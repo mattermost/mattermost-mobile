@@ -25,7 +25,7 @@ function mapStateToProps(state) {
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
     const currentChannelCreatorName = displayUsername(currentChannelCreator, teammateNameDisplay);
     const currentChannelStats = getCurrentChannelStats(state);
-    const currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
+    let currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
     let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
     const currentUserId = getCurrentUserId(state);
 
@@ -44,6 +44,10 @@ function mapStateToProps(state) {
             isTeammateGuest = true;
             currentChannelGuestCount = 1;
         }
+    }
+
+    if (currentChannel.type === General.GM_CHANNEL) {
+        currentChannelMemberCount = currentChannel.display_name.split(',').length;
     }
 
     return {

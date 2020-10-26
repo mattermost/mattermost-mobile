@@ -7,9 +7,9 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {toChannelScreen} from '@support/ui/screen';
 import jestExpect from 'expect';
 
+import {logoutUser, toChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Channels', () => {
@@ -17,6 +17,10 @@ describe('Channels', () => {
         const {user} = await Setup.apiInit();
 
         await toChannelScreen(user);
+    });
+
+    afterAll(async () => {
+        await logoutUser();
     });
 
     it('MM-T3201 Create public channel', async () => {
@@ -63,6 +67,9 @@ describe('Channels', () => {
         // * Expect to see channel header and purpose in channel info
         await expect(element(by.text(expectedChannelHeader))).toBeVisible();
         await expect(element(by.text(expectedPurpose))).toBeVisible();
+
+        // # Close channel info screen
+        await element(by.id('screen.channel_info.close')).tap();
     });
 });
 

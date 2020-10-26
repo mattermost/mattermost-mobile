@@ -33,6 +33,7 @@ exports[`ChannelTitle should match snapshot 1`] = `
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       My Channel
     </Text>
@@ -83,6 +84,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       Other user
     </Text>
@@ -158,6 +160,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       Other user
     </Text>
@@ -208,6 +211,7 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       <FormattedText
         defaultMessage="{displayname} (you)"

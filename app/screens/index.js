@@ -121,7 +121,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         break;
     case 'Notification':
         extraStyles = Platform.select({android: {flex: undefined, height: 100}});
-        screen = require('@screens/notification').default;
+        screen = require('@screens/notification/index.tsx').default;
         break;
     case 'NotificationSettings':
         screen = require('@screens/settings/notification_settings').default;

@@ -287,9 +287,8 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
+  <Connect(FailedNetworkAction)
     onRetry={[Function]}
-    showAction={true}
     theme={
       Object {
         "awayIndicator": "#ffbc42",

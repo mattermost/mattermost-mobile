@@ -12,11 +12,11 @@ export const wait = async (ms) => {
 };
 
 export const isAndroid = () => {
-    return !process.env.IOS;
+    return device.getPlatform() === 'android';
 };
 
 export const isIos = () => {
-    return process.env.IOS;
+    return device.getPlatform() === 'ios';
 };
 
 /**

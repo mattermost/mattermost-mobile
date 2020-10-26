@@ -253,6 +253,7 @@ export default class SettingsSidebarBase extends PureComponent {
                             isDestructor={true}
                             onPress={this.logout}
                             separator={false}
+                            testID='sidebar.settings.logout'
                             theme={theme}
                         />
                     </View>
