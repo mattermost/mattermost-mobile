@@ -362,16 +362,13 @@ platform :ios do
     data_path = 'ios'
     if ENV['CIRCLECI'] == 'true'
       data_path = 'build-ios'
-      sh 'rm -rf ../build-ios/'
     end
 
+    # sh 'rm -rf ../build-ios/'
     sh 'cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../build-ios ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO'
     sh "cd ../#{data_path}/Build/Products/Release-iphonesimulator && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app"
     sh "mv ../#{data_path}/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip ../"
-
-    if ENV['CIRCLECI'] == 'true'
-      sh 'rm -rf ../build-ios/'
-    end
+    # sh 'rm -rf ../build-ios/'
 
     upload_file_to_s3({
       :os_type => "ios",
