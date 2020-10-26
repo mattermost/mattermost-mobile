@@ -355,16 +355,23 @@ platform :ios do
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
     ENV['APP_SCHEME'] = 'mattermost'
-    data_path = 'build-ios'
 
     update_identifiers
     replace_assets
 
-    sh 'rm -rf ../build-ios/'
+    data_path = 'ios'
+    if ENV['CIRCLECI'] == 'true'
+      data_path = 'build-ios'
+      sh 'rm -rf ../build-ios/'
+    end
+
     sh 'cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../build-ios ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO'
     sh "cd ../#{data_path}/Build/Products/Release-iphonesimulator && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app"
     sh "mv ../#{data_path}/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip ../"
-    sh 'rm -rf ../build-ios/'
+
+    if ENV['CIRCLECI'] == 'true'
+      sh 'rm -rf ../build-ios/'
+    end
 
     upload_file_to_s3({
       :os_type => "ios",
