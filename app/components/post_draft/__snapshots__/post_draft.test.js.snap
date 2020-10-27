@@ -368,8 +368,6 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             }
           >
             <View
-              forwardedRef={[Function]}
-              isInteraction={true}
               style={
                 Object {
                   "flex": 1,

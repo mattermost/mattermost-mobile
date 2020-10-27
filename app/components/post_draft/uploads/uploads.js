@@ -56,7 +56,6 @@ export default class Uploads extends PureComponent {
         showFileMaxWarning: false,
     };
 
-    errorRef = React.createRef();
     errorContainerRef = React.createRef();
     containerRef = React.createRef();
 
@@ -124,7 +123,7 @@ export default class Uploads extends PureComponent {
 
     handleFileMaxWarning = () => {
         this.setState({showFileMaxWarning: true});
-        if (this.errorRef.current) {
+        if (this.errorContainerRef.current) {
             this.makeErrorVisible(true, 20);
             setTimeout(() => {
                 this.makeErrorVisible(false, 20);
@@ -133,7 +132,7 @@ export default class Uploads extends PureComponent {
     };
 
     handleFileSizeWarning = () => {
-        if (this.errorRef.current) {
+        if (this.errorContainerRef.current) {
             const {formatMessage} = this.context.intl;
             const message = formatMessage({
                 id: 'file_upload.fileAbove',
@@ -183,7 +182,7 @@ export default class Uploads extends PureComponent {
     };
 
     handleUploadDisabled = () => {
-        if (this.errorRef.current) {
+        if (this.errorContainerRef.current) {
             const {formatMessage} = this.context.intl;
             const message = formatMessage({
                 id: 'mobile.file_upload.disabled2',
@@ -311,12 +310,7 @@ export default class Uploads extends PureComponent {
                     style={style.errorContainer}
                     isInteraction={true}
                 >
-                    <Animatable.View
-                        ref={this.errorRef}
-                        isInteraction={true}
-                        style={style.errorTextContainer}
-                        useNativeDriver={true}
-                    >
+                    <View style={style.errorTextContainer}>
                         {showFileMaxWarning && (
                             <FormattedText
                                 style={style.warning}
@@ -329,7 +323,7 @@ export default class Uploads extends PureComponent {
                                 {fileSizeWarning}
                             </Text>
                         }
-                    </Animatable.View>
+                    </View>
                 </Animatable.View>
             </View>
         );
