@@ -326,7 +326,6 @@
   "mobile.notice_mobile_link": "行動裝置 App",
   "mobile.notice_platform_link": "伺服器",
   "mobile.notice_text": "藉由在{platform}與{mobile}上的開源軟體，才得以實現 Mattermost。",
-  "mobile.notification.in": " 在 ",
   "mobile.notification_settings.auto_responder.default_message": "嗨，我不在辦公室暫時無法回覆訊息。",
   "mobile.notification_settings.auto_responder.enabled": "已啟用",
   "mobile.notification_settings.auto_responder.footer_message": "設定用以自動回覆直接傳訊的自訂訊息。在公開及私人頻道的提及不會觸發自動回覆。啟用自動回覆會將狀態設為不在辦公室同時停止郵件與推播通知。",

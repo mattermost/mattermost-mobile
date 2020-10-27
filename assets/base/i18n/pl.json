@@ -313,7 +313,6 @@
   "mobile.notice_mobile_link": "aplikacje mobilne",
   "mobile.notice_platform_link": "serwer",
   "mobile.notice_text": "Mattermost został stworzony dzięki oprogramowaniu open source używanym w naszej {platform} i {mobile}.",
-  "mobile.notification.in": " w ",
   "mobile.notification_settings.auto_responder.default_message": "Witaj, jestem poza biurem i nie mogę odpowiadać na wiadomości.",
   "mobile.notification_settings.auto_responder.enabled": "Włączony",
   "mobile.notification_settings.auto_responder.footer_message": "Ustaw niestandardową wiadomość, która zostanie automatycznie wysłana w odpowiedzi na Wiadomości Bezpośrednie. Wzmianki na Kanałach Publicznych i Prywatnych nie uruchamiają automatycznej odpowiedzi. Włączenie Automatycznych Odpowiedzi ustawia twój status na Nieobecny i wyłącza powiadomienia email i push.",
