@@ -1,5 +1,5 @@
 {
-  "testRunner": "jest",
+  "testRunner": "jest --forceExit --detectOpenHandles",
   "runnerConfig": "e2e/config.js",
   "configurations": {
     "ios.sim.debug": {
