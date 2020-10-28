@@ -107,7 +107,7 @@ export default class ChannelIOS extends ChannelBase {
 
         return (
             <MainSidebar
-                testID='channel_screen'
+                testID='channel.screen'
                 ref={this.mainSidebarRef}
             >
                 <SettingsSidebar ref={this.settingsSidebarRef}>

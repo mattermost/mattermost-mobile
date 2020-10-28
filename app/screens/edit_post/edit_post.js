@@ -250,7 +250,10 @@ export default class EditPost extends PureComponent {
 
         return (
             <>
-                <View style={style.container}>
+                <View
+                    testID='edit_post.screen'
+                    style={style.container}
+                >
                     <StatusBar/>
                     <View style={style.scrollView}>
                         {displayError}

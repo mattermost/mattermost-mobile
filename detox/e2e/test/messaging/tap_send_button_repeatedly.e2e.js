@@ -9,7 +9,7 @@
 
 import jestExpect from 'expect';
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {ChannelScreen} from '@support/ui/screen';
 import {Channel, Post, Setup} from '@support/server_api';
 
 describe('Messaging', () => {
@@ -19,29 +19,28 @@ describe('Messaging', () => {
     beforeAll(async () => {
         ({team, user} = await Setup.apiInit());
 
-        await toChannelScreen(user);
+        await ChannelScreen.open(user);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('MM-T109 User can\'t send the same message repeatedly', async () => {
         const message = Date.now().toString();
 
+        const {disabledSendButton, sendButton, postInput} = ChannelScreen;
+
         // # Type a message
-        const postInput = await element(by.id('post_input'));
         await postInput.tap();
         await postInput.typeText(message);
 
         // # Tap the send button
-        const sendButton = await element(by.id('send_button'));
         await expect(sendButton).toBeVisible();
         await sendButton.tap();
         await expect(sendButton).not.toExist();
 
         // # Then tap send button repeatedly
-        const disabledSendButton = await element(by.id('disabled_send_button'));
         await expect(disabledSendButton).toBeVisible();
         await expect(disabledSendButton).toExist();
         await disabledSendButton.multiTap(3);

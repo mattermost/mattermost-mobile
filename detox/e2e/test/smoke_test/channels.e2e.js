@@ -7,7 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {ChannelScreen} from '@support/ui/screen';
+import {ChannelSidebar} from '@support/ui/component';
 import {Setup, Channel} from '@support/server_api';
 
 describe('Unread channels', () => {
@@ -25,41 +26,46 @@ describe('Unread channels', () => {
         ({channel: zChannel} = await Channel.apiCreateChannel({type: 'O', prefix: 'z-channel', teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, zChannel.id);
 
-        await toChannelScreen(user);
+        await ChannelScreen.open(user);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('MM-T3187 Unread channels sort at top', async () => {
+        const {channelDrawerButton} = ChannelScreen;
+
         // # Open channel drawer (with at least one unread channel)
-        await element(by.id('channel_drawer.button')).tap();
+        await channelDrawerButton.tap();
+
+        // * Channel should be visible
+        await ChannelSidebar.toBeVisible();
 
         // * Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
         await expect(element(by.text('UNREADS'))).toBeVisible();
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(0)).toHaveText(aChannel.display_name);
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(1)).toHaveText(newChannel.display_name);
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(2)).toHaveText(zChannel.display_name);
+        await ChannelSidebar.hasChannelAtIndex(0, aChannel.display_name);
+        await ChannelSidebar.hasChannelAtIndex(1, newChannel.display_name);
+        await ChannelSidebar.hasChannelAtIndex(2, zChannel.display_name);
 
         // # Tap an unread channel to view it
-        await element(by.text(aChannel.display_name)).tap();
-        await element(by.id('channel_drawer.button')).tap();
-        await element(by.text(newChannel.display_name)).tap();
-        await element(by.id('channel_drawer.button')).tap();
-        await element(by.text(zChannel.display_name)).tap();
+        await ChannelSidebar.getChannelByDisplayName(aChannel.display_name).tap();
+        await channelDrawerButton.tap();
+        await ChannelSidebar.getChannelByDisplayName(newChannel.display_name).tap();
+        await channelDrawerButton.tap();
+        await ChannelSidebar.getChannelByDisplayName(zChannel.display_name).tap();
 
         // # Open channel drawer again
-        await element(by.id('channel_drawer.button')).tap();
+        await channelDrawerButton.tap();
 
         // * Channel you just read is no longer listed in Unreads
         await expect(element(by.text('UNREADS'))).not.toBeVisible();
         await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(0)).toHaveText(aChannel.display_name);
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(1)).toHaveText(newChannel.display_name);
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(2)).toHaveText('Off-Topic');
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(3)).toHaveText('Town Square');
-        await expect(element(by.id('channel_item.display_name').withAncestor(by.id('channels_list'))).atIndex(4)).toHaveText(zChannel.display_name);
-        await element(by.text(aChannel.display_name)).tap();
+        await ChannelSidebar.hasChannelAtIndex(0, aChannel.display_name);
+        await ChannelSidebar.hasChannelAtIndex(1, newChannel.display_name);
+        await ChannelSidebar.hasChannelAtIndex(2, 'Off-Topic');
+        await ChannelSidebar.hasChannelAtIndex(3, 'Town Square');
+        await ChannelSidebar.hasChannelAtIndex(4, zChannel.display_name);
+        await ChannelSidebar.getChannelByDisplayName(aChannel.display_name).tap();
     });
 });

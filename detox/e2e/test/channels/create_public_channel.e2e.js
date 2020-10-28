@@ -9,67 +9,83 @@
 
 import jestExpect from 'expect';
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {ChannelSidebar} from '@support/ui/component';
+import {
+    ChannelScreen,
+    ChannelInfoScreen,
+    CreateChannelScreen,
+    MoreChannelsScreen,
+} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Channels', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
-        await toChannelScreen(user);
+        await ChannelScreen.open(user);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('MM-T3201 Create public channel', async () => {
         // # Go to channel sidebar list
-        await element(by.id('channel_drawer.button')).tap();
+        await ChannelScreen.channelDrawerButton.tap();
 
         // # Tap on + public channels
-        await element(by.id('action_button_sidebar.channels')).tap();
+        await ChannelSidebar.addChannel.tap();
 
         // * Expect a list of public channels, initially empty
+        await MoreChannelsScreen.toBeVisible();
         await expect(element(by.text('No more channels to join'))).toBeVisible();
 
         // # Tap to create new channel
-        await element(by.id('public_channels.create.button')).tap();
+        await MoreChannelsScreen.publicChannelCreateButton.tap();
 
         // * Expect a new screen to create a new public channel
+        const createChannelScreen = await CreateChannelScreen.toBeVisible();
         await expect(element(by.text('New Public Channel'))).toBeVisible();
 
+        const {
+            nameInput,
+            purposeInput,
+            headerInput,
+        } = CreateChannelScreen;
+
         // # Fill data
-        await element(by.id('edit_channel.name.input')).typeText('a');
+        await nameInput.typeText('a');
         await attemptToTapButton('edit_channel.create.button');
 
         // * Expect to be in the same screen since the channel name must be longer
-        await expect(element(by.id('edit_channel.name.input'))).toBeVisible();
+        await expect(nameInput).toBeVisible();
 
-        await element(by.id('edit_channel.name.input')).typeText('bc');
-        await element(by.id('edit_channel.purpose.input')).typeText('This sentence has');
-        await element(by.id('edit_channel.purpose.input')).tapReturnKey();
-        await element(by.id('edit_channel.purpose.input')).typeText('multiple lines');
-        await element(by.id('edit_channel.scroll')).scroll(200, 'down');
-        await expect(element(by.id('edit_channel.header.input'))).toBeVisible();
+        await nameInput.typeText('bc');
+        await purposeInput.typeText('This sentence has');
+        await purposeInput.tapReturnKey();
+        await purposeInput.typeText('multiple lines');
+        await createChannelScreen.scroll(200, 'down');
+        await expect(headerInput).toBeVisible();
         const expectedChannelHeader = 'I 🌮 love 🌮 tacos 🌮';
-        await element(by.id('edit_channel.header.input')).replaceText(expectedChannelHeader);
+        await headerInput.replaceText(expectedChannelHeader);
 
-        await element(by.id('edit_channel.create.button')).tap();
+        await CreateChannelScreen.createButton.tap();
 
         const expectedChannelName = 'abc';
         const expectedPurpose = 'This sentence has\nmultiple lines';
 
         // * Expect a redirection to the created channel
-        await expect(element(by.id('channel_intro.beginning.text'))).toHaveText('Beginning of ' + expectedChannelName);
-        await element(by.id('channel.title.button')).tap();
+        await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + expectedChannelName);
+
+        // # Open channel info
+        await ChannelInfoScreen.open();
 
         // * Expect to see channel header and purpose in channel info
         await expect(element(by.text(expectedChannelHeader))).toBeVisible();
         await expect(element(by.text(expectedPurpose))).toBeVisible();
 
         // # Close channel info screen
-        await element(by.id('screen.channel_info.close')).tap();
+        await ChannelInfoScreen.close();
     });
 });
 

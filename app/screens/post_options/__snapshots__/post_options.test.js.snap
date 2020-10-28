@@ -7,6 +7,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       "flex": 1,
     }
   }
+  testID="post.options"
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
@@ -201,6 +202,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       "flex": 1,
     }
   }
+  testID="post.options"
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
@@ -431,6 +433,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       "flex": 1,
     }
   }
+  testID="post.options"
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}

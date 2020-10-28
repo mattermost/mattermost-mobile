@@ -194,7 +194,10 @@ export default class ChannelInfo extends PureComponent {
         const channelIsArchived = currentChannel.delete_at !== 0;
 
         return (
-            <View style={style.container}>
+            <View
+                testID='channel_info.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}

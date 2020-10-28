@@ -57,7 +57,7 @@ export class PasteableTextInput extends React.PureComponent {
 
         return (
             <TextInput
-                testID='post_input'
+                testID='post.input'
                 {...props}
                 onPaste={this.onPaste}
                 ref={forwardRef}
