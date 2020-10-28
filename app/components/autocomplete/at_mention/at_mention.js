@@ -63,19 +63,8 @@ export default class AtMention extends PureComponent {
         if (matchTerm === null) {
             this.props.onResultCountChange(0);
             this.setState({
-                mentionComplete: false,
                 sections: [],
             });
-            this.props.onResultCountChange(0);
-            return;
-        }
-
-        if (this.state.mentionComplete) {
-            // Mention has been completed. Hide autocomplete.
-            this.setState({
-                sections: [],
-            });
-
             this.props.onResultCountChange(0);
             return;
         }
@@ -203,7 +192,9 @@ export default class AtMention extends PureComponent {
         }
 
         onChangeText(completedDraft);
-        this.setState({mentionComplete: true});
+        this.setState({
+            sections: [],
+        });
     };
 
     renderSectionHeader = ({section}) => {
@@ -255,8 +246,8 @@ export default class AtMention extends PureComponent {
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
-        const {mentionComplete, sections} = this.state;
-        if (sections.length === 0 || mentionComplete) {
+        const {sections} = this.state;
+        if (sections.length === 0) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
