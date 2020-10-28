@@ -4,10 +4,10 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {loadChannelsByTeamName, setChannelDisplayName} from '@actions/views/channel';
+import {setChannelDisplayName} from '@actions/views/channel';
+import {showPermalink} from '@actions/views/permalink';
 import {getChannelStats} from '@mm-redux/actions/channels';
 import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
-import {selectFocusedPostId} from '@mm-redux/actions/posts';
 import {General} from '@mm-redux/constants';
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentChannel, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
@@ -69,10 +69,9 @@ function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
             getChannelStats,
-            loadChannelsByTeamName,
             getCustomEmojisInText,
-            selectFocusedPostId,
             setChannelDisplayName,
+            showPermalink,
         }, dispatch),
     };
 }

@@ -46,15 +46,21 @@ export function loadChannelsByTeamName(teamName, errorHandler) {
     return async (dispatch, getState) => {
         const state = getState();
         const {currentTeamId} = state.entities.teams;
-        const team = getTeamByName(state, teamName);
 
-        if (!team && errorHandler) {
-            errorHandler();
+        if (teamName) {
+            const team = getTeamByName(state, teamName);
+
+            if (!team && errorHandler) {
+                errorHandler();
+                return {error: true};
+            }
+
+            if (team && team.id !== currentTeamId) {
+                await dispatch(fetchMyChannelsAndMembers(team.id));
+            }
         }
 
-        if (team && team.id !== currentTeamId) {
-            await dispatch(fetchMyChannelsAndMembers(team.id));
-        }
+        return {data: true};
     };
 }
 
