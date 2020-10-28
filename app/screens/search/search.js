@@ -17,7 +17,8 @@ import {
 import {Navigation} from 'react-native-navigation';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
-import {goToScreen, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
+import {goToScreen, dismissModal} from '@actions/navigation';
+import {showingPermalink} from '@actions/views/permalink';
 import Autocomplete from '@components/autocomplete';
 import CompassIcon from '@components/compass_icon';
 import KeyboardLayout from '@components/layout/keyboard_layout';
@@ -58,14 +59,14 @@ export default class Search extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
+            closePermalink: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPostsWithParams: PropTypes.func.isRequired,
             getMorePostsForSearch: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
@@ -235,9 +236,9 @@ export default class Search extends PureComponent {
     };
 
     handleHashtagPress = (hashtag) => {
-        if (this.showingPermalink) {
+        if (showingPermalink) {
             dismissModal();
-            this.handleClosePermalink();
+            this.props.actions.closePermalink();
         }
 
         const terms = '#' + hashtag;
@@ -248,20 +249,13 @@ export default class Search extends PureComponent {
         Keyboard.dismiss();
     };
 
-    handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
-
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({searchListHeight: height});
     };
 
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
-        this.showPermalinkView(postId, true);
+        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     handleScroll = (event) => {
@@ -337,9 +331,7 @@ export default class Search extends PureComponent {
     }, 100);
 
     previewPost = (post) => {
-        Keyboard.dismiss();
-
-        this.showPermalinkView(post.id, false);
+        this.props.actions.showPermalink(this.context.intl, '', post.id, false);
     };
 
     removeSearchTerms = preventDoubleTap((item) => {
@@ -475,28 +467,6 @@ export default class Search extends PureComponent {
 
     retry = () => {
         this.search(this.state.value.trim());
-    };
-
-    showPermalinkView = (postId, isPermalink) => {
-        const {actions} = this.props;
-
-        actions.selectFocusedPostId(postId);
-
-        if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink,
-                onClose: this.handleClosePermalink,
-            };
-            const options = {
-                layout: {
-                    backgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-
-            this.showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
-        }
     };
 
     scrollToTop = () => {
