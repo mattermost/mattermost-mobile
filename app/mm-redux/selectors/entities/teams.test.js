@@ -7,7 +7,7 @@ import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import TestHelper from 'test/test_helper';
 import * as Selectors from '@mm-redux/selectors/entities/teams';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
-import {General, Preferences} from '../../constants';
+import {General, Preferences} from '@mm-redux/constants';
 
 describe('Selectors.Teams', () => {
     TestHelper.initMockEntities();
