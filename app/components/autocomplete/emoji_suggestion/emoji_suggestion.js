@@ -226,6 +226,7 @@ export default class EmojiSuggestion extends PureComponent {
 
         return (
             <FlatList
+                testID='autocomplete.emoji_suggestion.list'
                 keyboardShouldPersistTaps='always'
                 style={[style.listView, {maxHeight: maxListHeight}]}
                 extraData={this.state}

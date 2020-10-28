@@ -4,13 +4,12 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     View,
     TouchableWithoutFeedback,
 } from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
-import addReactionIcon from '@assets/images/icons/reaction.png';
 import {
     REACTION_PICKER_HEIGHT,
     DEFAULT_EMOJIS,
@@ -82,7 +81,10 @@ export default class ReactionPicker extends PureComponent {
         return (
             <View style={[style.reactionListContainer, paddingRes]}>
                 {list}
-                <TouchableWithoutFeedback onPress={this.props.openReactionScreen}>
+                <TouchableWithoutFeedback
+                    onPress={this.props.openReactionScreen}
+                    testID='reaction_picker.open'
+                >
                     <View
                         style={[
                             style.reactionContainer,
@@ -92,11 +94,10 @@ export default class ReactionPicker extends PureComponent {
                             },
                         ]}
                     >
-                        <Image
-                            source={addReactionIcon}
-                            style={[style.iconImage]}
-                            width={iconSize}
-                            height={iconSize}
+                        <CompassIcon
+                            name='emoticon-plus-outline'
+                            size={31.2}
+                            style={style.icon}
                         />
                     </View>
                 </TouchableWithoutFeedback>
@@ -107,8 +108,8 @@ export default class ReactionPicker extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        iconImage: {
-            tintColor: theme.centerChannelColor,
+        icon: {
+            color: theme.centerChannelColor,
         },
         reactionListContainer: {
             flex: 1,

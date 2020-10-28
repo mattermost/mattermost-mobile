@@ -27,7 +27,17 @@ export class PasteableTextInput extends React.PureComponent {
         }
     }
 
+    getLastSubscriptionKey = () => {
+        const subscriptions = OnPasteEventEmitter._subscriber._subscriptionsForType.onPaste?.filter((sub) => sub); // eslint-disable-line no-underscore-dangle
+        return subscriptions?.length && subscriptions[subscriptions.length - 1].key;
+    }
+
     onPaste = (event) => {
+        const lastSubscriptionKey = this.getLastSubscriptionKey();
+        if (this.subscription.key !== lastSubscriptionKey) {
+            return;
+        }
+
         let data = null;
         let error = null;
 

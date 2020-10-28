@@ -11,14 +11,14 @@ import {
     View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from 'app/components/markdown/markdown_table_cell/markdown_table_cell';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {goToScreen} from 'app/actions/navigation';
-import {DeviceTypes} from 'app/constants';
+import CompassIcon from '@components/compass_icon';
+import {CELL_MAX_WIDTH, CELL_MIN_WIDTH} from '@components/markdown/markdown_table_cell/markdown_table_cell';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {goToScreen} from '@actions/navigation';
+import {DeviceTypes} from '@constants';
 
 const MAX_HEIGHT = 300;
 const MAX_PREVIEW_COLUMNS = 5;
@@ -239,14 +239,14 @@ export default class MarkdownTable extends React.PureComponent {
         if (expandButtonOffset > 0) {
             expandButton = (
                 <TouchableWithFeedback
-                    type={'opacity'}
+                    type='opacity'
                     onPress={this.handlePress}
                     style={[style.expandButton, {left: expandButtonOffset}]}
                 >
                     <View style={[style.iconContainer, {width: this.getTableWidth()}]}>
                         <View style={style.iconButton}>
-                            <Icon
-                                name={'expand'}
+                            <CompassIcon
+                                name='arrow-expand'
                                 style={style.icon}
                             />
                         </View>
@@ -259,7 +259,7 @@ export default class MarkdownTable extends React.PureComponent {
             <TouchableWithFeedback
                 style={style.tablePadding}
                 onPress={this.handlePress}
-                type={'opacity'}
+                type='opacity'
             >
                 <ScrollView
                     onContentSizeChange={this.handleContentSizeChange}

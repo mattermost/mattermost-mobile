@@ -15,13 +15,9 @@ import {
     Text,
     View,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
 import Slider from 'react-native-slider';
 
-import fullscreenImage from '@assets/images/video_player/fullscreen.png';
-import pauseImage from '@assets/images/video_player/pause.png';
-import playImage from '@assets/images/video_player/play.png';
-import replayImage from '@assets/images/video_player/replay.png';
+import CompassIcon from '@components/compass_icon';
 
 export const PLAYER_STATE = {
     PLAYING: 0,
@@ -35,6 +31,7 @@ export default class VideoControls extends PureComponent {
         isLoading: PropTypes.bool,
         isFullScreen: PropTypes.bool,
         mainColor: PropTypes.string,
+        controlButtonBg: PropTypes.string,
         onFullScreen: PropTypes.func,
         onPaused: PropTypes.func,
         onReplay: PropTypes.func,
@@ -106,16 +103,16 @@ export default class VideoControls extends PureComponent {
         });
     };
 
-    getControlIconAndAspectRatio = (playerState) => {
+    getControlIconName = (playerState) => {
         switch (playerState) {
         case PLAYER_STATE.PLAYING:
-            return {icon: pauseImage, aspectRatio: 0.83};
+            return 'pause';
         case PLAYER_STATE.ENDED:
-            return {icon: replayImage, aspectRatio: 1.17};
+            return 'refresh';
         }
 
-        return {icon: playImage, aspectRatio: 0.83};
-    };
+        return 'play';
+    }
 
     handleAppStateChange = (nextAppState) => {
         if (nextAppState !== 'active' && this.props.playerState === PLAYER_STATE.PLAYING) {
@@ -179,9 +176,10 @@ export default class VideoControls extends PureComponent {
                         style={styles.fullScreenContainer}
                         onPress={this.props.onFullScreen}
                     >
-                        <FastImage
-                            source={fullscreenImage}
-                            style={{width: 20, height: 20}}
+                        <CompassIcon
+                            name='arrow-expand'
+                            size={20}
+                            color='#fff'
                         />
                     </TouchableOpacity>
                 </View>
@@ -214,16 +212,17 @@ export default class VideoControls extends PureComponent {
     };
 
     setPlayerControls = (playerState) => {
-        const {icon, aspectRatio} = this.getControlIconAndAspectRatio(playerState);
+        const iconName = this.getControlIconName(playerState);
         const pressAction = playerState === PLAYER_STATE.ENDED ? this.onReplay : this.onPause;
         return (
             <TouchableOpacity
-                style={[styles.controlButton, {backgroundColor: this.props.mainColor}]}
                 onPress={pressAction}
+                style={[styles.controlButton, {backgroundColor: this.props.controlButtonBg}]}
             >
-                <FastImage
-                    source={icon}
-                    style={[styles.controlIcon, {aspectRatio}]}
+                <CompassIcon
+                    name={iconName}
+                    size={72}
+                    color='#fff'
                 />
             </TouchableOpacity>
         );
@@ -286,18 +285,6 @@ const styles = StyleSheet.create({
     timeRow: {
         alignSelf: 'stretch',
     },
-    controlButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 50,
-        height: 50,
-        borderRadius: 3,
-        borderWidth: 1.5,
-        borderColor: 'rgba(255,255,255,0.5)',
-    },
-    controlIcon: {
-        height: 20,
-    },
     progressContainer: {
         position: 'absolute',
         flexDirection: 'row',
@@ -307,6 +294,10 @@ const styles = StyleSheet.create({
     },
     progressColumnContainer: {
         flex: 1,
+    },
+    controlButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     fullScreenContainer: {
         alignSelf: 'stretch',

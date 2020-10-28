@@ -75,10 +75,8 @@ exports[`MoreChannels should match snapshot 1`] = `
         }
       >
           
-        <Icon
-          allowFontScaling={false}
-          name="caret-down"
-          size={12}
+        <CompassIcon
+          name="menu-down"
         />
       </Text>
     </View>

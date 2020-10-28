@@ -39,9 +39,8 @@ exports[`PinnedPosts should match snapshot when getPinnedPosts failed 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
+  <Connect(FailedNetworkAction)
     onRetry={[Function]}
-    showAction={true}
     theme={
       Object {
         "awayIndicator": "#ffbc42",

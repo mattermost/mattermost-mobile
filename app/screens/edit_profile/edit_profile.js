@@ -517,9 +517,10 @@ export default class EditProfile extends PureComponent {
         const profilePicture = (
             <ProfilePicture
                 userId={currentUser.id}
-                size={150}
+                size={153}
+                iconSize={104}
                 statusBorderWidth={6}
-                statusSize={40}
+                statusSize={36}
                 edit={!profilePictureDisabled}
                 imageUri={uri}
                 profileImageRemove={profileImageRemove}

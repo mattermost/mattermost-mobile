@@ -4,8 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View, Platform} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
@@ -34,10 +34,10 @@ export default class UploadRemove extends PureComponent {
                 type={'opacity'}
             >
                 <View style={style.removeButton}>
-                    <Icon
+                    <CompassIcon
                         name='close-circle'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        size={21}
+                        size={24}
                         style={style.removeIcon}
                     />
                 </View>
@@ -51,10 +51,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         tappableContainer: {
             position: 'absolute',
             elevation: 11,
-            top: -5,
-            right: -10,
-            width: 32,
-            height: 32,
+            top: -7,
+            right: -8,
+            width: 24,
+            height: 24,
         },
         removeButton: {
             borderRadius: 12,
@@ -64,13 +64,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 android: 4.75,
             }),
             backgroundColor: theme.centerChannelBg,
-        },
-        removeIcon: {
-            position: 'relative',
-            top: Platform.select({
-                ios: 1,
-                android: 0,
-            }),
+            width: 24,
+            height: 25,
         },
     };
 });

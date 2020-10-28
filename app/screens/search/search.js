@@ -14,12 +14,13 @@ import {
     Text,
     View,
 } from 'react-native';
-import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
-import {goToScreen, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
+import {goToScreen, dismissModal} from '@actions/navigation';
+import {showingPermalink} from '@actions/views/permalink';
 import Autocomplete from '@components/autocomplete';
+import CompassIcon from '@components/compass_icon';
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import DateHeader from '@components/post_list/date_header';
 import FormattedText from '@components/formatted_text';
@@ -58,14 +59,14 @@ export default class Search extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
+            closePermalink: PropTypes.func.isRequired,
             handleSearchDraftChanged: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             removeSearchTerms: PropTypes.func.isRequired,
             searchPostsWithParams: PropTypes.func.isRequired,
             getMorePostsForSearch: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
@@ -193,8 +194,8 @@ export default class Search extends PureComponent {
             archivedIndicator = (
                 <View style={style.archivedIndicator}>
                     <Text>
-                        <AwesomeIcon
-                            name='archive'
+                        <CompassIcon
+                            name='archive-outline'
                             style={style.archivedText}
                         />
                         {' '}
@@ -235,9 +236,9 @@ export default class Search extends PureComponent {
     };
 
     handleHashtagPress = (hashtag) => {
-        if (this.showingPermalink) {
+        if (showingPermalink) {
             dismissModal();
-            this.handleClosePermalink();
+            this.props.actions.closePermalink();
         }
 
         const terms = '#' + hashtag;
@@ -248,20 +249,13 @@ export default class Search extends PureComponent {
         Keyboard.dismiss();
     };
 
-    handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
-
     handleLayout = (event) => {
         const {height} = event.nativeEvent.layout;
         this.setState({searchListHeight: height});
     };
 
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
-        this.showPermalinkView(postId, true);
+        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     handleScroll = (event) => {
@@ -337,9 +331,7 @@ export default class Search extends PureComponent {
     }, 100);
 
     previewPost = (post) => {
-        Keyboard.dismiss();
-
-        this.showPermalinkView(post.id, false);
+        this.props.actions.showPermalink(this.context.intl, '', post.id, false);
     };
 
     removeSearchTerms = preventDoubleTap((item) => {
@@ -477,28 +469,6 @@ export default class Search extends PureComponent {
         this.search(this.state.value.trim());
     };
 
-    showPermalinkView = (postId, isPermalink) => {
-        const {actions} = this.props;
-
-        actions.selectFocusedPostId(postId);
-
-        if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink,
-                onClose: this.handleClosePermalink,
-            };
-            const options = {
-                layout: {
-                    backgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-
-            this.showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
-        }
-    };
-
     scrollToTop = () => {
         if (this.listRef?._wrapperListRef) {
             this.listRef._wrapperListRef.getListRef().scrollToOffset({
@@ -597,14 +567,16 @@ export default class Search extends PureComponent {
 
         const sectionsData = [{
             value: 'from:',
-            modifier: `from:${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
+            testID: 'search_from.section',
+            modifier: `${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.from_modifier_description',
                 defaultMessage: 'to find posts from specific users',
             }),
         }, {
             value: 'in:',
-            modifier: `in:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
+            testID: 'search_in.section',
+            modifier: `:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.in_modifier_description',
                 defaultMessage: 'to find posts in specific channels',
@@ -615,7 +587,8 @@ export default class Search extends PureComponent {
         if (this.props.enableDateSuggestion) {
             sectionsData.push({
                 value: 'on:',
-                modifier: 'on: YYYY-MM-DD',
+                testID: 'search_on.section',
+                modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.on_modifier_description',
                     defaultMessage: 'to find posts on a specific date',
@@ -623,7 +596,8 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'after:',
-                modifier: 'after: YYYY-MM-DD',
+                testID: 'search_after.section',
+                modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.after_modifier_description',
                     defaultMessage: 'to find posts after a specific date',
@@ -631,7 +605,8 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'before:',
-                modifier: 'before: YYYY-MM-DD',
+                testID: 'search_before.section',
+                modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.before_modifier_description',
                     defaultMessage: 'to find posts before a specific date',

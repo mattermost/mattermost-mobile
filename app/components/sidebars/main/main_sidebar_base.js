@@ -256,6 +256,7 @@ export default class MainSidebarBase extends Component {
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
                     drawerWidth={drawerWidth - offset}
+                    testID='main_sidebar'
                 >
                     {lists}
                 </DrawerSwiper>
@@ -266,6 +267,11 @@ export default class MainSidebarBase extends Component {
     selectChannel = (channel, currentChannelId, closeDrawer = true) => {
         const {logChannelSwitch, handleSelectChannel} = this.props.actions;
 
+        if (closeDrawer) {
+            telemetry.start(['channel:close_drawer']);
+            this.closeMainSidebar();
+        }
+
         if (channel.id === currentChannelId) {
             return;
         }
@@ -273,11 +279,6 @@ export default class MainSidebarBase extends Component {
         logChannelSwitch(channel.id, currentChannelId);
 
         tracker.channelSwitch = Date.now();
-
-        if (closeDrawer) {
-            telemetry.start(['channel:close_drawer']);
-            this.closeMainSidebar();
-        }
 
         if (!channel) {
             const utils = require('app/utils/general');

@@ -268,69 +268,71 @@ exports[`channelInfo should match snapshot 1`] = `
             }
           }
         />
-        <Connect(NotificationPreference)
-          isLandscape={false}
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
+        <React.Fragment>
+          <Connect(NotificationPreference)
+            isLandscape={false}
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
             }
-          }
-        />
-        <Separator
-          theme={
-            Object {
-              "awayIndicator": "#ffbc42",
-              "buttonBg": "#166de0",
-              "buttonColor": "#ffffff",
-              "centerChannelBg": "#ffffff",
-              "centerChannelColor": "#3d3c40",
-              "codeTheme": "github",
-              "dndIndicator": "#f74343",
-              "errorTextColor": "#fd5960",
-              "linkColor": "#2389d7",
-              "mentionBg": "#ffffff",
-              "mentionBj": "#ffffff",
-              "mentionColor": "#145dbf",
-              "mentionHighlightBg": "#ffe577",
-              "mentionHighlightLink": "#166de0",
-              "newMessageSeparator": "#ff8800",
-              "onlineIndicator": "#06d6a0",
-              "sidebarBg": "#145dbf",
-              "sidebarHeaderBg": "#1153ab",
-              "sidebarHeaderTextColor": "#ffffff",
-              "sidebarText": "#ffffff",
-              "sidebarTextActiveBorder": "#579eff",
-              "sidebarTextActiveColor": "#ffffff",
-              "sidebarTextHoverBg": "#4578bf",
-              "sidebarUnreadText": "#ffffff",
-              "type": "Mattermost",
+          />
+          <Separator
+            theme={
+              Object {
+                "awayIndicator": "#ffbc42",
+                "buttonBg": "#166de0",
+                "buttonColor": "#ffffff",
+                "centerChannelBg": "#ffffff",
+                "centerChannelColor": "#3d3c40",
+                "codeTheme": "github",
+                "dndIndicator": "#f74343",
+                "errorTextColor": "#fd5960",
+                "linkColor": "#2389d7",
+                "mentionBg": "#ffffff",
+                "mentionBj": "#ffffff",
+                "mentionColor": "#145dbf",
+                "mentionHighlightBg": "#ffe577",
+                "mentionHighlightLink": "#166de0",
+                "newMessageSeparator": "#ff8800",
+                "onlineIndicator": "#06d6a0",
+                "sidebarBg": "#145dbf",
+                "sidebarHeaderBg": "#1153ab",
+                "sidebarHeaderTextColor": "#ffffff",
+                "sidebarText": "#ffffff",
+                "sidebarTextActiveBorder": "#579eff",
+                "sidebarTextActiveColor": "#ffffff",
+                "sidebarTextHoverBg": "#4578bf",
+                "sidebarUnreadText": "#ffffff",
+                "type": "Mattermost",
+              }
             }
-          }
-        />
+          />
+        </React.Fragment>
         <Connect(Pinned)
           channelId="1234"
           isLandscape={false}
@@ -767,69 +769,71 @@ exports[`channelInfo should not include NotificationPreference for direct messag
       }
     }
   />
-  <Connect(NotificationPreference)
-    isLandscape={false}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
+  <React.Fragment>
+    <Connect(NotificationPreference)
+      isLandscape={false}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
       }
-    }
-  />
-  <Separator
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
+    />
+    <Separator
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
       }
-    }
-  />
+    />
+  </React.Fragment>
   <Connect(Pinned)
     channelId="1234"
     isLandscape={false}
@@ -1128,37 +1132,6 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(IgnoreMentions)
     channelId="1234"
     isLandscape={false}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
-      }
-    }
-  />
-  <Separator
     theme={
       Object {
         "awayIndicator": "#ffbc42",

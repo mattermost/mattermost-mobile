@@ -52,7 +52,7 @@ export default class ProfilePictureButton extends PureComponent {
                 textStyle: {
                     color: '#CC3239',
                 },
-                icon: 'trash',
+                icon: 'trash-can-outline',
                 iconStyle: {
                     color: '#CC3239',
                 },

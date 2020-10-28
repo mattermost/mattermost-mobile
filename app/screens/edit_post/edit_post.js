@@ -47,6 +47,7 @@ export default class EditPost extends PureComponent {
 
     leftButton = {
         id: 'close-edit-post',
+        testID: 'edit_post.close',
     };
 
     rightButton = {
@@ -255,6 +256,7 @@ export default class EditPost extends PureComponent {
                         {displayError}
                         <View style={[inputContainerStyle, padding(isLandscape), {height}]}>
                             <TextInputWithLocalizedPlaceholder
+                                testID='edit_post.input'
                                 ref={this.messageRef}
                                 value={message}
                                 blurOnSubmit={false}

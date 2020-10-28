@@ -10,8 +10,10 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {dismissModal, showModalOverCurrentContext} from '@actions/navigation';
+import {dismissModal} from '@actions/navigation';
 import StatusBar from '@components/status_bar';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddMembers from './add_members';
@@ -32,10 +34,9 @@ export default class ChannelInfo extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -80,34 +81,18 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
-    handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
-
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
-        this.showPermalinkView(postId);
+        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
-    showPermalinkView = (postId) => {
-        const {actions} = this.props;
-        const screen = 'Permalink';
-        const passProps = {
-            isPermalink: true,
-            onClose: this.handleClosePermalink,
-        };
-        const options = {
-            layout: {
-                backgroundColor: changeOpacity('#000', 0.2),
-            },
+    permalinkBadTeam = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_team.error'),
+            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
         };
 
-        actions.selectFocusedPostId(postId);
-
-        this.showingPermalink = true;
-        showModalOverCurrentContext(screen, passProps, options);
+        alertErrorWithFallback(intl, {}, message);
     };
 
     actionsRows = (channelIsArchived) => {
@@ -144,12 +129,14 @@ export default class ChannelInfo extends PureComponent {
                 />
                 <Separator theme={theme}/>
                 {!isDirectMessage &&
-                <NotificationPreference
-                    isLandscape={isLandscape}
-                    theme={theme}
-                />
+                <>
+                    <NotificationPreference
+                        isLandscape={isLandscape}
+                        theme={theme}
+                    />
+                    <Separator theme={theme}/>
+                </>
                 }
-                <Separator theme={theme}/>
                 <Pinned
                     channelId={currentChannel.id}
                     isLandscape={isLandscape}
@@ -209,7 +196,7 @@ export default class ChannelInfo extends PureComponent {
                         status={status}
                         theme={theme}
                         type={currentChannel.type}
-                        isArchived={currentChannel.delete_at !== 0}
+                        isArchived={channelIsArchived}
                         isBot={isBot}
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}

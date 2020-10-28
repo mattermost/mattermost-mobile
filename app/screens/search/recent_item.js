@@ -4,10 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, TouchableHighlight, TouchableOpacity, View} from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import CompassIcon from '@components/compass_icon';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export const RECENT_LABEL_HEIGHT = 42;
 
@@ -57,8 +57,8 @@ export default class RecentItem extends PureComponent {
                         onPress={this.handleRemove}
                         style={style.recentRemove}
                     >
-                        <IonIcon
-                            name='ios-close-circle-outline'
+                        <CompassIcon
+                            name='close-circle-outline'
                             size={20}
                             color={changeOpacity(theme.centerChannelColor, 0.6)}
                         />

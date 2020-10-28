@@ -26,7 +26,8 @@ export default class AddReaction extends PureComponent {
     };
 
     leftButton = {
-        id: 'close-edit-post',
+        id: 'close-add-reaction',
+        testID: 'screen.add_reaction.close',
     };
 
     constructor(props) {
@@ -42,7 +43,7 @@ export default class AddReaction extends PureComponent {
     }
 
     navigationButtonPressed({buttonId}) {
-        if (buttonId === 'close-edit-post') {
+        if (buttonId === 'close-add-reaction') {
             this.close();
         }
     }

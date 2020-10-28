@@ -26,8 +26,6 @@ import mattermostBucket from 'app/mattermost_bucket';
 import {changeOpacity} from 'app/utils/theme';
 import {goToScreen} from 'app/actions/navigation';
 
-import {ATTACHMENT_ICON_HEIGHT, ATTACHMENT_ICON_WIDTH} from 'app/constants/attachment';
-
 const {DOCUMENTS_PATH} = DeviceTypes;
 const TEXT_PREVIEW_FORMATS = [
     'application/json',
@@ -40,20 +38,9 @@ export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
         backgroundColor: PropTypes.string,
         canDownloadFiles: PropTypes.bool.isRequired,
-        iconHeight: PropTypes.number,
-        iconWidth: PropTypes.number,
         file: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         onLongPress: PropTypes.func,
-        wrapperHeight: PropTypes.number,
-        wrapperWidth: PropTypes.number,
-    };
-
-    static defaultProps = {
-        iconHeight: ATTACHMENT_ICON_HEIGHT,
-        iconWidth: ATTACHMENT_ICON_WIDTH,
-        wrapperHeight: ATTACHMENT_ICON_HEIGHT,
-        wrapperWidth: ATTACHMENT_ICON_WIDTH,
     };
 
     static contextTypes = {
@@ -322,17 +309,13 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     renderFileAttachmentIcon = () => {
-        const {backgroundColor, iconHeight, iconWidth, file, theme, wrapperHeight, wrapperWidth} = this.props;
+        const {backgroundColor, file, theme} = this.props;
 
         return (
             <FileAttachmentIcon
                 backgroundColor={backgroundColor}
                 file={file.data}
                 theme={theme}
-                iconHeight={iconHeight}
-                iconWidth={iconWidth}
-                wrapperHeight={wrapperHeight}
-                wrapperWidth={wrapperWidth}
             />
         );
     }

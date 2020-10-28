@@ -31,7 +31,6 @@ exports[`DialogIntroductionText should render the introduction text correctly 1`
         },
         "quoteBlockIcon": Object {
           "color": "rgba(61,60,64,0.5)",
-          "padding": 5,
         },
       }
     }

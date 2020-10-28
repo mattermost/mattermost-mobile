@@ -55,6 +55,7 @@ describe('ImagePreview', () => {
         );
 
         expect(wrapper.instance().renderDownloadButton()).toMatchSnapshot();
+        expect(wrapper.find({name: 'download-outline'}).exists()).toBe(true);
     });
 
     test('should match snapshot and not renderDownloadButton for local files', () => {
@@ -69,7 +70,7 @@ describe('ImagePreview', () => {
         );
 
         expect(wrapper.instance().renderDownloadButton()).toMatchSnapshot();
-        expect(wrapper.instance().renderDownloadButton()).toBeNull();
+        expect(wrapper.find({name: 'download-outline'}).exists()).toBe(false);
     });
 
     test('should match state on handleChangeImage', () => {

@@ -10,16 +10,16 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {Navigation} from 'react-native-navigation';
 
-import FormattedText from 'app/components/formatted_text';
-import Post from 'app/components/post';
-import SafeAreaView from 'app/components/safe_area_view';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {goToScreen, dismissModal} from 'app/actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import Post from '@components/post';
+import SafeAreaView from '@components/safe_area_view';
+import {marginHorizontal as margin} from '@components/safe_area_view/iphone_x_spacing';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {goToScreen, dismissModal} from '@actions/navigation';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -139,7 +139,7 @@ export default class LongPost extends PureComponent {
                                 style={style.close}
                                 onPress={this.handleClose}
                             >
-                                <MaterialIcon
+                                <CompassIcon
                                     name='close'
                                     size={20}
                                     color={theme.centerChannelColor}

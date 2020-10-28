@@ -7,13 +7,19 @@
   return [[NSUserDefaults alloc] initWithSuiteName: name];
 }
 
+-(NSString *)appGroupId {
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *appGroupId = [bundle objectForInfoDictionaryKey:@"AppGroupIdentifier"];
+    return appGroupId;
+}
+
 -(NSString *)fileUrl:(NSString *)fileName {
-  NSURL *fileManagerURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:APP_GROUP_ID];
+  NSURL *fileManagerURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:[self appGroupId]];
   return [NSString stringWithFormat:@"%@/%@", fileManagerURL.path, fileName];
 }
 
 -(id) getPreference:(NSString *)key {
-  NSUserDefaults* bucket = [self bucketByName: APP_GROUP_ID];
+  NSUserDefaults* bucket = [self bucketByName: [self appGroupId]];
   return [bucket objectForKey:key];
 }
 
@@ -50,12 +56,12 @@
 }
 
 -(void) removePreference:(NSString *)key {
-  NSUserDefaults* bucket = [self bucketByName: APP_GROUP_ID];
+  NSUserDefaults* bucket = [self bucketByName: [self appGroupId]];
   [bucket removeObjectForKey: key];
 }
 
 -(void) setPreference:(NSString *)key value:(NSString *) value {
-  NSUserDefaults* bucket = [self bucketByName: APP_GROUP_ID];
+  NSUserDefaults* bucket = [self bucketByName: [self appGroupId]];
   if (bucket && [key length] > 0 && [value length] > 0) {
     [bucket setObject:value forKey:key];
   }

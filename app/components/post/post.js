@@ -10,7 +10,6 @@ import {
     ViewPropTypes,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -18,6 +17,7 @@ import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux
 
 import {showModalOverCurrentContext, showModal} from '@actions/navigation';
 
+import CompassIcon from '@components/compass_icon';
 import PostBody from '@components/post_body';
 import PostHeader from '@components/post_header';
 import PostProfilePicture from '@components/post_profile_picture';
@@ -102,7 +102,7 @@ export default class Post extends PureComponent {
         };
 
         if (!this.closeButton) {
-            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+            this.closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         }
 
         const options = {

@@ -11,11 +11,11 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import RemoveMarkdown from 'app/components/remove_markdown';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {goToScreen} from 'app/actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import RemoveMarkdown from '@components/remove_markdown';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {goToScreen} from '@actions/navigation';
 
 const {View: AnimatedView} = Animated;
 
@@ -122,9 +122,9 @@ export default class AnnouncementBanner extends PureComponent {
                     >
                         <RemoveMarkdown value={bannerText}/>
                     </Text>
-                    <MaterialIcons
+                    <CompassIcon
                         color={bannerTextColor}
-                        name='info'
+                        name='info-outline'
                         size={16}
                     />
                 </TouchableOpacity>

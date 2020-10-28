@@ -5,17 +5,17 @@ import React, {PureComponent} from 'react';
 import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
-import FormattedText from 'app/components/formatted_text';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {ViewTypes} from 'app/constants';
-import {goToScreen} from 'app/actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {ViewTypes} from '@constants';
+import {goToScreen} from '@actions/navigation';
 
 export default class AutocompleteSelector extends PureComponent {
     static propTypes = {
@@ -202,7 +202,7 @@ export default class AutocompleteSelector extends PureComponent {
                         >
                             {text}
                         </Text>
-                        <Icon
+                        <CompassIcon
                             name='chevron-down'
                             color={changeOpacity(theme.centerChannelColor, 0.5)}
                             style={[style.icon, padding(isLandscape)]}

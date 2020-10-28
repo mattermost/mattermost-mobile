@@ -264,7 +264,6 @@ export default class UserProfile extends PureComponent {
                     defaultMessage={l.defaultMessage}
                     textId={l.textId}
                     icon={l.icon}
-                    iconType={l.iconType}
                     theme={this.props.theme}
                     iconSize={l.iconSize}
                 />
@@ -315,23 +314,27 @@ export default class UserProfile extends PureComponent {
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
+                    contentContainerStyle={style.contentContainer}
                 >
                     <View style={style.top}>
                         <ProfilePicture
                             userId={user.id}
-                            size={150}
+                            size={153}
+                            iconSize={104}
                             statusBorderWidth={6}
-                            statusSize={40}
+                            statusSize={36}
                         />
                         {this.getDisplayName()}
                         <Text style={style.username}>{`@${user.username}`}</Text>
                     </View>
+                    <View style={style.divider}/>
                     {this.renderDetailsBlock(style)}
+                    <View style={style.divider}/>
                     <UserProfileRow
                         action={this.sendMessage}
                         defaultMessage='Send Message'
-                        icon='paper-plane-o'
-                        iconType='fontawesome'
+                        icon='send'
+                        iconSize={24}
                         textId={t('mobile.routes.user_profile.send_message')}
                         theme={theme}
                         isLandscape={isLandscape}
@@ -369,6 +372,9 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
+        contentContainer: {
+            paddingBottom: 48,
+        },
         text: {
             fontSize: 15,
             color: theme.centerChannelColor,
@@ -386,6 +392,12 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         indicatorContainer: {
             marginTop: 15,
             flexDirection: 'row',
+        },
+        divider: {
+            height: 1,
+            marginLeft: 16,
+            marginRight: 22,
+            backgroundColor: '#EBEBEC',
         },
     };
 });

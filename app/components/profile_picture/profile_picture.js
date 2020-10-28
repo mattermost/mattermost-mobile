@@ -5,11 +5,11 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Platform, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-import placeholder from '@assets/images/profile.jpg';
-import UserStatus from '@components/user_status';
 import {Client4} from '@mm-redux/client';
+
+import CompassIcon from '@components/compass_icon';
+import UserStatus from '@components/user_status';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const STATUS_BUFFER = Platform.select({
@@ -22,6 +22,7 @@ export default class ProfilePicture extends PureComponent {
         isCurrentUser: PropTypes.bool.isRequired,
         size: PropTypes.number,
         statusSize: PropTypes.number,
+        iconSize: PropTypes.number,
         user: PropTypes.object,
         showStatus: PropTypes.bool,
         status: PropTypes.string,
@@ -108,12 +109,16 @@ export default class ProfilePicture extends PureComponent {
     }
 
     render() {
-        const {edit, showStatus, theme, user} = this.props;
+        const {edit, showStatus, theme, user, size} = this.props;
         const {pictureUrl} = this.state;
         const style = getStyleSheet(theme);
 
         let statusIcon;
         let statusStyle;
+        let containerStyle = {
+            width: size + STATUS_BUFFER,
+            height: size + STATUS_BUFFER,
+        };
         if (edit) {
             const iconColor = changeOpacity(theme.centerChannelColor, 0.6);
             statusStyle = {
@@ -122,8 +127,8 @@ export default class ProfilePicture extends PureComponent {
                 backgroundColor: theme.centerChannelBg,
             };
             statusIcon = (
-                <FontAwesomeIcon
-                    name='camera'
+                <CompassIcon
+                    name='camera-outline'
                     size={this.props.statusSize / 1.7}
                     color={iconColor}
                 />
@@ -158,16 +163,22 @@ export default class ProfilePicture extends PureComponent {
                 />
             );
         } else {
+            containerStyle = {
+                width: size + (STATUS_BUFFER - 1),
+                height: size + (STATUS_BUFFER - 1),
+                backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            };
             image = (
-                <FastImage
-                    style={{width: this.props.size, height: this.props.size, borderRadius: this.props.size / 2}}
-                    source={placeholder}
+                <CompassIcon
+                    name='account-outline'
+                    size={this.props.iconSize || this.props.size}
+                    style={style.icon}
                 />
             );
         }
 
         return (
-            <View style={{width: this.props.size + STATUS_BUFFER, height: this.props.size + STATUS_BUFFER}}>
+            <View style={[style.container, containerStyle]}>
                 {image}
                 {(showStatus || edit) && (user && !user.is_bot) &&
                     <View style={[style.statusWrapper, statusStyle, {borderRadius: this.props.statusSize / 2}]}>
@@ -181,6 +192,14 @@ export default class ProfilePicture extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 80,
+        },
+        icon: {
+            color: changeOpacity(theme.centerChannelColor, 0.48),
+        },
         statusWrapper: {
             position: 'absolute',
             bottom: 0,

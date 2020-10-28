@@ -6,4 +6,6 @@ module.exports = {
     siteUrl: process.env.SITE_URL || 'http://localhost:8065',
     adminUsername: process.env.ADMIN_USERNAME || 'sysadmin',
     adminPassword: process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1',
+    ldapServer: process.env.LDAP_SERVER || 'localhost',
+    ldapPort: process.env.LDAP_PORT || 389,
 };

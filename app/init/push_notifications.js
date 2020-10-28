@@ -67,10 +67,11 @@ class PushNotificationUtils {
 
     onPushNotification = async (deviceNotification) => {
         const {dispatch} = Store.redux;
-        const {data, foreground, message, userInteraction} = deviceNotification;
+        const {data, foreground, message, userInfo, userInteraction} = deviceNotification;
         const notification = {
             data,
             message,
+            userInfo,
         };
 
         waitForHydration(Store.redux, () => {
@@ -84,7 +85,7 @@ class PushNotificationUtils {
 
                 if (foreground) {
                     EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
-                } else if (userInteraction && !notification?.data?.localNotification) {
+                } else if (userInteraction && !notification?.userInfo?.localNotification && !notification?.data?.localNotification) {
                     this.loadFromNotification(notification);
                 }
                 break;

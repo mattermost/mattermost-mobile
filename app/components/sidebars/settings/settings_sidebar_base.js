@@ -4,17 +4,17 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {showModal, showModalOverCurrentContext, dismissModal} from 'app/actions/navigation';
-import UserStatus from 'app/components/user_status';
-import {NavigationTypes} from 'app/constants';
-import {confirmOutOfOfficeDisabled} from 'app/utils/status';
-import {preventDoubleTap} from 'app/utils/tap';
-import {t} from 'app/utils/i18n';
+import {showModal, showModalOverCurrentContext, dismissModal} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import UserStatus from '@components/user_status';
+import {NavigationTypes} from '@constants';
+import {confirmOutOfOfficeDisabled} from '@utils/status';
+import {preventDoubleTap} from '@utils/tap';
+import {t} from '@utils/i18n';
 
 import DrawerItem from './drawer_item';
 import UserInfo from './user_info';
@@ -133,7 +133,7 @@ export default class SettingsSidebarBase extends PureComponent {
         this.closeSettingsSidebar();
 
         if (!this.closeButton) {
-            this.closeButton = await MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor);
+            this.closeButton = await CompassIcon.getImageSource('close', 24, this.props.theme.sidebarHeaderTextColor);
         }
 
         const options = {
@@ -172,7 +172,7 @@ export default class SettingsSidebarBase extends PureComponent {
     renderUserStatusIcon = (userId) => {
         return (
             <UserStatus
-                size={18}
+                size={24}
                 userId={userId}
             />
         );
@@ -211,8 +211,7 @@ export default class SettingsSidebarBase extends PureComponent {
                         <DrawerItem
                             defaultMessage='Recent Mentions'
                             i18nId='search_header.title2'
-                            iconName='ios-at'
-                            iconType='ion'
+                            iconName='at'
                             onPress={this.goToMentions}
                             separator={true}
                             theme={theme}
@@ -220,8 +219,7 @@ export default class SettingsSidebarBase extends PureComponent {
                         <DrawerItem
                             defaultMessage='Saved Messages'
                             i18nId='search_header.title3'
-                            iconName='ios-bookmark-outline'
-                            iconType='ion'
+                            iconName='bookmark-outline'
                             onPress={this.goToFlagged}
                             separator={false}
                             theme={theme}
@@ -232,8 +230,7 @@ export default class SettingsSidebarBase extends PureComponent {
                         <DrawerItem
                             defaultMessage='Edit Profile'
                             i18nId='mobile.routes.edit_profile'
-                            iconName='ios-person'
-                            iconType='ion'
+                            iconName='pencil-outline'
                             onPress={this.goToEditProfile}
                             separator={true}
                             theme={theme}
@@ -241,8 +238,7 @@ export default class SettingsSidebarBase extends PureComponent {
                         <DrawerItem
                             defaultMessage='Settings'
                             i18nId='mobile.routes.settings'
-                            iconName='ios-options'
-                            iconType='ion'
+                            iconName='settings-outline'
                             onPress={this.goToSettings}
                             separator={false}
                             theme={theme}
@@ -251,12 +247,13 @@ export default class SettingsSidebarBase extends PureComponent {
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem
-                            centered={true}
                             defaultMessage='Logout'
                             i18nId='sidebar_right_menu.logout'
+                            iconName='exit-to-app'
                             isDestructor={true}
                             onPress={this.logout}
                             separator={false}
+                            testID='sidebar.settings.logout'
                             theme={theme}
                         />
                     </View>

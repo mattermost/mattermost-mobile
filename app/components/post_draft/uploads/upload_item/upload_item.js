@@ -15,6 +15,7 @@ import FileAttachmentIcon from '@components/file_attachment_list/file_attachment
 import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import ImageCacheManager from '@utils/image_cache_manager';
+import {changeOpacity} from '@utils/theme';
 
 import UploadRemove from './upload_remove';
 import UploadRetry from './upload_retry';
@@ -189,6 +190,7 @@ export default class UploadItem extends PureComponent {
                         file={file}
                         theme={theme}
                         resizeMode='center'
+                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                     />
                 </View>
             );
@@ -198,8 +200,7 @@ export default class UploadItem extends PureComponent {
                     <FileAttachmentIcon
                         file={file}
                         theme={theme}
-                        wrapperHeight={53}
-                        wrapperWidth={53}
+                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                     />
                 </View>
             );
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
     },
     progressText: {
         color: 'white',
-        fontSize: 11,
+        fontSize: 9,
         fontWeight: 'bold',
     },
     filePreview: {

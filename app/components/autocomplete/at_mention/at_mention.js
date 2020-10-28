@@ -222,6 +222,7 @@ export default class AtMention extends PureComponent {
     renderItem = ({item}) => {
         return (
             <AtMentionItem
+                testID={`autocomplete.at_mention.item.${item}`}
                 onPress={this.completeMention}
                 userId={item}
             />
@@ -265,6 +266,7 @@ export default class AtMention extends PureComponent {
 
         return (
             <SectionList
+                testID='autocomplete.at_mention.list'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
                 style={[style.listView, {maxHeight: maxListHeight}]}

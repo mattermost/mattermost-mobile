@@ -16,7 +16,6 @@ import {
     findNodeHandle,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import {intlShape} from 'react-intl';
 import Permissions from 'react-native-permissions';
@@ -26,18 +25,19 @@ import FastImage from 'react-native-fast-image';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import FileAttachmentDocument from 'app/components/file_attachment_list/file_attachment_document';
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import {DeviceTypes, NavigationTypes} from 'app/constants';
-import {getLocalFilePathFromFile, isDocument, isVideo} from 'app/utils/file';
-import {emptyFunction} from 'app/utils/general';
-import {calculateDimensions} from 'app/utils/images';
-import {t} from 'app/utils/i18n';
-import BottomSheet from 'app/utils/bottom_sheet';
+import CompassIcon from '@components/compass_icon';
+import FileAttachmentDocument from '@components/file_attachment_list/file_attachment_document';
+import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
+import {DeviceTypes, NavigationTypes} from '@constants';
+import {getLocalFilePathFromFile, isDocument, isVideo} from '@utils/file';
+import {emptyFunction} from '@utils/general';
+import {calculateDimensions} from '@utils/images';
+import {t} from '@utils/i18n';
+import BottomSheet from '@utils/bottom_sheet';
 import {
     dismissModal,
     mergeNavigationOptions,
-} from 'app/actions/navigation';
+} from '@actions/navigation';
 
 import Downloader from './downloader';
 import VideoPreview from './video_preview';
@@ -209,11 +209,7 @@ export default class ImagePreview extends PureComponent {
                     backgroundColor='transparent'
                     canDownloadFiles={canDownloadFiles}
                     file={file}
-                    iconHeight={200}
-                    iconWidth={200}
                     theme={theme}
-                    wrapperHeight={200}
-                    wrapperWidth={200}
                 />
             </View>
         );
@@ -226,10 +222,7 @@ export default class ImagePreview extends PureComponent {
                     backgroundColor='transparent'
                     file={file}
                     theme={this.props.theme}
-                    iconHeight={200}
-                    iconWidth={200}
-                    wrapperHeight={200}
-                    wrapperWidth={200}
+                    iconSize={120}
                 />
             </View>
         );
@@ -240,8 +233,8 @@ export default class ImagePreview extends PureComponent {
         const file = this.getCurrentFile();
 
         if (file?.data?.localPath) {
-            // we already have the file locally we don't need to download it
-            return null;
+            // We already have the file locally so we don't need to download it
+            return <View style={style.headerIcon}/>;
         }
 
         if (file) {
@@ -251,17 +244,17 @@ export default class ImagePreview extends PureComponent {
                 action = this.showDownloadOptions;
                 if (Platform.OS === 'android') {
                     icon = (
-                        <Icon
-                            name='ellipsis-vertical'
-                            size={32}
+                        <CompassIcon
+                            name='dots-vertical'
+                            size={24}
                             color='#fff'
                         />
                     );
                 } else if (file.source || isVideo(file.data)) {
                     icon = (
-                        <Icon
+                        <CompassIcon
                             name='download-outline'
-                            size={26}
+                            size={24}
                             color='#fff'
                         />
                     );
@@ -354,9 +347,9 @@ export default class ImagePreview extends PureComponent {
                             onPress={this.close}
                             style={style.headerIcon}
                         >
-                            <Icon
-                                name='md-close'
-                                size={26}
+                            <CompassIcon
+                                name='close'
+                                size={24}
                                 color='#fff'
                             />
                         </TouchableOpacity>

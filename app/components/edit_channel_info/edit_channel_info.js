@@ -241,6 +241,7 @@ export default class EditChannelInfo extends PureComponent {
             <React.Fragment>
                 <StatusBar/>
                 <KeyboardAwareScrollView
+                    testID='edit_channel.scroll'
                     ref={this.scroll}
                     style={style.container}
                     keyboardShouldPersistTaps={'always'}
@@ -262,6 +263,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
+                                            testID='edit_channel.name.input'
                                             ref={this.nameInput}
                                             value={displayName}
                                             onChangeText={this.onDisplayNameChangeText}
@@ -294,6 +296,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
+                                            testID='edit_channel.purpose.input'
                                             ref={this.purposeInput}
                                             value={purpose}
                                             onChangeText={this.onPurposeChangeText}
@@ -336,6 +339,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
+                                    testID={'edit_channel.header.input'}
                                     ref={this.headerInput}
                                     value={header}
                                     onChangeText={this.onHeaderChangeText}

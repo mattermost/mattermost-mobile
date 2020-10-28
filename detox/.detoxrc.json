@@ -1,6 +1,6 @@
 {
   "testRunner": "jest",
-  "runnerConfig": "e2e/config.json",
+  "runnerConfig": "e2e/config.js",
   "configurations": {
     "ios.sim.debug": {
       "binaryPath": "../ios/Build/Products/Debug-iphonesimulator/Mattermost.app",
@@ -33,6 +33,9 @@
         "avdName": "detox_emu_api_30"
       }
     }
+  },
+  "artifacts": {
+    "pathBuilder": "./e2e/path_builder.js"
   },
   "behavior": {
     "init": {

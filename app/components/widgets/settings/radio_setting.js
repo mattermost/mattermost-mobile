@@ -4,9 +4,10 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
-import CheckMark from 'app/components/checkmark';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+
+import CompassIcon from '@components/compass_icon';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class RadioSetting extends PureComponent {
     static propTypes = {
@@ -39,13 +40,12 @@ export default class RadioSetting extends PureComponent {
         this.setState({value: item});
     }
 
-    renderCheckMark = (value, {width, height, color}) => {
+    renderCheckMark = (value, style) => {
         if (value === this.state.value) {
             return (
-                <CheckMark
-                    width={width}
-                    height={height}
-                    color={color}
+                <CompassIcon
+                    name='check'
+                    style={style}
                 />
             );
         }
@@ -183,8 +183,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 15,
         },
         checkMark: {
-            width: 12,
-            height: 12,
+            fontSize: 12,
             color: theme.linkColor,
         },
     };

@@ -117,8 +117,7 @@ class AdvancedSettings extends Component {
             <View>
                 <SettingsItem
                     defaultMessage='Throw JavaScript Exception'
-                    iconName='md-flame'
-                    iconType='ion'
+                    iconName='alert-circle-outline'
                     onPress={Sentry.crash}
                     separator={false}
                     showArrow={false}
@@ -128,8 +127,7 @@ class AdvancedSettings extends Component {
                 <View style={style.divider}/>
                 <SettingsItem
                     defaultMessage='Throw Native Exception'
-                    iconName='md-nuclear'
-                    iconType='ion'
+                    iconName='alert-outline'
                     onPress={Sentry.nativeCrash}
                     separator={false}
                     showArrow={false}
@@ -156,8 +154,7 @@ class AdvancedSettings extends Component {
                     <SettingsItem
                         defaultMessage='Delete Documents & Data'
                         i18nId='mobile.advanced_settings.delete_title'
-                        iconName='ios-refresh'
-                        iconType='ion'
+                        iconName='trash-can-outline'
                         isDestructor={true}
                         onPress={this.clearOfflineCache}
                         separator={false}
@@ -184,6 +181,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             ...Platform.select({
                 ios: {
+                    flex: 1,
                     paddingTop: 35,
                 },
             }),

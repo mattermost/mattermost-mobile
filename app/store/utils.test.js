@@ -4,7 +4,7 @@
 import DeviceInfo from 'react-native-device-info';
 
 import initialState from '@store/initial_state';
-import {getStateForReset} from '@store/utils';
+import {getStateForReset, serialize} from '@store/utils';
 
 /*
 const {currentUserId} = currentState.entities.users;
@@ -104,5 +104,34 @@ describe('getStateForReset', () => {
         const resetState = getStateForReset(initialState, currentState);
         const {app} = resetState;
         expect(app.previousVersion).toStrictEqual(currentState.app.version);
+    });
+});
+
+describe('Store serialzer', () => {
+    it('should set the value to be undefined', () => {
+        const value = serialize();
+        expect(value).toBeUndefined();
+    });
+
+    it('should set the value to be null', () => {
+        const value = serialize(null);
+        expect(value).toBeNull();
+    });
+
+    it('should set the value to be a new array with the same values', () => {
+        const initial = [1, 2, 3];
+        const value = serialize(initial);
+        expect(initial === value).toEqual(false);
+        expect(value).toEqual(initial);
+    });
+
+    it('should set the value to be a new object with the same values', () => {
+        const initial = {
+            key: '123',
+            value: 'some value',
+        };
+        const value = serialize(initial);
+        expect(initial === value).toEqual(false);
+        expect(value).toEqual(initial);
     });
 });

@@ -33,8 +33,8 @@ exports[`channel_info_header should match snapshot 1`] = `
       isBot={false}
       isInfo={true}
       isUnread={false}
-      membersCount={2}
-      size={16}
+      membersCount={3}
+      size={24}
       status="status"
       theme={
         Object {
@@ -180,7 +180,6 @@ exports[`channel_info_header should match snapshot 1`] = `
               },
               "quoteBlockIcon": Object {
                 "color": undefined,
-                "padding": 5,
               },
             }
           }
@@ -344,8 +343,8 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       isBot={false}
       isInfo={true}
       isUnread={false}
-      membersCount={2}
-      size={16}
+      membersCount={3}
+      size={24}
       status="status"
       theme={
         Object {
@@ -522,7 +521,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
               },
               "quoteBlockIcon": Object {
                 "color": undefined,
-                "padding": 5,
               },
             }
           }
@@ -686,8 +684,8 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       isBot={false}
       isInfo={true}
       isUnread={false}
-      membersCount={2}
-      size={16}
+      membersCount={3}
+      size={24}
       status="status"
       theme={
         Object {
@@ -833,7 +831,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
               },
               "quoteBlockIcon": Object {
                 "color": undefined,
-                "padding": 5,
               },
             }
           }
@@ -997,8 +994,8 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       isBot={false}
       isInfo={true}
       isUnread={false}
-      membersCount={2}
-      size={16}
+      membersCount={3}
+      size={24}
       status="status"
       theme={
         Object {
@@ -1175,7 +1172,6 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
               },
               "quoteBlockIcon": Object {
                 "color": undefined,
-                "padding": 5,
               },
             }
           }
@@ -1339,8 +1335,8 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       isBot={false}
       isInfo={true}
       isUnread={false}
-      membersCount={2}
-      size={16}
+      membersCount={3}
+      size={24}
       status="status"
       theme={
         Object {
@@ -1486,7 +1482,6 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
               },
               "quoteBlockIcon": Object {
                 "color": undefined,
-                "padding": 5,
               },
             }
           }
@@ -1672,8 +1667,8 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       isBot={false}
       isInfo={true}
       isUnread={false}
-      membersCount={2}
-      size={16}
+      membersCount={3}
+      size={24}
       status="status"
       theme={
         Object {
@@ -1850,7 +1845,6 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
               },
               "quoteBlockIcon": Object {
                 "color": undefined,
-                "padding": 5,
               },
             }
           }

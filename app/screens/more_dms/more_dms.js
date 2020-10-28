@@ -350,6 +350,7 @@ export default class MoreDirectMessages extends PureComponent {
                 text: formatMessage({id: 'mobile.more_dms.start', defaultMessage: 'Start'}),
                 showAsAction: 'always',
                 enabled: startEnabled,
+                testID: START_BUTTON,
             }],
         });
     };
@@ -365,6 +366,7 @@ export default class MoreDirectMessages extends PureComponent {
                 selectable={true}
                 selected={selected}
                 enabled={true}
+                testID='more_dms.user'
             />
         );
     };
@@ -475,7 +477,7 @@ export default class MoreDirectMessages extends PureComponent {
         }
 
         return (
-            <KeyboardLayout>
+            <KeyboardLayout testID='direct_channels_screen'>
                 <StatusBar/>
                 <View style={style.searchBar}>
                     <View style={padding(isLandscape)}>
@@ -517,6 +519,7 @@ export default class MoreDirectMessages extends PureComponent {
                     onLoadMore={this.getProfiles}
                     onRowPress={this.handleSelectProfile}
                     renderItem={this.renderItem}
+                    testID='more_dms.list'
                     theme={theme}
                 />
             </KeyboardLayout>

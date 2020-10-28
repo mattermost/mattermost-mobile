@@ -7,10 +7,10 @@ import {
     Text,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class GroupMentionItem extends PureComponent {
     static propTypes = {
@@ -39,8 +39,8 @@ export default class GroupMentionItem extends PureComponent {
                 type={'opacity'}
             >
                 <View style={style.rowPicture}>
-                    <Icon
-                        name='users'
+                    <CompassIcon
+                        name='account-group-outline'
                         style={style.rowIcon}
                     />
                 </View>

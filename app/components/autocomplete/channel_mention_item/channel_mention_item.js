@@ -7,13 +7,13 @@ import {
     Text,
     View,
 } from 'react-native';
-import VectorIcon from 'app/components/vector_icon.js';
 
 import {General} from '@mm-redux/constants';
-import {BotTag, GuestTag} from 'app/components/tag';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import {BotTag, GuestTag} from '@components/tag';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class ChannelMentionItem extends PureComponent {
     static propTypes = {
@@ -50,10 +50,10 @@ export default class ChannelMentionItem extends PureComponent {
         } = this.props;
 
         const style = getStyleFromTheme(theme);
-        let iconName = 'public';
+        let iconName = 'globe';
         let component;
         if (type === General.PRIVATE_CHANNEL) {
-            iconName = 'private';
+            iconName = 'lock';
         }
 
         if (type === General.DM_CHANNEL || type === General.GM_CHANNEL) {
@@ -89,9 +89,8 @@ export default class ChannelMentionItem extends PureComponent {
                     type={'native'}
                 >
                     <View style={style.row}>
-                        <VectorIcon
+                        <CompassIcon
                             name={iconName}
-                            type={'mattermost'}
                             style={style.icon}
                         />
                         <Text style={style.rowDisplayName}>{displayName}</Text>

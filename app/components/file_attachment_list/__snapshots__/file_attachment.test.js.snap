@@ -18,8 +18,10 @@ exports[`FileAttachment should match snapshot 1`] = `
   <View
     style={
       Object {
-        "marginHorizontal": 20,
-        "marginVertical": 10,
+        "marginBottom": 8.2,
+        "marginLeft": 8,
+        "marginRight": 6,
+        "marginTop": 7.8,
       }
     }
   >
@@ -28,14 +30,16 @@ exports[`FileAttachment should match snapshot 1`] = `
       type="opacity"
     >
       <FileAttachmentIcon
+        defaultImage={false}
+        failed={false}
         file={
           Object {
             "mime_type": "image/png",
           }
         }
-        iconHeight={48}
-        iconWidth={36}
+        iconSize={48}
         onCaptureRef={[Function]}
+        smallImage={false}
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -65,8 +69,6 @@ exports[`FileAttachment should match snapshot 1`] = `
             "type": "Mattermost",
           }
         }
-        wrapperHeight={48}
-        wrapperWidth={36}
       />
     </TouchableWithFeedbackIOS>
   </View>

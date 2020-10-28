@@ -441,7 +441,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - boost-for-react-native
     - libwebp
     - MMKV
@@ -653,7 +653,7 @@ SPEC CHECKSUMS:
   RNPermissions: e29e449d948ba1c04f3bb3bede5c662667543c49
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
   RNReanimated: 89f5e0a04d1dd52fbf27e7e7030d8f80a646a3fc
-  RNRudderSdk: 1baf9e917dd01e5fc2fce9094f74f0206a338f0c
+  RNRudderSdk: 5d99b1a5a582ab55d6213b38018d35e98818af63
   RNScreens: b748efec66e095134c7166ca333b628cd7e6f3e2
   RNSentry: 2d4a0e18c6dfe93b647c360e0d15c9391d24e9d1
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
@@ -669,4 +669,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 1aabd16b6a9ed2037b4d7443027d222817790468
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.10.0.rc.1

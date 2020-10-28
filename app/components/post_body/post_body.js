@@ -9,24 +9,25 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import Icon from 'react-native-vector-icons/Ionicons';
 import {Posts} from '@mm-redux/constants';
 
-import CombinedSystemMessage from 'app/components/combined_system_message';
+import CompassIcon from '@components/compass_icon';
+import CombinedSystemMessage from '@components/combined_system_message';
+import FormattedText from '@components/formatted_text';
+import Markdown from '@components/markdown';
+import MarkdownEmoji from '@components/markdown/markdown_emoji';
+import ShowMoreButton from '@components/show_more_button';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+
+import {emptyFunction} from '@utils/general';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {showModalOverCurrentContext} from '@actions/navigation';
+
+import telemetry from '@telemetry';
+
 import {renderSystemMessage} from './system_message_helpers';
-import FormattedText from 'app/components/formatted_text';
-import Markdown from 'app/components/markdown';
-import MarkdownEmoji from 'app/components/markdown/markdown_emoji';
-import ShowMoreButton from 'app/components/show_more_button';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-
-import {emptyFunction} from 'app/utils/general';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {showModalOverCurrentContext} from 'app/actions/navigation';
-
-import telemetry from 'app/telemetry';
 
 let FileAttachmentList;
 let PostAddChannelMember;
@@ -71,7 +72,7 @@ export default class PostBody extends PureComponent {
         shouldRenderJumboEmoji: PropTypes.bool.isRequired,
         theme: PropTypes.object,
         location: PropTypes.string,
-        mentionKeys: PropTypes.array.isRequired,
+        mentionKeys: PropTypes.array,
     };
 
     static defaultProps = {
@@ -79,6 +80,7 @@ export default class PostBody extends PureComponent {
         onFailedPostPress: emptyFunction,
         onPress: emptyFunction,
         replyBarStyle: [],
+        mentionKeys: [],
         message: '',
         postProps: {},
     };
@@ -457,8 +459,8 @@ export default class PostBody extends PureComponent {
                     style={style.retry}
                     type={'opacity'}
                 >
-                    <Icon
-                        name='ios-information-circle-outline'
+                    <CompassIcon
+                        name='information-outline'
                         size={26}
                         color={theme.errorTextColor}
                     />
