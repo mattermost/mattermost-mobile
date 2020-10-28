@@ -330,7 +330,6 @@
   "mobile.notice_mobile_link": "aplicativos móveis",
   "mobile.notice_platform_link": "servidor",
   "mobile.notice_text": "Mattermost é possível graças ao software open source na nossa {platform} e {mobile}.",
-  "mobile.notification.in": " em ",
   "mobile.notification_settings.auto_responder.default_message": "Olá, Eu estou fora do escritório e não é possível responder as mensagens.",
   "mobile.notification_settings.auto_responder.enabled": "Habilitado",
   "mobile.notification_settings.auto_responder.footer_message": "Definir uma mensagem personalizada que será enviada automaticamente em resposta a Mensagens Diretas. As menções nos Canais Públicos ou Privados não acionam a resposta automática. A ativação de Respostas Automáticas definem seu status como Fora do Escritório e desativa as notificações por email e por push.",
