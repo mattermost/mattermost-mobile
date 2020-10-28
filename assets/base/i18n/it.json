@@ -321,7 +321,6 @@
   "mobile.notice_mobile_link": "apps per smartphone",
   "mobile.notice_platform_link": "server",
   "mobile.notice_text": "Mattermost è stato realizzato con il software open source usato sulla nostra {platform} e {mobile}.",
-  "mobile.notification.in": " in ",
   "mobile.notification_settings.auto_responder.default_message": "Buongiorno, sono fuori sede e non posso rispondere ai messaggi.",
   "mobile.notification_settings.auto_responder.enabled": "Abilitato",
   "mobile.notification_settings.auto_responder.footer_message": "Imposta un messaggio personale che verrà automaticamente inviato come risposta ai messaggi diretti. Le citazioni nei canali pubblici e privati non scateneranno risposte automatiche. Attivare le risposte automatiche imposta il tuo stato a Fuori sede e disattiva le notifiche email e push.",

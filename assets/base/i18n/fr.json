@@ -317,7 +317,6 @@
   "mobile.notice_mobile_link": "applications mobiles",
   "mobile.notice_platform_link": "serveur",
   "mobile.notice_text": "Mattermost est rendu possible grâce aux logiciels open source utilisés dans notre {platform} et {mobile}.",
-  "mobile.notification.in": "  dans  ",
   "mobile.notification_settings.auto_responder.default_message": "Bonjour, je suis absent du bureau et suis actuellement incapable de répondre aux messages.",
   "mobile.notification_settings.auto_responder.enabled": "Activer",
   "mobile.notification_settings.auto_responder.footer_message": "Définit un message personnalisé qui sera envoyé automatiquement en réponse aux messages personnels. Les mentions dans les canaux publics et privés ne déclenchent pas de réponse automatique. Activer les Réponses automatiques définit votre statut sur Absent du bureau et désactive les notifications par e-mail et push.",

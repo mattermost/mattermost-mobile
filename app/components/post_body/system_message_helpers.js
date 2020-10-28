@@ -16,7 +16,7 @@ const renderUsername = (value = '') => {
 };
 
 const renderMessage = (postBodyProps, styles, intl, localeHolder, values, skipMarkdown = false) => {
-    const {onPress} = postBodyProps;
+    const {onPress, onPermalinkPress} = postBodyProps;
     const {messageStyle, textStyles} = styles;
 
     if (skipMarkdown) {
@@ -33,6 +33,7 @@ const renderMessage = (postBodyProps, styles, intl, localeHolder, values, skipMa
             disableAtChannelMentionHighlight={true}
             disableGallery={true}
             onPostPress={onPress}
+            onPermalinkPress={onPermalinkPress}
             textStyles={textStyles}
             value={intl.formatMessage(localeHolder, values)}
         />
