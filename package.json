@@ -194,7 +194,7 @@
       "searchDir": [
         "./app/components"
       ],
-      "pattern": "**/*.stories.js",
+      "pattern": "**/*.stories.@(js|jsx|ts|tsx)",
       "outputFile": "./storybook/storyLoader.js"
     }
   }
