@@ -8,7 +8,7 @@ import {isLandscape} from '@selectors/device';
 
 import type {GlobalState} from '@mm-redux/types/store';
 
-import DownloadFile from './download_file';
+import PrepareFile from './prepare_file';
 
 function mapStateToProps(state: GlobalState) {
     return {
@@ -17,4 +17,4 @@ function mapStateToProps(state: GlobalState) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(DownloadFile);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(PrepareFile);

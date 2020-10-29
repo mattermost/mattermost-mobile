@@ -10,9 +10,9 @@ import {ATTACHMENT_DOWNLOAD} from '@constants/attachment';
 import {Client4} from '@mm-redux/client';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import type {CallbackFunctionWithoutArguments, DownloadRef, FooterProps, FooterRef, ShowToast, ToastRef} from 'types/screens/gallery';
+import type {CallbackFunctionWithoutArguments, PrepareFileRef, FooterProps, FooterRef, ShowToast, ToastRef} from 'types/screens/gallery';
 
-import DownloadFile from './download_file';
+import PrepareFile from './prepare_file';
 import Summary from './summary';
 import Toast from './toast';
 
@@ -29,7 +29,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const [downloading, setDownloading] = useState(false);
     const opacity = useRef(new Animated.Value(1)).current;
     const downloadingOpacitity = useRef(new Animated.Value(0)).current;
-    const downloadRef = useRef<DownloadRef>(null);
+    const prepareRef = useRef<PrepareFileRef>(null);
     const toastRef = useRef<ToastRef>();
 
     const animate = (value: Animated.Value, show: boolean, callback?: () => void): Animated.CompositeAnimation => {
@@ -72,7 +72,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
     const openOrShare = (share: boolean, callback: (path?: string) => void) => {
         animate(opacity, false, () => {
             animate(downloadingOpacitity, true, async () => {
-                const path = await downloadRef.current?.start(props.file, share);
+                const path = await prepareRef.current?.start(props.file, share);
                 animate(opacity, true);
                 callback(path);
             });
@@ -81,8 +81,8 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
 
     const startDownload = async (): Promise<string | undefined> => {
         let path;
-        if (downloadRef.current) {
-            path = await downloadRef.current.start(props.file);
+        if (prepareRef.current) {
+            path = await prepareRef.current.start(props.file);
         }
         setDownloading(false);
 
@@ -153,8 +153,8 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
                 <Toast ref={toastRef}/>
             </Animated.View>
             <Animated.View style={[{transform: [{translateY: downloadingY}], opacity: downloadingOpacitity}, styles.footer]}>
-                <DownloadFile
-                    ref={downloadRef}
+                <PrepareFile
+                    ref={prepareRef}
                     intl={props.intl}
                 />
             </Animated.View>

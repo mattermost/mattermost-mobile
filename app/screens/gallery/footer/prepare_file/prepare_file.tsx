@@ -17,9 +17,9 @@ import mattermostBucket from 'app/mattermost_bucket';
 
 import type {FileInfo} from '@mm-redux/types/files';
 import {Theme} from '@mm-redux/types/preferences';
-import type {DownloadRef} from 'types/screens/gallery';
+import type {PrepareFileRef} from 'types/screens/gallery';
 
-type DownloadFileProps = {
+type PrepareFileProps = {
     intl: typeof intlShape;
     isLandscape: boolean;
     theme: Theme,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({intl, isLandscape, theme}: DownloadFileProps, ref) => {
+const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLandscape, theme}: PrepareFileProps, ref) => {
     const containerStyles: Array<ViewStyle> = [styles.container];
     let downloadTask = useRef<StatefulPromise<FetchBlobResponse>>().current;
     const [progress, setProgress] = useState(0);
@@ -92,12 +92,12 @@ const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({intl, isLandsc
             if (downloadTask) {
                 Alert.alert(
                     intl.formatMessage({
-                        id: 'mobile.downloader.failed_title',
-                        defaultMessage: 'Download failed',
+                        id: 'mobile.prepare_file.failed_title',
+                        defaultMessage: 'Preparing failed',
                     }),
                     intl.formatMessage({
-                        id: 'mobile.downloader.failed_description',
-                        defaultMessage: 'An error occurred while downloading the file. Please check your internet connection and try again.\n',
+                        id: 'mobile.prepare_file.failed_description',
+                        defaultMessage: 'An error occurred while preparing the file. Please try again.\n',
                     }),
                     [{
                         text: intl.formatMessage({
@@ -166,8 +166,8 @@ const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({intl, isLandsc
     return (
         <View style={[containerStyles, paddingHorizontal(isLandscape)]}>
             <FormattedText
-                id='mobile.download_file.save'
-                defaultMessage='Saving'
+                id='mobile.prepare_file.text'
+                defaultMessage='Preparing'
                 style={styles.saving}
             />
             <View style={{marginTop: 10, flex: 1, marginHorizontal: 7, alignItems: 'flex-start'}}>
@@ -183,6 +183,6 @@ const DownloadFile = forwardRef<DownloadRef, DownloadFileProps>(({intl, isLandsc
     );
 });
 
-DownloadFile.displayName = 'DownloadFile';
+PrepareFile.displayName = 'PrepareFile';
 
-export default DownloadFile;
+export default PrepareFile;

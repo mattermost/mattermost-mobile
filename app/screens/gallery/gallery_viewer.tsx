@@ -131,8 +131,8 @@ const GalleryViewer = (props: GalleryProps) => {
         const isActive = eq(index, i);
         const itemProps = {
             file,
-            deviceWidth: width - 5,
-            deviceHeight: height - 15,
+            deviceWidth: width,
+            deviceHeight: height,
         };
 
         if (isImage(file)) {

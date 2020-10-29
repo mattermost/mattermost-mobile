@@ -64,7 +64,7 @@ const Actions = (props: ActionsProps) => {
             >
                 <CompassIcon
                     color='#FFFFFF'
-                    name='download-outline'
+                    name='export-variant'
                     size={24}
                 />
             </Action>

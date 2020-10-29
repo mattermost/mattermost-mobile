@@ -47,7 +47,7 @@ const getStyles = makeStyleSheetFromTheme((isLandscape: boolean) => ({
         flexDirection: 'row',
         bottom: Platform.select({
             android: isLandscape ? 79 : 69,
-            ios: isLandscape ? 64 : 89,
+            ios: isLandscape ? 64 : 92,
         }),
         marginHorizontal: 16,
     },
@@ -67,10 +67,17 @@ const getStyles = makeStyleSheetFromTheme((isLandscape: boolean) => ({
         textShadowRadius: 10,
     },
     thumb: {
-        width: 15,
-        height: 15,
-        backgroundColor: 'white',
-        borderWidth: 2,
+        width: 16,
+        height: 16,
+        backgroundColor: '#FFF',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+        shadowOpacity: 0.24,
+        shadowRadius: 14,
+        elevation: 5,
     },
 }));
 
@@ -200,7 +207,7 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
                         onSlidingStart={seekStart}
                         maximumValue={Math.floor(duration)}
                         value={Math.floor(progress)}
-                        thumbStyle={[styles.thumb, {borderColor: props.mainColor}]}
+                        thumbStyle={[styles.thumb]}
                         minimumTrackTintColor={props.mainColor}
                     />
                 </View>

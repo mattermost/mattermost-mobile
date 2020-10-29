@@ -42,7 +42,7 @@ export interface DetailsProps {
     user?: string;
 }
 
-export interface DownloadRef {
+export interface PrepareFileRef {
     start(file: FileInfo, share?: boolean): Promise<string | undefined>;
 }
 

@@ -206,7 +206,7 @@ export default class UploadItem extends PureComponent {
                     />
                     }
                     {file.loading && !file.failed &&
-                    <View style={styles.progressCircleContent}>
+                    <View style={styles.progress}>
                         <ProgressBar
                             progress={progress}
                             color={this.props.theme.buttonBg}
@@ -236,14 +236,15 @@ const styles = StyleSheet.create({
         width: 56,
         borderRadius: 4,
     },
-    progressCircleContent: {
+    progress: {
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        height: 56,
-        width: 56,
+        height: 53,
+        width: 53,
         justifyContent: 'flex-end',
         position: 'absolute',
         borderRadius: 4,
+        paddingLeft: 3,
     },
     filePreview: {
         width: 56,

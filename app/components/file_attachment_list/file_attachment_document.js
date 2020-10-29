@@ -276,7 +276,7 @@ export default class FileAttachmentDocument extends PureComponent {
             fileAttachmentComponent = (
                 <>
                     {this.renderFileAttachmentIcon()}
-                    <View style={[StyleSheet.absoluteFill, {justifyContent: 'flex-end', height: 48, width: 48, top: 6}]}>
+                    <View style={[StyleSheet.absoluteFill, styles.progress]}>
                         <ProgressBar
                             progress={progress || 0.1}
                             color={theme.buttonBg}
@@ -299,3 +299,13 @@ export default class FileAttachmentDocument extends PureComponent {
         );
     }
 }
+
+const styles = StyleSheet.create({
+    progress: {
+        justifyContent: 'flex-end',
+        height: 48,
+        left: 2,
+        top: 5,
+        width: 44,
+    },
+});
