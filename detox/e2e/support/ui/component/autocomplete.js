@@ -22,8 +22,14 @@ class Autocomplete {
         return element(by.id(`autocomplete.at_mention.item.${userId}`));
     }
 
-    toBeVisible = async () => {
-        await expect(element(by.id(this.testID.autocomplete)).atIndex(0)).toBeVisible();
+    toBeVisible = async (isVisible = true) => {
+        if (isVisible) {
+            await expect(this.autocomplete.atIndex(0)).toBeVisible();
+            return this.autocomplete;
+        }
+
+        await expect(this.autocomplete).not.toBeVisible();
+        return null;
     }
 }
 

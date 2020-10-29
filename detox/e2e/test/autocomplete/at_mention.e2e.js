@@ -24,11 +24,9 @@ describe('Autocomplete', () => {
     });
 
     beforeEach(async () => {
-        await device.reloadReactNative();
-
-        // # Select post draft
-        await ChannelScreen.toBeVisible();
-        await postInput.tap();
+        // # Clear text and verify that Autocomplete disappeared
+        await postInput.clearText();
+        await Autocomplete.toBeVisible(false);
     });
 
     afterAll(async () => {
@@ -37,7 +35,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_1 should suggest user based on username', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -51,7 +48,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_2 should suggest user based on nickname', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -65,7 +61,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_3 should suggest user based on first name', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -79,7 +74,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_4 should suggest user based on last name', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -93,7 +87,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_5 should suggest user based on lowercase first name', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -107,7 +100,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_6 should suggest user based on lowercase last name', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -121,7 +113,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_7 should suggest user based on full name with space', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -135,7 +126,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_8 should suggest user based on partial full name with space', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -149,7 +139,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_9 should stop suggesting user after full name with trailing space', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
@@ -169,7 +158,6 @@ describe('Autocomplete', () => {
 
     it('MM-T3409_10 should stop suggesting user when keyword is not associated with any user', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
         await postInput.typeText('@');
         await Autocomplete.toBeVisible();
         await expect(atMentionSuggestionList).toExist();
