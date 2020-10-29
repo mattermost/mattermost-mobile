@@ -14,10 +14,9 @@ describe('RecentMentions', () => {
     const baseProps = {
         actions: {
             clearSearch: jest.fn(),
-            loadChannelsByTeamName: jest.fn(),
             getPostThread: jest.fn(),
             getRecentMentions: jest.fn(),
-            selectFocusedPostId: jest.fn(),
+            showPermalink: jest.fn(),
             selectPost: jest.fn(),
         },
         theme: Preferences.THEMES.default,

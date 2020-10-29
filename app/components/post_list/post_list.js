@@ -15,10 +15,8 @@ import Post from 'app/components/post';
 import {DeepLinkTypes, ListTypes, NavigationTypes} from '@constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
-import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {t} from 'app/utils/i18n';
 
@@ -42,11 +40,11 @@ const SCROLL_POSITION_CONFIG = {
 export default class PostList extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            closePermalink: PropTypes.func.isRequired,
             handleSelectChannelByName: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
@@ -60,7 +58,6 @@ export default class PostList extends PureComponent {
         loadMorePostsVisible: PropTypes.bool,
         onLoadMoreUp: PropTypes.func,
         onHashtagPress: PropTypes.func,
-        onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
         postIds: PropTypes.array.isRequired,
@@ -171,10 +168,8 @@ export default class PostList extends PureComponent {
     };
 
     handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
+        this.props.actions.closePermalink();
+    }
 
     handleContentSizeChange = (contentWidth, contentHeight, forceLoad) => {
         this.contentHeight = contentHeight;
@@ -220,14 +215,9 @@ export default class PostList extends PureComponent {
 
     handlePermalinkPress = (postId, teamName) => {
         telemetry.start(['post_list:permalink']);
-        const {actions, onPermalinkPress} = this.props;
+        const {showPermalink} = this.props.actions;
 
-        if (onPermalinkPress) {
-            onPermalinkPress(postId, true);
-        } else {
-            actions.loadChannelsByTeamName(teamName, this.permalinkBadTeam);
-            this.showPermalinkView(postId);
-        }
+        showPermalink(this.context.intl, teamName, postId);
     };
 
     handleRefresh = () => {
@@ -284,16 +274,6 @@ export default class PostList extends PureComponent {
         this.fillContentTimer = setTimeout(() => {
             this.handleContentSizeChange(0, this.contentHeight, true);
         });
-    };
-
-    permalinkBadTeam = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_team.error'),
-            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
-        };
-
-        alertErrorWithFallback(intl, {}, message);
     };
 
     permalinkBadChannel = () => {
@@ -449,29 +429,6 @@ export default class PostList extends PureComponent {
                     }, 10);
                 }
             }
-        }
-    };
-
-    showPermalinkView = (postId, error = '') => {
-        const {actions} = this.props;
-
-        actions.selectFocusedPostId(postId);
-
-        if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink: true,
-                onClose: this.handleClosePermalink,
-                error,
-            };
-            const options = {
-                layout: {
-                    componentBackgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-
-            this.showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
         }
     };
 
