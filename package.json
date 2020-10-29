@@ -145,6 +145,7 @@
     "patch-package": "6.2.2",
     "react-dom": "16.13.1",
     "react-native-dev-menu": "4.0.2",
+    "react-native-dotenv": "2.4.2",
     "react-native-storybook-loader": "2.0.2",
     "redux-mock-store": "1.5.4",
     "redux-persist-node-storage": "2.0.0",
