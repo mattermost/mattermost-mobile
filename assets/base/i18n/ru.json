@@ -326,7 +326,6 @@
   "mobile.notice_mobile_link": "мобильных приложениях",
   "mobile.notice_platform_link": "сервере",
   "mobile.notice_text": "Mattermost стал возможен благодаря использованию программ с открытым исходным кодом в нашем {platform} и {mobile}.",
-  "mobile.notification.in": " в ",
   "mobile.notification_settings.auto_responder.default_message": "Привет, я сейчас не на работе и не могу ответить.",
   "mobile.notification_settings.auto_responder.enabled": "Включено",
   "mobile.notification_settings.auto_responder.footer_message": "Установите специальное сообщение, которое будет автоматически отправлено в ответ на личные сообщения. Упоминания в публичных и частных каналах не будут отправлять автоматический ответ. Включение автоматических ответов устанавливает статус «Не на работе» и отключает отправку push и email и уведомлений.",
