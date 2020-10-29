@@ -12,7 +12,10 @@ class DirectChannelsScreen {
 
     directChannelsScreen = element(by.id(this.testID.directChannelsScreen));
     startButton = element(by.id(this.testID.startButton));
-    dmUser = element(by.id('more_dms.user').withAncestor(by.id('more_dms.list')));
+
+    getUserAtIndex = (index) => {
+        return element(by.id('more_dms.user').withAncestor(by.id('more_dms.list'))).atIndex(index);
+    }
 
     toBeVisible = async () => {
         await expect(this.directChannelsScreen).toBeVisible();

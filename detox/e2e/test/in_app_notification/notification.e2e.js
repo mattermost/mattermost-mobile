@@ -79,6 +79,7 @@ describe('in-app Notification', () => {
 
         // # Tap the send button
         await sendButton.tap();
+        await wait(timeouts.HALF_SEC);
 
         // # Open Add reaction screen
         await AddReactionScreen.open(message);

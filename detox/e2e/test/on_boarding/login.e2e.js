@@ -82,7 +82,7 @@ describe('On boarding', () => {
 
         // # Enter invalid server URL
         await serverUrlInput.clearText();
-        await serverUrlInput.typeText('http://invalid:8065');
+        await serverUrlInput.typeText(serverUrl.substring(0, serverUrl.length - 1));
 
         // # Tap anywhere to hide keyboard
         await screen.tap({x: 5, y: 10});
@@ -92,11 +92,6 @@ describe('On boarding', () => {
 
         // # Tap connect button
         await connectButton.tap();
-
-        // # Explicitly wait on Android before verifying error message
-        if (isAndroid()) {
-            await wait(timeouts.TWO_SEC);
-        }
 
         // * Verify error message
         await waitFor(errorText).toBeVisible().withTimeout(timeouts.ONE_SEC);

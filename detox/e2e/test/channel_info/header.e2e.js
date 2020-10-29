@@ -38,12 +38,12 @@ describe('Channel Info Header', () => {
         // # Wait for some profiles to load
         await wait(timeouts.ONE_SEC);
 
-        const {dmUser, startButton} = DirectChannelsScreen;
+        const {getUserAtIndex, startButton} = DirectChannelsScreen;
 
         // # Select 3 profiles
-        await dmUser.atIndex(0).tap();
-        await dmUser.atIndex(1).tap();
-        await dmUser.atIndex(2).tap();
+        await getUserAtIndex(0).tap();
+        await getUserAtIndex(1).tap();
+        await getUserAtIndex(2).tap();
 
         // # Create a GM with selected profiles
         await startButton.tap();
