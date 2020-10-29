@@ -5,10 +5,10 @@ import {connect} from 'react-redux';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Animated, Text, View} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import CompassIcon from '@components/compass_icon';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const DISABLED_OPACITY = 0.26;
 const DEFAULT_OPACITY = 1;
@@ -106,8 +106,8 @@ class RadioButton extends PureComponent {
                         },
                     ]}
                 />
-                <Icon
-                    name={checked ? 'radio-button-checked' : 'radio-button-unchecked'}
+                <CompassIcon
+                    name={checked ? 'radiobox-marked' : 'radiobox-blank'}
                     size={24}
                     color={color}
                     style={{
