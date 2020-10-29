@@ -33,9 +33,8 @@ describe('Autocomplete', () => {
         await EditChannelScreen.editChannelHeaderInput.typeText('@');
 
         // * Expect autocomplete to render
-        const {atMentionSuggestionList} = Autocomplete;
         await Autocomplete.toBeVisible();
-        await expect(atMentionSuggestionList).toExist();
+        await expect(Autocomplete.atMentionSuggestionList).toExist();
 
         // # Go to previous screen
         await EditChannelScreen.back();
