@@ -49,7 +49,6 @@ const getStyles = makeStyleSheetFromTheme(({deviceHeight, deviceWidth, theme}: G
     },
     buttonShape: {
         paddingHorizontal: 20,
-        paddingVertical: 16,
     },
     buttonText: {
         color: theme?.buttonColor,
