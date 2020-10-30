@@ -46,6 +46,7 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                                             <FormattedText
                                                 id={item.id}
                                                 defaultMessage={item.defaultMessage}
+                                                values={item.labelValues}
                                             />
                                         )}
                                         action={this.handlePress}
