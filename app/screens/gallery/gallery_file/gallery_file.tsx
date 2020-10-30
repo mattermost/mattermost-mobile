@@ -36,11 +36,15 @@ const getStyles = makeStyleSheetFromTheme(({deviceHeight, deviceWidth, theme}: G
         fontSize: 16,
         fontWeight: '600',
         lineHeight: 24,
+        marginVertical: 8,
         paddingHorizontal: 16,
     },
     button: {
+        alignItems: 'center',
         backgroundColor: theme?.buttonBg,
         borderRadius: 4,
+        height: 48,
+        justifyContent: 'center',
         marginTop: 16,
     },
     buttonShape: {
