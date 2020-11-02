@@ -277,6 +277,7 @@
   "mobile.file_upload.camera_photo": "Fotoğraf Çek",
   "mobile.file_upload.camera_video": "Görüntü Kaydet",
   "mobile.file_upload.disabled": "Mobil uygulamadan dosya yükleme özelliği devre dışı bırakılmış. Ayrıntılı bilgi almak için Sistem Yöneticiniz ile görüşün.",
+  "mobile.file_upload.disabled2": "Mobil uygulamadan dosya yüklemek devre dışı bırakılmış.",
   "mobile.file_upload.library": "Fotoğraf Kitaplığı",
   "mobile.file_upload.max_warning": "En fazla 5 dosya yüklenebilir.",
   "mobile.file_upload.unsupportedMimeType": "Profil görseli olarak yalnız BMP, JPG ya da PNG dosyaları kullanılabilir.",
