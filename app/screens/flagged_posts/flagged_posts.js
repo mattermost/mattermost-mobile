@@ -112,9 +112,10 @@ export default class FlaggedPosts extends PureComponent {
     keyExtractor = (item) => item;
 
     previewPost = (post) => {
+        const {showPermalink} = this.props.actions;
         Keyboard.dismiss();
 
-        this.showPermalinkView(post.id, false);
+        showPermalink(this.context.intl, '', post.id, false);
     };
 
     renderEmpty = () => {
