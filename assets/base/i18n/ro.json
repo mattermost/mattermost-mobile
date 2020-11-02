@@ -326,7 +326,6 @@
   "mobile.notice_mobile_link": "aplicații pentru mobil",
   "mobile.notice_platform_link": "server",
   "mobile.notice_text": "Cel mai important lucru este posibil prin software-ul open source folosit în {platform} și {mobile}.",
-  "mobile.notification.in": " în ",
   "mobile.notification_settings.auto_responder.default_message": "Bună ziua, sunt în afara funcției și nu pot răspunde la mesaje.",
   "mobile.notification_settings.auto_responder.enabled": "Activat",
   "mobile.notification_settings.auto_responder.footer_message": "Setați un mesaj personalizat care va fi trimis automat ca răspuns la mesajele directe. Mențiunile din canalele publice și private nu vor declanșa răspunsul automat. Activarea răspunsurilor automate vă stabilește starea Plecat din Birou și dezactivează e-mailurile și notificările automate.",

@@ -330,7 +330,6 @@
   "mobile.notice_mobile_link": "モバイルアプリ",
   "mobile.notice_platform_link": "サーバー",
   "mobile.notice_text": "Mattermostはオープンソースとして {platform} と {mobile} で開発されています。",
-  "mobile.notification.in": " in ",
   "mobile.notification_settings.auto_responder.default_message": "ただいま外出中のため返信できません。",
   "mobile.notification_settings.auto_responder.enabled": "有効",
   "mobile.notification_settings.auto_responder.footer_message": "ダイレクトメッセージへの自動返信用のカスタムメッセージを設定してください。公開/非公開チャンネルでのあなたについての投稿には自動返信を行いません。自動返信を有効化することで、あなたのステータスは外出中となり、電子メールやプッシュ通知が無効化されます。",
