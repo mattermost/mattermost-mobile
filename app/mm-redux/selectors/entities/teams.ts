@@ -225,10 +225,9 @@ export const getSortedJoinableTeams = reselect.createSelector(
 
 export const getMySortedTeamIds = createIdsSelector(
     getMyTeams,
-    (state: GlobalState) => state,
+    (state: GlobalState) => getPreference(state, Preferences.TEAMS_ORDER, '', ''),
     (state: GlobalState, locale: string) => locale,
-    (teams, state, locale) => {
-        const userTeamOrderPreference = getPreference(state, Preferences.TEAMS_ORDER, '', '');
+    (teams, userTeamOrderPreference, locale) => {
         return sortTeamsByUserPreference(teams, locale, userTeamOrderPreference).map((t) => t.id);
     },
 );
