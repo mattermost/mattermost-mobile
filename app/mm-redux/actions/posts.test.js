@@ -60,7 +60,6 @@ describe('Actions.Posts', () => {
             }
         }
         assert.ok(messageFound !== null, 'failed to find new post in posts');
-        assert.ok(messageFound && messageFound.props.disable_group_highlight, 'mentions should not be highlighted by default');
 
         // postsInChannel[channelId] should not exist as create post should not add entry to postsInChannel when it did not exist before
         assert.ok(!postsInChannel[channelId], 'postIds in channel do not exist');
