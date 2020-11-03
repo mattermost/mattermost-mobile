@@ -52,14 +52,14 @@ describe('Actions.Posts', () => {
         assert.ok(posts);
         assert.ok(postsInChannel);
 
-        let messageFound = null;
+        let found = false;
         for (const storedPost of Object.values(posts)) {
             if (storedPost.message === post.message) {
-                messageFound = storedPost;
+                found = true;
                 break;
             }
         }
-        assert.ok(messageFound !== null, 'failed to find new post in posts');
+        assert.ok(found, 'failed to find new post in posts');
 
         // postsInChannel[channelId] should not exist as create post should not add entry to postsInChannel when it did not exist before
         assert.ok(!postsInChannel[channelId], 'postIds in channel do not exist');
