@@ -23,7 +23,7 @@ export default class ChannelNotificationPreferenceAndroid extends ChannelNotific
                 label: intl.formatMessage({
                     id: element.id,
                     defaultMessage: element.defaultMessage,
-                }),
+                }, element.labelValues),
                 value: element.value,
                 checked: element.checked,
             };

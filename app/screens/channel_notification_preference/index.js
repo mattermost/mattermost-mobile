@@ -4,16 +4,17 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {updateChannelNotifyProps} from '@mm-redux/actions/channels';
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isLandscape} from 'app/selectors/device';
 
 import ChannelNotificationPreference from './channel_notification_preference';
 
 function mapStateToProps(state) {
-    const theme = getTheme(state);
     return {
-        theme,
+        globalNotifyProps: getCurrentUser(state)?.notify_props,
         isLandscape: isLandscape(state),
+        theme: getTheme(state),
     };
 }
 
