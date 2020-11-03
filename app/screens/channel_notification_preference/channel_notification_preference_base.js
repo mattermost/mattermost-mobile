@@ -39,7 +39,7 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
         const {formatMessage} = this.context.intl;
         const {globalNotifyProps} = this.props;
         const {notificationLevel} = this.state;
-        const defaultNotificationLevel = formatMessage({id: `channel_header.notificationPreference.${globalNotifyProps.push.toLowerCase()}`});
+        const defaultNotificationLevel = formatMessage({id: `channel_header.notificationPreference.${globalNotifyProps?.push.toLowerCase()}`});
 
         return [{
             id: t('channel_notifications.preference.global_default'),
