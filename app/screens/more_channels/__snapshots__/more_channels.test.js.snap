@@ -12,6 +12,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           "paddingLeft": 8,
         }
       }
+      testID="more_channels.screen"
     >
       <View
         style={null}

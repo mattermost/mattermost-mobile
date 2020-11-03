@@ -205,6 +205,7 @@ export default class Autocomplete extends PureComponent {
         return (
             <View style={wrapperStyles}>
                 <View
+                    testID='autocomplete'
                     ref={this.containerRef}
                     style={containerStyles}
                 >

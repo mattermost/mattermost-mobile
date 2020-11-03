@@ -67,7 +67,7 @@ export default class ChannelAndroid extends ChannelBase {
             component = (
                 <KeyboardLayout>
                     <View
-                        testID='channel_screen'
+                        testID='channel.screen'
                         style={style.flex}
                     >
                         <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>

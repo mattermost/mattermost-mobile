@@ -179,6 +179,7 @@ export default class CreateChannel extends PureComponent {
 
         return (
             <EditChannelInfo
+                testID='create_channel.screen'
                 theme={theme}
                 enableRightButton={this.emitCanCreateChannel}
                 error={error}

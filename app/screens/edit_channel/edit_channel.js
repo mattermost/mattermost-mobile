@@ -315,6 +315,7 @@ export default class EditChannel extends PureComponent {
                 excludeFooter={true}
             >
                 <EditChannelInfo
+                    testID='edit_channel.screen'
                     theme={theme}
                     enableRightButton={this.emitCanUpdateChannel}
                     error={error}

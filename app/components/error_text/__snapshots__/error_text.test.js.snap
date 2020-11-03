@@ -20,7 +20,7 @@ exports[`ErrorText should match snapshot 1`] = `
       },
     ]
   }
-  testID="error_text"
+  testID="error.text"
 >
   Username must begin with a letter and contain between 3 and 22 characters including numbers, lowercase letters, and the symbols
 </Text>

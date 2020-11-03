@@ -17,7 +17,6 @@ exports[`EditChannelInfo should match snapshot 1`] = `
         "flex": 1,
       }
     }
-    testID="edit_channel.scroll"
   >
     <TouchableWithoutFeedback
       onPress={[Function]}

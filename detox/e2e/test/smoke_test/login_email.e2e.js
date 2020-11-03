@@ -7,47 +7,38 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup, System} from '@support/server_api';
-import {logoutUser} from '@support/ui/screen';
-import {serverUrl} from '@support/test_config';
+import {Setup} from '@support/server_api';
+import {ChannelScreen, LoginScreen} from '@support/ui/screen';
 
 describe('Smoke Tests', () => {
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('MM-T3179 Log in - Email / password', async () => {
-        const {config} = await System.apiGetConfig();
         const {user} = await Setup.apiInit();
 
-        // * Verify that it starts with the Select Server screen
-        await expect(element(by.id('select_server_screen'))).toBeVisible();
+        // # Navigate to Login screen
+        const loginScreen = await LoginScreen.open();
 
-        // # Type in the server URL
-        await element(by.id('server_url_input')).replaceText(serverUrl);
-
-        // # Tap connect button
-        await element(by.text('Connect')).tap();
-
-        // # Verify that it goes into Login screen
-        await expect(element(by.id('login_screen'))).toBeVisible();
+        const {usernameInput, passwordInput, signinButton} = LoginScreen;
 
         // # Type in username
-        await element(by.id('username_input')).replaceText(user.username);
+        await usernameInput.replaceText(user.username);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text(config.TeamSettings.SiteName)).tap();
+        await loginScreen.tap({x: 5, y: 10});
 
         // # Type in password
-        await element(by.id('password_input')).replaceText(user.password);
+        await passwordInput.replaceText(user.password);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text(config.TeamSettings.SiteName)).tap();
+        await loginScreen.tap({x: 5, y: 10});
 
         // # Tap "Sign in" button
-        await element(by.text('Sign in')).tap();
+        await signinButton.tap();
 
         // * Verify that the user has successfully logged in by checking it redirects into the Channel screen
-        await expect(element(by.id('channel_screen'))).toBeVisible();
+        await ChannelScreen.toBeVisible();
     });
 });

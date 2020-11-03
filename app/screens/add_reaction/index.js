@@ -27,7 +27,7 @@ export default class AddReaction extends PureComponent {
 
     leftButton = {
         id: 'close-add-reaction',
-        testID: 'screen.add_reaction.close',
+        testID: 'close.add_reaction.button',
     };
 
     constructor(props) {
@@ -60,7 +60,10 @@ export default class AddReaction extends PureComponent {
 
     render() {
         return (
-            <View style={styles.container}>
+            <View
+                testID='add_reaction.screen'
+                style={styles.container}
+            >
                 <EmojiPicker onEmojiPress={this.handleEmojiPress}/>
             </View>
         );

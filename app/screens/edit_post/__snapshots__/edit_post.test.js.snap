@@ -8,6 +8,7 @@ exports[`EditPost should match snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="edit_post.screen"
   >
     <Connect(StatusBar) />
     <View
