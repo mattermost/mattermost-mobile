@@ -52,14 +52,15 @@ describe('Actions.Posts', () => {
         assert.ok(posts);
         assert.ok(postsInChannel);
 
-        let found = false;
+        let messageFound = null;
         for (const storedPost of Object.values(posts)) {
             if (storedPost.message === post.message) {
-                found = true;
+                messageFound = storedPost;
                 break;
             }
         }
-        assert.ok(found, 'failed to find new post in posts');
+        assert.ok(messageFound !== null, 'failed to find new post in posts');
+        assert.ok(messageFound && messageFound.props.disable_group_highlight, 'mentions should not be highlighted by default');
 
         // postsInChannel[channelId] should not exist as create post should not add entry to postsInChannel when it did not exist before
         assert.ok(!postsInChannel[channelId], 'postIds in channel do not exist');

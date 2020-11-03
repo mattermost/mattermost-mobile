@@ -210,6 +210,9 @@ export function createPost(post: Post, files: any[] = []) {
             type: PostTypes.RECEIVED_NEW_POST,
             data: {
                 ...newPost,
+                props: { // Will be overwritten with server response
+                    disable_group_highlight: true,
+                },
                 id: pendingPostId,
             },
         });
