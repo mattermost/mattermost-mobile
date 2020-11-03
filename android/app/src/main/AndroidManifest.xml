@@ -20,6 +20,7 @@
       android:installLocation="auto"
       android:networkSecurityConfig="@xml/network_security_config"
       android:requestLegacyExternalStorage="true"
+      android:usesCleartextTraffic="true"
     >
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"

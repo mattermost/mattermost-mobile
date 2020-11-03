@@ -9,6 +9,7 @@ import FastImage from 'react-native-fast-image';
 import thumb from '@assets/images/thumb.png';
 import CustomPropTypes from '@constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {lookupMimeType} from '@mm-redux/utils/file_utils';
 
 const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
@@ -18,8 +19,11 @@ export default class ProgressiveImage extends PureComponent {
         isBackgroundImage: PropTypes.bool,
         children: CustomPropTypes.Children,
         defaultSource: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.number]), // this should be provided by the component
+        filename: PropTypes.string,
         imageUri: PropTypes.string,
         imageStyle: CustomPropTypes.Style,
+        inViewPort: PropTypes.bool,
+        miniPreview: PropTypes.string,
         onError: PropTypes.func,
         resizeMethod: PropTypes.string,
         resizeMode: PropTypes.string,
@@ -39,7 +43,21 @@ export default class ProgressiveImage extends PureComponent {
 
         this.state = {
             intensity: new Animated.Value(0),
+            mimeType: props.filename ? lookupMimeType(props.filename) : '',
+            showHighResImage: false,
         };
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.inViewPort !== this.props.inViewPort && this.props.inViewPort) {
+            this.startLoadingOriginalImage();
+        }
+    }
+
+    startLoadingOriginalImage = () => {
+        this.setState({
+            showHighResImage: true,
+        });
     }
 
     onLoadImageEnd = () => {
@@ -62,7 +80,10 @@ export default class ProgressiveImage extends PureComponent {
             style,
             theme,
             tintDefaultSource,
+            miniPreview,
         } = this.props;
+
+        const {showHighResImage} = this.state;
 
         let DefaultComponent;
         let ImageComponent;
@@ -118,6 +139,44 @@ export default class ProgressiveImage extends PureComponent {
         const containerStyle = {
             backgroundColor: changeOpacity(theme.centerChannelColor, defaultOpacity),
         };
+
+        if (miniPreview) {
+            // show blurred preview image unless component comes in viewport
+            return (
+                <Animated.View style={[styles.defaultImageContainer, style, containerStyle]}>
+                    <ImageComponent
+                        resizeMode={resizeMode}
+                        resizeMethod={resizeMethod}
+                        onError={onError}
+                        source={{uri: `data:${this.state.mimeType};base64,${miniPreview}`}}
+                        style={[
+                            StyleSheet.absoluteFill,
+                            imageStyle,
+                        ]}
+                        testID='miniPreview'
+                    >
+                        {this.props.children}
+                    </ImageComponent>
+                    {showHighResImage && (
+                        <ImageComponent
+                            resizeMode={resizeMode}
+                            resizeMethod={resizeMethod}
+                            onError={onError}
+                            source={{uri: imageUri}}
+                            style={[
+                                StyleSheet.absoluteFill,
+                                imageStyle,
+                                {opacity}]
+                            }
+                            testID='highResImage'
+                            onLoadEnd={this.onLoadImageEnd}
+                        >
+                            {this.props.children}
+                        </ImageComponent>
+                    )}
+                </Animated.View>
+            );
+        }
 
         return (
             <Animated.View style={[styles.defaultImageContainer, style, containerStyle]}>
