@@ -239,6 +239,7 @@ NotificationSettings {
             "flex": 1,
           }
         }
+        testID="notification_settings.screen"
       >
         <Connect(StatusBar) />
         <ScrollView
@@ -310,6 +311,7 @@ NotificationSettings {
             onPress={[Function]}
             separator={true}
             showArrow={true}
+            testID="notification_settings.mobile.action"
             theme={
               Object {
                 "awayIndicator": "#ffbc42",
