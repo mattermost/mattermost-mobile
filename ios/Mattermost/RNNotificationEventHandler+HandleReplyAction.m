@@ -102,7 +102,9 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
     [[UIApplication sharedApplication] setApplicationIconBadgeNumber:[notifications count]];
   }];
 
-  completionHandler();
+  dispatch_async(dispatch_get_main_queue(), ^{
+    completionHandler();
+  });
 }
 
 - (void) handleReplyFailure:(NSString *)channelId completionHandler:(void (^)(void))completionHandler {
@@ -124,7 +126,9 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   };
   [notificationCenter sendLocalNotification:notification withId:id];
 
-  completionHandler();
+  dispatch_async(dispatch_get_main_queue(), ^{
+    completionHandler();
+  });
 }
 
 #pragma mark - Method Swizzling
