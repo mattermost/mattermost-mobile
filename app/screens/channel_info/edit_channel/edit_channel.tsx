@@ -12,6 +12,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface EditChannelProps {
+    testID: string;
     canEdit: boolean;
     isLandscape: boolean;
     theme: Theme;
@@ -33,7 +34,7 @@ export default class EditChannel extends PureComponent<EditChannelProps> {
     });
 
     render() {
-        const {canEdit, isLandscape, theme} = this.props;
+        const {testID, canEdit, isLandscape, theme} = this.props;
 
         if (!canEdit) {
             return null;
@@ -43,6 +44,7 @@ export default class EditChannel extends PureComponent<EditChannelProps> {
             <>
                 <Separator theme={theme}/>
                 <ChannelInfoRow
+                    testID={testID}
                     action={this.handleChannelEdit}
                     defaultMessage='Edit Channel'
                     icon='pencil-outline'

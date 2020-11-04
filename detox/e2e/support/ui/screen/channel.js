@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {SettingsSidebar} from '@support/ui/component';
 import {LoginScreen, SelectServerScreen} from '@support/ui/screen';
 
 class ChannelScreen {
@@ -14,7 +15,7 @@ class ChannelScreen {
         disabledSendButton: 'disabled_send.button',
         postInput: 'post.input',
         sendButton: 'send.button',
-        sidebarSettingsButton: 'sidebar.settings.button',
+        settingsDrawerButton: 'settings_drawer.button',
     }
 
     channelScreen = element(by.id(this.testID.channelScreen));
@@ -26,7 +27,7 @@ class ChannelScreen {
     disabledSendButton = element(by.id(this.testID.disabledSendButton));
     postInput = element(by.id(this.testID.postInput));
     sendButton = element(by.id(this.testID.sendButton));
-    sidebarSettingsButton = element(by.id(this.testID.sidebarSettingsButton));
+    settingsDrawerButton = element(by.id(this.testID.settingsDrawerButton));
 
     toBeVisible = async () => {
         await expect(this.channelScreen).toBeVisible();
@@ -42,8 +43,8 @@ class ChannelScreen {
     }
 
     logout = async () => {
-        await this.sidebarSettingsButton.tap();
-        await element(by.text('Logout')).tap();
+        await this.settingsDrawerButton.tap();
+        await SettingsSidebar.logoutAction.tap();
         await SelectServerScreen.toBeVisible();
     }
 }

@@ -39,7 +39,10 @@ export default class ChannelNotificationPreferenceAndroid extends ChannelNotific
         const options = this.getRadioItems();
 
         return (
-            <View style={style.container}>
+            <View
+                testId='channel_notification_preference.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <FormattedText
                     id='channel_notifications.preference.header'

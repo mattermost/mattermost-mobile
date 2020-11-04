@@ -9,8 +9,8 @@
 
 import {ChannelSidebar} from '@support/ui/component';
 import {
-    ChannelScreen,
     ChannelInfoScreen,
+    ChannelScreen,
     DirectChannelsScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
@@ -27,9 +27,9 @@ describe('Channel Info Header', () => {
     });
 
     it('MM-T3406 should render correct GM member count in channel info header', async () => {
-        // # Open drawer
+        // # Open channel drawer
         await ChannelScreen.channelDrawerButton.tap();
-        await expect(element(by.text('DIRECT MESSAGES'))).toBeVisible();
+        await ChannelSidebar.toBeVisible();
 
         // # Open Direct Channels screen
         await ChannelSidebar.addDirectChannel.tap();
@@ -38,7 +38,10 @@ describe('Channel Info Header', () => {
         // # Wait for some profiles to load
         await wait(timeouts.ONE_SEC);
 
-        const {getUserAtIndex, startButton} = DirectChannelsScreen;
+        const {
+            getUserAtIndex,
+            startButton,
+        } = DirectChannelsScreen;
 
         // # Select 3 profiles
         await getUserAtIndex(0).tap();
@@ -48,7 +51,7 @@ describe('Channel Info Header', () => {
         // # Create a GM with selected profiles
         await startButton.tap();
 
-        // # Open channel info modal
+        // # Open channel info screen
         await ChannelInfoScreen.open();
 
         // * Verify GM member count is 3

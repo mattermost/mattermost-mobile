@@ -13,6 +13,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface NotificationPreferenceProps {
+    testID: string;
     channelId: string;
     userId: string;
     notifyProps: ChannelNotifyProps;
@@ -65,7 +66,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
     }
 
     render() {
-        const {isLandscape, theme, notifyProps, userId, channelId} = this.props;
+        const {testID, isLandscape, theme, notifyProps, userId, channelId} = this.props;
         const pushNotifyLevel = notifyProps.push || ViewTypes.NotificationLevels.DEFAULT;
 
         if (!userId || !channelId) {
@@ -74,6 +75,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
 
         return (
             <ChannelInfoRow
+                testID={testID}
                 action={this.goToChannelNotificationPreference}
                 defaultMessage='Mobile Notifications'
                 detail={this.notificationLevelToText(pushNotifyLevel)}

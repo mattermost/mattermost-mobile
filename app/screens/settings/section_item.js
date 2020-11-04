@@ -22,6 +22,7 @@ const ActionTypes = {
 
 function sectionItem(props) {
     const {
+        testID,
         action,
         actionType,
         actionValue,
@@ -73,7 +74,10 @@ function sectionItem(props) {
     }
 
     const component = (
-        <View style={[style.container, padding(isLandscape)]}>
+        <View
+            testID={testID}
+            style={[style.container, padding(isLandscape)]}
+        >
             <View style={description ? style.doubleContainer : style.singleContainer}>
                 {labelComponent}
                 {descriptionComponent}

@@ -77,7 +77,7 @@ describe('Channels', () => {
         // * Expect a redirection to the created channel
         await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + expectedChannelName);
 
-        // # Open channel info
+        // # Open channel info screen
         await ChannelInfoScreen.open();
 
         // * Expect to see channel header and purpose in channel info

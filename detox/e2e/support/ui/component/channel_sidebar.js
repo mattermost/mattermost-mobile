@@ -18,6 +18,8 @@ class ChannelSidebar {
 
     toBeVisible = async () => {
         await expect(element(by.id(this.testID.mainSidebar))).toBeVisible();
+
+        return this.mainSidebar;
     }
 
     getChannelByDisplayName = (displayName) => {
