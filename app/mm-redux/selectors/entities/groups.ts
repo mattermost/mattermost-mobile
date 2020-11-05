@@ -75,7 +75,7 @@ export const getAssociatedGroupsForReference = reselect.createSelector(
         }
         return groupsForReference;
     },
-    getCurrentUserLocale,
+    (state: GlobalState) => getCurrentUserLocale(state),
     (groupsForReference, locale) => {
         return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
     },
