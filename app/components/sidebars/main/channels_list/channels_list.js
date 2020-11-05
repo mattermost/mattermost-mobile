@@ -160,7 +160,7 @@ export default class ChannelsList extends PureComponent {
         return (
             <View
                 style={styles.container}
-                testID='channels_list'
+                testID='channels.list'
             >
                 <View style={styles.headerContainer}>
                     {title}

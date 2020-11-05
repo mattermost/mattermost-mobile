@@ -3051,7 +3051,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
       },
     ]
   }
-  testID="autocomplete.emoji_suggestion.list"
+  testID="emoji_suggestion.list"
   updateCellsBatchingPeriod={50}
   windowSize={21}
 />

@@ -53,6 +53,7 @@ export default class EditChannelInfo extends PureComponent {
         oldHeader: PropTypes.string,
         oldPurpose: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
+        testID: PropTypes.string,
     };
 
     static defaultProps = {
@@ -204,6 +205,7 @@ export default class EditChannelInfo extends PureComponent {
             isLandscape,
             error,
             saving,
+            testID,
         } = this.props;
         const {keyboardVisible, keyboardPosition} = this.state;
         const bottomStyle = {
@@ -241,7 +243,7 @@ export default class EditChannelInfo extends PureComponent {
             <React.Fragment>
                 <StatusBar/>
                 <KeyboardAwareScrollView
-                    testID='edit_channel.scroll'
+                    testID={testID}
                     ref={this.scroll}
                     style={style.container}
                     keyboardShouldPersistTaps={'always'}

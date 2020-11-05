@@ -477,7 +477,7 @@ export default class MoreDirectMessages extends PureComponent {
         }
 
         return (
-            <KeyboardLayout testID='direct_channels_screen'>
+            <KeyboardLayout testID='direct_channels.screen'>
                 <StatusBar/>
                 <View style={style.searchBar}>
                     <View style={padding(isLandscape)}>

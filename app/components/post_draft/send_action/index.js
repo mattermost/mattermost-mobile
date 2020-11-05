@@ -16,7 +16,7 @@ function SendButton(props) {
     if (props.disabled) {
         return (
             <View
-                testID='disabled_send_button'
+                testID='disabled_send.button'
                 style={style.sendButtonContainer}
             >
                 <View style={[style.sendButton, style.disableButton]}>
@@ -32,7 +32,7 @@ function SendButton(props) {
 
     return (
         <TouchableWithFeedback
-            testID='send_button'
+            testID='send.button'
             onPress={props.handleSendMessage}
             style={style.sendButtonContainer}
             type={'opacity'}

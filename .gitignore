@@ -5,6 +5,8 @@ build-ios
 server.PID
 mattermost.keystore
 tmp/
+.env
+env.d.ts
 
 # OSX
 #

@@ -28,6 +28,14 @@ module.exports = {
                 '@websocket': './app/client/websocket',
             },
         }],
+        ['module:react-native-dotenv', {
+            moduleName: '@env',
+            path: '.env',
+            blacklist: null,
+            whitelist: null,
+            safe: false,
+            allowUndefined: true,
+        }],
     ],
     exclude: ['**/*.png', '**/*.jpg', '**/*.gif'],
 };

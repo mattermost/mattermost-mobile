@@ -413,7 +413,10 @@ export default class PostOptions extends PureComponent {
         const initialPosition = getInitialPosition(deviceHeight, marginFromTop);
 
         return (
-            <View style={style.container}>
+            <View
+                testID='post.options'
+                style={style.container}
+            >
                 <SlideUpPanel
                     allowStayMiddle={false}
                     ref={this.refSlideUpPanel}

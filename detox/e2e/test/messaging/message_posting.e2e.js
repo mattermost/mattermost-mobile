@@ -7,38 +7,42 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {ChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Messaging', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
-        await toChannelScreen(user);
+        await ChannelScreen.open(user);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('should post a message on tap to paper send button', async () => {
-        // * Verify channel screen and post input exist and send button to not exist
-        await expect(element(by.id('channel_screen'))).toBeVisible();
-        await expect(element(by.id('post_input'))).toExist();
-        await expect(element(by.id('send_button'))).not.toExist();
+        // * Verify channel screen is visible
+        await ChannelScreen.toBeVisible();
+
+        const {postInput, sendButton} = ChannelScreen;
+
+        // * Post input should exist while send button should not
+        await expect(postInput).toBeVisible();
+        await expect(sendButton).not.toExist();
 
         // # Tap on post input
-        await element(by.id('post_input')).tap();
+        await postInput.tap();
 
         // # Type text on post input
         const text = Date.now().toString();
-        await element(by.id('post_input')).typeText(text);
+        await postInput.typeText(text);
 
         // # Tap send button
-        await expect(element(by.id('send_button'))).toBeVisible();
-        await element(by.id('send_button')).tap();
+        await expect(sendButton).toBeVisible();
+        await sendButton.tap();
 
         // * Verify text to exist
-        await expect(element(by.text(text))).toExist();
+        await expect(element(by.text(text))).toBeVisible();
     });
 });

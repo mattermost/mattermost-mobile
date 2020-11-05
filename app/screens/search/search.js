@@ -712,7 +712,10 @@ export default class Search extends PureComponent {
             <SafeAreaView style={style.flex}>
                 <KeyboardLayout>
                     <StatusBar/>
-                    <View style={[style.header, paddingRes]}>
+                    <View
+                        testID='search.screen'
+                        style={[style.header, paddingRes]}
+                    >
                         <SearchBar
                             ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}

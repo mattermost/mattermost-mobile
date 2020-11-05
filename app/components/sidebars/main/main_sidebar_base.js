@@ -256,7 +256,7 @@ export default class MainSidebarBase extends Component {
                     showTeams={showTeams}
                     drawerOpened={this.state.drawerOpened}
                     drawerWidth={drawerWidth - offset}
-                    testID='main_sidebar'
+                    testID='main.sidebar'
                 >
                     {lists}
                 </DrawerSwiper>
