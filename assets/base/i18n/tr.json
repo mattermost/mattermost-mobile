@@ -44,7 +44,7 @@
   "channel_notifications.ignoreChannelMentions.settings": "@channel, @here, @all yok sayılsın",
   "channel_notifications.muteChannel.settings": "Kanal bildirimlerini kapat",
   "channel_notifications.preference.all_activity": "Tüm işlemler için",
-  "channel_notifications.preference.global_default": "Genel varsayılan (Anmalar)",
+  "channel_notifications.preference.global_default": "Genel varsayılan ({notifyLevel})",
   "channel_notifications.preference.header": "Bildirimler Gönderilsin",
   "channel_notifications.preference.never": "Asla",
   "channel_notifications.preference.only_mentions": "Yalnız anmalar ve doğrudan iletiler",
