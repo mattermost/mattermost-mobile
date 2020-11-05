@@ -76,7 +76,7 @@ export const getAssociatedGroupsForReference = reselect.createSelector(
         return groupsForReference;
     },
     (state: GlobalState) => getCurrentUserLocale(state),
-    (groupsForReference, locale) => {
+    (groupsForReference: Array<Group>, locale: string) => {
         return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
     },
 );
@@ -84,7 +84,7 @@ export const getAssociatedGroupsForReference = reselect.createSelector(
 export const searchAssociatedGroupsForReferenceLocal = reselect.createSelector(
     (state: GlobalState, term: string, teamId: string, channelId: string) => getAssociatedGroupsForReference(state, teamId, channelId),
     (state: GlobalState, term: string) => term,
-    (groups, term) => {
+    (groups: Array<Group>, term: string) => {
         if (!groups || groups.length === 0) {
             return emptyList;
         }
