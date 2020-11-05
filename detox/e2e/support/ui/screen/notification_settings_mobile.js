@@ -50,10 +50,14 @@ class NotificationSettingsMobileScreen {
 
     getPushActionFor(pushKey) {
         switch (pushKey) {
-        case 'all': return this.allAction;
-        case 'mentions': return this.mentionsAction;
-        case 'never': return this.neverAction;
-        default: throw new Error('Not a valid push option: ' + pushKey);
+        case 'all':
+            return this.allAction;
+        case 'mentions':
+            return this.mentionsAction;
+        case 'never':
+            return this.neverAction;
+        default:
+            throw new Error('Not a valid push option: ' + pushKey);
         }
     }
 }
