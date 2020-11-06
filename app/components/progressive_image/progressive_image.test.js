@@ -71,8 +71,7 @@ describe('MiniPreview', () => {
             tintDefaultSource: false,
             defaultSource: null,
             inViewPort: false,
-            miniPreview: 'somebase64data',
-            filename: 'file.png',
+            thumbnailUri: 'somebase64data',
         };
         const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
         expect(wrapper.find({testID: 'miniPreview'}).length).toEqual(1);
@@ -89,8 +88,7 @@ describe('MiniPreview', () => {
             tintDefaultSource: false,
             defaultSource: null,
             inViewPort: false,
-            miniPreview: 'somebase64data',
-            filename: 'file.png',
+            thumbnailUri: 'somebase64data',
         };
         const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
         const selectHighResImage = () => wrapper.find({testID: 'highResImage'});
