@@ -102,7 +102,7 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
         },
       ]
     }
-    testID="thumbnail"
+    testID="progressive_image.thumbnail"
   />
   <ForwardRef(AnimatedComponentWrapper)
     onError={[MockFunction]}
@@ -129,7 +129,7 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
         },
       ]
     }
-    testID="highResImage"
+    testID="progressive_image.highResImage"
   />
 </ForwardRef(AnimatedComponentWrapper)>
 `;

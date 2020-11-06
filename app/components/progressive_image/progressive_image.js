@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, ImageBackground, View, StyleSheet} from 'react-native';
+import {Animated, ImageBackground, Image, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import thumb from '@assets/images/thumb.png';
@@ -140,8 +140,10 @@ export default class ProgressiveImage extends PureComponent {
         let thumbnail;
         let image;
         if (thumbnailUri) {
+            const ImageElement = thumbnailUri.startsWith('data:') ? Image : ImageComponent;
+
             thumbnail = (
-                <ImageComponent
+                <ImageElement
                     resizeMode={resizeMode}
                     resizeMethod={resizeMethod}
                     onError={onError}
@@ -150,10 +152,11 @@ export default class ProgressiveImage extends PureComponent {
                         StyleSheet.absoluteFill,
                         imageStyle,
                     ]}
-                    testID='miniPreview'
+                    blurRadius={0.4}
+                    testID='progressive_image.miniPreview'
                 >
                     {this.props.children}
-                </ImageComponent>
+                </ImageElement>
             );
 
             if (showHighResImage) {
@@ -168,7 +171,7 @@ export default class ProgressiveImage extends PureComponent {
                             imageStyle,
                             {opacity}]
                         }
-                        testID='highResImage'
+                        testID='progressive_image.highResImage'
                         onLoadEnd={this.onLoadImageEnd}
                     >
                         {this.props.children}
@@ -183,7 +186,7 @@ export default class ProgressiveImage extends PureComponent {
                     onError={onError}
                     source={thumb}
                     style={[imageStyle, {tintColor: theme.centerChannelColor, opacity: defaultOpacity}]}
-                    testID='thumbnail'
+                    testID='progressive_image.thumbnail'
                 />
             );
 
@@ -195,7 +198,7 @@ export default class ProgressiveImage extends PureComponent {
                     source={{uri: imageUri}}
                     style={[StyleSheet.absoluteFill, imageStyle, {opacity}]}
                     onLoadEnd={this.onLoadImageEnd}
-                    testID='highResImage'
+                    testID='progressive_image.highResImage'
                 >
                     {this.props.children}
                 </ImageComponent>

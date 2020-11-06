@@ -74,7 +74,7 @@ describe('MiniPreview', () => {
             thumbnailUri: 'somebase64data',
         };
         const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
-        expect(wrapper.find({testID: 'miniPreview'}).length).toEqual(1);
+        expect(wrapper.find({testID: 'progressive_image.miniPreview'}).length).toEqual(1);
     });
 
     test('should load and show high res image with animation when component comes into viewport', () => {
@@ -91,7 +91,7 @@ describe('MiniPreview', () => {
             thumbnailUri: 'somebase64data',
         };
         const wrapper = shallow(<ProgressiveImage {...baseProps}/>);
-        const selectHighResImage = () => wrapper.find({testID: 'highResImage'});
+        const selectHighResImage = () => wrapper.find({testID: 'progressive_image.highResImage'});
         expect(selectHighResImage().length).toEqual(0);
         wrapper.setProps({
             inViewPort: true,
