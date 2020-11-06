@@ -466,6 +466,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.file_quick_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -491,6 +492,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.image_quick_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -516,6 +518,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.camera_quick_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"

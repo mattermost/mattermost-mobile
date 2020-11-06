@@ -66,22 +66,24 @@ function handleReceivedPostSelected(state, action) {
     return data;
 }
 
-function handleSetTempUploadFilesForPostDraft(state, action) {
-    if (!action.rootId) {
-        return state;
-    }
+export const handleSetTempUploadFilesForPostDraft = (() => {
+    return (state, action) => {
+        if (!action.rootId) {
+            return state;
+        }
 
-    const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
-    const files = [
-        ...state[action.rootId]?.files || [],
-        ...tempFiles,
-    ];
+        const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
+        const files = [
+            ...state[action.rootId]?.files || [],
+            ...tempFiles,
+        ];
 
-    return {
-        ...state,
-        [action.rootId]: Object.assign({}, state[action.rootId], {files}),
+        return {
+            ...state,
+            [action.rootId]: Object.assign({}, state[action.rootId], {files}),
+        };
     };
-}
+})();
 
 function handleRetryUploadForPost(state, action) {
     if (!action.rootId) {
