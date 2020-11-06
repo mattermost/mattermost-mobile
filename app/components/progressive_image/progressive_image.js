@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Animated, ImageBackground, Image, View, StyleSheet} from 'react-native';
+import {Animated, ImageBackground, Image, Platform, View, StyleSheet} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import thumb from '@assets/images/thumb.png';
@@ -152,7 +152,7 @@ export default class ProgressiveImage extends PureComponent {
                         StyleSheet.absoluteFill,
                         imageStyle,
                     ]}
-                    blurRadius={0.4}
+                    blurRadius={Platform.OS === 'android' ? 0.4 : 1}
                     testID='progressive_image.miniPreview'
                 >
                     {this.props.children}
