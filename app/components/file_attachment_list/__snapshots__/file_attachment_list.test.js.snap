@@ -49,6 +49,7 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={true}
         onPreviewPress={[Function]}
@@ -137,6 +138,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -204,6 +206,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -261,6 +264,7 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
         }
       }
       id="fileId"
+      inViewPort={false}
       index={0}
       onPreviewPress={[Function]}
       theme={
@@ -347,6 +351,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -414,6 +419,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -481,6 +487,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
           }
         }
         id="thirdFileId"
+        inViewPort={false}
         index={2}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -548,6 +555,7 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
           }
         }
         id="fourthFileId"
+        inViewPort={false}
         index={3}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -636,6 +644,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -703,6 +712,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -770,6 +780,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
           }
         }
         id="thirdFileId"
+        inViewPort={false}
         index={2}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -837,6 +848,7 @@ exports[`FileAttachmentList should match snapshot with more than four image file
           }
         }
         id="fourthFileId"
+        inViewPort={false}
         index={3}
         isSingleImage={false}
         nonVisibleImagesCount={2}
@@ -906,6 +918,7 @@ exports[`FileAttachmentList should match snapshot with non-image attachment 1`] 
         }
       }
       id="fileId"
+      inViewPort={false}
       index={0}
       onPreviewPress={[Function]}
       theme={
@@ -992,6 +1005,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -1059,6 +1073,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -1126,6 +1141,7 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
           }
         }
         id="thirdFileId"
+        inViewPort={false}
         index={2}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -1214,6 +1230,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
         onPreviewPress={[Function]}
@@ -1281,6 +1298,7 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
         onPreviewPress={[Function]}

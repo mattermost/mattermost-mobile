@@ -34,6 +34,7 @@ export default class FileAttachment extends PureComponent {
         wrapperWidth: PropTypes.number,
         isSingleImage: PropTypes.bool,
         nonVisibleImagesCount: PropTypes.number,
+        inViewPort: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -147,6 +148,7 @@ export default class FileAttachment extends PureComponent {
             onLongPress,
             isSingleImage,
             nonVisibleImagesCount,
+            inViewPort,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -164,10 +166,11 @@ export default class FileAttachment extends PureComponent {
                 >
                     <FileAttachmentImage
                         file={file || {}}
-                        theme={theme}
-                        isSingleImage={isSingleImage}
+                        inViewPort={inViewPort}
                         imageDimensions={imageDimensions}
+                        isSingleImage={isSingleImage}
                         resizeMode={this.state.resizeMode}
+                        theme={theme}
                     />
                     {this.renderMoreImagesOverlay(nonVisibleImagesCount, theme)}
                 </TouchableWithFeedback>

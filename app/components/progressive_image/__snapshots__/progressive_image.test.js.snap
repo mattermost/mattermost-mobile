@@ -103,6 +103,7 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
         },
       ]
     }
+    testID="progressive_image.thumbnail"
   />
   <ForwardRef(AnimatedComponentWrapper)
     nativeID="image-undefined"
@@ -130,6 +131,7 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
         },
       ]
     }
+    testID="progressive_image.highResImage"
   />
 </ForwardRef(AnimatedComponentWrapper)>
 `;
