@@ -40,7 +40,7 @@ export default class ChannelNotificationPreferenceAndroid extends ChannelNotific
 
         return (
             <View
-                testId='channel_notification_preference.screen'
+                testID='channel_notification_preference.screen'
                 style={style.container}
             >
                 <StatusBar/>

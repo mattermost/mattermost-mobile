@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RadioButtonGroup should match snapshot 1`] = `
+<View>
+  <Connect(RadioButton)
+    checked={true}
+    disabled={false}
+    label="label-1"
+    name="name"
+    onCheck={[Function]}
+    testID="radio-1"
+    theme={Object {}}
+    value="value"
+  />
+  <Connect(RadioButton)
+    checked={false}
+    disabled={true}
+    label="label-2"
+    name="name"
+    onCheck={[Function]}
+    testID="radio-2"
+    theme={Object {}}
+    value="value"
+  />
+</View>
+`;

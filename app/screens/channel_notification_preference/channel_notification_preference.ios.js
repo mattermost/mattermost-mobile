@@ -27,7 +27,7 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                 excludeFooter={true}
             >
                 <View
-                    testId='channel_notification_preference.screen'
+                    testID='channel_notification_preference.screen'
                     style={style.container}
                 >
                     <StatusBar/>
