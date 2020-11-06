@@ -44,7 +44,7 @@
   "channel_notifications.ignoreChannelMentions.settings": "Negeer @channel,@here,@all",
   "channel_notifications.muteChannel.settings": "Demp kanaal",
   "channel_notifications.preference.all_activity": "Voor alle activiteiten",
-  "channel_notifications.preference.global_default": "Algemene standaard (Vermeldingen)",
+  "channel_notifications.preference.global_default": "Algemene instelling (Meldingsniveau)",
   "channel_notifications.preference.header": "Verstuur mobiele pushberichten",
   "channel_notifications.preference.never": "Nooit",
   "channel_notifications.preference.only_mentions": "Enkel vermeldingen en directe berichten",
