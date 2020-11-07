@@ -33,7 +33,6 @@ export default class FileAttachmentImage extends PureComponent {
             IMAGE_SIZE.Thumbnail,
         ]),
         imageWidth: PropTypes.number,
-        onCaptureRef: PropTypes.func,
         theme: PropTypes.object,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
@@ -57,14 +56,6 @@ export default class FileAttachmentImage extends PureComponent {
             return null;
         }
         return (<View style={style.boxPlaceholder}/>);
-    };
-
-    handleCaptureRef = (ref) => {
-        const {onCaptureRef} = this.props;
-
-        if (onCaptureRef) {
-            onCaptureRef(ref);
-        }
     };
 
     handleError = () => {
@@ -103,7 +94,6 @@ export default class FileAttachmentImage extends PureComponent {
 
         return (
             <View
-                ref={this.handleCaptureRef}
                 style={[
                     wrapperStyle,
                     style.smallImageBorder,
@@ -116,6 +106,7 @@ export default class FileAttachmentImage extends PureComponent {
                 {this.boxPlaceholder()}
                 <View style={style.smallImageOverlay}>
                     <ProgressiveImage
+                        id={file.id}
                         style={{height: file.height, width: file.width}}
                         tintDefaultSource={!file.localPath && !this.state.failed}
                         filename={file.name}
@@ -158,11 +149,11 @@ export default class FileAttachmentImage extends PureComponent {
 
         return (
             <View
-                ref={this.handleCaptureRef}
                 style={style.fileImageWrapper}
             >
                 {this.boxPlaceholder()}
                 <ProgressiveImage
+                    id={file.id}
                     style={[this.props.isSingleImage ? null : style.imagePreview, imageDimensions]}
                     tintDefaultSource={!file.localPath && !this.state.failed}
                     filename={file.name}

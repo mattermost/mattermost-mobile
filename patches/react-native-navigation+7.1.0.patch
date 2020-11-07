@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-index 260ed81..f719679 100644
+index 3bfbc0b..cdb0d05 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
-@@ -56,14 +56,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
+@@ -55,14 +55,18 @@ public class NavigationModule extends ReactContextBaseJavaModule {
          reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
              @Override
              public void onHostResume() {
@@ -45,13 +45,13 @@ index 260ed81..f719679 100644
          });
      }
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
-index ae8be52..8a8dec5 100644
+index f7aba70..f8d3f38 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNCommandsHandler.m
-@@ -300,10 +300,9 @@ - (void)dismissAllModals:(NSDictionary *)mergeOptions commandId:(NSString*)comma
+@@ -312,10 +312,9 @@ - (void)dismissAllModals:(NSDictionary *)mergeOptions commandId:(NSString*)comma
  	[CATransaction begin];
  	[CATransaction setCompletionBlock:^{
- 		[self->_eventEmitter sendOnNavigationCommandCompletion:dismissAllModals commandId:commandId params:@{}];
+ 		[self->_eventEmitter sendOnNavigationCommandCompletion:dismissAllModals commandId:commandId];
 -		completion();
  	}];
  	RNNNavigationOptions* options = [[RNNNavigationOptions alloc] initWithDict:mergeOptions];
@@ -60,3 +60,20 @@ index ae8be52..8a8dec5 100644
  	
  	[CATransaction commit];
  }
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
+index f98f7a1..26ecb83 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNViewLocation.m
+@@ -31,11 +31,7 @@ - (CGFloat)getCornerRadius:(UIView *)view {
+ 
+ - (CATransform3D)getTransform:(UIView *)view {
+     if (view) {
+-        if (!CATransform3DEqualToTransform(view.layer.transform, CATransform3DIdentity)) {
+-            return view.layer.transform;
+-        } else {
+-            return [self getTransform:view.superview];
+-        }
++        return view.layer.transform;
+     }
+ 
+     return CATransform3DIdentity;

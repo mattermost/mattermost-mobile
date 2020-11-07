@@ -5,12 +5,14 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import TextPreview from './text_preview';
+import type {GlobalState} from '@mm-redux/types/store';
 
-function mapStateToProps(state) {
+import Toast from './toast';
+
+function mapStateToProps(state: GlobalState) {
     return {
         theme: getTheme(state),
     };
 }
 
-export default connect(mapStateToProps)(TextPreview);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(Toast);

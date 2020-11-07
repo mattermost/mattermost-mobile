@@ -51,6 +51,7 @@
             "*": ["./*", "node_modules/*"]
         }
     },
+    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "detox/**/*", "types/**/*"],
     "exclude": [
         "node_modules",
         "build",

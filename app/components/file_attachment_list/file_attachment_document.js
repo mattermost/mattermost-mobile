@@ -8,31 +8,22 @@ import {
     Platform,
     StatusBar,
     StyleSheet,
-    Text,
     View,
 } from 'react-native';
 import FileViewer from 'react-native-file-viewer';
 import RNFetchBlob from 'rn-fetch-blob';
-import {CircularProgress} from 'react-native-circular-progress';
 import {intlShape} from 'react-intl';
 import tinyColor from 'tinycolor2';
 
+import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import ProgressBar from '@components/progress_bar';
+import {DeviceTypes} from '@constants/';
 import {getFileUrl} from '@mm-redux/utils/file_utils';
-
-import FileAttachmentIcon from 'app/components/file_attachment_list/file_attachment_icon';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {DeviceTypes} from 'app/constants/';
+import {getLocalFilePathFromFile} from '@utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
-import {changeOpacity} from 'app/utils/theme';
-import {goToScreen} from 'app/actions/navigation';
 
 const {DOCUMENTS_PATH} = DeviceTypes;
-const TEXT_PREVIEW_FORMATS = [
-    'application/json',
-    'application/x-x509-ca-cert',
-    'text/plain',
-];
-const circularProgressWidth = 4;
 
 export default class FileAttachmentDocument extends PureComponent {
     static propTypes = {
@@ -89,8 +80,7 @@ export default class FileAttachmentDocument extends PureComponent {
     };
 
     downloadAndPreviewFile = async (file) => {
-        const {data} = file;
-        const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
+        const path = getLocalFilePathFromFile(DOCUMENTS_PATH, file);
 
         this.setState({didCancel: false});
 
@@ -107,7 +97,7 @@ export default class FileAttachmentDocument extends PureComponent {
             }
 
             const options = {
-                session: data.id,
+                session: file.id,
                 timeout: 10000,
                 indicator: true,
                 overwrite: true,
@@ -115,20 +105,14 @@ export default class FileAttachmentDocument extends PureComponent {
                 certificate,
             };
 
-            const mime = data.mime_type.split(';')[0];
-            let openDocument = this.openDocument;
-            if (TEXT_PREVIEW_FORMATS.includes(mime)) {
-                openDocument = this.previewTextFile;
-            }
-
             const exist = await RNFetchBlob.fs.exists(path);
             if (exist) {
-                openDocument(file, 0);
+                this.openDocument(file);
             } else {
                 this.setState({downloading: true});
-                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(data.id));
+                this.downloadTask = RNFetchBlob.config(options).fetch('GET', getFileUrl(file.id));
                 this.downloadTask.progress((received, total) => {
-                    const progress = Math.round((received / total) * 100);
+                    const progress = parseFloat((received / total).toFixed(1));
                     if (this.mounted) {
                         this.setState({progress});
                     }
@@ -137,10 +121,9 @@ export default class FileAttachmentDocument extends PureComponent {
                 await this.downloadTask;
                 if (this.mounted) {
                     this.setState({
-                        progress: 100,
+                        progress: 1,
                     }, () => {
-                        // need to wait a bit for the progress circle UI to update to the give progress
-                        openDocument(file);
+                        this.openDocument(file);
                     });
                 }
             }
@@ -165,36 +148,13 @@ export default class FileAttachmentDocument extends PureComponent {
             return;
         }
 
-        if (downloading && progress < 100) {
+        if (downloading && progress < 1) {
             this.cancelDownload();
         } else if (downloading) {
             this.resetViewState();
         } else {
             this.downloadAndPreviewFile(file);
         }
-    };
-
-    previewTextFile = (file, delay = 2000) => {
-        const {data} = file;
-        const prefix = Platform.OS === 'android' ? 'file:/' : '';
-        const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
-        const readFile = RNFetchBlob.fs.readFile(`${prefix}${path}`, 'utf8');
-        setTimeout(async () => {
-            try {
-                this.setState({downloading: false, progress: 0});
-
-                const content = await readFile;
-                const screen = 'TextPreview';
-                const title = file.caption;
-                const passProps = {
-                    content,
-                };
-
-                goToScreen(screen, title, passProps);
-            } catch (error) {
-                RNFetchBlob.fs.unlink(path);
-            }
-        }, delay);
     };
 
     onDonePreviewingFile = () => {
@@ -204,50 +164,44 @@ export default class FileAttachmentDocument extends PureComponent {
         this.setStatusBarColor();
     };
 
-    openDocument = (file, delay = 2000) => {
-        // The animation for the progress circle takes about 2 seconds to finish
-        // therefore we are delaying the opening of the document to have the UI
-        // shown nicely and smooth
-        setTimeout(() => {
-            if (!this.state.didCancel && !this.state.preview && this.mounted) {
-                const {data} = file;
-                const path = `${DOCUMENTS_PATH}/${data.id}-${file.caption}`;
-                this.setState({preview: true});
-                this.setStatusBarColor('dark-content');
-                FileViewer.open(path, {
-                    displayName: file.caption,
-                    onDismiss: this.onDonePreviewingFile,
-                    showOpenWithDialog: true,
-                    showAppsSuggestions: true,
-                }).then(() => {
-                    if (this.mounted) {
-                        this.setState({downloading: false, progress: 0});
-                    }
-                }).catch(() => {
-                    const {intl} = this.context;
-                    Alert.alert(
-                        intl.formatMessage({
-                            id: 'mobile.document_preview.failed_title',
-                            defaultMessage: 'Open Document failed',
+    openDocument = (file) => {
+        if (!this.state.didCancel && !this.state.preview && this.mounted) {
+            const path = getLocalFilePathFromFile(DOCUMENTS_PATH, file);
+            this.setState({preview: true});
+            this.setStatusBarColor('dark-content');
+            FileViewer.open(path, {
+                displayName: file.name,
+                onDismiss: this.onDonePreviewingFile,
+                showOpenWithDialog: true,
+                showAppsSuggestions: true,
+            }).then(() => {
+                if (this.mounted) {
+                    this.setState({downloading: false, progress: 0});
+                }
+            }).catch(() => {
+                const {intl} = this.context;
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.document_preview.failed_title',
+                        defaultMessage: 'Open Document failed',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.document_preview.failed_description',
+                        defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n',
+                    }, {
+                        fileType: file.extension.toUpperCase(),
+                    }),
+                    [{
+                        text: intl.formatMessage({
+                            id: 'mobile.server_upgrade.button',
+                            defaultMessage: 'OK',
                         }),
-                        intl.formatMessage({
-                            id: 'mobile.document_preview.failed_description',
-                            defaultMessage: 'An error occurred while opening the document. Please make sure you have a {fileType} viewer installed and try again.\n',
-                        }, {
-                            fileType: data.extension.toUpperCase(),
-                        }),
-                        [{
-                            text: intl.formatMessage({
-                                id: 'mobile.server_upgrade.button',
-                                defaultMessage: 'OK',
-                            }),
-                        }],
-                    );
-                    this.onDonePreviewingFile();
-                    RNFetchBlob.fs.unlink(path);
-                });
-            }
-        }, delay);
+                    }],
+                );
+                this.onDonePreviewingFile();
+                RNFetchBlob.fs.unlink(path);
+            });
+        }
     };
 
     resetViewState = () => {
@@ -255,13 +209,7 @@ export default class FileAttachmentDocument extends PureComponent {
             this.setState({
                 progress: 0,
                 didCancel: true,
-            }, () => {
-                // need to wait a bit for the progress circle UI to update to the give progress
-                setTimeout(() => {
-                    if (this.mounted) {
-                        this.setState({downloading: false});
-                    }
-                }, 2000);
+                downloading: false,
             });
         }
     };
@@ -314,20 +262,11 @@ export default class FileAttachmentDocument extends PureComponent {
         return (
             <FileAttachmentIcon
                 backgroundColor={backgroundColor}
-                file={file.data}
+                file={file}
                 theme={theme}
             />
         );
     }
-
-    renderDownloadProgres = () => {
-        const {theme} = this.props;
-        return (
-            <Text style={{fontSize: 10, color: theme.centerChannelColor, fontWeight: '600'}}>
-                {`${this.state.progress}%`}
-            </Text>
-        );
-    };
 
     render() {
         const {onLongPress, theme} = this.props;
@@ -335,18 +274,15 @@ export default class FileAttachmentDocument extends PureComponent {
         let fileAttachmentComponent;
         if (downloading) {
             fileAttachmentComponent = (
-                <View style={[style.circularProgressContent]}>
-                    <CircularProgress
-                        size={40}
-                        fill={progress}
-                        width={circularProgressWidth}
-                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        tintColor={theme.linkColor}
-                        rotation={0}
-                    >
-                        {this.renderDownloadProgres}
-                    </CircularProgress>
-                </View>
+                <>
+                    {this.renderFileAttachmentIcon()}
+                    <View style={[StyleSheet.absoluteFill, styles.progress]}>
+                        <ProgressBar
+                            progress={progress || 0.1}
+                            color={theme.buttonBg}
+                        />
+                    </View>
+                </>
             );
         } else {
             fileAttachmentComponent = this.renderFileAttachmentIcon();
@@ -364,11 +300,12 @@ export default class FileAttachmentDocument extends PureComponent {
     }
 }
 
-const style = StyleSheet.create({
-    circularProgressContent: {
-        left: -(circularProgressWidth - 2),
-        top: 4,
-        width: 36,
+const styles = StyleSheet.create({
+    progress: {
+        justifyContent: 'flex-end',
         height: 48,
+        left: 2,
+        top: 5,
+        width: 44,
     },
 });
