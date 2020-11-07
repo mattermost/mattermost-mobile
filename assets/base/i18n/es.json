@@ -44,7 +44,7 @@
   "channel_notifications.ignoreChannelMentions.settings": "Ignorar @channel, @here, @all",
   "channel_notifications.muteChannel.settings": "Silenciar canal",
   "channel_notifications.preference.all_activity": "Para toda actividad",
-  "channel_notifications.preference.global_default": "Predeterminado global (Menciones)",
+  "channel_notifications.preference.global_default": "Predeterminado global ({notifyLevel})",
   "channel_notifications.preference.header": "Enviar Notificaciones",
   "channel_notifications.preference.never": "Nunca",
   "channel_notifications.preference.only_mentions": "Sólo menciones y mensajes directos",
