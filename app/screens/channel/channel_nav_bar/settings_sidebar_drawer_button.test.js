@@ -4,11 +4,11 @@
 import React from 'react';
 
 import Preferences from '@mm-redux/constants/preferences';
-import {SettingDrawerButton} from './settings_drawer_button';
+import {SettingsSidebarDrawerButton} from './settings_sidebar_drawer_button';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 
-describe('SettingDrawerButton', () => {
+describe('SettingsSidebarDrawerButton', () => {
     const baseProps = {
         openSidebar: jest.fn(),
         theme: Preferences.THEMES.default,
@@ -16,28 +16,28 @@ describe('SettingDrawerButton', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallowWithIntl(
-            <SettingDrawerButton {...baseProps}/>,
+            <SettingsSidebarDrawerButton {...baseProps}/>,
         );
         expect(wrapper).toMatchSnapshot();
     });
 
     test('Should be accessible', () => {
         const wrapper = shallowWithIntl(
-            <SettingDrawerButton {...baseProps}/>,
+            <SettingsSidebarDrawerButton {...baseProps}/>,
         );
         expect(wrapper.props().accessible).toBeTruthy();
     });
 
     test('Should have the correct accessibilityHint', () => {
         const wrapper = shallowWithIntl(
-            <SettingDrawerButton {...baseProps}/>,
+            <SettingsSidebarDrawerButton {...baseProps}/>,
         );
         expect(wrapper.props().accessibilityHint).toEqual('Opens the more options right hand sidebar');
     });
 
     test('Should have the correct accessibilityLabel', () => {
         const wrapper = shallowWithIntl(
-            <SettingDrawerButton {...baseProps}/>,
+            <SettingsSidebarDrawerButton {...baseProps}/>,
         );
         expect(wrapper.props().accessibilityLabel).toEqual('More Options');
     });

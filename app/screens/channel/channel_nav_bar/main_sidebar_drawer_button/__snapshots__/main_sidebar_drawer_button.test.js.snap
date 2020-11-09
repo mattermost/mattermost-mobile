@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ChannelDrawerButton should match, full snapshot 1`] = `
+exports[`MainSidebarDrawerButton should match, full snapshot 1`] = `
 <ForwardRef
   accessibilityHint="Opens the channels and teams drawer"
   accessibilityLabel="Channels and teams"
@@ -40,7 +40,7 @@ exports[`ChannelDrawerButton should match, full snapshot 1`] = `
 </ForwardRef>
 `;
 
-exports[`ChannelDrawerButton should match, full snapshot 2`] = `
+exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
 <ForwardRef
   accessibilityHint="Opens the channels and teams drawer"
   accessibilityLabel="Channels and teams"
