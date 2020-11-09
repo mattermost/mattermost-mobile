@@ -12,9 +12,7 @@ import {
     FileQuickAction,
     ImageQuickAction,
 } from '@support/ui/component';
-import {
-    ChannelScreen,
-} from '@support/ui/screen';
+import {ChannelScreen} from '@support/ui/screen';
 import {
     Setup,
     System,
