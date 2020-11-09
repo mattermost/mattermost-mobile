@@ -11,13 +11,13 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
-import FormattedText from 'app/components/formatted_text';
-import {DeviceTypes} from 'app/constants';
-import {checkUpgradeType, isUpgradeAvailable} from 'app/utils/client_upgrade';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {showModal, dismissModal} from 'app/actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {DeviceTypes} from '@constants';
+import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {showModal, dismissModal} from '@actions/navigation';
 
 const {View: AnimatedView} = Animated;
 
@@ -46,7 +46,7 @@ export default class ClientUpgradeListener extends PureComponent {
     constructor(props) {
         super(props);
 
-        MaterialIcon.getImageSource('close', 20, this.props.theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, this.props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
 
@@ -117,11 +117,7 @@ export default class ClientUpgradeListener extends PureComponent {
         const {downloadLink} = this.props;
         const {intl} = this.context;
 
-        Linking.canOpenURL(downloadLink).then((supported) => {
-            if (supported) {
-                return Linking.openURL(downloadLink);
-            }
-
+        Linking.openURL(downloadLink).catch(() => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
@@ -132,8 +128,6 @@ export default class ClientUpgradeListener extends PureComponent {
                     defaultMessage: 'An error occurred while trying to open the download link.',
                 }),
             );
-
-            return false;
         });
 
         this.toggleUpgradeMessage(false);

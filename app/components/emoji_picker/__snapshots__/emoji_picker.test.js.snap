@@ -2098,7 +2098,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "PEOPLE",
-              "icon": "smile-o",
+              "icon": "emoticon-happy-outline",
               "id": "mobile.emoji_picker.people",
               "key": "people",
             },
@@ -3182,7 +3182,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "NATURE",
-              "icon": "leaf",
+              "icon": "leaf-outline",
               "id": "mobile.emoji_picker.nature",
               "key": "nature",
             },
@@ -3778,7 +3778,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "FOODS",
-              "icon": "cutlery",
+              "icon": "food-apple",
               "id": "mobile.emoji_picker.foods",
               "key": "foods",
             },
@@ -4335,7 +4335,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "ACTIVITY",
-              "icon": "futbol-o",
+              "icon": "basketball",
               "id": "mobile.emoji_picker.activity",
               "key": "activity",
             },
@@ -5144,7 +5144,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "PLACES",
-              "icon": "plane",
+              "icon": "airplane-variant",
               "id": "mobile.emoji_picker.places",
               "key": "places",
             },
@@ -6323,7 +6323,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "OBJECTS",
-              "icon": "lightbulb-o",
+              "icon": "lightbulb-outline",
               "id": "mobile.emoji_picker.objects",
               "key": "objects",
             },
@@ -8155,7 +8155,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "SYMBOLS",
-              "icon": "heart-o",
+              "icon": "heart-outline",
               "id": "mobile.emoji_picker.symbols",
               "key": "symbols",
             },
@@ -9874,7 +9874,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "FLAGS",
-              "icon": "flag-o",
+              "icon": "flag-outline",
               "id": "mobile.emoji_picker.flags",
               "key": "flags",
             },
@@ -9952,7 +9952,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 },
               ],
               "defaultMessage": "CUSTOM",
-              "icon": "at",
+              "icon": "emoticon-custom-outline",
               "id": "mobile.emoji_picker.custom",
               "key": "custom",
             },
@@ -10008,9 +10008,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="smile-o"
+              <CompassIcon
+                name="emoticon-happy-outline"
                 size={17}
                 style={
                   Array [
@@ -10035,9 +10034,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="leaf"
+              <CompassIcon
+                name="leaf-outline"
                 size={17}
                 style={
                   Array [
@@ -10060,9 +10058,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="cutlery"
+              <CompassIcon
+                name="food-apple"
                 size={17}
                 style={
                   Array [
@@ -10085,9 +10082,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="futbol-o"
+              <CompassIcon
+                name="basketball"
                 size={17}
                 style={
                   Array [
@@ -10110,9 +10106,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="plane"
+              <CompassIcon
+                name="airplane-variant"
                 size={17}
                 style={
                   Array [
@@ -10135,9 +10130,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="lightbulb-o"
+              <CompassIcon
+                name="lightbulb-outline"
                 size={17}
                 style={
                   Array [
@@ -10160,9 +10154,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="heart-o"
+              <CompassIcon
+                name="heart-outline"
                 size={17}
                 style={
                   Array [
@@ -10185,9 +10178,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="flag-o"
+              <CompassIcon
+                name="flag-outline"
                 size={17}
                 style={
                   Array [
@@ -10210,9 +10202,8 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
                 }
               }
             >
-              <Icon
-                allowFontScaling={false}
-                name="at"
+              <CompassIcon
+                name="emoticon-custom-outline"
                 size={17}
                 style={
                   Array [

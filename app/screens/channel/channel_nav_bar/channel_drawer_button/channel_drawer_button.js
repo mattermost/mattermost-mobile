@@ -7,17 +7,16 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-
-import Icon from 'react-native-vector-icons/Ionicons';
-
-import Badge from 'app/components/badge';
-import PushNotifications from 'app/push_notifications';
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
 import {intlShape} from 'react-intl';
 
-import telemetry from 'app/telemetry';
+import Badge from '@components/badge';
+import CompassIcon from '@components/compass_icon';
+import PushNotifications from 'app/push_notifications';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
+
+import telemetry from '@telemetry';
 import {LARGE_BADGE_RIGHT_POSITION, SMALL_BADGE_RIGHT_POSITION, MAX_BADGE_RIGHT_POSITION} from '@constants/view';
 
 export default class ChannelDrawerButton extends PureComponent {
@@ -111,9 +110,9 @@ export default class ChannelDrawerButton extends PureComponent {
         let containerStyle;
         if (visible) {
             icon = (
-                <Icon
-                    name='md-menu'
-                    size={25}
+                <CompassIcon
+                    name='menu-variant'
+                    size={24}
                     color={theme.sidebarHeaderTextColor}
                 />
             );
@@ -132,7 +131,10 @@ export default class ChannelDrawerButton extends PureComponent {
                 onPress={this.handlePress}
                 style={containerStyle}
             >
-                <View style={[style.wrapper]}>
+                <View
+                    style={[style.wrapper]}
+                    testID='channel_drawer.button'
+                >
                     <View>
                         {icon}
                         {badge}
@@ -183,7 +185,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 14,
             borderWidth: 2,
             position: 'absolute',
-            right: -7,
+
+            right: -4,
             top: 0,
         },
         mention: {

@@ -8,14 +8,16 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-
-import Icon from 'react-native-vector-icons/Ionicons';
+import {intlShape} from 'react-intl';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {preventDoubleTap} from 'app/utils/tap';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-class SettingDrawerButton extends PureComponent {
+import CompassIcon from '@components/compass_icon';
+import {preventDoubleTap} from '@utils/tap';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {t} from '@utils/i18n';
+
+export class SettingDrawerButton extends PureComponent {
     static propTypes = {
         openSidebar: PropTypes.func.isRequired,
         theme: PropTypes.object,
@@ -25,17 +27,38 @@ class SettingDrawerButton extends PureComponent {
         theme: {},
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     handlePress = preventDoubleTap(() => {
         this.props.openSidebar();
     });
 
     render() {
         const {theme} = this.props;
+
+        const {formatMessage} = this.context.intl;
+
+        const buttonDescriptor = {
+            id: t('navbar.more_options.button'),
+            defaultMessage: 'More Options',
+            description: 'Accessibility helper for more options button in channel header.',
+        };
+        const accessibilityLabel = formatMessage(buttonDescriptor);
+
+        const buttonHint = {
+            id: t('navbar.more_options.hint'),
+            defaultMessage: 'Opens the more options right hand sidebar',
+            description: 'Accessibility helper for explaining what the more options button in the channel header will do.',
+        };
+        const accessibilityHint = formatMessage(buttonHint);
+
         const style = getStyleFromTheme(theme);
 
         const icon = (
-            <Icon
-                name='ellipsis-vertical'
+            <CompassIcon
+                name='dots-vertical'
                 size={25}
                 color={theme.sidebarHeaderTextColor}
             />
@@ -43,6 +66,11 @@ class SettingDrawerButton extends PureComponent {
 
         return (
             <TouchableOpacity
+                accessible={true}
+                accessibilityHint={accessibilityHint}
+                accessibilityLabel={accessibilityLabel}
+                accessibilityRole='button'
+                testID='sidebar.settings.button'
                 onPress={this.handlePress}
                 style={style.container}
             >

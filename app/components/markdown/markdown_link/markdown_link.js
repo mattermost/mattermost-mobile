@@ -64,22 +64,18 @@ export default class MarkdownLink extends PureComponent {
                 onPermalinkPress(match.postId, match.teamName);
             }
         } else {
-            Linking.canOpenURL(url).then((supported) => {
-                if (supported) {
-                    Linking.openURL(url);
-                } else {
-                    const {formatMessage} = this.context.intl;
-                    Alert.alert(
-                        formatMessage({
-                            id: 'mobile.server_link.error.title',
-                            defaultMessage: 'Link Error',
-                        }),
-                        formatMessage({
-                            id: 'mobile.server_link.error.text',
-                            defaultMessage: 'The link could not be found on this server.',
-                        }),
-                    );
-                }
+            Linking.openURL(url).catch(() => {
+                const {formatMessage} = this.context.intl;
+                Alert.alert(
+                    formatMessage({
+                        id: 'mobile.server_link.error.title',
+                        defaultMessage: 'Link Error',
+                    }),
+                    formatMessage({
+                        id: 'mobile.server_link.error.text',
+                        defaultMessage: 'The link could not be found on this server.',
+                    }),
+                );
             });
         }
     });

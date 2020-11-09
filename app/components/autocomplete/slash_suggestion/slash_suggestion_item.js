@@ -3,11 +3,12 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text} from 'react-native';
+import {Image, Text, View} from 'react-native';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import slashIcon from '@assets/images/autocomplete/slash_command.png';
 
 export default class SlashSuggestionItem extends PureComponent {
     static propTypes = {
@@ -31,19 +32,44 @@ export default class SlashSuggestionItem extends PureComponent {
             hint,
             theme,
             suggestion,
+            complete,
             isLandscape,
         } = this.props;
 
         const style = getStyleFromTheme(theme);
 
+        let suggestionText = suggestion;
+        if (suggestionText[0] === '/' && complete.split(' ').length === 1) {
+            suggestionText = suggestionText.substring(1);
+        }
+
         return (
             <TouchableWithFeedback
                 onPress={this.completeSuggestion}
-                style={[style.row, padding(isLandscape)]}
-                type={'opacity'}
+                style={padding(isLandscape)}
+                underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                type={'native'}
             >
-                <Text style={style.suggestionName}>{`${suggestion} ${hint}`}</Text>
-                <Text style={style.suggestionDescription}>{description}</Text>
+                <View style={style.container}>
+                    <View style={style.icon}>
+                        <Image
+                            style={style.iconColor}
+                            width={10}
+                            height={16}
+                            source={slashIcon}
+                        />
+                    </View>
+                    <View style={style.suggestionContainer}>
+                        <Text style={style.suggestionName}>{`${suggestionText} ${hint}`}</Text>
+                        <Text
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
+                            style={style.suggestionDescription}
+                        >
+                            {description}
+                        </Text>
+                    </View>
+                </View>
             </TouchableWithFeedback>
         );
     }
@@ -51,32 +77,38 @@ export default class SlashSuggestionItem extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        row: {
-            paddingVertical: 8,
+        icon: {
+            fontSize: 24,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            width: 35,
+            height: 35,
+            marginRight: 12,
+            borderRadius: 4,
             justifyContent: 'center',
-            paddingHorizontal: 8,
-            backgroundColor: theme.centerChannelBg,
-            borderLeftWidth: 1,
-            borderLeftColor: changeOpacity(theme.centerChannelColor, 0.2),
-            borderRightWidth: 1,
-            borderRightColor: changeOpacity(theme.centerChannelColor, 0.2),
+            alignItems: 'center',
+            marginTop: 8,
         },
-        rowDisplayName: {
-            fontSize: 13,
-            color: theme.centerChannelColor,
+        iconColor: {
+            tintColor: theme.centerChannelColor,
         },
-        rowName: {
-            color: theme.centerChannelColor,
-            opacity: 0.6,
+        container: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingBottom: 8,
+            paddingHorizontal: 16,
+            overflow: 'hidden',
+        },
+        suggestionContainer: {
+            flex: 1,
         },
         suggestionDescription: {
-            fontSize: 11,
-            color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.56),
         },
         suggestionName: {
-            fontSize: 13,
+            fontSize: 15,
             color: theme.centerChannelColor,
-            marginBottom: 5,
+            marginBottom: 4,
         },
     };
 });

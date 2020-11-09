@@ -9,17 +9,16 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 import {displayUsername} from '@mm-redux/utils/user_utils';
 
-import ProfilePicture from 'app/components/profile_picture';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {showModal} from 'app/actions/navigation';
-
-import Emoji from 'app/components/emoji';
+import {showModal} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
+import ProfilePicture from '@components/profile_picture';
+import Emoji from '@components/emoji';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class ReactionRow extends React.PureComponent {
     static propTypes = {
@@ -48,7 +47,7 @@ export default class ReactionRow extends React.PureComponent {
         };
 
         if (!this.closeButton) {
-            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+            this.closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         }
 
         const options = {
@@ -93,6 +92,7 @@ export default class ReactionRow extends React.PureComponent {
                                 userId={id}
                                 showStatus={false}
                                 size={24}
+                                iconSize={18}
                             />
                         </View>
                     </TouchableOpacity>

@@ -10,6 +10,11 @@ exports[`user_profile should match snapshot 1`] = `
 >
   <Connect(StatusBar) />
   <ScrollView
+    contentContainerStyle={
+      Object {
+        "paddingBottom": 48,
+      }
+    }
     style={
       Object {
         "backgroundColor": "#ffffff",
@@ -27,9 +32,10 @@ exports[`user_profile should match snapshot 1`] = `
       }
     >
       <Connect(ProfilePicture)
-        size={150}
+        iconSize={104}
+        size={153}
         statusBorderWidth={6}
-        statusSize={40}
+        statusSize={36}
         userId="4hzdnk6mg7gepe7yze6m3domnc"
       />
       <View
@@ -131,6 +137,16 @@ exports[`user_profile should match snapshot 1`] = `
     <View
       style={
         Object {
+          "backgroundColor": "#EBEBEC",
+          "height": 1,
+          "marginLeft": 16,
+          "marginRight": 22,
+        }
+      }
+    />
+    <View
+      style={
+        Object {
           "marginBottom": 25,
           "marginHorizontal": 15,
         }
@@ -167,13 +183,22 @@ exports[`user_profile should match snapshot 1`] = `
         </Text>
       </View>
     </View>
+    <View
+      style={
+        Object {
+          "backgroundColor": "#EBEBEC",
+          "height": 1,
+          "marginLeft": 16,
+          "marginRight": 22,
+        }
+      }
+    />
     <userProfileRow
       action={[Function]}
       defaultMessage="Send Message"
-      icon="paper-plane-o"
+      icon="send"
       iconColor="rgba(0, 0, 0, 0.7)"
-      iconSize={15}
-      iconType="fontawesome"
+      iconSize={24}
       isLandscape={false}
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"

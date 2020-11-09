@@ -8,8 +8,8 @@ import {
     View,
 } from 'react-native';
 
-import Icon from 'react-native-vector-icons/FontAwesome';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CompassIcon from '@components/compass_icon';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 export default class MarkdownBlockQuote extends PureComponent {
     static propTypes = {
@@ -22,10 +22,10 @@ export default class MarkdownBlockQuote extends PureComponent {
         let icon;
         if (!this.props.continue) {
             icon = (
-                <Icon
-                    name='quote-left'
+                <CompassIcon
+                    name='format-quote-open'
                     style={this.props.iconStyle}
-                    size={14}
+                    size={20}
                 />
             );
         }

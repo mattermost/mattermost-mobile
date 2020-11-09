@@ -5,29 +5,24 @@ import React, {memo} from 'react';
 import {View} from 'react-native';
 import PropTypes from 'prop-types';
 
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-let PaperPlane = null;
 
 function SendButton(props) {
     const {theme} = props;
     const style = getStyleSheet(theme);
 
-    if (!PaperPlane) {
-        PaperPlane = require('./paper_plane').default;
-    }
-
     if (props.disabled) {
         return (
             <View
-                testID='disabled_send_button'
+                testID='disabled_send.button'
                 style={style.sendButtonContainer}
             >
                 <View style={[style.sendButton, style.disableButton]}>
-                    <PaperPlane
-                        height={16}
-                        width={19}
+                    <CompassIcon
+                        name='send'
+                        size={24}
                         color={changeOpacity(theme.buttonColor, 0.5)}
                     />
                 </View>
@@ -37,15 +32,15 @@ function SendButton(props) {
 
     return (
         <TouchableWithFeedback
-            testID='send_button'
+            testID='send.button'
             onPress={props.handleSendMessage}
             style={style.sendButtonContainer}
             type={'opacity'}
         >
             <View style={style.sendButton}>
-                <PaperPlane
-                    height={16}
-                    width={19}
+                <CompassIcon
+                    name='send'
+                    size={24}
                     color={theme.buttonColor}
                 />
             </View>

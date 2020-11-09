@@ -8,6 +8,7 @@ import Preferences from '@mm-redux/constants/preferences';
 import {General} from '@mm-redux/constants';
 
 import ChannelInfo from './channel_info';
+import NotificationPreference from './notification_preference';
 
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');
@@ -47,12 +48,12 @@ describe('channelInfo', () => {
         theme: Preferences.THEMES.default,
         isBot: false,
         isTeammateGuest: false,
+        isDirectMessage: false,
         isLandscape: false,
         actions: {
             getChannelStats: jest.fn(),
-            loadChannelsByTeamName: jest.fn(),
             getCustomEmojisInText: jest.fn(),
-            selectFocusedPostId: jest.fn(),
+            showPermalink: jest.fn(),
             setChannelDisplayName: jest.fn(),
         },
     };
@@ -80,5 +81,21 @@ describe('channelInfo', () => {
         expect(dismissModal).not.toHaveBeenCalled();
         instance.close();
         expect(dismissModal).toHaveBeenCalled();
+    });
+
+    test('should not include NotificationPreference for direct message', () => {
+        const wrapper = shallow(
+            <ChannelInfo
+                {...baseProps}
+            />,
+            {context: {intl: intlMock}},
+        );
+
+        expect(wrapper.instance().actionsRows()).toMatchSnapshot();
+        expect(wrapper.find(NotificationPreference).exists()).toEqual(true);
+
+        wrapper.setProps({isDirectMessage: true});
+        expect(wrapper.instance().actionsRows()).toMatchSnapshot();
+        expect(wrapper.find(NotificationPreference).exists()).toEqual(false);
     });
 });

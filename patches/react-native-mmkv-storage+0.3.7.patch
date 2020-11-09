@@ -1,13 +1,14 @@
 diff --git a/node_modules/react-native-mmkv-storage/ios/MMKVStorage.m b/node_modules/react-native-mmkv-storage/ios/MMKVStorage.m
-index 34c764c..34fd83d 100644
+index fe0ee2b..5bdde1d 100644
 --- a/node_modules/react-native-mmkv-storage/ios/MMKVStorage.m
 +++ b/node_modules/react-native-mmkv-storage/ios/MMKVStorage.m
-@@ -37,7 +37,9 @@ - (id)init
+@@ -45,7 +45,10 @@ - (id)init
  {
      self = [super init];
      if (self) {
 -        [MMKV initialize];
-+        NSString *APP_GROUP_ID = @"group.com.mattermost.rnbeta";
++        NSBundle *bundle = [NSBundle mainBundle];
++        NSString *APP_GROUP_ID = [bundle objectForInfoDictionaryKey:@"AppGroupIdentifier"];
 +        NSString *groupDir = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:APP_GROUP_ID].path;
 +        [MMKV initializeMMKV:nil groupDir:groupDir logLevel:MMKVLogInfo];
          secureStorage = [[SecureStorage alloc]init];

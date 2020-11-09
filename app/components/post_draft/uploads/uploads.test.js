@@ -10,6 +10,7 @@ import Uploads from './uploads';
 
 describe('Uploads', () => {
     const baseProps = {
+        canUploadFiles: true,
         channelId: 'channel-id',
         files: [],
         filesUploadingForCurrentChannel: true,
@@ -36,5 +37,26 @@ describe('Uploads', () => {
         await instance.handleUploadFiles([]);
         expect(instance.handleFileSizeWarning).not.toHaveBeenCalled();
         expect(props.initUploadFiles).not.toHaveBeenCalled();
+    });
+
+    test('handlePasteFiles should display an error if uploads are disabled', () => {
+        const topScreenId = 'top-screen';
+        EphemeralStore.getNavigationTopComponentId = jest.fn(() => (topScreenId));
+
+        const props = {
+            ...baseProps,
+            canUploadFiles: false,
+            screenId: topScreenId,
+        };
+        const wrapper = shallow(
+            <Uploads {...props}/>,
+        );
+        const instance = wrapper.instance();
+        instance.showPasteFilesErrorDialog = jest.fn();
+        instance.handleUploadDisabled = jest.fn();
+
+        instance.handlePasteFiles(undefined, []);
+        expect(instance.showPasteFilesErrorDialog).not.toHaveBeenCalled();
+        expect(instance.handleUploadDisabled).toHaveBeenCalled();
     });
 });

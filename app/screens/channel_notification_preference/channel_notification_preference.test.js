@@ -6,7 +6,7 @@ import {ViewTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
 import SectionItem from '@screens/settings/section_item';
 
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntlMessages} from 'test/intl-test-helper';
 import ChannelNotificationPreference from './channel_notification_preference';
 
 function makeProps(pushNotificationLevel) {
@@ -15,6 +15,9 @@ function makeProps(pushNotificationLevel) {
             updateChannelNotifyProps: jest.fn(),
         },
         channelId: 'channel_id',
+        globalNotifyProps: {
+            push: 'mention',
+        },
         userId: 'user_id',
         notifyProps: {
             push: pushNotificationLevel,
@@ -25,7 +28,7 @@ function makeProps(pushNotificationLevel) {
 }
 
 function checkNotificationSelected(pushNotificationLevel, trueIdx) {
-    const wrapper = shallowWithIntl(
+    const wrapper = shallowWithIntlMessages(
         <ChannelNotificationPreference
             {...makeProps(pushNotificationLevel)}
         />,
@@ -52,7 +55,7 @@ describe('ChannelNotificationPreference', () => {
 
     test('should save on click', () => {
         const props = makeProps('default');
-        const wrapper = shallowWithIntl(
+        const wrapper = shallowWithIntlMessages(
             <ChannelNotificationPreference {...props}/>,
         );
 

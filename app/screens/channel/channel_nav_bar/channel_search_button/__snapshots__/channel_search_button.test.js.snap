@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelSearchButton should match, full snapshot 1`] = `
+<View
+  style={
+    Object {
+      "width": 40,
+    }
+  }
+>
+  <ForwardRef
+    accessibilityHint="Opens the channel search modal"
+    accessibilityLabel="Search"
+    accessibilityRole="button"
+    accessible={true}
+    onPress={[Function]}
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+    testID="channel.search.button"
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "flex-end",
+          "flex": 1,
+          "flexDirection": "column",
+          "justifyContent": "center",
+          "position": "relative",
+        }
+      }
+    >
+      <CompassIcon
+        name="magnify"
+        size={24}
+        style={
+          Object {
+            "backgroundColor": "#1153ab",
+            "color": "#ffffff",
+          }
+        }
+      />
+    </View>
+  </ForwardRef>
+</View>
+`;

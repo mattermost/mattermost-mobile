@@ -25,6 +25,7 @@ exports[`ChannelDrawerButton should match, full snapshot 1`] = `
         },
       ]
     }
+    testID="channel_drawer.button"
   >
     <View>
       <View
@@ -64,13 +65,13 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
         },
       ]
     }
+    testID="channel_drawer.button"
   >
     <View>
-      <Icon
-        allowFontScaling={false}
+      <CompassIcon
         color="#ffffff"
-        name="md-menu"
-        size={25}
+        name="menu-variant"
+        size={24}
       />
       <Badge
         containerStyle={
@@ -79,7 +80,7 @@ exports[`ChannelDrawerButton should match, full snapshot 2`] = `
             "borderRadius": 14,
             "borderWidth": 2,
             "position": "absolute",
-            "right": -13,
+            "right": -9,
             "top": -6,
           }
         }

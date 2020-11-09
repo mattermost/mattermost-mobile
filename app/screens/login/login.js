@@ -7,7 +7,6 @@ import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
     Dimensions,
-    Image,
     InteractionManager,
     Keyboard,
     StyleSheet,
@@ -20,6 +19,7 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
@@ -339,7 +339,7 @@ export default class Login extends PureComponent {
 
             proceed = (
                 <Button
-                    testID='signin_button'
+                    testID='signin.button'
                     onPress={this.preSignIn}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
@@ -382,10 +382,12 @@ export default class Login extends PureComponent {
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >
-                        <Image
-                            source={require('@assets/images/logo.png')}
+                        <CompassIcon
+                            name='mattermost'
+                            size={76}
+                            style={GlobalStyles.logo}
                         />
-                        <View testID='login_screen'>
+                        <View testID='login.screen'>
                             <Text style={GlobalStyles.header}>
                                 {this.props.config.SiteName}
                             </Text>
@@ -397,7 +399,7 @@ export default class Login extends PureComponent {
                         </View>
                         <ErrorText error={this.state.error}/>
                         <TextInput
-                            testID='username_input'
+                            testID='username.input'
                             autoCapitalize='none'
                             autoCorrect={false}
                             blurOnSubmit={false}
@@ -413,7 +415,7 @@ export default class Login extends PureComponent {
                             underlineColorAndroid='transparent'
                         />
                         <TextInput
-                            testID='password_input'
+                            testID='password.input'
                             autoCapitalize='none'
                             autoCorrect={false}
                             disableFullscreenUI={true}

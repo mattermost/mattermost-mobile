@@ -10,7 +10,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {messageCount} from '@mm-redux/utils/post_list';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import VectorIcon from '@components/vector_icon';
+import CompassIcon from '@components/compass_icon';
 import ViewTypes, {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {t} from '@utils/i18n';
@@ -320,9 +320,8 @@ export default class MoreMessageButton extends React.PureComponent {
                                 />
                             }
                             {!loadingPosts &&
-                                <VectorIcon
-                                    name='md-arrow-up'
-                                    type='ion'
+                                <CompassIcon
+                                    name='arrow-up'
                                     style={styles.icon}
                                 />
                             }
@@ -335,9 +334,8 @@ export default class MoreMessageButton extends React.PureComponent {
                             onPress={this.cancel}
                         >
                             <View style={styles.cancelContainer}>
-                                <VectorIcon
-                                    name='md-close'
-                                    type='ion'
+                                <CompassIcon
+                                    name='close'
                                     style={styles.icon}
                                 />
                             </View>

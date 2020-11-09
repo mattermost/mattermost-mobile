@@ -14,14 +14,12 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import EvilIcon from 'react-native-vector-icons/EvilIcons';
-
 import {SearchBar} from 'react-native-elements';
 
 import {memoizeResult} from '@mm-redux/utils/helpers';
 
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import CompassIcon from '@components/compass_icon';
+import CustomPropTypes from '@constants/custom_prop_types';
 
 const LEFT_COMPONENT_INITIAL_POSITION = Platform.OS === 'ios' ? 7 : 0;
 
@@ -236,16 +234,18 @@ export default class Search extends PureComponent {
         let cancelIcon = null;
 
         if (Platform.OS === 'ios') {
-            clearIcon = {
-                type: 'ionicon',
-                name: 'ios-close-circle',
-                size: 17,
-                color: searchBarStyle.clearIconColorIos,
-            };
+            clearIcon = (
+                <CompassIcon
+                    name='close-circle'
+                    size={18}
+                    style={{color: searchBarStyle.clearIconColorIos}}
+                    onPress={this.onClear}
+                />
+            );
 
             searchIcon = (
-                <EvilIcon
-                    name='search'
+                <CompassIcon
+                    name='magnify'
                     size={24}
                     style={[
                         styles.fullWidth,
@@ -257,35 +257,39 @@ export default class Search extends PureComponent {
             searchIcon = this.props.showArrow ?
                 (
                     <TouchableWithoutFeedback onPress={this.onCancel}>
-                        <MaterialIcon
-                            name='arrow-back'
+                        <CompassIcon
+                            name='arrow-left'
                             size={this.props.backArrowSize}
                             color={searchBarStyle.clearIconColorAndroid}
                         />
                     </TouchableWithoutFeedback>
                 ) :
-                {
-                    type: 'material',
-                    size: this.props.searchIconSize,
-                    color: searchBarStyle.searchIconColor,
-                    name: 'search',
-                };
+                (
+                    <CompassIcon
+                        name='magnify'
+                        size={this.props.searchIconSize}
+                        color={searchBarStyle.searchIconColor}
+                    />
+                );
 
             // Making sure the icon won't change depending on whether the input is in focus on Android devices
-            cancelIcon = {
-                type: 'material',
-                size: 25,
-                color: searchBarStyle.clearIconColorAndroid,
-                name: 'arrow-back',
-                underlayColor: 'transparent',
-            };
+            cancelIcon = (
+                <CompassIcon
+                    name='arrow-left'
+                    size={25}
+                    color={searchBarStyle.clearIconColorAndroid}
+                    onPress={this.onCancel}
+                />
+            );
 
-            clearIcon = {
-                type: 'material',
-                size: this.props.deleteIconSize,
-                color: searchBarStyle.clearIconColorAndroid,
-                name: 'close',
-            };
+            clearIcon = (
+                <CompassIcon
+                    name='close'
+                    size={this.props.deleteIconSize}
+                    color={searchBarStyle.clearIconColorAndroid}
+                    onPress={this.onClear}
+                />
+            );
         }
 
         return (
@@ -414,7 +418,7 @@ const getSearchBarStyle = memoizeResult((
     },
     searchIcon: {
         color: tintColorSearch || placeholderTextColor,
-        top: 10,
+        top: 8,
     },
     searchIconColor: tintColorSearch || placeholderTextColor,
 }));

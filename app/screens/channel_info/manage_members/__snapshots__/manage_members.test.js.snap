@@ -37,7 +37,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot for Manage Members 
     action={[Function]}
     defaultMessage="Manage Members"
     detail={10}
-    icon="users"
+    icon="account-multiple-outline"
     isLandscape={false}
     rightArrow={true}
     shouldRender={true}
@@ -113,7 +113,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot for View Members 1`
     action={[Function]}
     defaultMessage="View Members"
     detail={10}
-    icon="users"
+    icon="account-multiple-outline"
     isLandscape={false}
     rightArrow={true}
     shouldRender={true}
@@ -158,7 +158,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot without separator 1
     action={[Function]}
     defaultMessage="Manage Members"
     detail={10}
-    icon="users"
+    icon="account-multiple-outline"
     isLandscape={false}
     rightArrow={true}
     shouldRender={true}

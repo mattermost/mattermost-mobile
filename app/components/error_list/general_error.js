@@ -9,7 +9,8 @@ import {
     Text,
     TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+
+import CompassIcon from '@components/compass_icon';
 
 const style = StyleSheet.create({
     buttonContainer: {
@@ -54,7 +55,7 @@ function GeneralError(props) {
                 style={style.buttonContainer}
                 onPress={dismiss}
             >
-                <Icon
+                <CompassIcon
                     name='close'
                     size={20}
                     color='#fff'

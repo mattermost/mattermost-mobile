@@ -44,7 +44,7 @@ export default class Pinned extends PureComponent<PinnedProps> {
                 action={this.goToPinnedPosts}
                 defaultMessage='Pinned Messages'
                 detail={pinnedCount}
-                image={require('@assets/images/channel_info/pin.png')}
+                icon='pin-outline'
                 textId={t('channel_header.pinnedPosts')}
                 theme={theme}
                 isLandscape={isLandscape}

@@ -5,9 +5,9 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {TouchableOpacity, View} from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
-import VectorIcon from 'app/components/vector_icon.js';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class DrawerItem extends PureComponent {
     static propTypes = {
@@ -15,7 +15,6 @@ export default class DrawerItem extends PureComponent {
         defaultMessage: PropTypes.string,
         i18nId: PropTypes.string,
         iconName: PropTypes.string,
-        iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
         isDestructor: PropTypes.bool,
         labelComponent: PropTypes.node,
         leftComponent: PropTypes.node,
@@ -36,7 +35,6 @@ export default class DrawerItem extends PureComponent {
             defaultMessage,
             i18nId,
             iconName,
-            iconType,
             isDestructor,
             labelComponent,
             leftComponent,
@@ -59,11 +57,10 @@ export default class DrawerItem extends PureComponent {
         let icon;
         if (leftComponent) {
             icon = leftComponent;
-        } else if (iconType && iconName) {
+        } else if (iconName) {
             icon = (
-                <VectorIcon
+                <CompassIcon
                     name={iconName}
-                    type={iconType}
                     style={[style.icon, destructor]}
                 />
             );
@@ -120,8 +117,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginLeft: 5,
         },
         icon: {
-            color: theme.linkColor,
-            fontSize: 22,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            fontSize: 24,
         },
         wrapper: {
             flex: 1,

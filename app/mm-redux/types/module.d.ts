@@ -4,3 +4,4 @@ declare module 'gfycat-sdk';
 declare module 'remote-redux-devtools';
 declare module 'redux-action-buffer';
 declare module 'react-intl';
+declare module 'react-native-local-auth';

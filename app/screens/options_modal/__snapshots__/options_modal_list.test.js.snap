@@ -54,8 +54,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
             ]
           }
         />
-        <Icon
-          allowFontScaling={false}
+        <CompassIcon
           name="camera"
           size={18}
           style={
@@ -100,8 +99,7 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
             ]
           }
         />
-        <Icon
-          allowFontScaling={false}
+        <CompassIcon
           name="photo"
           size={18}
           style={
@@ -230,10 +228,9 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             ]
           }
         />
-        <Icon
-          allowFontScaling={false}
+        <CompassIcon
           name="camera"
-          size={18}
+          size={24}
           style={
             Object {
               "color": "#4E8ACC",
@@ -276,10 +273,9 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
             ]
           }
         />
-        <Icon
-          allowFontScaling={false}
+        <CompassIcon
           name="photo"
-          size={18}
+          size={24}
           style={
             Object {
               "color": "#4E8ACC",

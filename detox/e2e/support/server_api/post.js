@@ -38,7 +38,7 @@ export const apiGetPostsInChannel = async (channelId) => {
 
 /**
  * Get last post in a channel.
- * @param {string} channelId - The channel ID to get the the last post
+ * @param {string} channelId - The channel ID to get the last post
  * @return {Object} returns {post} on success or {error, status} on error
  */
 export const apiGetLastPostInChannel = async (channelId) => {

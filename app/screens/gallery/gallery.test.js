@@ -1,0 +1,88 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React from 'react';
+import {shallowWithIntl} from 'test/intl-test-helper';
+
+import Preferences from '@mm-redux/constants/preferences';
+
+import * as NavigationActions from 'app/actions/navigation';
+
+import Gallery from './gallery';
+
+jest.useFakeTimers();
+jest.mock('react-native-file-viewer', () => ({
+    open: jest.fn(),
+}));
+
+jest.mock('react-native-reanimated', () => {
+    const Reanimated = require('react-native-reanimated/mock');
+
+    // The mock for `call` immediately calls the callback which is incorrect
+    // So we override it with a no-op
+    Reanimated.default.call = () => jest.fn();
+
+    return Reanimated;
+});
+
+describe('Gallery', () => {
+    const baseProps = {
+        canDownloadFiles: true,
+        deviceHeight: 400,
+        deviceWidth: 300,
+        files: [
+            {caption: 'Caption 1', source: 'source', data: 'data'},
+            {caption: 'Caption 2', source: 'source', data: 'data'},
+        ],
+        index: 0,
+        theme: Preferences.THEMES.default,
+        componentId: 'component-id',
+    };
+
+    test('should match snapshot', () => {
+        const wrapper = shallowWithIntl(
+            <Gallery {...baseProps}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match state on handleChangeImage', () => {
+        const wrapper = shallowWithIntl(
+            <Gallery {...baseProps}/>,
+        );
+
+        wrapper.setState({index: 0});
+        wrapper.instance().handlePageSelected(1);
+
+        expect(wrapper.state('index')).toEqual(1);
+    });
+
+    test('should match call popTopScreen & mergeNavigationOptions on close', () => {
+        const mergeNavigationOptions = jest.spyOn(NavigationActions, 'mergeNavigationOptions');
+        const popTopScreen = jest.spyOn(NavigationActions, 'popTopScreen');
+
+        const wrapper = shallowWithIntl(
+            <Gallery
+                {...baseProps}
+            />,
+        );
+
+        wrapper.instance().close();
+
+        expect(mergeNavigationOptions).toHaveBeenCalledTimes(1);
+        expect(popTopScreen).toHaveBeenCalled();
+        expect(mergeNavigationOptions).toHaveBeenCalledWith(
+            baseProps.componentId,
+            {
+                layout: {
+                    backgroundColor: '#000',
+                    componentBackgroundColor: '#000',
+                },
+                topBar: {
+                    visible: true,
+                },
+            },
+        );
+    });
+});

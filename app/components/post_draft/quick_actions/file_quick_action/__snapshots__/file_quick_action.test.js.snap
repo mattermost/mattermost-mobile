@@ -12,8 +12,7 @@ exports[`FileQuickAction should match snapshot 1`] = `
   }
   type="opacity"
 >
-  <Icon
-    allowFontScaling={false}
+  <CompassIcon
     color="rgba(61,60,64,0.64)"
     name="file-document-outline"
     size={24}

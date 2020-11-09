@@ -9,9 +9,9 @@ import {
     View,
 } from 'react-native';
 
-import CheckMark from 'app/components/checkmark';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import CompassIcon from '@components/compass_icon';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const ITEM_HEIGHT = 45;
 
@@ -34,9 +34,9 @@ export default class SelectTimezoneRow extends PureComponent {
         const styles = getStyleSheet(theme);
 
         const selected = timezone === selectedTimezone && (
-            <CheckMark
-                width={12}
-                height={12}
+            <CompassIcon
+                name='check'
+                size={24}
                 color={theme.linkColor}
             />
         );

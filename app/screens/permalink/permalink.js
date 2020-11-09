@@ -11,8 +11,6 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import * as Animatable from 'react-native-animatable';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
 import {
@@ -22,6 +20,7 @@ import {
     dismissAllModals,
     popToRoot,
 } from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import PostList from '@components/post_list';
@@ -171,10 +170,6 @@ export default class Permalink extends PureComponent {
         // Do nothing because we're already in a modal
     };
 
-    handlePermalinkPress = () => {
-        // Do nothing because we're already in permalink view for a different post
-    };
-
     handlePress = () => {
         if (this.viewRef) {
             this.viewRef.growOut().then(() => {
@@ -280,8 +275,8 @@ export default class Permalink extends PureComponent {
         if (this.props.channelIsArchived) {
             icon = (
                 <Text>
-                    <AwesomeIcon
-                        name='archive'
+                    <CompassIcon
+                        name='archive-outline'
                         style={[style.archiveIcon]}
                     />
                     {' '}
@@ -323,7 +318,6 @@ export default class Permalink extends PureComponent {
                     shouldRenderReplyButton={false}
                     renderReplies={true}
                     onHashtagPress={this.handleHashtagPress}
-                    onPermalinkPress={this.handlePermalinkPress}
                     onPostPress={this.goToThread}
                     postIds={postIds}
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds || []) : -1}
@@ -358,7 +352,7 @@ export default class Permalink extends PureComponent {
                                 style={style.close}
                                 onPress={this.handleClose}
                             >
-                                <MaterialIcon
+                                <CompassIcon
                                     name='close'
                                     size={20}
                                     color={theme.centerChannelColor}

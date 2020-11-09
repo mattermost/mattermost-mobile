@@ -14,12 +14,12 @@ import RNFetchBlob from 'rn-fetch-blob';
 import DeviceInfo from 'react-native-device-info';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 
-import Icon from 'react-native-vector-icons/Ionicons';
 import DocumentPicker from 'react-native-document-picker';
 import ImagePicker from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import {showModalOverCurrentContext} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {NavigationTypes} from '@constants';
 import emmProvider from '@init/emm_provider';
@@ -424,7 +424,7 @@ export default class AttachmentButton extends PureComponent {
                     id: t('mobile.file_upload.camera_photo'),
                     defaultMessage: 'Take Photo',
                 },
-                icon: 'camera',
+                icon: 'camera-outline',
             });
         }
 
@@ -435,7 +435,7 @@ export default class AttachmentButton extends PureComponent {
                     id: t('mobile.file_upload.camera_video'),
                     defaultMessage: 'Take Video',
                 },
-                icon: 'video-camera',
+                icon: 'video-outline',
             });
         }
 
@@ -446,7 +446,7 @@ export default class AttachmentButton extends PureComponent {
                     id: t('mobile.file_upload.library'),
                     defaultMessage: 'Photo Library',
                 },
-                icon: 'photo',
+                icon: 'file-image-outline',
             });
         }
 
@@ -457,7 +457,7 @@ export default class AttachmentButton extends PureComponent {
                     id: t('mobile.file_upload.video'),
                     defaultMessage: 'Video Library',
                 },
-                icon: 'file-video-o',
+                icon: 'file-video-outline',
             });
         }
 
@@ -468,7 +468,7 @@ export default class AttachmentButton extends PureComponent {
                     id: t('mobile.file_upload.browse'),
                     defaultMessage: 'Browse Files',
                 },
-                icon: 'file',
+                icon: 'file-outline',
             });
         }
 
@@ -503,11 +503,11 @@ export default class AttachmentButton extends PureComponent {
                 style={style.buttonContainer}
                 type={'opacity'}
             >
-                <Icon
+                <CompassIcon
                     size={30}
                     style={style.attachIcon}
                     color={changeOpacity(theme.centerChannelColor, 0.9)}
-                    name='md-add'
+                    name='plus'
                 />
             </TouchableWithFeedback>
         );

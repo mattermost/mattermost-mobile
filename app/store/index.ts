@@ -18,7 +18,7 @@ import appReducer from 'app/reducers';
 import {createReducer, getStoredState} from './helpers';
 import {createMiddlewares} from './middlewares';
 import Store from './store';
-import {transformSet} from './utils';
+import {transformSet, serialize} from './utils';
 
 /**
  * Configures and constructs the redux store. Accepts the following parameters:
@@ -32,7 +32,7 @@ import {transformSet} from './utils';
  *     enableThunk - bool - default = true - If true, include the thunk middleware automatically. If false, thunk must be provided as part of additionalMiddleware.
  */
 
-type ReduxStore = {
+export type ReduxStore = {
     store: redux.Store;
     persistor: Persistor;
 }
@@ -158,7 +158,7 @@ const setTransformer = createTransform(
  * @param optionalConfig (optional) persist configuration (applies to tests)
  * @param optionalOptions (optional) middleware configuration (applies to tests)
  */
-export default function configureStore(storage: any, preloadedState: any = {}, optionalConfig: {}, optionalOptions = {}): ReduxStore {
+export default function configureStore(storage: any, preloadedState: any = {}, optionalConfig: any = {}, optionalOptions = {}): ReduxStore {
     const defaultOptions: ClientOptions = {
         enableBuffer: true,
         enableThunk: true,
@@ -167,7 +167,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
     const defaultConfig: PersistConfig<GlobalState> = {
         key: 'root',
         storage,
-        serialize: (state: GlobalState) => ({...state}),
+        serialize,
         deserialize: false,
         blacklist: ['device', 'navigation', 'requests', '_persist'],
         transforms: [

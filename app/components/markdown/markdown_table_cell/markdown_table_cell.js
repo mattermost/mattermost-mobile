@@ -3,7 +3,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
@@ -34,10 +34,8 @@ export default class MarkdownTableCell extends React.PureComponent {
         }
 
         return (
-            <View style={cellStyle}>
-                <Text style={textStyle}>
-                    {this.props.children}
-                </Text>
+            <View style={[cellStyle, textStyle]}>
+                {this.props.children}
             </View>
         );
     }
@@ -55,10 +53,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRightWidth: 1,
         },
         alignCenter: {
-            textAlign: 'center',
+            alignItems: 'center',
         },
         alignRight: {
-            textAlign: 'right',
+            alignItems: 'flex-end',
         },
     };
 });

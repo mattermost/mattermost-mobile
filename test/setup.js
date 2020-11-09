@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable react/no-multi-comp */
+
 import * as ReactNative from 'react-native';
 import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
+import 'react-native-gesture-handler/jestSetup';
 
 require('isomorphic-fetch');
 
@@ -110,8 +113,26 @@ jest.doMock('react-native', () => {
     }, ReactNative);
 });
 
-jest.mock('react-native-vector-icons/MaterialCommunityIcons');
-jest.mock('react-native-vector-icons/FontAwesome5');
+jest.mock('react-native-vector-icons', () => {
+    const React = jest.requireActual('react');
+    const PropTypes = jest.requireActual('prop-types');
+    class CompassIcon extends React.PureComponent {
+        render() {
+            return React.createElement('Icon', this.props);
+        }
+    }
+    CompassIcon.propTypes = {
+        name: PropTypes.string,
+        size: PropTypes.number,
+        style: PropTypes.oneOfType([PropTypes.array, PropTypes.number, PropTypes.object]),
+    };
+    CompassIcon.getImageSource = jest.fn().mockResolvedValue({});
+    return {
+        createIconSet: () => CompassIcon,
+
+        createIconSetFromFontello: () => CompassIcon,
+    };
+});
 
 jest.mock('react-native/Libraries/Animated/src/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
@@ -165,7 +186,6 @@ jest.mock('react-native-cookies', () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     openURL: jest.fn(),
-    canOpenURL: jest.fn(),
     getInitialURL: jest.fn(),
     clearAll: jest.fn(),
     get: () => Promise.resolve(({
@@ -183,13 +203,16 @@ jest.mock('react-native-image-picker', () => ({
 
 jest.mock('react-native-navigation', () => {
     const RNN = jest.requireActual('react-native-navigation');
+    RNN.Navigation.setLazyComponentRegistrator = jest.fn();
     return {
         ...RNN,
         Navigation: {
             ...RNN.Navigation,
             events: () => ({
                 registerAppLaunchedListener: jest.fn(),
-                bindComponent: jest.fn(),
+                bindComponent: jest.fn(() => {
+                    return {remove: jest.fn()};
+                }),
             }),
             setRoot: jest.fn(),
             pop: jest.fn(),
@@ -204,6 +227,10 @@ jest.mock('react-native-navigation', () => {
         },
     };
 });
+
+jest.mock('react-native-share', () => ({
+    default: jest.fn(),
+}));
 
 jest.mock('app/actions/navigation', () => ({
     resetToChannel: jest.fn(),
@@ -222,6 +249,15 @@ jest.mock('app/actions/navigation', () => ({
     dismissAllModals: jest.fn(() => Promise.resolve()),
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
+
+jest.mock('app/utils/file', () => {
+    const file = jest.requireActual('../app/utils/file');
+
+    return {
+        ...file,
+        generateId: jest.fn().mockReturnValue('123'),
+    };
+});
 
 let logs = [];
 let warns = [];

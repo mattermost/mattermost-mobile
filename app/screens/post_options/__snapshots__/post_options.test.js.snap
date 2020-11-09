@@ -7,6 +7,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       "flex": 1,
     }
   }
+  testID="post.options"
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
@@ -49,7 +50,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
     />
     <PostOption
       destructive={false}
-      icon="reply"
+      icon="reply-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Reply"
@@ -84,7 +85,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       }
     />
     <PostOption
-      icon="bookmark"
+      icon="mark-as-unread"
       isLandscape={false}
       onPress={[Function]}
       text="Mark as Unread"
@@ -120,7 +121,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
     />
     <PostOption
       destructive={false}
-      icon="pin"
+      icon="pin-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Pin to Channel"
@@ -156,7 +157,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
     />
     <PostOption
       destructive={false}
-      icon="edit"
+      icon="pencil-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Edit"
@@ -201,6 +202,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       "flex": 1,
     }
   }
+  testID="post.options"
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
@@ -243,7 +245,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     />
     <PostOption
       destructive={false}
-      icon="reply"
+      icon="reply-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Reply"
@@ -278,7 +280,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       }
     />
     <PostOption
-      icon="bookmark"
+      icon="mark-as-unread"
       isLandscape={false}
       onPress={[Function]}
       text="Mark as Unread"
@@ -314,7 +316,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     />
     <PostOption
       destructive={false}
-      icon="pin"
+      icon="pin-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Pin to Channel"
@@ -350,7 +352,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     />
     <PostOption
       destructive={false}
-      icon="edit"
+      icon="pencil-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Edit"
@@ -386,7 +388,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     />
     <PostOption
       destructive={true}
-      icon="trash"
+      icon="trash-can-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Delete"
@@ -431,6 +433,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       "flex": 1,
     }
   }
+  testID="post.options"
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
@@ -473,7 +476,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     />
     <PostOption
       destructive={false}
-      icon="reply"
+      icon="reply-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Reply"
@@ -508,7 +511,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       }
     />
     <PostOption
-      icon="bookmark"
+      icon="mark-as-unread"
       isLandscape={false}
       onPress={[Function]}
       text="Mark as Unread"
@@ -544,7 +547,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     />
     <PostOption
       destructive={false}
-      icon="pin"
+      icon="pin-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Pin to Channel"
@@ -580,7 +583,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     />
     <PostOption
       destructive={false}
-      icon="edit"
+      icon="pencil-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Edit"
@@ -616,7 +619,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     />
     <PostOption
       destructive={true}
-      icon="trash"
+      icon="trash-can-outline"
       isLandscape={false}
       onPress={[Function]}
       text="Delete"

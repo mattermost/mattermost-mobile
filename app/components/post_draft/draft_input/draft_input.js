@@ -415,16 +415,6 @@ export default class DraftInput extends PureComponent {
                     theme={theme}
                     registerTypingAnimation={registerTypingAnimation}
                 />
-                {Platform.OS === 'android' &&
-                <Autocomplete
-                    cursorPositionEvent={cursorPositionEvent}
-                    maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
-                    onChangeText={this.handleInputQuickAction}
-                    valueEvent={valueEvent}
-                    rootId={rootId}
-                    channelId={channelId}
-                />
-                }
                 <View
                     style={[style.inputWrapper, padding(isLandscape)]}
                     onLayout={this.handleLayout}
@@ -475,6 +465,16 @@ export default class DraftInput extends PureComponent {
                         </View>
                     </ScrollView>
                 </View>
+                {Platform.OS === 'android' &&
+                <Autocomplete
+                    cursorPositionEvent={cursorPositionEvent}
+                    maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
+                    onChangeText={this.handleInputQuickAction}
+                    valueEvent={valueEvent}
+                    rootId={rootId}
+                    channelId={channelId}
+                />
+                }
             </>
         );
     }

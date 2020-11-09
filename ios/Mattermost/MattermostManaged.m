@@ -65,11 +65,16 @@ RCT_EXPORT_MODULE();
   return safeAreaInsets;
 }
 
-- (NSDictionary *)constantsToExport {
+-(NSString *)appGroupId {
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *appGroupId = [bundle objectForInfoDictionaryKey:@"AppGroupIdentifier"];
+    return appGroupId;
+}
 
+- (NSDictionary *)constantsToExport {
   return @{
            @"hasSafeAreaInsets": @([self hasSafeAreaInsets]),
-           @"appGroupIdentifier": APP_GROUP_ID
+           @"appGroupIdentifier": [self appGroupId]
            };
 }
 
@@ -87,7 +92,7 @@ RCT_EXPORT_MODULE();
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _sharedUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
+    _sharedUserDefaults = [[NSUserDefaults alloc] initWithSuiteName:[self appGroupId]];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedConfigDidChange:) name:@"managedConfigDidChange" object:nil];
     [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification
