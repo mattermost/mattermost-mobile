@@ -27,7 +27,7 @@ describe('Channel Info Header', () => {
     });
 
     it('MM-T3406 should render correct GM member count in channel info header', async () => {
-        // # Open channel drawer
+        // # Open main sidebar
         await ChannelScreen.mainSidebarDrawerButton.tap();
         await MainSidebar.toBeVisible();
 

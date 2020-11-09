@@ -27,7 +27,7 @@ describe('Channel Notification Preference', () => {
     });
 
     beforeEach(async () => {
-        // # Open channel drawer
+        // # Open main sidebar
         await ChannelScreen.mainSidebarDrawerButton.tap();
         await MainSidebar.toBeVisible();
 
@@ -73,7 +73,7 @@ describe('Channel Notification Preference', () => {
     });
 
     it('MM-T3375_2 should not display Mobile Notifications option for DM Channel', async () => {
-        // # Open channel drawer
+        // # Open main sidebar
         await ChannelScreen.mainSidebarDrawerButton.tap();
         await MainSidebar.toBeVisible();
 

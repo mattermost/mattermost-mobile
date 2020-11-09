@@ -32,7 +32,7 @@ describe('Channel Notification Preference - Default', () => {
     });
 
     beforeEach(async () => {
-        // # Open channel drawer
+        // # Open main sidebar
         await ChannelScreen.mainSidebarDrawerButton.tap();
         await MainSidebar.toBeVisible();
 
@@ -97,7 +97,7 @@ describe('Channel Notification Preference - Default', () => {
 });
 
 async function setGlobalNotificationsTo(pushKey) {
-    // # Open settings drawer
+    // # Open settings sidebar
     await ChannelScreen.settingsSidebarDrawerButton.tap();
     await SettingsSidebar.toBeVisible();
 

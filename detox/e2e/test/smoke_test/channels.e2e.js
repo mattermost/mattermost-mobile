@@ -36,7 +36,7 @@ describe('Unread channels', () => {
     it('MM-T3187 Unread channels sort at top', async () => {
         const {mainSidebarDrawerButton} = ChannelScreen;
 
-        // # Open channel drawer (with at least one unread channel)
+        // # Open main sidebar (with at least one unread channel)
         await mainSidebarDrawerButton.tap();
 
         // * Channel should be visible
@@ -55,7 +55,7 @@ describe('Unread channels', () => {
         await mainSidebarDrawerButton.tap();
         await MainSidebar.getChannelByDisplayName(zChannel.display_name).tap();
 
-        // # Open channel drawer again
+        // # Open main sidebar again
         await mainSidebarDrawerButton.tap();
 
         // * Channel you just read is no longer listed in Unreads

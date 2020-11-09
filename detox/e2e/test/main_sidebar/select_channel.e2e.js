@@ -29,7 +29,7 @@ describe('Select channel', () => {
     it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
         const {mainSidebarDrawerButton, channelNavBarTitle} = ChannelScreen;
 
-        // # Open channel drawer (with at least one unread channel)
+        // # Open main sidebar (with at least one unread channel)
         await mainSidebarDrawerButton.tap();
 
         // * Main sidebar should be visible
@@ -42,7 +42,7 @@ describe('Select channel', () => {
         // * Selected channel should be visible
         await expect(channelNavBarTitle).toHaveText(newChannel.display_name);
 
-        // # Open channel drawer again and select the same channel
+        // # Open main sidebar again and select the same channel
         await mainSidebarDrawerButton.tap();
         await channelItem.tap();
 
