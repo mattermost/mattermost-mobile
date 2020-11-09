@@ -12,11 +12,11 @@ class FileQuickAction {
 
     toBeVisible = async (options = {disabled: false}) => {
         if (options.disabled) {
-            await expect(element(by.id(this.testID.fileQuickActionDisabled))).toBeVisible();
+            await expect(this.fileQuickActionDisabled).toBeVisible();
             return this.fileQuickActionDisabled;
         }
 
-        await expect(element(by.id(this.testID.fileQuickAction))).toBeVisible();
+        await expect(this.fileQuickAction).toBeVisible();
         return this.fileQuickAction;
     }
 }

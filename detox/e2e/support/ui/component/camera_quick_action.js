@@ -12,11 +12,11 @@ class CameraQuickAction {
 
     toBeVisible = async (options = {disabled: false}) => {
         if (options.disabled) {
-            await expect(element(by.id(this.testID.cameraQuickActionDisabled))).toBeVisible();
+            await expect(this.cameraQuickActionDisabled).toBeVisible();
             return this.cameraQuickActionDisabled;
         }
 
-        await expect(element(by.id(this.testID.cameraQuickAction))).toBeVisible();
+        await expect(this.cameraQuickAction).toBeVisible();
         return this.cameraQuickAction;
     }
 }

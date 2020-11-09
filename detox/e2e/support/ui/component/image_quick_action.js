@@ -12,11 +12,11 @@ class ImageQuickAction {
 
     toBeVisible = async (options = {disabled: false}) => {
         if (options.disabled) {
-            await expect(element(by.id(this.testID.imageQuickActionDisabled))).toBeVisible();
+            await expect(this.imageQuickActionDisabled).toBeVisible();
             return this.imageQuickActionDisabled;
         }
 
-        await expect(element(by.id(this.testID.imageQuickAction))).toBeVisible();
+        await expect(this.imageQuickAction).toBeVisible();
         return this.imageQuickAction;
     }
 }
