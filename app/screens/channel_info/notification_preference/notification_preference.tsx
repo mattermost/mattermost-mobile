@@ -13,7 +13,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface NotificationPreferenceProps {
-    testID: string;
+    testID?: string;
     channelId: string;
     userId: string;
     notifyProps: ChannelNotifyProps;
