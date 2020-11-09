@@ -17,7 +17,7 @@ class ChannelSidebar {
     addDirectChannel = element(by.id(this.testID.addDirectChannel));
 
     toBeVisible = async () => {
-        await expect(element(by.id(this.testID.mainSidebar))).toBeVisible();
+        await expect(this.mainSidebar).toBeVisible();
 
         return this.mainSidebar;
     }

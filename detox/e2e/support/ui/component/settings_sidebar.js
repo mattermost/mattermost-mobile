@@ -13,7 +13,7 @@ class SettingsSidebar {
     logoutAction = element(by.id(this.testID.logoutAction));
 
     toBeVisible = async () => {
-        await expect(element(by.id(this.testID.settingsSidebar))).toBeVisible();
+        await expect(this.settingsSidebar).toBeVisible();
 
         return this.settingsSidebar;
     }
