@@ -18,7 +18,7 @@ describe('RadioButtonGroup', () => {
         const options = [{
             testID: 'radio-1',
             label: 'label-1',
-            theme: {},
+            theme: Preferences.THEMES.default,
             value: 'value',
             checked: true,
             disabled: false,
