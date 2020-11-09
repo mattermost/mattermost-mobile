@@ -12,7 +12,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface EditChannelProps {
-    testID: string;
+    testID?: string;
     canEdit: boolean;
     isLandscape: boolean;
     theme: Theme;
