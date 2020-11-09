@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelSidebar} from '@support/ui/component';
+import {MainSidebar} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
 import {isAndroid} from '@support/utils';
 import {Setup} from '@support/server_api';
@@ -27,28 +27,28 @@ describe('Select channel', () => {
     });
 
     it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
-        const {channelDrawerButton, channelNavBarTitle} = ChannelScreen;
+        const {mainSidebarDrawerButton, channelNavBarTitle} = ChannelScreen;
 
         // # Open channel drawer (with at least one unread channel)
-        await channelDrawerButton.tap();
+        await mainSidebarDrawerButton.tap();
 
         // * Main sidebar should be visible
-        await ChannelSidebar.toBeVisible();
+        await MainSidebar.toBeVisible();
 
         // # Tap a channel to view it
-        const channelItem = ChannelSidebar.getChannelByDisplayName(newChannel.display_name);
+        const channelItem = MainSidebar.getChannelByDisplayName(newChannel.display_name);
         await channelItem.tap();
 
         // * Selected channel should be visible
         await expect(channelNavBarTitle).toHaveText(newChannel.display_name);
 
         // # Open channel drawer again and select the same channel
-        await channelDrawerButton.tap();
+        await mainSidebarDrawerButton.tap();
         await channelItem.tap();
 
         // * Drawer should not be visible on Android
         if (isAndroid()) {
-            await expect(ChannelSidebar.mainSidebar).not.toBeVisible();
+            await expect(MainSidebar.mainSidebar).not.toBeVisible();
         }
 
         // * Selected channel should remain the same

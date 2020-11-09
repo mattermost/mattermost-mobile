@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelSidebar} from '@support/ui/component';
+import {MainSidebar} from '@support/ui/component';
 import {
     ChannelInfoScreen,
     ChannelScreen,
@@ -28,11 +28,11 @@ describe('Channel Info Header', () => {
 
     it('MM-T3406 should render correct GM member count in channel info header', async () => {
         // # Open channel drawer
-        await ChannelScreen.channelDrawerButton.tap();
-        await ChannelSidebar.toBeVisible();
+        await ChannelScreen.mainSidebarDrawerButton.tap();
+        await MainSidebar.toBeVisible();
 
         // # Open Direct Channels screen
-        await ChannelSidebar.addDirectChannel.tap();
+        await MainSidebar.addDirectChannel.tap();
         await DirectChannelsScreen.toBeVisible();
 
         // # Wait for some profiles to load

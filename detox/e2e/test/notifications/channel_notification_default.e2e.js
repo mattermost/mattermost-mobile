@@ -8,7 +8,7 @@
 // *******************************************************************
 
 import {
-    ChannelSidebar,
+    MainSidebar,
     SettingsSidebar,
 } from '@support/ui/component';
 import {
@@ -33,11 +33,11 @@ describe('Channel Notification Preference - Default', () => {
 
     beforeEach(async () => {
         // # Open channel drawer
-        await ChannelScreen.channelDrawerButton.tap();
-        await ChannelSidebar.toBeVisible();
+        await ChannelScreen.mainSidebarDrawerButton.tap();
+        await MainSidebar.toBeVisible();
 
         // # Go to channel
-        await ChannelSidebar.getChannelByDisplayName(testChannel.display_name).tap();
+        await MainSidebar.getChannelByDisplayName(testChannel.display_name).tap();
     });
 
     afterAll(async () => {
@@ -98,7 +98,7 @@ describe('Channel Notification Preference - Default', () => {
 
 async function setGlobalNotificationsTo(pushKey) {
     // # Open settings drawer
-    await ChannelScreen.settingsDrawerButton.tap();
+    await ChannelScreen.settingsSidebarDrawerButton.tap();
     await SettingsSidebar.toBeVisible();
 
     // # Open general settings screen

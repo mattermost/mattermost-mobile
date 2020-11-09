@@ -8,7 +8,7 @@
 // *******************************************************************
 
 import {ChannelScreen} from '@support/ui/screen';
-import {ChannelSidebar} from '@support/ui/component';
+import {MainSidebar} from '@support/ui/component';
 import {Setup, Channel} from '@support/server_api';
 
 describe('Unread channels', () => {
@@ -34,38 +34,38 @@ describe('Unread channels', () => {
     });
 
     it('MM-T3187 Unread channels sort at top', async () => {
-        const {channelDrawerButton} = ChannelScreen;
+        const {mainSidebarDrawerButton} = ChannelScreen;
 
         // # Open channel drawer (with at least one unread channel)
-        await channelDrawerButton.tap();
+        await mainSidebarDrawerButton.tap();
 
         // * Channel should be visible
-        await ChannelSidebar.toBeVisible();
+        await MainSidebar.toBeVisible();
 
         // * Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
         await expect(element(by.text('UNREADS'))).toBeVisible();
-        await ChannelSidebar.hasChannelAtIndex(0, aChannel.display_name);
-        await ChannelSidebar.hasChannelAtIndex(1, newChannel.display_name);
-        await ChannelSidebar.hasChannelAtIndex(2, zChannel.display_name);
+        await MainSidebar.hasChannelAtIndex(0, aChannel.display_name);
+        await MainSidebar.hasChannelAtIndex(1, newChannel.display_name);
+        await MainSidebar.hasChannelAtIndex(2, zChannel.display_name);
 
         // # Tap an unread channel to view it
-        await ChannelSidebar.getChannelByDisplayName(aChannel.display_name).tap();
-        await channelDrawerButton.tap();
-        await ChannelSidebar.getChannelByDisplayName(newChannel.display_name).tap();
-        await channelDrawerButton.tap();
-        await ChannelSidebar.getChannelByDisplayName(zChannel.display_name).tap();
+        await MainSidebar.getChannelByDisplayName(aChannel.display_name).tap();
+        await mainSidebarDrawerButton.tap();
+        await MainSidebar.getChannelByDisplayName(newChannel.display_name).tap();
+        await mainSidebarDrawerButton.tap();
+        await MainSidebar.getChannelByDisplayName(zChannel.display_name).tap();
 
         // # Open channel drawer again
-        await channelDrawerButton.tap();
+        await mainSidebarDrawerButton.tap();
 
         // * Channel you just read is no longer listed in Unreads
         await expect(element(by.text('UNREADS'))).not.toBeVisible();
         await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
-        await ChannelSidebar.hasChannelAtIndex(0, aChannel.display_name);
-        await ChannelSidebar.hasChannelAtIndex(1, newChannel.display_name);
-        await ChannelSidebar.hasChannelAtIndex(2, 'Off-Topic');
-        await ChannelSidebar.hasChannelAtIndex(3, 'Town Square');
-        await ChannelSidebar.hasChannelAtIndex(4, zChannel.display_name);
-        await ChannelSidebar.getChannelByDisplayName(aChannel.display_name).tap();
+        await MainSidebar.hasChannelAtIndex(0, aChannel.display_name);
+        await MainSidebar.hasChannelAtIndex(1, newChannel.display_name);
+        await MainSidebar.hasChannelAtIndex(2, 'Off-Topic');
+        await MainSidebar.hasChannelAtIndex(3, 'Town Square');
+        await MainSidebar.hasChannelAtIndex(4, zChannel.display_name);
+        await MainSidebar.getChannelByDisplayName(aChannel.display_name).tap();
     });
 });

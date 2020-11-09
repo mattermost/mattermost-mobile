@@ -9,7 +9,7 @@
 
 import jestExpect from 'expect';
 
-import {ChannelSidebar} from '@support/ui/component';
+import {MainSidebar} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelInfoScreen,
@@ -31,10 +31,10 @@ describe('Channels', () => {
 
     it('MM-T3201 Create public channel', async () => {
         // # Go to channel sidebar list
-        await ChannelScreen.channelDrawerButton.tap();
+        await ChannelScreen.mainSidebarDrawerButton.tap();
 
         // # Tap on + public channels
-        await ChannelSidebar.addChannel.tap();
+        await MainSidebar.addChannel.tap();
 
         // * Expect a list of public channels, initially empty
         await MoreChannelsScreen.toBeVisible();

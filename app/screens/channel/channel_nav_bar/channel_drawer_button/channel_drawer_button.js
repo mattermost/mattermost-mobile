@@ -133,7 +133,7 @@ export default class ChannelDrawerButton extends PureComponent {
             >
                 <View
                     style={[style.wrapper]}
-                    testID='channel_drawer.button'
+                    testID='main_sidebar_drawer.button'
                 >
                     <View>
                         {icon}

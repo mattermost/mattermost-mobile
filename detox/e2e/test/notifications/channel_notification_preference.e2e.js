@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelSidebar} from '@support/ui/component';
+import {MainSidebar} from '@support/ui/component';
 import {
     ChannelInfoScreen,
     ChannelNotificationPreferenceScreen,
@@ -28,11 +28,11 @@ describe('Channel Notification Preference', () => {
 
     beforeEach(async () => {
         // # Open channel drawer
-        await ChannelScreen.channelDrawerButton.tap();
-        await ChannelSidebar.toBeVisible();
+        await ChannelScreen.mainSidebarDrawerButton.tap();
+        await MainSidebar.toBeVisible();
 
         // # Go to channel
-        await ChannelSidebar.getChannelByDisplayName(testChannel.display_name).tap();
+        await MainSidebar.getChannelByDisplayName(testChannel.display_name).tap();
     });
 
     afterAll(async () => {
@@ -74,11 +74,11 @@ describe('Channel Notification Preference', () => {
 
     it('MM-T3375_2 should not display Mobile Notifications option for DM Channel', async () => {
         // # Open channel drawer
-        await ChannelScreen.channelDrawerButton.tap();
-        await ChannelSidebar.toBeVisible();
+        await ChannelScreen.mainSidebarDrawerButton.tap();
+        await MainSidebar.toBeVisible();
 
         // # Open Direct Channels screen
-        await ChannelSidebar.addDirectChannel.tap();
+        await MainSidebar.addDirectChannel.tap();
         await DirectChannelsScreen.toBeVisible();
 
         const {

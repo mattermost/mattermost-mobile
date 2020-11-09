@@ -12,7 +12,7 @@ exports[`SettingDrawerButton should match, full snapshot 1`] = `
       "width": 44,
     }
   }
-  testID="settings_drawer.button"
+  testID="settings_sidebar_drawer.button"
 >
   <View
     style={
