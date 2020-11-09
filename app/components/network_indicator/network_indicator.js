@@ -24,7 +24,7 @@ import networkConnectionListener, {checkConnection} from '@utils/network';
 import {t} from '@utils/i18n';
 
 import mattermostBucket from 'app/mattermost_bucket';
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from '@init/push_notifications';
 
 const MAX_WEBSOCKET_RETRIES = 3;
 const CONNECTION_RETRY_SECONDS = 5;

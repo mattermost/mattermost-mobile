@@ -19,7 +19,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {setNavigatorStyles} from '@utils/theme';
 import tracker from '@utils/time_tracker';
 
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from '@init/push_notifications';
 import telemetry from 'app/telemetry';
 
 export let ClientUpgradeListener;

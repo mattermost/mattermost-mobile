@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainPackage.java b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainPackage.java
+index ba6c5cb..95893df 100644
+--- a/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainPackage.java
++++ b/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainPackage.java
+@@ -17,7 +17,7 @@ public class KeychainPackage implements ReactPackage {
+   private final KeychainModuleBuilder builder;
+ 
+   public KeychainPackage() {
+-    this(new KeychainModuleBuilder());
++    this(new KeychainModuleBuilder().withoutWarmUp());
+   }
+ 
+   public KeychainPackage(KeychainModuleBuilder builder) {
