@@ -25,7 +25,7 @@ describe('RadioButtonGroup', () => {
         }, {
             testID: 'radio-2',
             label: 'label-2',
-            theme: {},
+            theme: Preferences.THEMES.default,
             value: 'value',
             checked: false,
             disabled: true,
