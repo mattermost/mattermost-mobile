@@ -17,7 +17,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
 
-export class SettingDrawerButton extends PureComponent {
+export class SettingsSidebarDrawerButton extends PureComponent {
     static propTypes = {
         openSidebar: PropTypes.func.isRequired,
         theme: PropTypes.object,
@@ -70,7 +70,7 @@ export class SettingDrawerButton extends PureComponent {
                 accessibilityHint={accessibilityHint}
                 accessibilityLabel={accessibilityLabel}
                 accessibilityRole='button'
-                testID='sidebar.settings.button'
+                testID='settings_sidebar_drawer.button'
                 onPress={this.handlePress}
                 style={style.container}
             >
@@ -107,4 +107,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(SettingDrawerButton);
+export default connect(mapStateToProps)(SettingsSidebarDrawerButton);

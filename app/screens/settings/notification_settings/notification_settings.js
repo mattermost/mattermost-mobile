@@ -197,7 +197,10 @@ export default class NotificationSettings extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <View
+                testID='notification_settings.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     contentContainerStyle={style.wrapper}
@@ -215,6 +218,7 @@ export default class NotificationSettings extends PureComponent {
                         isLandscape={isLandscape}
                     />
                     <SettingsItem
+                        testID='notification_settings.mobile.action'
                         defaultMessage='Mobile'
                         i18nId={t('mobile.notification_settings.mobile')}
                         iconName='cellphone'

@@ -19,7 +19,7 @@ import {t} from '@utils/i18n';
 import telemetry from '@telemetry';
 import {LARGE_BADGE_RIGHT_POSITION, SMALL_BADGE_RIGHT_POSITION, MAX_BADGE_RIGHT_POSITION} from '@constants/view';
 
-export default class ChannelDrawerButton extends PureComponent {
+export default class MainSidebarDrawerButton extends PureComponent {
     static propTypes = {
         openSidebar: PropTypes.func.isRequired,
         badgeCount: PropTypes.number,
@@ -133,7 +133,7 @@ export default class ChannelDrawerButton extends PureComponent {
             >
                 <View
                     style={[style.wrapper]}
-                    testID='channel_drawer.button'
+                    testID='main_sidebar_drawer.button'
                 >
                     <View>
                         {icon}

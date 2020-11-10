@@ -33,6 +33,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 {pushNotificationsEnabled &&
                 <View>
                     <SectionItem
+                        testID='notification_settings_mobile.all.action'
                         label={(
                             <FormattedText
                                 id='user.settings.notifications.allActivity'
@@ -48,6 +49,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     />
                     <View style={style.separator}/>
                     <SectionItem
+                        testID='notification_settings_mobile.mentions.action'
                         label={(
                             <FormattedText
                                 id='user.settings.notifications.onlyMentions'
@@ -63,6 +65,7 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                     />
                     <View style={style.separator}/>
                     <SectionItem
+                        testID='notification_settings_mobile.never.action'
                         label={(
                             <FormattedText
                                 id='user.settings.notifications.never'
@@ -161,7 +164,10 @@ class NotificationSettingsMobileIos extends NotificationSettingsMobileBase {
                 excludeHeader={true}
                 excludeFooter={true}
             >
-                <View style={style.container}>
+                <View
+                    testID='notification_settings_mobile.screen'
+                    style={style.container}
+                >
                     <StatusBar/>
                     <ScrollView
                         style={style.scrollView}

@@ -189,7 +189,10 @@ class Settings extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <View
+                testID='general_settings.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     alwaysBounceVertical={false}
@@ -197,6 +200,7 @@ class Settings extends PureComponent {
                 >
                     <View style={style.divider}/>
                     <SettingsItem
+                        testID='general_settings.notifications.action'
                         defaultMessage='Notifications'
                         i18nId={t('user.settings.modal.notifications')}
                         iconName='bell-outline'

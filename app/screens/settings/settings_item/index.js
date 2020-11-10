@@ -14,6 +14,7 @@ import getStyleSheet from './style';
 
 export default class SettingsItem extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         defaultMessage: PropTypes.string.isRequired,
         messageValues: PropTypes.object,
         i18nId: PropTypes.string,
@@ -78,6 +79,7 @@ export default class SettingsItem extends PureComponent {
 
     render() {
         const {
+            testID,
             iconName,
             onPress,
             rightComponent,
@@ -126,6 +128,7 @@ export default class SettingsItem extends PureComponent {
 
         return (
             <TouchableOpacity
+                testID={testID}
                 onPress={onPress}
             >
                 <View style={[style.container, paddingLeft(isLandscape)]}>

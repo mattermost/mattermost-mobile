@@ -11,6 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class DrawerItem extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         centered: PropTypes.bool,
         defaultMessage: PropTypes.string,
         i18nId: PropTypes.string,
@@ -31,6 +32,7 @@ export default class DrawerItem extends PureComponent {
 
     render() {
         const {
+            testID,
             centered,
             defaultMessage,
             i18nId,
@@ -81,6 +83,7 @@ export default class DrawerItem extends PureComponent {
 
         return (
             <TouchableOpacity
+                testID={testID}
                 onPress={onPress}
             >
                 <View style={style.container}>

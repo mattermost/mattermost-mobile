@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-class ChannelSidebar {
+class MainSidebar {
     testID = {
         mainSidebar: 'main.sidebar',
         channelItemDisplayName: 'channel_item.display_name',
@@ -17,7 +17,9 @@ class ChannelSidebar {
     addDirectChannel = element(by.id(this.testID.addDirectChannel));
 
     toBeVisible = async () => {
-        await expect(element(by.id(this.testID.mainSidebar))).toBeVisible();
+        await expect(this.mainSidebar).toBeVisible();
+
+        return this.mainSidebar;
     }
 
     getChannelByDisplayName = (displayName) => {
@@ -31,5 +33,5 @@ class ChannelSidebar {
     }
 }
 
-const channelSidebar = new ChannelSidebar();
-export default channelSidebar;
+const mainSidebar = new MainSidebar();
+export default mainSidebar;

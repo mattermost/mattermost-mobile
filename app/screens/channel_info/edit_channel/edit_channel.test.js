@@ -18,6 +18,7 @@ jest.mock('@utils/theme', () => {
 
 describe('ChannelInfo -> EditChannel', () => {
     const baseProps = {
+        testID: 'test-id',
         canEdit: true,
         isLandscape: false,
         theme: Preferences.THEMES.default,

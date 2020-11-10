@@ -1,8 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ChannelInfo -> EditChannel should match snapshot for Edit Channel 1`] = `
-<React.Fragment>
-  <Separator
+exports[`RadioButtonGroup should match snapshot 1`] = `
+<View>
+  <Connect(RadioButton)
+    checked={true}
+    disabled={false}
+    label="label-1"
+    name="name"
+    onCheck={[Function]}
+    testID="radio-1"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -32,16 +38,15 @@ exports[`ChannelInfo -> EditChannel should match snapshot for Edit Channel 1`] =
         "type": "Mattermost",
       }
     }
+    value="value"
   />
-  <channelInfoRow
-    action={[Function]}
-    defaultMessage="Edit Channel"
-    icon="pencil-outline"
-    isLandscape={false}
-    rightArrow={true}
-    shouldRender={true}
-    testID="test-id"
-    textId="mobile.channel_info.edit"
+  <Connect(RadioButton)
+    checked={false}
+    disabled={true}
+    label="label-2"
+    name="name"
+    onCheck={[Function]}
+    testID="radio-2"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -71,7 +76,7 @@ exports[`ChannelInfo -> EditChannel should match snapshot for Edit Channel 1`] =
         "type": "Mattermost",
       }
     }
-    togglable={false}
+    value="value"
   />
-</React.Fragment>
+</View>
 `;

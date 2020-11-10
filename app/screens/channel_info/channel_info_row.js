@@ -25,7 +25,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
+    const {testID, action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -70,7 +70,10 @@ function channelInfoRow(props) {
     }
 
     const RowComponent = (
-        <View style={[style.container, padding(isLandscape)]}>
+        <View
+            testID={testID}
+            style={[style.container, padding(isLandscape)]}
+        >
             {iconElement}
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
@@ -90,6 +93,7 @@ function channelInfoRow(props) {
 }
 
 channelInfoRow.propTypes = {
+    testID: PropTypes.string,
     action: PropTypes.func.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     detail: PropTypes.oneOfType([

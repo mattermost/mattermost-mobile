@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {SettingsSidebar} from '@support/ui/component';
 import {LoginScreen, SelectServerScreen} from '@support/ui/screen';
 
 class ChannelScreen {
     testID = {
         channelScreen: 'channel.screen',
-        channelDrawerButton: 'channel_drawer.button',
+        mainSidebarDrawerButton: 'main_sidebar_drawer.button',
         channelIntro: 'channel_intro.beginning.text',
         channelNavBarTitle: 'channel.nav_bar.title',
         channelSearchButton: 'channel.search.button',
@@ -14,11 +15,11 @@ class ChannelScreen {
         disabledSendButton: 'disabled_send.button',
         postInput: 'post.input',
         sendButton: 'send.button',
-        sidebarSettingsButton: 'sidebar.settings.button',
+        settingsSidebarDrawerButton: 'settings_sidebar_drawer.button',
     }
 
     channelScreen = element(by.id(this.testID.channelScreen));
-    channelDrawerButton = element(by.id(this.testID.channelDrawerButton));
+    mainSidebarDrawerButton = element(by.id(this.testID.mainSidebarDrawerButton));
     channelIntro = element(by.id(this.testID.channelIntro));
     channelNavBarTitle = element(by.id(this.testID.channelNavBarTitle));
     channelSearchButton = element(by.id(this.testID.channelSearchButton));
@@ -26,7 +27,7 @@ class ChannelScreen {
     disabledSendButton = element(by.id(this.testID.disabledSendButton));
     postInput = element(by.id(this.testID.postInput));
     sendButton = element(by.id(this.testID.sendButton));
-    sidebarSettingsButton = element(by.id(this.testID.sidebarSettingsButton));
+    settingsSidebarDrawerButton = element(by.id(this.testID.settingsSidebarDrawerButton));
 
     toBeVisible = async () => {
         await expect(this.channelScreen).toBeVisible();
@@ -42,8 +43,8 @@ class ChannelScreen {
     }
 
     logout = async () => {
-        await this.sidebarSettingsButton.tap();
-        await element(by.text('Logout')).tap();
+        await this.settingsSidebarDrawerButton.tap();
+        await SettingsSidebar.logoutAction.tap();
         await SelectServerScreen.toBeVisible();
     }
 }
