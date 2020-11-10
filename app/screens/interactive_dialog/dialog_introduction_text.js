@@ -34,6 +34,7 @@ export default class DialogIntroductionText extends PureComponent {
                 <View style={[style.introductionTextView, padding(isLandscape)]}>
                     <Markdown
                         baseTextStyle={style.introductionText}
+                        disableGallery={true}
                         textStyles={textStyles}
                         blockStyles={blockStyles}
                         value={value}

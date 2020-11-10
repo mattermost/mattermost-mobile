@@ -1,0 +1,13 @@
+diff --git a/node_modules/mime-db/db.json b/node_modules/mime-db/db.json
+index e69f352..b21d9da 100644
+--- a/node_modules/mime-db/db.json
++++ b/node_modules/mime-db/db.json
+@@ -2004,7 +2004,7 @@
+   },
+   "application/vnd.apple.keynote": {
+     "source": "iana",
+-    "extensions": ["keynote"]
++    "extensions": ["key"]
+   },
+   "application/vnd.apple.mpegurl": {
+     "source": "iana",

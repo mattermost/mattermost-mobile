@@ -42,6 +42,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       }
       disableAtMentions={true}
       disableChannelLink={true}
+      disableGallery={true}
       disableHashtags={true}
       textStyles={
         Object {
@@ -176,6 +177,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       }
       disableAtMentions={true}
       disableChannelLink={true}
+      disableGallery={true}
       disableHashtags={true}
       textStyles={
         Object {
@@ -370,6 +372,7 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
       }
       disableAtMentions={true}
       disableChannelLink={true}
+      disableGallery={true}
       disableHashtags={true}
       textStyles={
         Object {

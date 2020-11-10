@@ -3,16 +3,18 @@
 
 import Autocomplete from './autocomplete';
 import CameraQuickAction from './camera_quick_action';
-import ChannelSidebar from './channel_sidebar';
 import FileQuickAction from './file_quick_action';
 import ImageQuickAction from './image_quick_action';
+import MainSidebar from './main_sidebar';
 import PostOptions from './post_options';
+import SettingsSidebar from './settings_sidebar';
 
 export {
     Autocomplete,
     CameraQuickAction,
-    ChannelSidebar,
     FileQuickAction,
     ImageQuickAction,
+    MainSidebar,
     PostOptions,
+    SettingsSidebar,
 };

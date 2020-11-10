@@ -95,6 +95,7 @@ exports[`PostAttachmentOpenGraph should match snapshot, without image and descri
       type="none"
     >
       <FastImage
+        nativeID="image-123"
         resizeMode="contain"
         source={
           Object {
@@ -275,6 +276,7 @@ exports[`PostAttachmentOpenGraph should match state and snapshot, on renderImage
     type="none"
   >
     <FastImage
+      nativeID="image-123"
       resizeMode="contain"
       source={
         Object {

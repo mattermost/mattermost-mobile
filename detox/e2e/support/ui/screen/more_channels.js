@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelScreen} from '@support/ui/component';
-import {ChannelSidebar} from '@support/ui/screen';
+import {MainSidebar} from '@support/ui/screen';
 
 class MoreChannelsScreen {
     testID = {
@@ -20,8 +20,8 @@ class MoreChannelsScreen {
     }
 
     open = async () => {
-        await ChannelScreen.channelDrawerButton.tap();
-        await ChannelSidebar.addChannel.tap();
+        await ChannelScreen.mainSidebarDrawerButton.tap();
+        await MainSidebar.addChannel.tap();
 
         return this.toBeVisible();
     }

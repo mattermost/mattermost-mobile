@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import {YouTubeStandaloneAndroid, YouTubeStandaloneIOS} from 'react-native-youtube';
 import {intlShape} from 'react-intl';
+import parseUrl from 'url-parse';
 
 import ImageViewPort from '@components/image_viewport';
 import PostAttachmentImage from '@components/post_attachment_image';
@@ -20,7 +21,8 @@ import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import CustomPropTypes from '@constants/custom_prop_types';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-import {calculateDimensions, getViewPortWidth, previewImageAtIndex} from '@utils/images';
+import {generateId} from '@utils/file';
+import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink} from '@utils/url';
 
 const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
@@ -73,6 +75,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             }
         }
 
+        this.fileId = generateId();
         this.state = {
             linkLoadError: false,
             linkLoaded: false,
@@ -109,6 +112,36 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         }
 
         return null;
+    };
+
+    getFileInfo = () => {
+        let {link} = this.props;
+        const {originalHeight, originalWidth, uri} = this.state;
+        const {expandedLink, postId} = this.props;
+        if (expandedLink) {
+            link = expandedLink;
+        }
+
+        const url = decodeURIComponent(link);
+        let filename = parseUrl(url.substr(url.lastIndexOf('/'))).pathname.replace('/', '');
+        let extension = filename.split('.').pop();
+
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+            extension = ext;
+        }
+
+        return {
+            id: this.fileId,
+            name: filename,
+            extension,
+            has_preview_image: true,
+            post_id: postId,
+            uri,
+            width: originalWidth,
+            height: originalHeight,
+        };
     };
 
     getImageSize = (path) => {
@@ -172,31 +205,10 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         this.setState({linkLoadError: true});
     };
 
-    handlePreviewImage = (imageRef) => {
-        let {link} = this.props;
-        const {expandedLink} = this.props;
-        if (expandedLink) {
-            link = expandedLink;
-        }
-        const {
-            originalHeight,
-            originalWidth,
-            uri,
-        } = this.state;
-        const filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const files = [{
-            caption: filename,
-            source: {uri},
-            dimensions: {
-                width: originalWidth,
-                height: originalHeight,
-            },
-            data: {
-                localPath: uri,
-            },
-        }];
+    handlePreviewImage = () => {
+        const files = [this.getFileInfo()];
 
-        previewImageAtIndex([imageRef], 0, files);
+        openGalleryAtIndex(0, files);
     };
 
     isImage = (specificLink) => {
@@ -290,6 +302,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
     renderImage = (link) => {
         const imageMetadata = this.props.metadata?.images?.[link];
+        const fileInfo = this.getFileInfo();
         const {width, height, uri} = this.state;
 
         if (!imageMetadata) {
@@ -298,6 +311,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
         return (
             <PostAttachmentImage
+                id={fileInfo.id}
                 height={height || MAX_IMAGE_HEIGHT}
                 imageMetadata={imageMetadata}
                 onImagePress={this.handlePreviewImage}
@@ -350,7 +364,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     };
 
     renderOpenGraph = (isYouTube, isImage) => {
-        const {isReplyPost, link, metadata, openGraphData, showLinkPreviews, theme} = this.props;
+        const {isReplyPost, link, metadata, openGraphData, postId, showLinkPreviews, theme} = this.props;
 
         if (isYouTube || (isImage && !openGraphData)) {
             return null;
@@ -375,6 +389,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                     isReplyPost={isReplyPost}
                     link={link}
                     openGraphData={openGraphData}
+                    postId={postId}
                     imagesMetadata={metadata.images}
                     theme={theme}
                 />

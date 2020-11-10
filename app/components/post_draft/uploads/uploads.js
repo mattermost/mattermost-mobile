@@ -20,6 +20,7 @@ import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import EphemeralStore from '@store/ephemeral_store';
+import {openGalleryAtIndex} from '@utils/images';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';
@@ -96,12 +97,19 @@ export default class Uploads extends PureComponent {
                     key={file.clientId}
                     channelId={this.props.channelId}
                     file={file}
+                    onPress={this.onPress}
                     rootId={this.props.rootId}
                     theme={this.props.theme}
                 />
             );
         });
     };
+
+    onPress = (file) => {
+        const {files} = this.props;
+        const index = files.indexOf(file);
+        openGalleryAtIndex(index, files.filter((f) => !f.failed && !f.loading));
+    }
 
     clearErrorsFromState = (delay) => {
         setTimeout(() => {
