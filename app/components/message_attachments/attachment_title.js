@@ -71,6 +71,7 @@ export default class AttachmentTitle extends PureComponent {
                     disableHashtags={true}
                     disableAtMentions={true}
                     disableChannelLink={true}
+                    disableGallery={true}
                     autolinkedUrlSchemes={[]}
                     mentionKeys={[]}
                     theme={theme}

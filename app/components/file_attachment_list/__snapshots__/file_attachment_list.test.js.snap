@@ -33,28 +33,25 @@ exports[`FileAttachmentList should match snapshot with a single image file 1`] =
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image01.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 171,
-              "id": "fileId",
-              "mime_type": "image/png",
-              "name": "image01.png",
-              "post_id": "postId",
-              "size": 14894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 425,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 171,
+            "id": "fileId",
+            "mime_type": "image/png",
+            "name": "image01.png",
+            "post_id": "postId",
+            "size": 14894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 425,
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={true}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -125,28 +122,25 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image01.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 171,
-              "id": "fileId",
-              "mime_type": "image/png",
-              "name": "image01.png",
-              "post_id": "postId",
-              "size": 14894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 425,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 171,
+            "id": "fileId",
+            "mime_type": "image/png",
+            "name": "image01.png",
+            "post_id": "postId",
+            "size": 14894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 425,
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -196,28 +190,25 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image02.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "otherFileId",
-              "mime_type": "image/png",
-              "name": "image02.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "otherFileId",
+            "mime_type": "image/png",
+            "name": "image02.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -263,22 +254,18 @@ exports[`FileAttachmentList should match snapshot with combination of image and 
       canDownloadFiles={true}
       file={
         Object {
-          "caption": "file01.other",
-          "data": Object {
-            "extension": "other",
-            "id": "fileId",
-            "mime_type": "other/type",
-            "name": "file01.other",
-            "post_id": "postId",
-            "size": 14894,
-            "user_id": "userId",
-          },
+          "extension": "other",
+          "id": "fileId",
+          "mime_type": "other/type",
+          "name": "file01.other",
+          "post_id": "postId",
+          "size": 14894,
+          "user_id": "userId",
         }
       }
       id="fileId"
+      inViewPort={false}
       index={0}
-      isSingleImage={false}
-      onCaptureRef={[Function]}
       onPreviewPress={[Function]}
       theme={
         Object {
@@ -348,28 +335,25 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image01.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 171,
-              "id": "fileId",
-              "mime_type": "image/png",
-              "name": "image01.png",
-              "post_id": "postId",
-              "size": 14894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 425,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 171,
+            "id": "fileId",
+            "mime_type": "image/png",
+            "name": "image01.png",
+            "post_id": "postId",
+            "size": 14894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 425,
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -419,28 +403,25 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image02.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "otherFileId",
-              "mime_type": "image/png",
-              "name": "image02.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "otherFileId",
+            "mime_type": "image/png",
+            "name": "image02.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -490,28 +471,25 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image03.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "thirdFileId",
-              "mime_type": "image/png",
-              "name": "image03.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "thirdFileId",
+            "mime_type": "image/png",
+            "name": "image03.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="thirdFileId"
+        inViewPort={false}
         index={2}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -561,28 +539,25 @@ exports[`FileAttachmentList should match snapshot with four image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image04.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "fourthFileId",
-              "mime_type": "image/png",
-              "name": "image04.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "fourthFileId",
+            "mime_type": "image/png",
+            "name": "image04.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="fourthFileId"
+        inViewPort={false}
         index={3}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -653,28 +628,25 @@ exports[`FileAttachmentList should match snapshot with more than four image file
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image01.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 171,
-              "id": "fileId",
-              "mime_type": "image/png",
-              "name": "image01.png",
-              "post_id": "postId",
-              "size": 14894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 425,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 171,
+            "id": "fileId",
+            "mime_type": "image/png",
+            "name": "image01.png",
+            "post_id": "postId",
+            "size": 14894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 425,
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -724,28 +696,25 @@ exports[`FileAttachmentList should match snapshot with more than four image file
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image02.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "otherFileId",
-              "mime_type": "image/png",
-              "name": "image02.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "otherFileId",
+            "mime_type": "image/png",
+            "name": "image02.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -795,28 +764,25 @@ exports[`FileAttachmentList should match snapshot with more than four image file
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image03.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "thirdFileId",
-              "mime_type": "image/png",
-              "name": "image03.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "thirdFileId",
+            "mime_type": "image/png",
+            "name": "image03.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="thirdFileId"
+        inViewPort={false}
         index={2}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -866,29 +832,26 @@ exports[`FileAttachmentList should match snapshot with more than four image file
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image04.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "fourthFileId",
-              "mime_type": "image/png",
-              "name": "image04.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "fourthFileId",
+            "mime_type": "image/png",
+            "name": "image04.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="fourthFileId"
+        inViewPort={false}
         index={3}
         isSingleImage={false}
         nonVisibleImagesCount={2}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -945,22 +908,18 @@ exports[`FileAttachmentList should match snapshot with non-image attachment 1`] 
       canDownloadFiles={true}
       file={
         Object {
-          "caption": "file01.other",
-          "data": Object {
-            "extension": "other",
-            "id": "fileId",
-            "mime_type": "other/type",
-            "name": "file01.other",
-            "post_id": "postId",
-            "size": 14894,
-            "user_id": "userId",
-          },
+          "extension": "other",
+          "id": "fileId",
+          "mime_type": "other/type",
+          "name": "file01.other",
+          "post_id": "postId",
+          "size": 14894,
+          "user_id": "userId",
         }
       }
       id="fileId"
+      inViewPort={false}
       index={0}
-      isSingleImage={false}
-      onCaptureRef={[Function]}
       onPreviewPress={[Function]}
       theme={
         Object {
@@ -1030,28 +989,25 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image01.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 171,
-              "id": "fileId",
-              "mime_type": "image/png",
-              "name": "image01.png",
-              "post_id": "postId",
-              "size": 14894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 425,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 171,
+            "id": "fileId",
+            "mime_type": "image/png",
+            "name": "image01.png",
+            "post_id": "postId",
+            "size": 14894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 425,
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -1101,28 +1057,25 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image02.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "otherFileId",
-              "mime_type": "image/png",
-              "name": "image02.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "otherFileId",
+            "mime_type": "image/png",
+            "name": "image02.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -1172,28 +1125,25 @@ exports[`FileAttachmentList should match snapshot with three image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image03.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "thirdFileId",
-              "mime_type": "image/png",
-              "name": "image03.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "thirdFileId",
+            "mime_type": "image/png",
+            "name": "image03.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="thirdFileId"
+        inViewPort={false}
         index={2}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -1264,28 +1214,25 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image01.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 171,
-              "id": "fileId",
-              "mime_type": "image/png",
-              "name": "image01.png",
-              "post_id": "postId",
-              "size": 14894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 425,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 171,
+            "id": "fileId",
+            "mime_type": "image/png",
+            "name": "image01.png",
+            "post_id": "postId",
+            "size": 14894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 425,
           }
         }
         id="fileId"
+        inViewPort={false}
         index={0}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {
@@ -1335,28 +1282,25 @@ exports[`FileAttachmentList should match snapshot with two image files 1`] = `
         canDownloadFiles={true}
         file={
           Object {
-            "caption": "image02.png",
-            "data": Object {
-              "create_at": 1546893090093,
-              "delete_at": 0,
-              "extension": "png",
-              "has_preview_image": true,
-              "height": 800,
-              "id": "otherFileId",
-              "mime_type": "image/png",
-              "name": "image02.png",
-              "post_id": "postId",
-              "size": 24894,
-              "update_at": 1546893090093,
-              "user_id": "userId",
-              "width": 555,
-            },
+            "create_at": 1546893090093,
+            "delete_at": 0,
+            "extension": "png",
+            "has_preview_image": true,
+            "height": 800,
+            "id": "otherFileId",
+            "mime_type": "image/png",
+            "name": "image02.png",
+            "post_id": "postId",
+            "size": 24894,
+            "update_at": 1546893090093,
+            "user_id": "userId",
+            "width": 555,
           }
         }
         id="otherFileId"
+        inViewPort={false}
         index={1}
         isSingleImage={false}
-        onCaptureRef={[Function]}
         onPreviewPress={[Function]}
         theme={
           Object {

@@ -88,6 +88,11 @@ export function makeMapStateToProps() {
             postProps.username = owner?.username || '';
         }
 
+        // Disable group highlight when post is pending
+        if (post.id === post.pending_post_id) {
+            postProps.disable_group_highlight = true;
+        }
+
         return {
             metadata: post.metadata,
             postProps,

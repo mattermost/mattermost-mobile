@@ -48,6 +48,7 @@ exports[`ProgressiveImage should match snapshot for Default Image 1`] = `
   }
 >
   <ForwardRef(AnimatedComponentWrapper)
+    nativeID="image-undefined"
     onError={[MockFunction]}
     resizeMethod="auto"
     resizeMode="contain"
@@ -102,8 +103,10 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
         },
       ]
     }
+    testID="progressive_image.thumbnail"
   />
   <ForwardRef(AnimatedComponentWrapper)
+    nativeID="image-undefined"
     onError={[MockFunction]}
     onLoadEnd={[Function]}
     resizeMethod="auto"
@@ -128,6 +131,7 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
         },
       ]
     }
+    testID="progressive_image.highResImage"
   />
 </ForwardRef(AnimatedComponentWrapper)>
 `;

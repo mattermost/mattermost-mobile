@@ -2875,6 +2875,20 @@
       "search": [
         "radiobox-blank"
       ]
+    },
+    {
+      "uid": "53586a0ccc205f12eb53587faa230a71",
+      "css": "export-variant",
+      "code": 986003,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M500 41.7L333.3 208.3H458.3V583.3H541.7V208.3H666.7M750 958.3H250C203.7 958.3 166.7 920.8 166.7 875V375A83.3 83.3 0 0 1 250 291.7H375V375H250V875H750V375H625V291.7H750A83.3 83.3 0 0 1 833.3 375V875A83.3 83.3 0 0 1 750 958.3Z",
+        "width": 1000
+      },
+      "search": [
+        "export-variant"
+      ]
     }
   ]
 }

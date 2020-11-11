@@ -1,0 +1,94 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DrawerItem should match snapshot 1`] = `
+<ForwardRef
+  onPress={[MockFunction]}
+  testID="test-id"
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#ffffff",
+        "flexDirection": "row",
+        "height": 50,
+      }
+    }
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "height": 50,
+          "justifyContent": "center",
+          "marginLeft": 5,
+          "width": 45,
+        }
+      }
+    >
+      <CompassIcon
+        name="icon-name"
+        style={
+          Array [
+            Object {
+              "color": "rgba(61,60,64,0.64)",
+              "fontSize": 24,
+            },
+            Object {
+              "color": "#fd5960",
+            },
+          ]
+        }
+      />
+    </View>
+    <View
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+    >
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "flex": 1,
+            "flexDirection": "row",
+          }
+        }
+      >
+        <FormattedText
+          defaultMessage="default message"
+          id="i18-id"
+          style={
+            Array [
+              Object {
+                "color": "rgba(61,60,64,0.5)",
+                "flex": 1,
+                "fontSize": 17,
+                "includeFontPadding": false,
+                "textAlignVertical": "center",
+              },
+              Object {
+                "color": "#fd5960",
+              },
+              Object {
+                "textAlign": "center",
+                "textAlignVertical": "center",
+              },
+            ]
+          }
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.2)",
+            "height": 1,
+          }
+        }
+      />
+    </View>
+  </View>
+</ForwardRef>
+`;

@@ -272,6 +272,7 @@ exports[`channelInfo should match snapshot 1`] = `
         <React.Fragment>
           <Connect(NotificationPreference)
             isLandscape={false}
+            testID="channel_info.notification_preference.action"
             theme={
               Object {
                 "awayIndicator": "#ffbc42",
@@ -465,6 +466,7 @@ exports[`channelInfo should match snapshot 1`] = `
         />
         <Connect(EditChannel)
           isLandscape={false}
+          testID="channel_info.edit_channel.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -773,6 +775,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <React.Fragment>
     <Connect(NotificationPreference)
       isLandscape={false}
+      testID="channel_info.notification_preference.action"
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -966,6 +969,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(EditChannel)
     isLandscape={false}
+    testID="channel_info.edit_channel.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1325,6 +1329,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(EditChannel)
     isLandscape={false}
+    testID="channel_info.edit_channel.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",

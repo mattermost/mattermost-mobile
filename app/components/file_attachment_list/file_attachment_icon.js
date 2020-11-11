@@ -3,14 +3,10 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {
-    View,
-    StyleSheet,
-} from 'react-native';
-
-import * as Utils from '@mm-redux/utils/file_utils';
+import {View, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import * as Utils from '@mm-redux/utils/file_utils';
 
 const BLUE_ICON = '#338AFF';
 const RED_ICON = '#ED522A';
@@ -40,7 +36,6 @@ export default class FileAttachmentIcon extends PureComponent {
         defaultImage: PropTypes.bool,
         smallImage: PropTypes.bool,
         file: PropTypes.object,
-        onCaptureRef: PropTypes.func,
         iconColor: PropTypes.string,
         iconSize: PropTypes.number,
         theme: PropTypes.object,
@@ -70,14 +65,6 @@ export default class FileAttachmentIcon extends PureComponent {
         return ICON_NAME_AND_COLOR_FROM_FILE_TYPE[fileType] || ICON_NAME_AND_COLOR_FROM_FILE_TYPE.other;
     }
 
-    handleCaptureRef = (ref) => {
-        const {onCaptureRef} = this.props;
-
-        if (onCaptureRef) {
-            onCaptureRef(ref);
-        }
-    };
-
     render() {
         const {backgroundColor, file, iconSize, theme, iconColor} = this.props;
         const [iconName, defaultIconColor] = this.getFileIconNameAndColor(file);
@@ -85,10 +72,7 @@ export default class FileAttachmentIcon extends PureComponent {
         const bgColor = backgroundColor || theme?.centerChannelBg || 'transparent';
 
         return (
-            <View
-                ref={this.handleCaptureRef}
-                style={[styles.fileIconWrapper, {backgroundColor: bgColor}]}
-            >
+            <View style={[styles.fileIconWrapper, {backgroundColor: bgColor}]}>
                 <CompassIcon
                     name={iconName}
                     size={iconSize}
@@ -101,7 +85,6 @@ export default class FileAttachmentIcon extends PureComponent {
 
 const styles = StyleSheet.create({
     fileIconWrapper: {
-        flex: 1,
         borderRadius: 4,
         alignItems: 'center',
         justifyContent: 'center',

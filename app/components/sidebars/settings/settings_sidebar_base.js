@@ -139,6 +139,7 @@ export default class SettingsSidebarBase extends PureComponent {
         const options = {
             topBar: {
                 leftButtons: [{
+                    testID: 'close.settings.button',
                     id: 'close-settings',
                     icon: this.closeButton,
                 }],
@@ -188,7 +189,10 @@ export default class SettingsSidebarBase extends PureComponent {
         const {currentUser, theme} = this.props;
 
         return (
-            <View style={style.container}>
+            <View
+                testID='settings.sidebar'
+                style={style.container}
+            >
                 <ScrollView
                     alwaysBounceVertical={false}
                     contentContainerStyle={style.wrapper}
@@ -236,6 +240,7 @@ export default class SettingsSidebarBase extends PureComponent {
                             theme={theme}
                         />
                         <DrawerItem
+                            testID='settings.sidebar.settings.action'
                             defaultMessage='Settings'
                             i18nId='mobile.routes.settings'
                             iconName='settings-outline'
@@ -247,13 +252,13 @@ export default class SettingsSidebarBase extends PureComponent {
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.logout.action'
                             defaultMessage='Logout'
                             i18nId='sidebar_right_menu.logout'
                             iconName='exit-to-app'
                             isDestructor={true}
                             onPress={this.logout}
                             separator={false}
-                            testID='sidebar.settings.logout'
                             theme={theme}
                         />
                     </View>
