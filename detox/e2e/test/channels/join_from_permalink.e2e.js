@@ -13,19 +13,19 @@ import {ChannelScreen} from '@support/ui/screen';
 import {Setup, Team, User} from '@support/server_api';
 import {serverUrl} from '@support/test_config';
 
-describe('Channels', () => {
+describe('Messaging', () => {
     let testChannel;
     let testTeam;
 
     beforeAll(async () => {
-        const {channel: channel1, team, user} = await Setup.apiInit();
-        testChannel = channel1;
+        const {channel, team, user} = await Setup.apiInit();
+        testChannel = channel;
         testTeam = team;
 
         await ChannelScreen.open(user);
     });
 
-    it('should join channel from a permalink', async () => {
+    it('MM-T3471 Tapping channel URL link joins public channel', async () => {
         // # Go to the Town Square channel
         const {channelDrawerButton, channelNavBarTitle} = ChannelScreen;
         await channelDrawerButton.tap();
@@ -36,17 +36,17 @@ describe('Channels', () => {
 
         // # There's no way to get a channel permalink on mobile so we make one
         // manually
-        const permalink = `${serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
+        const channelPermalink = `${serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
 
-        // # Post the permalink to the test channel in Town Square
+        // # Post the channel permalink to the test channel in Town Square
         const {postInput, sendButton} = ChannelScreen;
         await expect(postInput).toBeVisible();
         await expect(sendButton).not.toExist();
         await postInput.tap();
-        await postInput.typeText(permalink);
+        await postInput.typeText(channelPermalink);
         await expect(sendButton).toBeVisible();
         await sendButton.tap();
-        await expect(element(by.text(permalink))).toBeVisible();
+        await expect(element(by.text(channelPermalink))).toBeVisible();
 
         // # Create another user in the same team, log in and go to town square
         const {user: otherUser} = await User.apiCreateUser({prefix: 'TestUser'});
@@ -59,11 +59,11 @@ describe('Channels', () => {
         await channelItem.tap();
         await expect(channelNavBarTitle).toHaveText('Town Square');
 
-        // # As this new user, Tap the permalink we posted earlier
-        const permalinkPost = element(by.text(permalink));
+        // # As this new user, Tap the channel permalink we posted earlier
+        const permalinkPost = element(by.text(channelPermalink));
         await permalinkPost.tap({x: 5, y: 10});
 
-        // * Confirm that we have joined the correct channel from the permalink
+        // * Confirm that we have joined the correct channel from the channel permalink
         await expect(channelNavBarTitle).toHaveText(testChannel.display_name);
     });
 });
