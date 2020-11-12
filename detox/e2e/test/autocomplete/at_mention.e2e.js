@@ -168,7 +168,7 @@ describe('Autocomplete', () => {
         await expect(element(by.id(`autocomplete.at_mention.item.${user.id}`))).not.toExist();
     });
 
-    it('should be able to select at mention multiple times', async () => {
+    it('MM-T3409_11 should be able to select at mention multiple times', async () => {
         // # Type "@" to activate at mention autocomplete
         await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
         await postInput.typeText('@');
