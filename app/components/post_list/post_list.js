@@ -13,7 +13,6 @@ import * as PostListUtils from '@mm-redux/utils/post_list';
 import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
 import Post from 'app/components/post';
 import {DeepLinkTypes, ListTypes, NavigationTypes} from '@constants';
-import {THREAD} from '@constants/screen';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {matchDeepLink} from 'app/utils/url';
@@ -452,9 +451,10 @@ export default class PostList extends PureComponent {
     }
 
     onViewableItemsChanged = ({viewableItems}) => {
-        if ((!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) && this.props.location !== THREAD) {
+        if (!viewableItems.length) {
             return;
         }
+
         const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
             if (isViewable) {
                 acc[item] = true;
@@ -475,7 +475,6 @@ export default class PostList extends PureComponent {
             extraData,
             highlightPostId,
             loadMorePostsVisible,
-            location,
             postIds,
             refreshing,
             scrollViewNativeID,
@@ -527,7 +526,7 @@ export default class PostList extends PureComponent {
                         itemVisiblePercentThreshold: 1,
                         minimumViewTime: 100,
                     }}
-                    onViewableItemsChanged={(showMoreMessagesButton || location === THREAD) ? this.onViewableItemsChanged : null}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
                 />
                 {showMoreMessagesButton &&
                     <MoreMessagesButton
