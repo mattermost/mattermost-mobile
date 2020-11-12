@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelScreen} from '@support/ui/component';
-import {ChannelSidebar} from '@support/ui/screen';
+import {MainSidebar} from '@support/ui/screen';
 
 class DirectChannelsScreen {
     testID = {
@@ -24,8 +24,8 @@ class DirectChannelsScreen {
     }
 
     open = async () => {
-        await ChannelScreen.channelDrawerButton.tap();
-        await ChannelSidebar.addDirectChannel.tap();
+        await ChannelScreen.mainSidebarDrawerButton.tap();
+        await MainSidebar.addDirectChannel.tap();
 
         return this.toBeVisible();
     }

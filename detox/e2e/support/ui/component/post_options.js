@@ -7,10 +7,13 @@ class PostOptions {
         openReactionPicker: 'open.reaction_picker',
     }
 
+    postOptions = element(by.id(this.testID.postOptions));
     openReactionPicker = element(by.id(this.testID.openReactionPicker));
 
     toBeVisible = async () => {
-        await expect(element(by.id(this.testID.postOptions))).toBeVisible();
+        await expect(this.postOptions).toBeVisible();
+
+        return postOptions;
     }
 }
 

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SettingDrawerButton should match, full snapshot 1`] = `
+exports[`SettingsSidebarDrawerButton should match, full snapshot 1`] = `
 <ForwardRef
   accessibilityHint="Opens the more options right hand sidebar"
   accessibilityLabel="More Options"
@@ -12,7 +12,7 @@ exports[`SettingDrawerButton should match, full snapshot 1`] = `
       "width": 44,
     }
   }
-  testID="sidebar.settings.button"
+  testID="settings_sidebar_drawer.button"
 >
   <View
     style={

@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {getBadgeCount} from 'app/selectors/views';
-import ChannelDrawerButton from './channel_drawer_button';
+import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 
 function mapStateToProps(state) {
     return {
@@ -15,4 +15,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ChannelDrawerButton);
+export default connect(mapStateToProps)(MainSidebarDrawerButton);

@@ -131,6 +131,7 @@ export default class ChannelInfo extends PureComponent {
                 {!isDirectMessage &&
                 <>
                     <NotificationPreference
+                        testID='channel_info.notification_preference.action'
                         isLandscape={isLandscape}
                         theme={theme}
                     />
@@ -155,6 +156,7 @@ export default class ChannelInfo extends PureComponent {
                     theme={theme}
                 />
                 <EditChannel
+                    testID='channel_info.edit_channel.action'
                     isLandscape={isLandscape}
                     theme={theme}
                 />

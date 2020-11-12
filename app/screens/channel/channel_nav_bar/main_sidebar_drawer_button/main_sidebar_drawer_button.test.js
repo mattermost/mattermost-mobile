@@ -10,7 +10,7 @@ import Badge from 'app/components/badge';
 import PushNotification from 'app/push_notifications/push_notifications.ios';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
-import ChannelDrawerButton from './channel_drawer_button';
+import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 
 jest.mock('react-native-notifications', () => {
     let badgesCount = 0;
@@ -37,7 +37,7 @@ jest.mock('react-native-notifications', () => {
     };
 });
 
-describe('ChannelDrawerButton', () => {
+describe('MainSidebarDrawerButton', () => {
     const baseProps = {
         openSidebar: jest.fn(),
         badgeCount: 0,
@@ -49,7 +49,7 @@ describe('ChannelDrawerButton', () => {
 
     test('should match, full snapshot', () => {
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...baseProps}/>,
+            <MainSidebarDrawerButton {...baseProps}/>,
         );
 
         // no badge to show
@@ -70,7 +70,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         shallowWithIntl(
-            <ChannelDrawerButton {...props}/>,
+            <MainSidebarDrawerButton {...props}/>,
         );
         expect(setApplicationIconBadgeNumber).not.toBeCalled();
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(0));
@@ -84,7 +84,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         shallowWithIntl(
-            <ChannelDrawerButton {...props}/>,
+            <MainSidebarDrawerButton {...props}/>,
         );
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledTimes(1);
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(1));
@@ -98,7 +98,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...props}/>,
+            <MainSidebarDrawerButton {...props}/>,
         );
         NotificationsIOS.getBadgesCount((count) => expect(count).toBe(0));
 
@@ -116,7 +116,7 @@ describe('ChannelDrawerButton', () => {
         };
 
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...props}/>,
+            <MainSidebarDrawerButton {...props}/>,
         );
         wrapper.setProps({badgeCount: 2});
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(2);
@@ -129,21 +129,21 @@ describe('ChannelDrawerButton', () => {
 
     test('Should be accessible', () => {
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...baseProps}/>,
+            <MainSidebarDrawerButton {...baseProps}/>,
         );
         expect(wrapper.props().accessible).toBeTruthy();
     });
 
     test('Should have the correct accessibilityHint', () => {
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...baseProps}/>,
+            <MainSidebarDrawerButton {...baseProps}/>,
         );
         expect(wrapper.props().accessibilityHint).toEqual('Opens the channels and teams drawer');
     });
 
     test('Should have the correct accessibilityLabel', () => {
         const wrapper = shallowWithIntl(
-            <ChannelDrawerButton {...baseProps}/>,
+            <MainSidebarDrawerButton {...baseProps}/>,
         );
         expect(wrapper.props().accessibilityLabel).toEqual('Channels and teams');
     });

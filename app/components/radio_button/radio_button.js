@@ -15,6 +15,7 @@ const DEFAULT_OPACITY = 1;
 
 class RadioButton extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         label: PropTypes.string,
         theme: PropTypes.object,
         value: PropTypes.string,
@@ -83,7 +84,7 @@ class RadioButton extends PureComponent {
 
     render() {
         const {scaleValue, opacityValue} = this.state;
-        const {theme, checked, disabled} = this.props;
+        const {testID, theme, checked, disabled} = this.props;
         const styles = getStyleSheet(theme);
 
         const color = checked ? theme.buttonBg : theme.centerChannelColor;
@@ -91,6 +92,7 @@ class RadioButton extends PureComponent {
 
         return (
             <View
+                testID={testID}
                 style={styles.container}
                 {...this.responder}
             >

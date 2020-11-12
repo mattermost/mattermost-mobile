@@ -12,10 +12,10 @@ import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import ChannelDrawerButton from './channel_drawer_button';
+import MainSidebarDrawerButton from './main_sidebar_drawer_button';
 import ChannelSearchButton from './channel_search_button';
 import ChannelTitle from './channel_title';
-import SettingDrawerButton from './settings_drawer_button';
+import SettingsSidebarDrawerButton from './settings_sidebar_drawer_button';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 const {
@@ -112,7 +112,7 @@ export default class ChannelNavBar extends PureComponent {
 
         return (
             <View style={[style.header, padding(isLandscape), {height}]}>
-                <ChannelDrawerButton
+                <MainSidebarDrawerButton
                     openSidebar={openMainSidebar}
                     visible={this.drawerButtonVisible()}
                 />
@@ -123,7 +123,7 @@ export default class ChannelNavBar extends PureComponent {
                 <ChannelSearchButton
                     theme={theme}
                 />
-                <SettingDrawerButton openSidebar={openSettingsSidebar}/>
+                <SettingsSidebarDrawerButton openSidebar={openSettingsSidebar}/>
             </View>
         );
     }
