@@ -61,11 +61,9 @@ export default class AtMention extends PureComponent {
 
         // Not invoked, render nothing.
         if (matchTerm === null) {
-            this.props.onResultCountChange(0);
             this.setState({
                 sections: [],
             });
-            this.props.onResultCountChange(0);
             return;
         }
 
@@ -93,6 +91,12 @@ export default class AtMention extends PureComponent {
             });
 
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.sections.length !== this.state.sections.length && this.state.sections.length === 0) {
+            this.props.onResultCountChange(0);
         }
     }
 
