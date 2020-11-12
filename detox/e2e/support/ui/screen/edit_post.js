@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PostOptions} from '@support/ui/component';
 import {isAndroid} from '@support/utils';
 
 class EditPostScreen {
@@ -10,6 +11,7 @@ class EditPostScreen {
         editPostClose: 'edit_post.close',
     }
 
+    editPostScreen = element(by.id(this.testID.editPostScreen));
     editPostInput = element(by.id(this.testID.editPostInput));
     editPostClose = element(by.id(this.testID.editPostClose));
 
@@ -19,17 +21,16 @@ class EditPostScreen {
         return this.editPostScreen;
     }
 
-    open = async (message) => {
-        // # Open edit post screen
-        await element(by.text(message)).longPress();
-
+    open = async () => {
         // # Swipe up panel on Android
         if (isAndroid()) {
-            const slide = element(by.id('slide_up_panel'));
-            await slide.swipe('up');
+            await PostOptions.slideUpPanel.swipe('up');
         }
 
-        await element(by.text('Edit')).tap();
+        // # Open edit post screen
+        await PostOptions.editAction.tap();
+
+        return this.toBeVisible();
     }
 
     back = async () => {

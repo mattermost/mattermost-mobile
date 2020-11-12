@@ -9,6 +9,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface FavoriteProps {
+    testID?: string;
     channelId: string;
     favoriteChannel: (channelId: string) => void;
     isFavorite: boolean;
@@ -17,7 +18,7 @@ interface FavoriteProps {
     theme: Theme;
 }
 
-const Favorite = ({channelId, favoriteChannel, isLandscape, isFavorite, unfavoriteChannel, theme}: FavoriteProps) => {
+const Favorite = ({testID, channelId, favoriteChannel, isLandscape, isFavorite, unfavoriteChannel, theme}: FavoriteProps) => {
     const [favorite, setFavorite] = useState(isFavorite);
 
     const handleFavorite = preventDoubleTap(() => {
@@ -28,6 +29,7 @@ const Favorite = ({channelId, favoriteChannel, isLandscape, isFavorite, unfavori
 
     return (
         <ChannelInfoRow
+            testID={testID}
             action={handleFavorite}
             defaultMessage='Favorite'
             detail={favorite}

@@ -19,6 +19,7 @@ describe('Messaging', () => {
     beforeAll(async () => {
         ({team, user} = await Setup.apiInit());
 
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -29,16 +30,14 @@ describe('Messaging', () => {
     it('MM-T109 User can\'t send the same message repeatedly', async () => {
         const message = Date.now().toString();
 
-        const {disabledSendButton, sendButton, postInput} = ChannelScreen;
+        const {disabledSendButton, postInput} = ChannelScreen;
 
         // # Type a message
         await postInput.tap();
         await postInput.typeText(message);
 
-        // # Tap the send button
-        await expect(sendButton).toBeVisible();
-        await sendButton.tap();
-        await expect(sendButton).not.toExist();
+        // # Tap send button
+        await ChannelScreen.tapSendButton();
 
         // # Then tap send button repeatedly
         await expect(disabledSendButton).toBeVisible();

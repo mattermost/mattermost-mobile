@@ -7,10 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    MainSidebar,
-    SettingsSidebar,
-} from '@support/ui/component';
+import {MainSidebar} from '@support/ui/component';
 import {
     ChannelInfoScreen,
     ChannelNotificationPreferenceScreen,
@@ -28,15 +25,14 @@ describe('Channel Notification Preference - Default', () => {
     beforeAll(async () => {
         const {user, channel} = await Setup.apiInit();
         testChannel = channel;
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
     beforeEach(async () => {
-        // # Open main sidebar
-        await ChannelScreen.mainSidebarDrawerButton.tap();
-        await MainSidebar.toBeVisible();
-
         // # Go to channel
+        await ChannelScreen.openMainSidebar();
         await MainSidebar.getChannelByDisplayName(testChannel.display_name).tap();
     });
 
@@ -53,11 +49,9 @@ describe('Channel Notification Preference - Default', () => {
         // # Set global notifications to mentions
         await setGlobalNotificationsTo('mentions');
 
-        // # Open channel info screen
+        // # Open on notification preference screen
         await ChannelInfoScreen.open();
-
-        // # Tap on Mobile Notifications
-        await ChannelInfoScreen.notificationPreferenceAction.tap();
+        await ChannelNotificationPreferenceScreen.open();
 
         // # Tap on For all activity option
         await element(by.text(`${ChannelNotificationPreferenceScreen.optionDefaultText} (Mentions)`)).tap();
@@ -76,7 +70,7 @@ describe('Channel Notification Preference - Default', () => {
 
         // * Verify Global default (Never) is displayed
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.notificationPreferenceAction.tap();
+        await ChannelNotificationPreferenceScreen.open();
         await expect(element(by.text(`${ChannelNotificationPreferenceScreen.optionDefaultText} (Never)`))).toBeVisible();
 
         // # Go back to channel info screen
@@ -88,7 +82,7 @@ describe('Channel Notification Preference - Default', () => {
 
         // * Verify Global default (All) is displayed
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.notificationPreferenceAction.tap();
+        await ChannelNotificationPreferenceScreen.open();
         await expect(element(by.text(`${ChannelNotificationPreferenceScreen.optionDefaultText} (All)`))).toBeVisible();
 
         // # Tap on back button
@@ -97,21 +91,11 @@ describe('Channel Notification Preference - Default', () => {
 });
 
 async function setGlobalNotificationsTo(pushKey) {
-    // # Open settings sidebar
-    await ChannelScreen.settingsSidebarDrawerButton.tap();
-    await SettingsSidebar.toBeVisible();
-
-    // # Open general settings screen
-    await SettingsSidebar.settingsAction.tap();
-    await GeneralSettingsScreen.toBeVisible();
-
-    // # Open notification settings screen
-    await GeneralSettingsScreen.notificationsAction.tap();
-    await NotificationSettingsScreen.toBeVisible();
-
     // # Open notifications settings mobile screen
-    await NotificationSettingsScreen.mobileAction.tap();
-    await NotificationSettingsMobileScreen.toBeVisible();
+    await ChannelScreen.openSettingsSidebar();
+    await GeneralSettingsScreen.open();
+    await NotificationSettingsScreen.open();
+    await NotificationSettingsMobileScreen.open();
 
     // # Tap on Send Notifications option if Android
     if (isAndroid()) {

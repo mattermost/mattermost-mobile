@@ -7,11 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {MainSidebar} from '@support/ui/component';
 import {
     ChannelInfoScreen,
     ChannelScreen,
-    DirectChannelsScreen,
+    MoreDirectMessagesScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {Setup} from '@support/server_api';
@@ -19,6 +18,8 @@ import {Setup} from '@support/server_api';
 describe('Channel Info Header', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -27,13 +28,9 @@ describe('Channel Info Header', () => {
     });
 
     it('MM-T3406 should render correct GM member count in channel info header', async () => {
-        // # Open main sidebar
-        await ChannelScreen.mainSidebarDrawerButton.tap();
-        await MainSidebar.toBeVisible();
-
-        // # Open Direct Channels screen
-        await MainSidebar.addDirectChannel.tap();
-        await DirectChannelsScreen.toBeVisible();
+        // # Open more direct messages screen
+        await ChannelScreen.openMainSidebar();
+        await MoreDirectMessagesScreen.open();
 
         // # Wait for some profiles to load
         await wait(timeouts.ONE_SEC);
@@ -41,7 +38,7 @@ describe('Channel Info Header', () => {
         const {
             getUserAtIndex,
             startButton,
-        } = DirectChannelsScreen;
+        } = MoreDirectMessagesScreen;
 
         // # Select 3 profiles
         await getUserAtIndex(0).tap();

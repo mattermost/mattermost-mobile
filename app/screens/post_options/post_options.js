@@ -75,9 +75,11 @@ export default class PostOptions extends PureComponent {
     getOption = (key, icon, message, onPress, destructive = false) => {
         const {formatMessage} = this.context.intl;
         const {isLandscape, theme} = this.props;
+        const testID = `post.options.${key}.action`;
 
         return (
             <PostOption
+                testID={testID}
                 key={key}
                 icon={icon}
                 text={formatMessage(message)}
@@ -222,6 +224,7 @@ export default class PostOptions extends PureComponent {
         if (!isSystemMessage(post) && this.props.canMarkAsUnread) {
             return (
                 <PostOption
+                    testID='post.options.markUnread.action'
                     key='markUnread'
                     icon='mark-as-unread'
                     text={formatMessage({id: 'mobile.post_info.mark_unread', defaultMessage: 'Mark as Unread'})}
@@ -403,6 +406,7 @@ export default class PostOptions extends PureComponent {
             reactionHeight = REACTION_PICKER_HEIGHT;
             reactionPicker = (
                 <ReactionPicker
+                    testID='post_options.reaction_picker.action'
                     addReaction={this.handleAddReaction}
                     openReactionScreen={this.handleAddReactionScreen}
                 />

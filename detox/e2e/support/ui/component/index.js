@@ -3,12 +3,14 @@
 
 import Autocomplete from './autocomplete';
 import MainSidebar from './main_sidebar';
+import Post from './post';
 import PostOptions from './post_options';
 import SettingsSidebar from './settings_sidebar';
 
 export {
     Autocomplete,
     MainSidebar,
+    Post,
     PostOptions,
     SettingsSidebar,
 };

@@ -205,7 +205,10 @@ export default class RecentMentions extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <View
+                testID='recent_mentions.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 {component}
             </View>

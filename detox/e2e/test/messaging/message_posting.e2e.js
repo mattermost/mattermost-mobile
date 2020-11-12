@@ -14,6 +14,7 @@ describe('Messaging', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -25,11 +26,11 @@ describe('Messaging', () => {
         // * Verify channel screen is visible
         await ChannelScreen.toBeVisible();
 
-        const {postInput, sendButton} = ChannelScreen;
+        const {disabledSendButton, postInput} = ChannelScreen;
 
         // * Post input should exist while send button should not
         await expect(postInput).toBeVisible();
-        await expect(sendButton).not.toExist();
+        await expect(disabledSendButton).toBeVisible();
 
         // # Tap on post input
         await postInput.tap();
@@ -39,8 +40,7 @@ describe('Messaging', () => {
         await postInput.typeText(text);
 
         // # Tap send button
-        await expect(sendButton).toBeVisible();
-        await sendButton.tap();
+        await ChannelScreen.tapSendButton();
 
         // * Verify text to exist
         await expect(element(by.text(text))).toBeVisible();

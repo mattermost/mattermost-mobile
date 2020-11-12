@@ -25,6 +25,7 @@ class LoginScreen {
     }
 
     open = async () => {
+        // # Open login screen
         await SelectServerScreen.connectToServer();
 
         return this.toBeVisible();

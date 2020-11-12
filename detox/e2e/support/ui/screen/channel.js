@@ -1,8 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SettingsSidebar} from '@support/ui/component';
-import {LoginScreen, SelectServerScreen} from '@support/ui/screen';
+import {
+    MainSidebar,
+    PostOptions,
+    SettingsSidebar,
+} from '@support/ui/component';
+import {
+    LoginScreen,
+    LongPostScreen,
+    PostListScreen,
+    SelectServerScreen,
+} from '@support/ui/screen';
 
 class ChannelScreen {
     testID = {
@@ -29,6 +38,14 @@ class ChannelScreen {
     sendButton = element(by.id(this.testID.sendButton));
     settingsSidebarDrawerButton = element(by.id(this.testID.settingsSidebarDrawerButton));
 
+    getLongPostPostItem = (postId, text) => {
+        return LongPostScreen.getPost(postId, text);
+    }
+
+    getPostListPostItem = (postId, text) => {
+        return PostListScreen.getPost(postId, text);
+    }
+
     toBeVisible = async () => {
         await expect(this.channelScreen).toBeVisible();
 
@@ -36,6 +53,7 @@ class ChannelScreen {
     }
 
     open = async (user) => {
+        // # Open channel screen
         await SelectServerScreen.connectToServer();
         await LoginScreen.login(user);
 
@@ -43,9 +61,37 @@ class ChannelScreen {
     }
 
     logout = async () => {
-        await this.settingsSidebarDrawerButton.tap();
+        await this.openSettingsSidebar();
         await SettingsSidebar.logoutAction.tap();
         await SelectServerScreen.toBeVisible();
+    }
+
+    openMainSidebar = async () => {
+        // # Open main sidebar
+        await this.mainSidebarDrawerButton.tap();
+        await MainSidebar.toBeVisible();
+    }
+
+    openSettingsSidebar = async () => {
+        // # Open settings sidebar
+        await this.settingsSidebarDrawerButton.tap();
+        await SettingsSidebar.toBeVisible();
+    }
+
+    openPostOptionsFor = async (postId, text) => {
+        const post = await this.getPostListPostItem(postId, text);
+        await expect(post).toBeVisible();
+
+        // # Open post options
+        await post.longPress();
+        await PostOptions.toBeVisible();
+    }
+
+    tapSendButton = async () => {
+        // # Tap send button
+        await this.sendButton.tap();
+        await expect(this.sendButton).not.toExist();
+        await expect(this.disabledSendButton).toBeVisible();
     }
 }
 

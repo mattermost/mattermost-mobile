@@ -20,6 +20,8 @@ describe('Autocomplete', () => {
     beforeAll(async () => {
         ({user} = await Setup.apiInit());
         userAtMentionAutocomplete = Autocomplete.getAtMentionItem(user.id);
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 

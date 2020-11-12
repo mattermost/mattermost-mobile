@@ -110,12 +110,14 @@ export default class ChannelInfo extends PureComponent {
         return (
             <>
                 <Favorite
+                    testID='channel_info.favorite.action'
                     channelId={currentChannel.id}
                     isLandscape={isLandscape}
                     theme={theme}
                 />
                 <Separator theme={theme}/>
                 <Mute
+                    testID='channel_info.mute.action'
                     channelId={currentChannel.id}
                     isLandscape={isLandscape}
                     userId={currentUserId}
@@ -123,6 +125,7 @@ export default class ChannelInfo extends PureComponent {
                 />
                 <Separator theme={theme}/>
                 <IgnoreMentions
+                    testID='channel_info.ignore_mentions.action'
                     channelId={currentChannel.id}
                     isLandscape={isLandscape}
                     theme={theme}
@@ -139,19 +142,23 @@ export default class ChannelInfo extends PureComponent {
                 </>
                 }
                 <Pinned
+                    testID='channel_info.pinned.action'
                     channelId={currentChannel.id}
                     isLandscape={isLandscape}
                     theme={theme}
                 />
                 <ManageMembers
+                    testID='channel_info.manage_members.action'
                     isLandscape={isLandscape}
                     theme={theme}
                 />
                 <AddMembers
+                    testID='channel_info.add_members.action'
                     isLandscape={isLandscape}
                     theme={theme}
                 />
                 <ConvertPrivate
+                    testID='channel_info.convert_private.action'
                     isLandscape={isLandscape}
                     theme={theme}
                 />

@@ -12,6 +12,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface ManageMembersProps {
+    testID?: string;
     canManageUsers: boolean;
     isDirectMessage: boolean;
     isLandscape: boolean;
@@ -41,7 +42,7 @@ export default class ManageMembers extends PureComponent<ManageMembersProps> {
     });
 
     render() {
-        const {isDirectMessage, canManageUsers, isLandscape, membersCount, separator, theme} = this.props;
+        const {testID, isDirectMessage, canManageUsers, isLandscape, membersCount, separator, theme} = this.props;
 
         if (isDirectMessage) {
             return null;
@@ -51,6 +52,7 @@ export default class ManageMembers extends PureComponent<ManageMembersProps> {
             <>
                 {separator && <Separator theme={theme}/>}
                 <ChannelInfoRow
+                    testID={testID}
                     action={this.goToChannelMembers}
                     defaultMessage={canManageUsers ? 'Manage Members' : 'View Members'}
                     detail={membersCount}
