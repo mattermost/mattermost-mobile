@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    DeviceEventEmitter,
     Keyboard,
     FlatList,
     StyleSheet,
@@ -111,6 +112,21 @@ export default class RecentMentions extends PureComponent {
         }
     }
 
+    onViewableItemsChanged = ({viewableItems}) => {
+        if (!viewableItems.length) {
+            return;
+        }
+
+        const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
+            if (isViewable) {
+                acc[item] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+    };
+
     previewPost = (post) => {
         this.props.actions.showPermalink(this.context.intl, '', post.id, false);
     };
@@ -198,6 +214,7 @@ export default class RecentMentions extends PureComponent {
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'
                     renderItem={this.renderPost}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
                 />
             );
         } else {
