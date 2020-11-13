@@ -55,24 +55,22 @@ function handleSelectChannel(state, action) {
     return data;
 }
 
-export const handleSetTempUploadFilesForPostDraft = (() => {
-    return (state, action) => {
-        if (action.rootId) {
-            return state;
-        }
+export function handleSetTempUploadFilesForPostDraft(state, action) {
+    if (action.rootId) {
+        return state;
+    }
 
-        const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
-        const files = [
-            ...state[action.channelId]?.files || [],
-            ...tempFiles,
-        ];
+    const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
+    const files = [
+        ...state[action.channelId]?.files || [],
+        ...tempFiles,
+    ];
 
-        return {
-            ...state,
-            [action.channelId]: Object.assign({}, state[action.channelId], {files}),
-        };
+    return {
+        ...state,
+        [action.channelId]: Object.assign({}, state[action.channelId], {files}),
     };
-})();
+}
 
 function handleRetryUploadFileForPost(state, action) {
     if (action.rootId) {
