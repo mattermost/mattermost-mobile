@@ -140,12 +140,16 @@ export default class FileQuickAction extends PureComponent {
 
     render() {
         const {disabled, theme} = this.props;
+        const testID = disabled ?
+            'post_draft.file_quick_action.disabled' :
+            'post_draft.file_quick_action';
         const color = disabled ?
             changeOpacity(theme.centerChannelColor, 0.16) :
             changeOpacity(theme.centerChannelColor, 0.64);
 
         return (
             <TouchableWithFeedback
+                testID={testID}
                 disabled={disabled}
                 onPress={this.handleButtonPress}
                 style={style.icon}

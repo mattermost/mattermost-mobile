@@ -170,4 +170,24 @@ describe('Autocomplete', () => {
         // * Expect at mention autocomplete not to contain associated user suggestion
         await expect(userAtMentionAutocomplete).not.toExist();
     });
+
+    it('MM-T3409_11 should be able to select at mention multiple times', async () => {
+        // # Type "@" to activate at mention autocomplete
+        await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
+        await postInput.typeText('@');
+        await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
+
+        // # Type username
+        await postInput.typeText(user.username);
+
+        // # Tap user
+        await element(by.id(`autocomplete.at_mention.item.${user.id}`)).tap();
+
+        // * expect mention autocomplete to dissappear
+        await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
+
+        // # Type "@" again to re-activate mention autocomplete
+        await postInput.typeText('@');
+        await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
+    });
 });
