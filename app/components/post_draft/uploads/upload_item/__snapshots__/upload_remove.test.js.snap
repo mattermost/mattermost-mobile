@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UploadRemove should match, full snapshot 1`] = `
+<TouchableWithFeedbackIOS
+  onPress={[Function]}
+  style={
+    Object {
+      "elevation": 11,
+      "height": 24,
+      "position": "absolute",
+      "right": -8,
+      "top": -7,
+      "width": 24,
+    }
+  }
+  type="opacity"
+>
+  <View
+    style={
+      Object {
+        "alignSelf": "center",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 12,
+        "height": 25,
+        "marginTop": 5.4,
+        "width": 24,
+      }
+    }
+  >
+    <CompassIcon
+      color="rgba(61,60,64,0.64)"
+      name="close-circle"
+      size={24}
+    />
+  </View>
+</TouchableWithFeedbackIOS>
+`;

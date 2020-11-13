@@ -1,23 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import channelReducer, {handleSetTempUploadFilesForPostDraft} from './channel';
+import channelReducer, {handleSetTempUploadFilesForPostDraft} from './thread';
 import {ViewTypes} from '@constants';
 
-describe('Reducers.channel', () => {
+describe('Reducers.thread', () => {
     test('Initial state', () => {
         const initialState = {
-            displayName: '',
             drafts: {},
-            loading: false,
-            refreshing: false,
-            loadingPosts: {},
-            lastGetPosts: {},
-            retryFailed: false,
-            loadMorePostsVisible: true,
-            lastChannelViewTime: {},
-            keepChannelIdAsUnread: null,
-            unreadMessageCount: {},
         };
 
         const nextState = channelReducer(
@@ -28,20 +18,19 @@ describe('Reducers.channel', () => {
         expect(nextState).toEqual(initialState);
     });
 
-    test('handleSetTempUploadFilesForPostDraft - should not throw error when state[action.channelId] is null', () => {
+    test('handleSetTempUploadFilesForPostDraft - should not throw error when state[action.rootId] is null', () => {
         const action = {
-            channelId: 'channel-id',
             clientIds: [],
-            rootId: null,
+            rootId: 'root-id',
             type: ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT,
         };
 
         const initialState = {
-            [action.channelId]: null,
+            [action.rootId]: null,
         };
 
         const expectedState = {
-            [action.channelId]: {
+            [action.rootId]: {
                 files: [],
             },
         };
