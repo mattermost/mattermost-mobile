@@ -57,7 +57,7 @@ export default class AtMention extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
+        const {groups, inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
 
         // Not invoked, render nothing.
         if (matchTerm === null) {
@@ -83,8 +83,13 @@ export default class AtMention extends PureComponent {
         }
 
         // Server request is complete
-        if (requestStatus !== RequestStatus.STARTED &&
-            (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)) {
+        if (
+            groups !== this.props.groups ||
+                (
+                    requestStatus !== RequestStatus.STARTED &&
+                    (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)
+                )
+        ) {
             const sections = this.buildSections(nextProps);
             this.setState({
                 sections,

@@ -57,34 +57,41 @@ export function getGroupMembers(state: GlobalState, id: string) {
     return groupMemberData.members;
 }
 
-export function searchAssociatedGroupsForReferenceLocal(state: GlobalState, term: string, teamId: string, channelId: string): Array<Group> {
-    const groups = getAssociatedGroupsForReference(state, teamId, channelId);
-    if (!groups || groups.length === 0) {
-        return emptyList;
-    }
-    const filteredGroups = filterGroupsMatchingTerm(groups, term);
-    return filteredGroups;
-}
+export const getAssociatedGroupsForReference = reselect.createSelector(
+    (state: GlobalState, teamId: string, channelId: string) => {
+        const team = getTeam(state, teamId);
+        const channel = getChannel(state, channelId);
+        let groupsForReference = [];
+        if (team && team.group_constrained && channel && channel.group_constrained) {
+            const groupsFromChannel = getGroupsAssociatedToChannelForReference(state, channelId);
+            const groupsFromTeam = getGroupsAssociatedToTeamForReference(state, teamId);
+            groupsForReference = groupsFromChannel.concat(groupsFromTeam.filter((item) => groupsFromChannel.indexOf(item) < 0));
+        } else if (team && team.group_constrained) {
+            groupsForReference = getGroupsAssociatedToTeamForReference(state, teamId);
+        } else if (channel && channel.group_constrained) {
+            groupsForReference = getGroupsAssociatedToChannelForReference(state, channelId);
+        } else {
+            groupsForReference = getAllAssociatedGroupsForReference(state);
+        }
+        return groupsForReference;
+    },
+    (state: GlobalState) => getCurrentUserLocale(state),
+    (groupsForReference: Array<Group>, locale: string) => {
+        return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
+    },
+);
 
-export function getAssociatedGroupsForReference(state: GlobalState, teamId: string, channelId: string): Array<Group> {
-    const team = getTeam(state, teamId);
-    const channel = getChannel(state, channelId);
-    const locale = getCurrentUserLocale(state);
-
-    let groupsForReference = [];
-    if (team && team.group_constrained && channel && channel.group_constrained) {
-        const groupsFromChannel = getGroupsAssociatedToChannelForReference(state, channelId);
-        const groupsFromTeam = getGroupsAssociatedToTeamForReference(state, teamId);
-        groupsForReference = groupsFromChannel.concat(groupsFromTeam.filter((item) => groupsFromChannel.indexOf(item) < 0));
-    } else if (team && team.group_constrained) {
-        groupsForReference = getGroupsAssociatedToTeamForReference(state, teamId);
-    } else if (channel && channel.group_constrained) {
-        groupsForReference = getGroupsAssociatedToChannelForReference(state, channelId);
-    } else {
-        groupsForReference = getAllAssociatedGroupsForReference(state);
-    }
-    return groupsForReference.sort((groupA: Group, groupB: Group) => groupA.name.localeCompare(groupB.name, locale));
-}
+export const searchAssociatedGroupsForReferenceLocal = reselect.createSelector(
+    (state: GlobalState, term: string, teamId: string, channelId: string) => getAssociatedGroupsForReference(state, teamId, channelId),
+    (state: GlobalState, term: string) => term,
+    (groups: Array<Group>, term: string) => {
+        if (!groups || groups.length === 0) {
+            return emptyList;
+        }
+        const filteredGroups = filterGroupsMatchingTerm(groups, term);
+        return filteredGroups;
+    },
+);
 
 export const getAssociatedGroupsForReferenceMap = reselect.createSelector(
     getAssociatedGroupsForReference,
