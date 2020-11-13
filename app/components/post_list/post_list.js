@@ -464,7 +464,7 @@ export default class PostList extends PureComponent {
 
         DeviceEventEmitter.emit('scrolled', viewableItemsMap);
 
-        if (this.onViewableItemsChangedListener) {
+        if (this.onViewableItemsChangedListener && !this.props.deepLinkURL) {
             this.onViewableItemsChangedListener(viewableItems);
         }
     }
