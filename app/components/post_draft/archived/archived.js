@@ -50,7 +50,10 @@ export default class Archived extends PureComponent {
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.archivedWrapper}>
+            <View
+                testID='post_draft.archived'
+                style={style.archivedWrapper}
+            >
                 <FormattedMarkdownText
                     {...this.message()}
                     theme={theme}

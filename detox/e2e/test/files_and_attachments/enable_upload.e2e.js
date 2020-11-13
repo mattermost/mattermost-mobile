@@ -7,11 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    CameraQuickAction,
-    FileQuickAction,
-    ImageQuickAction,
-} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
 import {
     Setup,
@@ -35,9 +30,15 @@ describe('Enable Upload', () => {
     });
 
     it('MM-T3483 should enable file, image, camera icons when mobile file upload is enabled', async () => {
+        const {
+            cameraQuickAction,
+            fileQuickAction,
+            imageQuickAction,
+        } = ChannelScreen;
+
         // * Verify enabled file, image, camera icons are visible
-        await expect(CameraQuickAction.cameraQuickAction).toBeVisible();
-        await expect(FileQuickAction.fileQuickAction).toBeVisible();
-        await expect(ImageQuickAction.imageQuickAction).toBeVisible();
+        await expect(cameraQuickAction).toBeVisible();
+        await expect(fileQuickAction).toBeVisible();
+        await expect(imageQuickAction).toBeVisible();
     });
 });

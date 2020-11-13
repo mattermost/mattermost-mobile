@@ -2,8 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {
+    CameraQuickAction,
+    FileQuickAction,
+    ImageQuickAction,
     MainSidebar,
+    PostDraft,
     PostOptions,
+    SendButton,
     SettingsSidebar,
 } from '@support/ui/component';
 import {
@@ -21,9 +26,6 @@ class ChannelScreen {
         channelNavBarTitle: 'channel.nav_bar.title',
         channelSearchButton: 'channel.search.button',
         channelTitleButton: 'channel.title.button',
-        disabledSendButton: 'disabled_send.button',
-        postInput: 'post.input',
-        sendButton: 'send.button',
         settingsSidebarDrawerButton: 'settings_sidebar_drawer.button',
     }
 
@@ -33,10 +35,21 @@ class ChannelScreen {
     channelNavBarTitle = element(by.id(this.testID.channelNavBarTitle));
     channelSearchButton = element(by.id(this.testID.channelSearchButton));
     channelTitleButton = element(by.id(this.testID.channelTitleButton));
-    disabledSendButton = element(by.id(this.testID.disabledSendButton));
-    postInput = element(by.id(this.testID.postInput));
-    sendButton = element(by.id(this.testID.sendButton));
     settingsSidebarDrawerButton = element(by.id(this.testID.settingsSidebarDrawerButton));
+
+    // convenience props
+    cameraQuickAction = CameraQuickAction.cameraQuickAction;
+    cameraQuickActionDisabled = CameraQuickAction.cameraQuickActionDisabled;
+    imageQuickAction = ImageQuickAction.imageQuickAction;
+    imageQuickActionDisabled = ImageQuickAction.imageQuickActionDisabled;
+    fileQuickAction = FileQuickAction.fileQuickAction;
+    fileQuickActionDisabled = FileQuickAction.fileQuickActionDisabled;
+    postDraft = PostDraft.postDraft;
+    postDraftArchived = PostDraft.postDraftArchived;
+    postDraftReadOnly = PostDraft.postDraftReadOnly;
+    postInput = PostDraft.postInput;
+    sendButton = SendButton.sendButton;
+    sendButtonDisabled = SendButton.sendButtonDisabled;
 
     getLongPostPostItem = (postId, text) => {
         return LongPostScreen.getPost(postId, text);
@@ -91,7 +104,7 @@ class ChannelScreen {
         // # Tap send button
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
-        await expect(this.disabledSendButton).toBeVisible();
+        await expect(this.sendButtonDisabled).toBeVisible();
     }
 }
 

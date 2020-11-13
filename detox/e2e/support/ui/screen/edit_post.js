@@ -16,7 +16,11 @@ class EditPostScreen {
     editPostClose = element(by.id(this.testID.editPostClose));
 
     toBeVisible = async () => {
-        await expect(this.editPostScreen).toBeVisible();
+        if (isAndroid()) {
+            await expect(this.editPostScreen).toBeVisible();
+        } else {
+            await expect(this.editPostScreen).toExist();
+        }
 
         return this.editPostScreen;
     }

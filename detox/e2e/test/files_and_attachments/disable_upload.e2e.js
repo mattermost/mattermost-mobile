@@ -7,11 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    CameraQuickAction,
-    FileQuickAction,
-    ImageQuickAction,
-} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
 import {
     Setup,
@@ -35,9 +30,15 @@ describe('Disable Upload', () => {
     });
 
     it('MM-T3453 should disable file, image, camera icons when mobile file upload is disabled', async () => {
+        const {
+            cameraQuickActionDisabled,
+            fileQuickActionDisabled,
+            imageQuickActionDisabled,
+        } = ChannelScreen;
+
         // * Verify disabled file, image, camera icons are visible
-        await expect(CameraQuickAction.cameraQuickActionDisabled).toBeVisible();
-        await expect(FileQuickAction.fileQuickActionDisabled).toBeVisible();
-        await expect(ImageQuickAction.imageQuickActionDisabled).toBeVisible();
+        await expect(cameraQuickActionDisabled).toBeVisible();
+        await expect(fileQuickActionDisabled).toBeVisible();
+        await expect(imageQuickActionDisabled).toBeVisible();
     });
 });

@@ -13,11 +13,6 @@ import {
     EditPostScreen,
 } from '@support/ui/screen';
 import {
-    isAndroid,
-    timeouts,
-    wait,
-} from '@support/utils';
-import {
     Channel,
     Post,
     Setup,
@@ -49,11 +44,6 @@ describe('Autocomplete', () => {
 
         // # Tap send button
         await ChannelScreen.tapSendButton();
-
-        // # Explicitly wait on Android before verifying error message
-        if (isAndroid()) {
-            await wait(timeouts.ONE_SEC);
-        }
 
         // # Open edit post screen
         const {post} = await Post.apiGetLastPostInChannel(testChannel.id);

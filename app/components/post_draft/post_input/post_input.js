@@ -278,6 +278,7 @@ export default class PostInput extends PureComponent {
 
         return (
             <PasteableTextInput
+                testID='post_draft.post.input'
                 ref={this.input}
                 style={{...style.input, maxHeight}}
                 onChangeText={this.handleTextChange}
