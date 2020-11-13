@@ -44,7 +44,6 @@ describe('Messaging', () => {
 
         // # Then tap send button repeatedly
         await expect(sendButtonDisabled).toBeVisible();
-        await expect(sendButtonDisabled).toExist();
         await sendButtonDisabled.multiTap(3);
 
         // * Check that message is successfully posted
