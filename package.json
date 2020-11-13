@@ -51,7 +51,7 @@
     "react-native-image-picker": "2.3.4",
     "react-native-keyboard-aware-scrollview": "2.1.0",
     "react-native-keyboard-tracking-view": "5.7.0",
-    "react-native-keychain": "6.2.0",
+    "react-native-keychain": "4.0.5",
     "react-native-linear-gradient": "2.5.6",
     "react-native-local-auth": "1.6.0",
     "react-native-localize": "1.4.3",
