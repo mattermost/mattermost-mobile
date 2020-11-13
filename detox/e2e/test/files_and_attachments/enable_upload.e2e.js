@@ -20,6 +20,9 @@ import {
 
 describe('Enable Upload', () => {
     beforeAll(async () => {
+        // * Verify that the server has license
+        await System.apiRequireLicense();
+
         // # Enable mobile upload
         await System.apiUpdateConfig({FileSettings: {EnableMobileUpload: true}});
 
