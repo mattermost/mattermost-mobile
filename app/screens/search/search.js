@@ -7,6 +7,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    DeviceEventEmitter,
     Keyboard,
     Platform,
     SafeAreaView,
@@ -329,6 +330,22 @@ export default class Search extends PureComponent {
             this.props.actions.getMorePostsForSearch();
         }
     }, 100);
+
+    onViewableItemsChanged = ({viewableItems}) => {
+        const visible = viewableItems.filter((item) => item.section.key === 'results');
+        if (!visible.length) {
+            return;
+        }
+
+        const viewableItemsMap = visible.reduce((acc, {item, isViewable}) => {
+            if (isViewable) {
+                acc[item] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+    };
 
     previewPost = (post) => {
         this.props.actions.showPermalink(this.context.intl, '', post.id, false);
@@ -753,6 +770,7 @@ export default class Search extends PureComponent {
                         onScroll={this.handleScroll}
                         scrollEventThrottle={60}
                         ListFooterComponent={this.renderFooter}
+                        onViewableItemsChanged={this.onViewableItemsChanged}
                     />
                     <Autocomplete
                         cursorPosition={cursorPosition}
