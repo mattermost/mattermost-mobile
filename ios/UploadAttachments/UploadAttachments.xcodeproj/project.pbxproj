@@ -1,0 +1,396 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+/* Begin PBXBuildFile section */
+		7F80232C229C91AD0034D6D4 /* MMMConstants.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FABE054221387B500D0F595 /* MMMConstants.h */; };
+		7F82907122C295AC0035544F /* MMKeychainManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F82907022C295AC0035544F /* MMKeychainManager.m */; };
+		7F82907322C296970035544F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F82907222C296970035544F /* Security.framework */; };
+		7F82907522C296A10035544F /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F82907422C296A10035544F /* LocalAuthentication.framework */; };
+		7FABE04E2213818A00D0F595 /* MattermostBucket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE04C2213818900D0F595 /* MattermostBucket.m */; };
+		7FABE055221387B500D0F595 /* MMMConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE053221387B400D0F595 /* MMMConstants.m */; };
+		7FABE058221388D700D0F595 /* UploadSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE057221388D600D0F595 /* UploadSessionManager.swift */; };
+		7FABE05B2213892200D0F595 /* AttachmentItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0592213892100D0F595 /* AttachmentItem.swift */; };
+		7FABE05C2213892200D0F595 /* AttachmentArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE05A2213892100D0F595 /* AttachmentArray.swift */; };
+		7FABE0F7221466F900D0F595 /* UploadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0F6221466F900D0F595 /* UploadManager.swift */; };
+		7FABE0FA2214674200D0F595 /* StoreManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0F82214674200D0F595 /* StoreManager.m */; };
+		7FABE0FC2214800F00D0F595 /* UploadSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FABE0FB2214800F00D0F595 /* UploadSession.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7FABE03422137F2900D0F595 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				7F80232C229C91AD0034D6D4 /* MMMConstants.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		7F82906F22C295AB0035544F /* MMKeychainManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMKeychainManager.h; sourceTree = "<group>"; };
+		7F82907022C295AC0035544F /* MMKeychainManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMKeychainManager.m; sourceTree = "<group>"; };
+		7F82907222C296970035544F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		7F82907422C296A10035544F /* LocalAuthentication.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LocalAuthentication.framework; path = System/Library/Frameworks/LocalAuthentication.framework; sourceTree = SDKROOT; };
+		7FABE03622137F2900D0F595 /* libUploadAttachments.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libUploadAttachments.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		7FABE04B2213818900D0F595 /* UploadAttachments-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UploadAttachments-Bridging-Header.h"; sourceTree = "<group>"; };
+		7FABE04C2213818900D0F595 /* MattermostBucket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MattermostBucket.m; sourceTree = "<group>"; };
+		7FABE04D2213818A00D0F595 /* MattermostBucket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MattermostBucket.h; sourceTree = "<group>"; };
+		7FABE053221387B400D0F595 /* MMMConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMMConstants.m; sourceTree = "<group>"; };
+		7FABE054221387B500D0F595 /* MMMConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMMConstants.h; sourceTree = "<group>"; };
+		7FABE057221388D600D0F595 /* UploadSessionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UploadSessionManager.swift; sourceTree = "<group>"; };
+		7FABE0592213892100D0F595 /* AttachmentItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentItem.swift; sourceTree = "<group>"; };
+		7FABE05A2213892100D0F595 /* AttachmentArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttachmentArray.swift; sourceTree = "<group>"; };
+		7FABE0F6221466F900D0F595 /* UploadManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UploadManager.swift; sourceTree = "<group>"; };
+		7FABE0F82214674200D0F595 /* StoreManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StoreManager.m; sourceTree = "<group>"; };
+		7FABE0F92214674200D0F595 /* StoreManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StoreManager.h; sourceTree = "<group>"; };
+		7FABE0FB2214800F00D0F595 /* UploadSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadSession.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7FABE03322137F2900D0F595 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F82907522C296A10035544F /* LocalAuthentication.framework in Frameworks */,
+				7F82907322C296970035544F /* Security.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7F82901A22C28F770035544F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F82907422C296A10035544F /* LocalAuthentication.framework */,
+				7F82907222C296970035544F /* Security.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7FABE02D22137F2900D0F595 = {
+			isa = PBXGroup;
+			children = (
+				7FABE03822137F2900D0F595 /* UploadAttachments */,
+				7FABE03722137F2900D0F595 /* Products */,
+				7F82901A22C28F770035544F /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		7FABE03722137F2900D0F595 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7FABE03622137F2900D0F595 /* libUploadAttachments.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7FABE03822137F2900D0F595 /* UploadAttachments */ = {
+			isa = PBXGroup;
+			children = (
+				7F82906F22C295AB0035544F /* MMKeychainManager.h */,
+				7F82907022C295AC0035544F /* MMKeychainManager.m */,
+				7FABE05A2213892100D0F595 /* AttachmentArray.swift */,
+				7FABE0592213892100D0F595 /* AttachmentItem.swift */,
+				7FABE054221387B500D0F595 /* MMMConstants.h */,
+				7FABE053221387B400D0F595 /* MMMConstants.m */,
+				7FABE04D2213818A00D0F595 /* MattermostBucket.h */,
+				7FABE04C2213818900D0F595 /* MattermostBucket.m */,
+				7FABE0F92214674200D0F595 /* StoreManager.h */,
+				7FABE0F82214674200D0F595 /* StoreManager.m */,
+				7FABE04B2213818900D0F595 /* UploadAttachments-Bridging-Header.h */,
+				7FABE0F6221466F900D0F595 /* UploadManager.swift */,
+				7FABE057221388D600D0F595 /* UploadSessionManager.swift */,
+				7FABE0FB2214800F00D0F595 /* UploadSession.swift */,
+			);
+			path = UploadAttachments;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7FABE03522137F2900D0F595 /* UploadAttachments */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7FABE03D22137F2900D0F595 /* Build configuration list for PBXNativeTarget "UploadAttachments" */;
+			buildPhases = (
+				7FABE03222137F2900D0F595 /* Sources */,
+				7FABE03322137F2900D0F595 /* Frameworks */,
+				7FABE0472213800800D0F595 /* Generate header files */,
+				7FABE03422137F2900D0F595 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = UploadAttachments;
+			productName = UploadAttachments;
+			productReference = 7FABE03622137F2900D0F595 /* libUploadAttachments.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7FABE02E22137F2900D0F595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1010;
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = Mattermost;
+				TargetAttributes = {
+					7FABE03522137F2900D0F595 = {
+						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1010;
+					};
+				};
+			};
+			buildConfigurationList = 7FABE03122137F2900D0F595 /* Build configuration list for PBXProject "UploadAttachments" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7FABE02D22137F2900D0F595;
+			productRefGroup = 7FABE03722137F2900D0F595 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7FABE03522137F2900D0F595 /* UploadAttachments */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		7FABE0472213800800D0F595 /* Generate header files */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate header files";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\ntarget_dir=${BUILT_PRODUCTS_DIR}/include/${PRODUCT_MODULE_NAME}/\n\n# Ensure the target include path exists\nmkdir -p ${target_dir}\n\n# Copy any file that looks like a Swift generated header to the include path\ncp ${DERIVED_SOURCES_DIR}/*-Swift.h ${target_dir}\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7FABE03222137F2900D0F595 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7FABE05C2213892200D0F595 /* AttachmentArray.swift in Sources */,
+				7FABE0FA2214674200D0F595 /* StoreManager.m in Sources */,
+				7F82907122C295AC0035544F /* MMKeychainManager.m in Sources */,
+				7FABE058221388D700D0F595 /* UploadSessionManager.swift in Sources */,
+				7FABE0F7221466F900D0F595 /* UploadManager.swift in Sources */,
+				7FABE04E2213818A00D0F595 /* MattermostBucket.m in Sources */,
+				7FABE055221387B500D0F595 /* MMMConstants.m in Sources */,
+				7FABE05B2213892200D0F595 /* AttachmentItem.swift in Sources */,
+				7FABE0FC2214800F00D0F595 /* UploadSession.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7FABE03B22137F2900D0F595 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		7FABE03C22137F2900D0F595 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7FABE03E22137F2900D0F595 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				HEADER_SEARCH_PATHS = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "$(SRCROOT)/UploadAttachments/module.modulemap";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "UploadAttachments/UploadAttachments-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7FABE03F22137F2900D0F595 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				HEADER_SEARCH_PATHS = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "$(SRCROOT)/UploadAttachments/module.modulemap";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "UploadAttachments/UploadAttachments-Bridging-Header.h";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7FABE03122137F2900D0F595 /* Build configuration list for PBXProject "UploadAttachments" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7FABE03B22137F2900D0F595 /* Debug */,
+				7FABE03C22137F2900D0F595 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7FABE03D22137F2900D0F595 /* Build configuration list for PBXNativeTarget "UploadAttachments" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7FABE03E22137F2900D0F595 /* Debug */,
+				7FABE03F22137F2900D0F595 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7FABE02E22137F2900D0F595 /* Project object */;
+}

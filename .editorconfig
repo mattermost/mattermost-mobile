@@ -1,0 +1,18 @@
+# http://editorconfig.org/
+
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[*.{js,jsx,json,html}]
+indent_style = space
+indent_size = 4
+
+[{package.json,.eslintrc.json}]
+indent_size = 2
+
+[Makefile]
+indent_style = tab

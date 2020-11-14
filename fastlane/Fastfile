@@ -1,0 +1,924 @@
+fastlane_version '2.71.0'
+fastlane_require 'aws-sdk-s3'
+fastlane_require 'erb'
+fastlane_require 'json'
+fastlane_require 'pathname'
+
+skip_docs
+
+configured = false
+is_build_pr = false
+
+# Executes before anything else use to setup the script
+before_all do
+  is_build_pr = ENV['BUILD_PR'] == 'true'
+  if is_build_pr && ENV['CIRCLECI'] == 'true'
+    ENV['BRANCH_TO_BUILD'] = ENV['CIRCLE_BRANCH']
+  end
+
+  if ENV['CIRCLECI'] != 'true'
+    # Raises an error is git is not clean
+    if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
+      ensure_git_status_clean
+    end
+
+    # Block to ensure we are on the right branch
+    branch = ENV['BRANCH_TO_BUILD'] || ENV['GIT_BRANCH']
+    begin
+      ensure_git_branch(
+          branch: branch
+      )
+    rescue
+      sh "git checkout #{branch}"
+      UI.success("Using branch \"#{branch}\"")
+    end
+
+    # If we are going to commit changes to git create a separate branch
+    # so no changes are done in the branch that is being built
+    if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
+      local_branch = ENV['GIT_LOCAL_BRANCH'] || 'build'
+      sh "git checkout -b #{local_branch}"
+      UI.success("Creating branch \"#{local_branch}\"")
+    end
+  end
+end
+
+after_all do |lane|
+  if ENV['CIRCLECI'] != 'true'
+    if ENV['RESET_GIT_BRANCH'] == 'true'
+      branch = ENV['BRANCH_TO_BUILD'] || 'master'
+      package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+      beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta'
+      release_dir = "../android/app/src/main/java/#{package_id.gsub '.', '/'}"
+
+      if beta_dir != release_dir
+        sh "rm -rf #{release_dir}"
+      end
+
+      reset_git_repo(
+          force: true,
+          skip_clean: true
+      )
+      sh "git checkout #{branch}"
+
+      if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
+        local_branch = ENV['GIT_LOCAL_BRANCH'] || 'build'
+        sh "git branch -D #{local_branch}"
+        UI.success("Deleted working branch \"#{local_branch}\"")
+        if lane.to_s == 'build_pr'
+          sh 'git checkout master'
+          ## Remove the branch for the PR
+          sh "git branch -D #{branch}"
+          UI.success("Deleted PR branch \"#{branch}\"")
+        end
+      end
+    end
+  end
+end
+
+desc 'Increment version number for both Android and iOS'
+lane :set_app_version do
+  version_number = ENV['VERSION_NUMBER']
+  unless version_number.nil? || version_number.empty?
+    package = load_config_json('../package.json')
+    package['version'] = version_number
+    save_config_json('../package.json', package)
+
+    lock = load_config_json('../package-lock.json')
+    lock['version'] = version_number
+    save_config_json('../package-lock.json', lock)
+
+    android_set_version_name(
+        gradle_file: './android/app/build.gradle',
+        version_name: version_number
+    )
+
+    increment_version_number(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        version_number: version_number
+    )
+
+    if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
+      msg = ENV['INCREMENT_VERSION_NUMBER_MESSAGE'] || 'Bump app version number to '
+      commit_message = "#{msg} #{version_number.to_s}"
+      build_folder_path = Dir[File.expand_path('..')].first
+      repo_path = (sh "git -C #{build_folder_path} rev-parse --show-toplevel").strip
+      git_dirty_files = (sh "git -C #{repo_path} diff --name-only HEAD").split(" ").join(' ')
+
+      unless git_dirty_files.empty?
+        sh "git -C #{repo_path} commit -m \"#{commit_message}\" #{git_dirty_files}"
+        UI.success("Successfully committed \"#{git_dirty_files}\" 💾.")
+      end
+    end
+  end
+end
+
+desc 'Increments the build number for both Android and iOS'
+lane :set_app_build_number do
+  ## set the build number for both platforms
+  # use the one for iOS if no env variable set
+  if ENV['INCREMENT_BUILD_NUMBER'] === 'true'
+    build_number = ENV['BUILD_NUMBER'] || (get_build_number(xcodeproj: './ios/Mattermost.xcodeproj').to_i + 1)
+    increment_build_number(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        build_number: build_number
+    )
+    android_set_version_code(
+        gradle_file: './android/app/build.gradle',
+        version_code: build_number
+    )
+
+
+    if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
+      msg = ENV['INCREMENT_BUILD_NUMBER_MESSAGE'] || 'Bump app build number to '
+      commit_message = "#{msg} #{build_number.to_s}"
+      build_folder_path = Dir[File.expand_path('..')].first
+      repo_path = (sh "git -C #{build_folder_path} rev-parse --show-toplevel").strip
+      git_dirty_files = (sh "git -C #{repo_path} diff --name-only HEAD").split(" ").join(' ')
+
+      unless git_dirty_files.empty?
+        sh "git -C #{repo_path} commit -m \"#{commit_message}\" #{git_dirty_files}"
+        UI.success("Successfully committed \"#{git_dirty_files}\" 💾.")
+      end
+    end
+  end
+end
+
+desc 'Configure the app before building'
+lane :configure do
+  json = load_config_json('../dist/assets/config.json')
+
+  # Set the Segment API Key
+  unless ENV['RUDDER_API_KEY'].nil? || ENV['RUDDER_API_KEY'].empty?
+    json['RudderApiKey'] =  ENV['RUDDER_API_KEY']
+  end
+
+  # Configure Sentry if enabled
+  if ENV['SENTRY_ENABLED'] == 'true'
+    json['SentryEnabled'] = true
+    json['SentryOrg'] = ENV['SENTRY_ORG']
+    json['SentryProjectIos'] = ENV['SENTRY_PROJECT_IOS']
+    json['SentryProjectAndroid'] = ENV['SENTRY_PROJECT_ANDROID']
+    json['SentryDsnIos'] = ENV['SENTRY_DSN_IOS']
+    json['SentryDsnAndroid'] = ENV['SENTRY_DSN_ANDROID']
+  end
+
+  # Save the config.json file
+  save_config_json('../dist/assets/config.json', json)
+
+  configured = true
+end
+
+desc 'Upload file to s3'
+lane :upload_file_to_s3 do |options|
+  os_type = options[:os_type].downcase
+  extension = os_type == "android" ? "*.apk" : "*.ipa"
+  build_folder_path = Dir[File.expand_path('..')].first
+  files = []
+  
+  unless options[:file].nil? || options[:file].empty?
+    files.push("#{build_folder_path}/#{options[:file]}")
+  else
+    files = Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f}
+  end
+
+  unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty? || files.length == 0
+    version_number = ''
+    build_number = ''
+    pr_file = ''
+    plist_file = ''
+
+    if is_build_pr
+      pr_file = File.basename(files.first)
+      plist_file = "#{File.basename(files.first, '.*')}.plist"
+    else
+      version_number = os_type == "android" ? 
+        android_get_version_name(gradle_file: './android/app/build.gradle') :
+        get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+      build_number = os_type == "android" ?
+        android_get_version_code(gradle_file: './android/app/build.gradle') :
+        get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    end
+
+    s3_region = ENV['AWS_REGION']
+    s3_bucket_name = ENV['AWS_BUCKET_NAME']
+    s3_folder = is_build_pr ?
+      "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}" :
+      "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+    
+    s3 = Aws::S3::Resource.new(region: s3_region)
+    s3_bucket = s3.bucket(s3_bucket_name)
+    mutex = Mutex.new
+    threads = []
+    file_number = 0
+    total_files = files.length
+    links = []
+    total_files.times do |i|
+      threads[i] = Thread.new {
+        until files.empty?
+          mutex.synchronize do
+            file_number += 1
+            Thread.current["file_number"] = file_number
+          end
+          file = files.pop rescue nil
+          next unless file
+
+          filename = File.basename(file)
+          puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
+          s3_file = s3_bucket.object("#{s3_folder}/#{filename}")
+          s3_file.upload_file("#{file}")
+          links.push(s3_file.public_url)
+        end
+      }
+    end
+    threads.each { |t| t.join }
+
+    if is_build_pr
+      if os_type == 'android'
+        install_url = "https://#{s3_bucket_name}/#{s3_folder}/#{pr_file}"
+      elsif os_type == 'ios'
+        current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+        plist_template = File.read('plist.erb')
+        plist_body = ERB.new(plist_template).result(binding)
+
+        plist_obj = s3_bucket.object("#{s3_folder}/#{plist_file}")
+        plist_obj.put(body: plist_body)
+
+        install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{plist_file}"
+      end
+
+      qa_build_message({
+                            :os_type => os_type,
+                            :install_url => install_url
+                        })
+    end
+  
+    if options[:file] == 'Mattermost-simulator-x86_64.app.zip'
+      pretext = '#### New iOS build for VM/Simulator'
+      msg = "Download link: #{links.first}"
+      send_message_to_mattermost({
+                                      :version_number => version_number,
+                                      :build_number => build_number,
+                                      :pretext => pretext,
+                                      :title => '',
+                                      :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
+                                      :msg => msg,
+                                      :default_payloads => [],
+                                      :success => true,
+                                  })
+    end
+
+    UI.message("S3 public paths:\n#{links.join("\n")}")
+  end
+end
+
+desc 'Create GitHub release'
+lane :github do
+  tag = ENV['CIRCLE_TAG'] || ENV['TAG']
+
+  if tag
+    version = android_get_version_name(gradle_file: './android/app/build.gradle')
+    build = android_get_version_code(gradle_file: './android/app/build.gradle')
+    changelog = File.read("metadata/changelog")
+    android = [
+      "    * [Mattermost arm64-v8a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-arm64-v8a.apk)",
+      "    * [Mattermost armeabi-v7a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-armeabi-v7a.apk)",
+      "    * [Mattermost Universal](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-universal.apk)",
+      "    * [Mattermost x86](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86.apk)",
+      "    * [Mattermost x86_64](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86_64.apk)",
+    ]
+    changelog.concat("* Android\n#{android.join("\n")}\n")
+    changelog.concat("* iOS\n    * [Mattermost](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.ipa)")
+
+    github_release = set_github_release(
+      repository_name: "mattermost/mattermost-mobile",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: "Mobile Version #{version}",
+      tag_name: tag,
+      description: changelog,
+      upload_assets: ["./Mattermost-unsigned.ipa", "./Mattermost-unsigned.apk"],
+      is_draft: true
+    )
+  end
+end
+
+platform :ios do
+  before_all do
+    if ENV['CIRCLECI'] == 'true'
+      setup_circle_ci
+    end
+  end
+
+  desc 'Get iOS adhoc profiles'
+  lane :adhoc do
+    if ENV['MATCH_TYPE'] != 'adhoc' && !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+      match(
+          type: 'adhoc'
+      )
+    end
+  end
+
+  desc 'Build iOS app'
+  lane :build do
+    unless configured
+      configure
+    end
+    update_identifiers
+    replace_assets
+    build_ios
+    upload_file_to_s3({:os_type => "ios"})
+  end
+
+  desc 'Build an unsigned ipa'
+  lane :unsigned do
+    UI.success('Building unsigned iOS app')
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost'
+
+    update_identifiers
+    replace_assets
+
+    sh 'rm -rf ../build-ios/'
+    sh 'cd ../ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
+    sh 'cd ../build-ios/ && mkdir -p Payload && cp -R Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/'
+    sh 'mv ../build-ios/Mattermost-unsigned.ipa ../'
+    sh 'rm -rf ../build-ios/'
+  end
+
+  lane :simulator do
+    UI.success('Building iOS app for simulator')
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost'
+
+    update_identifiers
+    replace_assets
+
+    data_path = 'ios'
+    if ENV['CIRCLECI'] == 'true'
+      data_path = 'build-ios'
+    end
+
+    sh 'rm -rf ../build-ios/'
+    sh 'cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../build-ios ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO'
+    sh "cd ../#{data_path}/Build/Products/Release-iphonesimulator && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app"
+    sh "mv ../#{data_path}/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip ../"
+    sh 'rm -rf ../build-ios/'
+
+    upload_file_to_s3({
+      :os_type => "ios",
+      :file => "Mattermost-simulator-x86_64.app.zip"
+    })
+  end
+
+  lane :update_identifiers do
+    # Set the name for the app
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    update_info_plist(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        display_name: app_name
+    )
+
+    # Set the notification service extension bundle identifier
+    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.mattermost.rnbeta.NotificationService'
+    update_app_identifier(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'NotificationService/Info.plist',
+        app_identifier: notification_bundle_id
+    )
+
+    find_replace_string(
+        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
+        old_string: 'com.mattermost.rnbeta.NotificationService',
+        new_string: notification_bundle_id
+    )
+
+    # Set the share extension bundle identifier
+    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.mattermost.rnbeta.MattermostShare'
+    update_app_identifier(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'MattermostShare/Info.plist',
+        app_identifier: extension_bundle_id
+    )
+
+    find_replace_string(
+        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
+        old_string: 'com.mattermost.rnbeta.MattermostShare',
+        new_string: extension_bundle_id
+    )
+
+    # Set the app bundle id
+    app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+    update_app_identifier(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        app_identifier: app_bundle_id
+    )
+
+    find_replace_string(
+        path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
+        old_string: 'com.mattermost.rnbeta',
+        new_string: app_bundle_id
+    )
+
+    # Set the deep link prefix
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
+    update_info_plist(
+        xcodeproj: './ios/Mattermost.xcodeproj',
+        plist_path: 'Mattermost/Info.plist',
+        block: proc do |plist|
+          urlScheme = plist["CFBundleURLTypes"].find{|scheme| scheme["CFBundleURLName"] == "com.mattermost"}
+          urlScheme[:CFBundleURLSchemes] = [app_scheme]
+        end
+    )
+
+    # If set update the development team
+    unless ENV['FASTLANE_TEAM_ID'].nil? || ENV['FASTLANE_TEAM_ID'].empty?
+    update_project_team(
+        path: './ios/Mattermost.xcodeproj',
+        teamid: ENV['FASTLANE_TEAM_ID']
+    )
+    end
+
+    # Set the ICloud container
+    icloud_container = ENV['IOS_ICLOUD_CONTAINER'] || 'iCloud.com.mattermost.rnbeta'
+    update_icloud_container_identifiers(
+        entitlements_file: './ios/Mattermost/Mattermost.entitlements',
+        icloud_container_identifiers: [icloud_container]
+    )
+
+    # Set the app group id to share data between the app and the extension
+    app_group_id = ENV['IOS_APP_GROUP'] || 'group.com.mattermost.rnbeta'
+    update_app_group_identifiers(
+        entitlements_file: './ios/Mattermost/Mattermost.entitlements',
+        app_group_identifiers: [app_group_id]
+    )
+
+    update_info_plist(
+      xcodeproj: './ios/Mattermost.xcodeproj',
+      plist_path: 'Mattermost/Info.plist',
+      block: proc do |plist|
+        plist["AppGroupIdentifier"] = app_group_id
+      end
+    )
+
+    update_app_group_identifiers(
+        entitlements_file: './ios/MattermostShare/MattermostShare.entitlements',
+        app_group_identifiers: [app_group_id]
+    )
+
+    update_info_plist(
+      xcodeproj: './ios/Mattermost.xcodeproj',
+      plist_path: 'MattermostShare/Info.plist',
+      block: proc do |plist|
+        plist["AppGroupIdentifier"] = app_group_id
+      end
+    )
+
+    update_app_group_identifiers(
+        entitlements_file: './ios/NotificationService/NotificationService.entitlements',
+        app_group_identifiers: [app_group_id]
+    )
+
+    update_info_plist(
+      xcodeproj: './ios/Mattermost.xcodeproj',
+      plist_path: 'NotificationService/Info.plist',
+      block: proc do |plist|
+        plist["AppGroupIdentifier"] = app_group_id
+      end
+    )
+
+    # Sync the provisioning profiles using match
+    if ENV['SYNC_PROVISIONING_PROFILES'] == 'true' && !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+      match(type: ENV['MATCH_TYPE'] || 'adhoc')
+    end
+  end
+
+  lane :replace_assets do
+    if ENV['REPLACE_ASSETS'] == 'true'
+      sh 'cp -R ../dist/assets/release/icons/ios/* ../ios/Mattermost/Images.xcassets/AppIcon.appiconset/'
+      sh 'cp -R ../dist/assets/release/splash_screen/ios/* ../ios/SplashScreenResource/'
+    end
+  end
+
+  lane :deploy do |options|
+    ipa_path = options[:file]
+
+    unless ipa_path.nil?
+      submit_to_testflight(ipa_path)
+    end
+  end
+
+  error do |lane, exception|
+    version = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+    build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+    send_message_to_mattermost({
+                                   :version_number => version,
+                                   :build_number => build_number,
+                                   :pretext => '',
+                                   :title => 'Unsuccessful Build',
+                                   :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
+                                   :msg => exception.message,
+                                   :default_payloads => [:lane],
+                                   :success => false
+                               })
+  end
+
+  def setup_code_signing
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: './ios/Mattermost.xcodeproj'
+    )
+
+    ENV['MATCH_APP_IDENTIFIER'].split(',').each do |id|
+      target = 'Mattermost'
+      if id.include? 'NotificationService'
+        target = 'NotificationService'
+      elsif id.include? 'MattermostShare'
+        target = 'MattermostShare'
+      end
+
+      profile = "sigh_#{id}_#{ENV['MATCH_TYPE']}"
+      config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
+
+      update_project_provisioning(
+          xcodeproj: './ios/Mattermost.xcodeproj',
+          profile: ENV["#{profile}_profile-path"], # optional if you use sigh
+          target_filter: ".*#{target}$", # matches name or type of a target
+          build_configuration: config_mode,
+          code_signing_identity: 'iPhone Distribution' # optionally specify the codesigning identity
+      )
+    end
+  end
+
+  def build_ios
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name_sub = app_name.gsub(" ", "_")
+    config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
+    method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
+
+    setup_code_signing
+
+    gym(
+        clean: true,
+        scheme: 'Mattermost',
+        configuration: config_mode,
+        workspace: './ios/Mattermost.xcworkspace',
+        export_method: method,
+        skip_profile_detection: true,
+        output_name: "#{app_name_sub}.ipa",
+        export_xcargs: "-allowProvisioningUpdates",
+        export_options: {
+            signingStyle: 'manual',
+            iCloudContainerEnvironment: 'Production'
+        }
+    )
+  end
+
+end
+
+platform :android do
+  desc 'Build Android app'
+  lane :build do
+    unless configured
+      configure
+    end
+    configure_telemetry_android
+    update_identifiers
+    replace_assets
+    link_sentry_android
+    build_android
+    move_apk_to_root
+    upload_file_to_s3({:os_type => "android"})
+  end
+
+  desc 'Build an unsigned apk'
+  lane :unsigned do
+    UI.success('Building unsigned Android app')
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost'
+
+    update_identifiers
+    replace_assets
+
+    gradle(
+        task: 'assemble',
+        build_type: 'Unsigned',
+        project_dir: 'android/'
+    )
+
+    sh "mv #{lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]} #{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/Mattermost-unsigned.apk"
+  end
+
+  lane :update_identifiers do
+    # Set the name for the app
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    sh "echo '#{app_name}' > ../fastlane/metadata/android/en-US/title.txt"
+    android_change_string_app_name(
+        newName: app_name,
+        stringsFile: './android/app/src/main/res/values/strings.xml'
+    )
+
+    package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+    android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
+    android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
+
+    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
+    find_replace_string(
+      path_to_file: "./android/app/src/main/AndroidManifest.xml",
+      old_string: 'scheme="mattermost"',
+      new_string: "scheme=\'#{app_scheme}\'"
+    )
+
+    beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
+    release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
+    if ENV['BUILD_FOR_RELEASE'] == 'true'
+      find_replace_string(
+          path_to_file: "#{beta_dir}MainApplication.java",
+          old_string: 'return BuildConfig.DEBUG;',
+          new_string: 'return false;'
+      )
+    end
+
+    if release_dir != beta_dir
+      unless Dir.exist?(".#{release_dir}")
+        FileUtils.mkdir_p ".#{release_dir}"
+      end
+
+      sh "mv .#{beta_dir}* .#{release_dir}"
+
+      find_replace_string(
+          path_to_file: './android/app/BUCK',
+          old_string: 'package com.mattermost.rnbeta;',
+          new_string: "package #{package_id};"
+      )
+
+      Dir.glob(".#{release_dir}*.java") do |item|
+        find_replace_string(
+            path_to_file: ".#{release_dir}MainApplication.java",
+            old_string: 'package com.mattermost.rnbeta;',
+            new_string: "package #{package_id};"
+        )
+      end
+
+      find_replace_string(
+        path_to_file: item[1..-1],
+        old_string: 'import com.mattermost.rnbeta.generated.BasePackageList;',
+        new_string: "import #{package_id}.generated.BasePackageList;"
+    )
+
+      Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.MainApplication;',
+            new_string: "import #{package_id}.MainApplication;"
+        )
+      end
+    end
+  end
+
+  lane :replace_assets do
+    if ENV['REPLACE_ASSETS'] == 'true'
+      sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
+      sh 'cp -R ../dist/assets/release/splash_screen/android/* ../android/app/src/main/res/'
+    end
+  end
+
+  lane :deploy do |options|
+    apk_path = options[:file]
+
+    unless apk_path.nil?
+      submit_to_google_play(apk_path)
+    end
+  end
+
+  error do |lane, exception|
+    build_number = android_get_version_code(
+        gradle_file: './android/app/build.gradle'
+    )
+    version_number = android_get_version_name(
+        gradle_file: './android/app/build.gradle'
+    )
+
+   send_message_to_mattermost({
+                                  :version_number => version_number,
+                                  :build_number => build_number,
+                                  :pretext => '',
+                                  :title => 'Unsuccessful Build',
+                                  :thumb_url => 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
+                                  :msg =>  exception.message,
+                                  :default_payloads => [:lane],
+                                  :success => false,
+                              })
+  end
+
+  def build_android
+    config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
+
+    gradle(
+        task: 'app:assemble',
+        build_type: config_mode,
+        project_dir: 'android/',
+        properties: {
+          'separateApk' => ENV["SEPARATE_APKS"] || false,
+          'universalApk' => ENV["SEPARATE_APKS"] || false,
+        }
+    )
+  end
+
+  def move_apk_to_root
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name_sub = app_name.gsub(" ", "_")
+    apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
+    outputJson = load_config_json(lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH])
+    paths = []
+    apks.each do |apk|
+      filename = File.basename(apk)
+      output = outputJson.find { |o| o["path"] === filename }
+      unless output.nil?
+        filterName = output["apkData"]["filterName"]
+        name = "#{app_name_sub}"
+        unless filterName.nil? || filterName.empty?
+          name += "-#{filterName}"
+        end
+        new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
+        paths.push(new_apk_path)
+        sh "mv #{apk} #{new_apk_path}"
+        UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
+      end
+    end
+
+    lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
+  end
+
+  def link_sentry_android
+    if ENV['SENTRY_ENABLED'] == 'true'
+      url = 'https://sentry.io'
+      File.open('../android/sentry.properties', 'w+') do |f|
+        UI.message('Creating sentry.properties from environment')
+        f.write(
+            "defaults.url=#{url}\n"\
+        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
+        "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}\n"\
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"
+        )
+      end
+    else
+      UI.message('Not creating sentry.properties because Sentry is disabled')
+    end
+  end
+end
+
+def load_config_json(json_path)
+  config_file = File.read(json_path)
+  JSON.parse(config_file)
+end
+
+def save_config_json(json_path, json)
+  File.open(json_path, 'w') do |f|
+    f.write(JSON.pretty_generate(json))
+    f.write("\n")
+  end
+end
+
+def send_message_to_mattermost(options)
+  unless ENV['MATTERMOST_WEBHOOK_URL'].nil? || ENV['MATTERMOST_WEBHOOK_URL'].empty?
+    mattermost(
+        pretext: options[:pretext],
+        message: options[:msg],
+        default_payloads: options[:default_payloads],
+        username: 'Fastlane',
+        icon_url: 'https://mattermost-plugin-media.s3.amazonaws.com/fastlane.png',
+        payload: {},
+        attachment_properties: {
+            title: options[:title],
+            thumb_url: options[:thumb_url],
+            fields: [{
+                         title: 'Version',
+                         value: options[:version_number],
+                         short: true
+                     },
+                     {
+                         title: 'Build Number',
+                         value: options[:build_number],
+                         short: true
+                     }]
+        },
+        success: options[:success]
+    )
+  end
+end
+
+def submit_to_testflight(ipa_path)
+  ipa = (Dir.glob(ipa_path).select { |f| File.file? f}).first
+
+  if !ipa.nil?
+    UI.success("ipa file #{ipa}")
+    pilot(
+        ipa: ipa
+    )
+  else
+    UI.user_error! "ipa file does not exist #{ipa}"
+    return
+  end
+
+  filename = File.basename(ipa)
+  version_number = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
+  build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
+  s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+  public_link = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}/#{filename}"
+
+
+  # Send a build message to Mattermost
+  pretext = '#### New iOS released ready to be published'
+  msg = "Release has been cut and is on TestFlight ready to be published.\nDownload link: #{public_link}"
+
+  if ENV['BETA_BUILD'] == 'true'
+    pretext = '#### New iOS beta published to TestFlight'
+    msg = "Sign up as a beta tester [here](https://testflight.apple.com/join/Q7Rx7K9P).\nDownload link: #{public_link}"
+  end
+
+  send_message_to_mattermost({
+                                 :version_number => version_number,
+                                 :build_number => build_number,
+                                 :pretext => pretext,
+                                 :title => '',
+                                 :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
+                                 :msg => msg,
+                                 :default_payloads => [],
+                                 :success => true,
+                             })
+end
+
+def submit_to_google_play(apk_path)
+  apks = Dir.glob(apk_path).select { |f| File.file? f}
+  filenames = apks.map {|f| File.basename(f)}
+
+  if(apks.length > 0)
+    unless ENV['SUPPLY_JSON_KEY'].nil? || ENV['SUPPLY_JSON_KEY'].empty?
+      supply(
+          package_name: ENV['MAIN_APP_IDENTIFIER'] || ENV['SUPPLY_PACKAGE_NAME'],
+          track: ENV['SUPPLY_TRACK'] || 'alpha',
+          apk_paths: apks
+      )
+    end
+  else
+    UI.user_error! "There are no apks in #{apk_path}"
+    return
+  end
+
+  version_number = android_get_version_name(gradle_file: './android/app/build.gradle')
+  build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
+  s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+  public_path = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}"
+  links = (filenames.map { |f| "* #{public_path}/#{f}"}).join("\n")
+
+  # Send a build message to Mattermost
+  pretext = '#### New Android released ready to be published'
+  msg = "Release has been cut and is on the Beta track ready to be published.\nDownload links:\n#{links}"
+
+  if ENV['BETA_BUILD'] == 'true'
+    pretext = '#### New Android beta published to Google Play'
+    msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload links:\n#{links}"
+  end
+
+  send_message_to_mattermost({
+                                 :version_number => version_number,
+                                 :build_number => build_number,
+                                 :pretext => pretext,
+                                 :title => '',
+                                 :thumb_url => 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
+                                 :msg => msg,
+                                 :default_payloads => [],
+                                 :success => true,
+                             })
+end
+
+def qa_build_message(options)
+  abbreviated_commit_hash = last_git_commit[:abbreviated_commit_hash]
+  os_type = options[:os_type]
+  install_url = options[:install_url]
+
+  unless ENV['MATTERMOST_WEBHOOK_URL'].nil? || ENV['MATTERMOST_WEBHOOK_URL'].empty?
+    os_type = options[:os_type]
+
+    if os_type == 'android'
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [Android APK Link](#{install_url})"
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300')
+    elsif os_type == 'ios'
+      msg = "QA build [#{abbreviated_commit_hash}](https://github.com/mattermost/mattermost-mobile/commit/#{abbreviated_commit_hash}) — [iOS pList Link](#{install_url})"
+      mattermost(message: msg, username: 'Fastlane', icon_url: 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png')
+    end
+  else
+    UI.success("PR Built for #{os_type}: #{install_url}")
+  end
+end

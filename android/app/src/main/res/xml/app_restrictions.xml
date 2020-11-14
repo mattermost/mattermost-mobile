@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<restrictions xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <restriction
+            android:key="inAppPinCode"
+            android:title="@string/inAppPinCode_title"
+            android:description="@string/inAppPinCode_description"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="blurApplicationScreen"
+            android:title="@string/blurApplicationScreen_title"
+            android:description="@string/blurApplicationScreen_description"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="jailbreakProtection"
+            android:title="@string/jailbreakProtection_title"
+            android:description="@string/jailbreakProtection_description"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="copyAndPasteProtection"
+            android:title="@string/copyAndPasteProtection_title"
+            android:description="@string/copyAndPasteProtection_description"
+            android:restrictionType="string"
+            android:defaultValue="false" />
+    <restriction
+            android:key="serverUrl"
+            android:title="@string/serverUrl_title"
+            android:description="@string/serverUrl_description"
+            android:restrictionType="string"
+            android:defaultValue="" />
+    <restriction
+            android:key="allowOtherServers"
+            android:title="@string/allowOtherServers_title"
+            android:description="@string/allowOtherServers_description"
+            android:restrictionType="string"
+            android:defaultValue="true" />
+    <restriction
+            android:key="username"
+            android:title="@string/username_title"
+            android:description="@string/username_description"
+            android:restrictionType="string"
+            android:defaultValue="" />
+    <restriction
+            android:key="timeout"
+            android:title="@string/timeout_title"
+            android:description="@string/timeout_description"
+            android:restrictionType="string"
+            android:defaultValue="10000" />
+    <restriction
+            android:key="vendor"
+            android:title="@string/vendor_title"
+            android:description="@string/vendor_description"
+            android:restrictionType="string"
+            android:defaultValue="" />
+
+</restrictions>

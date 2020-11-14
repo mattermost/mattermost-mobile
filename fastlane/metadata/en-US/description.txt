@@ -1,0 +1,13 @@
+Mattermost is workplace messaging from behind your firewall.
+
+- Discuss topics in private groups, one-to-one or team-wide
+- Find what you're looking for with full text search, filters and #hashtags
+- Easily share images, video, audio and files 
+- Personalize your experience with custom colors, formatting and fonts
+- Connect in-house systems with webhooks and Slack-compatible integrations
+
+To use this app, you need a "Server URL" from a Mattermost server. To host your own server go to https://about.mattermost.com/download
+
+Find the Terms of Service for this app here: http://www.mattermost.com/terms/
+
+This is a reference implementation of an open source Mattermost app available at: https://github.com/mattermost/mattermost-mobile

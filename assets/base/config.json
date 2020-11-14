@@ -1,0 +1,45 @@
+{
+    "DefaultServerUrl": "",
+    "TestServerUrl": "http://localhost:8065",
+    "DefaultTheme": "default",
+    "ShowErrorsList": false,
+    "MinServerVersion": "5.25.0",
+    "EELearnURL": "about.mattermost.com",
+    "TeamEditionLearnURL": "mattermost.org",
+    "AboutTeamURL": "http://www.mattermost.org/",
+    "AboutEnterpriseURL": "http://about.mattermost.com/",
+    "PlatformNoticeURL": "https://about.mattermost.com/platform-notice-txt/",
+    "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
+    "RudderApiKey": "",
+
+    "HideEmailLoginExperimental": false,
+    "HideGitLabLoginExperimental": false,
+    "HideLDAPLoginExperimental": false,
+    "HideSAMLLoginExperimental": false,
+    "HideO365LoginExperimental": false,
+
+    "SentryEnabled": false,
+    "SentryDsnIos": "",
+    "SentryDsnAndroid": "",
+    "SentryOptions": {
+        "deactivateStacktraceMerging": true,
+        "autoBreadcrumbs": {
+            "xhr": false,
+            "console": true
+        }
+    },
+
+    "ExperimentalNormalizeMarkdownLinks": false,
+
+    "AutoSelectServerUrl": false,
+
+    "EnableMobileClientUpgrade": false,
+    "EnableMobileClientUpgradeUserSetting": false,
+    "EnableForceMobileClientUpgrade": false,
+    "MobileClientUpgradeAndroidApkLink": "https://about.mattermost.com/mattermost-android-app/",
+    "MobileClientUpgradeIosIpaLink": "https://about.mattermost.com/mattermost-ios-app/",
+
+    "ShowSentryDebugOptions": false,
+
+    "CustomRequestHeaders": {}
+}

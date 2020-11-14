@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/RNReactNativeHapticFeedbackModule.java b/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/RNReactNativeHapticFeedbackModule.java
+index cc597e0..db3c3f9 100644
+--- a/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/RNReactNativeHapticFeedbackModule.java
++++ b/node_modules/react-native-haptic-feedback/android/src/main/java/com/mkuczera/RNReactNativeHapticFeedbackModule.java
+@@ -39,7 +39,7 @@ public class RNReactNativeHapticFeedbackModule extends ReactContextBaseJavaModul
+
+     switch (type) {
+       case "impactLight":
+-        durations = new long[]{0, 20};
++        durations = new long[]{0, 5};
+         break;
+       case "impactMedium":
+         durations = new long[]{0, 40};

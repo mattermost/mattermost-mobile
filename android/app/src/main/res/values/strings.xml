@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Mattermost Beta</string>
+    <string name="inAppPinCode_title">in-App Pincode</string>
+    <string name="inAppPinCode_description">Require users to authenticate as the owner of the phone before using the app. Prompts for fingerprint or passcode when the app first opens and when the app has been in the background for more than 5 minutes.</string>
+    <string name="blurApplicationScreen_title">Blur Application Screen</string>
+    <string name="blurApplicationScreen_description">Blur the app when it’s set to background to protect any confidential on-screen information, it also prevents taking screenshots of the app.</string>
+    <string name="jailbreakProtection_title">Jailbreak &#x2F; Root Detection</string>
+    <string name="jailbreakProtection_description">Disable app launch on Jailbroken or rooted devices.</string>
+    <string name="copyAndPasteProtection_title">Copy&amp;Paste Protection</string>
+    <string name="copyAndPasteProtection_description">Disable the ability to copy from or paste into any text inputs in the app.</string>
+    <string name="serverUrl_title">Mattermost Server URL</string>
+    <string name="serverUrl_description">Set a default Mattermost server URL.</string>
+    <string name="allowOtherServers_title">Allow Other Servers</string>
+    <string name="allowOtherServers_description">Allow the user to change the above server URL.</string>
+    <string name="username_title">Default Username</string>
+    <string name="username_description">Set the username or email address to use to authenticate against the Mattermost Server.</string>
+    <string name="timeout_title">Default Request Timeout</string>
+    <string name="timeout_description">How long in milliseconds the mobile app should wait for the server to respond.</string>
+    <string name="vendor_title">EMM Vendor or Company Name</string>
+    <string name="vendor_description">Name of the EMM vendor or company deploying the app. Used in help text when prompting for passcodes so users are aware why the app is being protected.</string>
+</resources>
