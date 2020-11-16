@@ -21,13 +21,8 @@ import {handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName} 
 import {getUserByUsername} from '@mm-redux/actions/users';
 import {makeDirectChannel} from '@actions/views/more_dms';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
-<<<<<<< HEAD
 import {showModalOverCurrentContext} from '@actions/navigation';
 import {changeOpacity} from '@mm-redux/utils/theme_utils';
-=======
-import { showModalOverCurrentContext } from '@actions/navigation';
-import { changeOpacity } from '@mm-redux/utils/theme_utils';
->>>>>>> 6f20f671ede4fc89d44962898dc75b2e1fced1e6
 
 export function createIncomingHook(hook: IncomingWebhook): ActionFunc {
     return bindClientFunc({
