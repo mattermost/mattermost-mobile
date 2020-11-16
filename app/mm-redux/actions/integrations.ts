@@ -16,10 +16,13 @@ import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
 import {DeepLinkTypes} from '@constants';
 import * as DraftUtils from '@utils/draft';
-import { getConfig, getCurrentUrl } from '@mm-redux/selectors/entities/general';
-import { handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName } from '@actions/views/channel';
+import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName} from '@actions/views/channel';
 import {getUserByUsername} from '@mm-redux/actions/users';
-import { makeDirectChannel } from '@actions/views/more_dms';
+import {makeDirectChannel} from '@actions/views/more_dms';
+import {selectFocusedPostId} from '@mm-redux/actions/posts';
+import {showModalOverCurrentContext} from '@actions/navigation';
+import {changeOpacity} from '@mm-redux/utils/theme_utils';
 
 export function createIncomingHook(hook: IncomingWebhook): ActionFunc {
     return bindClientFunc({
@@ -407,7 +410,7 @@ export function submitInteractiveDialog(submission: DialogSubmission): ActionFun
     };
 }
 
-export function handleGotoLocation (href: string): ActionFunc {
+export function handleGotoLocation(href: string, intl: any): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const config = getConfig(state);
@@ -417,17 +420,19 @@ export function handleGotoLocation (href: string): ActionFunc {
         if (match) {
             switch (match.type) {
             case DeepLinkTypes.CHANNEL:
-                dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(this.context.intl)));
+                dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(intl)));
                 break;
             case DeepLinkTypes.PERMALINK:
-                dispatch(loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(this.context.intl)));
-                this.showPermalinkView(match.postId);
+                dispatch(loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(intl)));
+                if (match.postId) {
+                    dispatch(showPermalinkView(match.postId));
+                }
                 break;
             case DeepLinkTypes.DMCHANNEL: {
                 const {data} = await dispatch(getUserByUsername(match.userName || ''));
                 if (!data) {
-                    DraftUtils.errorBadUser(this.context.intl);
-                    return {data:false};
+                    DraftUtils.errorBadUser(intl);
+                    return {data: false};
                 }
                 dispatch(makeDirectChannel(data.id));
                 break;
@@ -439,6 +444,27 @@ export function handleGotoLocation (href: string): ActionFunc {
         } else {
             DraftUtils.tryOpenURL(url);
         }
+        return {data: true};
+    };
+}
+
+export function showPermalinkView(postId: string, error = ''): ActionFunc {
+    return async (dispatch: DispatchFunc) => {
+        dispatch(selectFocusedPostId(postId));
+
+        const screen = 'Permalink';
+        const passProps = {
+            isPermalink: true,
+            onClose: this.handleClosePermalink,
+            error,
+        };
+        const options = {
+            layout: {
+                componentBackgroundColor: changeOpacity('#000', 0.2),
+            },
+        };
+        showModalOverCurrentContext(screen, passProps, options);
+
         return {data: true};
     };
 }
