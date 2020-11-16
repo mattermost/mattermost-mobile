@@ -4,7 +4,6 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import {Client4} from '@mm-redux/client';
-import brokenImageIcon from '@assets/images/icons/brokenimage.png';
 
 import FileAttachmentImage from './file_attachment_image.js';
 
@@ -26,15 +25,6 @@ describe('FileAttachmentImage', () => {
             <FileAttachmentImage {...baseProps}/>,
         );
         const instance = wrapper.instance();
-
-        it('should have brokenImageIcon as defaultSource if state.failed is true', () => {
-            wrapper.setState({failed: true});
-            const file = {};
-            const imageProps = instance.imageProps(file);
-            expect(imageProps.defaultSource).toStrictEqual(brokenImageIcon);
-            expect(imageProps.thumbnailUri).toBeUndefined();
-            expect(imageProps.imageUri).toBeUndefined();
-        });
 
         it('should have file.localPath as defaultSource if localPath is set', () => {
             wrapper.setState({failed: false});

@@ -7,6 +7,7 @@ exports[`ChannelTitle should match snapshot 1`] = `
       "flex": 1,
     }
   }
+  testID="channel.title.button"
 >
   <View
     style={
@@ -32,17 +33,17 @@ exports[`ChannelTitle should match snapshot 1`] = `
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       My Channel
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />
@@ -57,6 +58,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
       "flex": 1,
     }
   }
+  testID="channel.title.button"
 >
   <View
     style={
@@ -82,17 +84,17 @@ exports[`ChannelTitle should match snapshot when is DM and has guests and the te
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       Other user
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />
@@ -132,6 +134,7 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
       "flex": 1,
     }
   }
+  testID="channel.title.button"
 >
   <View
     style={
@@ -157,17 +160,17 @@ exports[`ChannelTitle should match snapshot when is DM and has guests but the te
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       Other user
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />
@@ -182,6 +185,7 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
       "flex": 1,
     }
   }
+  testID="channel.title.button"
 >
   <View
     style={
@@ -207,6 +211,7 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
           "textAlign": "center",
         }
       }
+      testID="channel.nav_bar.title"
     >
       <FormattedText
         defaultMessage="{displayname} (you)"
@@ -218,14 +223,13 @@ exports[`ChannelTitle should match snapshot when isSelfDMChannel is true 1`] = `
         }
       />
     </Text>
-    <Icon
-      allowFontScaling={false}
+    <CompassIcon
       name="chevron-down"
-      size={12}
+      size={24}
       style={
         Object {
           "color": undefined,
-          "marginHorizontal": 5,
+          "marginHorizontal": 1,
         }
       }
     />

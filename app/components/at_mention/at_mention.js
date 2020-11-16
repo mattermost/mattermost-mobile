@@ -6,13 +6,13 @@ import PropTypes from 'prop-types';
 import {StyleSheet, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 
 import {showModal} from '@actions/navigation';
-import {displayUsername} from '@mm-redux/utils/user_utils';
+import CompassIcon from '@components/compass_icon';
 import CustomPropTypes from '@constants/custom_prop_types';
-import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from '@utils/bottom_sheet';
+import mattermostManaged from 'app/mattermost_managed';
 
 export default class AtMention extends React.PureComponent {
     static propTypes = {
@@ -57,7 +57,7 @@ export default class AtMention extends React.PureComponent {
         };
 
         if (!this.closeButton) {
-            this.closeButton = await MaterialIcon.getImageSource('close', 20, theme.sidebarHeaderTextColor);
+            this.closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         }
 
         const options = {

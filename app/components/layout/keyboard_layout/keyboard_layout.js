@@ -16,6 +16,7 @@ export default class KeyboardLayout extends PureComponent {
     static propTypes = {
         children: PropTypes.node,
         style: CustomPropTypes.Style,
+        testID: PropTypes.string,
     };
 
     constructor(props) {
@@ -60,7 +61,10 @@ export default class KeyboardLayout extends PureComponent {
         }
 
         return (
-            <View style={layoutStyle}>
+            <View
+                style={layoutStyle}
+                testID={this.props.testID}
+            >
                 {this.props.children}
             </View>
         );

@@ -3,9 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Image} from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -40,27 +39,18 @@ export default class InputQuickAction extends PureComponent {
         onTextChange(newValue);
     }
 
-    renderInput = (style) => {
+    renderInput = () => {
         const {disabled, inputType, theme} = this.props;
-
-        if (inputType === 'at') {
-            const color = disabled ?
-                changeOpacity(theme.centerChannelColor, 0.16) :
-                changeOpacity(theme.centerChannelColor, 0.64);
-
-            return (
-                <MaterialCommunityIcons
-                    color={color}
-                    name='at'
-                    size={ICON_SIZE}
-                />
-            );
-        }
+        const name = inputType === 'at' ? inputType : 'slash-forward-box-outline';
+        const color = disabled ?
+            changeOpacity(theme.centerChannelColor, 0.16) :
+            changeOpacity(theme.centerChannelColor, 0.64);
 
         return (
-            <Image
-                source={require('@assets/images/icons/slash-forward-box.png')}
-                style={[style.slash, disabled ? style.disabled : null]}
+            <CompassIcon
+                name={name}
+                color={color}
+                size={ICON_SIZE}
             />
         );
     }
@@ -76,7 +66,7 @@ export default class InputQuickAction extends PureComponent {
                 style={style.icon}
                 type={'opacity'}
             >
-                {this.renderInput(style)}
+                {this.renderInput()}
             </TouchableWithFeedback>
         );
     }
@@ -84,12 +74,6 @@ export default class InputQuickAction extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        slash: {
-            width: ICON_SIZE,
-            height: ICON_SIZE,
-            opacity: 1,
-            tintColor: changeOpacity(theme.centerChannelColor, 0.64),
-        },
         disabled: {
             tintColor: changeOpacity(theme.centerChannelColor, 0.16),
         },

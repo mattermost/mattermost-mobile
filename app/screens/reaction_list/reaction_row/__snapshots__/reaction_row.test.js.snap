@@ -34,6 +34,7 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
         }
       >
         <Connect(ProfilePicture)
+          iconSize={18}
           showStatus={false}
           size={24}
           userId="user_id"

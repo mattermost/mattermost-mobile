@@ -5,7 +5,7 @@
 
 import RNFetchBlob from 'rn-fetch-blob';
 
-import ImageCacheManager, {getCacheFile, hashCode} from 'app/utils/image_cache_manager';
+import ImageCacheManager, {getCacheFile} from 'app/utils/image_cache_manager';
 import {emptyFunction} from 'app/utils/general';
 import * as fileUtils from 'app/utils/file';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -151,7 +151,7 @@ describe('ImageCacheManager.cache', () => {
         RNFetchBlob.fs.exists.mockReturnValueOnce(false);
         RNFetchBlob.fs.existsWithDiffExt.mockReturnValueOnce(null);
 
-        const ext = 'jpg';
+        const ext = 'jpeg';
         const headers = {'Content-Type': 'image/jpeg'};
         RNFetchBlob.fetch.mockReturnValueOnce({respInfo: {respType: '', headers}});
         fileUtils.getExtensionFromMime.
@@ -301,8 +301,8 @@ describe('ImageCacheManager.cache', () => {
         const expectedFileUri = 'https://file-uri/ABC123';
         const fileName = null;
 
-        const incorrectHash = hashCode(fileUri);
-        const expectedHash = hashCode(expectedFileUri);
+        const incorrectHash = fileUtils.hashCode(fileUri);
+        const expectedHash = fileUtils.hashCode(expectedFileUri);
         expect(incorrectHash).not.toBe(expectedHash);
 
         RNFetchBlob.fs.exists.mockReturnValueOnce(false);

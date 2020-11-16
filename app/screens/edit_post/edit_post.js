@@ -47,6 +47,7 @@ export default class EditPost extends PureComponent {
 
     leftButton = {
         id: 'close-edit-post',
+        testID: 'edit_post.close',
     };
 
     rightButton = {
@@ -249,12 +250,16 @@ export default class EditPost extends PureComponent {
 
         return (
             <>
-                <View style={style.container}>
+                <View
+                    testID='edit_post.screen'
+                    style={style.container}
+                >
                     <StatusBar/>
                     <View style={style.scrollView}>
                         {displayError}
                         <View style={[inputContainerStyle, padding(isLandscape), {height}]}>
                             <TextInputWithLocalizedPlaceholder
+                                testID='edit_post.input'
                                 ref={this.messageRef}
                                 value={message}
                                 blurOnSubmit={false}
@@ -281,6 +286,7 @@ export default class EditPost extends PureComponent {
                         value={message}
                         nestedScrollEnabled={true}
                         onVisible={this.onAutocompleteVisible}
+                        offsetY={8}
                         style={style.autocomplete}
                     />
                 </KeyboardTrackingView>

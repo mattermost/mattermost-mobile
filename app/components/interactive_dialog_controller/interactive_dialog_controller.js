@@ -3,11 +3,11 @@
 
 import {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {Alert} from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {showModal} from 'app/actions/navigation';
+import {showModal} from '@actions/navigation';
+import CompassIcon from '@components/compass_icon';
 
 export default class InteractiveDialogController extends PureComponent {
     static propTypes = {
@@ -22,7 +22,7 @@ export default class InteractiveDialogController extends PureComponent {
     constructor(props) {
         super(props);
 
-        MaterialIcon.getImageSource('close', 20, props.theme.sidebarHeaderTextColor).then((source) => {
+        CompassIcon.getImageSource('close', 24, props.theme.sidebarHeaderTextColor).then((source) => {
             this.closeButton = source;
         });
     }

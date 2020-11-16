@@ -13,7 +13,7 @@ import {
 import DeviceInfo from 'react-native-device-info';
 
 import Config from '@assets/config';
-import AppIcon from '@components/app_icon';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import StatusBar from '@components/status_bar';
@@ -217,10 +217,10 @@ export default class About extends PureComponent {
                     contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.logoContainer}>
-                        <AppIcon
+                        <CompassIcon
+                            name='mattermost'
                             color={theme.centerChannelColor}
-                            height={120}
-                            width={120}
+                            size={120}
                         />
                     </View>
                     <View style={style.infoContainer}>

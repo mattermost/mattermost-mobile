@@ -66,14 +66,14 @@ function handleReceivedPostSelected(state, action) {
     return data;
 }
 
-function handleSetTempUploadFilesForPostDraft(state, action) {
+export function handleSetTempUploadFilesForPostDraft(state, action) {
     if (!action.rootId) {
         return state;
     }
 
     const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
     const files = [
-        ...state[action.rootId].files,
+        ...state[action.rootId]?.files || [],
         ...tempFiles,
     ];
 

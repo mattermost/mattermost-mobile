@@ -56,16 +56,6 @@ export default class ThreadIOS extends ThreadBase {
                             scrollViewNativeID={SCROLLVIEW_NATIVE_ID}
                         />
                     </Animated.View>
-                    <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                        <Autocomplete
-                            maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                            onChangeText={this.handleAutoComplete}
-                            cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
-                            valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
-                            rootId={rootId}
-                            channelId={channelId}
-                        />
-                    </View>
                 </>
             );
 
@@ -101,6 +91,16 @@ export default class ThreadIOS extends ThreadBase {
                     {content}
                 </SafeAreaView>
                 {postDraft}
+                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                    <Autocomplete
+                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.handleAutoComplete}
+                        cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
+                        rootId={rootId}
+                        channelId={channelId}
+                    />
+                </View>
             </React.Fragment>
         );
     }

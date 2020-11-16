@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Image,
     Text,
     Platform,
     TouchableHighlight,
@@ -12,30 +11,10 @@ import {
     View,
 } from 'react-native';
 
-import copy from '@assets/images/post_menu/copy.png';
-import edit from '@assets/images/post_menu/edit.png';
-import emoji from '@assets/images/post_menu/emoji.png';
-import flag from '@assets/images/post_menu/flag.png';
-import link from '@assets/images/post_menu/link.png';
-import pin from '@assets/images/post_menu/pin.png';
-import trash from '@assets/images/post_menu/trash.png';
-import reply from '@assets/images/post_menu/reply.png';
-import bookmark from '@assets/images/post_menu/bookmark.png';
+import CompassIcon from '@components/compass_icon';
 import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
-
-const icons = {
-    copy,
-    edit,
-    emoji,
-    flag,
-    link,
-    pin,
-    trash,
-    reply,
-    bookmark,
-};
 
 export default class PostOption extends PureComponent {
     static propTypes = {
@@ -54,7 +33,6 @@ export default class PostOption extends PureComponent {
     render() {
         const {destructive, icon, text, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
-        const image = icons[icon];
 
         const Touchable = Platform.select({
             ios: TouchableHighlight,
@@ -74,17 +52,18 @@ export default class PostOption extends PureComponent {
         });
 
         return (
-            <View style={style.container} >
+            <View style={style.container}>
                 <Touchable
                     onPress={this.handleOnPress}
                     {...touchableProps}
                     style={[style.row, padding(isLandscape)]}
                 >
                     <View style={style.row}>
-                        <View style={[style.icon]}>
-                            <Image
-                                source={image}
-                                style={[style.iconImage, destructive ? style.destructiveIconImage : null]}
+                        <View style={[style.iconContainer]}>
+                            <CompassIcon
+                                name={icon}
+                                size={24}
+                                style={[style.icon, destructive ? style.destructive : null]}
                             />
                         </View>
                         <View style={style.textContainer}>
@@ -109,21 +88,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         destructive: {
             color: '#D0021B',
         },
-        destructiveIconImage: {
-            tintColor: '#D0021B',
-        },
         row: {
             flex: 1,
             flexDirection: 'row',
         },
-        icon: {
+        iconContainer: {
             alignItems: 'center',
             height: 50,
             justifyContent: 'center',
             width: 60,
         },
-        iconImage: {
-            tintColor: theme.centerChannelColor,
+        icon: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         textContainer: {
             justifyContent: 'center',
@@ -139,9 +115,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             letterSpacing: -0.45,
         },
         footer: {
-            height: 1,
-            marginLeft: 60,
-            borderBottomWidth: 1,
+            marginHorizontal: 17,
+            borderBottomWidth: 0.5,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
     };

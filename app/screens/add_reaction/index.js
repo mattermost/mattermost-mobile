@@ -26,7 +26,8 @@ export default class AddReaction extends PureComponent {
     };
 
     leftButton = {
-        id: 'close-edit-post',
+        id: 'close-add-reaction',
+        testID: 'close.add_reaction.button',
     };
 
     constructor(props) {
@@ -42,7 +43,7 @@ export default class AddReaction extends PureComponent {
     }
 
     navigationButtonPressed({buttonId}) {
-        if (buttonId === 'close-edit-post') {
+        if (buttonId === 'close-add-reaction') {
             this.close();
         }
     }
@@ -59,7 +60,10 @@ export default class AddReaction extends PureComponent {
 
     render() {
         return (
-            <View style={styles.container}>
+            <View
+                testID='add_reaction.screen'
+                style={styles.container}
+            >
                 <EmojiPicker onEmojiPress={this.handleEmojiPress}/>
             </View>
         );

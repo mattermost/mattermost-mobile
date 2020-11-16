@@ -186,8 +186,7 @@ export default class NotificationSettings extends PureComponent {
                 <SettingsItem
                     defaultMessage='Automatic Direct Message Replies'
                     i18nId={t('mobile.notification_settings.ooo_auto_responder')}
-                    iconName='beach-access'
-                    iconType='material'
+                    iconName='reply-outline'
                     onPress={() => this.handlePress(this.goToNotificationSettingsAutoResponder)}
                     separator={false}
                     showArrow={showArrow}
@@ -198,7 +197,10 @@ export default class NotificationSettings extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <View
+                testID='notification_settings.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     contentContainerStyle={style.wrapper}
@@ -208,8 +210,7 @@ export default class NotificationSettings extends PureComponent {
                     <SettingsItem
                         defaultMessage='Mentions and Replies'
                         i18nId={t('mobile.notification_settings.mentions_replies')}
-                        iconName='md-at'
-                        iconType='ion'
+                        iconName='at'
                         onPress={() => this.handlePress(this.goToNotificationSettingsMentions)}
                         separator={true}
                         showArrow={showArrow}
@@ -217,10 +218,10 @@ export default class NotificationSettings extends PureComponent {
                         isLandscape={isLandscape}
                     />
                     <SettingsItem
+                        testID='notification_settings.mobile.action'
                         defaultMessage='Mobile'
                         i18nId={t('mobile.notification_settings.mobile')}
-                        iconName='md-phone-portrait'
-                        iconType='ion'
+                        iconName='cellphone'
                         onPress={() => this.handlePress(this.goToNotificationSettingsMobile)}
                         separator={true}
                         showArrow={showArrow}
@@ -230,8 +231,7 @@ export default class NotificationSettings extends PureComponent {
                     <SettingsItem
                         defaultMessage='Email'
                         i18nId={t('mobile.notification_settings.email')}
-                        iconName='ios-mail'
-                        iconType='ion'
+                        iconName='email-outline'
                         onPress={() => this.handlePress(this.goToNotificationSettingsEmail)}
                         separator={showEmailSeparator}
                         showArrow={showArrow}
@@ -256,6 +256,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
             ...Platform.select({
                 ios: {
+                    flex: 1,
                     paddingTop: 35,
                 },
             }),

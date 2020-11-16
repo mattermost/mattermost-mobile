@@ -26,6 +26,7 @@ if (__DEV__) {
         'Require cycle: node_modules/react-native/Libraries/Network/fetch.js',
         'Warning: Cannot update a component from inside the function body of a different component',
     ]);
+    require('storybook/mattermost_storybook.ts');
 }
 
 const setFontFamily = () => {
@@ -53,7 +54,7 @@ const setFontFamily = () => {
 };
 
 if (Platform.OS === 'android') {
-    const ShareExtension = require('share_extension/android').default;
+    const ShareExtension = require('share_extension/index.tsx').default;
     const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
     setFontFamily();

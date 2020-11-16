@@ -11,6 +11,8 @@ import {renderWithReduxIntl} from 'test/testing_library';
 
 import PostDraft from './post_draft';
 
+jest.mock('app/components/compass_icon', () => 'Icon');
+
 const mockStore = configureMockStore([thunk]);
 const state = {
     ...intitialState,
@@ -61,7 +63,7 @@ describe('PostDraft', () => {
         );
 
         expect(toJSON()).toMatchSnapshot();
-        expect(getByTestId('post_input')).toBeTruthy();
+        expect(getByTestId('post.input')).toBeTruthy();
         expect(queryByText('Close Channel')).toBeNull();
     });
 
@@ -77,7 +79,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('You are viewing an ')).toBeTruthy();
@@ -98,7 +100,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('You are viewing an ')).toBeTruthy();
@@ -119,7 +121,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('This channel is read-only.')).toBeTruthy();
@@ -138,7 +140,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('This channel is read-only.')).toBeTruthy();

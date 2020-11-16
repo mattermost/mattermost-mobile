@@ -55,14 +55,14 @@ function handleSelectChannel(state, action) {
     return data;
 }
 
-function handleSetTempUploadFileForPostDraft(state, action) {
+export function handleSetTempUploadFilesForPostDraft(state, action) {
     if (action.rootId) {
         return state;
     }
 
     const tempFiles = action.clientIds.map((temp) => ({...temp, loading: true}));
     const files = [
-        ...state[action.channelId].files,
+        ...state[action.channelId]?.files || [],
         ...tempFiles,
     ];
 
@@ -203,7 +203,7 @@ function drafts(state = {}, action) { // eslint-disable-line complexity
     case ChannelTypes.SELECT_CHANNEL:
         return handleSelectChannel(state, action);
     case ViewTypes.SET_TEMP_UPLOAD_FILES_FOR_POST_DRAFT:
-        return handleSetTempUploadFileForPostDraft(state, action);
+        return handleSetTempUploadFilesForPostDraft(state, action);
     case ViewTypes.RETRY_UPLOAD_FILE_FOR_POST:
         return handleRetryUploadFileForPost(state, action);
     case FileTypes.RECEIVED_UPLOAD_FILES:

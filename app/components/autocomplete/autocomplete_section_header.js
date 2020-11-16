@@ -16,6 +16,7 @@ export default class AutocompleteSectionHeader extends PureComponent {
         loading: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        isFirstSection: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -23,12 +24,17 @@ export default class AutocompleteSectionHeader extends PureComponent {
     };
 
     render() {
-        const {defaultMessage, id, loading, theme, isLandscape} = this.props;
+        const {defaultMessage, id, loading, theme, isLandscape, isFirstSection} = this.props;
         const style = getStyleFromTheme(theme);
+        const sectionStyles = [style.section, padding(isLandscape)];
+
+        if (!isFirstSection) {
+            sectionStyles.push(style.borderTop);
+        }
 
         return (
             <View style={style.sectionWrapper}>
-                <View style={[style.section, padding(isLandscape)]}>
+                <View style={sectionStyles}>
                     <FormattedText
                         id={id}
                         defaultMessage={defaultMessage}
@@ -48,18 +54,24 @@ export default class AutocompleteSectionHeader extends PureComponent {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        section: {
-            justifyContent: 'center',
-            paddingHorizontal: 8,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+        borderTop: {
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.2),
+        },
+        section: {
+            justifyContent: 'center',
+            position: 'relative',
+            top: -1,
             flexDirection: 'row',
         },
         sectionText: {
             fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            paddingVertical: 7,
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+            paddingTop: 16,
+            paddingBottom: 8,
+            paddingHorizontal: 16,
             flex: 1,
         },
         sectionWrapper: {

@@ -1,29 +1,48 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {toChannelScreen} from '@support/ui/screen';
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
 
+import {ChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Messaging', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
-        await toChannelScreen(user);
+        await ChannelScreen.open(user);
+    });
+
+    afterAll(async () => {
+        await ChannelScreen.logout();
     });
 
     it('should post a message on tap to paper send button', async () => {
-        await expect(element(by.id('channel_screen'))).toBeVisible();
-        await expect(element(by.id('post_input'))).toExist();
-        await expect(element(by.id('send_button'))).not.toExist();
-        await element(by.id('post_input')).tap();
+        // * Verify channel screen is visible
+        await ChannelScreen.toBeVisible();
 
+        const {postInput, sendButton} = ChannelScreen;
+
+        // * Post input should exist while send button should not
+        await expect(postInput).toBeVisible();
+        await expect(sendButton).not.toExist();
+
+        // # Tap on post input
+        await postInput.tap();
+
+        // # Type text on post input
         const text = Date.now().toString();
-        await element(by.id('post_input')).typeText(text);
+        await postInput.typeText(text);
 
-        await expect(element(by.id('send_button'))).toBeVisible();
-        await element(by.id('send_button')).tap();
+        // # Tap send button
+        await expect(sendButton).toBeVisible();
+        await sendButton.tap();
 
-        await expect(element(by.text(text))).toExist();
+        // * Verify text to exist
+        await expect(element(by.text(text))).toBeVisible();
     });
 });

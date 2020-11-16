@@ -10,11 +10,11 @@ import {
     TouchableHighlight,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
-import FormattedText from 'app/components/formatted_text';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 function createTouchableComponent(children, action) {
     return (
@@ -25,7 +25,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconSize, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
+    const {testID, action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -34,16 +34,12 @@ function channelInfoRow(props) {
     const style = getStyleSheet(theme);
 
     let iconElement = null;
-    let iSize = iconSize;
-    if (!iSize) {
-        iSize = 15;
-    }
     if (image == null) {
         iconElement = (
-            <Icon
+            <CompassIcon
                 name={icon}
-                size={iSize}
-                color={iconColor || changeOpacity(theme.centerChannelColor, 0.5)}
+                size={24}
+                color={iconColor || changeOpacity(theme.centerChannelColor, 0.64)}
             />
         );
     } else {
@@ -65,19 +61,20 @@ function channelInfoRow(props) {
         );
     } else if (rightArrow) {
         actionElement = (
-            <Icon
-                name='angle-right'
-                size={20}
+            <CompassIcon
+                name='chevron-right'
+                size={24}
                 style={style.rightIcon}
             />
         );
     }
 
     const RowComponent = (
-        <View style={[style.container, padding(isLandscape)]}>
-            <View style={style.iconContainer}>
-                {iconElement}
-            </View>
+        <View
+            testID={testID}
+            style={[style.container, padding(isLandscape)]}
+        >
+            {iconElement}
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
                 id={textId}
@@ -96,6 +93,7 @@ function channelInfoRow(props) {
 }
 
 channelInfoRow.propTypes = {
+    testID: PropTypes.string,
     action: PropTypes.func.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     detail: PropTypes.oneOfType([
@@ -105,7 +103,6 @@ channelInfoRow.propTypes = {
     ]),
     icon: PropTypes.string,
     iconColor: PropTypes.string,
-    iconSize: PropTypes.number,
     image: PropTypes.number,
     imageTintColor: PropTypes.string,
     isLandscape: PropTypes.bool,
@@ -131,7 +128,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
         },
         detail: {
-            marginHorizontal: 15,
+            marginHorizontal: 7,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 15,
         },
@@ -141,17 +138,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 15,
             paddingVertical: 15,
         },
-        iconContainer: {
-            width: 17,
-            height: 17,
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        leftIcon: {
-            width: 17,
-        },
         rightIcon: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
+            color: changeOpacity(theme.centerChannelColor, 0.32),
+            marginRight: -4,
         },
     };
 });

@@ -5,6 +5,8 @@ build-ios
 server.PID
 mattermost.keystore
 tmp/
+.env
+env.d.ts
 
 # OSX
 #
@@ -88,6 +90,11 @@ ios/sentry.properties
 .nyc_output
 coverage
 .tmp
+
+# E2E testing
+mattermost-license.txt
+*.mattermost-license
+detox/artifacts
 
 # Bundle artifact
 *.jsbundle

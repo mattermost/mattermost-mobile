@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    DeviceEventEmitter,
     Keyboard,
     FlatList,
     StyleSheet,
@@ -12,13 +13,7 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {
-    goToScreen,
-    showModalOverCurrentContext,
-    showSearchModal,
-    dismissModal,
-} from '@actions/navigation';
-import noResultsImage from '@assets/images/no_results/pin.png';
+import {dismissModal, goToScreen, showSearchModal} from '@actions/navigation';
 import ChannelLoader from '@components/channel_loader';
 import DateHeader from '@components/post_list/date_header';
 import FailedNetworkAction from '@components/failed_network_action';
@@ -27,7 +22,6 @@ import PostSeparator from '@components/post_separator';
 import StatusBar from '@components/status_bar';
 import {isDateLine, getDateForDateLine} from '@mm-redux/utils/post_list';
 import SearchResultPost from '@screens/search/search_result_post';
-import {changeOpacity} from '@utils/theme';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -35,11 +29,10 @@ export default class PinnedPosts extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getPinnedPosts: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string.isRequired,
         postIds: PropTypes.array,
@@ -109,15 +102,8 @@ export default class PinnedPosts extends PureComponent {
         goToScreen(screen, title, passProps);
     };
 
-    handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
-
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
-        this.showPermalinkView(postId, true);
+        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     handleHashtagPress = async (hashtag) => {
@@ -127,10 +113,23 @@ export default class PinnedPosts extends PureComponent {
 
     keyExtractor = (item) => item;
 
-    previewPost = (post) => {
-        Keyboard.dismiss();
+    onViewableItemsChanged = ({viewableItems}) => {
+        if (!viewableItems.length) {
+            return;
+        }
 
-        this.showPermalinkView(post.id, false);
+        const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
+            if (isViewable) {
+                acc[item] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+    };
+
+    previewPost = (post) => {
+        this.props.actions.showPermalink(this.context.intl, '', post.id, false);
     };
 
     renderEmpty = () => {
@@ -143,7 +142,7 @@ export default class PinnedPosts extends PureComponent {
                     id: 'mobile.pinned_posts.empty_description',
                     defaultMessage: 'Pin important messages which are visible to the whole channel. Long press on a message and choose Pin to Channel to save it here.',
                 })}
-                image={noResultsImage}
+                iconName='pin-outline'
                 title={formatMessage({id: 'mobile.pinned_posts.empty_title', defaultMessage: 'No Pinned messages yet'})}
                 theme={theme}
             />
@@ -186,28 +185,6 @@ export default class PinnedPosts extends PureComponent {
         );
     };
 
-    showPermalinkView = (postId, isPermalink) => {
-        const {actions} = this.props;
-
-        actions.selectFocusedPostId(postId);
-
-        if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink,
-                onClose: this.handleClosePermalink,
-            };
-            const options = {
-                layout: {
-                    backgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-
-            this.showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
-        }
-    };
-
     retry = () => {
         this.getPinnedPosts();
     };
@@ -238,6 +215,7 @@ export default class PinnedPosts extends PureComponent {
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'
                     renderItem={this.renderPost}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
                 />
             );
         } else {

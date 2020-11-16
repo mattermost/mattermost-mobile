@@ -9,7 +9,6 @@ import {
     ActivityIndicator,
     Alert,
     DeviceEventEmitter,
-    Image,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -28,6 +27,8 @@ import urlParse from 'url-parse';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
+import AppVersion from '@components/app_version';
+import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
@@ -202,6 +203,19 @@ export default class SelectServer extends PureComponent {
 
         if (this.state.connecting || this.state.connected) {
             this.cancelPing();
+
+            return;
+        }
+
+        if (!this.state.url || this.state.url.trim() === '') {
+            this.setState({
+                error: {
+                    intl: {
+                        id: t('mobile.server_url.empty'),
+                        defaultMessage: 'Please enter a valid server URL',
+                    },
+                },
+            });
 
             return;
         }
@@ -485,7 +499,7 @@ export default class SelectServer extends PureComponent {
 
         return (
             <SafeAreaView
-                testID='select_server_screen'
+                testID='select_server.screen'
                 style={style.container}
             >
                 <KeyboardAvoidingView
@@ -500,11 +514,13 @@ export default class SelectServer extends PureComponent {
                         accessible={false}
                     >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                            <Image
-                                source={require('@assets/images/logo.png')}
+                            <CompassIcon
+                                name='mattermost'
+                                size={76}
+                                style={GlobalStyles.logo}
                             />
 
-                            <View>
+                            <View testID='header.text'>
                                 <FormattedText
                                     style={[GlobalStyles.header, GlobalStyles.label]}
                                     id='mobile.components.select_server_view.enterServerUrl'
@@ -512,7 +528,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
-                                testID='server_url_input'
+                                testID='server_url.input'
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!inputDisabled}
@@ -532,7 +548,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
-                                testID='connect_button'
+                                testID='connect.button'
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >
@@ -546,6 +562,7 @@ export default class SelectServer extends PureComponent {
                             </View>
                         </View>
                     </TouchableWithoutFeedback>
+                    <AppVersion/>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         );

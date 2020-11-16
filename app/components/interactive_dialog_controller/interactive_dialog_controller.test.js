@@ -7,9 +7,6 @@ import {shallow} from 'enzyme';
 import InteractiveDialogController from './interactive_dialog_controller';
 
 jest.mock('react-intl');
-jest.mock('react-native-vector-icons/MaterialIcons', () => ({
-    getImageSource: jest.fn().mockResolvedValue({}),
-}));
 
 describe('InteractiveDialogController', () => {
     test('should open interactive dialog as alert or screen depending on with or without element', () => {

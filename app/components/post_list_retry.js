@@ -7,11 +7,11 @@ import {
     Platform,
     View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 
-import FormattedText from 'app/components/formatted_text';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class PostListRetry extends PureComponent {
     static propTypes = {
@@ -31,8 +31,8 @@ export default class PostListRetry extends PureComponent {
                     type={'opacity'}
                 >
                     <View style={style.buttonWrapper}>
-                        <Icon
-                            name='md-refresh'
+                        <CompassIcon
+                            name='refresh'
                             size={50}
                             style={style.icon}
                         />

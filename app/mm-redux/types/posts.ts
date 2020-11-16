@@ -37,6 +37,8 @@ export type PostEmbed = {
 export type PostImage = {
     height: number;
     width: number;
+    format?: string;
+    frame_count?: number;
 };
 
 export type PostMetadata = {

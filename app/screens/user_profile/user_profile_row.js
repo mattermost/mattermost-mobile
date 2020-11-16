@@ -9,23 +9,19 @@ import {
     View,
 } from 'react-native';
 
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import FormattedText from 'app/components/formatted_text';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import VectorIcon from 'app/components/vector_icon';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const createStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: changeOpacity(theme.centerChannelBg, 0.7),
+            backgroundColor: theme.centerChannelBg,
             paddingHorizontal: 15,
             flexDirection: 'row',
             alignItems: 'center',
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.3),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.3),
         },
         detail: {
             marginHorizontal: 15,
@@ -34,14 +30,14 @@ const createStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         label: {
             flex: 1,
-            marginLeft: 15,
+            marginLeft: 6,
             fontSize: 15,
+            fontWeight: '600',
             paddingVertical: 15,
-            color: theme.centerChannelColor,
+            color: theme.buttonBg,
         },
         leftIcon: {
-            width: 17,
-            color: theme.centerChannelColor,
+            color: theme.buttonBg,
         },
         rightIcon: {
             color: theme.centerChannelColor,
@@ -62,7 +58,7 @@ function createTouchableComponent(children, action) {
 }
 
 function userProfileRow(props) {
-    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconType, iconSize, shouldRender = true, isLandscape} = props;
+    const {action, defaultMessage, detail, icon, textId, togglable, theme, iconSize, shouldRender = true, isLandscape} = props;
 
     if (!shouldRender) {
         return null;
@@ -70,32 +66,29 @@ function userProfileRow(props) {
 
     const style = createStyleSheet(theme);
 
+    const iconComponent = (
+        <CompassIcon
+            name={icon}
+            size={iconSize}
+            style={style.leftIcon}
+        />
+    );
+
     const RowComponent = (
         <View style={style.wrapper}>
             <View style={[style.container, padding(isLandscape, +15)]}>
-                <VectorIcon
-                    name={icon}
-                    size={iconSize}
-                    type={iconType}
-                    style={style.leftIcon}
-                />
+                {iconComponent}
                 <FormattedText
                     style={[style.label]}
                     id={textId}
                     defaultMessage={defaultMessage}
                 />
                 <Text style={style.detail}>{detail}</Text>
-                {togglable ?
-                    <Switch
-                        onValueChange={action}
-                        value={detail}
-                    /> :
-                    <VectorIcon
-                        name='chevron-right'
-                        size={15}
-                        type={'fontawesome'}
-                        style={style.rightIcon}
-                    />
+                {togglable &&
+                <Switch
+                    onValueChange={action}
+                    value={detail}
+                />
                 }
             </View>
         </View>
@@ -117,7 +110,6 @@ userProfileRow.propTypes = {
         PropTypes.bool,
     ]),
     icon: PropTypes.string.isRequired,
-    iconType: PropTypes.oneOf(['fontawesome', 'foundation', 'ion', 'material']),
     iconColor: PropTypes.string,
     iconSize: PropTypes.number,
     textId: PropTypes.string.isRequired,

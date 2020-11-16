@@ -6,10 +6,10 @@ import {intlShape} from 'react-intl';
 import {Alert, NativeModules, Platform, StyleSheet} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import AndroidOpenSettings from 'react-native-android-open-settings';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import DocumentPicker from 'react-native-document-picker';
 import Permissions from 'react-native-permissions';
 
+import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {NavigationTypes} from '@constants';
 import {ICON_SIZE, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
@@ -140,18 +140,22 @@ export default class FileQuickAction extends PureComponent {
 
     render() {
         const {disabled, theme} = this.props;
+        const testID = disabled ?
+            'post_draft.file_quick_action.disabled' :
+            'post_draft.file_quick_action';
         const color = disabled ?
             changeOpacity(theme.centerChannelColor, 0.16) :
             changeOpacity(theme.centerChannelColor, 0.64);
 
         return (
             <TouchableWithFeedback
+                testID={testID}
                 disabled={disabled}
                 onPress={this.handleButtonPress}
                 style={style.icon}
                 type={'opacity'}
             >
-                <MaterialCommunityIcons
+                <CompassIcon
                     color={color}
                     name='file-document-outline'
                     size={ICON_SIZE}

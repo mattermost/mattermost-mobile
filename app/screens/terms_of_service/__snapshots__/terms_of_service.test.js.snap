@@ -37,12 +37,12 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "quoteBlockIcon": Object {
             "color": undefined,
-            "padding": 5,
           },
         }
       }
       disableAtMentions={true}
       disableChannelLink={true}
+      disableGallery={true}
       disableHashtags={true}
       textStyles={
         Object {
@@ -172,12 +172,12 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
           },
           "quoteBlockIcon": Object {
             "color": undefined,
-            "padding": 5,
           },
         }
       }
       disableAtMentions={true}
       disableChannelLink={true}
+      disableGallery={true}
       disableHashtags={true}
       textStyles={
         Object {
@@ -287,9 +287,8 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
   }
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
+  <Connect(FailedNetworkAction)
     onRetry={[Function]}
-    showAction={true}
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -368,12 +367,12 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
           },
           "quoteBlockIcon": Object {
             "color": undefined,
-            "padding": 5,
           },
         }
       }
       disableAtMentions={true}
       disableChannelLink={true}
+      disableGallery={true}
       disableHashtags={true}
       textStyles={
         Object {

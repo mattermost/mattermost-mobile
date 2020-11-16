@@ -9,7 +9,6 @@ import {RequestStatus} from '@mm-redux/constants';
 
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AtMentionItem from 'app/components/autocomplete/at_mention_item';
-import AutocompleteDivider from 'app/components/autocomplete/autocomplete_divider';
 import AutocompleteSectionHeader from 'app/components/autocomplete/autocomplete_section_header';
 import SpecialMentionItem from 'app/components/autocomplete/special_mention_item';
 import GroupMentionItem from 'app/components/autocomplete/at_mention_group/at_mention_group';
@@ -58,26 +57,13 @@ export default class AtMention extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
+        const {groups, inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
 
         // Not invoked, render nothing.
         if (matchTerm === null) {
-            this.props.onResultCountChange(0);
-            this.setState({
-                mentionComplete: false,
-                sections: [],
-            });
-
-            return;
-        }
-
-        if (this.state.mentionComplete) {
-            // Mention has been completed. Hide autocomplete.
             this.setState({
                 sections: [],
             });
-
-            this.props.onResultCountChange(0);
             return;
         }
 
@@ -97,14 +83,25 @@ export default class AtMention extends PureComponent {
         }
 
         // Server request is complete
-        if (requestStatus !== RequestStatus.STARTED &&
-            (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)) {
+        if (
+            groups !== this.props.groups ||
+                (
+                    requestStatus !== RequestStatus.STARTED &&
+                    (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)
+                )
+        ) {
             const sections = this.buildSections(nextProps);
             this.setState({
                 sections,
             });
 
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.sections.length !== this.state.sections.length && this.state.sections.length === 0) {
+            this.props.onResultCountChange(0);
         }
     }
 
@@ -204,16 +201,20 @@ export default class AtMention extends PureComponent {
         }
 
         onChangeText(completedDraft);
-        this.setState({mentionComplete: true});
+        this.setState({
+            sections: [],
+        });
     };
 
     renderSectionHeader = ({section}) => {
+        const isFirstSection = section.id === this.state.sections[0].id;
         return (
             <AutocompleteSectionHeader
                 id={section.id}
                 defaultMessage={section.defaultMessage}
                 theme={this.props.theme}
                 isLandscape={this.props.isLandscape}
+                isFirstSection={isFirstSection}
             />
         );
     };
@@ -221,6 +222,7 @@ export default class AtMention extends PureComponent {
     renderItem = ({item}) => {
         return (
             <AtMentionItem
+                testID={`autocomplete.at_mention.item.${item}`}
                 onPress={this.completeMention}
                 userId={item}
             />
@@ -253,8 +255,8 @@ export default class AtMention extends PureComponent {
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
-        const {mentionComplete, sections} = this.state;
-        if (sections.length === 0 || mentionComplete) {
+        const {sections} = this.state;
+        if (sections.length === 0) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;
@@ -264,13 +266,13 @@ export default class AtMention extends PureComponent {
 
         return (
             <SectionList
+                testID='at_mention_suggestion.list'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
                 style={[style.listView, {maxHeight: maxListHeight}]}
                 sections={sections}
                 renderItem={this.renderItem}
                 renderSectionHeader={this.renderSectionHeader}
-                ItemSeparatorComponent={AutocompleteDivider}
                 initialNumToRender={10}
                 nestedScrollEnabled={nestedScrollEnabled}
             />
@@ -282,6 +284,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         listView: {
             backgroundColor: theme.centerChannelBg,
+            borderRadius: 4,
         },
     };
 });

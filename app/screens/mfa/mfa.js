@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     ActivityIndicator,
-    Image,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -15,6 +14,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
+import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
@@ -141,8 +141,10 @@ export default class Mfa extends PureComponent {
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
                     <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                        <Image
-                            source={require('@assets/images/logo.png')}
+                        <CompassIcon
+                            name='mattermost'
+                            size={76}
+                            style={GlobalStyles.logo}
                         />
                         <View>
                             <FormattedText

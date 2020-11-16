@@ -8,10 +8,10 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import CheckMark from 'app/components/checkmark';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+
+import CompassIcon from '@components/compass_icon';
+import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const ActionTypes = {
     ARROW: 'arrow',
@@ -22,6 +22,7 @@ const ActionTypes = {
 
 function sectionItem(props) {
     const {
+        testID,
         action,
         actionType,
         actionValue,
@@ -36,11 +37,11 @@ function sectionItem(props) {
 
     let actionComponent;
     if (actionType === ActionTypes.SELECT && selected) {
+        const selectStyle = [style.arrow, {color: theme.linkColor}];
         actionComponent = (
-            <CheckMark
-                width={12}
-                height={12}
-                color={theme.linkColor}
+            <CompassIcon
+                name='check'
+                style={selectStyle}
             />
         );
     } else if (actionType === ActionTypes.TOGGLE) {
@@ -52,8 +53,8 @@ function sectionItem(props) {
         );
     } else if (actionType === ActionTypes.ARROW) {
         actionComponent = (
-            <FontAwesomeIcon
-                name='angle-right'
+            <CompassIcon
+                name='chevron-right'
                 style={style.arrow}
             />
         );
@@ -73,7 +74,10 @@ function sectionItem(props) {
     }
 
     const component = (
-        <View style={[style.container, padding(isLandscape)]}>
+        <View
+            testID={testID}
+            style={[style.container, padding(isLandscape)]}
+        >
             <View style={description ? style.doubleContainer : style.singleContainer}>
                 {labelComponent}
                 {descriptionComponent}

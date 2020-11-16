@@ -10,9 +10,8 @@ import {
     View,
 } from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-const checkmark = require('@assets/images/themes/check.png');
 
 const tilePadding = 8;
 
@@ -64,8 +63,9 @@ const ThemeTile = (props) => {
                     />
                 )}
                 {selected && (
-                    <Image
-                        source={checkmark}
+                    <CompassIcon
+                        name='check-circle'
+                        size={31.2}
                         style={style.check}
                     />
                 )}
@@ -115,6 +115,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'absolute',
             right: 10,
             bottom: 10,
+            color: theme.buttonBg,
         },
         label: {
             color: theme.centerChannelColor,

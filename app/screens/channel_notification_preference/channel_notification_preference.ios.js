@@ -26,7 +26,10 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                 excludeHeader={true}
                 excludeFooter={true}
             >
-                <View style={style.container}>
+                <View
+                    testID='channel_notification_preference.screen'
+                    style={style.container}
+                >
                     <StatusBar/>
                     <FormattedText
                         id='channel_notifications.preference.header'
@@ -46,6 +49,7 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                                             <FormattedText
                                                 id={item.id}
                                                 defaultMessage={item.defaultMessage}
+                                                values={item.labelValues}
                                             />
                                         )}
                                         action={this.handlePress}

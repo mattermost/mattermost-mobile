@@ -37,7 +37,8 @@ function mapStateToProps(state) {
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const canLeave = (!isDefaultChannel && !isDirectMessage && !isGroupMessage) || (isDefaultChannel && isGuest);
     const canDelete = showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin);
-    const canUnarchive = (currentChannel?.delete_at > 0 && !isDirectMessage && !isGroupMessage);
+    const isArchived = currentChannel?.delete_at > 0;
+    const canUnarchive = (isArchived && !isDirectMessage && !isGroupMessage);
     const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
     const {serverVersion} = state.entities.general;
 
@@ -55,7 +56,7 @@ function mapStateToProps(state) {
     }
 
     return {
-        canArchive: (canLeave && canDelete && !isReadOnly),
+        canArchive: (!isArchived && canLeave && canDelete && !isReadOnly),
         canUnarchive: canUnarchive && canUnarchiveChannel,
         channelId: currentChannel?.id || '',
         displayName: (currentChannel?.display_name || '').trim(),

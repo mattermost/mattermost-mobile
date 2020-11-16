@@ -41,7 +41,7 @@ export default class AddMembers extends PureComponent<AddMembersProps> {
                     <ChannelInfoRow
                         action={this.goToChannelAddMembers}
                         defaultMessage='Add Members'
-                        icon='user-plus'
+                        icon='account-plus-outline'
                         textId={t('channel_header.addMembers')}
                         theme={theme}
                         isLandscape={isLandscape}
