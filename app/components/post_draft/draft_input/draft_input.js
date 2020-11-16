@@ -329,10 +329,10 @@ export default class DraftInput extends PureComponent {
         if (match) {
             switch (match.type) {
             case DeepLinkTypes.CHANNEL:
-                handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(this.context.intln));
+                handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(this.context.intl));
                 break;
             case DeepLinkTypes.PERMALINK:
-                loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(this.context.intln));
+                loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(this.context.intl));
                 this.showPermalinkView(match.postId);
                 break;
             case DeepLinkTypes.DMCHANNEL: {
