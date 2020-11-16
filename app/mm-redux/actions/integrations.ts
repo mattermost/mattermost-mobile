@@ -455,7 +455,7 @@ export function showPermalinkView(postId: string, error = ''): ActionFunc {
         const screen = 'Permalink';
         const passProps = {
             isPermalink: true,
-            onClose: this.handleClosePermalink,
+            onClose: () => selectFocusedPostId(''),
             error,
         };
         const options = {
