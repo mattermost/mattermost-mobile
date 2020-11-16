@@ -14,6 +14,13 @@ import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} f
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
+import {DeepLinkTypes} from '@constants';
+import * as DraftUtils from '@utils/draft';
+import { getConfig, getCurrentUrl } from '@mm-redux/selectors/entities/general';
+import { handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName } from '@actions/views/channel';
+import {getUserByUsername} from '@mm-redux/actions/users';
+import { makeDirectChannel } from '@actions/views/more_dms';
+
 export function createIncomingHook(hook: IncomingWebhook): ActionFunc {
     return bindClientFunc({
         clientFunc: Client4.createIncomingWebhook,
@@ -397,5 +404,41 @@ export function submitInteractiveDialog(submission: DialogSubmission): ActionFun
         }
 
         return {data};
+    };
+}
+
+export function handleGotoLocation (href: string): ActionFunc {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
+        const state = getState();
+        const config = getConfig(state);
+
+        const {url, match} = await DraftUtils.getURLAndMatch(href, getCurrentUrl(state), config.SiteURL);
+
+        if (match) {
+            switch (match.type) {
+            case DeepLinkTypes.CHANNEL:
+                dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(this.context.intl)));
+                break;
+            case DeepLinkTypes.PERMALINK:
+                dispatch(loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(this.context.intl)));
+                this.showPermalinkView(match.postId);
+                break;
+            case DeepLinkTypes.DMCHANNEL: {
+                const {data} = await dispatch(getUserByUsername(match.userName || ''));
+                if (!data) {
+                    DraftUtils.errorBadUser(this.context.intl);
+                    return {data:false};
+                }
+                dispatch(makeDirectChannel(data.id));
+                break;
+            }
+            case DeepLinkTypes.GROUPCHANNEL:
+                dispatch(handleSelectChannel(match.id));
+                break;
+            }
+        } else {
+            DraftUtils.tryOpenURL(url);
+        }
+        return {data: true};
     };
 }

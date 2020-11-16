@@ -14,7 +14,7 @@ import SendAction from '@components/post_draft/send_action';
 import Typing from '@components/post_draft/typing';
 import Uploads from '@components/post_draft/uploads';
 import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
-import {DeepLinkTypes, NavigationTypes} from '@constants';
+import {NavigationTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -34,7 +34,6 @@ export default class DraftInput extends PureComponent {
         registerTypingAnimation: PropTypes.func.isRequired,
         addReactionToLatestPost: PropTypes.func.isRequired,
         getChannelMemberCountsByGroup: PropTypes.func.isRequired,
-        getUserByUsername: PropTypes.func.isRequired,
         channelDisplayName: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         createPost: PropTypes.func.isRequired,
@@ -46,17 +45,14 @@ export default class DraftInput extends PureComponent {
         getChannelTimezones: PropTypes.func.isRequired,
         handleClearFiles: PropTypes.func.isRequired,
         handleClearFailedFiles: PropTypes.func.isRequired,
-        handleSelectChannelByName: PropTypes.func.isRequired,
+        handleGotoLocation: PropTypes.func.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTimezoneEnabled: PropTypes.bool,
-        makeDirectChannel: PropTypes.func.isRequired,
         maxMessageLength: PropTypes.number.isRequired,
         membersCount: PropTypes.number,
         rootId: PropTypes.string,
         screenId: PropTypes.string.isRequired,
         setStatus: PropTypes.func.isRequired,
-        serverURL: PropTypes.string,
-        siteURL: PropTypes.string,
         theme: PropTypes.object.isRequired,
         useChannelMentions: PropTypes.bool.isRequired,
         userIsOutOfOffice: PropTypes.bool.isRequired,
@@ -65,9 +61,7 @@ export default class DraftInput extends PureComponent {
         useGroupMentions: PropTypes.bool.isRequired,
         channelMemberCountsByGroup: PropTypes.object,
         groupsWithAllowReference: PropTypes.object,
-        loadChannelsByTeamName: PropTypes.func.isRequired,
         selectFocusedPostId: PropTypes.func.isRequired,
-        handleSelectChannel: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -318,40 +312,9 @@ export default class DraftInput extends PureComponent {
         this.input.current.changeDraft('');
 
         if (data.goto_location) {
-            this.handleGotoLocation(data.goto_location);
+            this.props.handleGotoLocation(data.goto_location);
         }
     };
-
-    handleGotoLocation = async (href) => {
-        const {serverURL, siteURL, handleSelectChannelByName, getUserByUsername, makeDirectChannel, loadChannelsByTeamName, handleSelectChannel} = this.props;
-        const {url, match} = await DraftUtils.getURLAndMatch(href, serverURL, siteURL);
-
-        if (match) {
-            switch (match.type) {
-            case DeepLinkTypes.CHANNEL:
-                handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(this.context.intl));
-                break;
-            case DeepLinkTypes.PERMALINK:
-                loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(this.context.intl));
-                this.showPermalinkView(match.postId);
-                break;
-            case DeepLinkTypes.DMCHANNEL: {
-                const {data} = await getUserByUsername(match.userName);
-                if (!data) {
-                    DraftUtils.errrorBadUser(this.context.intl);
-                    return;
-                }
-                makeDirectChannel(data.id);
-                break;
-            }
-            case DeepLinkTypes.GROUPCHANNEL:
-                handleSelectChannel(match.id);
-                break;
-            }
-        } else {
-            DraftUtils.tryOpenURL(url);
-        }
-    }
 
     showPermalinkView = (postId, error = '') => {
         const {selectFocusedPostId} = this.props;

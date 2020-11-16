@@ -112,7 +112,7 @@ export function errorBadChannel(intl) {
     alertErrorWithFallback(intl, {}, message);
 }
 
-export function errrorBadUser(intl) {
+export function errorBadUser(intl) {
     const message = {
         id: t('mobile.server_link.unreachable_user.error'),
         defaultMessage: 'This link belongs to a deleted user.',

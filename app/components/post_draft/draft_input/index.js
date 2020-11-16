@@ -8,11 +8,12 @@ import {addReactionToLatestPost} from '@actions/views/emoji';
 import {handleClearFiles, handleClearFailedFiles} from '@actions/views/file_upload';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {createPost, selectFocusedPostId} from '@mm-redux/actions/posts';
-import {setStatus, getUserByUsername} from '@mm-redux/actions/users';
+import {setStatus} from '@mm-redux/actions/users';
 import {General, Permissions} from '@mm-redux/constants';
 import {getCurrentChannel, getChannel, getChannelStats, getChannelMemberCountsByGroup as selectChannelMemberCountsByGroup} from '@mm-redux/selectors/entities/channels';
-import {getConfig, getLicense, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 import {getAssociatedGroupsForReferenceMap} from '@mm-redux/selectors/entities/groups';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
@@ -20,8 +21,6 @@ import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isLandscape} from '@selectors/device';
 import {getCurrentChannelDraft, getThreadDraft} from '@selectors/views';
-import {handleSelectChannelByName, handleSelectChannel, loadChannelsByTeamName} from 'app/actions/views/channel';
-import {makeDirectChannel} from 'app/actions/views/more_dms';
 
 import PostDraft from './draft_input';
 
@@ -84,8 +83,6 @@ export function mapStateToProps(state, ownProps) {
         isTimezoneEnabled,
         maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH_FALLBACK,
         membersCount,
-        serverURL: getCurrentUrl(state),
-        siteURL: config.SiteURL,
         theme: getTheme(state),
         useChannelMentions,
         userIsOutOfOffice,
@@ -101,15 +98,11 @@ const mapDispatchToProps = {
     createPost,
     executeCommand,
     getChannelTimezones,
-    getUserByUsername,
     handleClearFiles,
     handleClearFailedFiles,
-    handleSelectChannelByName,
-    handleSelectChannel,
+    handleGotoLocation,
     setStatus,
     getChannelMemberCountsByGroup,
-    makeDirectChannel,
-    loadChannelsByTeamName,
     selectFocusedPostId,
 };
 
