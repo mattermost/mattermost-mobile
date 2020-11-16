@@ -22,7 +22,6 @@ import EphemeralStore from '@store/ephemeral_store';
 import * as DraftUtils from '@utils/draft';
 import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 
 const AUTOCOMPLETE_MARGIN = 20;
 const AUTOCOMPLETE_MAX_HEIGHT = 200;
@@ -312,34 +311,12 @@ export default class DraftInput extends PureComponent {
         this.input.current.changeDraft('');
 
         if (data.goto_location) {
-            this.props.handleGotoLocation(data.goto_location);
-        }
-    };
-
-    showPermalinkView = (postId, error = '') => {
-        const {selectFocusedPostId} = this.props;
-        selectFocusedPostId(postId);
-
-        if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink: true,
-                onClose: this.handleClosePermalink,
-                error,
-            };
-            const options = {
-                layout: {
-                    componentBackgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-            showModalOverCurrentContext(screen, passProps, options);
+            this.props.handleGotoLocation(data.goto_location, this.context.intl);
         }
     };
 
     handleClosePermalink = () => {
-        const {selectFocusedPostId} = this.props;
         selectFocusedPostId('');
-        this.showingPermalink = false;
     };
 
     sendMessage = (value = '') => {

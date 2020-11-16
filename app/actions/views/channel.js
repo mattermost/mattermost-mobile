@@ -214,7 +214,7 @@ export function handleSelectChannel(channelId) {
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
 
-        return {data: true}
+        return {data: true};
     };
 }
 
