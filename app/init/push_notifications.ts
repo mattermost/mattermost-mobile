@@ -127,7 +127,16 @@ class PushNotifications {
         if (notification) {
             EphemeralStore.setStartFromNotification(true);
             notification.userInteraction = true;
-            this.handleNotification(notification);
+
+            // getInitialNotification may run before the store is set
+            // that is why we run on an interval until the store is available
+            // once we handle the notification the interval is cleared.
+            const interval = setInterval(() => {
+                if (Store.redux) {
+                    clearInterval(interval);
+                    this.handleNotification(notification);
+                }
+            }, 500);
         }
     }
 
