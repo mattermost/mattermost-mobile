@@ -22,9 +22,9 @@ describe('SearchResultPost', () => {
         skipPinnedHeader: false,
     };
 
-    test('should match snapshot', () => {
+    test('should match snapshot', async () => {
         const wrapper = shallowWithIntl(<SearchResultPost {...baseProps}/>);
 
-        expect(wrapper.instance()).toMatchSnapshot();
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });
