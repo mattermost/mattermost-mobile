@@ -741,11 +741,11 @@ SPEC CHECKSUMS:
   UMReactNativeAdapter: 2c175f151cfe5ff011ced7bc79ccb08bf124f6c3
   UMSensorsInterface: 1df848f22690ccd23a821777f00df230fe5a28e3
   UMTaskManagerInterface: dfc62edf51844ae87dafc1fe849b594871fda1e5
-  WatermelonDB: 553035ef459ca26be2dbb5a73b183d1976c47a35
+  WatermelonDB: 0aa53ec3f017fd52cd953ad6e69e4eec36c04044
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: 7d13633d129fd179e01b8953d38d47be90db185a
   YoutubePlayer-in-WKWebView: af2f5929fc78882d94bfdfeea999b661b78d9717
 
 PODFILE CHECKSUM: 93ddf37519d321c69692a52e0a30c3e7fb27b0e0
 
-COCOAPODS: 1.10.0.rc.1
+COCOAPODS: 1.10.0
