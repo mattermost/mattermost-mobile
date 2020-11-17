@@ -10,6 +10,7 @@ export default class Global extends Model {
     static table = MM_TABLES.GLOBAL
 
     @field('name') name!: string
+
     //TODO : implement a better sanitizer callback for the 'value' field
     @json('value', (rawJson) => rawJson) value!: Object
 }
