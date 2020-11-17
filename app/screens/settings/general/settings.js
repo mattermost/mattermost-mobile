@@ -211,6 +211,7 @@ class Settings extends PureComponent {
                         isLandscape={isLandscape}
                     />
                     <SettingsItem
+                        testID='general_settings.display.action'
                         defaultMessage='Display'
                         i18nId={t('user.settings.modal.display')}
                         iconName='layers-outline'
@@ -223,6 +224,7 @@ class Settings extends PureComponent {
                     {showTeams &&
                     <React.Fragment>
                         <SettingsItem
+                            testID='general_settings.select_team.action'
                             defaultMessage='Open teams you can join'
                             i18nId={t('mobile.select_team.join_open')}
                             iconName='menu'
@@ -235,6 +237,7 @@ class Settings extends PureComponent {
                     </React.Fragment>
                     }
                     <SettingsItem
+                        testID='general_settings.advanced.action'
                         defaultMessage='Advanced Settings'
                         i18nId={t('mobile.advanced_settings.title')}
                         iconName='tune'
@@ -247,6 +250,7 @@ class Settings extends PureComponent {
                     {LocalConfig.EnableMobileClientUpgrade && LocalConfig.EnableMobileClientUpgradeUserSetting &&
                     <React.Fragment>
                         <SettingsItem
+                            testID='general_settings.check_for_upgrade.action'
                             defaultMessage='Check for Upgrade'
                             i18nId={t('mobile.settings.modal.check_for_upgrade')}
                             iconName='update'
@@ -259,6 +263,7 @@ class Settings extends PureComponent {
                     </React.Fragment>
                     }
                     <SettingsItem
+                        testID='general_settings.about.action'
                         defaultMessage='About {appTitle}'
                         messageValues={{appTitle: config.SiteName || 'Mattermost'}}
                         i18nId={t('about.title')}
@@ -273,6 +278,7 @@ class Settings extends PureComponent {
                     {showHelp &&
                     <React.Fragment>
                         <SettingsItem
+                            testID='general_settings.help.action'
                             defaultMessage='Help'
                             i18nId={t('mobile.help.title')}
                             onPress={this.openHelp}
@@ -285,6 +291,7 @@ class Settings extends PureComponent {
                     </React.Fragment>
                     }
                     <SettingsItem
+                        testID='general_settings.report.action'
                         defaultMessage='Report a Problem'
                         i18nId={t('sidebar_right_menu.report')}
                         onPress={this.openErrorEmail}

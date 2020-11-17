@@ -45,7 +45,7 @@ describe('PostOptions', () => {
         currentUserId: 'user1',
         deviceHeight: 600,
         hasBeenDeleted: false,
-        isFlagged: false,
+        isFlagged: true,
         isSystemMessage: false,
         managedConfig: {},
         post,

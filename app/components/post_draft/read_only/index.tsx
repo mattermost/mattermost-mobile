@@ -17,7 +17,10 @@ const ReadOnlyChannnel = ({theme}: ReadOnlyProps): ReactNode => {
     const style = getStyle(theme);
     return (
         <SafeAreaView style={style.background}>
-            <View style={style.container}>
+            <View
+                testID='post_draft.read_only'
+                style={style.container}
+            >
                 <CompassIcon
                     name='glasses'
                     style={style.icon}

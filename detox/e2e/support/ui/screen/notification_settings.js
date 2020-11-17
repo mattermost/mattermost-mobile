@@ -22,7 +22,7 @@ class NotificationSettingsScreen {
 
     open = async () => {
         // # Open notification settings screen
-        await GeneralSettingsScreen.notificationAction.tap();
+        await GeneralSettingsScreen.notificationsAction.tap();
 
         return this.toBeVisible();
     }

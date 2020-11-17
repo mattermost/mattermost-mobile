@@ -22,6 +22,8 @@ describe('Autocomplete', () => {
 
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 

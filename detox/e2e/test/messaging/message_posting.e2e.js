@@ -14,6 +14,7 @@ describe('Messaging', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -21,28 +22,34 @@ describe('Messaging', () => {
         await ChannelScreen.logout();
     });
 
-    it('should post a message on tap to paper send button', async () => {
+    it('MM-T3486 should post a message when send button is tapped', async () => {
         // * Verify channel screen is visible
         await ChannelScreen.toBeVisible();
 
-        const {postInput, sendButton} = ChannelScreen;
+        const {
+            postInput,
+            sendButton,
+            sendButtonDisabled,
+        } = ChannelScreen;
 
-        // * Post input should exist while send button should not
+        // * Verify post input is visible and send button is disabled
         await expect(postInput).toBeVisible();
-        await expect(sendButton).not.toExist();
+        await expect(sendButtonDisabled).toBeVisible();
 
         // # Tap on post input
         await postInput.tap();
 
-        // # Type text on post input
-        const text = Date.now().toString();
-        await postInput.typeText(text);
+        // # Type message on post input
+        const message = Date.now().toString();
+        await postInput.typeText(message);
+
+        // * Verify send button is enabled
+        await expect(sendButton).toBeVisible();
 
         // # Tap send button
-        await expect(sendButton).toBeVisible();
         await sendButton.tap();
 
-        // * Verify text to exist
-        await expect(element(by.text(text))).toBeVisible();
+        // * Verify message is posted
+        await expect(element(by.text(message))).toBeVisible();
     });
 });

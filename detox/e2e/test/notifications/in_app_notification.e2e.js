@@ -7,11 +7,93 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {AddReactionScreen, ChannelScreen, NotificationScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
-import {Setup} from '@support/server_api';
+import {
+    AddReactionScreen,
+    ChannelScreen,
+    NotificationScreen,
+} from '@support/ui/screen';
+import {
+    Channel,
+    Post,
+    Setup,
+} from '@support/server_api';
+import {
+    isAndroid,
+    timeouts,
+    wait,
+} from '@support/utils';
 
 const DetoxConstants = require('detox').DetoxConstants;
+
+describe('in-app Notification', () => {
+    let testChannel1;
+    let testChannel2;
+    let testNotification;
+
+    beforeAll(async () => {
+        const {channel, team, user} = await Setup.apiInit();
+        testChannel1 = channel;
+        testNotification = getNotification(testChannel1, team, user);
+
+        ({channel: testChannel2} = await Channel.apiGetChannelByName(team.name, 'town-square'));
+
+        // # Open channel screen
+        await ChannelScreen.open(user);
+    });
+
+    afterAll(async () => {
+        await ChannelScreen.logout();
+    });
+
+    it('MM-T3440 should render an in-app notification', async () => {
+        const testMessage = Date.now().toString();
+        const {postInput} = ChannelScreen;
+
+        // # Type a message
+        await postInput.tap();
+        await postInput.typeText(testMessage);
+
+        // # Tap send button
+        await ChannelScreen.tapSendButton();
+
+        // # Open add reaction screen
+        const {post} = await Post.apiGetLastPostInChannel(testChannel2.id);
+        await ChannelScreen.openPostOptionsFor(post.id, testMessage);
+        await AddReactionScreen.open();
+
+        // # Close add reaction screen
+        await AddReactionScreen.close();
+
+        if (isAndroid()) {
+            // eslint-disable-next-line no-console
+            console.log('Skipping on Android until https://github.com/wix/Detox/issues/2141');
+            return;
+        }
+
+        // # When a push notification is received
+        await device.sendUserNotification(testNotification);
+        await wait(timeouts.HALF_SEC);
+
+        // * Verify in-app notification is shown
+        const {
+            inAppNotificationScreen,
+            inAppNotificationIcon,
+            inAppNotificationTitle,
+            inAppNotificationMessage,
+        } = NotificationScreen;
+
+        await NotificationScreen.toBeVisible();
+        await expect(inAppNotificationIcon).toBeVisible();
+        await expect(inAppNotificationTitle).toHaveText(testChannel1.name);
+        await expect(inAppNotificationMessage).toHaveText('This is an e2e test message');
+
+        // # Wait for some profiles to load
+        await wait(5 * timeouts.ONE_SEC);
+
+        // * Verify in-app notification is hidden
+        await expect(inAppNotificationScreen).not.toBeVisible();
+    });
+});
 
 function getNotification(channel, team, user) {
     if (isAndroid()) {
@@ -52,66 +134,3 @@ function getNotification(channel, team, user) {
         },
     };
 }
-
-describe('in-app Notification', () => {
-    let testNotification;
-    let testChannel;
-
-    beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit();
-        testChannel = channel;
-        testNotification = getNotification(channel, team, user);
-        await ChannelScreen.open(user);
-    });
-
-    afterAll(async () => {
-        await ChannelScreen.logout();
-    });
-
-    it('MM-T3440 should render an in-app notification', async () => {
-        const message = Date.now().toString();
-
-        const {postInput, sendButton} = ChannelScreen;
-
-        // # Type a message
-        await postInput.tap();
-        await postInput.typeText(message);
-
-        // # Tap the send button
-        await sendButton.tap();
-        await wait(timeouts.HALF_SEC);
-
-        // # Open Add reaction screen
-        await AddReactionScreen.open(message);
-        await AddReactionScreen.closeAddReactionButton.tap();
-
-        if (isAndroid()) {
-            // eslint-disable-next-line no-console
-            console.log('Skipping on Android until https://github.com/wix/Detox/issues/2141');
-            return;
-        }
-
-        // # When a push notification is received
-        await device.sendUserNotification(testNotification);
-        await wait(timeouts.HALF_SEC);
-
-        // * Verify in-app notification is shown
-        const {
-            inAppNotification,
-            inAppNotificationIcon,
-            inAppNotificationTitle,
-            inAppNotificationMessage,
-        } = NotificationScreen;
-
-        await NotificationScreen.toBeVisible();
-        await expect(inAppNotificationIcon).toBeVisible();
-        await expect(inAppNotificationTitle).toHaveText(testChannel.name);
-        await expect(inAppNotificationMessage).toHaveText('This is an e2e test message');
-
-        // # Wait for some profiles to load
-        await wait(5 * timeouts.ONE_SEC);
-
-        // * Verify in-app notification is hidden
-        await expect(inAppNotification).not.toBeVisible();
-    });
-});
