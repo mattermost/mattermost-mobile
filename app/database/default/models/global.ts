@@ -7,7 +7,7 @@ import field from '@nozbe/watermelondb/decorators/field';
 import json from '@nozbe/watermelondb/decorators/json';
 
 export default class Global extends Model {
-    static table = MM_TABLES.GLOBAL
+    static table = MM_TABLES.DEFAULT.GLOBAL
 
     @field('name') name!: string
 
