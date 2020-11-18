@@ -3,8 +3,6 @@
 import {AppSchema, appSchema, tableSchema} from '@nozbe/watermelondb';
 import {MM_TABLES} from '@constants/database';
 
-// TODO :  index only child tables
-
 export const defaultSchema: AppSchema = appSchema({
     version: 1,
     tables: [

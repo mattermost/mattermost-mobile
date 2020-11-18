@@ -38,3 +38,7 @@ export const MM_TABLES = {
         USER: 'User',
     },
 };
+
+export default {
+    MM_TABLES,
+};
