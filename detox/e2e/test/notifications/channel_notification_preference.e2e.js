@@ -12,7 +12,7 @@ import {
     ChannelInfoScreen,
     ChannelNotificationPreferenceScreen,
     ChannelScreen,
-    DirectChannelsScreen,
+    MoreDirectMessagesScreen,
 } from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 import {isAndroid} from '@support/utils';
@@ -23,15 +23,14 @@ describe('Channel Notification Preference', () => {
     beforeAll(async () => {
         const {user, channel} = await Setup.apiInit();
         testChannel = channel;
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
     beforeEach(async () => {
-        // # Open main sidebar
-        await ChannelScreen.mainSidebarDrawerButton.tap();
-        await MainSidebar.toBeVisible();
-
         // # Go to channel
+        await ChannelScreen.openMainSidebar();
         await MainSidebar.getChannelByDisplayName(testChannel.display_name).tap();
     });
 
@@ -45,11 +44,9 @@ describe('Channel Notification Preference', () => {
     });
 
     it('MM-T3375_1 should display Mobile Notifications option for non-DM Channels', async () => {
-        // # Open channel info screen
+        // # Open on notification preference screen
         await ChannelInfoScreen.open();
-
-        // # Tap on Mobile Notifications
-        await ChannelInfoScreen.notificationPreferenceAction.tap();
+        await ChannelNotificationPreferenceScreen.open();
 
         const {
             titleText,
@@ -73,18 +70,14 @@ describe('Channel Notification Preference', () => {
     });
 
     it('MM-T3375_2 should not display Mobile Notifications option for DM Channel', async () => {
-        // # Open main sidebar
-        await ChannelScreen.mainSidebarDrawerButton.tap();
-        await MainSidebar.toBeVisible();
-
-        // # Open Direct Channels screen
-        await MainSidebar.addDirectChannel.tap();
-        await DirectChannelsScreen.toBeVisible();
+        // # Open more direct messages screen
+        await ChannelScreen.openMainSidebar();
+        await MoreDirectMessagesScreen.open();
 
         const {
             getUserAtIndex,
             startButton,
-        } = DirectChannelsScreen;
+        } = MoreDirectMessagesScreen;
 
         // # Select 1 profile
         await getUserAtIndex(0).tap();
@@ -100,11 +93,9 @@ describe('Channel Notification Preference', () => {
     });
 
     it('MM-T3377 should be able to select For all activity option and display All next to Mobile Notifications', async () => {
-        // # Open channel info screen
+        // # Open on notification preference screen
         await ChannelInfoScreen.open();
-
-        // # Tap on Mobile Notifications
-        await ChannelInfoScreen.notificationPreferenceAction.tap();
+        await ChannelNotificationPreferenceScreen.open();
 
         // # Tap on For all activity option
         await element(by.text(ChannelNotificationPreferenceScreen.optionAllText)).tap();
@@ -118,11 +109,9 @@ describe('Channel Notification Preference', () => {
     });
 
     it('MM-T3378 should be able to select Only mentions and direct messages option and display Mentions next to Mobile Notifications', async () => {
-        // # Open channel info screen
+        // # Open on notification preference screen
         await ChannelInfoScreen.open();
-
-        // # Tap on Mobile Notifications
-        await ChannelInfoScreen.notificationPreferenceAction.tap();
+        await ChannelNotificationPreferenceScreen.open();
 
         // # Tap on For all activity option
         await element(by.text(ChannelNotificationPreferenceScreen.optionMentionsText)).tap();
@@ -136,11 +125,9 @@ describe('Channel Notification Preference', () => {
     });
 
     it('MM-T3379 should be able to select Never option and display Never next to Mobile Notifications', async () => {
-        // # Open channel info screen
+        // # Open on notification preference screen
         await ChannelInfoScreen.open();
-
-        // # Tap on Mobile Notifications
-        await ChannelInfoScreen.notificationPreferenceAction.tap();
+        await ChannelNotificationPreferenceScreen.open();
 
         // # Tap on For all activity option
         await element(by.text(ChannelNotificationPreferenceScreen.optionNeverText)).tap();

@@ -57,26 +57,13 @@ export default class AtMention extends PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        const {inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
+        const {groups, inChannel, outChannel, teamMembers, isSearch, matchTerm, requestStatus} = nextProps;
 
         // Not invoked, render nothing.
         if (matchTerm === null) {
-            this.props.onResultCountChange(0);
-            this.setState({
-                mentionComplete: false,
-                sections: [],
-            });
-            this.props.onResultCountChange(0);
-            return;
-        }
-
-        if (this.state.mentionComplete) {
-            // Mention has been completed. Hide autocomplete.
             this.setState({
                 sections: [],
             });
-
-            this.props.onResultCountChange(0);
             return;
         }
 
@@ -96,14 +83,25 @@ export default class AtMention extends PureComponent {
         }
 
         // Server request is complete
-        if (requestStatus !== RequestStatus.STARTED &&
-            (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)) {
+        if (
+            groups !== this.props.groups ||
+                (
+                    requestStatus !== RequestStatus.STARTED &&
+                    (inChannel !== this.props.inChannel || outChannel !== this.props.outChannel || teamMembers !== this.props.teamMembers)
+                )
+        ) {
             const sections = this.buildSections(nextProps);
             this.setState({
                 sections,
             });
 
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.sections.length !== this.state.sections.length && this.state.sections.length === 0) {
+            this.props.onResultCountChange(0);
         }
     }
 
@@ -203,7 +201,9 @@ export default class AtMention extends PureComponent {
         }
 
         onChangeText(completedDraft);
-        this.setState({mentionComplete: true});
+        this.setState({
+            sections: [],
+        });
     };
 
     renderSectionHeader = ({section}) => {
@@ -255,8 +255,8 @@ export default class AtMention extends PureComponent {
 
     render() {
         const {maxListHeight, theme, nestedScrollEnabled} = this.props;
-        const {mentionComplete, sections} = this.state;
-        if (sections.length === 0 || mentionComplete) {
+        const {sections} = this.state;
+        if (sections.length === 0) {
             // If we are not in an active state or the mention has been completed return null so nothing is rendered
             // other components are not blocked.
             return null;

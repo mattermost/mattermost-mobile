@@ -18,6 +18,7 @@ import {preventDoubleTap} from '@utils/tap';
 
 export default class PostOption extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         destructive: PropTypes.bool,
         icon: PropTypes.string.isRequired,
         onPress: PropTypes.func.isRequired,
@@ -31,7 +32,7 @@ export default class PostOption extends PureComponent {
     }, 500);
 
     render() {
-        const {destructive, icon, text, isLandscape, theme} = this.props;
+        const {testID, destructive, icon, text, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
 
         const Touchable = Platform.select({
@@ -52,7 +53,10 @@ export default class PostOption extends PureComponent {
         });
 
         return (
-            <View style={style.container}>
+            <View
+                testID={testID}
+                style={style.container}
+            >
                 <Touchable
                     onPress={this.handleOnPress}
                     {...touchableProps}

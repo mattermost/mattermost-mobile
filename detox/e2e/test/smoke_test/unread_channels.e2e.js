@@ -7,9 +7,12 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelScreen} from '@support/ui/screen';
 import {MainSidebar} from '@support/ui/component';
-import {Setup, Channel} from '@support/server_api';
+import {ChannelScreen} from '@support/ui/screen';
+import {
+    Channel,
+    Setup,
+} from '@support/server_api';
 
 describe('Unread channels', () => {
     let newChannel;
@@ -26,6 +29,7 @@ describe('Unread channels', () => {
         ({channel: zChannel} = await Channel.apiCreateChannel({type: 'O', prefix: 'z-channel', teamId: team.id}));
         await Channel.apiAddUserToChannel(user.id, zChannel.id);
 
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -34,13 +38,8 @@ describe('Unread channels', () => {
     });
 
     it('MM-T3187 Unread channels sort at top', async () => {
-        const {mainSidebarDrawerButton} = ChannelScreen;
-
         // # Open main sidebar (with at least one unread channel)
-        await mainSidebarDrawerButton.tap();
-
-        // * Channel should be visible
-        await MainSidebar.toBeVisible();
+        await ChannelScreen.openMainSidebar();
 
         // * Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
         await expect(element(by.text('UNREADS'))).toBeVisible();
@@ -50,15 +49,13 @@ describe('Unread channels', () => {
 
         // # Tap an unread channel to view it
         await MainSidebar.getChannelByDisplayName(aChannel.display_name).tap();
-        await mainSidebarDrawerButton.tap();
+        await ChannelScreen.openMainSidebar();
         await MainSidebar.getChannelByDisplayName(newChannel.display_name).tap();
-        await mainSidebarDrawerButton.tap();
+        await ChannelScreen.openMainSidebar();
         await MainSidebar.getChannelByDisplayName(zChannel.display_name).tap();
 
-        // # Open main sidebar again
-        await mainSidebarDrawerButton.tap();
-
         // * Channel you just read is no longer listed in Unreads
+        await ChannelScreen.openMainSidebar();
         await expect(element(by.text('UNREADS'))).not.toBeVisible();
         await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
         await MainSidebar.hasChannelAtIndex(0, aChannel.display_name);

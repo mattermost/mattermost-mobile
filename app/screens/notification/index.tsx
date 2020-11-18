@@ -127,7 +127,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
                 style={styles.container}
                 useNativeDriver={true}
                 animation={animation}
-                testID='in_app_notification'
+                testID='in_app_notification.screen'
             >
                 <View style={styles.flex}>
                     <TouchableOpacity

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelInfoScreen} from '@support/ui/screen';
-
 class CreateChannelScreen {
     testID = {
         createChannelScreen: 'create_channel.screen',
@@ -24,16 +22,6 @@ class CreateChannelScreen {
         await expect(this.createChannelScreen).toBeVisible();
 
         return this.createChannelScreen;
-    }
-
-    open = async () => {
-        // # Open channel info screen
-        await ChannelInfoScreen.open();
-
-        // # Tap on Edit Channel
-        await ChannelInfoScreen.editChannelAction.tap();
-
-        return this.toBeVisible();
     }
 
     back = async () => {

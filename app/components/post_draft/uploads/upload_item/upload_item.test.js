@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
 import {shallow} from 'enzyme';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import {Preferences} from '@mm-redux/constants';
 import ImageCacheManager from '@utils/image_cache_manager';
@@ -21,6 +23,14 @@ describe('UploadItem', () => {
     };
 
     describe('downloadAndUploadFile', () => {
+        test('should match, full snapshot', () => {
+            const wrapper = shallowWithIntl(
+                <UploadItem {...props}/>,
+            );
+
+            expect(wrapper.getElement()).toMatchSnapshot();
+        });
+
         test('should upload file', async () => {
             const component = shallow(<UploadItem {...props}/>);
             component.instance().uploadFile = jest.fn();

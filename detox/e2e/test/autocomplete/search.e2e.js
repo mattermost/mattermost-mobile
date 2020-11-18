@@ -20,9 +20,9 @@ describe('Autocomplete', () => {
 
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
-        await ChannelScreen.open(user);
 
         // # Open search screen
+        await ChannelScreen.open(user);
         await SearchScreen.open();
     });
 

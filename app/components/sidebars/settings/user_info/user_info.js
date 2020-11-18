@@ -12,6 +12,7 @@ import ProfilePicture from 'app/components/profile_picture';
 
 export default class UserInfo extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         user: PropTypes.object.isRequired,
         onPress: PropTypes.func,
         theme: PropTypes.object.isRequired,
@@ -22,7 +23,7 @@ export default class UserInfo extends PureComponent {
     };
 
     render() {
-        const {user, onPress, theme} = this.props;
+        const {testID, user, onPress, theme} = this.props;
         const {first_name: firstName, last_name: lastName} = user;
         const style = getStyleSheet(theme);
 
@@ -36,7 +37,10 @@ export default class UserInfo extends PureComponent {
         }
 
         return (
-            <TouchableOpacity onPress={onPress}>
+            <TouchableOpacity
+                testID={testID}
+                onPress={onPress}
+            >
                 <View style={style.container}>
                     <ProfilePicture
                         size={48}

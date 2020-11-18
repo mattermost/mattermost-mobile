@@ -6,24 +6,26 @@ class MainSidebar {
         mainSidebar: 'main.sidebar',
         channelItemDisplayName: 'channel_item.display_name',
         channelsList: 'channels.list',
-        addChannel: 'action_button_sidebar.channels',
-        addDirectChannel: 'action_button_sidebar.direct',
+        openMoreChannelsButton: 'action_button_sidebar.channels',
+        openCreatePrivateChannelButton: 'action_button_sidebar.pg',
+        openMoreDirectMessagesButton: 'action_button_sidebar.direct',
     }
 
     mainSidebar = element(by.id(this.testID.mainSidebar));
     channelItemDisplayName = element(by.id(this.testID.channelItemDisplayName));
     channelsList = element(by.id(this.testID.channelsList));
-    addChannel = element(by.id(this.testID.addChannel));
-    addDirectChannel = element(by.id(this.testID.addDirectChannel));
+    openMoreChannelsButton = element(by.id(this.testID.openMoreChannelsButton));
+    openCreatePrivateChannelButton = element(by.id(this.testID.openCreatePrivateChannelButton));
+    openMoreDirectMessagesButton = element(by.id(this.testID.openMoreDirectMessagesButton));
+
+    getChannelByDisplayName = (displayName) => {
+        return element(by.text(displayName).withAncestor(by.id(this.testID.channelsList)));
+    }
 
     toBeVisible = async () => {
         await expect(this.mainSidebar).toBeVisible();
 
         return this.mainSidebar;
-    }
-
-    getChannelByDisplayName = (displayName) => {
-        return element(by.text(displayName).withAncestor(by.id(this.testID.channelsList)));
     }
 
     hasChannelAtIndex = async (index, channelDisplayName) => {

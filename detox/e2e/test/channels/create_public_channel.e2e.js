@@ -9,7 +9,6 @@
 
 import jestExpect from 'expect';
 
-import {MainSidebar} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelInfoScreen,
@@ -22,6 +21,7 @@ describe('Channels', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -30,14 +30,11 @@ describe('Channels', () => {
     });
 
     it('MM-T3201 Create public channel', async () => {
-        // # Go to channel sidebar list
-        await ChannelScreen.mainSidebarDrawerButton.tap();
-
-        // # Tap on + public channels
-        await MainSidebar.addChannel.tap();
+        // # Open more channels screen
+        await ChannelScreen.openMainSidebar();
+        await MoreChannelsScreen.open();
 
         // * Expect a list of public channels, initially empty
-        await MoreChannelsScreen.toBeVisible();
         await expect(element(by.text('No more channels to join'))).toBeVisible();
 
         // # Tap to create new channel

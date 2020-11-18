@@ -20,6 +20,8 @@ describe('Autocomplete', () => {
     beforeAll(async () => {
         ({user} = await Setup.apiInit());
         userAtMentionAutocomplete = Autocomplete.getAtMentionItem(user.id);
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -167,5 +169,25 @@ describe('Autocomplete', () => {
 
         // * Expect at mention autocomplete not to contain associated user suggestion
         await expect(userAtMentionAutocomplete).not.toExist();
+    });
+
+    it('MM-T3409_11 should be able to select at mention multiple times', async () => {
+        // # Type "@" to activate at mention autocomplete
+        await expect(atMentionSuggestionList).not.toExist();
+        await postInput.typeText('@');
+        await expect(atMentionSuggestionList).toExist();
+
+        // # Type username
+        await postInput.typeText(user.username);
+
+        // # Tap user
+        await userAtMentionAutocomplete.tap();
+
+        // * expect mention autocomplete to dissappear
+        await expect(atMentionSuggestionList).not.toExist();
+
+        // # Type "@" again to re-activate mention autocomplete
+        await postInput.typeText('@');
+        await expect(atMentionSuggestionList).toExist();
     });
 });

@@ -34,6 +34,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Post extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         actions: PropTypes.shape({
             createPost: PropTypes.func.isRequired,
             insertToDraft: PropTypes.func.isRequired,
@@ -240,6 +241,7 @@ export default class Post extends PureComponent {
 
     render() {
         const {
+            testID,
             channelIsReadOnly,
             commentedOnPost,
             highlight,
@@ -323,7 +325,10 @@ export default class Post extends PureComponent {
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
 
         return (
-            <View style={[style.postStyle, highlighted, padding(isLandscape)]}>
+            <View
+                testID={testID}
+                style={[style.postStyle, highlighted, padding(isLandscape)]}
+            >
                 <TouchableWithFeedback
                     onPress={this.handlePress}
                     onLongPress={this.showPostOptions}

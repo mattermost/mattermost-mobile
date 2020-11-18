@@ -198,11 +198,13 @@ export default class SettingsSidebarBase extends PureComponent {
                     contentContainerStyle={style.wrapper}
                 >
                     <UserInfo
+                        testID='settings.sidebar.user_info.action'
                         onPress={this.goToUserProfile}
                         user={currentUser}
                     />
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.status.action'
                             labelComponent={this.renderUserStatusLabel(currentUser.id)}
                             leftComponent={this.renderUserStatusIcon(currentUser.id)}
                             separator={false}
@@ -213,6 +215,7 @@ export default class SettingsSidebarBase extends PureComponent {
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.recent_mentions.action'
                             defaultMessage='Recent Mentions'
                             i18nId='search_header.title2'
                             iconName='at'
@@ -221,6 +224,7 @@ export default class SettingsSidebarBase extends PureComponent {
                             theme={theme}
                         />
                         <DrawerItem
+                            testID='settings.sidebar.saved_messages.action'
                             defaultMessage='Saved Messages'
                             i18nId='search_header.title3'
                             iconName='bookmark-outline'
@@ -232,6 +236,7 @@ export default class SettingsSidebarBase extends PureComponent {
                     <View style={style.separator}/>
                     <View style={style.block}>
                         <DrawerItem
+                            testID='settings.sidebar.edit_profile.action'
                             defaultMessage='Edit Profile'
                             i18nId='mobile.routes.edit_profile'
                             iconName='pencil-outline'

@@ -7,6 +7,7 @@ exports[`RecentMentions should match snapshot 1`] = `
       "flex": 1,
     }
   }
+  testID="recent_mentions.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
@@ -22,6 +23,7 @@ exports[`RecentMentions should match snapshot when component waiting for respons
       "flex": 1,
     }
   }
+  testID="recent_mentions.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
@@ -37,6 +39,7 @@ exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] 
       "flex": 1,
     }
   }
+  testID="recent_mentions.screen"
 >
   <Connect(StatusBar) />
   <Connect(FailedNetworkAction)

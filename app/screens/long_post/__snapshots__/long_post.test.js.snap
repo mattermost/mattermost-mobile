@@ -332,6 +332,7 @@ LongPost {
                 shouldRenderReplyButton={false}
                 showAddReaction={false}
                 showLongPost={true}
+                testID="long_post.post.post-id"
               />
             </ScrollView>
             <View

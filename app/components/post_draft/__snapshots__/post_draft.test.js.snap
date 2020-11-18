@@ -13,6 +13,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
       "paddingTop": 10,
     }
   }
+  testID="post_draft.archived"
 >
   <Text>
     <Text
@@ -116,6 +117,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
       "paddingTop": 10,
     }
   }
+  testID="post_draft.archived"
 >
   <Text>
     <Text
@@ -266,6 +268,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
         null,
       ]
     }
+    testID="post_draft"
   >
     <RCTScrollView
       contentContainerStyle={
@@ -316,7 +319,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               "paddingTop": 6,
             }
           }
-          testID="post.input"
+          testID="post_draft.post.input"
           textContentType="none"
           underlineColorAndroid="transparent"
         />
@@ -466,6 +469,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.file_quick_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -491,6 +495,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.image_quick_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -516,6 +521,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.camera_quick_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -531,7 +537,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 "paddingRight": 8,
               }
             }
-            testID="disabled_send.button"
+            testID="post_draft.send.button.disabled"
           >
             <View
               style={
@@ -584,6 +590,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
         "paddingHorizontal": 12,
       }
     }
+    testID="post_draft.read_only"
   >
     <Icon
       color="#3d3c40"
@@ -633,6 +640,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
         "paddingHorizontal": 12,
       }
     }
+    testID="post_draft.read_only"
   >
     <Icon
       color="#3d3c40"

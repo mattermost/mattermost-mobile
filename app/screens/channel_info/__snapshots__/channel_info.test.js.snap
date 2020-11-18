@@ -79,6 +79,7 @@ exports[`channelInfo should match snapshot 1`] = `
         <Connect(Favorite)
           channelId="1234"
           isLandscape={false}
+          testID="channel_info.favorite.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -143,6 +144,7 @@ exports[`channelInfo should match snapshot 1`] = `
         <Connect(Mute)
           channelId="1234"
           isLandscape={false}
+          testID="channel_info.mute.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -208,6 +210,7 @@ exports[`channelInfo should match snapshot 1`] = `
         <Connect(IgnoreMentions)
           channelId="1234"
           isLandscape={false}
+          testID="channel_info.ignore_mentions.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -338,6 +341,7 @@ exports[`channelInfo should match snapshot 1`] = `
         <Connect(Pinned)
           channelId="1234"
           isLandscape={false}
+          testID="channel_info.pinned.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -370,6 +374,7 @@ exports[`channelInfo should match snapshot 1`] = `
         />
         <Connect(ManageMembers)
           isLandscape={false}
+          testID="channel_info.manage_members.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -402,6 +407,7 @@ exports[`channelInfo should match snapshot 1`] = `
         />
         <Connect(AddMembers)
           isLandscape={false}
+          testID="channel_info.add_members.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -434,6 +440,7 @@ exports[`channelInfo should match snapshot 1`] = `
         />
         <Connect(ConvertPrivate)
           isLandscape={false}
+          testID="channel_info.convert_private.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -582,6 +589,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(Favorite)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.favorite.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -646,6 +654,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(Mute)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.mute.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -711,6 +720,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(IgnoreMentions)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.ignore_mentions.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -841,6 +851,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(Pinned)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.pinned.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -873,6 +884,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(ManageMembers)
     isLandscape={false}
+    testID="channel_info.manage_members.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -905,6 +917,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(AddMembers)
     isLandscape={false}
+    testID="channel_info.add_members.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -937,6 +950,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(ConvertPrivate)
     isLandscape={false}
+    testID="channel_info.convert_private.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1008,6 +1022,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(Favorite)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.favorite.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1072,6 +1087,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(Mute)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.mute.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1137,6 +1153,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(IgnoreMentions)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.ignore_mentions.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1201,6 +1218,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   <Connect(Pinned)
     channelId="1234"
     isLandscape={false}
+    testID="channel_info.pinned.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1233,6 +1251,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(ManageMembers)
     isLandscape={false}
+    testID="channel_info.manage_members.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1265,6 +1284,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(AddMembers)
     isLandscape={false}
+    testID="channel_info.add_members.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1297,6 +1317,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(ConvertPrivate)
     isLandscape={false}
+    testID="channel_info.convert_private.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",

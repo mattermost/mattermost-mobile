@@ -18,6 +18,8 @@ import {Setup} from '@support/server_api';
 describe('Autocomplete', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -26,7 +28,8 @@ describe('Autocomplete', () => {
     });
 
     it('MM-T3390 should render autocomplete in channel header edit screen', async () => {
-        // # Open edit channel modal
+        // # Open edit channel screen
+        await ChannelInfoScreen.open();
         await EditChannelScreen.open();
 
         // # Activate at_mention autocomplete

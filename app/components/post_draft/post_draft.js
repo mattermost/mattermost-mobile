@@ -90,6 +90,7 @@ export default class PostDraft extends PureComponent {
 
         const draftInput = (
             <DraftInput
+                testID='post_draft'
                 ref={this.draftInput}
                 channelId={channelId}
                 cursorPositionEvent={cursorPositionEvent}
