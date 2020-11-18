@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {ChannelSidebar} from '@support/ui/component';
+import {MainSidebar} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
 
 import {Setup, Team, User} from '@support/server_api';
@@ -27,10 +27,9 @@ describe('Messaging', () => {
 
     it('MM-T3471 Tapping channel URL link joins public channel', async () => {
         // # Go to the Town Square channel
-        const {channelDrawerButton, channelNavBarTitle} = ChannelScreen;
-        await channelDrawerButton.tap();
-        await ChannelSidebar.toBeVisible();
-        let channelItem = ChannelSidebar.getChannelByDisplayName('Town Square');
+        const {channelNavBarTitle} = ChannelScreen;
+        await ChannelScreen.openMainSidebar();
+        let channelItem = MainSidebar.getChannelByDisplayName('Town Square');
         await channelItem.tap();
         await expect(channelNavBarTitle).toHaveText('Town Square');
 
@@ -39,13 +38,11 @@ describe('Messaging', () => {
         const channelPermalink = `${serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
 
         // # Post the channel permalink to the test channel in Town Square
-        const {postInput, sendButton} = ChannelScreen;
+        const {postInput} = ChannelScreen;
         await expect(postInput).toBeVisible();
-        await expect(sendButton).not.toExist();
         await postInput.tap();
         await postInput.typeText(channelPermalink);
-        await expect(sendButton).toBeVisible();
-        await sendButton.tap();
+        await ChannelScreen.tapSendButton();
         await expect(element(by.text(channelPermalink))).toBeVisible();
 
         // # Create another user in the same team, log in and go to town square
@@ -53,13 +50,12 @@ describe('Messaging', () => {
         await Team.apiAddUserToTeam(otherUser.id, testTeam.id);
         await ChannelScreen.logout();
         await ChannelScreen.open(otherUser);
-        await channelDrawerButton.tap();
-        await ChannelSidebar.toBeVisible();
-        channelItem = ChannelSidebar.getChannelByDisplayName('Town Square');
+        await ChannelScreen.openMainSidebar();
+        channelItem = MainSidebar.getChannelByDisplayName('Town Square');
         await channelItem.tap();
         await expect(channelNavBarTitle).toHaveText('Town Square');
 
-        // # As this new user, Tap the channel permalink we posted earlier
+        // # As this new user, tap the channel permalink we posted earlier
         const permalinkPost = element(by.text(channelPermalink));
         await permalinkPost.tap({x: 5, y: 10});
 
