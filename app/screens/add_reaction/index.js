@@ -64,7 +64,10 @@ export default class AddReaction extends PureComponent {
                 testID='add_reaction.screen'
                 style={styles.container}
             >
-                <EmojiPicker onEmojiPress={this.handleEmojiPress}/>
+                <EmojiPicker
+                    testID='add_reaction.emoji_picker'
+                    onEmojiPress={this.handleEmojiPress}
+                />
             </View>
         );
     }

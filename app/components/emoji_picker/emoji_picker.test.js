@@ -34,6 +34,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
     const fuse = new Fuse(emojis, options);
 
     const baseProps = {
+        testID: 'emoji_picker',
         actions: {
             getCustomEmojis: jest.fn(),
             incrementEmojiPickerPage: jest.fn(),

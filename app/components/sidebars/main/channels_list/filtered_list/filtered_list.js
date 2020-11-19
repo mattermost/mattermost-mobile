@@ -25,6 +25,7 @@ const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
 class FilteredList extends Component {
     static propTypes = {
+        testID: PropTypes.string,
         actions: PropTypes.shape({
             getProfilesInTeam: PropTypes.func.isRequired,
             makeGroupMessageVisibleIfNecessary: PropTypes.func.isRequired,
@@ -341,8 +342,11 @@ class FilteredList extends Component {
     keyExtractor = (item) => item.id || item;
 
     renderItem = ({item}) => {
+        const {testID} = this.props;
+
         return (
             <ChannelItem
+                testID={testID + '.channel_item'}
                 channelId={item.id}
                 channel={item}
                 isSearchResult={true}
@@ -375,10 +379,11 @@ class FilteredList extends Component {
     };
 
     render() {
-        const {styles} = this.props;
+        const {testID, styles} = this.props;
         const {dataSource} = this.state;
         return (
             <View
+                testID={testID}
                 style={styles.container}
             >
                 <SectionList

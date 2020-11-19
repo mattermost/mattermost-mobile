@@ -9,6 +9,7 @@ import {
     ChannelScreen,
     SearchResultPostScreen,
 } from '@support/ui/screen';
+import {isAndroid} from '@support/utils';
 
 class SearchScreen {
     testID = {
@@ -37,6 +38,7 @@ class SearchScreen {
     // convenience props
     searchBar = SearchBar.getSearchBar(this.testID.searchScreenPrefix);
     searchInput = SearchBar.getSearchInput(this.testID.searchScreenPrefix);
+    backButton = SearchBar.getBackButton(this.testID.searchScreenPrefix);
     cancelButton = SearchBar.getCancelButton(this.testID.searchScreenPrefix);
     clearButton = SearchBar.getClearButton(this.testID.searchScreenPrefix);
 
@@ -61,8 +63,13 @@ class SearchScreen {
         return this.toBeVisible();
     }
 
-    cancel = async () => {
-        await this.cancelButton.tap();
+    back = async () => {
+        if (isAndroid()) {
+            await this.backButton.tap();
+        } else {
+            await this.cancelButton.tap();
+        }
+        await expect(this.searchScreen).not.toBeVisible();
     }
 
     clear = async () => {

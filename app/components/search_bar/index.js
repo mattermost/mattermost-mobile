@@ -260,7 +260,7 @@ export default class Search extends PureComponent {
                 (
                     <TouchableWithoutFeedback onPress={this.onCancel}>
                         <CompassIcon
-                            testID={testID + '.search.cancel.button'}
+                            testID={testID + '.search.back.button'}
                             name='arrow-left'
                             size={this.props.backArrowSize}
                             color={searchBarStyle.clearIconColorAndroid}

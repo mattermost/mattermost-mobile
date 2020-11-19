@@ -27,6 +27,7 @@ let FilteredList = null;
 
 export default class ChannelsList extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
@@ -94,6 +95,7 @@ export default class ChannelsList extends PureComponent {
     render() {
         const {intl} = this.context;
         const {
+            testID,
             onShowTeams,
             theme,
             isLandscape,
@@ -106,6 +108,7 @@ export default class ChannelsList extends PureComponent {
         if (searching) {
             list = (
                 <FilteredList
+                    testID={testID + '.filtered_list'}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                     term={term}
@@ -114,6 +117,7 @@ export default class ChannelsList extends PureComponent {
         } else {
             list = (
                 <List
+                    testID={testID + '.list'}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                 />
@@ -133,7 +137,7 @@ export default class ChannelsList extends PureComponent {
                 style={[styles.searchContainer, padding(isLandscape)]}
             >
                 <SearchBar
-                    testID='channels_list.search_bar'
+                    testID={testID + '.search_bar'}
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -160,8 +164,8 @@ export default class ChannelsList extends PureComponent {
 
         return (
             <View
+                testID={testID}
                 style={styles.container}
-                testID='channels_list'
             >
                 <View style={styles.headerContainer}>
                     {title}

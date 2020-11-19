@@ -19,6 +19,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
@@ -63,6 +64,7 @@ export default class ChannelItem extends PureComponent {
 
     render() {
         const {
+            testID,
             channelId,
             currentChannelId,
             displayName,
@@ -173,7 +175,10 @@ export default class ChannelItem extends PureComponent {
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
             >
-                <View style={[style.container, mutedStyle, padding(isLandscape)]}>
+                <View
+                    testID={testID}
+                    style={[style.container, mutedStyle, padding(isLandscape)]}
+                >
                     {extraBorder}
                     <View style={[style.item, extraItemStyle]}>
                         {icon}
@@ -181,7 +186,7 @@ export default class ChannelItem extends PureComponent {
                             style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID='channel_item.display_name'
+                            testID={testID + '.display_name'}
                         >
                             {channelDisplayName}
                         </Text>
