@@ -10,5 +10,5 @@ export default class System extends Model {
     static table = MM_TABLES.SERVER.SYSTEM
 
     @field('name') name!: string
-    @json('value', (rawJson) => rawJson) value!: string
+    @json('value', (rawJson) => rawJson) value!: string[]
 }

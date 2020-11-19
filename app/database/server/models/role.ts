@@ -9,6 +9,6 @@ export default class Role extends Model {
     static table = MM_TABLES.SERVER.ROLE
 
     @field('name') name!: string
-    @json('permissions', (rawJson) => rawJson) permissions!: string
+    @json('permissions', (rawJson) => rawJson) permissions!: string[]
     @field('role_id') roleId! : string
 }
