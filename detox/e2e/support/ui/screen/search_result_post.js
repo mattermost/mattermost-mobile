@@ -9,7 +9,11 @@ class SearchResultPostScreen {
     }
 
     getPost = (postId, text) => {
-        return Post.getPost(this.testID.searchResultPostScreenPrefix, postId, text);
+        const {postItem, postItemHeaderReply} = Post.getPost(this.testID.searchResultPostScreenPrefix, postId, text);
+        return {
+            searchResultPostItem: postItem,
+            searchResultPostItemHeaderReply: postItemHeaderReply,
+        };
     }
 }
 

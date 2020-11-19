@@ -10,13 +10,13 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 function SendButton(props) {
-    const {theme} = props;
+    const {testID, theme} = props;
     const style = getStyleSheet(theme);
 
     if (props.disabled) {
         return (
             <View
-                testID='post_draft.send.button.disabled'
+                testID={testID + '.send.button.disabled'}
                 style={style.sendButtonContainer}
             >
                 <View style={[style.sendButton, style.disableButton]}>
@@ -32,7 +32,7 @@ function SendButton(props) {
 
     return (
         <TouchableWithFeedback
-            testID='post_draft.send.button'
+            testID={testID + '.send.button'}
             onPress={props.handleSendMessage}
             style={style.sendButtonContainer}
             type={'opacity'}
@@ -49,6 +49,7 @@ function SendButton(props) {
 }
 
 SendButton.propTypes = {
+    testID: PropTypes.string,
     handleSendMessage: PropTypes.func.isRequired,
     disabled: PropTypes.bool.isRequired,
     theme: PropTypes.object.isRequired,

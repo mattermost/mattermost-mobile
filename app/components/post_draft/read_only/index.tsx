@@ -10,15 +10,16 @@ import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface ReadOnlyProps {
+    testID?: string;
     theme: Theme;
 }
 
-const ReadOnlyChannnel = ({theme}: ReadOnlyProps): ReactNode => {
+const ReadOnlyChannnel = ({testID, theme}: ReadOnlyProps): ReactNode => {
     const style = getStyle(theme);
     return (
         <SafeAreaView style={style.background}>
             <View
-                testID='post_draft.read_only'
+                testID={testID}
                 style={style.container}
             >
                 <CompassIcon

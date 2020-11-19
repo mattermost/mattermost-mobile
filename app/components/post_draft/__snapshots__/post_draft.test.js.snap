@@ -400,6 +400,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 "height": 44,
               }
             }
+            testID="post_draft.quick_actions"
           >
             <View
               accessible={true}
@@ -419,6 +420,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.quick_actions.at_input_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -444,6 +446,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.quick_actions.slash_input_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -469,7 +472,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
-              testID="post_draft.file_quick_action"
+              testID="post_draft.quick_actions.file_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -495,7 +498,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
-              testID="post_draft.image_quick_action"
+              testID="post_draft.quick_actions.image_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -521,7 +524,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
-              testID="post_draft.camera_quick_action"
+              testID="post_draft.quick_actions.camera_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -537,7 +540,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 "paddingRight": 8,
               }
             }
-            testID="post_draft.send.button.disabled"
+            testID="post_draft.send_action.send.button.disabled"
           >
             <View
               style={

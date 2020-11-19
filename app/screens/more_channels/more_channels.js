@@ -460,6 +460,7 @@ export default class MoreChannels extends PureComponent {
                     >
                         <View style={padding(isLandscape)}>
                             <SearchBar
+                                testID='more_channels.search_bar'
                                 ref={this.setSearchBarRef}
                                 placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                                 cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

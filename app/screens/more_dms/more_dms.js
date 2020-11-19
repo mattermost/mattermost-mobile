@@ -482,6 +482,7 @@ export default class MoreDirectMessages extends PureComponent {
                 <View style={style.searchBar}>
                     <View style={padding(isLandscape)}>
                         <SearchBar
+                            testID='more_direct_messages.search_bar'
                             ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

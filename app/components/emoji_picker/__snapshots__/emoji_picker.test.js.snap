@@ -24,6 +24,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
           "paddingVertical": 5,
         }
       }
+      testID="emoji_picker"
     >
       <View
         style={null}
@@ -60,6 +61,7 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
           searchIconSize={24}
           showArrow={false}
           showCancel={true}
+          testID="emoji_picker.search_bar"
           tintColorDelete="rgba(61,60,64,0.5)"
           tintColorSearch="rgba(61,60,64,0.8)"
           titleCancelColor="#3d3c40"

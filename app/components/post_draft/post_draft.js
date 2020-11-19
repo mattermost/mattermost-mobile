@@ -15,6 +15,7 @@ import ReadOnly from './read_only';
 
 export default class PostDraft extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         accessoriesContainerID: PropTypes.string,
         canPost: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
@@ -55,6 +56,7 @@ export default class PostDraft extends PureComponent {
 
     render = () => {
         const {
+            testID,
             accessoriesContainerID,
             canPost,
             channelId,
@@ -73,6 +75,7 @@ export default class PostDraft extends PureComponent {
         if (channelIsArchived || deactivatedChannel) {
             return (
                 <Archived
+                    testID={testID + '.archived'}
                     defactivated={deactivatedChannel}
                     rootId={rootId}
                     theme={theme}
@@ -84,13 +87,16 @@ export default class PostDraft extends PureComponent {
 
         if (readonly) {
             return (
-                <ReadOnly theme={theme}/>
+                <ReadOnly
+                    testID={testID + '.read_only'}
+                    theme={theme}
+                />
             );
         }
 
         const draftInput = (
             <DraftInput
-                testID='post_draft'
+                testID={testID}
                 ref={this.draftInput}
                 channelId={channelId}
                 cursorPositionEvent={cursorPositionEvent}

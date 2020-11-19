@@ -73,6 +73,7 @@ export default class ChannelAndroid extends ChannelBase {
                         <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
                     </View>
                     <PostDraft
+                        testID='channel.post_draft'
                         ref={this.postDraft}
                         screenId={this.props.componentId}
                         registerTypingAnimation={this.registerTypingAnimation}

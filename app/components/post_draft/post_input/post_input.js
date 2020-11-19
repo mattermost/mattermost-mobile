@@ -27,6 +27,7 @@ export default class PostInput extends PureComponent {
     };
 
     static propTypes = {
+        testID: PropTypes.string,
         channelDisplayName: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         cursorPositionEvent: PropTypes.string,
@@ -267,7 +268,7 @@ export default class PostInput extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {channelDisplayName, isLandscape, theme} = this.props;
+        const {testID, channelDisplayName, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
         let maxHeight = 150;
@@ -278,7 +279,7 @@ export default class PostInput extends PureComponent {
 
         return (
             <PasteableTextInput
-                testID='post_draft.post.input'
+                testID={testID}
                 ref={this.input}
                 style={{...style.input, maxHeight}}
                 onChangeText={this.handleTextChange}

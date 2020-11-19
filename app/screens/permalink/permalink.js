@@ -312,6 +312,7 @@ export default class Permalink extends PureComponent {
         } else {
             postList = (
                 <PostList
+                    testID='permalink.post_list'
                     highlightPostId={focusedPostId}
                     indicateNewMessages={false}
                     isSearchResult={false}

@@ -15,6 +15,7 @@ import InputAction from './input_quick_action';
 
 export default class QuickActions extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         canUploadFiles: PropTypes.bool,
         fileCount: PropTypes.number,
         inputEventType: PropTypes.string.isRequired,
@@ -64,6 +65,7 @@ export default class QuickActions extends PureComponent {
 
     render() {
         const {
+            testID,
             canUploadFiles,
             fileCount,
             theme,
@@ -77,8 +79,12 @@ export default class QuickActions extends PureComponent {
         };
 
         return (
-            <View style={style.quickActionsContainer}>
+            <View
+                testID={testID}
+                style={style.quickActionsContainer}
+            >
                 <InputAction
+                    testID={testID + '.at_input_action'}
                     disabled={this.state.atDisabled}
                     inputType='at'
                     onTextChange={this.handleOnTextChange}
@@ -86,14 +92,24 @@ export default class QuickActions extends PureComponent {
                     value={this.state.inputValue}
                 />
                 <InputAction
+                    testID={testID + '.slash_input_action'}
                     disabled={this.state.slashDisabled}
                     inputType='slash'
                     onTextChange={this.handleOnTextChange}
                     theme={theme}
                 />
-                <FileAction {...uploadProps}/>
-                <ImageAction {...uploadProps}/>
-                <CameraAction {...uploadProps}/>
+                <FileAction
+                    testID={testID + '.file_action'}
+                    {...uploadProps}
+                />
+                <ImageAction
+                    testID={testID + '.image_action'}
+                    {...uploadProps}
+                />
+                <CameraAction
+                    testID={testID + '.camera_action'}
+                    {...uploadProps}
+                />
             </View>
         );
     }

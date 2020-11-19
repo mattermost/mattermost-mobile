@@ -338,9 +338,13 @@ export default class ChannelAddMembers extends PureComponent {
         return (
             <KeyboardLayout>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View
+                    testID='channel_add_members.screen'
+                    style={style.searchBar}
+                >
                     <View style={padding(isLandscape)}>
                         <SearchBar
+                            testID='channel_add_members.search_bar'
                             ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

@@ -584,7 +584,7 @@ export default class Search extends PureComponent {
 
         const sectionsData = [{
             value: 'from:',
-            testID: 'search_from.section',
+            testID: 'search.from_section',
             modifier: `${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.from_modifier_description',
@@ -592,7 +592,7 @@ export default class Search extends PureComponent {
             }),
         }, {
             value: 'in:',
-            testID: 'search_in.section',
+            testID: 'search.in_section',
             modifier: `:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.in_modifier_description',
@@ -604,7 +604,7 @@ export default class Search extends PureComponent {
         if (this.props.enableDateSuggestion) {
             sectionsData.push({
                 value: 'on:',
-                testID: 'search_on.section',
+                testID: 'search.on_section',
                 modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.on_modifier_description',
@@ -613,7 +613,7 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'after:',
-                testID: 'search_after.section',
+                testID: 'search.after_section',
                 modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.after_modifier_description',
@@ -622,7 +622,7 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'before:',
-                testID: 'search_before.section',
+                testID: 'search.before_section',
                 modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.before_modifier_description',
@@ -734,6 +734,7 @@ export default class Search extends PureComponent {
                         style={[style.header, paddingRes]}
                     >
                         <SearchBar
+                            testID='search.search_bar'
                             ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

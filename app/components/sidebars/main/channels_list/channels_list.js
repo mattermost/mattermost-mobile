@@ -133,6 +133,7 @@ export default class ChannelsList extends PureComponent {
                 style={[styles.searchContainer, padding(isLandscape)]}
             >
                 <SearchBar
+                    testID='channels_list.search_bar'
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -160,7 +161,7 @@ export default class ChannelsList extends PureComponent {
         return (
             <View
                 style={styles.container}
-                testID='channels.list'
+                testID='channels_list'
             >
                 <View style={styles.headerContainer}>
                     {title}

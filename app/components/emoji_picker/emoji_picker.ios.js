@@ -47,9 +47,13 @@ export default class EmojiPicker extends EmojiPickerBase {
                     keyboardVerticalOffset={keyboardOffset}
                     style={styles.flex}
                 >
-                    <View style={styles.searchBar}>
+                    <View
+                        testID='emoji_picker'
+                        style={styles.searchBar}
+                    >
                         <View style={padding(isLandscape)}>
                             <SearchBar
+                                testID='emoji_picker.search_bar'
                                 ref={this.setSearchBarRef}
                                 placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                                 cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

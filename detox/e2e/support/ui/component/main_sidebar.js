@@ -5,7 +5,7 @@ class MainSidebar {
     testID = {
         mainSidebar: 'main.sidebar',
         channelItemDisplayName: 'channel_item.display_name',
-        channelsList: 'channels.list',
+        channelsList: 'channels_list',
         openMoreChannelsButton: 'action_button_sidebar.channels',
         openCreatePrivateChannelButton: 'action_button_sidebar.pg',
         openMoreDirectMessagesButton: 'action_button_sidebar.direct',

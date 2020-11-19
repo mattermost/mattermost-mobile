@@ -18,6 +18,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         null,
       ]
     }
+    testID="search.recent_item.test"
   >
     <Text
       style={
