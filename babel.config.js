@@ -13,16 +13,16 @@ module.exports = {
         ['module-resolver', {
             root: ['.'],
             alias: {
-                '@assets': './dist/assets',
                 '@actions': './app/actions',
+                '@assets': './dist/assets',
                 '@components': './app/components',
                 '@constants': './app/constants',
                 '@i18n': './app/i18n',
                 '@init': './app/init',
                 '@notifications': './app/notifications',
-                '@share': './share_extension',
                 '@screens': './app/screens',
                 '@selectors': './app/selectors',
+                '@share': './share_extension',
                 '@store': './app/store',
                 '@telemetry': './app/telemetry',
                 '@utils': './app/utils',

@@ -35,8 +35,8 @@
         "paths": {
             "@assets/*": ["dist/assets/*"],
             "@components/*": ["app/components/*"],
-            "@constants/*": ["app/constants/*"],
             "@constants": ["app/constants/index"],
+            "@constants/*": ["app/constants/*"],
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
             "@notifications": ["app/notifications/index"],
@@ -45,6 +45,7 @@
             "@share/*": ["share_extension/*"],
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
+            "@typings/*": ["types/*"],
             "@telemetry/*": ["/app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
