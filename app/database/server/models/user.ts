@@ -10,10 +10,12 @@ import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
 import ChannelMembership from '@typings/database/channel_membership';
 import Post from '@typings/database/post';
+import Channel from '@typings/database/channel';
 
 export default class User extends Model {
     static table = MM_TABLES.SERVER.USER
     static associations: Associations = {
+        [MM_TABLES.SERVER.CHANNEL]: {type: 'has_many', foreignKey: 'creator_id'},
         [MM_TABLES.SERVER.CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
         [MM_TABLES.SERVER.GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
         [MM_TABLES.SERVER.POST]: {type: 'has_many', foreignKey: 'user_id'},
@@ -41,6 +43,7 @@ export default class User extends Model {
     @field('user_id') userId! : string
     @field('user_name') userName! : string
 
+    @children(MM_TABLES.SERVER.CHANNEL) channel! : Channel
     @children(MM_TABLES.SERVER.CHANNEL_MEMBERSHIP) channelMembership! : ChannelMembership
     @children(MM_TABLES.SERVER.GROUP_MEMBERSHIP) groupMembership! : GroupMembership
     @children(MM_TABLES.SERVER.POST) post! : Post

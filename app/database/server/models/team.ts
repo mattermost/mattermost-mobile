@@ -25,7 +25,6 @@ export default class Team extends Model {
         [MM_TABLES.SERVER.TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
     }
 
-    @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string[]
     @field('allowed_open_invite') allowedOpenInvite!: boolean
     @field('description') description!: string
     @field('display_name') displayName!: string
@@ -34,12 +33,13 @@ export default class Team extends Model {
     @field('name') name!: string
     @field('team_id') teamId!: string
     @field('type') type!: string
+    @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string[]
 
+    @children(MM_TABLES.SERVER.CHANNEL) channel!: Channel
     @children(MM_TABLES.SERVER.GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
     @children(MM_TABLES.SERVER.MY_TEAM) myTeam!: MyTeam
     @children(MM_TABLES.SERVER.SLASH_COMMAND) slashCommand!: SlashCommand
     @children(MM_TABLES.SERVER.TEAM_CHANNEL_HISTORY) teamChannelHistory!: TeamChannelHistory
     @children(MM_TABLES.SERVER.TEAM_MEMBERSHIP) teamMembership!: TeamMembership
     @children(MM_TABLES.SERVER.TEAM_SEARCH_HISTORY) teamSearchHistory!: TeamSearchHistory
-    @children(MM_TABLES.SERVER.CHANNEL) channel!: Channel
 }
