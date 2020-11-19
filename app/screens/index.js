@@ -12,9 +12,9 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler';
 import RootWrapper from '@components/root';
 let store;
 
-const withGestures = (screen) => {
+const withGestures = (screen, styles) => {
     if (Platform.OS === 'android') {
-        return gestureHandlerRootHOC(screen);
+        return gestureHandlerRootHOC(screen, styles);
     }
 
     return screen;
@@ -204,7 +204,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withReduxProvider(screen)), extraStyles, () => screen);
+        Navigation.registerComponent(screenName, () => withGestures(withReduxProvider(screen), extraStyles), () => screen);
     }
 });
 

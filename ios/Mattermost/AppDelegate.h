@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import "RNNotifications.h"
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 

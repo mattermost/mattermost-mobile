@@ -8,11 +8,11 @@ import semver from 'semver/preload';
 
 import {MinServerVersion} from '@assets/config';
 import * as I18n from '@i18n';
+import PushNotification from '@init/push_notifications';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import Store from '@store/store';
 import intitialState from '@store/initial_state';
 
-import PushNotification from 'app/push_notifications';
 import mattermostBucket from 'app/mattermost_bucket';
 
 import GlobalEventHandler from './global_event_handler';
@@ -27,14 +27,6 @@ jest.mock('@utils/error_handling', () => ({
     default: {
         initializeErrorHandling: jest.fn(),
     },
-}));
-
-jest.mock('react-native-notifications', () => ({
-    addEventListener: jest.fn(),
-    cancelAllLocalNotifications: jest.fn(),
-    setBadgesCount: jest.fn(),
-    NotificationAction: jest.fn(),
-    NotificationCategory: jest.fn(),
 }));
 
 jest.mock('react-native-status-bar-size', () => ({

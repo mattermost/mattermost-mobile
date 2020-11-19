@@ -8,7 +8,7 @@ import {Client4} from '@mm-redux/client';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from '@init/push_notifications';
 
 const sortByNewest = (a, b) => {
     if (a.create_at > b.create_at) {
@@ -56,11 +56,11 @@ export function scheduleExpiredNotification(intl) {
         if (expiresAt) {
             // eslint-disable-next-line no-console
             console.log('Schedule Session Expiry Local Push Notification', expiresAt);
-            PushNotifications.localNotificationSchedule({
-                date: new Date(expiresAt),
-                message,
+            PushNotifications.scheduleNotification({
+                fireDate: expiresAt,
+                body: message,
                 userInfo: {
-                    localNotification: true,
+                    local: true,
                 },
             });
         }

@@ -228,6 +228,37 @@ jest.mock('react-native-navigation', () => {
     };
 });
 
+jest.mock('react-native-notifications', () => {
+    let deliveredNotifications = [];
+
+    return {
+        Notifications: {
+            registerRemoteNotifications: jest.fn(),
+            addEventListener: jest.fn(),
+            setDeliveredNotifications: jest.fn((notifications) => {
+                deliveredNotifications = notifications;
+            }),
+            cancelAllLocalNotifications: jest.fn(),
+            NotificationAction: jest.fn(),
+            NotificationCategory: jest.fn(),
+            events: () => ({
+                registerNotificationOpened: jest.fn(),
+                registerRemoteNotificationsRegistered: jest.fn(),
+                registerNotificationReceivedBackground: jest.fn(),
+                registerNotificationReceivedForeground: jest.fn(),
+            }),
+            ios: {
+                getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
+                removeDeliveredNotifications: jest.fn((ids) => {
+                    // eslint-disable-next-line max-nested-callbacks
+                    deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
+                }),
+                setBadgeCount: jest.fn(),
+            },
+        },
+    };
+});
+
 jest.mock('react-native-share', () => ({
     default: jest.fn(),
 }));
