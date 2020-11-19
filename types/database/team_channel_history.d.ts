@@ -1,6 +1,8 @@
-import Model, { Associations } from '@nozbe/watermelondb/Model';
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 export default class TeamChannelHistory extends Model {
-    static table: any;
+    static table: string;
     static associations: Associations;
     channelIds: string[];
     teamId: string;

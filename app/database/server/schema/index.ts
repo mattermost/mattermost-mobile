@@ -136,7 +136,7 @@ export const defaultSchema: AppSchema = appSchema({
                 {name: 'create_at', type: 'number'},
                 {name: 'delete_at', type: 'number'},
                 {name: 'edit_at', type: 'number'},
-                {name: 'is_pinned', type: 'string'},
+                {name: 'is_pinned', type: 'boolean'},
                 {name: 'message', type: 'string'},
                 {name: 'original_id', type: 'string'},
                 {name: 'pending_post_id', type: 'string'},
