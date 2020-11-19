@@ -19,9 +19,7 @@ describe('PostDraft Archived', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallowWithIntl(
-            <Archived {...baseProps}/>,
-        );
+        const wrapper = shallowWithIntl(<Archived {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });

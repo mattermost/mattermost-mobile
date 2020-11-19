@@ -15,9 +15,7 @@ describe('PostDraft ReadOnly', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallowWithIntl(
-            <ReadOnly {...baseProps}/>,
-        );
+        const wrapper = shallowWithIntl(<ReadOnly {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });

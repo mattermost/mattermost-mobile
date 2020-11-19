@@ -37,9 +37,7 @@ describe('Search', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallowWithIntl(
-            <Search {...baseProps}/>,
-        );
+        const wrapper = shallowWithIntl(<Search {...baseProps}/>);
 
         expect(wrapper.getElement()).toMatchSnapshot();
     });
