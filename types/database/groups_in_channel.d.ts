@@ -1,6 +1,9 @@
-import { Model } from '@nozbe/watermelondb';
+import Model, { Associations } from '@nozbe/watermelondb/Model';
 export default class GroupsInChannel extends Model {
-    static table: any;
+    static table: string;
+    static associations: Associations;
+    channelId: string;
+    groupId: string;
     memberCount: number;
     timeZoneCount: number;
 }

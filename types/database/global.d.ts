@@ -1,7 +1,6 @@
 import { Model } from '@nozbe/watermelondb';
-export default class Role extends Model {
+export default class Global extends Model {
     static table: string;
     name: string;
-    permissions: string;
-    roleId: string;
+    value: Object;
 }

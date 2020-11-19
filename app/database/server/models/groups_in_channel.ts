@@ -9,12 +9,11 @@ export default class GroupsInChannel extends Model {
 
     static associations: Associations = {
         [MM_TABLES.SERVER.GROUP]: {type: 'belongs_to', key: 'group_id'},
+        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     }
 
     @field('channel_id') channelId! : string
     @field('group_id') groupId! : string
     @field('member_count') memberCount! : number
     @field('timezone_count') timeZoneCount! : number
-
-    // FIXME : add relation to channelId
 }
