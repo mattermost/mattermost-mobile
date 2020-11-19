@@ -3,17 +3,15 @@
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
+import json from '@nozbe/watermelondb/decorators/json';
 
-export default class Reaction extends Model {
-    static table = MM_TABLES.SERVER.REACTION
+export default class PostMetadata extends Model {
+    static table = MM_TABLES.SERVER.POST_METADATA
     static associations: Associations = {
         [MM_TABLES.SERVER.POST]: {type: 'belongs_to', key: 'post_id'},
-        [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'user_id'},
     }
 
-    @field('create_at') createAt!: number
-    @field('emoji_name') emojiName!: string
     @field('post_id') postId!: string
-    @field('reaction_id') reactionId!: string
-    @field('user_id') userId!: string
+    @field('type') type!: string
+    @json('data', (rawJson) => rawJson) data!: Object
 }
