@@ -24,6 +24,7 @@ describe('Smoke Tests', () => {
         // * Check that LDAP server can connect and is synchronized with Mattermost server
         await Ldap.apiRequireLDAPServer();
 
+        // # Ensure user has team
         await ensureUserHasTeam(testOne);
     });
 

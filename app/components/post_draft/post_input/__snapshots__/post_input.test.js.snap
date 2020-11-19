@@ -25,6 +25,7 @@ exports[`PostInput should match, full snapshot 1`] = `
       "paddingTop": 6,
     }
   }
+  testID="post_draft.post.input"
   textContentType="none"
   underlineColorAndroid="transparent"
 />

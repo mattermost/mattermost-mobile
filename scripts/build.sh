@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 function execute() {
     cd fastlane && NODE_ENV=production bundle exec fastlane $1 $2
@@ -60,7 +60,7 @@ function setup() {
 
         echo "Installing Fastane"
         if !gem list bundler -i --version 2.1.4 > /dev/null 2>&1; then
-          gem install bundler --versio 2.1.4
+          gem install bundler --version 2.1.4
         fi
         cd fastlane && bundle install && cd .. || exit 1
     fi

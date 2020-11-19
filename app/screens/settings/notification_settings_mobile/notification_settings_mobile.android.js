@@ -16,16 +16,15 @@ import {
 import deepEqual from 'deep-equal';
 import PropTypes from 'prop-types';
 
+import FormattedText from '@components/formatted_text';
+import RadioButtonGroup from '@components/radio_button';
+import StatusBar from '@components/status_bar';
+import PushNotifications from '@init/push_notifications';
 import {RequestStatus} from '@mm-redux/constants';
-
-import FormattedText from 'app/components/formatted_text';
-import RadioButtonGroup from 'app/components/radio_button';
+import SectionItem from '@screens/settings/section_item';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getNotificationProps} from '@utils/notify_props';
 import NotificationPreferences from 'app/notification_preferences';
-import PushNotifications from 'app/push_notifications';
-import StatusBar from 'app/components/status_bar';
-import SectionItem from 'app/screens/settings/section_item';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {getNotificationProps} from 'app/utils/notify_props';
 
 import NotificationSettingsMobileBase from './notification_settings_mobile_base';
 
@@ -698,13 +697,13 @@ class NotificationSettingsMobileAndroid extends NotificationSettingsMobileBase {
         const {intl} = this.props;
 
         PushNotifications.localNotification({
-            message: intl.formatMessage({
+            body: intl.formatMessage({
                 id: 'mobile.notification_settings_mobile.test_push',
                 defaultMessage: 'This is a test push notification',
             }),
             userInfo: {
-                localNotification: true,
-                localTest: true,
+                local: true,
+                test: true,
             },
         });
     };

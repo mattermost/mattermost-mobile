@@ -9,6 +9,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface MuteProps {
+    testID?: string;
     channelId: string;
     isChannelMuted: boolean;
     isLandscape: boolean;
@@ -17,7 +18,7 @@ interface MuteProps {
     userId: string;
 }
 
-const Mute = ({channelId, isChannelMuted, isLandscape, updateChannelNotifyProps, userId, theme}: MuteProps) => {
+const Mute = ({testID, channelId, isChannelMuted, isLandscape, updateChannelNotifyProps, userId, theme}: MuteProps) => {
     const [muted, setMuted] = useState(isChannelMuted);
 
     const handleMuteChannel = preventDoubleTap(() => {
@@ -31,6 +32,7 @@ const Mute = ({channelId, isChannelMuted, isLandscape, updateChannelNotifyProps,
 
     return (
         <ChannelInfoRow
+            testID={testID}
             action={handleMuteChannel}
             defaultMessage='Mute channel'
             detail={muted}

@@ -29,6 +29,7 @@ const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
 export default class DraftInput extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         registerTypingAnimation: PropTypes.func.isRequired,
         addReactionToLatestPost: PropTypes.func.isRequired,
         getChannelMemberCountsByGroup: PropTypes.func.isRequired,
@@ -395,6 +396,7 @@ export default class DraftInput extends PureComponent {
 
     render() {
         const {
+            testID,
             channelDisplayName,
             channelId,
             cursorPositionEvent,
@@ -416,6 +418,7 @@ export default class DraftInput extends PureComponent {
                     registerTypingAnimation={registerTypingAnimation}
                 />
                 <View
+                    testID={testID}
                     style={[style.inputWrapper, padding(isLandscape)]}
                     onLayout={this.handleLayout}
                 >

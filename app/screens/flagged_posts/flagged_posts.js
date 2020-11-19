@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    DeviceEventEmitter,
     Keyboard,
     FlatList,
     StyleSheet,
@@ -111,6 +112,21 @@ export default class FlaggedPosts extends PureComponent {
 
     keyExtractor = (item) => item;
 
+    onViewableItemsChanged = ({viewableItems}) => {
+        if (!viewableItems.length) {
+            return;
+        }
+
+        const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
+            if (isViewable) {
+                acc[item] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+    };
+
     previewPost = (post) => {
         const {showPermalink} = this.props.actions;
         Keyboard.dismiss();
@@ -203,6 +219,7 @@ export default class FlaggedPosts extends PureComponent {
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'
                     renderItem={this.renderPost}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
                 />
             );
         } else {

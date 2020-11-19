@@ -19,6 +19,7 @@ exports[`PostDraft ReadOnly Should match snapshot 1`] = `
         "paddingHorizontal": 12,
       }
     }
+    testID="post_draft.read_only"
   >
     <CompassIcon
       color="#3d3c40"

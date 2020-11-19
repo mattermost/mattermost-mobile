@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   if !gem list bundler -i --version 2.1.4 > /dev/null 2>&1; then

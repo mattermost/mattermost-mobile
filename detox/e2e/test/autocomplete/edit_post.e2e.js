@@ -8,13 +8,25 @@
 // *******************************************************************
 
 import {Autocomplete} from '@support/ui/component';
-import {ChannelScreen, EditPostScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
-import {Setup} from '@support/server_api';
+import {
+    ChannelScreen,
+    EditPostScreen,
+} from '@support/ui/screen';
+import {
+    Channel,
+    Post,
+    Setup,
+} from '@support/server_api';
 
 describe('Autocomplete', () => {
+    let testChannel;
+
     beforeAll(async () => {
-        const {user} = await Setup.apiInit();
+        const {team, user} = await Setup.apiInit();
+        const {channel} = await Channel.apiGetChannelByName(team.name, 'town-square');
+        testChannel = channel;
+
+        // # Open channel screen
         await ChannelScreen.open(user);
     });
 
@@ -23,23 +35,20 @@ describe('Autocomplete', () => {
     });
 
     it('MM-T3391 should render autocomplete in post edit screen', async () => {
-        const message = Date.now().toString();
-        const {postInput, sendButton} = ChannelScreen;
+        const testMessage = Date.now().toString();
+        const {postInput} = ChannelScreen;
 
         // # Type a message
         await postInput.tap();
-        await postInput.typeText(message);
+        await postInput.typeText(testMessage);
 
-        // # Tap the send button
-        await sendButton.tap();
+        // # Tap send button
+        await ChannelScreen.tapSendButton();
 
-        // # Explicitly wait on Android before verifying error message
-        if (isAndroid()) {
-            await wait(timeouts.ONE_SEC);
-        }
-
-        // # Open edit screen
-        await EditPostScreen.open(message);
+        // # Open edit post screen
+        const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
+        await ChannelScreen.openPostOptionsFor(post.id, testMessage);
+        await EditPostScreen.open();
 
         const {atMentionSuggestionList} = Autocomplete;
         const {editPostInput, editPostClose} = EditPostScreen;

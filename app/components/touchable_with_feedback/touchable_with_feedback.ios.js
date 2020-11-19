@@ -9,6 +9,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class TouchableWithFeedbackIOS extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         children: CustomPropTypes.Children,
         cancelTouchOnPanning: PropTypes.bool,
         type: PropTypes.oneOf(['native', 'opacity', 'none']),
@@ -29,12 +30,15 @@ export default class TouchableWithFeedbackIOS extends PureComponent {
     }
 
     render() {
-        const {children, type, ...props} = this.props;
+        const {testID, children, type, ...props} = this.props;
 
         switch (type) {
         case 'native':
             return (
-                <View {...this.panResponder.panHandlers}>
+                <View
+                    testID={testID}
+                    {...this.panResponder.panHandlers}
+                >
                     <TouchableHighlight
                         {...props}
                     >
@@ -45,6 +49,7 @@ export default class TouchableWithFeedbackIOS extends PureComponent {
         case 'opacity':
             return (
                 <TouchableOpacity
+                    testID={testID}
                     {...props}
                 >
                     {children}
@@ -53,6 +58,7 @@ export default class TouchableWithFeedbackIOS extends PureComponent {
         case 'none':
             return (
                 <TouchableWithoutFeedback
+                    testID={testID}
                     {...props}
                 >
                     {children}

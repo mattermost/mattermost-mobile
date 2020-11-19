@@ -3,21 +3,21 @@
 
 class NotificationScreen {
     testID = {
-        inAppNotification: 'in_app_notification',
+        inAppNotificationScreen: 'in_app_notification.screen',
         inAppNotificationIcon: 'in_app_notification.icon',
         inAppNotificationTitle: 'in_app_notification.title',
         inAppNotificationMessage: 'in_app_notification.message',
     }
 
-    inAppNotification = element(by.id(this.testID.inAppNotification));
+    inAppNotificationScreen = element(by.id(this.testID.inAppNotificationScreen));
     inAppNotificationIcon = element(by.id(this.testID.inAppNotificationIcon));
     inAppNotificationTitle = element(by.id(this.testID.inAppNotificationTitle));
     inAppNotificationMessage = element(by.id(this.testID.inAppNotificationMessage));
 
     toBeVisible = async () => {
-        await expect(this.inAppNotification).toBeVisible();
+        await expect(this.inAppNotificationScreen).toBeVisible();
 
-        return this.inAppNotification;
+        return this.inAppNotificationScreen;
     }
 }
 

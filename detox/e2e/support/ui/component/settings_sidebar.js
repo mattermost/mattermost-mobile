@@ -4,11 +4,21 @@
 class SettingsSidebar {
     testID = {
         settingsSidebar: 'settings.sidebar',
+        userInfoAction: 'settings.sidebar.user_info.action',
+        statusAction: 'settings.sidebar.status.action',
+        recentMentionsAction: 'settings.sidebar.recent_mentions.action',
+        savedMessagesAction: 'settings.sidebar.saved_messages.action',
+        editProfileAction: 'settings.sidebar.edit_profile.action',
         settingsAction: 'settings.sidebar.settings.action',
         logoutAction: 'settings.sidebar.logout.action',
     }
 
     settingsSidebar = element(by.id(this.testID.settingsSidebar));
+    userInfoAction = element(by.id(this.testID.userInfoAction));
+    statusAction = element(by.id(this.testID.statusAction));
+    recentMentionsAction = element(by.id(this.testID.recentMentionsAction));
+    savedMessagesAction = element(by.id(this.testID.savedMessagesAction));
+    editProfileAction = element(by.id(this.testID.editProfileAction));
     settingsAction = element(by.id(this.testID.settingsAction));
     logoutAction = element(by.id(this.testID.logoutAction));
 

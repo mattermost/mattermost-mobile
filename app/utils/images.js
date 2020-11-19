@@ -94,14 +94,14 @@ export function openGalleryAtIndex(index, files) {
             sharedElementTransitions.push({
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
-                interpolation: 'overshoot',
+                interpolation: {mode: 'overshoot'},
             });
         } else {
             contentPush.y = {
                 from: windowHeight,
                 to: 0,
                 duration: 300,
-                interpolation: 'decelerate',
+                interpolation: {mode: 'decelerate'},
             };
 
             if (Platform.OS === 'ios') {

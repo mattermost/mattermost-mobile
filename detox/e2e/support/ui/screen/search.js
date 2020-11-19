@@ -26,6 +26,7 @@ class SearchScreen {
     }
 
     open = async () => {
+        // # Open search screen
         await ChannelScreen.channelSearchButton.tap();
 
         return this.toBeVisible();

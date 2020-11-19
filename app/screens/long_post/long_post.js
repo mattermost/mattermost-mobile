@@ -118,6 +118,7 @@ export default class LongPost extends PureComponent {
             isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
+        const testID = `long_post.post.${postId}`;
 
         return (
             <SafeAreaView
@@ -158,6 +159,7 @@ export default class LongPost extends PureComponent {
                         </View>
                         <ScrollView style={style.postList}>
                             <Post
+                                testID={testID}
                                 postId={postId}
                                 shouldRenderReplyButton={false}
                                 onPress={this.handlePress}

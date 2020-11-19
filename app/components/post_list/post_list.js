@@ -451,17 +451,22 @@ export default class PostList extends PureComponent {
     }
 
     onViewableItemsChanged = ({viewableItems}) => {
-        if (!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) {
+        if (!viewableItems.length) {
             return;
         }
+
         const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
             if (isViewable) {
                 acc[item] = true;
             }
             return acc;
         }, {});
+
         DeviceEventEmitter.emit('scrolled', viewableItemsMap);
-        this.onViewableItemsChangedListener(viewableItems);
+
+        if (this.onViewableItemsChangedListener && !this.props.deepLinkURL) {
+            this.onViewableItemsChangedListener(viewableItems);
+        }
     }
 
     render() {
@@ -521,7 +526,7 @@ export default class PostList extends PureComponent {
                         itemVisiblePercentThreshold: 1,
                         minimumViewTime: 100,
                     }}
-                    onViewableItemsChanged={showMoreMessagesButton ? this.onViewableItemsChanged : null}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
                 />
                 {showMoreMessagesButton &&
                     <MoreMessagesButton
@@ -541,8 +546,11 @@ export default class PostList extends PureComponent {
 }
 
 function PostComponent({postId, highlightPostId, lastPostIndex, index, ...postProps}) {
+    const testID = `post_list.post.${postId}`;
+
     return (
         <Post
+            testID={testID}
             postId={postId}
             highlight={highlightPostId === postId}
             isLastPost={lastPostIndex === index}
