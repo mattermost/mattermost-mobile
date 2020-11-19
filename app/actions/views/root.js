@@ -66,17 +66,17 @@ export function loadConfigAndLicense() {
 export function loadFromPushNotification(notification) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {data} = notification;
+        const {payload} = notification;
         const {currentTeamId, teams, myMembers: myTeamMembers} = state.entities.teams;
         const {channels} = state.entities.channels;
 
         let channelId = '';
         let teamId = currentTeamId;
-        if (data) {
-            channelId = data.channel_id;
+        if (payload) {
+            channelId = payload.channel_id;
 
             // when the notification does not have a team id is because its from a DM or GM
-            teamId = data.team_id || currentTeamId;
+            teamId = payload.team_id || currentTeamId;
         }
 
         // load any missing data
@@ -96,6 +96,8 @@ export function loadFromPushNotification(notification) {
         }
 
         dispatch(handleSelectTeamAndChannel(teamId, channelId));
+
+        return {data: true};
     };
 }
 
