@@ -13,7 +13,7 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 
 import {setAppCredentials} from 'app/init/credentials';
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from '@init/push_notifications';
 import {getDeviceTimezone} from 'app/utils/timezone';
 import {setCSRFFromCookie} from 'app/utils/security';
 import {loadConfigAndLicense} from 'app/actions/views/root';
@@ -94,11 +94,11 @@ export function scheduleExpiredNotification(intl) {
             });
 
             if (expiresAt) {
-                PushNotifications.localNotificationSchedule({
-                    date: new Date(expiresAt),
-                    message,
+                PushNotifications.scheduleNotification({
+                    fireDate: expiresAt,
+                    body: message,
                     userInfo: {
-                        localNotification: true,
+                        local: true,
                     },
                 });
             }

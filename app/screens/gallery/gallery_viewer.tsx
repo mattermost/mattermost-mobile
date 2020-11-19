@@ -5,7 +5,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
 import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode} from 'react-native-reanimated';
-import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash';
+import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
 import {isImage, isVideo} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
 import {makeStyleSheetFromTheme} from '@utils/theme';

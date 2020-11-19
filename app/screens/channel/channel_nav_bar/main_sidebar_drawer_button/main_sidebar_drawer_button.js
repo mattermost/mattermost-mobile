@@ -11,7 +11,7 @@ import {intlShape} from 'react-intl';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from '@init/push_notifications';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {t} from '@utils/i18n';
