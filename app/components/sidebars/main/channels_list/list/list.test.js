@@ -11,7 +11,7 @@ import List from './list';
 describe('ChannelsList List', () => {
     const baseProps = {
         onSelectChannel: jest.fn(),
-        testID: 'main.sidebars.channels_list.list',
+        testID: 'main.sidebar.channels_list.list',
         canJoinPublicChannels: true,
         canCreatePrivateChannels: true,
         canCreatePublicChannels: true,

@@ -55,7 +55,7 @@ exports[`ChannelsList FilteredList should match snapshot 1`] = `
   teamProfiles={Object {}}
   teammateNameDisplay="teammate-name-display"
   term="term"
-  testID="main.sidebars.channels_list.filtered_list"
+  testID="main.sidebar.channels_list.filtered_list"
   theme={
     Object {
       "awayIndicator": "#ffbc42",

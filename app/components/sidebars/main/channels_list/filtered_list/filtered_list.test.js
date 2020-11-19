@@ -17,7 +17,7 @@ describe('ChannelsList FilteredList', () => {
             searchProfiles: jest.fn(),
         },
         onSelectChannel: jest.fn(),
-        testID: 'main.sidebars.channels_list.filtered_list',
+        testID: 'main.sidebar.channels_list.filtered_list',
         channels: {},
         currentTeam: {},
         currentUserId: 'current-user-id',

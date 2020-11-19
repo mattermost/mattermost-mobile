@@ -3,7 +3,7 @@
 exports[`ChannelsList List should match snapshot 1`] = `
 <View
   onLayout={[Function]}
-  testID="main.sidebars.channels_list.list"
+  testID="main.sidebar.channels_list.list"
 >
   <SectionList
     contentContainerStyle={
