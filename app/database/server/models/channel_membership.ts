@@ -7,7 +7,7 @@ import field from '@nozbe/watermelondb/decorators/field';
 export default class ChannelMembership extends Model {
     static table = MM_TABLES.SERVER.CHANNEL_MEMBERSHIP
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL_MEMBERSHIP]: {type: 'belongs_to', key: 'channel_id'},
+        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
         [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'user_id'},
     }
 

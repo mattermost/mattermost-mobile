@@ -8,7 +8,7 @@ import json from '@nozbe/watermelondb/decorators/json';
 export default class MyTeam extends Model {
     static table = MM_TABLES.SERVER.MY_TEAM
     static associations: Associations = {
-        [MM_TABLES.SERVER.MY_TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [MM_TABLES.SERVER.TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
     @field('is_unread') isUnread!: boolean
