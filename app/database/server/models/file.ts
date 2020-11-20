@@ -7,7 +7,6 @@ import field from '@nozbe/watermelondb/decorators/field';
 export default class File extends Model {
     static table = MM_TABLES.SERVER.FILE
     static associations: Associations = {
-        [MM_TABLES.SERVER.DRAFT]: {type: 'belongs_to', key: 'draft_id'},
         [MM_TABLES.SERVER.POST]: {type: 'belongs_to', key: 'post_id'},
     }
 
