@@ -7,29 +7,29 @@ export const defaultSchema: AppSchema = appSchema({
     version: 1,
     tables: [
         tableSchema({
-            name: MM_TABLES.SERVERS,
+            name: MM_TABLES.DEFAULT.APP,
             columns: [
-                {name: 'db_path', type: 'string'},
-                {name: 'display_name', type: 'string', isIndexed: true},
-                {name: 'mention_count', type: 'number'},
-                {name: 'unread_count', type: 'number'},
-                {name: 'url', type: 'string'},
-            ],
-        }),
-        tableSchema({
-            name: MM_TABLES.APP,
-            columns: [
-                {name: 'app_id', type: 'string', isIndexed: true}, // to avoid name conflict with id column ?
+                {name: 'app_id', type: 'string', isIndexed: true},
                 {name: 'build_number', type: 'string'},
                 {name: 'created_at', type: 'number'},
                 {name: 'version_number', type: 'string'},
             ],
         }),
         tableSchema({
-            name: MM_TABLES.GLOBAL,
+            name: MM_TABLES.DEFAULT.GLOBAL,
             columns: [
                 {name: 'name', type: 'string', isIndexed: true},
                 {name: 'value', type: 'string'},
+            ],
+        }),
+        tableSchema({
+            name: MM_TABLES.DEFAULT.SERVERS,
+            columns: [
+                {name: 'db_path', type: 'string'},
+                {name: 'display_name', type: 'string', isIndexed: true},
+                {name: 'mention_count', type: 'number'},
+                {name: 'unread_count', type: 'number'},
+                {name: 'url', type: 'string'},
             ],
         }),
     ],

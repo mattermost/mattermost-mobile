@@ -6,7 +6,7 @@ import field from '@nozbe/watermelondb/decorators/field';
 import {MM_TABLES} from '@constants/database';
 
 export default class Server extends Model {
-    static table = MM_TABLES.SERVERS
+    static table = MM_TABLES.DEFAULT.SERVERS
 
     @field('db_path') dbPath!: string
     @field('display_name') displayName!: string
