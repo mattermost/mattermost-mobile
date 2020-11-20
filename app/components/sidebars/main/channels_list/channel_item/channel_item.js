@@ -170,6 +170,8 @@ export default class ChannelItem extends PureComponent {
             />
         );
 
+        const displayNameTestID = `${testID}.display_name`;
+
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
@@ -186,7 +188,7 @@ export default class ChannelItem extends PureComponent {
                             style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID={testID + '.display_name'}
+                            testID={displayNameTestID}
                         >
                             {channelDisplayName}
                         </Text>

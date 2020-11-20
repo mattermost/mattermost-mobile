@@ -315,10 +315,11 @@ export default class List extends PureComponent {
 
     renderItem = ({item}) => {
         const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
+        const channelItemTestID = `${testID}.channel_item`;
 
         return (
             <ChannelItem
-                testID={testID + '.channel_item'}
+                testID={channelItemTestID}
                 channelId={item}
                 isUnread={unreadChannelIds.includes(item)}
                 isFavorite={favoriteChannelIds.includes(item)}

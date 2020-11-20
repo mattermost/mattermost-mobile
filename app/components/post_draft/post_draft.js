@@ -73,9 +73,11 @@ export default class PostDraft extends PureComponent {
         } = this.props;
 
         if (channelIsArchived || deactivatedChannel) {
+            const archivedTestID = `${testID}.archived`;
+
             return (
                 <Archived
-                    testID={testID + '.archived'}
+                    testID={archivedTestID}
                     defactivated={deactivatedChannel}
                     rootId={rootId}
                     theme={theme}
@@ -86,9 +88,11 @@ export default class PostDraft extends PureComponent {
         const readonly = channelIsReadOnly || !canPost;
 
         if (readonly) {
+            const readOnlyTestID = `${testID}.read_only`;
+
             return (
                 <ReadOnly
-                    testID={testID + '.read_only'}
+                    testID={readOnlyTestID}
                     theme={theme}
                 />
             );

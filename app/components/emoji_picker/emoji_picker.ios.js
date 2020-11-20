@@ -21,6 +21,7 @@ export default class EmojiPicker extends EmojiPickerBase {
         const {formatMessage} = this.context.intl;
         const {testID, isLandscape, theme} = this.props;
         const {searchTerm} = this.state;
+        const searchBarTestID = `${testID}.search_bar`;
         const styles = getStyleSheetFromTheme(theme);
 
         const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
@@ -53,7 +54,7 @@ export default class EmojiPicker extends EmojiPickerBase {
                     >
                         <View style={padding(isLandscape)}>
                             <SearchBar
-                                testID={testID + '.search_bar'}
+                                testID={searchBarTestID}
                                 ref={this.setSearchBarRef}
                                 placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                                 cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

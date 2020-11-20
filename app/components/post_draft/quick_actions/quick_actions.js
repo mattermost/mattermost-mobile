@@ -70,6 +70,11 @@ export default class QuickActions extends PureComponent {
             fileCount,
             theme,
         } = this.props;
+        const atInputActionTestID = `${testID}.at_input_action`;
+        const slashInputActionTestID = `${testID}.slash_input_action`;
+        const fileActionTestID = `${testID}.file_action`;
+        const imageActionTestID = `${testID}.image_action`;
+        const cameraActionTestID = `${testID}.camera_action`;
         const uploadProps = {
             disabled: !canUploadFiles,
             fileCount,
@@ -84,7 +89,7 @@ export default class QuickActions extends PureComponent {
                 style={style.quickActionsContainer}
             >
                 <InputAction
-                    testID={testID + '.at_input_action'}
+                    testID={atInputActionTestID}
                     disabled={this.state.atDisabled}
                     inputType='at'
                     onTextChange={this.handleOnTextChange}
@@ -92,22 +97,22 @@ export default class QuickActions extends PureComponent {
                     value={this.state.inputValue}
                 />
                 <InputAction
-                    testID={testID + '.slash_input_action'}
+                    testID={slashInputActionTestID}
                     disabled={this.state.slashDisabled}
                     inputType='slash'
                     onTextChange={this.handleOnTextChange}
                     theme={theme}
                 />
                 <FileAction
-                    testID={testID + '.file_action'}
+                    testID={fileActionTestID}
                     {...uploadProps}
                 />
                 <ImageAction
-                    testID={testID + '.image_action'}
+                    testID={imageActionTestID}
                     {...uploadProps}
                 />
                 <CameraAction
-                    testID={testID + '.camera_action'}
+                    testID={cameraActionTestID}
                     {...uploadProps}
                 />
             </View>

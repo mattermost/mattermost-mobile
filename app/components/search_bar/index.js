@@ -216,6 +216,9 @@ export default class Search extends PureComponent {
 
     render() {
         const {testID, backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin, containerHeight} = this.props;
+        const searchClearButtonTestID = `${testID}.search.clear.button`;
+        const searchBackButtonTestID = `${testID}.search.back.button`;
+        const searchInputTestID = `${testID}.search.input`;
         const searchBarStyle = getSearchBarStyle(
             backgroundColor,
             cancelButtonStyle,
@@ -237,7 +240,7 @@ export default class Search extends PureComponent {
         if (Platform.OS === 'ios') {
             clearIcon = (
                 <CompassIcon
-                    testID={testID + '.search.clear.button'}
+                    testID={searchClearButtonTestID}
                     name='close-circle'
                     size={18}
                     style={{color: searchBarStyle.clearIconColorIos}}
@@ -260,7 +263,7 @@ export default class Search extends PureComponent {
                 (
                     <TouchableWithoutFeedback onPress={this.onCancel}>
                         <CompassIcon
-                            testID={testID + '.search.back.button'}
+                            testID={searchBackButtonTestID}
                             name='arrow-left'
                             size={this.props.backArrowSize}
                             color={searchBarStyle.clearIconColorAndroid}
@@ -287,7 +290,7 @@ export default class Search extends PureComponent {
 
             clearIcon = (
                 <CompassIcon
-                    testID={testID + '.search.clear.button'}
+                    testID={searchClearButtonTestID}
                     name='close'
                     size={this.props.deleteIconSize}
                     color={searchBarStyle.clearIconColorAndroid}
@@ -322,7 +325,7 @@ export default class Search extends PureComponent {
                     ]}
                 >
                     <SearchBar
-                        testID={testID + '.search.input'}
+                        testID={searchInputTestID}
                         autoCapitalize={this.props.autoCapitalize}
                         autoCorrect={false}
                         autoFocus={this.props.autoFocus}

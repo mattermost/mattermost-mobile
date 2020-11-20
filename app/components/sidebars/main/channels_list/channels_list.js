@@ -100,7 +100,9 @@ export default class ChannelsList extends PureComponent {
             theme,
             isLandscape,
         } = this.props;
-
+        const filteredListTestID = `${testID}.filtered_list`;
+        const listTestID = `${testID}.list`;
+        const searchBarTestID = `${testID}.search_bar`;
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
 
@@ -108,7 +110,7 @@ export default class ChannelsList extends PureComponent {
         if (searching) {
             list = (
                 <FilteredList
-                    testID={testID + '.filtered_list'}
+                    testID={filteredListTestID}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                     term={term}
@@ -117,7 +119,7 @@ export default class ChannelsList extends PureComponent {
         } else {
             list = (
                 <List
-                    testID={testID + '.list'}
+                    testID={listTestID}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                 />
@@ -137,7 +139,7 @@ export default class ChannelsList extends PureComponent {
                 style={[styles.searchContainer, padding(isLandscape)]}
             >
                 <SearchBar
-                    testID={testID + '.search_bar'}
+                    testID={searchBarTestID}
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

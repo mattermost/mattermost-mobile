@@ -14,6 +14,7 @@ export default class EmojiPicker extends EmojiPickerBase {
         const {formatMessage} = this.context.intl;
         const {testID, theme} = this.props;
         const {searchTerm} = this.state;
+        const searchBarTestID = `${testID}.search_bar`;
         const styles = getStyleSheetFromTheme(theme);
 
         const searchBarInput = {
@@ -29,7 +30,7 @@ export default class EmojiPicker extends EmojiPickerBase {
                     style={styles.searchBar}
                 >
                     <SearchBar
-                        testID={testID + '.search_bar'}
+                        testID={searchBarTestID}
                         ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

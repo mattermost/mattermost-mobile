@@ -11,12 +11,14 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 function SendButton(props) {
     const {testID, theme} = props;
+    const sendButtonTestID = `${testID}.send.button`;
+    const sendButtonDisabledTestID = `${testID}.send.button.disabled`;
     const style = getStyleSheet(theme);
 
     if (props.disabled) {
         return (
             <View
-                testID={testID + '.send.button.disabled'}
+                testID={sendButtonDisabledTestID}
                 style={style.sendButtonContainer}
             >
                 <View style={[style.sendButton, style.disableButton]}>
@@ -32,7 +34,7 @@ function SendButton(props) {
 
     return (
         <TouchableWithFeedback
-            testID={testID + '.send.button'}
+            testID={sendButtonTestID}
             onPress={props.handleSendMessage}
             style={style.sendButtonContainer}
             type={'opacity'}
