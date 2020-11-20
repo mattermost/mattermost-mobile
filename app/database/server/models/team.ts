@@ -25,7 +25,7 @@ export default class Team extends Model {
         [MM_TABLES.SERVER.TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
     }
 
-    @field('allowed_open_invite') allowedOpenInvite!: boolean
+    @field('allow_open_invite') allowOpenInvite!: boolean
     @field('description') description!: string
     @field('display_name') displayName!: string
     @field('is_group_constrained') isGroupConstrained!: boolean

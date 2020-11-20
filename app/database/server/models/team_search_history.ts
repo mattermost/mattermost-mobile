@@ -13,7 +13,7 @@ export default class TeamSearchHistory extends Model {
     }
 
     @field('created_at') createdAt!: number
+    @field('team_id') teamId!: number
     @json('display_term', (rawJson) => rawJson) displayTerm!: string []
-    @field('team_id') team_id!: number
     @text('term') term!: number
 }

@@ -57,9 +57,9 @@ export const defaultSchema: AppSchema = appSchema({
         tableSchema({
             name: MM_TABLES.SERVER.FILE,
             columns: [
+                {name: 'draft_id', type: 'string'},
                 {name: 'extension', type: 'string'},
                 {name: 'file_id', type: 'string'},
-                {name: 'draft_id', type: 'string'},
                 {name: 'height', type: 'number'},
                 {name: 'image_thumbnail', type: 'string'},
                 {name: 'local_path', type: 'string'},
@@ -79,6 +79,13 @@ export const defaultSchema: AppSchema = appSchema({
             ],
         }),
         tableSchema({
+            name: MM_TABLES.SERVER.GROUP_MEMBERSHIP,
+            columns: [
+                {name: 'group_id', type: 'string', isIndexed: true},
+                {name: 'user_id', type: 'string', isIndexed: true},
+            ],
+        }),
+        tableSchema({
             name: MM_TABLES.SERVER.GROUPS_IN_CHANNEL,
             columns: [
                 {name: 'channel_id', type: 'string', isIndexed: true},
@@ -94,13 +101,6 @@ export const defaultSchema: AppSchema = appSchema({
                 {name: 'member_count', type: 'number'},
                 {name: 'team_id', type: 'string', isIndexed: true},
                 {name: 'timezone_count', type: 'number'},
-            ],
-        }),
-        tableSchema({
-            name: MM_TABLES.SERVER.GROUP_MEMBERSHIP,
-            columns: [
-                {name: 'group_id', type: 'string', isIndexed: true},
-                {name: 'user_id', type: 'string', isIndexed: true},
             ],
         }),
         tableSchema({
@@ -224,8 +224,8 @@ export const defaultSchema: AppSchema = appSchema({
         tableSchema({
             name: MM_TABLES.SERVER.TEAM,
             columns: [
+                {name: 'allow_open_invite', type: 'boolean'},
                 {name: 'allowed_domains', type: 'string'},
-                {name: 'allowed_open_invite', type: 'boolean'},
                 {name: 'description', type: 'string'},
                 {name: 'display_name', type: 'string'},
                 {name: 'is_group_constrained', type: 'boolean'},

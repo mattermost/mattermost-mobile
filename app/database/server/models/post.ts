@@ -26,7 +26,7 @@ export default class Post extends Model {
     @field('channel_id') channelId!: string
     @field('create_at') createAt!: number
     @field('delete_at') deleteAt!: number
-    @field('edit_at') edit_at!: number
+    @field('edit_at') editAt!: number
     @field('is_pinned') isPinned!: boolean
     @field('message') message!: string
     @field('original_id') originalId!: string
@@ -36,7 +36,7 @@ export default class Post extends Model {
     @field('root_id') rootId!: string
     @field('type') type!: string
     @field('user_id') userId!: string
-    @json('props', (rawJson) => rawJson) props!: string
+    @json('props', (rawJson) => rawJson) props!: string[]
 
     @children(MM_TABLES.SERVER.DRAFT) draft!: Draft
     @children(MM_TABLES.SERVER.FILE) file!: File

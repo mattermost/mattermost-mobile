@@ -13,5 +13,5 @@ export default class PostMetadata extends Model {
 
     @field('post_id') postId!: string
     @field('type') type!: string
-    @json('data', (rawJson) => rawJson) data!: Object
+    @json('data', (rawJson) => rawJson) data!: string[]
 }

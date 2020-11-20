@@ -36,7 +36,7 @@ export default class Channel extends Model {
     @field('display_name') displayName! : string
     @field('is_group_constrained') isGroupConstrained! : boolean
     @field('name') name! : string
-    @field('teamId') team_id! : string
+    @field('team_id') teamId! : string
     @field('type') type! : string
 
     @children(MM_TABLES.SERVER.CHANNEL_MEMBERSHIP) channelMembership! : ChannelMembership

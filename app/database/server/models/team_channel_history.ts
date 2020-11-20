@@ -11,6 +11,6 @@ export default class TeamChannelHistory extends Model {
         [MM_TABLES.SERVER.TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
-    @json('channel_ids', (rawJson) => rawJson) channelIds!: string[]
     @field('team_id') teamId!: string
+    @json('channel_ids', (rawJson) => rawJson) channelIds!: string[]
 }

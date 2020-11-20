@@ -11,6 +11,7 @@ import Reaction from '@typings/database/reaction';
 import ChannelMembership from '@typings/database/channel_membership';
 import Post from '@typings/database/post';
 import Channel from '@typings/database/channel';
+import json from '@nozbe/watermelondb/decorators/json';
 
 export default class User extends Model {
     static table = MM_TABLES.SERVER.USER
@@ -34,14 +35,14 @@ export default class User extends Model {
     @field('last_picture_update') lastPictureUpdate! : number
     @field('locale') locale! : string
     @field('nick_name') nickName! : string
-    @field('notify_props') notifyProps! : string
     @field('position') position! : string
-    @field('props') props! : string
     @field('roles') roles! : string
     @field('status') status! : string
-    @field('time_zone') timeZone! : string
     @field('user_id') userId! : string
     @field('user_name') userName! : string
+    @json('notify_props', (rawJson) => rawJson) notifyProps! : string[]
+    @json('props', (rawJson) => rawJson) props! : string[]
+    @json('time_zone', (rawJson) => rawJson) timeZone! : string[]
 
     @children(MM_TABLES.SERVER.CHANNEL) channel! : Channel
     @children(MM_TABLES.SERVER.CHANNEL_MEMBERSHIP) channelMembership! : ChannelMembership
