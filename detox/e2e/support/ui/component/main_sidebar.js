@@ -5,8 +5,8 @@ class MainSidebar {
     testID = {
         mainSidebar: 'main.sidebar',
         channelsList: 'main.sidebar.channels_list',
-        channelItemDisplayName: 'main.sidebar.list.channel_item.display_name',
-        filteredChannelItemDisplayName: 'main.sidebar.filtered_list.channel_item.display_name',
+        channelItemDisplayName: 'main.sidebar.channels_list.list.channel_item.display_name',
+        filteredChannelItemDisplayName: 'main.sidebar.channels_list.filtered_list.channel_item.display_name',
         openMoreChannelsButton: 'action_button_sidebar.channels',
         openCreatePrivateChannelButton: 'action_button_sidebar.pg',
         openMoreDirectMessagesButton: 'action_button_sidebar.direct',
@@ -32,13 +32,13 @@ class MainSidebar {
 
     hasChannelAtIndex = async (index, channelDisplayName) => {
         await expect(
-            element(by.id(this.testID.channelItemDisplayName).withAncestor(by.id(this.testID.channelsList))).atIndex(index),
+            element(by.id(this.testID.channelItemDisplayName)).atIndex(index),
         ).toHaveText(channelDisplayName);
     }
 
     hasFilteredChannelAtIndex = async (index, filteredChannelItemDisplayName) => {
         await expect(
-            element(by.id(this.testID.filteredChannelItemDisplayName).withAncestor(by.id(this.testID.channelsList))).atIndex(index),
+            element(by.id(this.testID.filteredChannelItemDisplayName)).atIndex(index),
         ).toHaveText(filteredChannelItemDisplayName);
     }
 }
