@@ -9,7 +9,6 @@ export const defaultSchema: AppSchema = appSchema({
         tableSchema({
             name: MM_TABLES.DEFAULT.APP,
             columns: [
-                {name: 'app_id', type: 'string', isIndexed: true},
                 {name: 'build_number', type: 'string'},
                 {name: 'created_at', type: 'number'},
                 {name: 'version_number', type: 'string'},

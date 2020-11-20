@@ -9,7 +9,6 @@ import date from '@nozbe/watermelondb/decorators/date';
 export default class App extends Model {
     static table = MM_TABLES.DEFAULT.APP
 
-    @field('app_id') appId!: string
     @field('build_number') buildNumber!: string
     @date('created_at') createdAt!: Date
     @field('version_number') unreadCount!: string
