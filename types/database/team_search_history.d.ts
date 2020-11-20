@@ -5,7 +5,7 @@ export default class TeamSearchHistory extends Model {
     static table: string;
     static associations: Associations;
     createdAt: number;
+    teamId: number;
     displayTerm: string[];
-    team_id: number;
     term: number;
 }

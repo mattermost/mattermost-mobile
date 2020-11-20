@@ -7,6 +7,7 @@ import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
 import ChannelMembership from '@typings/database/channel_membership';
 import Post from '@typings/database/post';
+import Channel from '@typings/database/channel';
 export default class User extends Model {
     static table: string;
     static associations: Associations;
@@ -20,14 +21,15 @@ export default class User extends Model {
     lastPictureUpdate: number;
     locale: string;
     nickName: string;
-    notifyProps: string;
     position: string;
-    props: string;
     roles: string;
     status: string;
-    timeZone: string;
     userId: string;
     userName: string;
+    notifyProps: string[];
+    props: string[];
+    timeZone: string[];
+    channel: Channel;
     channelMembership: ChannelMembership;
     groupMembership: GroupMembership;
     post: Post;

@@ -7,19 +7,9 @@ export const defaultSchema: AppSchema = appSchema({
     version: 1,
     tables: [
         tableSchema({
-            name: MM_TABLES.DEFAULT.SERVERS,
-            columns: [
-                {name: 'db_path', type: 'string'},
-                {name: 'display_name', type: 'string'},
-                {name: 'mention_count', type: 'number'},
-                {name: 'unread_count', type: 'number'},
-                {name: 'url', type: 'string'},
-            ],
-        }),
-        tableSchema({
             name: MM_TABLES.DEFAULT.APP,
             columns: [
-                {name: 'app_id', type: 'string'},
+                {name: 'app_id', type: 'string', isIndexed: true},
                 {name: 'build_number', type: 'string'},
                 {name: 'created_at', type: 'number'},
                 {name: 'version_number', type: 'string'},
@@ -30,6 +20,16 @@ export const defaultSchema: AppSchema = appSchema({
             columns: [
                 {name: 'name', type: 'string'},
                 {name: 'value', type: 'string'},
+            ],
+        }),
+        tableSchema({
+            name: MM_TABLES.DEFAULT.SERVERS,
+            columns: [
+                {name: 'db_path', type: 'string'},
+                {name: 'display_name', type: 'string', isIndexed: true},
+                {name: 'mention_count', type: 'number'},
+                {name: 'unread_count', type: 'number'},
+                {name: 'url', type: 'string'},
             ],
         }),
     ],

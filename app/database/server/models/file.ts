@@ -10,7 +10,6 @@ export default class File extends Model {
         [MM_TABLES.SERVER.POST]: {type: 'belongs_to', key: 'post_id'},
     }
 
-    @field('draft_id') draftId!: string
     @field('extension') extension!: string
     @field('file_id') fileId!: string
     @field('height') height!: number

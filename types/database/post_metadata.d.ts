@@ -6,5 +6,5 @@ export default class PostMetadata extends Model {
     static associations: Associations;
     postId: string;
     type: string;
-    data: Object;
+    data: string[];
 }
