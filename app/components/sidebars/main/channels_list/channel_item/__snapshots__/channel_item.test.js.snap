@@ -17,7 +17,7 @@ exports[`ChannelItem should match snapshot 1`] = `
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -95,7 +95,7 @@ exports[`ChannelItem should match snapshot 1`] = `
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -121,7 +121,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -209,7 +209,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         {displayname} (you)
       </Text>
@@ -235,7 +235,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -323,7 +323,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         {displayname} (you)
       </Text>
@@ -349,7 +349,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -437,7 +437,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -463,7 +463,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -541,7 +541,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -567,7 +567,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -645,7 +645,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -671,7 +671,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -749,7 +749,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -779,7 +779,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -857,7 +857,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>
@@ -885,7 +885,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         null,
       ]
     }
-    testID="main.sidebar.list.channel_item"
+    testID="main.sidebar.channels_list.list.channel_item"
   >
     <View
       style={
@@ -963,7 +963,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             },
           ]
         }
-        testID="main.sidebar.list.channel_item.display_name"
+        testID="main.sidebar.channels_list.list.channel_item.display_name"
       >
         display_name
       </Text>

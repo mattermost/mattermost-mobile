@@ -22,7 +22,7 @@ describe('ChannelItem', () => {
     };
 
     const baseProps = {
-        testID: 'main.sidebar.list.channel_item',
+        testID: 'main.sidebar.channels_list.list.channel_item',
         channelId: 'channel_id',
         channel,
         currentChannelId: 'current_channel_id',
