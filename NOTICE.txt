@@ -2298,7 +2298,7 @@ The React Native Reanimated and Gesture Handler Toolbelt.
 * HOMEPAGE:
   * https://github.com/wcandillon/react-native-redash
 
-* LICENSE: MIT?
+* LICENSE: MIT
 
 ---
 
