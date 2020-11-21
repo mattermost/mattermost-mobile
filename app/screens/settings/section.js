@@ -9,7 +9,6 @@ import {
 
 import FormattedText from 'app/components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {marginHorizontal as margin} from 'app/components/safe_area_view/iphone_x_spacing';
 
 function section(props) {
     const {
@@ -23,7 +22,6 @@ function section(props) {
         headerId,
         headerValues,
         theme,
-        isLandscape,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -35,7 +33,7 @@ function section(props) {
                     id={headerId}
                     defaultMessage={headerDefaultMessage}
                     values={headerValues}
-                    style={[style.header, margin(isLandscape)]}
+                    style={style.header}
                 />
             }
             <View style={style.items}>
@@ -46,7 +44,7 @@ function section(props) {
                     id={footerId}
                     defaultMessage={footerDefaultMessage}
                     values={footerValues}
-                    style={[style.footer, margin(isLandscape)]}
+                    style={style.footer}
                 />
             }
         </View>
@@ -64,7 +62,6 @@ section.propTypes = {
     headerId: PropTypes.string,
     headerValues: PropTypes.object,
     theme: PropTypes.object.isRequired,
-    isLandscape: PropTypes.bool.isRequired,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {

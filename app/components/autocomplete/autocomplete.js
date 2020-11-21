@@ -9,12 +9,12 @@ import {
     View,
     ViewPropTypes,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {DeviceTypes} from '@constants';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {emptyFunction} from '@utils/general';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import {DeviceTypes} from 'app/constants';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {emptyFunction} from 'app/utils/general';
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
@@ -203,7 +203,10 @@ export default class Autocomplete extends PureComponent {
         }
 
         return (
-            <View style={wrapperStyles}>
+            <SafeAreaView
+                style={wrapperStyles}
+                edges={['left', 'right']}
+            >
                 <View
                     testID='autocomplete'
                     ref={this.containerRef}
@@ -254,7 +257,7 @@ export default class Autocomplete extends PureComponent {
                     />
                     }
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 }

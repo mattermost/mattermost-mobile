@@ -7,7 +7,6 @@ import {FlatList, Keyboard, Platform, RefreshControl, SectionList, Text, View} f
 
 import {ListTypes} from 'app/constants';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 
 export const FLATLIST = 'flat';
 export const SECTIONLIST = 'section';
@@ -32,13 +31,11 @@ export default class CustomList extends PureComponent {
         selectable: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         shouldRenderSeparator: PropTypes.bool,
-        isLandscape: PropTypes.bool.isRequired,
         testID: PropTypes.string,
     };
 
     static defaultProps = {
         canRefresh: true,
-        isLandscape: false,
         listType: FLATLIST,
         showNoResults: true,
         shouldRenderSeparator: true,
@@ -165,13 +162,13 @@ export default class CustomList extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
             <View style={style.sectionWrapper}>
                 <View style={style.sectionContainer}>
-                    <Text style={[style.sectionText, padding(isLandscape)]}>{section.id}</Text>
+                    <Text style={style.sectionText}>{section.id}</Text>
                 </View>
             </View>
         );

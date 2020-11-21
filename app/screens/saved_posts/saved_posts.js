@@ -12,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal, goToScreen, showSearchModal} from '@actions/navigation';
 import ChannelLoader from '@components/channel_loader';
@@ -25,7 +26,7 @@ import SearchResultPost from '@screens/search/search_result_post';
 import ChannelDisplayName from '@screens/search/channel_display_name';
 import mattermostManaged from 'app/mattermost_managed';
 
-export default class FlaggedPosts extends PureComponent {
+export default class SavedPosts extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
@@ -227,10 +228,10 @@ export default class FlaggedPosts extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <SafeAreaView style={style.container}>
                 <StatusBar/>
                 {component}
-            </View>
+            </SafeAreaView>
         );
     }
 }

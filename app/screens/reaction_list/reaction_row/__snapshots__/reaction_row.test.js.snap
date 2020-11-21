@@ -14,13 +14,10 @@ exports[`ReactionRow should match snapshot, renderContent 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
-          "alignItems": "center",
-          "width": "13%",
-        },
-        null,
-      ]
+      Object {
+        "alignItems": "center",
+        "width": "13%",
+      }
     }
   >
     <ForwardRef

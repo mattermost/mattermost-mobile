@@ -25,7 +25,6 @@ describe('OptionModalList', () => {
         }],
         onCancelPress: jest.fn(),
         title: 'test',
-        isLandscape: false,
     };
 
     test('should match snapshot for iOS', async () => {

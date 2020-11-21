@@ -15,7 +15,6 @@ interface ManageMembersProps {
     testID?: string;
     canManageUsers: boolean;
     isDirectMessage: boolean;
-    isLandscape: boolean;
     membersCount: number;
     separator: boolean;
     theme: Theme;
@@ -42,7 +41,7 @@ export default class ManageMembers extends PureComponent<ManageMembersProps> {
     });
 
     render() {
-        const {testID, isDirectMessage, canManageUsers, isLandscape, membersCount, separator, theme} = this.props;
+        const {isDirectMessage, canManageUsers, membersCount, separator, testID, theme} = this.props;
 
         if (isDirectMessage) {
             return null;
@@ -59,7 +58,6 @@ export default class ManageMembers extends PureComponent<ManageMembersProps> {
                     icon='account-multiple-outline'
                     textId={canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers')}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
             </>
         );

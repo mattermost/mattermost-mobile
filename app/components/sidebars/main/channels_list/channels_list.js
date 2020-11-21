@@ -8,10 +8,10 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import SearchBar from '@components/search_bar';
-import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {ViewTypes} from '@constants';
 import {
     changeOpacity,
@@ -32,7 +32,6 @@ export default class ChannelsList extends PureComponent {
         onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         onShowTeams: PropTypes.func,
     };
 
@@ -93,11 +92,7 @@ export default class ChannelsList extends PureComponent {
 
     render() {
         const {intl} = this.context;
-        const {
-            onShowTeams,
-            theme,
-            isLandscape,
-        } = this.props;
+        const {onShowTeams, theme} = this.props;
 
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
@@ -130,7 +125,7 @@ export default class ChannelsList extends PureComponent {
 
         const title = (
             <View
-                style={[styles.searchContainer, padding(isLandscape)]}
+                style={styles.searchContainer}
             >
                 <SearchBar
                     ref={this.setSearchBarRef}
@@ -158,7 +153,8 @@ export default class ChannelsList extends PureComponent {
         );
 
         return (
-            <View
+            <SafeAreaView
+                edges={['left']}
                 style={styles.container}
                 testID='channels.list'
             >
@@ -166,7 +162,7 @@ export default class ChannelsList extends PureComponent {
                     {title}
                 </View>
                 {list}
-            </View>
+            </SafeAreaView>
         );
     }
 }

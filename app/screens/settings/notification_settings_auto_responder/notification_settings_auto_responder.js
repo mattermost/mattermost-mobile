@@ -8,9 +8,9 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {General} from '@mm-redux/constants';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
@@ -31,7 +31,6 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
         currentUserStatus: PropTypes.string.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -97,7 +96,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
     };
 
     render() {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const {
             auto_responder_active: autoResponderActive,
             auto_responder_message: autoResponderMessage,
@@ -112,13 +111,15 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
         );
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <Section
                         disableHeader={true}
                         theme={theme}
-                        isLandscape={isLandscape}
                     >
                         <SectionItem
                             label={autoResponderActiveLabel}
@@ -126,7 +127,6 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                             actionType='toggle'
                             selected={autoResponderActive === 'true'}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
                     </Section>
                     {autoResponderActive === 'true' && (
@@ -134,7 +134,6 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                             headerId={t('mobile.notification_settings.auto_responder.message_title')}
                             headerDefaultMessage='CUSTOM MESSAGE'
                             theme={theme}
-                            isLandscape={isLandscape}
                         >
                             <View style={style.inputContainer}>
                                 <TextInputWithLocalizedPlaceholder
@@ -143,7 +142,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                     blurOnSubmit={false}
                                     onChangeText={this.onAutoResponseChangeText}
                                     multiline={true}
-                                    style={[style.input, padding(isLandscape)]}
+                                    style={style.input}
                                     autoCapitalize='none'
                                     autoCorrect={false}
                                     placeholder={{id: t('mobile.notification_settings.auto_responder.message_placeholder'), defaultMessage: 'Message'}}
@@ -159,10 +158,10 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                     <FormattedText
                         id={'mobile.notification_settings.auto_responder.footer_message'}
                         defaultMessage={'Set a custom message that will be automatically sent in response to Direct Messages. Mentions in Public and Private Channels will not trigger the automated reply. Enabling Automatic Replies sets your status to Out of Office and disables email and push notifications.'}
-                        style={[style.footer, padding(isLandscape)]}
+                        style={style.footer}
                     />
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 }

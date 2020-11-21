@@ -11,7 +11,6 @@ import {
 import {intlShape} from 'react-intl';
 
 import {General} from '@mm-redux/constants';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import Badge from 'app/components/badge';
 import ChannelIcon from 'app/components/channel_icon';
 import {preventDoubleTap} from 'app/utils/tap';
@@ -37,7 +36,6 @@ export default class ChannelItem extends PureComponent {
         unreadMsgs: PropTypes.number.isRequired,
         isSearchResult: PropTypes.bool,
         isBot: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -78,7 +76,6 @@ export default class ChannelItem extends PureComponent {
             isSearchResult,
             channel,
             isBot,
-            isLandscape,
         } = this.props;
 
         // Only ever show an archived channel if it's the currently viewed channel.
@@ -173,7 +170,7 @@ export default class ChannelItem extends PureComponent {
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
             >
-                <View style={[style.container, mutedStyle, padding(isLandscape)]}>
+                <View style={[style.container, mutedStyle]}>
                     {extraBorder}
                     <View style={[style.item, extraItemStyle]}>
                         {icon}
