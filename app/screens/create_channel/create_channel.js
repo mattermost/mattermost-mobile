@@ -99,7 +99,7 @@ export default class CreateChannel extends PureComponent {
                 break;
             case RequestStatus.FAILURE:
                 this.emitCreating(false);
-                this.onRequestFailure(this.props.createChannelRequest.error)
+                this.onRequestFailure(this.props.createChannelRequest.error);
                 break;
             }
         }
