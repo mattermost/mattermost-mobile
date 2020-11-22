@@ -74,14 +74,20 @@ export default class CreateChannel extends PureComponent {
         this.emitCanCreateChannel(false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {createChannelRequest} = nextProps;
+    onRequestStart() {
+        this.setState({error: null, creating: true});
+    }
 
-        if (this.props.createChannelRequest !== createChannelRequest) {
-            switch (createChannelRequest.status) {
+    onRequestFailure(error) {
+        this.setState({error, creating: false});
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.createChannelRequest !== prevProps.createChannelRequest) {
+            switch (this.props.createChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitCreating(true);
-                this.setState({error: null, creating: true});
+                this.onRequestStart();
                 break;
             case RequestStatus.SUCCESS:
                 EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
@@ -93,7 +99,7 @@ export default class CreateChannel extends PureComponent {
                 break;
             case RequestStatus.FAILURE:
                 this.emitCreating(false);
-                this.setState({error: createChannelRequest.error, creating: false});
+                this.onRequestFailure(this.props.createChannelRequest.error)
                 break;
             }
         }
