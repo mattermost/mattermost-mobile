@@ -12,7 +12,6 @@ import ChannelInfo from '@typings/database/channel_info';
 export default class Channel extends Model {
     static table: string;
     static associations: Associations;
-    channelId: string;
     createAt: number;
     creatorId: string;
     deleteAt: number;

@@ -17,7 +17,6 @@ export default class Post extends Model {
     message: string;
     originalId: string;
     pendingPostId: string;
-    postId: string;
     previousPostId: string;
     rootId: string;
     type: string;

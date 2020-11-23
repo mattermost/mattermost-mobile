@@ -8,7 +8,6 @@ export default class Group extends Model {
     static table: string;
     static associations: Associations;
     displayName: string;
-    groupId: string;
     name: string;
     groupsInChannel: GroupsInChannel;
     groupsInTeam: GroupsInTeam;

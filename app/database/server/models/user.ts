@@ -38,7 +38,6 @@ export default class User extends Model {
     @field('position') position! : string
     @field('roles') roles! : string
     @field('status') status! : string
-    @field('user_id') userId! : string
     @field('user_name') userName! : string
     @json('notify_props', (rawJson) => rawJson) notifyProps! : string[]
     @json('props', (rawJson) => rawJson) props! : string[]

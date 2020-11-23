@@ -17,7 +17,6 @@ export default class Team extends Model {
     isGroupConstrained: boolean;
     lastTeamIconUpdatedAt: number;
     name: string;
-    teamId: string;
     type: string;
     allowedDomains: string[];
     channel: Channel;

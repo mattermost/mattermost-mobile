@@ -24,7 +24,6 @@ export default class User extends Model {
     position: string;
     roles: string;
     status: string;
-    userId: string;
     userName: string;
     notifyProps: string[];
     props: string[];

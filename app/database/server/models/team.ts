@@ -31,7 +31,6 @@ export default class Team extends Model {
     @field('is_group_constrained') isGroupConstrained!: boolean
     @field('last_team_icon_updated_at') lastTeamIconUpdatedAt!: number
     @field('name') name!: string
-    @field('team_id') teamId!: string
     @field('type') type!: string
     @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string[]
 

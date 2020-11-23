@@ -19,7 +19,6 @@ export default class Group extends Model {
     }
 
     @field('display_name') displayName!: string
-    @field('group_id') groupId!: string
     @field('name') name!: string
 
     @children(MM_TABLES.SERVER.GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel

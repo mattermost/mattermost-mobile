@@ -31,7 +31,6 @@ export default class Post extends Model {
     @field('message') message!: string
     @field('original_id') originalId!: string
     @field('pending_post_id') pendingPostId!: string
-    @field('post_id') postId!: string
     @field('previous_post_id') previousPostId!: string
     @field('root_id') rootId!: string
     @field('type') type!: string

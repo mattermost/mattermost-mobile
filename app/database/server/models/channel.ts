@@ -29,7 +29,6 @@ export default class Channel extends Model {
         [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'creator_id'},
     }
 
-    @field('channel_id') channelId! : string
     @field('create_at') createAt! : number
     @field('creator_id') creatorId! : string
     @field('delete_at') deleteAt! : number
