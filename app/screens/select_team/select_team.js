@@ -26,6 +26,7 @@ import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import memoize from 'memoize-one';
 
 const TEAMS_PER_PAGE = 50;
 
@@ -69,12 +70,6 @@ export default class SelectTeam extends PureComponent {
         this.getTeams();
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.teams !== nextProps.teams) {
-            this.buildData(nextProps);
-        }
-    }
-
     navigationButtonPressed({buttonId}) {
         const {logout} = this.props.actions;
 
@@ -99,17 +94,15 @@ export default class SelectTeam extends PureComponent {
         });
     }
 
-    buildData = (props) => {
-        if (props.teams.length) {
-            this.setState({teams: props.teams});
-        } else {
-            const teams = [{
-                id: t('mobile.select_team.no_teams'),
-                defaultMessage: 'There are no available teams for you to join.',
-            }];
-            this.setState({teams});
+    memoizedTeams = memoize((teams) => {
+        if (teams.length) {
+            return teams;
         }
-    };
+        return [{
+            id: t('mobile.select_team.no_teams'),
+            defaultMessage: 'There are no available teams for you to join.',
+        }];
+    })
 
     close = () => {
         dismissModal();
@@ -210,7 +203,7 @@ export default class SelectTeam extends PureComponent {
 
     render() {
         const {theme, isLandscape} = this.props;
-        const {teams} = this.state;
+        const teams = this.memoizedTeams(this.props.teams);
         const style = getStyleFromTheme(theme);
 
         if (this.state.joining) {

@@ -87,7 +87,15 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   </View>
   <CustomList
     canRefresh={true}
-    data={Array []}
+    data={
+      Array [
+        Object {
+          "id": "kemjcpu9bi877yegqjs18ndp4r",
+          "invite_id": "ojsnudhqzbfzpk6e4n6ip1hwae",
+          "name": "test",
+        },
+      ]
+    }
     extraData={false}
     isLandscape={false}
     listType="flat"
