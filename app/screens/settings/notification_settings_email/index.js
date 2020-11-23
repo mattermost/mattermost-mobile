@@ -16,7 +16,6 @@ import {
     getTheme,
 } from '@mm-redux/selectors/entities/preferences';
 
-import {isLandscape} from 'app/selectors/device';
 import {getNotificationProps} from 'app/utils/notify_props';
 
 import NotificationSettingsEmail from './notification_settings_email';
@@ -42,7 +41,6 @@ function mapStateToProps(state) {
         emailInterval,
         sendEmailNotifications,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

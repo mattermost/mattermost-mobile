@@ -12,7 +12,6 @@ import {
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import TeamIcon from '@components/team_icon';
-import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -26,7 +25,6 @@ export default class TeamsListItem extends React.PureComponent {
         selectTeam: PropTypes.func.isRequired,
         teamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     selectTeam = preventDoubleTap(() => {
@@ -42,7 +40,6 @@ export default class TeamsListItem extends React.PureComponent {
             name,
             teamId,
             theme,
-            isLandscape,
         } = this.props;
         const styles = getStyleSheet(theme);
 
@@ -79,7 +76,7 @@ export default class TeamsListItem extends React.PureComponent {
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.selectTeam}
                 >
-                    <View style={[styles.teamContainer, padding(isLandscape)]}>
+                    <View style={styles.teamContainer}>
                         <View>
                             <TeamIcon
                                 teamId={teamId}

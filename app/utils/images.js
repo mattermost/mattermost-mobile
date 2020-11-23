@@ -128,6 +128,7 @@ export function openGalleryAtIndex(index, files) {
             layout: {
                 backgroundColor: '#000',
                 componentBackgroundColor: '#000',
+                orientation: ['portrait', 'landscape'],
             },
             topBar: {
                 background: {

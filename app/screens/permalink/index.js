@@ -14,7 +14,6 @@ import {makeGetPostIdsAroundPost, getPost} from '@mm-redux/selectors/entities/po
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
-import {isLandscape} from '@selectors/device';
 
 import Permalink from './permalink';
 
@@ -48,7 +47,6 @@ function makeMapStateToProps() {
             myMembers: getMyChannelMemberships(state),
             postIds,
             theme: getTheme(state),
-            isLandscape: isLandscape(state),
         };
     };
 }

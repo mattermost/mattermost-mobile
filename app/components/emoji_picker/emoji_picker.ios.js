@@ -7,12 +7,11 @@ import {
     View,
 } from 'react-native';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import SafeAreaView from 'app/components/safe_area_view';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import SearchBar from 'app/components/search_bar';
-import {DeviceTypes} from 'app/constants';
-import {changeOpacity, getKeyboardAppearanceFromTheme} from 'app/utils/theme';
+import SearchBar from '@components/search_bar';
+import {DeviceTypes} from '@constants';
+import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import EmojiPickerBase, {getStyleSheetFromTheme, SCROLLVIEW_NATIVE_ID} from './emoji_picker_base';
 
@@ -38,8 +37,8 @@ export default class EmojiPicker extends EmojiPickerBase {
 
         return (
             <SafeAreaView
-                excludeHeader={true}
-                excludeFooter={true}
+                style={{flex: 1}}
+                edges={['left', 'right']}
             >
                 <KeyboardAvoidingView
                     behavior='padding'
@@ -48,26 +47,24 @@ export default class EmojiPicker extends EmojiPickerBase {
                     style={styles.flex}
                 >
                     <View style={styles.searchBar}>
-                        <View style={padding(isLandscape)}>
-                            <SearchBar
-                                ref={this.setSearchBarRef}
-                                placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                                cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                                backgroundColor='transparent'
-                                inputHeight={33}
-                                inputStyle={searchBarInput}
-                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                                tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
-                                tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                                titleCancelColor={theme.centerChannelColor}
-                                onChangeText={this.changeSearchTerm}
-                                onCancelButtonPress={this.cancelSearch}
-                                autoCapitalize='none'
-                                value={searchTerm}
-                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                onAnimationComplete={this.setRebuiltEmojis}
-                            />
-                        </View>
+                        <SearchBar
+                            ref={this.setSearchBarRef}
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={33}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.8)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
+                            onChangeText={this.changeSearchTerm}
+                            onCancelButtonPress={this.cancelSearch}
+                            autoCapitalize='none'
+                            value={searchTerm}
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            onAnimationComplete={this.setRebuiltEmojis}
+                        />
                     </View>
                     <View style={[styles.container]}>
                         {this.renderListComponent(shorten)}

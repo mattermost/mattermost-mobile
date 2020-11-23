@@ -17,15 +17,10 @@ export default class OptionListRow extends React.PureComponent {
         id: PropTypes.string,
         theme: PropTypes.object.isRequired,
         ...CustomListRow.propTypes,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
         intl: intlShape,
-    };
-
-    static defaultProps = {
-        isLandscape: false,
     };
 
     onPress = () => {
@@ -41,7 +36,6 @@ export default class OptionListRow extends React.PureComponent {
             selected,
             theme,
             item,
-            isLandscape,
         } = this.props;
 
         const {text, value} = item;
@@ -54,7 +48,6 @@ export default class OptionListRow extends React.PureComponent {
                 enabled={enabled}
                 selectable={selectable}
                 selected={selected}
-                isLandscape={isLandscape}
             >
                 <View style={style.textContainer}>
                     <View>

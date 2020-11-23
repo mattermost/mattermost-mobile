@@ -6,9 +6,8 @@ import {connect} from 'react-redux';
 
 import {searchChannels, autocompleteChannelsForSearch} from '@mm-redux/actions/channels';
 import {getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {isLandscape} from 'app/selectors/device';
-
 import {
     filterMyChannels,
     filterOtherChannels,
@@ -16,8 +15,7 @@ import {
     filterPrivateChannels,
     filterDirectAndGroupMessages,
     getMatchTermForChannelMention,
-} from 'app/selectors/autocomplete';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
+} from '@selectors/autocomplete';
 
 import ChannelMention from './channel_mention';
 
@@ -52,7 +50,6 @@ function mapStateToProps(state, ownProps) {
         matchTerm,
         requestStatus: state.requests.channels.getChannels.status,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

@@ -27,7 +27,7 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
 import {THREAD} from 'app/constants/screen';
 import {addReaction} from 'app/actions/views/emoji';
-import {getDimensions, isLandscape} from 'app/selectors/device';
+import {getDimensions} from 'app/selectors/device';
 
 import PostOptions from './post_options';
 
@@ -144,7 +144,6 @@ export function makeMapStateToProps() {
             currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
             theme: getTheme(state),
-            isLandscape: isLandscape(state),
         };
     };
 }

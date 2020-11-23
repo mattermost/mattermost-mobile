@@ -20,7 +20,6 @@ describe('ChannelInfo -> Manage Members', () => {
     const baseProps = {
         canManageUsers: true,
         isDirectMessage: false,
-        isLandscape: false,
         membersCount: 10,
         separator: true,
         theme: Preferences.THEMES.default,

@@ -10,19 +10,17 @@ import {
     View,
 } from 'react-native';
 
+import SafeAreaView from '@components/safe_area_view';
+import {NavigationTypes, WebsocketEvents} from '@constants';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import SafeAreaView from 'app/components/safe_area_view';
-import {NavigationTypes, WebsocketEvents} from 'app/constants';
-import tracker from 'app/utils/time_tracker';
-import {t} from 'app/utils/i18n';
+import {t} from '@utils/i18n';
+import tracker from '@utils/time_tracker';
+import telemetry from '@telemetry/';
 
 import ChannelsList from './channels_list';
 import DrawerSwiper from './drawer_swiper';
 import TeamsList from './teams_list';
-
-import telemetry from 'app/telemetry';
 
 export default class MainSidebarBase extends Component {
     static propTypes = {
@@ -246,6 +244,8 @@ export default class MainSidebarBase extends Component {
         return (
             <SafeAreaView
                 excludeFooter={true}
+                excludeLeft={true}
+                excludeRight={true}
                 navBarBackgroundColor={theme.sidebarBg}
                 backgroundColor={theme.sidebarHeaderBg}
                 footerColor={theme.sidebarBg}

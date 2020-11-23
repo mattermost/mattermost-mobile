@@ -6,7 +6,6 @@ exports[`ChannelInfo -> Favorite should match snapshot for Favorite Channel 1`] 
   defaultMessage="Favorite"
   detail={true}
   icon="star-outline"
-  isLandscape={false}
   rightArrow={true}
   shouldRender={true}
   textId="mobile.routes.channelInfo.favorite"
@@ -49,7 +48,6 @@ exports[`ChannelInfo -> Favorite should match snapshot for Unfavorite Channel 1`
   defaultMessage="Favorite"
   detail={false}
   icon="star-outline"
-  isLandscape={false}
   rightArrow={true}
   shouldRender={true}
   textId="mobile.routes.channelInfo.favorite"

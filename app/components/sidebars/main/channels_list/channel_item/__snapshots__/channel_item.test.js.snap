@@ -14,7 +14,6 @@ exports[`ChannelItem should match snapshot 1`] = `
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -117,7 +116,6 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -230,7 +228,6 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -343,7 +340,6 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -456,7 +452,6 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -559,7 +554,6 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -662,7 +656,6 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -769,7 +762,6 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           "height": 44,
         },
         undefined,
-        null,
       ]
     }
   >
@@ -874,7 +866,6 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         Object {
           "opacity": 0.5,
         },
-        null,
       ]
     }
   >

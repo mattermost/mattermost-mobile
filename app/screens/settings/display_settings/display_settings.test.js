@@ -19,7 +19,6 @@ describe('DisplaySettings', () => {
         enableTheme: false,
         enableTimezone: false,
         componentId: 'component-id',
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {
