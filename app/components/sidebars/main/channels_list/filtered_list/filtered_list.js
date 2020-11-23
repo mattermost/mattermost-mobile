@@ -81,14 +81,16 @@ class FilteredList extends Component {
         return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.term !== nextProps.term) {
-            const {actions, currentTeam} = this.props;
-            const {term} = nextProps;
+    setDataSourceAndTerm(dataSource, term) {
+        this.setState({dataSource, term});
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.term !== this.props.term) {
+            const {actions, currentTeam, term} = this.props;
             const {searchChannels, searchProfiles} = actions;
             const dataSource = this.buildData(this.props, term);
-
-            this.setState({dataSource, term});
+            this.setDataSourceAndTerm(dataSource, term);
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
