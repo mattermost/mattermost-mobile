@@ -4,5 +4,7 @@ import {Model} from '@nozbe/watermelondb';
 export default class Global extends Model {
     static table: string;
     name: string;
-    value: Object;
+
+    // TODO : atm, the return type for 'value' is string[].  However, this return type can change to string/number/etc.  A broader definition will need to be applied and this return type updated accordingly.
+    value: string[];
 }

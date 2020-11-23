@@ -3,8 +3,7 @@
 import {Model} from '@nozbe/watermelondb';
 export default class App extends Model {
     static table: string;
-
     buildNumber: string;
-    createdAt: Date;
-    unreadCount: string;
+    createdAt: number;
+    versionNumber: string;
 }
