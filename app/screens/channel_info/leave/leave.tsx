@@ -25,7 +25,6 @@ interface LeaveProps {
     isDirectMessage: boolean;
     isFavorite: boolean;
     isGroupMessage: boolean;
-    isLandscape: boolean;
     isPublic: boolean;
     theme: Theme;
 }
@@ -92,7 +91,7 @@ export default class Leave extends PureComponent<LeaveProps> {
     });
 
     render() {
-        const {canLeave, isDirectMessage, isGroupMessage, isLandscape, theme} = this.props;
+        const {canLeave, isDirectMessage, isGroupMessage, theme} = this.props;
 
         if (!canLeave && !isDirectMessage && !isGroupMessage) {
             return null;
@@ -119,7 +118,6 @@ export default class Leave extends PureComponent<LeaveProps> {
                     textColor='#CA3B27'
                     textId={i18nId}
                     theme={theme}
-                    isLandscape={isLandscape}
                     rightArrow={false}
                 />
             );
@@ -133,7 +131,6 @@ export default class Leave extends PureComponent<LeaveProps> {
                     textColor='#CA3B27'
                     textId={t('navbar.leave')}
                     theme={theme}
-                    isLandscape={isLandscape}
                     rightArrow={false}
                 />
             );

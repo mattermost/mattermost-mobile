@@ -80,18 +80,6 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         expect(result).toEqual(output);
     });
 
-    test('should set rebuildEmojis to true when deviceWidth changes', async () => {
-        const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
-        const instance = wrapper.instance();
-
-        expect(instance.rebuildEmojis).toBe(undefined);
-
-        const newDeviceWidth = baseProps.deviceWidth * 2;
-        wrapper.setProps({deviceWidth: newDeviceWidth});
-
-        expect(instance.rebuildEmojis).toBe(true);
-    });
-
     test('should rebuild emojis emojis when emojis change', async () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const instance = wrapper.instance();

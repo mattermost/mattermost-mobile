@@ -19,7 +19,6 @@ import sectionListGetItemLayout from 'react-native-section-list-get-item-layout'
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes} from '@constants';
 import {emptyFunction} from '@utils/general';
 import {
@@ -101,8 +100,9 @@ export default class EmojiPicker extends PureComponent {
 
         if (this.props.emojis !== prevProps.emojis) {
             this.rebuildEmojis = true;
-            this.setRebuiltEmojis();
         }
+
+        this.setRebuiltEmojis();
     }
 
     setSearchBarRef = (ref) => {
@@ -305,7 +305,7 @@ export default class EmojiPicker extends PureComponent {
                 onPress={() => this.props.onEmojiPress(item)}
                 style={style.flatListRow}
             >
-                <View style={[style.flatListEmoji, padding(this.props.isLandscape)]}>
+                <View style={style.flatListEmoji}>
                     <Emoji
                         emojiName={item}
                         textStyle={style.emojiText}

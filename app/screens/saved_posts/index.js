@@ -11,7 +11,7 @@ import {clearSearch, getFlaggedPosts} from '@mm-redux/actions/search';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makePreparePostIdsForSearchPosts} from '@selectors/post_list';
 
-import FlaggedPosts from './flagged_posts';
+import SavedPosts from './saved_posts';
 
 function makeMapStateToProps() {
     const preparePostIds = makePreparePostIdsForSearchPosts();
@@ -37,4 +37,4 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(FlaggedPosts);
+export default connect(makeMapStateToProps, mapDispatchToProps)(SavedPosts);

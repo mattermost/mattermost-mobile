@@ -12,6 +12,7 @@ import {
     Text,
 } from 'react-native';
 import Button from 'react-native-button';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
@@ -19,7 +20,6 @@ import gitlab from '@assets/images/gitlab.png';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {ViewTypes} from '@constants';
 import globalEventHandler from '@init/global_event_handler';
 import {preventDoubleTap} from '@utils/tap';
@@ -30,7 +30,6 @@ export default class LoginOptions extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -254,36 +253,38 @@ export default class LoginOptions extends PureComponent {
 
     render() {
         return (
-            <ScrollView
-                style={style.container}
-                contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
-                ref={this.scrollRef}
-            >
-                <StatusBar/>
-                <CompassIcon
-                    name='mattermost'
-                    size={76}
-                    style={GlobalStyles.logo}
-                />
-                <Text style={GlobalStyles.header}>
-                    {this.props.config.SiteName}
-                </Text>
-                <FormattedText
-                    style={GlobalStyles.subheader}
-                    id='web.root.signup_info'
-                    defaultMessage='All team communication in one place, searchable and accessible anywhere'
-                />
-                <FormattedText
-                    style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}]}
-                    id='mobile.login_options.choose_title'
-                    defaultMessage='Choose your login method'
-                />
-                {this.renderEmailOption()}
-                {this.renderLdapOption()}
-                {this.renderGitlabOption()}
-                {this.renderSamlOption()}
-                {this.renderO365Option()}
-            </ScrollView>
+            <SafeAreaView style={style.container}>
+                <ScrollView
+                    style={style.container}
+                    contentContainerStyle={style.innerContainer}
+                    ref={this.scrollRef}
+                >
+                    <StatusBar/>
+                    <CompassIcon
+                        name='mattermost'
+                        size={76}
+                        style={GlobalStyles.logo}
+                    />
+                    <Text style={GlobalStyles.header}>
+                        {this.props.config.SiteName}
+                    </Text>
+                    <FormattedText
+                        style={GlobalStyles.subheader}
+                        id='web.root.signup_info'
+                        defaultMessage='All team communication in one place, searchable and accessible anywhere'
+                    />
+                    <FormattedText
+                        style={[GlobalStyles.subheader, {fontWeight: 'bold', marginTop: 10}]}
+                        id='mobile.login_options.choose_title'
+                        defaultMessage='Choose your login method'
+                    />
+                    {this.renderEmailOption()}
+                    {this.renderLdapOption()}
+                    {this.renderGitlabOption()}
+                    {this.renderSamlOption()}
+                    {this.renderO365Option()}
+                </ScrollView>
+            </SafeAreaView>
         );
     }
 }

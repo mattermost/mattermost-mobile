@@ -1,7 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`TermsOfService should enable/disable navigator buttons on setNavigatorButtons true/false 1`] = `
-<React.Fragment>
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
@@ -132,11 +138,17 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       value="Terms Text"
     />
   </ScrollView>
-</React.Fragment>
+</RNCSafeAreaView>
 `;
 
 exports[`TermsOfService should enable/disable navigator buttons on setNavigatorButtons true/false 2`] = `
-<React.Fragment>
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
@@ -267,7 +279,7 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       value="Terms Text"
     />
   </ScrollView>
-</React.Fragment>
+</RNCSafeAreaView>
 `;
 
 exports[`TermsOfService should match snapshot 1`] = `
@@ -331,7 +343,13 @@ exports[`TermsOfService should match snapshot for get terms 1`] = `
 `;
 
 exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
-<React.Fragment>
+<RNCSafeAreaView
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
@@ -462,5 +480,5 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
       value="Terms Text"
     />
   </ScrollView>
-</React.Fragment>
+</RNCSafeAreaView>
 `;

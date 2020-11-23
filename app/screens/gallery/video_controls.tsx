@@ -3,6 +3,7 @@
 
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {Animated, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import Slider from 'react-native-slider';
 
 import CompassIcon from '@components/compass_icon';
@@ -191,27 +192,33 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
                     />
                 </TouchableOpacity>
             </View>
-            <View style={[styles.controlsRow, styles.progressContainer]}>
-                <View style={styles.progressColumnContainer}>
-                    <View style={[styles.timerLabelsContainer]}>
-                        <Text style={styles.timerLabel}>
-                            {humanizeVideoDuration(progress)}
-                        </Text>
-                        <Text style={styles.timerLabel}>
-                            {humanizeVideoDuration(duration)}
-                        </Text>
+            <SafeAreaView
+                edges={['left', 'right']}
+                mode='margin'
+                style={styles.progressColumnContainer}
+            >
+                <View style={[styles.controlsRow, styles.progressContainer]}>
+                    <View style={styles.progressColumnContainer}>
+                        <View style={[styles.timerLabelsContainer]}>
+                            <Text style={styles.timerLabel}>
+                                {humanizeVideoDuration(progress)}
+                            </Text>
+                            <Text style={styles.timerLabel}>
+                                {humanizeVideoDuration(duration)}
+                            </Text>
+                        </View>
+                        <Slider
+                            onSlidingComplete={seekEnd}
+                            onValueChange={seeking}
+                            onSlidingStart={seekStart}
+                            maximumValue={Math.floor(duration)}
+                            value={Math.floor(progress)}
+                            thumbStyle={[styles.thumb]}
+                            minimumTrackTintColor={props.mainColor}
+                        />
                     </View>
-                    <Slider
-                        onSlidingComplete={seekEnd}
-                        onValueChange={seeking}
-                        onSlidingStart={seekStart}
-                        maximumValue={Math.floor(duration)}
-                        value={Math.floor(progress)}
-                        thumbStyle={[styles.thumb]}
-                        minimumTrackTintColor={props.mainColor}
-                    />
                 </View>
-            </View>
+            </SafeAreaView>
         </Animated.View>
     );
 });

@@ -12,7 +12,6 @@ describe('DialogIntroductionText', () => {
     const baseProps = {
         theme: Preferences.THEMES.default,
         value: '**bold** *italic* [link](https://mattermost.com/) <br/> [link target blank](!https://mattermost.com/)',
-        isLandscape: false,
     };
 
     test('should render the introduction text correctly', () => {

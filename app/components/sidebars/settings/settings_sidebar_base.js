@@ -92,9 +92,9 @@ export default class SettingsSidebarBase extends PureComponent {
         );
     };
 
-    goToFlaggedScreen = (intl) => {
+    goToSavedPostsScreen = (intl) => {
         this.openModal(
-            'FlaggedPosts',
+            'SavedPosts',
             intl.formatMessage({id: 'search_header.title3', defaultMessage: 'Saved Messages'}),
         );
     };
@@ -228,7 +228,7 @@ export default class SettingsSidebarBase extends PureComponent {
                             defaultMessage='Saved Messages'
                             i18nId='search_header.title3'
                             iconName='bookmark-outline'
-                            onPress={this.goToFlagged}
+                            onPress={this.goToSaved}
                             separator={false}
                             theme={theme}
                         />

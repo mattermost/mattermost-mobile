@@ -10,7 +10,6 @@ import {getLicense} from '@mm-redux/selectors/entities/general';
 import {getCurrentChannelId, getDefaultChannel} from '@mm-redux/selectors/entities/channels';
 import {getAssociatedGroupsForReference, searchAssociatedGroupsForReferenceLocal} from '@mm-redux/selectors/entities/groups';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {isLandscape} from 'app/selectors/device';
 
 import {
     filterMembersInChannel,
@@ -76,7 +75,6 @@ function mapStateToProps(state, ownProps) {
         outChannel,
         requestStatus: state.requests.users.autocompleteUsers.status,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
         useChannelMentions,
         groups,
     };

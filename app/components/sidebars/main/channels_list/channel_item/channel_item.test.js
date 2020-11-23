@@ -39,7 +39,6 @@ describe('ChannelItem', () => {
         unreadMsgs: 1,
         isSearchResult: false,
         isBot: false,
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {

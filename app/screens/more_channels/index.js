@@ -4,22 +4,20 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
-import {isLandscape} from 'app/selectors/device';
+
+import {handleSelectChannel, setChannelDisplayName} from '@actions/views/channel';
 import {General} from '@mm-redux/constants';
 import {getArchivedChannels, getChannels, joinChannel, searchChannels} from '@mm-redux/actions/channels';
 import {getChannelsInCurrentTeam, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {isAdmin, isSystemAdmin} from '@mm-redux/utils/user_utils';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 
-import {handleSelectChannel, setChannelDisplayName} from 'app/actions/views/channel';
-
 import MoreChannels from './more_channels';
-
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 const joinablePublicChannels = createSelector(
     getChannelsInCurrentTeam,
@@ -55,7 +53,6 @@ function mapStateToProps(state) {
         channels,
         archivedChannels,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
         canShowArchivedChannels,
     };
 }
