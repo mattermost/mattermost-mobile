@@ -205,6 +205,7 @@ jest.mock('react-native-image-picker', () => ({
 jest.mock('react-native-navigation', () => {
     const RNN = jest.requireActual('react-native-navigation');
     RNN.Navigation.setLazyComponentRegistrator = jest.fn();
+    RNN.Navigation.setDefaultOptions = jest.fn();
     return {
         ...RNN,
         Navigation: {
