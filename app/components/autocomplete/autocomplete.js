@@ -9,7 +9,6 @@ import {
     View,
     ViewPropTypes,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {DeviceTypes} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -203,7 +202,7 @@ export default class Autocomplete extends PureComponent {
         }
 
         return (
-            <SafeAreaView
+            <View
                 style={wrapperStyles}
                 edges={['left', 'right']}
             >
@@ -257,7 +256,7 @@ export default class Autocomplete extends PureComponent {
                     />
                     }
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 }
