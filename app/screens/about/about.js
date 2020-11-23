@@ -344,7 +344,7 @@ export default class About extends PureComponent {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        wrapper: {
+        container: {
             flex: 1,
         },
         scrollView: {
