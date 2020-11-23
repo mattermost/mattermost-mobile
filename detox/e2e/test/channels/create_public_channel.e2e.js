@@ -16,6 +16,7 @@ import {
     MoreChannelsScreen,
 } from '@support/ui/screen';
 import {Setup} from '@support/server_api';
+import {isAndroid} from '@support/utils';
 
 describe('Channels', () => {
     beforeAll(async () => {
@@ -52,7 +53,7 @@ describe('Channels', () => {
 
         // # Fill data
         await nameInput.typeText('a');
-        await attemptToTapButton('edit_channel.create.button');
+        await attemptToTapCreateButton();
 
         // * Expect to be in the same screen since the channel name must be longer
         await expect(nameInput).toBeVisible();
@@ -86,12 +87,12 @@ describe('Channels', () => {
     });
 });
 
-async function attemptToTapButton(id) {
-    if (device.getPlatform() === 'ios') {
-        const attributes = await element(by.id(id)).getAttributes();
+async function attemptToTapCreateButton() {
+    if (isAndroid()) {
+        await CreateChannelScreen.createButton.tap();
+    } else {
+        const attributes = await CreateChannelScreen.createButton.getAttributes();
         jestExpect(attributes.visible).toEqual(true);
         jestExpect(attributes.enabled).toEqual(false);
-    } else {
-        await element(by.id(id)).tap();
     }
 }

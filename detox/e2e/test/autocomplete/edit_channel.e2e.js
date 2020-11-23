@@ -33,7 +33,7 @@ describe('Autocomplete', () => {
         await EditChannelScreen.open();
 
         // # Activate at_mention autocomplete
-        await EditChannelScreen.editChannelHeaderInput.typeText('@');
+        await EditChannelScreen.headerInput.typeText('@');
 
         // * Expect autocomplete to render
         await Autocomplete.toBeVisible();

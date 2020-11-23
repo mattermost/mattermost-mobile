@@ -71,6 +71,7 @@ export default class EditChannel extends PureComponent {
     };
 
     rightButton = {
+        testID: 'edit_channel.save.button',
         id: 'edit-channel',
         enabled: false,
         showAsAction: 'always',

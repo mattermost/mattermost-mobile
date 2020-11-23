@@ -225,17 +225,24 @@ export default class EditPost extends PureComponent {
                 displayError = (
                     <View style={[style.errorContainerSplit, {width: deviceWidth}]}>
                         <ErrorText
+                            testID='edit_post.error.text'
                             error={error}
                             textStyle={style.errorWrap}
                         />
-                        <ErrorText error={errorExtra}/>
+                        <ErrorText
+                            testID='edit_post.error.text.extra'
+                            error={errorExtra}
+                        />
                     </View>
                 );
             } else {
                 displayError = (
                     <View style={[style.errorContainer, {width: deviceWidth}]}>
                         <View style={style.errorWrapper}>
-                            <ErrorText error={error}/>
+                            <ErrorText
+                                testID='edit_post.error.text'
+                                error={error}
+                            />
                         </View>
                     </View>
                 );

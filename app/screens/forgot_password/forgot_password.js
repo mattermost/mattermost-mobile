@@ -86,6 +86,7 @@ export default class ForgotPassword extends PureComponent {
         if (this.state.error) {
             displayError = (
                 <ErrorText
+                    testID='forgot_password.error.text'
                     error={this.state.error}
                     textStyle={style.errorText}
                 />
@@ -147,7 +148,10 @@ export default class ForgotPassword extends PureComponent {
             );
         }
         return (
-            <View style={style.container}>
+            <View
+                testID='forgot_password.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <TouchableWithoutFeedback
                     onPress={this.blur}

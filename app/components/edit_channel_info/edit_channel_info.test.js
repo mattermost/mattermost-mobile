@@ -11,6 +11,7 @@ import EditChannelInfo from './edit_channel_info';
 
 describe('EditChannelInfo', () => {
     const baseProps = {
+        testID: 'edit_channel_info',
         theme: Preferences.THEMES.default,
         deviceWidth: 400,
         deviceHeight: 600,

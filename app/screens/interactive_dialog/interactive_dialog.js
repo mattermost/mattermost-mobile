@@ -192,7 +192,10 @@ export default class InteractiveDialog extends PureComponent {
         const style = getStyleFromTheme(theme);
 
         return (
-            <View style={style.container}>
+            <View
+                testID='interactive_dialog.screen'
+                style={style.container}
+            >
                 <ScrollView
                     ref={this.scrollView}
                     style={style.scrollView}
@@ -200,6 +203,7 @@ export default class InteractiveDialog extends PureComponent {
                     <StatusBar/>
                     {error && (
                         <ErrorText
+                            testID='interactive_dialog.error.text'
                             textStyle={style.errorContainer}
                             error={error}
                         />

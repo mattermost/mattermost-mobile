@@ -3,6 +3,7 @@
 
 import Autocomplete from './autocomplete';
 import CameraQuickAction from './camera_quick_action';
+import EditChannelInfo from './edit_channel_info';
 import FileQuickAction from './file_quick_action';
 import ImageQuickAction from './image_quick_action';
 import InputQuickAction from './input_quick_action';
@@ -18,6 +19,7 @@ import SettingsSidebar from './settings_sidebar';
 export {
     Autocomplete,
     CameraQuickAction,
+    EditChannelInfo,
     FileQuickAction,
     ImageQuickAction,
     InputQuickAction,

@@ -233,7 +233,10 @@ export default class EditChannelInfo extends PureComponent {
             displayError = (
                 <View style={[style.errorContainer, {width: deviceWidth}]}>
                     <View style={[style.errorWrapper, padding(isLandscape)]}>
-                        <ErrorText error={error}/>
+                        <ErrorText
+                            testID='edit_channel_info.error.text'
+                            error={error}
+                        />
                     </View>
                 </View>
             );
@@ -265,7 +268,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
-                                            testID='edit_channel.name.input'
+                                            testID='edit_channel_info.name.input'
                                             ref={this.nameInput}
                                             value={displayName}
                                             onChangeText={this.onDisplayNameChangeText}
@@ -298,7 +301,7 @@ export default class EditChannelInfo extends PureComponent {
                                     </View>
                                     <View style={[style.inputContainer, padding(isLandscape)]}>
                                         <TextInputWithLocalizedPlaceholder
-                                            testID='edit_channel.purpose.input'
+                                            testID='edit_channel_info.purpose.input'
                                             ref={this.purposeInput}
                                             value={purpose}
                                             onChangeText={this.onPurposeChangeText}
@@ -341,7 +344,7 @@ export default class EditChannelInfo extends PureComponent {
                             </View>
                             <View style={[style.inputContainer, padding(isLandscape)]}>
                                 <TextInputWithLocalizedPlaceholder
-                                    testID={'edit_channel.header.input'}
+                                    testID='edit_channel_info.header.input'
                                     ref={this.headerInput}
                                     value={header}
                                     onChangeText={this.onHeaderChangeText}

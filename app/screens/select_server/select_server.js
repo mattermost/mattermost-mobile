@@ -520,7 +520,7 @@ export default class SelectServer extends PureComponent {
                                 style={GlobalStyles.logo}
                             />
 
-                            <View testID='header.text'>
+                            <View testID='select_server.header.text'>
                                 <FormattedText
                                     style={[GlobalStyles.header, GlobalStyles.label]}
                                     id='mobile.components.select_server_view.enterServerUrl'
@@ -528,7 +528,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
-                                testID='server_url.input'
+                                testID='select_server.server_url.input'
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!inputDisabled}
@@ -548,7 +548,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
-                                testID='connect.button'
+                                testID='select_server.connect.button'
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >
@@ -558,7 +558,10 @@ export default class SelectServer extends PureComponent {
                                 </Text>
                             </Button>
                             <View>
-                                <ErrorText error={error}/>
+                                <ErrorText
+                                    testID='select_server.error.text'
+                                    error={error}
+                                />
                             </View>
                         </View>
                     </TouchableWithoutFeedback>

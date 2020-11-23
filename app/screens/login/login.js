@@ -339,7 +339,7 @@ export default class Login extends PureComponent {
 
             proceed = (
                 <Button
-                    testID='signin.button'
+                    testID='login.signin.button'
                     onPress={this.preSignIn}
                     containerStyle={[GlobalStyles.signupButton, additionalStyle]}
                 >
@@ -397,9 +397,12 @@ export default class Login extends PureComponent {
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
-                        <ErrorText error={this.state.error}/>
+                        <ErrorText
+                            testID='login.error.text'
+                            error={this.state.error}
+                        />
                         <TextInput
-                            testID='username.input'
+                            testID='login.username.input'
                             autoCapitalize='none'
                             autoCorrect={false}
                             blurOnSubmit={false}
@@ -415,7 +418,7 @@ export default class Login extends PureComponent {
                             underlineColorAndroid='transparent'
                         />
                         <TextInput
-                            testID='password.input'
+                            testID='login.password.input'
                             autoCapitalize='none'
                             autoCorrect={false}
                             disableFullscreenUI={true}

@@ -140,7 +140,10 @@ export default class Mfa extends PureComponent {
             >
                 <StatusBar/>
                 <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                    <View
+                        testID='mfa.screen'
+                        style={[GlobalStyles.container, GlobalStyles.signupContainer]}
+                    >
                         <CompassIcon
                             name='mattermost'
                             size={76}
@@ -153,7 +156,10 @@ export default class Mfa extends PureComponent {
                                 defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
                             />
                         </View>
-                        <ErrorText error={this.state.error}/>
+                        <ErrorText
+                            testID='mfa.error.text'
+                            error={this.state.error}
+                        />
                         <TextInputWithLocalizedPlaceholder
                             ref={this.inputRef}
                             value={this.state.token}
