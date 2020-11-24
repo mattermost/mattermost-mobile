@@ -3,7 +3,7 @@
 
 import {Client4} from '@mm-redux/client';
 import {General, Preferences, Posts} from '@mm-redux/constants';
-import {WebsocketEvents} from '@constants';
+import {ViewTypes, WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
@@ -40,7 +40,6 @@ import {Reaction} from '@mm-redux/types/reactions';
 import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {CustomEmoji} from '@mm-redux/types/emojis';
-import {addRecentEmoji} from '@actions/views/emoji';
 
 // receivedPost should be dispatched after a single post from the server. This typically happens when an existing post
 // is updated.
@@ -225,14 +224,20 @@ export function createPost(post: Post, files: any[] = []) {
             }
             return input.codePointAt(0)?.toString(16) + '-' + input.codePointAt(1)?.toString(16);
         }
-        emojis?.map((emoji) => {
-            const unicode = emojiUnicode(emoji);
-            return EmojiIndicesByUnicode.get(unicode || '');
-        })
-        .filter((index) => index !== undefined)
-        .map((index:number) => Emojis[index].aliases[0])
-        .forEach((name) => dispatch(addRecentEmoji(name)));
-
+        if (emojis) {
+            const emojisAvailableWithMatterMost = [];
+            for (const emoji of emojis) {
+                const unicode = emojiUnicode(emoji);
+                const index = EmojiIndicesByUnicode.get(unicode || '');
+                if (index) {
+                    emojisAvailableWithMatterMost.push(Emojis[index].aliases[0]);
+                }
+            }
+            dispatch({
+                type: ViewTypes.ADD_RECENT_EMOJI_ARRAY,
+                emojis: emojisAvailableWithMatterMost
+            });
+        }
         dispatch(batchActions(actions, 'BATCH_CREATE_POST_INIT'));
 
         try {

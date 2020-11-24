@@ -3,6 +3,8 @@
 
 import {ViewTypes} from 'app/constants';
 
+const MAXIMUM_RECENT_EMOJI = 27;
+
 export default function recentEmojis(state = [], action) {
     switch (action.type) {
     case ViewTypes.ADD_RECENT_EMOJI: {
@@ -17,6 +19,16 @@ export default function recentEmojis(state = [], action) {
 
         return nextState;
     }
+    case ViewTypes.ADD_RECENT_EMOJI_ARRAY: {
+        const nextRecentEmojis = action.emojis.reduce((currentState, emoji) => {
+            return [...currentState.filter((currentEmoji) => currentEmoji !== emoji), emoji];
+        }, state);
+        if (nextRecentEmojis.length > MAXIMUM_RECENT_EMOJI) {
+            nextRecentEmojis.splice(0, recentEmojis.length - MAXIMUM_RECENT_EMOJI);
+        }
+        return nextRecentEmojis;
+    }
+
     default:
         return state;
     }
