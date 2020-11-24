@@ -9,6 +9,8 @@ import PostInChannel from '@typings/database/post_in_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import MyChannel from '@typings/database/my_channel';
 import ChannelInfo from '@typings/database/channel_info';
+import User from '@typings/database/user';
+import Team from '@typings/database/team';
 export default class Channel extends Model {
     static table: string;
     static associations: Associations;
@@ -28,4 +30,6 @@ export default class Channel extends Model {
     post: Post;
     postInChannel: PostInChannel;
     channelInfo: ChannelInfo;
+    channelTeam: Team;
+    channelUser: User;
 }

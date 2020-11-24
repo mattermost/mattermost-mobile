@@ -6,6 +6,8 @@ import PostInThread from '@typings/database/post_in_thread';
 import PostMetadata from '@typings/database/post_metadata';
 import Draft from '@typings/database/draft';
 import File from '@typings/database/file';
+import User from '@typings/database/user';
+import Channel from '@typings/database/channel';
 export default class Post extends Model {
     static table: string;
     static associations: Associations;
@@ -27,4 +29,6 @@ export default class Post extends Model {
     postInThread: PostInThread;
     postMetadata: PostMetadata;
     reaction: Reaction;
+    postUser: User;
+    postChannel: Channel;
 }

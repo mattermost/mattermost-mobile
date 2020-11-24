@@ -5,11 +5,14 @@ import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
 import json from '@nozbe/watermelondb/decorators/json';
 import children from '@nozbe/watermelondb/decorators/children';
-import Reaction from '@typings/database/reaction';
 import PostInThread from '@typings/database/post_in_thread';
 import PostMetadata from '@typings/database/post_metadata';
 import Draft from '@typings/database/draft';
 import File from '@typings/database/file';
+import User from '@typings/database/user';
+import immutableRelation from '@nozbe/watermelondb/decorators/immutableRelation';
+import Reaction from '@typings/database/reaction';
+import Channel from '@typings/database/channel';
 
 export default class Post extends Model {
     static table = MM_TABLES.SERVER.POST
@@ -42,4 +45,7 @@ export default class Post extends Model {
     @children(MM_TABLES.SERVER.POSTS_IN_THREAD) postInThread!: PostInThread
     @children(MM_TABLES.SERVER.POST_METADATA) postMetadata!: PostMetadata
     @children(MM_TABLES.SERVER.REACTION) reaction!: Reaction
+
+    @immutableRelation(MM_TABLES.SERVER.USER, 'user_id') postUser!: User
+    @immutableRelation(MM_TABLES.SERVER.CHANNEL, 'channel_id') postChannel!: Channel
 }

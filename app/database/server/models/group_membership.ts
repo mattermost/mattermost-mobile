@@ -3,6 +3,9 @@
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
+import relation from '@nozbe/watermelondb/decorators/relation';
+import Group from '@typings/database/group';
+import User from '@typings/database/user';
 
 export default class GroupMembership extends Model {
     static table = MM_TABLES.SERVER.GROUP_MEMBERSHIP
@@ -13,4 +16,7 @@ export default class GroupMembership extends Model {
 
     @field('group_id') groupId! : string
     @field('user_id') userId! : string
+
+    @relation(MM_TABLES.SERVER.GROUP, 'group_id') memberGroup!: Group
+    @relation(MM_TABLES.SERVER.USER, 'user_id') memberUser!: User
 }

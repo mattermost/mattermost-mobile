@@ -3,6 +3,8 @@
 import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import relation from '@nozbe/watermelondb/decorators/relation';
+import Group from '@typings/database/group';
 
 export default class GroupsInChannel extends Model {
     static table = MM_TABLES.SERVER.GROUPS_IN_CHANNEL
@@ -16,4 +18,6 @@ export default class GroupsInChannel extends Model {
     @field('group_id') groupId! : string
     @field('member_count') memberCount! : number
     @field('timezone_count') timeZoneCount! : number
+
+    @relation(MM_TABLES.SERVER.CHANNEL, 'channel_id') groupChannel!: Group
 }

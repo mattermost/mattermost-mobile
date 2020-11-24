@@ -3,6 +3,9 @@
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
+import relation from '@nozbe/watermelondb/decorators/relation';
+import User from '@typings/database/user';
+import Post from '@typings/database/post';
 
 export default class Reaction extends Model {
     static table = MM_TABLES.SERVER.REACTION
@@ -16,4 +19,7 @@ export default class Reaction extends Model {
     @field('post_id') postId!: string
     @field('reaction_id') reactionId!: string
     @field('user_id') userId!: string
+
+    @relation(MM_TABLES.SERVER.USER, 'user_id') reactionUser!: User
+    @relation(MM_TABLES.SERVER.POST, 'post_id') reactionPost!: Post
 }

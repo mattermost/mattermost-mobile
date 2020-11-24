@@ -3,16 +3,19 @@
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
-import relation from '@nozbe/watermelondb/decorators/relation';
 import children from '@nozbe/watermelondb/decorators/children';
 import Draft from '@typings/database/draft';
-import Post from '@typings/database/post';
-import ChannelMembership from '@typings/database/channel_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import PostInChannel from '@typings/database/post_in_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import MyChannel from '@typings/database/my_channel';
 import ChannelInfo from '@typings/database/channel_info';
+import immutableRelation from '@nozbe/watermelondb/decorators/immutableRelation';
+import relation from '@nozbe/watermelondb/decorators/relation';
+import User from '@typings/database/user';
+import Team from '@typings/database/team';
+import ChannelMembership from '@typings/database/channel_membership';
+import Post from '@typings/database/post';
 
 export default class Channel extends Model {
     static table = MM_TABLES.SERVER.CHANNEL
@@ -47,4 +50,6 @@ export default class Channel extends Model {
     @children(MM_TABLES.SERVER.POSTS_IN_CHANNEL) postInChannel! : PostInChannel
 
     @relation(MM_TABLES.SERVER.CHANNEL_INFO, 'channel_id') channelInfo!: ChannelInfo
+    @immutableRelation(MM_TABLES.SERVER.TEAM, 'team_id') channelTeam!: Team
+    @immutableRelation(MM_TABLES.SERVER.USER, 'creator_id') channelUser!: User
 }
