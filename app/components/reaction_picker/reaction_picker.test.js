@@ -11,8 +11,6 @@ import Preferences from '@mm-redux/constants/preferences';
 describe('Reactions', () => {
     const baseProps = {
         addReaction: jest.fn(),
-        deviceWidth: undefined,
-        isLandscape: false,
         openReactionScreen: jest.fn(),
         recentEmojis: [],
         theme: Preferences.THEMES.default,

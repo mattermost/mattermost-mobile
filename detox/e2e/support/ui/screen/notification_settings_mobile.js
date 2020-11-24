@@ -30,6 +30,19 @@ class NotificationSettingsMobileScreen {
     pushModalCancelButton = element(by.id(this.testID.pushModalCancelButton));
     pushModalSaveButton = element(by.id(this.testID.pushModalSaveButton));
 
+    getPushActionFor = (pushKey) => {
+        switch (pushKey) {
+        case 'all':
+            return this.allAction;
+        case 'mentions':
+            return this.mentionsAction;
+        case 'never':
+            return this.neverAction;
+        default:
+            throw new Error('Not a valid push option: ' + pushKey);
+        }
+    }
+
     toBeVisible = async () => {
         await expect(this.notificationSettingsMobileScreen).toBeVisible();
 
@@ -46,19 +59,6 @@ class NotificationSettingsMobileScreen {
     back = async () => {
         await this.backButton.tap();
         await expect(this.notificationSettingsMobileScreen).not.toBeVisible();
-    }
-
-    getPushActionFor(pushKey) {
-        switch (pushKey) {
-        case 'all':
-            return this.allAction;
-        case 'mentions':
-            return this.mentionsAction;
-        case 'never':
-            return this.neverAction;
-        default:
-            throw new Error('Not a valid push option: ' + pushKey);
-        }
     }
 }
 

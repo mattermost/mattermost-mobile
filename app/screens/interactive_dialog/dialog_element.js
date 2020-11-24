@@ -28,7 +28,6 @@ export default class DialogElement extends PureComponent {
         value: PropTypes.any,
         onChange: PropTypes.func,
         theme: PropTypes.object,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -73,7 +72,6 @@ export default class DialogElement extends PureComponent {
             theme,
             dataSource,
             options,
-            isLandscape,
         } = this.props;
 
         let {maxLength} = this.props;
@@ -118,7 +116,6 @@ export default class DialogElement extends PureComponent {
                     multiline={multiline}
                     keyboardType={keyboardType}
                     secureTextEntry={secureTextEntry}
-                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'select') {
@@ -136,7 +133,6 @@ export default class DialogElement extends PureComponent {
                     showRequiredAsterisk={true}
                     selected={this.state.selected}
                     roundedBorders={false}
-                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'radio') {
@@ -150,7 +146,6 @@ export default class DialogElement extends PureComponent {
                     theme={theme}
                     default={value}
                     onChange={this.onChange}
-                    isLandscape={isLandscape}
                 />
             );
         } else if (type === 'bool') {
@@ -165,7 +160,6 @@ export default class DialogElement extends PureComponent {
                     optional={optional}
                     theme={theme}
                     onChange={this.onChange}
-                    isLandscape={isLandscape}
                 />
             );
         }

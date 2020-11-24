@@ -10,15 +10,15 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface IgnoreMentionsProps {
+    testID?: string;
     channelId: string;
     ignore: boolean;
-    isLandscape: boolean;
     theme: Theme;
     updateChannelNotifyProps: (userId: string, channelId: string, opts: {ignore_channel_mentions: string}) => void;
     userId: string;
 }
 
-const IgnoreMentions = ({channelId, ignore, isLandscape, updateChannelNotifyProps, userId, theme}: IgnoreMentionsProps) => {
+const IgnoreMentions = ({channelId, ignore, updateChannelNotifyProps, userId, testID, theme}: IgnoreMentionsProps) => {
     const [mentions, setMentions] = useState(ignore);
 
     const handleIgnoreChannelMentions = preventDoubleTap(() => {
@@ -32,6 +32,7 @@ const IgnoreMentions = ({channelId, ignore, isLandscape, updateChannelNotifyProp
 
     return (
         <ChannelInfoRow
+            testID={testID}
             action={handleIgnoreChannelMentions}
             defaultMessage='Ignore @channel, @here, @all'
             detail={ignore}
@@ -39,7 +40,6 @@ const IgnoreMentions = ({channelId, ignore, isLandscape, updateChannelNotifyProp
             textId={t('channel_notifications.ignoreChannelMentions.settings')}
             togglable={true}
             theme={theme}
-            isLandscape={isLandscape}
         />
     );
 };

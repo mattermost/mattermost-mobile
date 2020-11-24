@@ -52,9 +52,11 @@ export default class ReactionButton extends PureComponent {
             containerSize,
         } = this.props;
         const style = getStyleSheet(theme);
+        const testID = `reaction_picker.reaction_button.${emoji}`;
 
         return (
             <TouchableWithoutFeedback
+                testID={testID}
                 key={emoji}
                 onPress={this.handlePress}
             >

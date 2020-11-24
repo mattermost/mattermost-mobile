@@ -6,13 +6,11 @@ import {connect} from 'react-redux';
 
 import {purgeOfflineStore} from 'app/actions/views/root';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from 'app/selectors/device';
 import AdvancedSettings from './advanced_settings';
 
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

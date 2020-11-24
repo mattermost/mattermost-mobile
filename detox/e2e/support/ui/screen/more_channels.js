@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelScreen} from '@support/ui/component';
-import {MainSidebar} from '@support/ui/screen';
+import {MainSidebar} from '@support/ui/component';
 
 class MoreChannelsScreen {
     testID = {
@@ -20,8 +19,8 @@ class MoreChannelsScreen {
     }
 
     open = async () => {
-        await ChannelScreen.mainSidebarDrawerButton.tap();
-        await MainSidebar.addChannel.tap();
+        // # Open more channels screen
+        await MainSidebar.openMoreChannelsButton.tap();
 
         return this.toBeVisible();
     }

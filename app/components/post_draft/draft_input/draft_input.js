@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import {Platform, ScrollView, View} from 'react-native';
 import {intlShape} from 'react-intl';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import PostInput from '@components/post_draft/post_input';
@@ -13,7 +14,6 @@ import QuickActions from '@components/post_draft/quick_actions';
 import SendAction from '@components/post_draft/send_action';
 import Typing from '@components/post_draft/typing';
 import Uploads from '@components/post_draft/uploads';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {NavigationTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
@@ -30,6 +30,7 @@ const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
 export default class DraftInput extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         registerTypingAnimation: PropTypes.func.isRequired,
         addReactionToLatestPost: PropTypes.func.isRequired,
         getChannelMemberCountsByGroup: PropTypes.func.isRequired,
@@ -408,11 +409,12 @@ export default class DraftInput extends PureComponent {
 
     render() {
         const {
+            testID,
             channelDisplayName,
             channelId,
             cursorPositionEvent,
-            isLandscape,
             files,
+            isLandscape,
             maxMessageLength,
             screenId,
             valueEvent,
@@ -420,6 +422,9 @@ export default class DraftInput extends PureComponent {
             rootId,
             theme,
         } = this.props;
+        const postInputTestID = `${testID}.post.input`;
+        const quickActionsTestID = `${testID}.quick_actions`;
+        const sendActionTestID = `${testID}.send_action`;
         const style = getStyleSheet(theme);
 
         return (
@@ -428,9 +433,11 @@ export default class DraftInput extends PureComponent {
                     theme={theme}
                     registerTypingAnimation={registerTypingAnimation}
                 />
-                <View
-                    style={[style.inputWrapper, padding(isLandscape)]}
+                <SafeAreaView
+                    edges={['left', 'right']}
                     onLayout={this.handleLayout}
+                    style={style.inputWrapper}
+                    testID={testID}
                 >
                     <ScrollView
                         style={style.inputContainer}
@@ -444,6 +451,7 @@ export default class DraftInput extends PureComponent {
                         disableScrollViewPanResponder={true}
                     >
                         <PostInput
+                            testID={postInputTestID}
                             channelDisplayName={channelDisplayName}
                             channelId={channelId}
                             cursorPositionEvent={cursorPositionEvent}
@@ -464,6 +472,7 @@ export default class DraftInput extends PureComponent {
                         />
                         <View style={style.actionsContainer}>
                             <QuickActions
+                                testID={quickActionsTestID}
                                 ref={this.quickActions}
                                 fileCount={files.length}
                                 inputEventType={valueEvent}
@@ -471,13 +480,14 @@ export default class DraftInput extends PureComponent {
                                 theme={theme}
                             />
                             <SendAction
+                                testID={sendActionTestID}
                                 disabled={!this.state.canSubmit}
                                 handleSendMessage={this.handleSendMessage}
                                 theme={theme}
                             />
                         </View>
                     </ScrollView>
-                </View>
+                </SafeAreaView>
                 {Platform.OS === 'android' &&
                 <Autocomplete
                     cursorPositionEvent={cursorPositionEvent}

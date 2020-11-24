@@ -8,7 +8,10 @@
 // *******************************************************************
 
 import {Autocomplete} from '@support/ui/component';
-import {ChannelScreen, SearchScreen} from '@support/ui/screen';
+import {
+    ChannelScreen,
+    SearchScreen,
+} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Autocomplete', () => {
@@ -20,14 +23,14 @@ describe('Autocomplete', () => {
 
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
-        await ChannelScreen.open(user);
 
         // # Open search screen
+        await ChannelScreen.open(user);
         await SearchScreen.open();
     });
 
     beforeEach(async () => {
-        await SearchScreen.searchInput.atIndex(0).clearText();
+        await SearchScreen.searchInput.clearText();
     });
 
     afterAll(async () => {

@@ -12,9 +12,9 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface AddMembersProps {
+    testID?: string;
     canManageUsers: boolean;
     groupConstrained: boolean;
-    isLandscape: boolean;
     theme: Theme;
 }
 
@@ -32,19 +32,19 @@ export default class AddMembers extends PureComponent<AddMembersProps> {
     });
 
     render() {
-        const {canManageUsers, groupConstrained, isLandscape, theme} = this.props;
+        const {canManageUsers, groupConstrained, testID, theme} = this.props;
 
         if (canManageUsers && !groupConstrained) {
             return (
                 <>
                     <Separator theme={theme}/>
                     <ChannelInfoRow
+                        testID={testID}
                         action={this.goToChannelAddMembers}
                         defaultMessage='Add Members'
                         icon='account-plus-outline'
                         textId={t('channel_header.addMembers')}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                 </>
             );

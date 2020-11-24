@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-import {isLandscape} from 'app/selectors/device';
 import {updateMe} from '@mm-redux/actions/users';
 
 import NotificationSettingsMobile from './notification_settings_mobile';
@@ -23,7 +22,6 @@ function mapStateToProps(state) {
         theme,
         updateMeRequest,
         currentUser,
-        isLandscape: isLandscape(state),
     };
 }
 

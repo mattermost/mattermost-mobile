@@ -1,18 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelScreen} from '@support/ui/screen';
+import {EditChannelInfo} from '@support/ui/component';
+import {ChannelInfoScreen} from '@support/ui/screen';
 
 class EditChannelScreen {
     testID = {
         editChannelScreen: 'edit_channel.screen',
-        editChannelHeaderInput: 'edit_channel.header.input',
+        saveButton: 'edit_channel.save.button',
         backButton: 'screen.back.button',
     }
 
     editChannelScreen = element(by.id(this.testID.editChannelScreen));
-    editChannelHeaderInput = element(by.id(this.testID.editChannelHeaderInput));
+    saveButton = element(by.id(this.testID.saveButton));
     backButton = element(by.id(this.testID.backButton));
+
+    // convenience props
+    nameInput = EditChannelInfo.nameInput;
+    purposeInput = EditChannelInfo.purposeInput;
+    headerInput = EditChannelInfo.headerInput;
 
     toBeVisible = async () => {
         await expect(this.editChannelScreen).toBeVisible();
@@ -21,9 +27,8 @@ class EditChannelScreen {
     }
 
     open = async () => {
-        // # Open channel menu then tap 'Edit Channel'
-        await ChannelScreen.channelTitleButton.tap();
-        await element(by.text('Edit Channel')).tap();
+        // # Open edit channel screen
+        await ChannelInfoScreen.editChannelAction.tap();
 
         return this.toBeVisible();
     }

@@ -47,12 +47,13 @@ exports[`PostOptions should match snapshot, no option for system message to user
     <Connect(ReactionPicker)
       addReaction={[Function]}
       openReactionScreen={[Function]}
+      testID="post_options.reaction_picker.action"
     />
     <PostOption
       destructive={false}
       icon="reply-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.reply.action"
       text="Reply"
       theme={
         Object {
@@ -86,8 +87,8 @@ exports[`PostOptions should match snapshot, no option for system message to user
     />
     <PostOption
       icon="mark-as-unread"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.markUnread.action"
       text="Mark as Unread"
       theme={
         Object {
@@ -122,8 +123,8 @@ exports[`PostOptions should match snapshot, no option for system message to user
     <PostOption
       destructive={false}
       icon="pin-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.pin.action"
       text="Pin to Channel"
       theme={
         Object {
@@ -158,8 +159,8 @@ exports[`PostOptions should match snapshot, no option for system message to user
     <PostOption
       destructive={false}
       icon="pencil-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.edit.action"
       text="Edit"
       theme={
         Object {
@@ -242,12 +243,13 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     <Connect(ReactionPicker)
       addReaction={[Function]}
       openReactionScreen={[Function]}
+      testID="post_options.reaction_picker.action"
     />
     <PostOption
       destructive={false}
       icon="reply-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.reply.action"
       text="Reply"
       theme={
         Object {
@@ -281,8 +283,8 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     />
     <PostOption
       icon="mark-as-unread"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.markUnread.action"
       text="Mark as Unread"
       theme={
         Object {
@@ -317,8 +319,8 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     <PostOption
       destructive={false}
       icon="pin-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.pin.action"
       text="Pin to Channel"
       theme={
         Object {
@@ -353,8 +355,8 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     <PostOption
       destructive={false}
       icon="pencil-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.edit.action"
       text="Edit"
       theme={
         Object {
@@ -389,8 +391,8 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     <PostOption
       destructive={true}
       icon="trash-can-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.delete.action"
       text="Delete"
       theme={
         Object {
@@ -473,12 +475,13 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     <Connect(ReactionPicker)
       addReaction={[Function]}
       openReactionScreen={[Function]}
+      testID="post_options.reaction_picker.action"
     />
     <PostOption
       destructive={false}
       icon="reply-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.reply.action"
       text="Reply"
       theme={
         Object {
@@ -512,8 +515,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     />
     <PostOption
       icon="mark-as-unread"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.markUnread.action"
       text="Mark as Unread"
       theme={
         Object {
@@ -548,8 +551,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     <PostOption
       destructive={false}
       icon="pin-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.pin.action"
       text="Pin to Channel"
       theme={
         Object {
@@ -584,8 +587,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     <PostOption
       destructive={false}
       icon="pencil-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.edit.action"
       text="Edit"
       theme={
         Object {
@@ -620,8 +623,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     <PostOption
       destructive={true}
       icon="trash-can-outline"
-      isLandscape={false}
       onPress={[Function]}
+      testID="post.options.delete.action"
       text="Delete"
       theme={
         Object {

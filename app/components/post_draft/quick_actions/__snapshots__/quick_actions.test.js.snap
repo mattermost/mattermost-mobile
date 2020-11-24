@@ -1,0 +1,195 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QuickActions should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "display": "flex",
+      "flexDirection": "row",
+      "height": 44,
+    }
+  }
+  testID="post_draft.quick_actions"
+>
+  <InputQuickAction
+    disabled={false}
+    inputType="at"
+    onTextChange={[Function]}
+    testID="post_draft.quick_actions.at_input_action"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+    value=""
+  />
+  <InputQuickAction
+    disabled={false}
+    inputType="slash"
+    onTextChange={[Function]}
+    testID="post_draft.quick_actions.slash_input_action"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+    value=""
+  />
+  <FileQuickAction
+    disabled={false}
+    fileCount={1}
+    maxFileCount={5}
+    onUploadFiles={[Function]}
+    testID="post_draft.quick_actions.file_action"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  />
+  <ImageQuickAction
+    disabled={false}
+    fileCount={1}
+    maxFileCount={5}
+    onUploadFiles={[Function]}
+    testID="post_draft.quick_actions.image_action"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  />
+  <CameraQuickAction
+    disabled={false}
+    fileCount={1}
+    maxFileCount={5}
+    onUploadFiles={[Function]}
+    testID="post_draft.quick_actions.camera_action"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  />
+</View>
+`;

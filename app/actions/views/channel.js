@@ -295,6 +295,8 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
         const actions = markAsViewedAndReadBatch(state, channelId, previousChannelId, markOnServer);
 
         dispatch(batchActions(actions, 'BATCH_MARK_CHANNEL_VIEWED_AND_READ'));
+
+        return {data: true};
     };
 }
 

@@ -8,12 +8,12 @@ import {
     Platform,
 } from 'react-native';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import SlashSuggestionItem from './slash_suggestion_item';
+import {analytics} from '@init/analytics.ts';
 import {Client4} from '@mm-redux/client';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {analytics} from '@init/analytics.ts';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import SlashSuggestionItem from './slash_suggestion_item';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
@@ -31,7 +31,6 @@ export default class SlashSuggestion extends PureComponent {
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
         value: PropTypes.string,
-        isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
         suggestions: PropTypes.array,
         rootId: PropTypes.string,
@@ -187,7 +186,6 @@ export default class SlashSuggestion extends PureComponent {
             theme={this.props.theme}
             suggestion={item.Suggestion}
             complete={item.Complete}
-            isLandscape={this.props.isLandscape}
         />
     )
 

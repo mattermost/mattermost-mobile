@@ -3,8 +3,7 @@
 
 import React from 'react';
 import {Platform, StyleSheet, View, ViewStyle} from 'react-native';
-
-import {paddingHorizontal} from '@components/safe_area_view/iphone_x_spacing';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import type {SummaryProps} from 'types/screens/gallery';
 
@@ -43,7 +42,10 @@ const Summary = (props: SummaryProps) => {
     }
 
     return (
-        <View style={[containerStyles, paddingHorizontal(props.isLandscape)]}>
+        <SafeAreaView
+            edges={['left', 'right']}
+            style={containerStyles}
+        >
             <View style={styles.details}>
                 <Avatar
                     avatarUri={props.avatarUri}
@@ -63,7 +65,7 @@ const Summary = (props: SummaryProps) => {
                     downloadAction={props.dowloadFile}
                 />
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
 

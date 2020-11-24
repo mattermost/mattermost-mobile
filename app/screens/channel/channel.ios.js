@@ -3,13 +3,14 @@
 
 import React from 'react';
 import {View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import LocalConfig from '@assets/config';
+import AnnouncementBanner from 'app/components/announcement_banner';
 import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
-import SafeAreaView from '@components/safe_area_view';
 import MainSidebar from '@components/sidebars/main';
 import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
@@ -70,20 +71,36 @@ export default class ChannelIOS extends ChannelBase {
         }
 
         const style = getStyle(theme);
+        const indicators = (
+            <>
+                <AnnouncementBanner/>
+                <NetworkIndicator/>
+            </>
+        );
+        const header = (
+            <>
+                <ChannelNavBar
+                    openMainSidebar={this.openMainSidebar}
+                    openSettingsSidebar={this.openSettingsSidebar}
+                    onPress={this.goToChannelInfo}
+                />
+            </>
+        );
         const drawerContent = (
             <>
-                <SafeAreaView>
-                    <StatusBar/>
-                    <NetworkIndicator/>
-                    <ChannelNavBar
-                        openMainSidebar={this.openMainSidebar}
-                        openSettingsSidebar={this.openSettingsSidebar}
-                        onPress={this.goToChannelInfo}
-                    />
+                <StatusBar/>
+                {header}
+                <SafeAreaView
+                    mode='margin'
+                    edges={['left', 'right', 'bottom']}
+                    style={style.flex}
+                >
                     {component}
                 </SafeAreaView>
+                {indicators}
                 {renderDraftArea &&
                     <PostDraft
+                        testID='channel.post_draft'
                         accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                         ref={this.postDraft}
@@ -127,5 +144,8 @@ const getStyle = makeStyleSheetFromTheme((theme) => ({
     backdrop: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
+    },
+    flex: {
+        flex: 1,
     },
 }));

@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {SafeAreaView, View} from 'react-native';
+import {View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -10,14 +11,21 @@ import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface ReadOnlyProps {
+    testID?: string;
     theme: Theme;
 }
 
-const ReadOnlyChannnel = ({theme}: ReadOnlyProps): ReactNode => {
+const ReadOnlyChannnel = ({testID, theme}: ReadOnlyProps): ReactNode => {
     const style = getStyle(theme);
     return (
-        <SafeAreaView style={style.background}>
-            <View style={style.container}>
+        <SafeAreaView
+            edges={['bottom']}
+            style={style.background}
+        >
+            <View
+                testID={testID}
+                style={style.container}
+            >
                 <CompassIcon
                     name='glasses'
                     style={style.icon}

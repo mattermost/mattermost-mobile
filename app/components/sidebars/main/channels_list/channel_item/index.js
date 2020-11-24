@@ -15,9 +15,8 @@ import {getTheme, getTeammateNameDisplaySetting} from '@mm-redux/selectors/entit
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getUserIdFromChannelName, isChannelMuted} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
-import {isLandscape} from 'app/selectors/device';
-import {getDraftForChannel} from 'app/selectors/views';
-import {isGuest as isGuestUser} from 'app/utils/users';
+import {getDraftForChannel} from '@selectors/views';
+import {isGuest as isGuestUser} from '@utils/users';
 
 import ChannelItem from './channel_item';
 
@@ -82,7 +81,6 @@ function makeMapStateToProps() {
             isBot,
             isChannelMuted: isChannelMuted(member),
             isGuest,
-            isLandscape: isLandscape(state),
             isManualUnread: isManuallyUnread(state, ownProps.channelId),
             mentions: member ? member.mention_count : 0,
             shouldHideChannel,

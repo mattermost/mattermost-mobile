@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal} from '@actions/navigation';
 import StatusBar from '@components/status_bar';
@@ -96,12 +97,11 @@ export default class ChannelInfo extends PureComponent {
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isLandscape, isDirectMessage, theme} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, theme} = this.props;
 
         if (channelIsArchived) {
             return (
                 <ManageMembers
-                    isLandscape={isLandscape}
                     theme={theme}
                     separator={false}
                 />);
@@ -110,21 +110,21 @@ export default class ChannelInfo extends PureComponent {
         return (
             <>
                 <Favorite
+                    testID='channel_info.favorite.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
                 <Separator theme={theme}/>
                 <Mute
+                    testID='channel_info.mute.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     userId={currentUserId}
                     theme={theme}
                 />
                 <Separator theme={theme}/>
                 <IgnoreMentions
+                    testID='channel_info.ignore_mentions.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
                 <Separator theme={theme}/>
@@ -132,32 +132,30 @@ export default class ChannelInfo extends PureComponent {
                 <>
                     <NotificationPreference
                         testID='channel_info.notification_preference.action'
-                        isLandscape={isLandscape}
                         theme={theme}
                     />
                     <Separator theme={theme}/>
                 </>
                 }
                 <Pinned
+                    testID='channel_info.pinned.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
                 <ManageMembers
-                    isLandscape={isLandscape}
+                    testID='channel_info.manage_members.action'
                     theme={theme}
                 />
                 <AddMembers
-                    isLandscape={isLandscape}
+                    testID='channel_info.add_members.action'
                     theme={theme}
                 />
                 <ConvertPrivate
-                    isLandscape={isLandscape}
+                    testID='channel_info.convert_private.action'
                     theme={theme}
                 />
                 <EditChannel
                     testID='channel_info.edit_channel.action'
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
             </>
@@ -174,16 +172,16 @@ export default class ChannelInfo extends PureComponent {
             theme,
             isBot,
             isTeammateGuest,
-            isLandscape,
         } = this.props;
 
         const style = getStyleSheet(theme);
         const channelIsArchived = currentChannel.delete_at !== 0;
 
         return (
-            <View
+            <SafeAreaView
                 testID='channel_info.screen'
                 style={style.container}
+                edges={['bottom', 'left', 'right']}
             >
                 <StatusBar/>
                 <ScrollView
@@ -206,7 +204,6 @@ export default class ChannelInfo extends PureComponent {
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
-                        isLandscape={isLandscape}
                     />
                     }
                     <View style={style.rowsContainer}>
@@ -215,17 +212,15 @@ export default class ChannelInfo extends PureComponent {
                     <View style={style.footer}>
                         <Leave
                             close={this.close}
-                            isLandscape={isLandscape}
                             theme={theme}
                         />
                         <Archive
                             close={this.close}
-                            isLandscape={isLandscape}
                             theme={theme}
                         />
                     </View>
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

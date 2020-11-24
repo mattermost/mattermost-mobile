@@ -12,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen, dismissModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -256,7 +257,7 @@ export default class ClientUpgrade extends PureComponent {
         const styles = getStyleFromTheme(theme);
 
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 <StatusBar/>
                 <ScrollView
                     style={styles.scrollView}
@@ -269,7 +270,7 @@ export default class ClientUpgrade extends PureComponent {
                     />
                     {this.renderMessageContent()}
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

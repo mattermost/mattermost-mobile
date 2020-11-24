@@ -9,14 +9,28 @@ class ChannelInfoScreen {
         channelInfoScreen: 'channel_info.screen',
         closeChannelInfoButton: 'close.channel_info.button',
         channelIconGMMemberCount: 'channel_icon.gm_member_count',
+        favoritePreferenceAction: 'channel_info.favorite.action',
+        mutePreferenceAction: 'channel_info.mute.action',
+        ignoreMentionsPreferenceAction: 'channel_info.ignore_mentions.action',
         notificationPreferenceAction: 'channel_info.notification_preference.action',
+        pinnedAction: 'channel_info.pinned.action',
+        manageMembersAction: 'channel_info.manage_members.action',
+        addMembersAction: 'channel_info.add_members.action',
+        convertPrivateAction: 'channel_info.convert_private.action',
         editChannelAction: 'channel_info.edit_channel.action',
     }
 
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
     closeChannelInfoButton = element(by.id(this.testID.closeChannelInfoButton));
     channelIconGMMemberCount = element(by.id(this.testID.channelIconGMMemberCount));
+    favoritePreferenceAction = element(by.id(this.testID.favoritePreferenceAction));
+    mutePreferenceAction = element(by.id(this.testID.mutePreferenceAction));
+    ignoreMentionsPreferenceAction = element(by.id(this.testID.ignoreMentionsPreferenceAction));
     notificationPreferenceAction = element(by.id(this.testID.notificationPreferenceAction));
+    pinnedAction = element(by.id(this.testID.pinnedAction));
+    manageMembersAction = element(by.id(this.testID.manageMembersAction));
+    addMembersAction = element(by.id(this.testID.addMembersAction));
+    convertPrivateAction = element(by.id(this.testID.convertPrivateAction));
     editChannelAction = element(by.id(this.testID.editChannelAction));
 
     toBeVisible = async () => {

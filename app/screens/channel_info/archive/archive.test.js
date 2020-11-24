@@ -26,7 +26,6 @@ describe('ChannelInfo -> Archive', () => {
         displayName: 'Test Channel',
         getChannel: jest.fn(),
         handleSelectChannel: jest.fn(),
-        isLandscape: false,
         isPublic: true,
         unarchiveChannel: jest.fn(),
         selectPenultimateChannel: jest.fn(),

@@ -11,11 +11,11 @@ import {
     View,
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Config from '@assets/config';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import StatusBar from '@components/status_bar';
 import AboutLinks from '@constants/about_links';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -27,7 +27,6 @@ export default class About extends PureComponent {
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     handleAboutTeam = () => {
@@ -55,7 +54,7 @@ export default class About extends PureComponent {
     }
 
     render() {
-        const {theme, config, license, isLandscape} = this.props;
+        const {theme, config, license} = this.props;
         const style = getStyleSheet(theme);
 
         let title = (
@@ -210,10 +209,13 @@ export default class About extends PureComponent {
         }
 
         return (
-            <View style={style.wrapper}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
-                    style={[style.scrollView, padding(isLandscape)]}
+                    style={style.scrollView}
                     contentContainerStyle={style.scrollViewContent}
                 >
                     <View style={style.logoContainer}>
@@ -335,14 +337,14 @@ export default class About extends PureComponent {
                         </View>
                     </View>
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        wrapper: {
+        container: {
             flex: 1,
         },
         scrollView: {

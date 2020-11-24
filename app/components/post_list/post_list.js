@@ -39,6 +39,7 @@ const SCROLL_POSITION_CONFIG = {
 
 export default class PostList extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         actions: PropTypes.shape({
             closePermalink: PropTypes.func.isRequired,
             handleSelectChannelByName: PropTypes.func.isRequired,
@@ -288,6 +289,7 @@ export default class PostList extends PureComponent {
 
     renderItem = ({item, index}) => {
         const {
+            testID,
             highlightPinnedOrFlagged,
             highlightPostId,
             isSearchResult,
@@ -360,6 +362,7 @@ export default class PostList extends PureComponent {
         const postId = item;
         return (
             <MemoizedPost
+                testID={testID}
                 postId={postId}
                 highlight={highlightPostId === postId}
                 isLastPost={lastPostIndex === index}
@@ -545,9 +548,12 @@ export default class PostList extends PureComponent {
     }
 }
 
-function PostComponent({postId, highlightPostId, lastPostIndex, index, ...postProps}) {
+function PostComponent({testID, postId, highlightPostId, lastPostIndex, index, ...postProps}) {
+    const postTestID = `${testID}.post.${postId}`;
+
     return (
         <Post
+            testID={postTestID}
             postId={postId}
             highlight={highlightPostId === postId}
             isLastPost={lastPostIndex === index}
@@ -557,6 +563,7 @@ function PostComponent({postId, highlightPostId, lastPostIndex, index, ...postPr
 }
 
 PostComponent.propTypes = {
+    testID: PropTypes.string,
     postId: PropTypes.string.isRequired,
     highlightPostId: PropTypes.string,
     lastPostIndex: PropTypes.number,
