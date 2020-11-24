@@ -9,7 +9,11 @@ class LongPostScreen {
     }
 
     getPost = (postId, text) => {
-        return Post.getPost(this.testID.longPostScreenPrefix, postId, text);
+        const {postItem, postItemHeaderReply} = Post.getPost(this.testID.longPostScreenPrefix, postId, text);
+        return {
+            longPostItem: postItem,
+            longPostItemHeaderReply: postItemHeaderReply,
+        };
     }
 }
 

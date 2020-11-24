@@ -583,6 +583,7 @@ export default class EditProfile extends PureComponent {
                 <View style={style.errorContainer}>
                     <View style={style.errorWrapper}>
                         <ErrorText
+                            testID='edit_profile.error.text'
                             error={error}
                             textStyle={style.errorText}
                         />
@@ -592,7 +593,10 @@ export default class EditProfile extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.flex}>
+            <SafeAreaView
+                testID='edit_profile.screen'
+                style={style.flex}
+            >
                 <StatusBar/>
                 <KeyboardAwareScrollView
                     bounces={false}

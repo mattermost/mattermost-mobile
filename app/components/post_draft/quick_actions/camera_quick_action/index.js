@@ -22,6 +22,7 @@ import {changeOpacity} from '@utils/theme';
 
 export default class CameraQuickAction extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         disabled: PropTypes.bool,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number,
@@ -147,17 +148,17 @@ export default class CameraQuickAction extends PureComponent {
     };
 
     render() {
-        const {disabled, theme} = this.props;
-        const testID = disabled ?
-            'post_draft.camera_quick_action.disabled' :
-            'post_draft.camera_quick_action';
+        const {testID, disabled, theme} = this.props;
+        const actionTestID = disabled ?
+            `${testID}.disabled` :
+            testID;
         const color = disabled ?
             changeOpacity(theme.centerChannelColor, 0.16) :
             changeOpacity(theme.centerChannelColor, 0.64);
 
         return (
             <TouchableWithFeedback
-                testID={testID}
+                testID={actionTestID}
                 disabled={disabled}
                 onPress={this.handleButtonPress}
                 style={style.icon}

@@ -7,7 +7,7 @@ import {TouchableHighlight} from 'react-native';
 
 import Preferences from '@mm-redux/constants/preferences';
 
-import ChannelItem from './channel_item.js';
+import ChannelItem from './channel_item';
 
 jest.useFakeTimers();
 jest.mock('react-intl');
@@ -22,6 +22,7 @@ describe('ChannelItem', () => {
     };
 
     const baseProps = {
+        testID: 'main.sidebar.channels_list.list.channel_item',
         channelId: 'channel_id',
         channel,
         currentChannelId: 'current_channel_id',

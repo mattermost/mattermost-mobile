@@ -108,12 +108,14 @@ export default class Timezone extends PureComponent {
 
         return (
             <SafeAreaView
+                testID='settings.select_timezone.screen'
                 edges={['left', 'right']}
                 style={style.container}
             >
                 <StatusBar/>
                 <View style={style.header}>
                     <SearchBar
+                        testID='settings.select_timezone.search_bar'
                         ref={this.setSearchBarRef}
                         placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

@@ -41,6 +41,7 @@ export function filterEmojiSearchInput(searchText) {
 
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         customEmojisEnabled: PropTypes.bool.isRequired,
         customEmojiPage: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,

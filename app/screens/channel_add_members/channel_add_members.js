@@ -332,12 +332,14 @@ export default class ChannelAddMembers extends PureComponent {
         return (
             <KeyboardLayout>
                 <SafeAreaView
+                    testID='channel_add_members.screen'
                     edges={['bottom', 'left', 'right']}
                     style={style.container}
                 >
                     <StatusBar/>
                     <View style={style.searchBar}>
                         <SearchBar
+                            testID='channel_add_members.search_bar'
                             ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

@@ -32,6 +32,7 @@ export default class RecentItem extends PureComponent {
     render() {
         const {item, theme} = this.props;
         const style = getStyleFromTheme(theme);
+        const testID = `search.recent_item.${item.terms}`;
 
         return (
             <TouchableHighlight
@@ -40,6 +41,7 @@ export default class RecentItem extends PureComponent {
                 onPress={this.handlePress}
             >
                 <View
+                    testID={testID}
                     style={style.recentItemContainer}
                 >
                     <Text

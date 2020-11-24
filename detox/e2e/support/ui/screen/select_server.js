@@ -2,23 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {serverUrl} from '@support/test_config';
+import {timeouts} from '@support/utils';
 
 class SelectServerScreen {
     testID = {
         selectServerScreen: 'select_server.screen',
-        connectButton: 'connect.button',
-        errorText: 'error.text',
-        headerText: 'header.text',
-        serverUrlInput: 'server_url.input',
+        headerText: 'select_server.header.text',
+        serverUrlInput: 'select_server.server_url.input',
+        connectButton: 'select_server.connect.button',
+        errorText: 'select_server.error.text',
     }
 
     selectServerScreen = element(by.id(this.testID.selectServerScreen));
+    headerText = element(by.id(this.testID.headerText));
     serverUrlInput = element(by.id(this.testID.serverUrlInput));
     connectButton = element(by.id(this.testID.connectButton));
     errorText = element(by.id(this.testID.errorText));
 
     toBeVisible = async () => {
-        await expect(this.selectServerScreen).toBeVisible();
+        await waitFor(this.selectServerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         return this.selectServerScreen;
     }

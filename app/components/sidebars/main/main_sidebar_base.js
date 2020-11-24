@@ -230,6 +230,7 @@ export default class MainSidebarBase extends Component {
                 style={style.swiperContent}
             >
                 <ChannelsList
+                    testID='main.sidebar.channels_list'
                     ref={this.channelListRef}
                     onSelectChannel={this.selectChannel}
                     onJoinChannel={this.joinChannel}

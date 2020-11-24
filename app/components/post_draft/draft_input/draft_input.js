@@ -409,6 +409,9 @@ export default class DraftInput extends PureComponent {
             rootId,
             theme,
         } = this.props;
+        const postInputTestID = `${testID}.post.input`;
+        const quickActionsTestID = `${testID}.quick_actions`;
+        const sendActionTestID = `${testID}.send_action`;
         const style = getStyleSheet(theme);
 
         return (
@@ -435,6 +438,7 @@ export default class DraftInput extends PureComponent {
                         disableScrollViewPanResponder={true}
                     >
                         <PostInput
+                            testID={postInputTestID}
                             channelDisplayName={channelDisplayName}
                             channelId={channelId}
                             cursorPositionEvent={cursorPositionEvent}
@@ -455,6 +459,7 @@ export default class DraftInput extends PureComponent {
                         />
                         <View style={style.actionsContainer}>
                             <QuickActions
+                                testID={quickActionsTestID}
                                 ref={this.quickActions}
                                 fileCount={files.length}
                                 inputEventType={valueEvent}
@@ -462,6 +467,7 @@ export default class DraftInput extends PureComponent {
                                 theme={theme}
                             />
                             <SendAction
+                                testID={sendActionTestID}
                                 disabled={!this.state.canSubmit}
                                 handleSendMessage={this.handleSendMessage}
                                 theme={theme}

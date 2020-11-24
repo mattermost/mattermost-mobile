@@ -133,7 +133,10 @@ export default class Mfa extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.flex}>
+            <SafeAreaView
+                testID='mfa.screen'
+                style={style.flex}
+            >
                 <KeyboardAvoidingView
                     behavior='padding'
                     style={style.flex}
@@ -155,7 +158,10 @@ export default class Mfa extends PureComponent {
                                     defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
                                 />
                             </View>
-                            <ErrorText error={this.state.error}/>
+                            <ErrorText
+                                testID='mfa.error.text'
+                                error={this.state.error}
+                            />
                             <TextInputWithLocalizedPlaceholder
                                 ref={this.inputRef}
                                 value={this.state.token}

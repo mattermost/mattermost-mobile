@@ -317,8 +317,12 @@ export default class SelectorScreen extends PureComponent {
         return (
             <SafeAreaView style={style.container}>
                 <StatusBar/>
-                <View style={style.searchBar}>
+                <View
+                    testID='selector.screen'
+                    style={style.searchBar}
+                >
                     <SearchBar
+                        testID='selector.search_bar'
                         ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

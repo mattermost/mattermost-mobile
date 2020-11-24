@@ -21,6 +21,7 @@ import RecentMentionsScreen from './recent_mentions';
 import SearchResultPostScreen from './search_result_post';
 import SearchScreen from './search';
 import SelectServerScreen from './select_server';
+import ThreadScreen from './thread';
 
 export {
     AddReactionScreen,
@@ -43,4 +44,5 @@ export {
     SearchResultPostScreen,
     SearchScreen,
     SelectServerScreen,
+    ThreadScreen,
 };

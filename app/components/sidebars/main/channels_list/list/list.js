@@ -38,6 +38,7 @@ let UnreadIndicator = null;
 
 export default class List extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         canJoinPublicChannels: PropTypes.bool.isRequired,
         canCreatePrivateChannels: PropTypes.bool.isRequired,
         canCreatePublicChannels: PropTypes.bool.isRequired,
@@ -311,10 +312,12 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {favoriteChannelIds, unreadChannelIds} = this.props;
+        const {testID, favoriteChannelIds, unreadChannelIds} = this.props;
+        const channelItemTestID = `${testID}.channel_item`;
 
         return (
             <ChannelItem
+                testID={channelItemTestID}
                 channelId={item}
                 isUnread={unreadChannelIds.includes(item)}
                 isFavorite={favoriteChannelIds.includes(item)}
@@ -390,13 +393,14 @@ export default class List extends PureComponent {
     };
 
     render() {
-        const {styles, theme} = this.props;
+        const {testID, styles, theme} = this.props;
         const {sections, showIndicator} = this.state;
 
         const paddingBottom = this.listContentPadding();
 
         return (
             <View
+                testID={testID}
                 style={styles.container}
                 onLayout={this.onLayout}
             >

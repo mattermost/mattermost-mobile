@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PostDraft ReadOnly Should match snapshot 1`] = `
+exports[`PostDraft ReadOnly should match snapshot 1`] = `
 <RNCSafeAreaView
   edges={
     Array [

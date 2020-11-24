@@ -27,6 +27,7 @@ let FilteredList = null;
 
 export default class ChannelsList extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
@@ -92,15 +93,18 @@ export default class ChannelsList extends PureComponent {
 
     render() {
         const {intl} = this.context;
-        const {onShowTeams, theme} = this.props;
-
+        const {testID, onShowTeams, theme} = this.props;
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
+        const filteredListTestID = `${testID}.filtered_list`;
+        const listTestID = `${testID}.list`;
+        const searchBarTestID = `${testID}.search_bar`;
 
         let list;
         if (searching) {
             list = (
                 <FilteredList
+                    testID={filteredListTestID}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                     term={term}
@@ -109,6 +113,7 @@ export default class ChannelsList extends PureComponent {
         } else {
             list = (
                 <List
+                    testID={listTestID}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                 />
@@ -128,6 +133,7 @@ export default class ChannelsList extends PureComponent {
                 style={styles.searchContainer}
             >
                 <SearchBar
+                    testID={searchBarTestID}
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -154,9 +160,9 @@ export default class ChannelsList extends PureComponent {
 
         return (
             <SafeAreaView
+                testID={testID}
                 edges={['left']}
                 style={styles.container}
-                testID='channels.list'
             >
                 <View style={styles.headerContainer}>
                     {title}

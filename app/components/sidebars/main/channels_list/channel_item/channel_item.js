@@ -18,6 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelItem extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         channelId: PropTypes.string.isRequired,
         channel: PropTypes.object,
         currentChannelId: PropTypes.string.isRequired,
@@ -61,6 +62,7 @@ export default class ChannelItem extends PureComponent {
 
     render() {
         const {
+            testID,
             channelId,
             currentChannelId,
             displayName,
@@ -165,12 +167,17 @@ export default class ChannelItem extends PureComponent {
             />
         );
 
+        const displayNameTestID = `${testID}.display_name`;
+
         return (
             <TouchableHighlight
                 underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                 onPress={this.onPress}
             >
-                <View style={[style.container, mutedStyle]}>
+                <View
+                    testID={testID}
+                    style={[style.container, mutedStyle]}
+                >
                     {extraBorder}
                     <View style={[style.item, extraItemStyle]}>
                         {icon}
@@ -178,7 +185,7 @@ export default class ChannelItem extends PureComponent {
                             style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID='channel_item.display_name'
+                            testID={displayNameTestID}
                         >
                             {channelDisplayName}
                         </Text>

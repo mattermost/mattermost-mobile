@@ -192,6 +192,7 @@ export default class ChannelPostList extends PureComponent {
         } else {
             component = (
                 <PostList
+                    testID='channel.post_list'
                     postIds={postIds}
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
                     extraData={postIds.length !== 0}

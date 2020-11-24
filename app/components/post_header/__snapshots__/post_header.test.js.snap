@@ -515,6 +515,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             "justifyContent": "flex-end",
           }
         }
+        testID="post_header.reply"
       >
         <TouchableWithFeedbackIOS
           onPress={[MockFunction]}
@@ -667,6 +668,7 @@ exports[`PostHeader should match snapshot when post isBot and shouldRenderReplyB
             "justifyContent": "flex-end",
           }
         }
+        testID="post_header.reply"
       >
         <TouchableWithFeedbackIOS
           onPress={[MockFunction]}
@@ -866,6 +868,7 @@ exports[`PostHeader should match snapshot when post should display reply button 
             "justifyContent": "flex-end",
           }
         }
+        testID="post_header.reply"
       >
         <TouchableWithFeedbackIOS
           onPress={[MockFunction]}

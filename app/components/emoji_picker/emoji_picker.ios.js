@@ -18,8 +18,9 @@ import EmojiPickerBase, {getStyleSheetFromTheme, SCROLLVIEW_NATIVE_ID} from './e
 export default class EmojiPicker extends EmojiPickerBase {
     render() {
         const {formatMessage} = this.context.intl;
-        const {isLandscape, theme} = this.props;
+        const {testID, isLandscape, theme} = this.props;
         const {searchTerm} = this.state;
+        const searchBarTestID = `${testID}.search_bar`;
         const styles = getStyleSheetFromTheme(theme);
 
         const shorten = DeviceTypes.IS_IPHONE_WITH_INSETS && isLandscape ? 6 : 2;
@@ -46,8 +47,12 @@ export default class EmojiPicker extends EmojiPickerBase {
                     keyboardVerticalOffset={keyboardOffset}
                     style={styles.flex}
                 >
-                    <View style={styles.searchBar}>
+                    <View
+                        testID={testID}
+                        style={styles.searchBar}
+                    >
                         <SearchBar
+                            testID={searchBarTestID}
                             ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

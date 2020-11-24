@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`InputQuickAction should match snapshot 1`] = `
+<TouchableWithFeedbackIOS
+  disabled={false}
+  onPress={[Function]}
+  style={
+    Object {
+      "alignItems": "center",
+      "justifyContent": "center",
+      "padding": 10,
+    }
+  }
+  testID="post_draft.quick_actions.input_action"
+  type="opacity"
+>
+  <CompassIcon
+    color="rgba(61,60,64,0.64)"
+    name="at"
+    size={24}
+  />
+</TouchableWithFeedbackIOS>
+`;

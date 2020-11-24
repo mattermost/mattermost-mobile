@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelsList FilteredList should match snapshot 1`] = `
+<FilteredList
+  actions={
+    Object {
+      "getProfilesInTeam": [MockFunction],
+      "makeGroupMessageVisibleIfNecessary": [MockFunction],
+      "searchChannels": [MockFunction],
+      "searchProfiles": [MockFunction],
+    }
+  }
+  archivedChannels={Array []}
+  channels={Object {}}
+  currentChannel={Object {}}
+  currentTeam={Object {}}
+  currentUserId="current-user-id"
+  groupChannelMemberDetails={Object {}}
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
+      },
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
+    }
+  }
+  isLandscape={false}
+  onSelectChannel={[MockFunction]}
+  otherChannels={Array []}
+  pastDirectMessages={Array []}
+  profiles={Object {}}
+  restrictDms={false}
+  searchOrder={Array []}
+  statuses={Object {}}
+  styles={Object {}}
+  teamProfiles={Object {}}
+  teammateNameDisplay="teammate-name-display"
+  term="term"
+  testID="main.sidebar.channels_list.filtered_list"
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
+`;

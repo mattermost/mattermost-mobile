@@ -100,6 +100,7 @@ export default class ChannelIOS extends ChannelBase {
                 {indicators}
                 {renderDraftArea &&
                     <PostDraft
+                        testID='channel.post_draft'
                         accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                         ref={this.postDraft}

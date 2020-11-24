@@ -50,6 +50,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           searchIconSize={24}
           showArrow={false}
           showCancel={true}
+          testID="more_channels.search_bar"
           tintColorDelete="rgba(61,60,64,0.5)"
           tintColorSearch="rgba(61,60,64,0.5)"
           titleCancelColor="#3d3c40"

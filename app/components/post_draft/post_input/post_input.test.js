@@ -11,6 +11,7 @@ import PostInput from './post_input';
 
 describe('PostInput', () => {
     const baseProps = {
+        testID: 'post_draft.post.input',
         channelDisplayName: 'Test Channel',
         channelId: 'channel-id',
         cursorPositionEvent: '',

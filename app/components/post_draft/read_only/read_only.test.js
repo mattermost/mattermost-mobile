@@ -9,13 +9,14 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import ReadOnly from './index';
 
 describe('PostDraft ReadOnly', () => {
-    test('Should match snapshot', () => {
-        const wrapper = shallowWithIntl(
-            <ReadOnly
-                theme={Preferences.THEMES.default}
-            />,
-        );
+    const baseProps = {
+        testID: 'post_draft.read_only',
+        theme: Preferences.THEMES.default,
+    };
 
-        expect(wrapper).toMatchSnapshot();
+    test('should match snapshot', () => {
+        const wrapper = shallowWithIntl(<ReadOnly {...baseProps}/>);
+
+        expect(wrapper.getElement()).toMatchSnapshot();
     });
 });

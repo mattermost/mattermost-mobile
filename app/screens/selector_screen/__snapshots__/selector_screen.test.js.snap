@@ -17,6 +17,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
         "paddingLeft": 8,
       }
     }
+    testID="selector.screen"
   >
     <Search
       autoCapitalize="none"
@@ -50,6 +51,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
       searchIconSize={24}
       showArrow={false}
       showCancel={true}
+      testID="selector.search_bar"
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -118,6 +120,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
         "paddingLeft": 8,
       }
     }
+    testID="selector.screen"
   >
     <Search
       autoCapitalize="none"
@@ -151,6 +154,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
       searchIconSize={24}
       showArrow={false}
       showCancel={true}
+      testID="selector.search_bar"
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -219,6 +223,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
         "paddingLeft": 8,
       }
     }
+    testID="selector.screen"
   >
     <Search
       autoCapitalize="none"
@@ -252,6 +257,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
       searchIconSize={24}
       showArrow={false}
       showCancel={true}
+      testID="selector.search_bar"
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -327,6 +333,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
         "paddingLeft": 8,
       }
     }
+    testID="selector.screen"
   >
     <Search
       autoCapitalize="none"
@@ -360,6 +367,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
       searchIconSize={24}
       showArrow={false}
       showCancel={true}
+      testID="selector.search_bar"
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -428,6 +436,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
         "paddingLeft": 8,
       }
     }
+    testID="selector.screen"
   >
     <Search
       autoCapitalize="none"
@@ -461,6 +470,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
       searchIconSize={24}
       showArrow={false}
       showCancel={true}
+      testID="selector.search_bar"
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"
@@ -529,6 +539,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
         "paddingLeft": 8,
       }
     }
+    testID="selector.screen"
   >
     <Search
       autoCapitalize="none"
@@ -562,6 +573,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
       searchIconSize={24}
       showArrow={false}
       showCancel={true}
+      testID="selector.search_bar"
       tintColorDelete="rgba(61,60,64,0.5)"
       tintColorSearch="rgba(61,60,64,0.5)"
       titleCancelColor="#3d3c40"

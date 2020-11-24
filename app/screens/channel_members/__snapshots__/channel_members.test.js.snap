@@ -15,6 +15,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
         "flex": 1,
       }
     }
+    testID="channel_members.screen"
   >
     <Connect(StatusBar) />
     <View
@@ -57,6 +58,7 @@ exports[`ChannelMembers should match snapshot 1`] = `
         searchIconSize={24}
         showArrow={false}
         showCancel={true}
+        testID="channel_members.search_bar"
         tintColorDelete="rgba(61,60,64,0.5)"
         tintColorSearch="rgba(61,60,64,0.5)"
         titleCancelColor="#3d3c40"
