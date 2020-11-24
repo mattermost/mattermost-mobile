@@ -44,7 +44,6 @@ describe('SelectTeam', () => {
             status: RequestStatus.FAILURE,
         },
         componentId: 'component-id',
-        isLandscape: false,
         serverVersion: '5.18',
     };
 

@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const ITEM_HEIGHT = 45;
@@ -21,7 +20,6 @@ export default class SelectTimezoneRow extends PureComponent {
         timezone: PropTypes.string.isRequired,
         selectedTimezone: PropTypes.string,
         onPress: PropTypes.func.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     timezoneSelected = () => {
@@ -30,7 +28,7 @@ export default class SelectTimezoneRow extends PureComponent {
     };
 
     render() {
-        const {theme, timezone, selectedTimezone, isLandscape} = this.props;
+        const {theme, timezone, selectedTimezone} = this.props;
         const styles = getStyleSheet(theme);
 
         const selected = timezone === selectedTimezone && (
@@ -43,7 +41,7 @@ export default class SelectTimezoneRow extends PureComponent {
 
         return (
             <TouchableOpacity
-                style={[styles.itemContainer, padding(isLandscape)]}
+                style={styles.itemContainer}
                 key={timezone}
                 onPress={this.timezoneSelected}
             >

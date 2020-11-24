@@ -30,11 +30,11 @@ export default class ReactionList extends PureComponent {
         actions: PropTypes.shape({
             getMissingProfilesByIds: PropTypes.func.isRequired,
         }).isRequired,
+        isLandscape: PropTypes.bool,
         reactions: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         teammateNameDisplay: PropTypes.string,
         userProfiles: PropTypes.array,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -165,7 +165,7 @@ export default class ReactionList extends PureComponent {
     };
 
     renderHeader = (forwardedRef) => {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const {selected, sortedReactionsForHeader} = this.state;
 
         return (
@@ -175,13 +175,12 @@ export default class ReactionList extends PureComponent {
                 reactions={sortedReactionsForHeader}
                 theme={theme}
                 forwardedRef={forwardedRef}
-                isLandscape={isLandscape}
             />
         );
     };
 
     render() {
-        const {theme} = this.props;
+        const {isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -192,6 +191,7 @@ export default class ReactionList extends PureComponent {
                     initialPosition={0.55}
                     header={this.renderHeader}
                     headerHeight={37.5}
+                    key={`landscape-${isLandscape}`}
                     theme={theme}
                 >
                     {this.renderReactionRows()}

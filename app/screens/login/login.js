@@ -17,12 +17,12 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import StatusBar from '@components/status_bar';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -43,7 +43,6 @@ export default class Login extends PureComponent {
         }).isRequired,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -369,7 +368,7 @@ export default class Login extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <SafeAreaView style={style.container}>
                 <StatusBar/>
                 <TouchableWithoutFeedback
                     onPress={this.blur}
@@ -378,7 +377,7 @@ export default class Login extends PureComponent {
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}
-                        contentContainerStyle={[style.innerContainer, padding(this.props.isLandscape)]}
+                        contentContainerStyle={style.innerContainer}
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >
@@ -433,7 +432,7 @@ export default class Login extends PureComponent {
                         {forgotPassword}
                     </KeyboardAwareScrollView>
                 </TouchableWithoutFeedback>
-            </View>
+            </SafeAreaView>
         );
     }
 }

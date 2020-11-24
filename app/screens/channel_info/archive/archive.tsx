@@ -23,7 +23,6 @@ interface ArchiveProps {
     displayName: string;
     getChannel: (channelId: string) => Promise<ActionResult>;
     handleSelectChannel: (channelId: string) => Promise<ActionResult>;
-    isLandscape: boolean;
     isPublic: boolean;
     unarchiveChannel: (channelId: string) => Promise<ActionResult>;
     selectPenultimateChannel: (channelId: string) => Promise<ActionResult>;
@@ -130,7 +129,7 @@ export default class Archive extends PureComponent<ArchiveProps> {
     });
 
     render() {
-        const {canArchive, canUnarchive, isLandscape, theme} = this.props;
+        const {canArchive, canUnarchive, theme} = this.props;
 
         if (!canArchive && !canUnarchive) {
             return null;
@@ -145,7 +144,6 @@ export default class Archive extends PureComponent<ArchiveProps> {
                     icon='archive-arrow-up-outline'
                     textId={t('mobile.routes.channelInfo.unarchive_channel')}
                     theme={theme}
-                    isLandscape={isLandscape}
                     rightArrow={false}
                 />
             );
@@ -159,7 +157,6 @@ export default class Archive extends PureComponent<ArchiveProps> {
                     textId={t('mobile.routes.channelInfo.delete_channel')}
                     textColor='#CA3B27'
                     theme={theme}
-                    isLandscape={isLandscape}
                     rightArrow={false}
                 />
             );
