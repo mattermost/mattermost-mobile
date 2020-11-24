@@ -187,12 +187,24 @@ export default class EmojiPicker extends PureComponent {
 
         clearTimeout(this.searchTermTimeout);
         const timeout = searchTerm ? 100 : 0;
-        this.searchTermTimeout = setTimeout(() => {
+        if (this.searchTermTimeout === undefined) {
             const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
                 filteredEmojis,
             });
-        }, timeout);
+            this.searchTermTimeout = setTimeout(() => {
+                this.setState({
+                    filteredEmojis,
+                });
+            }, timeout);
+        } else {
+            this.searchTermTimeout = setTimeout(() => {
+                const filteredEmojis = this.searchEmojis(searchTerm);
+                this.setState({
+                    filteredEmojis,
+                });
+            }, timeout);
+        }
     };
 
     cancelSearch = () => {
