@@ -10,5 +10,9 @@ export default class Global extends Model {
     static table = MM_TABLES.DEFAULT.GLOBAL
 
     @field('name') name!: string
+
+    // TODO : add TS definitions to sanitizer function signature.
+
+    // TODO : atm, the return type for 'value' is string[].  However, this return type can change to string/number/etc.  A broader definition will need to be applied and this return type updated accordingly.
     @json('value', (rawJson) => rawJson) value!: string[]
 }

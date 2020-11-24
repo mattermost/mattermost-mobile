@@ -4,13 +4,11 @@
 import {Model} from '@nozbe/watermelondb';
 import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
-import date from '@nozbe/watermelondb/decorators/date';
 
 export default class App extends Model {
     static table = MM_TABLES.DEFAULT.APP
 
-    @field('app_id') appId!: string
     @field('build_number') buildNumber!: string
-    @date('created_at') createdAt!: Date
-    @field('version_number') unreadCount!: string
+    @field('created_at') createdAt!: number
+    @field('version_number') versionNumber!: string
 }
