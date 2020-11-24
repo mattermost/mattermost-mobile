@@ -35,7 +35,6 @@ export default class AtMention extends PureComponent {
         teamMembers: PropTypes.array,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
-        isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
         useChannelMentions: PropTypes.bool.isRequired,
         groups: PropTypes.array,
@@ -213,7 +212,6 @@ export default class AtMention extends PureComponent {
                 id={section.id}
                 defaultMessage={section.defaultMessage}
                 theme={this.props.theme}
-                isLandscape={this.props.isLandscape}
                 isFirstSection={isFirstSection}
             />
         );

@@ -21,7 +21,6 @@ import {debounce} from '@mm-redux/actions/helpers';
 
 import CompassIcon from '@components/compass_icon';
 import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
-import {paddingLeft} from '@components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes, ListTypes, NavigationTypes} from '@constants';
 import {SidebarSectionTypes} from '@constants/view';
 
@@ -49,7 +48,6 @@ export default class List extends PureComponent {
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -329,24 +327,22 @@ export default class List extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {styles, isLandscape} = this.props;
+        const {styles} = this.props;
         const {intl} = this.context;
         const {action, defaultMessage, id} = section;
 
         const anchor = (id === 'sidebar.types.recent' || id === 'mobile.channel_list.channels');
 
         return (
-            <React.Fragment>
-                <View style={[styles.titleContainer, paddingLeft(isLandscape)]}>
-                    <Text style={styles.title}>
-                        {intl.formatMessage({id, defaultMessage}).toUpperCase()}
-                    </Text>
-                    <View style={styles.separatorContainer}>
-                        <View style={styles.separator}/>
-                    </View>
-                    {action && this.renderSectionAction(styles, action, anchor, id)}
+            <View style={styles.titleContainer}>
+                <Text style={styles.title}>
+                    {intl.formatMessage({id, defaultMessage}).toUpperCase()}
+                </Text>
+                <View style={styles.separatorContainer}>
+                    <View style={styles.separator}/>
                 </View>
-            </React.Fragment>
+                {action && this.renderSectionAction(styles, action, anchor, id)}
+            </View>
         );
     };
 

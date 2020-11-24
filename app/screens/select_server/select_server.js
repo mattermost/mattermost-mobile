@@ -12,7 +12,6 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
@@ -21,6 +20,7 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import RNFetchBlob from 'rn-fetch-blob';
 import merge from 'deepmerge';
 import urlParse from 'url-parse';

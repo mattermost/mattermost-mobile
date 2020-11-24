@@ -21,7 +21,6 @@ describe('ChannelInfo -> Favorite', () => {
         channelId: '123',
         favoriteChannel: jest.fn(),
         isFavorite: false,
-        isLandscape: false,
         unfavoriteChannel: jest.fn(),
         theme: Preferences.THEMES.default,
     };

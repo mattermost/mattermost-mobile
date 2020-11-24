@@ -19,7 +19,6 @@ interface ConvertPrivateProps {
     channelId: string;
     convertChannelToPrivate: (channelId: string) => Promise<ActionResult>;
     displayName: string;
-    isLandscape: boolean;
     theme: Theme;
 }
 
@@ -80,7 +79,7 @@ export default class ConvertPrivate extends PureComponent<ConvertPrivateProps> {
     });
 
     render() {
-        const {testID, canConvert, isLandscape, theme} = this.props;
+        const {canConvert, testID, theme} = this.props;
 
         if (!canConvert) {
             return null;
@@ -94,7 +93,6 @@ export default class ConvertPrivate extends PureComponent<ConvertPrivateProps> {
                     action={this.handleConvertToPrivate}
                     defaultMessage='Convert to Private Channel'
                     icon='lock'
-                    isLandscape={isLandscape}
                     rightArrow={false}
                     theme={theme}
                     textId={t('mobile.channel_info.convert')}

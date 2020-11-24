@@ -1,7 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Settings SelectTimezone should match snapshot 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    Array [
+      "left",
+      "right",
+    ]
+  }
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -21,47 +27,43 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
       }
     }
   >
-    <View
-      style={null}
-    >
-      <Search
-        autoCapitalize="none"
-        backArrowSize={24}
-        backgroundColor="transparent"
-        blurOnSubmit={false}
-        cancelTitle="Cancel"
-        containerHeight={40}
-        deleteIconSize={20}
-        editable={true}
-        inputHeight={33}
-        inputStyle={
-          Object {
-            "backgroundColor": "rgba(255,255,255,0.2)",
-            "color": "#ffffff",
-            "fontSize": 15,
-          }
+    <Search
+      autoCapitalize="none"
+      backArrowSize={24}
+      backgroundColor="transparent"
+      blurOnSubmit={false}
+      cancelTitle="Cancel"
+      containerHeight={40}
+      deleteIconSize={20}
+      editable={true}
+      inputHeight={33}
+      inputStyle={
+        Object {
+          "backgroundColor": "rgba(255,255,255,0.2)",
+          "color": "#ffffff",
+          "fontSize": 15,
         }
-        keyboardAppearance="light"
-        keyboardShouldPersist={false}
-        keyboardType="default"
-        onBlur={[Function]}
-        onChangeText={[Function]}
-        onSelectionChange={[Function]}
-        placeholder="Search"
-        placeholderTextColor="rgba(255,255,255,0.5)"
-        returnKeyType="search"
-        searchBarRightMargin={0}
-        searchIconSize={24}
-        selectionColor="rgba(255,255,255,0.5)"
-        showArrow={false}
-        showCancel={true}
-        testID="settings.select_timezone.search_bar"
-        tintColorDelete="rgba(255,255,255,0.5)"
-        tintColorSearch="rgba(255,255,255,0.5)"
-        titleCancelColor="#ffffff"
-        value=""
-      />
-    </View>
+      }
+      keyboardAppearance="light"
+      keyboardShouldPersist={false}
+      keyboardType="default"
+      onBlur={[Function]}
+      onChangeText={[Function]}
+      onSelectionChange={[Function]}
+      placeholder="Search"
+      placeholderTextColor="rgba(255,255,255,0.5)"
+      returnKeyType="search"
+      searchBarRightMargin={0}
+      searchIconSize={24}
+      selectionColor="rgba(255,255,255,0.5)"
+      showArrow={false}
+      showCancel={true}
+      testID="settings.select_timezone.search_bar"
+      tintColorDelete="rgba(255,255,255,0.5)"
+      tintColorSearch="rgba(255,255,255,0.5)"
+      titleCancelColor="#ffffff"
+      value=""
+    />
   </View>
   <FlatList
     data={Array []}
@@ -88,5 +90,5 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
     }
     windowSize={21}
   />
-</View>
+</RNCSafeAreaView>
 `;

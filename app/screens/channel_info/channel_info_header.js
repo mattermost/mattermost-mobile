@@ -18,7 +18,6 @@ import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
 import FormattedText from 'app/components/formatted_text';
 import Markdown from 'app/components/markdown';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import mattermostManaged from 'app/mattermost_managed';
 import BottomSheet from 'app/utils/bottom_sheet';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown';
@@ -44,7 +43,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
         hasGuests: PropTypes.bool.isRequired,
         isGroupConstrained: PropTypes.bool,
         timeZone: PropTypes.string,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -52,7 +50,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
     };
 
     renderHasGuestText = (style) => {
-        const {type, hasGuests, isLandscape, isTeammateGuest} = this.props;
+        const {type, hasGuests, isTeammateGuest} = this.props;
         if (!hasGuests) {
             return null;
         }
@@ -74,7 +72,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             defaultMessage = 'This channel has guests';
         }
         return (
-            <View style={[style.section, padding(isLandscape, -15)]}>
+            <View style={style.section}>
                 <View style={style.row}>
                     <FormattedText
                         style={style.header}
@@ -143,7 +141,6 @@ export default class ChannelInfoHeader extends React.PureComponent {
             isBot,
             isGroupConstrained,
             timeZone,
-            isLandscape,
         } = this.props;
 
         const style = getStyleSheet(theme);
@@ -155,7 +152,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
 
         return (
             <View style={style.container}>
-                <View style={[style.channelNameContainer, style.row, padding(isLandscape)]}>
+                <View style={[style.channelNameContainer, style.row]}>
                     <ChannelIcon
                         isInfo={true}
                         membersCount={memberCount}
@@ -176,7 +173,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                 </View>
                 {this.renderHasGuestText(style)}
                 {purpose.length > 0 &&
-                    <View style={[style.section, padding(isLandscape, -15)]}>
+                    <View style={style.section}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                             onLongPress={this.handlePurposeLongPress}
@@ -195,7 +192,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </View>
                 }
                 {header.length > 0 &&
-                    <View style={[style.section, padding(isLandscape, -15)]}>
+                    <View style={style.section}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                             onLongPress={this.handleHeaderLongPress}
@@ -221,7 +218,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </View>
                 }
                 {isGroupConstrained &&
-                    <Text style={[style.createdBy, style.row, padding(isLandscape)]}>
+                    <Text style={[style.createdBy, style.row]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.groupManaged'
                             defaultMessage='Members are managed by linked groups'
@@ -229,7 +226,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </Text>
                 }
                 {creator &&
-                    <Text style={[style.createdBy, style.row, padding(isLandscape)]}>
+                    <Text style={[style.createdBy, style.row]}>
                         <FormattedText
                             id='mobile.routes.channelInfo.createdBy'
                             defaultMessage='Created by {creator} on '

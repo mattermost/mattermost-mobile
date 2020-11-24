@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import SafeAreaView from './safe_area_view';
+import SafeAreaView from './safe_area';
 
 function mapStateToProps(state) {
     return {

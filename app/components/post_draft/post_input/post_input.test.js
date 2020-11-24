@@ -18,7 +18,6 @@ describe('PostInput', () => {
         handleCommentDraftChanged: jest.fn(),
         handlePostDraftChanged: jest.fn(),
         inputEventType: '',
-        isLandscape: false,
         maxMessageLength: 4000,
         onPasteFiles: jest.fn(),
         onSend: jest.fn(),

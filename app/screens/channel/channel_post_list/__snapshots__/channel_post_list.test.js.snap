@@ -37,7 +37,6 @@ exports[`ChannelPostList should match snapshot 1`] = `
     showMoreMessagesButton={true}
     testID="channel.post_list"
   />
-  <Connect(AnnouncementBanner) />
   <Connect(RetryBarIndicator) />
 </ForwardRef(AnimatedComponentWrapper)>
 `;

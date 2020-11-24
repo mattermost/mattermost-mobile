@@ -26,7 +26,6 @@ describe('Login', () => {
             scheduleExpiredNotification: jest.fn(),
             login: jest.fn(),
         },
-        isLandscape: false,
     };
 
     test('should show "I forgot my password" with only email login enabled', () => {

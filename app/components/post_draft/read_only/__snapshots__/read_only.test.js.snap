@@ -1,7 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PostDraft ReadOnly should match snapshot 1`] = `
-<ForwardRef(SafeAreaView)
+exports[`PostDraft ReadOnly Should match snapshot 1`] = `
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+    ]
+  }
   style={
     Object {
       "backgroundColor": "rgba(61,60,64,0.04)",
@@ -46,5 +51,59 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
       }
     />
   </View>
-</ForwardRef(SafeAreaView)>
+</RNCSafeAreaView>
+`;
+
+exports[`PostDraft ReadOnly should match snapshot 1`] = `
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+    ]
+  }
+  style={
+    Object {
+      "backgroundColor": "rgba(61,60,64,0.04)",
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopWidth": 1,
+        "flexDirection": "row",
+        "height": 50,
+        "paddingHorizontal": 12,
+      }
+    }
+    testID="post_draft.read_only"
+  >
+    <CompassIcon
+      color="#3d3c40"
+      name="glasses"
+      style={
+        Object {
+          "fontSize": 20,
+          "lineHeight": 22,
+          "opacity": 0.56,
+        }
+      }
+    />
+    <FormattedText
+      defaultMessage="This channel is read-only."
+      id="mobile.create_post.read_only"
+      style={
+        Object {
+          "color": "#3d3c40",
+          "fontSize": 15,
+          "lineHeight": 20,
+          "marginLeft": 9,
+          "opacity": 0.56,
+        }
+      }
+    />
+  </View>
+</RNCSafeAreaView>
 `;

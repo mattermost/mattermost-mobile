@@ -8,7 +8,6 @@ import {login} from '@actions/views/user';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-import {isLandscape} from '@selectors/device';
 
 import Login from './login.js';
 
@@ -20,7 +19,6 @@ function mapStateToProps(state) {
         config,
         license,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

@@ -16,7 +16,6 @@ describe('NotificationPreference', () => {
         notifyProps: {
             push: 'default',
         },
-        isLandscape: false,
         theme: Preferences.THEMES.default,
     };
 

@@ -2,7 +2,7 @@
 
 exports[`thread should match snapshot, has root post 1`] = `
 <React.Fragment>
-  <Connect(SafeAreaIos)
+  <Connect(SafeArea)
     excludeHeader={true}
     forceInsets={true}
   >
@@ -51,7 +51,7 @@ exports[`thread should match snapshot, has root post 1`] = `
         />
       </ForwardRef(AnimatedComponentWrapper)>
     </React.Fragment>
-  </Connect(SafeAreaIos)>
+  </Connect(SafeArea)>
   <Connect(PostDraft)
     accessoriesContainerID="threadAccessoriesContainer"
     channelId="channel_id"
@@ -80,7 +80,7 @@ exports[`thread should match snapshot, has root post 1`] = `
 
 exports[`thread should match snapshot, no root post, loading 1`] = `
 <React.Fragment>
-  <Connect(SafeAreaIos)
+  <Connect(SafeArea)
     excludeHeader={true}
     forceInsets={true}
   >
@@ -98,7 +98,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
       size="large"
       style={Object {}}
     />
-  </Connect(SafeAreaIos)>
+  </Connect(SafeArea)>
   <View
     nativeID="threadAccessoriesContainer"
   >
@@ -164,7 +164,7 @@ exports[`thread should match snapshot, render footer 2`] = `
 
 exports[`thread should match snapshot, render footer 3`] = `
 <React.Fragment>
-  <Connect(SafeAreaIos)
+  <Connect(SafeArea)
     excludeHeader={true}
     forceInsets={true}
   >
@@ -182,7 +182,7 @@ exports[`thread should match snapshot, render footer 3`] = `
       size="large"
       style={Object {}}
     />
-  </Connect(SafeAreaIos)>
+  </Connect(SafeArea)>
   <View
     nativeID="threadAccessoriesContainer"
   >

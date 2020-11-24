@@ -23,7 +23,6 @@ function makeProps(pushNotificationLevel) {
             push: pushNotificationLevel,
         },
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 }
 

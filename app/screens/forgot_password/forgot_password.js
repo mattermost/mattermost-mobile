@@ -13,6 +13,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
@@ -148,7 +149,7 @@ export default class ForgotPassword extends PureComponent {
             );
         }
         return (
-            <View
+            <SafeAreaView
                 testID='forgot_password.screen'
                 style={style.container}
             >
@@ -166,7 +167,7 @@ export default class ForgotPassword extends PureComponent {
                         {passwordFormView}
                     </View>
                 </TouchableWithoutFeedback>
-            </View>
+            </SafeAreaView>
         );
     }
 }

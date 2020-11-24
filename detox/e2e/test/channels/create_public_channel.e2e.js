@@ -62,7 +62,12 @@ describe('Channels', () => {
         await purposeInput.typeText('This sentence has');
         await purposeInput.tapReturnKey();
         await purposeInput.typeText('multiple lines');
-        await createChannelScreen.scroll(200, 'down');
+
+        // # Scroll down if Android
+        if (isAndroid()) {
+            await createChannelScreen.scroll(200, 'down');
+        }
+
         await expect(headerInput).toBeVisible();
         const expectedChannelHeader = 'I 🌮 love 🌮 tacos 🌮';
         await headerInput.replaceText(expectedChannelHeader);

@@ -60,7 +60,6 @@ describe('SelectorScreen', () => {
         data: [{text: 'text', value: 'value'}],
         dataSource: null,
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 
     beforeAll(() => {

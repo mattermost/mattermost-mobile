@@ -20,7 +20,6 @@ describe('components/widgets/settings/TextSetting', () => {
                 optional={false}
                 theme={theme}
                 onChange={onChange}
-                isLandscape={false}
             />,
         );
 

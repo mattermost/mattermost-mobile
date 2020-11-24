@@ -8,10 +8,10 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import SearchBar from '@components/search_bar';
-import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {ViewTypes} from '@constants';
 import {
     changeOpacity,
@@ -33,7 +33,6 @@ export default class ChannelsList extends PureComponent {
         onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         onShowTeams: PropTypes.func,
     };
 
@@ -94,17 +93,12 @@ export default class ChannelsList extends PureComponent {
 
     render() {
         const {intl} = this.context;
-        const {
-            testID,
-            onShowTeams,
-            theme,
-            isLandscape,
-        } = this.props;
+        const {testID, onShowTeams, theme} = this.props;
+        const {searching, term} = this.state;
+        const styles = getStyleSheet(theme);
         const filteredListTestID = `${testID}.filtered_list`;
         const listTestID = `${testID}.list`;
         const searchBarTestID = `${testID}.search_bar`;
-        const {searching, term} = this.state;
-        const styles = getStyleSheet(theme);
 
         let list;
         if (searching) {
@@ -136,7 +130,7 @@ export default class ChannelsList extends PureComponent {
 
         const title = (
             <View
-                style={[styles.searchContainer, padding(isLandscape)]}
+                style={styles.searchContainer}
             >
                 <SearchBar
                     testID={searchBarTestID}
@@ -165,15 +159,16 @@ export default class ChannelsList extends PureComponent {
         );
 
         return (
-            <View
+            <SafeAreaView
                 testID={testID}
+                edges={['left']}
                 style={styles.container}
             >
                 <View style={styles.headerContainer}>
                     {title}
                 </View>
                 {list}
-            </View>
+            </SafeAreaView>
         );
     }
 }

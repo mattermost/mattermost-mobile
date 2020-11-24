@@ -13,13 +13,12 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
+import ChannelItem from '@components/sidebars/main/channels_list/channel_item';
+import {ListTypes} from '@constants';
 import {General} from '@mm-redux/constants';
 import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
-import {t} from 'app/utils/i18n';
-import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
-import {ListTypes} from 'app/constants';
-import {paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
+import {t} from '@utils/i18n';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -51,7 +50,6 @@ class FilteredList extends Component {
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -359,23 +357,21 @@ class FilteredList extends Component {
     };
 
     renderSectionHeader = ({section}) => {
-        const {intl, isLandscape, styles} = this.props;
+        const {intl, styles} = this.props;
         const {
             defaultMessage,
             id,
         } = section;
 
         return (
-            <React.Fragment>
-                <View style={[styles.titleContainer, paddingLeft(isLandscape)]}>
-                    <Text style={styles.title}>
-                        {intl.formatMessage({id, defaultMessage}).toUpperCase()}
-                    </Text>
-                    <View style={styles.separatorContainer}>
-                        <View style={styles.separator}/>
-                    </View>
+            <View style={styles.titleContainer}>
+                <Text style={styles.title}>
+                    {intl.formatMessage({id, defaultMessage}).toUpperCase()}
+                </Text>
+                <View style={styles.separatorContainer}>
+                    <View style={styles.separator}/>
                 </View>
-            </React.Fragment>
+            </View>
         );
     };
 

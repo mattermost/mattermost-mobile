@@ -5,10 +5,8 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
-
-import {getAllowedThemes} from 'app/selectors/theme';
-import {isThemeSwitchingEnabled} from 'app/utils/theme';
-import {isLandscape} from 'app/selectors/device';
+import {getAllowedThemes} from '@selectors/theme';
+import {isThemeSwitchingEnabled} from '@utils/theme';
 import DisplaySettings from './display_settings';
 
 function mapStateToProps(state) {
@@ -19,7 +17,6 @@ function mapStateToProps(state) {
         enableTheme,
         enableTimezone,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

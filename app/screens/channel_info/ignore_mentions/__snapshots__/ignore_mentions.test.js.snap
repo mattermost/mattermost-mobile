@@ -6,7 +6,6 @@ exports[`ChannelInfo -> IgnoreMentions should match snapshot for Ignore Mentions
   defaultMessage="Ignore @channel, @here, @all"
   detail={true}
   icon="at"
-  isLandscape={false}
   rightArrow={true}
   shouldRender={true}
   textId="channel_notifications.ignoreChannelMentions.settings"
@@ -49,7 +48,6 @@ exports[`ChannelInfo -> IgnoreMentions should match snapshot for Not Ignore Ment
   defaultMessage="Ignore @channel, @here, @all"
   detail={false}
   icon="at"
-  isLandscape={false}
   rightArrow={true}
   shouldRender={true}
   textId="channel_notifications.ignoreChannelMentions.settings"

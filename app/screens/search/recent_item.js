@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {Text, TouchableHighlight, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export const RECENT_LABEL_HEIGHT = 42;
@@ -17,11 +16,6 @@ export default class RecentItem extends PureComponent {
         removeSearchTerms: PropTypes.func.isRequired,
         setRecentValue: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
-    };
-
-    static defaultProps = {
-        isLandscape: false,
     };
 
     handlePress = () => {
@@ -36,7 +30,7 @@ export default class RecentItem extends PureComponent {
     };
 
     render() {
-        const {item, theme, isLandscape} = this.props;
+        const {item, theme} = this.props;
         const style = getStyleFromTheme(theme);
         const testID = `search.recent_item.${item.terms}`;
 
@@ -48,7 +42,7 @@ export default class RecentItem extends PureComponent {
             >
                 <View
                     testID={testID}
-                    style={[style.recentItemContainer, padding(isLandscape)]}
+                    style={style.recentItemContainer}
                 >
                     <Text
                         style={style.recentItemLabel}
