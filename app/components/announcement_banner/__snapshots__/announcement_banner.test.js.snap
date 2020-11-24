@@ -1,121 +1,133 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AnnouncementBanner should match snapshot 1`] = `
-<ForwardRef(AnimatedComponentWrapper)
-  style={
-    Array [
-      Object {
-        "overflow": "hidden",
-        "paddingHorizontal": 10,
-        "position": "absolute",
-        "top": 0,
-        "width": "100%",
+<Unknown
+  bannerColor="#ddd"
+  bannerDismissed={false}
+  bannerEnabled={true}
+  bannerText="Banner Text"
+  bannerTextColor="#fff"
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-      Object {
-        "backgroundColor": "#ddd",
-        "height": 0,
-      },
-    ]
-  }
->
-  <ForwardRef
-    onPress={[Function]}
-    style={
-      Array [
-        Object {
-          "alignItems": "center",
-          "flex": 1,
-          "flexDirection": "row",
-        },
-        null,
-      ]
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
     }
-  >
-    <Text
-      ellipsizeMode="tail"
-      numberOfLines={1}
-      style={
-        Array [
-          Object {
-            "flex": 1,
-            "fontSize": 14,
-            "marginRight": 5,
-          },
-          Object {
-            "color": "#fff",
-          },
-        ]
-      }
-    >
-      <RemoveMarkdown
-        value="Banner Text"
-      />
-    </Text>
-    <CompassIcon
-      color="#fff"
-      name="info-outline"
-      size={16}
-    />
-  </ForwardRef>
-</ForwardRef(AnimatedComponentWrapper)>
+  }
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;
 
 exports[`AnnouncementBanner should match snapshot 2`] = `
-<ForwardRef(AnimatedComponentWrapper)
-  style={
-    Array [
-      Object {
-        "overflow": "hidden",
-        "paddingHorizontal": 10,
-        "position": "absolute",
-        "top": 0,
-        "width": "100%",
+<Unknown
+  bannerColor="#ddd"
+  bannerDismissed={false}
+  bannerEnabled={false}
+  bannerText="Banner Text"
+  bannerTextColor="#fff"
+  intl={
+    Object {
+      "defaultFormats": Object {},
+      "defaultLocale": "en",
+      "formatDate": [Function],
+      "formatHTMLMessage": [Function],
+      "formatMessage": [Function],
+      "formatNumber": [Function],
+      "formatPlural": [Function],
+      "formatRelative": [Function],
+      "formatTime": [Function],
+      "formats": Object {},
+      "formatters": Object {
+        "getDateTimeFormat": [Function],
+        "getMessageFormat": [Function],
+        "getNumberFormat": [Function],
+        "getPluralFormat": [Function],
+        "getRelativeFormat": [Function],
       },
-      Object {
-        "backgroundColor": "#ddd",
-        "height": 0,
-      },
-    ]
-  }
->
-  <ForwardRef
-    onPress={[Function]}
-    style={
-      Array [
-        Object {
-          "alignItems": "center",
-          "flex": 1,
-          "flexDirection": "row",
-        },
-        null,
-      ]
+      "locale": "en",
+      "messages": Object {},
+      "now": [Function],
+      "onError": [Function],
+      "textComponent": "span",
+      "timeZone": null,
     }
-  >
-    <Text
-      ellipsizeMode="tail"
-      numberOfLines={1}
-      style={
-        Array [
-          Object {
-            "flex": 1,
-            "fontSize": 14,
-            "marginRight": 5,
-          },
-          Object {
-            "color": "#fff",
-          },
-        ]
-      }
-    >
-      <RemoveMarkdown
-        value="Banner Text"
-      />
-    </Text>
-    <CompassIcon
-      color="#fff"
-      name="info-outline"
-      size={16}
-    />
-  </ForwardRef>
-</ForwardRef(AnimatedComponentWrapper)>
+  }
+  theme={
+    Object {
+      "awayIndicator": "#ffbc42",
+      "buttonBg": "#166de0",
+      "buttonColor": "#ffffff",
+      "centerChannelBg": "#ffffff",
+      "centerChannelColor": "#3d3c40",
+      "codeTheme": "github",
+      "dndIndicator": "#f74343",
+      "errorTextColor": "#fd5960",
+      "linkColor": "#2389d7",
+      "mentionBg": "#ffffff",
+      "mentionBj": "#ffffff",
+      "mentionColor": "#145dbf",
+      "mentionHighlightBg": "#ffe577",
+      "mentionHighlightLink": "#166de0",
+      "newMessageSeparator": "#ff8800",
+      "onlineIndicator": "#06d6a0",
+      "sidebarBg": "#145dbf",
+      "sidebarHeaderBg": "#1153ab",
+      "sidebarHeaderTextColor": "#ffffff",
+      "sidebarText": "#ffffff",
+      "sidebarTextActiveBorder": "#579eff",
+      "sidebarTextActiveColor": "#ffffff",
+      "sidebarTextHoverBg": "#4578bf",
+      "sidebarUnreadText": "#ffffff",
+      "type": "Mattermost",
+    }
+  }
+/>
 `;

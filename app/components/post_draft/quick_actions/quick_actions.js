@@ -15,6 +15,7 @@ import InputAction from './input_quick_action';
 
 export default class QuickActions extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         canUploadFiles: PropTypes.bool,
         fileCount: PropTypes.number,
         inputEventType: PropTypes.string.isRequired,
@@ -64,10 +65,16 @@ export default class QuickActions extends PureComponent {
 
     render() {
         const {
+            testID,
             canUploadFiles,
             fileCount,
             theme,
         } = this.props;
+        const atInputActionTestID = `${testID}.at_input_action`;
+        const slashInputActionTestID = `${testID}.slash_input_action`;
+        const fileActionTestID = `${testID}.file_action`;
+        const imageActionTestID = `${testID}.image_action`;
+        const cameraActionTestID = `${testID}.camera_action`;
         const uploadProps = {
             disabled: !canUploadFiles,
             fileCount,
@@ -77,8 +84,12 @@ export default class QuickActions extends PureComponent {
         };
 
         return (
-            <View style={style.quickActionsContainer}>
+            <View
+                testID={testID}
+                style={style.quickActionsContainer}
+            >
                 <InputAction
+                    testID={atInputActionTestID}
                     disabled={this.state.atDisabled}
                     inputType='at'
                     onTextChange={this.handleOnTextChange}
@@ -86,14 +97,24 @@ export default class QuickActions extends PureComponent {
                     value={this.state.inputValue}
                 />
                 <InputAction
+                    testID={slashInputActionTestID}
                     disabled={this.state.slashDisabled}
                     inputType='slash'
                     onTextChange={this.handleOnTextChange}
                     theme={theme}
                 />
-                <FileAction {...uploadProps}/>
-                <ImageAction {...uploadProps}/>
-                <CameraAction {...uploadProps}/>
+                <FileAction
+                    testID={fileActionTestID}
+                    {...uploadProps}
+                />
+                <ImageAction
+                    testID={imageActionTestID}
+                    {...uploadProps}
+                />
+                <CameraAction
+                    testID={cameraActionTestID}
+                    {...uploadProps}
+                />
             </View>
         );
     }

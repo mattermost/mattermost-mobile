@@ -13,18 +13,18 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {DeviceTypes, ListTypes, ViewTypes} from '@constants';
+import {getCurrentServerUrl} from '@init/credentials';
+import telemetry from '@telemetry';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {removeProtocol} from '@utils/url';
 import tracker from '@utils/time_tracker';
-
-import {getCurrentServerUrl} from 'app/init/credentials';
-import telemetry from 'app/telemetry';
 
 import TeamsListItem from './teams_list_item';
 
@@ -155,7 +155,10 @@ export default class TeamsList extends PureComponent {
         }
 
         return (
-            <View style={styles.container}>
+            <SafeAreaView
+                edges={['left']}
+                style={styles.container}
+            >
                 <View style={styles.headerContainer}>
                     <FormattedText
                         id='mobile.drawer.teamsTitle'
@@ -172,7 +175,7 @@ export default class TeamsList extends PureComponent {
                     keyExtractor={this.keyExtractor}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
-            </View>
+            </SafeAreaView>
         );
     }
 }

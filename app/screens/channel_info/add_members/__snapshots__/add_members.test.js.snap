@@ -37,7 +37,6 @@ exports[`ChannelInfo -> Add Members should match snapshot 1`] = `
     action={[Function]}
     defaultMessage="Add Members"
     icon="account-plus-outline"
-    isLandscape={false}
     rightArrow={true}
     shouldRender={true}
     textId="channel_header.addMembers"

@@ -11,6 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class InputQuickAction extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         disabled: PropTypes.bool,
         inputType: PropTypes.oneOf(['at', 'slash']).isRequired,
         onTextChange: PropTypes.func.isRequired,
@@ -56,11 +57,15 @@ export default class InputQuickAction extends PureComponent {
     }
 
     render() {
-        const {disabled, theme} = this.props;
+        const {testID, disabled, theme} = this.props;
+        const actionTestID = disabled ?
+            `${testID}.disabled` :
+            testID;
         const style = getStyleSheet(theme);
 
         return (
             <TouchableWithFeedback
+                testID={actionTestID}
                 disabled={disabled}
                 onPress={this.onPress}
                 style={style.icon}

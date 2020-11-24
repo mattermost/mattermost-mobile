@@ -6,7 +6,6 @@ import {connect} from 'react-redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
 
-import {isLandscape} from 'app/selectors/device';
 import LoginOptions from './login_options';
 
 function mapStateToProps(state) {
@@ -16,7 +15,6 @@ function mapStateToProps(state) {
         config,
         license,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

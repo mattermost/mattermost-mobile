@@ -1,56 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import {
     Text,
     View,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-export default class GroupMentionItem extends PureComponent {
-    static propTypes = {
-        completeHandle: PropTypes.string.isRequired,
-        onPress: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired,
-    };
-
-    completeMention = () => {
-        const {onPress, completeHandle} = this.props;
-        onPress(completeHandle);
-    };
-
-    render() {
-        const {
-            completeHandle,
-            theme,
-        } = this.props;
-
-        const style = getStyleFromTheme(theme);
-
-        return (
-            <TouchableWithFeedback
-                onPress={this.completeMention}
-                style={style.row}
-                type={'opacity'}
-            >
-                <View style={style.rowPicture}>
-                    <CompassIcon
-                        name='account-group-outline'
-                        style={style.rowIcon}
-                    />
-                </View>
-                <Text style={style.rowUsername}>{`@${completeHandle}`}</Text>
-                <Text style={style.rowUsername}>{' - '}</Text>
-                <Text style={style.rowFullname}>{`${completeHandle}`}</Text>
-            </TouchableWithFeedback>
-        );
-    }
-}
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         row: {
@@ -85,3 +47,40 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const GroupMentionItem = (props) => {
+    const insets = useSafeAreaInsets();
+    const {onPress, completeHandle, theme} = props;
+
+    const completeMention = () => {
+        onPress(completeHandle);
+    };
+
+    const style = getStyleFromTheme(theme);
+
+    return (
+        <TouchableWithFeedback
+            onPress={completeMention}
+            style={[style.row, {marginLeft: insets.left, marginRight: insets.right}]}
+            type={'opacity'}
+        >
+            <View style={style.rowPicture}>
+                <CompassIcon
+                    name='account-group-outline'
+                    style={style.rowIcon}
+                />
+            </View>
+            <Text style={style.rowUsername}>{`@${completeHandle}`}</Text>
+            <Text style={style.rowUsername}>{' - '}</Text>
+            <Text style={style.rowFullname}>{`${completeHandle}`}</Text>
+        </TouchableWithFeedback>
+    );
+};
+
+GroupMentionItem.propTypes = {
+    completeHandle: PropTypes.string.isRequired,
+    onPress: PropTypes.func.isRequired,
+    theme: PropTypes.object.isRequired,
+};
+
+export default GroupMentionItem;

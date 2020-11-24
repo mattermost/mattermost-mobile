@@ -9,6 +9,7 @@ import {
     Platform,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getTimezoneRegion} from '@mm-redux/utils/timezone_utils';
 
@@ -34,7 +35,6 @@ export default class Timezone extends PureComponent {
             getSupportedTimezones: PropTypes.func.isRequired,
             updateUser: PropTypes.func.isRequired,
         }).isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -139,19 +139,20 @@ export default class Timezone extends PureComponent {
                 automaticTimezone,
                 manualTimezone,
             },
-            isLandscape,
         } = this.props;
         const {useAutomaticTimezone} = this.state;
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <Section
                         disableHeader={true}
                         theme={theme}
-                        isLandscape={isLandscape}
                     >
                         <View style={style.divider}/>
                         <SectionItem
@@ -170,7 +171,6 @@ export default class Timezone extends PureComponent {
                             actionType='toggle'
                             selected={useAutomaticTimezone}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
 
                         {!useAutomaticTimezone && (
@@ -191,14 +191,13 @@ export default class Timezone extends PureComponent {
                                     action={this.goToSelectTimezone}
                                     actionType='arrow'
                                     theme={theme}
-                                    isLandscape={isLandscape}
                                 />
                             </View>
                         )}
                         <View style={style.divider}/>
                     </Section>
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 }

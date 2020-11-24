@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelsList List should match snapshot 1`] = `
+<View
+  onLayout={[Function]}
+  testID="main.sidebar.channels_list.list"
+>
+  <SectionList
+    contentContainerStyle={
+      Object {
+        "paddingBottom": 44,
+      }
+    }
+    data={Array []}
+    disableVirtualization={false}
+    horizontal={false}
+    initialNumToRender={10}
+    keyExtractor={[Function]}
+    keyboardDismissMode="interactive"
+    keyboardShouldPersistTaps="always"
+    maxToRenderPerBatch={10}
+    onEndReachedThreshold={2}
+    onScrollBeginDrag={[Function]}
+    onViewableItemsChanged={[Function]}
+    renderItem={[Function]}
+    renderSectionHeader={[Function]}
+    scrollEventThrottle={50}
+    sections={Array []}
+    stickySectionHeadersEnabled={true}
+    updateCellsBatchingPeriod={50}
+    viewabilityConfig={
+      Object {
+        "itemVisiblePercentThreshold": 100,
+        "waitForInteraction": true,
+      }
+    }
+    windowSize={21}
+  />
+</View>
+`;

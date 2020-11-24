@@ -38,7 +38,6 @@ describe('ChannelInfo -> Leave', () => {
         isDirectMessage: false,
         isFavorite: false,
         isGroupMessage: false,
-        isLandscape: false,
         isPublic: true,
         theme: Preferences.THEMES.default,
     };

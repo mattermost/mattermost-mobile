@@ -4,22 +4,20 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Text} from 'react-native';
-import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ChannelDisplayName extends PureComponent {
     static propTypes = {
         displayName: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     render() {
-        const {displayName, theme, isLandscape} = this.props;
+        const {displayName, theme} = this.props;
         const styles = getStyleFromTheme(theme);
 
         return (
-            <Text style={[styles.channelName, padding(isLandscape, +16)]}>{displayName}</Text>
+            <Text style={styles.channelName}>{displayName}</Text>
         );
     }
 }

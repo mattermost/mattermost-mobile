@@ -11,7 +11,6 @@ import {
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import FormattedText from '@components/formatted_text';
-import SafeAreaView from '@components/safe_area_view';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {TYPING_VISIBLE, TYPING_HEIGHT} from '@constants/post_draft';
 
@@ -95,19 +94,13 @@ export default class Typing extends PureComponent {
 
         return (
             <Animated.View style={{bottom: this.typingBottom}}>
-                <SafeAreaView
-                    excludeHeader={true}
-                    excludeFooter={true}
-                    useLandscapeMargin={true}
+                <Text
+                    style={style.typing}
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
                 >
-                    <Text
-                        style={style.typing}
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                    >
-                        {this.renderTyping()}
-                    </Text>
-                </SafeAreaView>
+                    {this.renderTyping()}
+                </Text>
             </Animated.View>
         );
     }

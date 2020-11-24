@@ -10,7 +10,6 @@ exports[`ChannelLoader should match snapshot 1`] = `
         "overflow": "hidden",
       },
       undefined,
-      null,
       Object {
         "backgroundColor": "#ffffff",
       },

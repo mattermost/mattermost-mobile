@@ -18,6 +18,7 @@ jest.mock('react-native-image-picker', () => ({
 describe('CameraButton', () => {
     const formatMessage = jest.fn();
     const baseProps = {
+        testID: 'post_draft.quick_actions.camera_action',
         fileCount: 0,
         maxFileCount: 5,
         onShowFileMaxWarning: jest.fn(),

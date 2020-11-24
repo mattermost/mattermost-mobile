@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -19,7 +20,6 @@ import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import CustomList from 'app/components/custom_list';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import TeamIcon from 'app/components/team_icon';
 import {NavigationTypes} from 'app/constants';
 import {resetToChannel, dismissModal} from 'app/actions/navigation';
@@ -45,7 +45,6 @@ export default class SelectTeam extends PureComponent {
         teams: PropTypes.array.isRequired,
         theme: PropTypes.object,
         teamsRequest: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -150,7 +149,7 @@ export default class SelectTeam extends PureComponent {
     }
 
     renderItem = ({item}) => {
-        const {currentUrl, theme, isLandscape} = this.props;
+        const {currentUrl, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (item.id === 'mobile.select_team.no_teams') {
@@ -168,7 +167,7 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <View style={[style.teamWrapper, padding(isLandscape)]}>
+            <View style={style.teamWrapper}>
                 <TouchableOpacity
                     onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
@@ -202,7 +201,7 @@ export default class SelectTeam extends PureComponent {
     };
 
     render() {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const teams = this.memoizedTeams(this.props.teams);
         const style = getStyleFromTheme(theme);
 
@@ -237,10 +236,10 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <SafeAreaView style={style.container}>
                 <StatusBar/>
                 <View style={style.headingContainer}>
-                    <View style={[style.headingWrapper, padding(isLandscape)]}>
+                    <View style={style.headingWrapper}>
                         <FormattedText
                             id='mobile.select_team.join_open'
                             defaultMessage='Open teams you can join'
@@ -268,7 +267,7 @@ export default class SelectTeam extends PureComponent {
                     extraData={this.state.loading}
                     shouldRenderSeparator={false}
                 />
-            </View>
+            </SafeAreaView>
         );
     }
 }
@@ -293,7 +292,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         line: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            width: '100%',
+            flex: 1,
             height: 1,
         },
         footer: {

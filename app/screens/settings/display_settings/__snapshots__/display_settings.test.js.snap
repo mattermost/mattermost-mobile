@@ -1,7 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DisplaySettings should match snapshot 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    Array [
+      "left",
+      "right",
+    ]
+  }
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -32,7 +38,6 @@ exports[`DisplaySettings should match snapshot 1`] = `
       i18nId="mobile.advanced_settings.clockDisplay"
       iconName="clock-outline"
       isDestructor={false}
-      isLandscape={false}
       isLink={false}
       onPress={[Function]}
       separator={false}
@@ -76,11 +81,17 @@ exports[`DisplaySettings should match snapshot 1`] = `
       }
     />
   </View>
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    Array [
+      "left",
+      "right",
+    ]
+  }
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -111,7 +122,6 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
       i18nId="mobile.display_settings.sidebar"
       iconName="dock-left"
       isDestructor={false}
-      isLandscape={false}
       isLink={false}
       onPress={[Function]}
       separator={true}
@@ -151,7 +161,6 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
       i18nId="mobile.advanced_settings.clockDisplay"
       iconName="clock-outline"
       isDestructor={false}
-      isLandscape={false}
       isLink={false}
       onPress={[Function]}
       separator={false}
@@ -195,5 +204,5 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
       }
     />
   </View>
-</View>
+</RNCSafeAreaView>
 `;

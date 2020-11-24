@@ -34,6 +34,7 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
     const fuse = new Fuse(emojis, options);
 
     const baseProps = {
+        testID: 'emoji_picker',
         actions: {
             getCustomEmojis: jest.fn(),
             incrementEmojiPickerPage: jest.fn(),
@@ -78,18 +79,6 @@ describe('components/emoji_picker/emoji_picker.ios', () => {
         const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
         const result = wrapper.instance().searchEmojis(input);
         expect(result).toEqual(output);
-    });
-
-    test('should set rebuildEmojis to true when deviceWidth changes', async () => {
-        const wrapper = shallowWithIntl(<EmojiPicker {...baseProps}/>);
-        const instance = wrapper.instance();
-
-        expect(instance.rebuildEmojis).toBe(undefined);
-
-        const newDeviceWidth = baseProps.deviceWidth * 2;
-        wrapper.setProps({deviceWidth: newDeviceWidth});
-
-        expect(instance.rebuildEmojis).toBe(true);
     });
 
     test('should rebuild emojis emojis when emojis change', async () => {

@@ -20,6 +20,12 @@ exports[`AttachmentFooter matches snapshot 1`] = `
   }
 >
   <ForwardRef(AnimatedComponentWrapper)
+    edges={
+      Array [
+        "left",
+        "right",
+      ]
+    }
     style={
       Object {
         "alignItems": "center",
