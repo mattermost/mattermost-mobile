@@ -235,7 +235,7 @@ export function createPost(post: Post, files: any[] = []) {
             }
             dispatch({
                 type: ViewTypes.ADD_RECENT_EMOJI_ARRAY,
-                emojis: emojisAvailableWithMatterMost
+                emojis: emojisAvailableWithMatterMost,
             });
         }
         dispatch(batchActions(actions, 'BATCH_CREATE_POST_INIT'));
