@@ -16,7 +16,8 @@ import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
-import {getSystemEmojis} from 'app/utils/emojis';
+import {EmojiIndicesByUnicode, Emojis, getSystemEmojis} from 'app/utils/emojis';
+import emojiRegex from 'emoji-regex';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
@@ -39,6 +40,7 @@ import {Reaction} from '@mm-redux/types/reactions';
 import {UserProfile} from '@mm-redux/types/users';
 import {Dictionary} from '@mm-redux/types/utilities';
 import {CustomEmoji} from '@mm-redux/types/emojis';
+import {addRecentEmoji} from '@actions/views/emoji';
 
 // receivedPost should be dispatched after a single post from the server. This typically happens when an existing post
 // is updated.
@@ -213,6 +215,23 @@ export function createPost(post: Post, files: any[] = []) {
                 id: pendingPostId,
             },
         });
+
+        const {message} = post;
+        const RE_UNICODE_EMOJI = emojiRegex();
+        const emojis = message.match(RE_UNICODE_EMOJI);
+        function emojiUnicode(input:string) {
+            if (input.length === 1) {
+                return input.codePointAt(0)?.toString(16);
+            }
+            return input.codePointAt(0)?.toString(16) + '-' + input.codePointAt(1)?.toString(16);
+        }
+        emojis?.map((emoji) => {
+            const unicode = emojiUnicode(emoji);
+            return EmojiIndicesByUnicode.get(unicode || '');
+        })
+        .filter((index) => index !== undefined)
+        .map((index:number) => Emojis[index].aliases[0])
+        .forEach((name) => dispatch(addRecentEmoji(name)));
 
         dispatch(batchActions(actions, 'BATCH_CREATE_POST_INIT'));
 
