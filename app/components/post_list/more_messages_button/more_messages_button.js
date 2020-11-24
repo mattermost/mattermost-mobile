@@ -15,7 +15,7 @@ import ViewTypes, {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {t} from '@utils/i18n';
 
-const HIDDEN_TOP = -100;
+const HIDDEN_TOP = -400;
 const SHOWN_TOP = 0;
 export const INDICATOR_BAR_FACTOR = Math.abs(INDICATOR_BAR_HEIGHT / (HIDDEN_TOP - SHOWN_TOP));
 export const MIN_INPUT = 0;

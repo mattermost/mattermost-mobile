@@ -5,8 +5,6 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import {isLandscape} from 'app/selectors/device';
-
 import ChannelLoader from './channel_loader';
 
 function mapStateToProps(state, ownProps) {
@@ -15,7 +13,6 @@ function mapStateToProps(state, ownProps) {
     return {
         channelIsLoading,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

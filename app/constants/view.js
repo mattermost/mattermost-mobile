@@ -106,6 +106,7 @@ const ViewTypes = keyMirror({
     LANDSCAPE: null,
 
     INDICATOR_BAR_VISIBLE: null,
+    CHANNEL_NAV_BAR_CHANGED: null,
 });
 
 const RequiredServer = {
@@ -137,4 +138,5 @@ export default {
     NotificationLevels,
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
+    INDICATOR_BAR_HEIGHT,
 };

@@ -14,7 +14,6 @@ describe('ReactionHeader', () => {
         onSelectReaction: jest.fn(),
         reactions: [{name: 'smile', count: 2}, {name: '+1', count: 1}],
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {

@@ -29,7 +29,6 @@ describe('UserListRow', () => {
         },
         theme: Preferences.THEMES.default,
         teammateNameDisplay: 'test',
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {

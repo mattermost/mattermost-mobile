@@ -3,15 +3,12 @@
 
 import {connect} from 'react-redux';
 
-import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
-
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {isGuest} from '@utils/users';
 
 import AtMentionItem from './at_mention_item';
-
-import {isLandscape} from 'app/selectors/device';
-import {isGuest} from 'app/utils/users';
 
 function mapStateToProps(state, ownProps) {
     const user = getUser(state, ownProps.userId);
@@ -25,7 +22,6 @@ function mapStateToProps(state, ownProps) {
         isBot: Boolean(user.is_bot),
         isGuest: isGuest(user),
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
         isCurrentUser: getCurrentUserId(state) === user.id,
     };
 }

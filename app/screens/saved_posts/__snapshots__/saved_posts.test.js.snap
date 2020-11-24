@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FlaggedPosts should match snapshot 1`] = `
-<View
+exports[`SavedPosts should match snapshot 1`] = `
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
@@ -12,11 +12,11 @@ exports[`FlaggedPosts should match snapshot 1`] = `
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
-exports[`FlaggedPosts should match snapshot when component waiting for response 1`] = `
-<View
+exports[`SavedPosts should match snapshot when component waiting for response 1`] = `
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
@@ -27,11 +27,11 @@ exports[`FlaggedPosts should match snapshot when component waiting for response 
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
-exports[`FlaggedPosts should match snapshot when getFlaggedPosts failed 1`] = `
-<View
+exports[`SavedPosts should match snapshot when getFlaggedPosts failed 1`] = `
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
@@ -71,5 +71,5 @@ exports[`FlaggedPosts should match snapshot when getFlaggedPosts failed 1`] = `
       }
     }
   />
-</View>
+</RNCSafeAreaView>
 `;

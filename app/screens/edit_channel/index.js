@@ -10,22 +10,18 @@ import {patchChannel, getChannel} from '@mm-redux/actions/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {setChannelDisplayName} from 'app/actions/views/channel';
-import {getDimensions} from 'app/selectors/device';
 
 import EditChannel from './edit_channel';
 
 function mapStateToProps(state) {
     const {updateChannel: updateChannelRequest} = state.requests.channels;
     const channel = getCurrentChannel(state);
-    const {deviceWidth, deviceHeight} = getDimensions(state);
 
     return {
         channel,
         currentTeamUrl: getCurrentTeamUrl(state),
         updateChannelRequest,
         theme: getTheme(state),
-        deviceWidth,
-        deviceHeight,
     };
 }
 

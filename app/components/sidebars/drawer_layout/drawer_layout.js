@@ -28,10 +28,6 @@ const DRAGGING = 'Dragging';
 const SETTLING = 'Settling';
 const emptyObject = {};
 
-export const DRAWER_INITIAL_OFFSET = 40;
-export const TABLET_WIDTH = 250;
-
-
 export default class DrawerLayout extends Component {
     static propTypes = {
         children: PropTypes.any,

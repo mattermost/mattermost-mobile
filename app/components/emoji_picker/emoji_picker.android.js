@@ -12,8 +12,9 @@ import EmojiPickerBase, {getStyleSheetFromTheme} from './emoji_picker_base';
 export default class EmojiPicker extends EmojiPickerBase {
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme} = this.props;
+        const {testID, theme} = this.props;
         const {searchTerm} = this.state;
+        const searchBarTestID = `${testID}.search_bar`;
         const styles = getStyleSheetFromTheme(theme);
 
         const searchBarInput = {
@@ -24,8 +25,12 @@ export default class EmojiPicker extends EmojiPickerBase {
 
         return (
             <React.Fragment>
-                <View style={styles.searchBar}>
+                <View
+                    testID={testID}
+                    style={styles.searchBar}
+                >
                     <SearchBar
+                        testID={searchBarTestID}
                         ref={this.setSearchBarRef}
                         placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                         cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}

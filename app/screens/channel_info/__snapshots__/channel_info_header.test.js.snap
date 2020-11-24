@@ -23,7 +23,6 @@ exports[`channel_info_header should match snapshot 1`] = `
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -84,12 +83,9 @@ exports[`channel_info_header should match snapshot 1`] = `
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -130,12 +126,9 @@ exports[`channel_info_header should match snapshot 1`] = `
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -290,7 +283,6 @@ exports[`channel_info_header should match snapshot 1`] = `
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -334,7 +326,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -395,12 +386,9 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <View
@@ -426,12 +414,9 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -472,12 +457,9 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -632,7 +614,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -676,7 +657,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -737,12 +717,9 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -783,12 +760,9 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -943,7 +917,6 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -987,7 +960,6 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -1048,12 +1020,9 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <View
@@ -1079,12 +1048,9 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -1125,12 +1091,9 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -1285,7 +1248,6 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -1329,7 +1291,6 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -1390,12 +1351,9 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -1436,12 +1394,9 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -1596,7 +1551,6 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -1618,7 +1572,6 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -1662,7 +1615,6 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >
@@ -1723,12 +1675,9 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <View
@@ -1754,12 +1703,9 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -1800,12 +1746,9 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <View
     style={
-      Array [
-        Object {
-          "marginTop": 15,
-        },
-        null,
-      ]
+      Object {
+        "marginTop": 15,
+      }
     }
   >
     <ForwardRef
@@ -1960,7 +1903,6 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         Object {
           "paddingHorizontal": 15,
         },
-        null,
       ]
     }
   >

@@ -9,6 +9,7 @@ import ErrorText from './error_text.js';
 
 describe('ErrorText', () => {
     const baseProps = {
+        testID: 'error.text',
         textStyle: {
             fontSize: 14,
             marginHorizontal: 15,

@@ -2,18 +2,29 @@
 
 exports[`ChannelMembers should match snapshot 1`] = `
 <Connect(KeyboardLayout)>
-  <Connect(StatusBar) />
-  <View
+  <RNCSafeAreaView
+    edges={
+      Array [
+        "bottom",
+        "left",
+        "right",
+      ]
+    }
     style={
       Object {
-        "height": 38,
-        "marginVertical": 5,
-        "paddingLeft": 8,
+        "flex": 1,
       }
     }
+    testID="channel_members.screen"
   >
+    <Connect(StatusBar) />
     <View
-      style={null}
+      style={
+        Object {
+          "height": 38,
+          "marginVertical": 5,
+        }
+      }
     >
       <Search
         autoCapitalize="none"
@@ -47,56 +58,56 @@ exports[`ChannelMembers should match snapshot 1`] = `
         searchIconSize={24}
         showArrow={false}
         showCancel={true}
+        testID="channel_members.search_bar"
         tintColorDelete="rgba(61,60,64,0.5)"
         tintColorSearch="rgba(61,60,64,0.5)"
         titleCancelColor="#3d3c40"
         value=""
       />
     </View>
-  </View>
-  <CustomList
-    canRefresh={true}
-    data={Array []}
-    extraData={Object {}}
-    isLandscape={false}
-    listType="section"
-    loading={false}
-    loadingComponent={null}
-    noResults={null}
-    onLoadMore={[Function]}
-    onRowPress={[Function]}
-    renderItem={[Function]}
-    shouldRenderSeparator={true}
-    showNoResults={true}
-    theme={
-      Object {
-        "awayIndicator": "#ffbc42",
-        "buttonBg": "#166de0",
-        "buttonColor": "#ffffff",
-        "centerChannelBg": "#ffffff",
-        "centerChannelColor": "#3d3c40",
-        "codeTheme": "github",
-        "dndIndicator": "#f74343",
-        "errorTextColor": "#fd5960",
-        "linkColor": "#2389d7",
-        "mentionBg": "#ffffff",
-        "mentionBj": "#ffffff",
-        "mentionColor": "#145dbf",
-        "mentionHighlightBg": "#ffe577",
-        "mentionHighlightLink": "#166de0",
-        "newMessageSeparator": "#ff8800",
-        "onlineIndicator": "#06d6a0",
-        "sidebarBg": "#145dbf",
-        "sidebarHeaderBg": "#1153ab",
-        "sidebarHeaderTextColor": "#ffffff",
-        "sidebarText": "#ffffff",
-        "sidebarTextActiveBorder": "#579eff",
-        "sidebarTextActiveColor": "#ffffff",
-        "sidebarTextHoverBg": "#4578bf",
-        "sidebarUnreadText": "#ffffff",
-        "type": "Mattermost",
+    <CustomList
+      canRefresh={true}
+      data={Array []}
+      extraData={Object {}}
+      listType="section"
+      loading={false}
+      loadingComponent={null}
+      noResults={null}
+      onLoadMore={[Function]}
+      onRowPress={[Function]}
+      renderItem={[Function]}
+      shouldRenderSeparator={true}
+      showNoResults={true}
+      theme={
+        Object {
+          "awayIndicator": "#ffbc42",
+          "buttonBg": "#166de0",
+          "buttonColor": "#ffffff",
+          "centerChannelBg": "#ffffff",
+          "centerChannelColor": "#3d3c40",
+          "codeTheme": "github",
+          "dndIndicator": "#f74343",
+          "errorTextColor": "#fd5960",
+          "linkColor": "#2389d7",
+          "mentionBg": "#ffffff",
+          "mentionBj": "#ffffff",
+          "mentionColor": "#145dbf",
+          "mentionHighlightBg": "#ffe577",
+          "mentionHighlightLink": "#166de0",
+          "newMessageSeparator": "#ff8800",
+          "onlineIndicator": "#06d6a0",
+          "sidebarBg": "#145dbf",
+          "sidebarHeaderBg": "#1153ab",
+          "sidebarHeaderTextColor": "#ffffff",
+          "sidebarText": "#ffffff",
+          "sidebarTextActiveBorder": "#579eff",
+          "sidebarTextActiveColor": "#ffffff",
+          "sidebarTextHoverBg": "#4578bf",
+          "sidebarUnreadText": "#ffffff",
+          "type": "Mattermost",
+        }
       }
-    }
-  />
+    />
+  </RNCSafeAreaView>
 </Connect(KeyboardLayout)>
 `;

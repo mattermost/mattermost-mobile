@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import AsyncStorage from '@react-native-community/async-storage';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
@@ -22,7 +23,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 export default class SidebarSettings extends PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -51,21 +51,20 @@ export default class SidebarSettings extends PureComponent {
             return null;
         }
 
-        const {
-            theme,
-            isLandscape,
-        } = this.props;
+        const {theme} = this.props;
         const {enabled} = this.state;
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <Section
                         disableHeader={true}
                         theme={theme}
-                        isLandscape={isLandscape}
                     >
                         <View style={style.divider}/>
                         <SectionItem
@@ -85,12 +84,11 @@ export default class SidebarSettings extends PureComponent {
                             actionType='toggle'
                             selected={enabled}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
                         <View style={style.divider}/>
                     </Section>
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 }
