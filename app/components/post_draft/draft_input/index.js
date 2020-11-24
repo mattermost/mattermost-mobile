@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 
 import {executeCommand} from '@actions/views/command';
-import {addReactionToLatestPost} from '@actions/views/emoji';
+import {addReactionToLatestPost, addRecentUsedEmojisInMessage} from '@actions/views/emoji';
 import {handleClearFiles, handleClearFailedFiles} from '@actions/views/file_upload';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
@@ -101,6 +101,7 @@ const mapDispatchToProps = {
     handleClearFailedFiles,
     setStatus,
     getChannelMemberCountsByGroup,
+    addRecentUsedEmojisInMessage,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(PostDraft);

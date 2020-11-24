@@ -21,7 +21,7 @@ export default function recentEmojis(state = [], action) {
     }
     case ViewTypes.ADD_RECENT_EMOJI_ARRAY: {
         const nextRecentEmojis = action.emojis.reduce((currentState, emoji) => {
-            return [...currentState.filter((currentEmoji) => currentEmoji !== emoji), emoji];
+            return [emoji, ...currentState.filter((currentEmoji) => currentEmoji !== emoji)];
         }, state);
         if (nextRecentEmojis.length > MAXIMUM_RECENT_EMOJI) {
             nextRecentEmojis.splice(0, recentEmojis.length - MAXIMUM_RECENT_EMOJI);

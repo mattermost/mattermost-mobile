@@ -3,7 +3,7 @@
 
 import {Client4} from '@mm-redux/client';
 import {General, Preferences, Posts} from '@mm-redux/constants';
-import {ViewTypes, WebsocketEvents} from '@constants';
+import {WebsocketEvents} from '@constants';
 import {PostTypes, ChannelTypes, FileTypes, IntegrationTypes} from '@mm-redux/action_types';
 
 import {getCurrentChannelId, getMyChannelMember as getMyChannelMemberSelector, isManuallyUnread} from '@mm-redux/selectors/entities/channels';
@@ -16,8 +16,7 @@ import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {parseNeededCustomEmojisFromText} from '@mm-redux/utils/emoji_utils';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@mm-redux/utils/post_utils';
 import {isCombinedUserActivityPost} from '@mm-redux/utils/post_list';
-import {EmojiIndicesByUnicode, Emojis, getSystemEmojis} from 'app/utils/emojis';
-import emojiRegex from 'emoji-regex';
+import {getSystemEmojis} from 'app/utils/emojis';
 
 import {getMyChannelMember, markChannelAsUnread, markChannelAsRead, markChannelAsViewed} from './channels';
 import {getCustomEmojiByName, getCustomEmojisByName} from './emojis';
@@ -215,30 +214,9 @@ export function createPost(post: Post, files: any[] = []) {
             },
         });
 
-        const {message} = post;
-        const RE_UNICODE_EMOJI = emojiRegex();
-        const emojis = message.match(RE_UNICODE_EMOJI);
-        function emojiUnicode(input:string) {
-            if (input.length === 1) {
-                return input.codePointAt(0)?.toString(16);
-            }
-            return input.codePointAt(0)?.toString(16) + '-' + input.codePointAt(1)?.toString(16);
-        }
-        if (emojis) {
-            const emojisAvailableWithMatterMost = [];
-            for (const emoji of emojis) {
-                const unicode = emojiUnicode(emoji);
-                const index = EmojiIndicesByUnicode.get(unicode || '');
-                if (index) {
-                    emojisAvailableWithMatterMost.push(Emojis[index].aliases[0]);
-                }
-            }
-            dispatch({
-                type: ViewTypes.ADD_RECENT_EMOJI_ARRAY,
-                emojis: emojisAvailableWithMatterMost,
-            });
-        }
         dispatch(batchActions(actions, 'BATCH_CREATE_POST_INIT'));
+
+        let failed = true;
 
         try {
             const created = await Client4.createPost({...newPost, create_at: 0});
@@ -270,6 +248,7 @@ export function createPost(post: Post, files: any[] = []) {
             }
 
             dispatch(batchActions(actions, 'BATCH_CREATE_POST'));
+            failed = false;
         } catch (error) {
             const data = {
                 ...newPost,
@@ -291,9 +270,10 @@ export function createPost(post: Post, files: any[] = []) {
             }
 
             dispatch(batchActions(actions, 'BATCH_CREATE_POST_FAILED'));
+            failed = true;
         }
 
-        return {data: true};
+        return {data: true, failed};
     };
 }
 
