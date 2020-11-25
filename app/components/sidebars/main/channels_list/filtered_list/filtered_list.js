@@ -20,6 +20,7 @@ import {t} from 'app/utils/i18n';
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
 import {paddingLeft} from 'app/components/safe_area_view/iphone_x_spacing';
+import memoize from 'memoize-one';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -67,7 +68,6 @@ class FilteredList extends Component {
         };
 
         this.state = {
-            dataSource: this.buildData(props),
         };
     }
 
@@ -86,9 +86,7 @@ class FilteredList extends Component {
             const {actions, currentTeam} = this.props;
             const {term} = nextProps;
             const {searchChannels, searchProfiles} = actions;
-            const dataSource = this.buildData(this.props, term);
 
-            this.setState({dataSource, term});
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
@@ -330,13 +328,17 @@ class FilteredList extends Component {
         return sections;
     };
 
-    buildData = (props, term) => {
+    buildData = memoize((props) => {
         if (!props.currentChannel) {
             return null;
         }
-
-        return this.buildSectionsForSearch(props, term);
-    };
+        return this.buildSectionsForSearch(props, props.term);
+    }, ([props], [prevProps]) => {
+        if (props.term !== prevProps.term) {
+            return false;
+        }
+        return true;
+    });
 
     keyExtractor = (item) => item.id || item;
 
@@ -376,7 +378,7 @@ class FilteredList extends Component {
 
     render() {
         const {styles} = this.props;
-        const {dataSource} = this.state;
+        const dataSource = this.buildData(this.props);
         return (
             <View
                 style={styles.container}
