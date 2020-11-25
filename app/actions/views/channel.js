@@ -248,8 +248,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
                 const myMemberships = getMyChannelMemberships(state);
                 if (!myMemberships[channel.id]) {
                     const currentUserId = getCurrentUserId(state);
-                    const team = getTeamByName(state, teamName);
-                    const result = await dispatch(joinChannel(currentUserId, team.id, channel.id));
+                    const result = await dispatch(joinChannel(currentUserId, '', channel.id));
                     if (result.error || !result.data || !result.data.channel) {
                         return result;
                     }
