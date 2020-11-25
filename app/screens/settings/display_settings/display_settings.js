@@ -5,21 +5,21 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {Platform, View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {DeviceTypes} from 'app/constants';
-import StatusBar from 'app/components/status_bar';
-import ClockDisplay from 'app/screens/settings/clock_display';
-import SettingsItem from 'app/screens/settings/settings_item';
-import {preventDoubleTap} from 'app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {goToScreen} from 'app/actions/navigation';
+import {goToScreen} from '@actions/navigation';
+import {DeviceTypes} from '@constants';
+import StatusBar from '@components/status_bar';
+import ClockDisplay from '@screens/settings/clock_display';
+import SettingsItem from '@screens/settings/settings_item';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class DisplaySettings extends PureComponent {
     static propTypes = {
         theme: PropTypes.object.isRequired,
         enableTheme: PropTypes.bool.isRequired,
         enableTimezone: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -73,7 +73,7 @@ export default class DisplaySettings extends PureComponent {
     });
 
     render() {
-        const {theme, enableTimezone, enableTheme, isLandscape} = this.props;
+        const {theme, enableTimezone, enableTheme} = this.props;
         const {showClockDisplaySettings} = this.state;
         const style = getStyleSheet(theme);
         const showArrow = Platform.OS === 'ios';
@@ -101,7 +101,6 @@ export default class DisplaySettings extends PureComponent {
                     separator={false}
                     showArrow={showArrow}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
             );
         }
@@ -117,13 +116,15 @@ export default class DisplaySettings extends PureComponent {
                     separator={true}
                     showArrow={showArrow}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
             );
         }
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <View style={style.divider}/>
@@ -137,7 +138,6 @@ export default class DisplaySettings extends PureComponent {
                             separator={true}
                             showArrow={showArrow}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
                     )}
                     <SettingsItem
@@ -148,13 +148,12 @@ export default class DisplaySettings extends PureComponent {
                         separator={disableClockDisplaySeparator}
                         showArrow={showArrow}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                     {timezoneOption}
                     <View style={style.divider}/>
                     {clockDisplayModal}
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 }

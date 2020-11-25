@@ -14,7 +14,6 @@ describe('DialogElement', () => {
         displayName: 'Testing',
         name: 'testing',
         type: 'text',
-        isLandscape: false,
     };
 
     const theme = Preferences.THEMES.default;

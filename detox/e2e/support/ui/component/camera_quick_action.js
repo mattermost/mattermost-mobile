@@ -3,21 +3,16 @@
 
 class CameraQuickAction {
     testID = {
-        cameraQuickAction: 'post_draft.camera_quick_action',
-        cameraQuickActionDisabled: 'post_draft.camera_quick_action.disabled',
+        cameraActionSuffix: 'post_draft.quick_actions.camera_action',
+        cameraActionDisabledSuffix: 'post_draft.quick_actions.camera_action.disabled',
     }
 
-    cameraQuickAction = element(by.id(this.testID.cameraQuickAction));
-    cameraQuickActionDisabled = element(by.id(this.testID.cameraQuickActionDisabled));
+    getCameraQuickAction = (screenPrefix) => {
+        return element(by.id(`${screenPrefix}${this.testID.cameraActionSuffix}`));
+    }
 
-    toBeVisible = async (options = {disabled: false}) => {
-        if (options.disabled) {
-            await expect(this.cameraQuickActionDisabled).toBeVisible();
-            return this.cameraQuickActionDisabled;
-        }
-
-        await expect(this.cameraQuickAction).toBeVisible();
-        return this.cameraQuickAction;
+    getCameraQuickActionDisabled = (screenPrefix) => {
+        return element(by.id(`${screenPrefix}${this.testID.cameraActionDisabledSuffix}`));
     }
 }
 

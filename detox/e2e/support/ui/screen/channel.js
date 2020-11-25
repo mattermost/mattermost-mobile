@@ -5,6 +5,7 @@ import {
     CameraQuickAction,
     FileQuickAction,
     ImageQuickAction,
+    InputQuickAction,
     MainSidebar,
     PostDraft,
     PostOptions,
@@ -20,6 +21,7 @@ import {
 
 class ChannelScreen {
     testID = {
+        channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         mainSidebarDrawerButton: 'main_sidebar_drawer.button',
         channelIntro: 'channel_intro.beginning.text',
@@ -38,25 +40,29 @@ class ChannelScreen {
     settingsSidebarDrawerButton = element(by.id(this.testID.settingsSidebarDrawerButton));
 
     // convenience props
-    cameraQuickAction = CameraQuickAction.cameraQuickAction;
-    cameraQuickActionDisabled = CameraQuickAction.cameraQuickActionDisabled;
-    imageQuickAction = ImageQuickAction.imageQuickAction;
-    imageQuickActionDisabled = ImageQuickAction.imageQuickActionDisabled;
-    fileQuickAction = FileQuickAction.fileQuickAction;
-    fileQuickActionDisabled = FileQuickAction.fileQuickActionDisabled;
-    postDraft = PostDraft.postDraft;
-    postDraftArchived = PostDraft.postDraftArchived;
-    postDraftReadOnly = PostDraft.postDraftReadOnly;
-    postInput = PostDraft.postInput;
-    sendButton = SendButton.sendButton;
-    sendButtonDisabled = SendButton.sendButtonDisabled;
+    atInputQuickAction = InputQuickAction.getAtInputQuickAction(this.testID.channelScreenPrefix);
+    atInputQuickActionDisabled = InputQuickAction.getAtInputQuickActionDisabled(this.testID.channelScreenPrefix);
+    slashInputQuickAction = InputQuickAction.getSlashInputQuickAction(this.testID.channelScreenPrefix);
+    slashInputQuickActionDisabled = InputQuickAction.getSlashInputQuickActionDisabled(this.testID.channelScreenPrefix);
+    fileQuickAction = FileQuickAction.getFileQuickAction(this.testID.channelScreenPrefix);
+    fileQuickActionDisabled = FileQuickAction.getFileQuickActionDisabled(this.testID.channelScreenPrefix);
+    imageQuickAction = ImageQuickAction.getImageQuickAction(this.testID.channelScreenPrefix);
+    imageQuickActionDisabled = ImageQuickAction.getImageQuickActionDisabled(this.testID.channelScreenPrefix);
+    cameraQuickAction = CameraQuickAction.getCameraQuickAction(this.testID.channelScreenPrefix);
+    cameraQuickActionDisabled = CameraQuickAction.getCameraQuickActionDisabled(this.testID.channelScreenPrefix);
+    postDraft = PostDraft.getPostDraft(this.testID.channelScreenPrefix);
+    postDraftArchived = PostDraft.getPostDraftArchived(this.testID.channelScreenPrefix);
+    postDraftReadOnly = PostDraft.getPostDraftReadOnly(this.testID.channelScreenPrefix);
+    postInput = PostDraft.getPostInput(this.testID.channelScreenPrefix);
+    sendButton = SendButton.getSendButton(this.testID.channelScreenPrefix);
+    sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.channelScreenPrefix);
 
     getLongPostPostItem = (postId, text) => {
         return LongPostScreen.getPost(postId, text);
     }
 
     getPostListPostItem = (postId, text) => {
-        return PostListScreen.getPost(postId, text);
+        return PostListScreen.getPost(this.testID.channelScreenPrefix, postId, text);
     }
 
     toBeVisible = async () => {
@@ -67,7 +73,7 @@ class ChannelScreen {
 
     open = async (user) => {
         // # Open channel screen
-        await SelectServerScreen.connectToServer();
+        await LoginScreen.open();
         await LoginScreen.login(user);
 
         return this.toBeVisible();
@@ -92,12 +98,19 @@ class ChannelScreen {
     }
 
     openPostOptionsFor = async (postId, text) => {
-        const post = await this.getPostListPostItem(postId, text);
-        await expect(post).toBeVisible();
+        const {postListPostItem} = await this.getPostListPostItem(postId, text);
+        await expect(postListPostItem).toBeVisible();
 
         // # Open post options
-        await post.longPress();
+        await postListPostItem.longPress();
         await PostOptions.toBeVisible();
+    }
+
+    postMessage = async (message) => {
+        // # Post message
+        await this.postInput.tap();
+        await this.postInput.typeText(message);
+        await this.tapSendButton();
     }
 
     tapSendButton = async () => {

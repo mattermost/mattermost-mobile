@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -23,7 +22,6 @@ export default class PostOption extends PureComponent {
         icon: PropTypes.string.isRequired,
         onPress: PropTypes.func.isRequired,
         text: PropTypes.string.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
     };
 
@@ -32,7 +30,7 @@ export default class PostOption extends PureComponent {
     }, 500);
 
     render() {
-        const {testID, destructive, icon, text, isLandscape, theme} = this.props;
+        const {destructive, icon, testID, text, theme} = this.props;
         const style = getStyleSheet(theme);
 
         const Touchable = Platform.select({
@@ -60,7 +58,7 @@ export default class PostOption extends PureComponent {
                 <Touchable
                     onPress={this.handleOnPress}
                     {...touchableProps}
-                    style={[style.row, padding(isLandscape)]}
+                    style={style.row}
                 >
                     <View style={style.row}>
                         <View style={[style.iconContainer]}>

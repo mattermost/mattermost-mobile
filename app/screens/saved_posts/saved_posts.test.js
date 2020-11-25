@@ -8,9 +8,9 @@ import Preferences from '@mm-redux/constants/preferences';
 import * as NavigationActions from 'app/actions/navigation';
 import {shallowWithIntl} from 'test/intl-test-helper';
 
-import FlaggedPosts from './flagged_posts';
+import SavedPosts from './saved_posts';
 
-describe('FlaggedPosts', () => {
+describe('SavedPosts', () => {
     const baseProps = {
         actions: {
             clearSearch: jest.fn(),
@@ -24,7 +24,7 @@ describe('FlaggedPosts', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <FlaggedPosts {...baseProps}/>,
+            <SavedPosts {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -41,7 +41,7 @@ describe('FlaggedPosts', () => {
             },
         };
         const wrapper = shallowWithIntl(
-            <FlaggedPosts {...newProps}/>,
+            <SavedPosts {...newProps}/>,
         );
 
         await wrapper.instance().getFlaggedPosts();
@@ -60,7 +60,7 @@ describe('FlaggedPosts', () => {
             },
         };
         const wrapper = shallowWithIntl(
-            <FlaggedPosts {...newProps}/>,
+            <SavedPosts {...newProps}/>,
         );
 
         wrapper.instance().getFlaggedPosts();
@@ -75,7 +75,7 @@ describe('FlaggedPosts', () => {
 
         const hashtag = 'test';
         const wrapper = shallowWithIntl(
-            <FlaggedPosts {...baseProps}/>,
+            <SavedPosts {...baseProps}/>,
         );
 
         dismissModal.mockImplementation(async () => {

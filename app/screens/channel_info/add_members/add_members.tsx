@@ -15,7 +15,6 @@ interface AddMembersProps {
     testID?: string;
     canManageUsers: boolean;
     groupConstrained: boolean;
-    isLandscape: boolean;
     theme: Theme;
 }
 
@@ -33,7 +32,7 @@ export default class AddMembers extends PureComponent<AddMembersProps> {
     });
 
     render() {
-        const {testID, canManageUsers, groupConstrained, isLandscape, theme} = this.props;
+        const {canManageUsers, groupConstrained, testID, theme} = this.props;
 
         if (canManageUsers && !groupConstrained) {
             return (
@@ -46,7 +45,6 @@ export default class AddMembers extends PureComponent<AddMembersProps> {
                         icon='account-plus-outline'
                         textId={t('channel_header.addMembers')}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                 </>
             );

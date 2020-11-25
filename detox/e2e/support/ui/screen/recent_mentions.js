@@ -39,11 +39,11 @@ class RecentMentionsScreen {
     }
 
     openPostOptionsFor = async (postId, text) => {
-        const post = await this.getSearchResultPostItem(postId, text);
-        await expect(post).toBeVisible();
+        const {searchResultPostItem} = await this.getSearchResultPostItem(postId, text);
+        await expect(searchResultPostItem).toBeVisible();
 
         // # Open post options
-        await post.longPress();
+        await searchResultPostItem.longPress();
         await PostOptions.toBeVisible();
     }
 }

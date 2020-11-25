@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {shallow} from 'enzyme';
+import {shallowWithIntl} from 'test/intl-test-helper';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -18,11 +18,10 @@ describe('AnnouncementBanner', () => {
         bannerText: 'Banner Text',
         bannerTextColor: '#fff',
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {
-        const wrapper = shallow(
+        const wrapper = shallowWithIntl(
             <AnnouncementBanner {...baseProps}/>,
         );
 

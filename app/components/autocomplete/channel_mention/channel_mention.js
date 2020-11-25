@@ -36,7 +36,6 @@ export default class ChannelMention extends PureComponent {
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
-        isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
     };
 
@@ -191,7 +190,6 @@ export default class ChannelMention extends PureComponent {
                 defaultMessage={section.defaultMessage}
                 loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
-                isLandscape={this.props.isLandscape}
                 isFirstSection={isFirstSection}
             />
         );

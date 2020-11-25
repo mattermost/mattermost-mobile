@@ -117,13 +117,10 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
   >
     <Text
       style={
-        Array [
-          Object {
-            "color": "#3d3c40",
-            "fontWeight": "600",
-          },
-          null,
-        ]
+        Object {
+          "color": "#3d3c40",
+          "fontWeight": "600",
+        }
       }
     >
       section_id

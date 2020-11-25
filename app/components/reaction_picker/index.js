@@ -3,16 +3,12 @@
 
 import {connect} from 'react-redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {getDimensions, isLandscape} from 'app/selectors/device';
 import ReactionPicker from './reaction_picker';
 
 function mapStateToProps(state) {
-    const {deviceWidth} = getDimensions(state);
     return {
         theme: getTheme(state),
         recentEmojis: state.views.recentEmojis,
-        deviceWidth,
-        isLandscape: isLandscape(state),
     };
 }
 

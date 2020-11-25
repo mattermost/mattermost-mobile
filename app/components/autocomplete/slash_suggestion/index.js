@@ -9,7 +9,6 @@ import {getAutocompleteCommands, getCommandAutocompleteSuggestions} from '@mm-re
 import {getAutocompleteCommandsList, getCommandAutocompleteSuggestionsList} from '@mm-redux/selectors/entities/integrations';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {isLandscape} from 'app/selectors/device';
 
 import SlashSuggestion from './slash_suggestion';
 
@@ -31,7 +30,6 @@ function mapStateToProps(state) {
         commands: mobileCommandsSelector(state),
         currentTeamId: getCurrentTeamId(state),
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
         suggestions: getCommandAutocompleteSuggestionsList(state),
     };
 }

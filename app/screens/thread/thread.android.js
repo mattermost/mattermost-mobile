@@ -30,8 +30,12 @@ export default class ThreadAndroid extends ThreadBase {
         if (this.hasRootPost()) {
             content = (
                 <>
-                    <Animated.View style={{flex: 1, paddingBottom: this.bottomPadding}}>
+                    <Animated.View
+                        testID='thread.screen'
+                        style={{flex: 1, paddingBottom: this.bottomPadding}}
+                    >
                         <PostList
+                            testID='thread.post_list'
                             renderFooter={this.renderFooter()}
                             indicateNewMessages={false}
                             postIds={postIds}
@@ -43,6 +47,7 @@ export default class ThreadAndroid extends ThreadBase {
                         />
                     </Animated.View>
                     <PostDraft
+                        testID='thread.post_draft'
                         ref={this.postDraft}
                         channelId={channelId}
                         channelIsArchived={channelIsArchived}

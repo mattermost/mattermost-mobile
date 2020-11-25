@@ -43,8 +43,12 @@ export default class ThreadIOS extends ThreadBase {
         if (this.hasRootPost()) {
             content = (
                 <>
-                    <Animated.View style={{flex: 1, paddingBottom: this.bottomPadding}}>
+                    <Animated.View
+                        testID='thread.screen'
+                        style={{flex: 1, paddingBottom: this.bottomPadding}}
+                    >
                         <PostList
+                            testID='thread.post_list'
                             renderFooter={this.renderFooter()}
                             indicateNewMessages={false}
                             postIds={postIds}
@@ -61,6 +65,7 @@ export default class ThreadIOS extends ThreadBase {
 
             postDraft = (
                 <PostDraft
+                    testID='thread.post_draft'
                     accessoriesContainerID={ACCESSORIES_CONTAINER_NATIVE_ID}
                     channelId={channelId}
                     channelIsArchived={channelIsArchived}

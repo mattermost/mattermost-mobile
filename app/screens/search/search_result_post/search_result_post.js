@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
-import Post from 'app/components/post';
+import Post from '@components/post';
 
 export default class SearchResultPost extends PureComponent {
     static propTypes = {

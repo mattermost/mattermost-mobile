@@ -11,19 +11,10 @@ import {Setup} from '@support/server_api';
 import {
     ChannelScreen,
     LoginScreen,
-    SelectServerScreen,
 } from '@support/ui/screen';
-import {serverUrl} from '@support/test_config';
-import {isAndroid, timeouts, wait} from '@support/utils';
 
-describe('On boarding', () => {
+describe('Login', () => {
     let user;
-
-    const {
-        connectButton,
-        errorText,
-        serverUrlInput,
-    } = SelectServerScreen;
 
     const {
         errorText: loginErrorText,
@@ -42,73 +33,6 @@ describe('On boarding', () => {
 
     afterAll(async () => {
         await ChannelScreen.logout();
-    });
-
-    it('should show Select server screen on initial load', async () => {
-        // * Verify basic elements on Select Server screen
-        await SelectServerScreen.toBeVisible();
-
-        await expect(serverUrlInput).toBeVisible();
-        await expect(connectButton).toBeVisible();
-    });
-
-    it('MM-T3383 should show error on empty server URL', async () => {
-        const screen = await SelectServerScreen.toBeVisible();
-
-        // # Enter an empty server URL
-        await serverUrlInput.typeText(' ');
-
-        // # Tap anywhere to hide keyboard
-        await screen.tap({x: 5, y: 10});
-
-        // * Verify that the error message does not exist
-        await waitFor(errorText).not.toExist().withTimeout(timeouts.HALF_SEC);
-
-        // # Tap connect button
-        await connectButton.tap();
-
-        // # Explicitly wait on Android before verifying error message
-        if (isAndroid()) {
-            await wait(timeouts.ONE_SEC);
-        }
-
-        // * Verify error message
-        await waitFor(errorText).toBeVisible().withTimeout(timeouts.ONE_SEC);
-        await expect(errorText).toHaveText('Please enter a valid server URL');
-    });
-
-    it('should show error on invalid server URL', async () => {
-        const screen = await SelectServerScreen.toBeVisible();
-
-        // # Enter invalid server URL
-        await serverUrlInput.clearText();
-        await serverUrlInput.typeText(serverUrl.substring(0, serverUrl.length - 1));
-
-        // # Tap anywhere to hide keyboard
-        await screen.tap({x: 5, y: 10});
-
-        // * Verify that the error message does not exist
-        await waitFor(errorText).not.toExist().withTimeout(timeouts.HALF_SEC);
-
-        // # Tap connect button
-        await connectButton.tap();
-
-        // * Verify error message
-        await waitFor(errorText).toBeVisible().withTimeout(timeouts.ONE_SEC);
-        await expect(errorText).toHaveText('Cannot connect to the server. Please check your server URL and internet connection.');
-    });
-
-    it('should move to Login screen on valid server URL', async () => {
-        await SelectServerScreen.toBeVisible();
-
-        // # Enter valid server URL
-        await serverUrlInput.replaceText(serverUrl);
-
-        // # Tap connect button
-        await connectButton.tap();
-
-        // * Verify that it goes into Login screen
-        await LoginScreen.toBeVisible();
     });
 
     it('should match elements on Login screen', async () => {

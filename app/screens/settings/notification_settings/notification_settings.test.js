@@ -23,7 +23,6 @@ describe('NotificationSettings', () => {
         updateMeRequest: {},
         currentUserStatus: 'status',
         enableAutoResponder: false,
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {

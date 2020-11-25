@@ -37,7 +37,6 @@ exports[`ChannelInfo -> ConvertPrivate should match snapshot for Convert to Priv
     action={[Function]}
     defaultMessage="Convert to Private Channel"
     icon="lock"
-    isLandscape={false}
     rightArrow={false}
     shouldRender={true}
     textId="mobile.channel_info.convert"

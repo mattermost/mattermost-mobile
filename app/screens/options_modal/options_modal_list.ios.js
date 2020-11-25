@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import FormattedText from '@components/formatted_text';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -24,7 +23,6 @@ export default class OptionsModalList extends PureComponent {
             PropTypes.string,
             PropTypes.object,
         ]),
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -121,21 +119,23 @@ export default class OptionsModalList extends PureComponent {
 
     render() {
         return (
-            <View style={[style.wrapper, padding(this.props.isLandscape)]}>
-                <View style={style.optionContainer}>
-                    {this.renderOptions()}
-                </View>
-                <View style={style.optionContainer}>
-                    <TouchableOpacity
-                        onPress={this.handleCancelPress}
-                        style={style.option}
-                    >
-                        <FormattedText
-                            id='channel_modal.cancel'
-                            defaultMessage='Cancel'
-                            style={style.optionCancelText}
-                        />
-                    </TouchableOpacity>
+            <View style={style.container}>
+                <View style={style.wrapper}>
+                    <View style={[style.optionContainer]}>
+                        {this.renderOptions()}
+                    </View>
+                    <View style={style.optionContainer}>
+                        <TouchableOpacity
+                            onPress={this.handleCancelPress}
+                            style={style.option}
+                        >
+                            <FormattedText
+                                id='channel_modal.cancel'
+                                defaultMessage='Cancel'
+                                style={style.optionCancelText}
+                            />
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         );
@@ -149,6 +149,7 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: 15,
+        width: '100%',
     },
     optionBorder: {
         borderBottomWidth: 1,
@@ -180,9 +181,13 @@ const style = StyleSheet.create({
         flex: 1,
         textAlign: 'center',
     },
-    wrapper: {
+    container: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
+    },
+    wrapper: {
+        maxWidth: 450,
+        width: '100%',
     },
 });

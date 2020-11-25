@@ -6,17 +6,17 @@ import {SelectServerScreen} from '@support/ui/screen';
 class LoginScreen {
     testID = {
         loginScreen: 'login.screen',
-        errorText: 'error.text',
-        passwordInput: 'password.input',
-        signinButton: 'signin.button',
-        usernameInput: 'username.input',
+        usernameInput: 'login.username.input',
+        passwordInput: 'login.password.input',
+        signinButton: 'login.signin.button',
+        errorText: 'login.error.text',
     }
 
     loginScreen = element(by.id(this.testID.loginScreen));
-    errorText = element(by.id(this.testID.errorText));
+    usernameInput = element(by.id(this.testID.usernameInput));
     passwordInput = element(by.id(this.testID.passwordInput));
     signinButton = element(by.id(this.testID.signinButton));
-    usernameInput = element(by.id(this.testID.usernameInput));
+    errorText = element(by.id(this.testID.errorText));
 
     toBeVisible = async () => {
         await expect(this.loginScreen).toBeVisible();

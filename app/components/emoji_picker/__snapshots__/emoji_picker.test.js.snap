@@ -1,9 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
-<Connect(SafeAreaIos)
-  excludeFooter={true}
-  excludeHeader={true}
+<RNCSafeAreaView
+  edges={
+    Array [
+      "left",
+      "right",
+    ]
+  }
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
 >
   <KeyboardAvoidingView
     behavior="padding"
@@ -24,48 +33,46 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
           "paddingVertical": 5,
         }
       }
+      testID="emoji_picker"
     >
-      <View
-        style={null}
-      >
-        <Search
-          autoCapitalize="none"
-          backArrowSize={24}
-          backgroundColor="transparent"
-          blurOnSubmit={false}
-          cancelTitle="Cancel"
-          containerHeight={40}
-          deleteIconSize={20}
-          editable={true}
-          inputHeight={33}
-          inputStyle={
-            Object {
-              "backgroundColor": "#ffffff",
-              "color": "#3d3c40",
-              "fontSize": 13,
-            }
+      <Search
+        autoCapitalize="none"
+        backArrowSize={24}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={40}
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "#ffffff",
+            "color": "#3d3c40",
+            "fontSize": 13,
           }
-          keyboardAppearance="light"
-          keyboardShouldPersist={false}
-          keyboardType="default"
-          onAnimationComplete={[Function]}
-          onBlur={[Function]}
-          onCancelButtonPress={[Function]}
-          onChangeText={[Function]}
-          onSelectionChange={[Function]}
-          placeholder="Search"
-          placeholderTextColor="rgba(61,60,64,0.5)"
-          returnKeyType="search"
-          searchBarRightMargin={0}
-          searchIconSize={24}
-          showArrow={false}
-          showCancel={true}
-          tintColorDelete="rgba(61,60,64,0.5)"
-          tintColorSearch="rgba(61,60,64,0.8)"
-          titleCancelColor="#3d3c40"
-          value=""
-        />
-      </View>
+        }
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onAnimationComplete={[Function]}
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(61,60,64,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        showArrow={false}
+        showCancel={true}
+        testID="emoji_picker.search_bar"
+        tintColorDelete="rgba(61,60,64,0.5)"
+        tintColorSearch="rgba(61,60,64,0.8)"
+        titleCancelColor="#3d3c40"
+        value=""
+      />
     </View>
     <View
       style={
@@ -10220,5 +10227,5 @@ exports[`components/emoji_picker/emoji_picker.ios should match snapshot 1`] = `
       </KeyboardTrackingView>
     </View>
   </KeyboardAvoidingView>
-</Connect(SafeAreaIos)>
+</RNCSafeAreaView>
 `;

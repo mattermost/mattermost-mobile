@@ -8,8 +8,12 @@ class PostListScreen {
         postListScreenPrefix: 'post_list.',
     }
 
-    getPost = (postId, text) => {
-        return Post.getPost(this.testID.postListScreenPrefix, postId, text);
+    getPost = (screenPrefix, postId, text) => {
+        const {postItem, postItemHeaderReply} = Post.getPost(`${screenPrefix}${this.testID.postListScreenPrefix}`, postId, text);
+        return {
+            postListPostItem: postItem,
+            postListPostItemHeaderReply: postItemHeaderReply,
+        };
     }
 }
 
