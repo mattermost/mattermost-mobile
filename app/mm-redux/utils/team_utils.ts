@@ -27,7 +27,11 @@ export function sortTeamsByUserPreference(teams: Array<Team>, locale: string, te
         return [];
     }
 
-    const teamsOrderList = teamsOrder.split(',');
+    const teamsOrderList = teamsOrder.split(',').filter((t) => t);
+
+    if (!teamsOrderList.length) {
+        return teams.sort(sortTeamsWithLocale(locale));
+    }
 
     const customSortedTeams = teams.filter((team) => {
         if (team !== null) {
