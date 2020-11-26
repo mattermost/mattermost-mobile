@@ -23,7 +23,7 @@ export function sortTeamsWithLocale(locale: string): (a: Team, b: Team) => numbe
 }
 
 export function sortTeamsByUserPreference(teams: Array<Team>, locale: string, teamsOrder = ''): Array<Team> {
-    if (!teams) {
+    if (!teams?.length) {
         return [];
     }
 
