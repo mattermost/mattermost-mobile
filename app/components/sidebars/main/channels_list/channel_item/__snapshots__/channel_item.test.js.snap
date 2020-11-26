@@ -30,6 +30,7 @@ exports[`ChannelItem should match snapshot 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -144,6 +145,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           },
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -257,6 +259,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
           },
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -370,6 +373,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
           },
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -472,6 +476,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -575,6 +580,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -678,6 +684,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -785,6 +792,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"
@@ -890,6 +898,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
           undefined,
         ]
       }
+      testID="main.sidebar.channels_list.list.channel_item.channel_id"
     >
       <ChannelIcon
         channelId="channel_id"

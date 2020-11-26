@@ -173,13 +173,24 @@ export default class SelectTeam extends PureComponent {
             );
         }
 
+        const testID = 'select_team.team_item';
+        const itemTestID = `${testID}.${item.id}`;
+        const teamIconTestID = `${testID}.team_icon`;
+
         return (
-            <View style={style.teamWrapper}>
+            <View
+                testID={testID}
+                style={style.teamWrapper}
+            >
                 <TouchableOpacity
                     onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
-                    <View style={style.teamContainer}>
+                    <View
+                        testID={itemTestID}
+                        style={style.teamContainer}
+                    >
                         <TeamIcon
+                            testID={teamIconTestID}
                             teamId={item.id}
                             styleContainer={style.teamIconContainer}
                             styleText={style.teamIconText}
@@ -243,7 +254,10 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
+            <SafeAreaView
+                testID='select_team.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.headingContainer}>
                     <View style={style.headingWrapper}>

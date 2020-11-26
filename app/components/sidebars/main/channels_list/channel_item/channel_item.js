@@ -167,6 +167,7 @@ export default class ChannelItem extends PureComponent {
             />
         );
 
+        const itemTestID = `${testID}.${channelId}`;
         const displayNameTestID = `${testID}.display_name`;
 
         return (
@@ -179,13 +180,16 @@ export default class ChannelItem extends PureComponent {
                     style={[style.container, mutedStyle]}
                 >
                     {extraBorder}
-                    <View style={[style.item, extraItemStyle]}>
+                    <View
+                        testID={itemTestID}
+                        style={[style.item, extraItemStyle]}
+                    >
                         {icon}
                         <Text
+                            testID={displayNameTestID}
                             style={[style.text, extraTextStyle]}
                             ellipsizeMode='tail'
                             numberOfLines={1}
-                            testID={displayNameTestID}
                         >
                             {channelDisplayName}
                         </Text>

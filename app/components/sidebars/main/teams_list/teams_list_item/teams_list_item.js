@@ -17,6 +17,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class TeamsListItem extends React.PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         currentTeamId: PropTypes.string.isRequired,
         currentUrl: PropTypes.string.isRequired,
         displayName: PropTypes.string.isRequired,
@@ -33,6 +34,7 @@ export default class TeamsListItem extends React.PureComponent {
 
     render() {
         const {
+            testID,
             currentTeamId,
             currentUrl,
             displayName,
@@ -60,8 +62,13 @@ export default class TeamsListItem extends React.PureComponent {
 
         let current;
         if (teamId === currentTeamId) {
+            const currentTestID = `${testID}.current`;
+
             current = (
-                <View style={styles.checkmarkContainer}>
+                <View
+                    testID={currentTestID}
+                    style={styles.checkmarkContainer}
+                >
                     <CompassIcon
                         name='check'
                         style={styles.checkmark}
@@ -70,15 +77,26 @@ export default class TeamsListItem extends React.PureComponent {
             );
         }
 
+        const itemTestID = `${testID}.${teamId}`;
+        const displayNameTestID = `${testID}.display_name`;
+        const teamIconTestID = `${testID}.team_icon`;
+
         return (
-            <View style={styles.teamWrapper}>
+            <View
+                testID={testID}
+                style={styles.teamWrapper}
+            >
                 <TouchableHighlight
                     underlayColor={changeOpacity(theme.sidebarTextHoverBg, 0.5)}
                     onPress={this.selectTeam}
                 >
-                    <View style={styles.teamContainer}>
+                    <View
+                        testID={itemTestID}
+                        style={styles.teamContainer}
+                    >
                         <View>
                             <TeamIcon
+                                testID={teamIconTestID}
                                 teamId={teamId}
                                 styleContainer={styles.teamIconContainer}
                                 styleText={styles.teamIconText}
@@ -87,6 +105,7 @@ export default class TeamsListItem extends React.PureComponent {
                         </View>
                         <View style={styles.teamNameContainer}>
                             <Text
+                                testID={displayNameTestID}
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
                                 style={styles.teamName}

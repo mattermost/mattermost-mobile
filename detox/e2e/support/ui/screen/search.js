@@ -9,7 +9,6 @@ import {
     ChannelScreen,
     SearchResultPostScreen,
 } from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
 
 class SearchScreen {
     testID = {
@@ -38,7 +37,6 @@ class SearchScreen {
     // convenience props
     searchBar = SearchBar.getSearchBar(this.testID.searchScreenPrefix);
     searchInput = SearchBar.getSearchInput(this.testID.searchScreenPrefix);
-    backButton = SearchBar.getBackButton(this.testID.searchScreenPrefix);
     cancelButton = SearchBar.getCancelButton(this.testID.searchScreenPrefix);
     clearButton = SearchBar.getClearButton(this.testID.searchScreenPrefix);
 
@@ -48,6 +46,10 @@ class SearchScreen {
 
     getSearchResultPostItem = (postId, text) => {
         return SearchResultPostScreen.getPost(postId, text);
+    }
+
+    getSearchResultPostMessageAtIndex = (index) => {
+        return SearchResultPostScreen.getPostMessageAtIndex(index);
     }
 
     toBeVisible = async () => {
@@ -63,17 +65,20 @@ class SearchScreen {
         return this.toBeVisible();
     }
 
-    back = async () => {
-        if (isAndroid()) {
-            await this.backButton.tap();
-        } else {
-            await this.cancelButton.tap();
-        }
+    cancel = async () => {
+        await this.cancelButton.tap();
         await expect(this.searchScreen).not.toBeVisible();
     }
 
     clear = async () => {
         await this.clearButton.tap();
+        await expect(this.clearButton).not.toExist();
+    }
+
+    hasSearchResultPostMessageAtIndex = async (index, postMessage) => {
+        await expect(
+            this.getSearchResultPostMessageAtIndex(index),
+        ).toHaveText(postMessage);
     }
 }
 

@@ -228,7 +228,10 @@ export default class SavedPosts extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
+            <SafeAreaView
+                testID='saved_messages.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 {component}
             </SafeAreaView>

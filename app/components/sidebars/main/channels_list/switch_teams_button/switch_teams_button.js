@@ -16,6 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class SwitchTeamsButton extends React.PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         currentTeamId: PropTypes.string,
         onShowTeams: PropTypes.func.isRequired,
         mentionCount: PropTypes.number.isRequired,
@@ -29,6 +30,7 @@ export default class SwitchTeamsButton extends React.PureComponent {
 
     render() {
         const {
+            testID,
             currentTeamId,
             mentionCount,
             teamsCount,
@@ -60,19 +62,26 @@ export default class SwitchTeamsButton extends React.PureComponent {
             />
         );
 
+        const itemTestID = `${testID}.${currentTeamId}`;
+        const teamIconTestID = `${testID}.team_icon`;
+
         return (
-            <View>
+            <View testID={testID}>
                 <TouchableHighlight
                     onPress={this.showTeams}
                     underlayColor={changeOpacity(theme.sidebarHeaderBg, 0.5)}
                 >
-                    <View style={styles.switcherContainer}>
+                    <View
+                        testID={itemTestID}
+                        style={styles.switcherContainer}
+                    >
                         <CompassIcon
                             name='chevron-left'
                             size={24}
                             style={styles.switcherArrow}
                         />
                         <TeamIcon
+                            testID={teamIconTestID}
                             teamId={currentTeamId}
                             styleContainer={styles.teamIconContainer}
                             styleText={styles.teamIconText}

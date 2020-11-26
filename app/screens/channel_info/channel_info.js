@@ -138,7 +138,7 @@ export default class ChannelInfo extends PureComponent {
                 </>
                 }
                 <Pinned
-                    testID='channel_info.pinned.action'
+                    testID='channel_info.pinned_messages.action'
                     channelId={currentChannel.id}
                     theme={theme}
                 />

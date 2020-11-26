@@ -7,12 +7,10 @@ import {
     ImageQuickAction,
     InputQuickAction,
     PostDraft,
+    PostList,
     SendButton,
 } from '@support/ui/component';
-import {
-    LongPostScreen,
-    PostListScreen,
-} from '@support/ui/screen';
+import {LongPostScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 
 class ThreadScreen {
@@ -43,12 +41,22 @@ class ThreadScreen {
     sendButton = SendButton.getSendButton(this.testID.threadScreenPrefix);
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.threadScreenPrefix);
 
-    getLongPostPostItem = (postId, text) => {
+    postList = new PostList(this.testID.threadScreenPrefix);
+
+    getLongPostItem = (postId, text) => {
         return LongPostScreen.getPost(postId, text);
     }
 
+    getLongPostMessage = () => {
+        return LongPostScreen.getPostMessage();
+    }
+
     getPostListPostItem = (postId, text) => {
-        return PostListScreen.getPost(this.testID.threadScreenPrefix, postId, text);
+        return this.postList.getPost(postId, text);
+    }
+
+    getPostMessageAtIndex = (index) => {
+        return this.postList.getPostMessageAtIndex(index);
     }
 
     toBeVisible = async () => {
@@ -75,6 +83,18 @@ class ThreadScreen {
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
         await expect(this.sendButtonDisabled).toBeVisible();
+    }
+
+    hasLongPostMessage = async (postMessage) => {
+        await expect(
+            this.getLongPostMessage(),
+        ).toHaveText(postMessage);
+    }
+
+    hasPostMessageAtIndex = async (index, postMessage) => {
+        await expect(
+            this.getPostMessageAtIndex(index),
+        ).toHaveText(postMessage);
     }
 }
 

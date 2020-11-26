@@ -329,6 +329,7 @@ export default class Permalink extends PureComponent {
 
         return (
             <SafeAreaView
+                testID='permalink.screen'
                 backgroundColor='transparent'
                 excludeHeader={true}
                 footerColor='transparent'

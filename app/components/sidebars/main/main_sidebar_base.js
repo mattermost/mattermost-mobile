@@ -217,6 +217,7 @@ export default class MainSidebarBase extends Component {
                     style={style.swiperContent}
                 >
                     <TeamsList
+                        testID='main.sidebar.teams_list'
                         closeMainSidebar={this.closeMainSidebar}
                     />
                 </View>

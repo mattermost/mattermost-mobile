@@ -99,6 +99,7 @@ export default class ChannelsList extends PureComponent {
         const filteredListTestID = `${testID}.filtered_list`;
         const listTestID = `${testID}.list`;
         const searchBarTestID = `${testID}.search_bar`;
+        const switchTeamsButtonTestID = `${testID}.switch_teams.button`;
 
         let list;
         if (searching) {
@@ -126,7 +127,13 @@ export default class ChannelsList extends PureComponent {
             fontSize: 15,
         };
 
-        const leftComponent = onShowTeams ? <SwitchTeamsButton onShowTeams={onShowTeams}/> : null;
+        const switchTeamsButton = (
+            <SwitchTeamsButton
+                testID={switchTeamsButtonTestID}
+                onShowTeams={onShowTeams}
+            />
+        );
+        const leftComponent = onShowTeams ? switchTeamsButton : null;
 
         const title = (
             <View

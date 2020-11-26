@@ -160,13 +160,24 @@ export default class Markdown extends PureComponent {
     renderText = ({context, literal}) => {
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
-            return <Text>{literal}</Text>;
+            return (
+                <Text testID='markdown_text'>
+                    {literal}
+                </Text>
+            );
         }
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
         const style = this.computeTextStyle(this.props.baseTextStyle, context);
 
-        return <Text style={style}>{literal}</Text>;
+        return (
+            <Text
+                testID='markdown_text'
+                style={style}
+            >
+                {literal}
+            </Text>
+        );
     };
 
     renderCodeSpan = ({context, literal}) => {

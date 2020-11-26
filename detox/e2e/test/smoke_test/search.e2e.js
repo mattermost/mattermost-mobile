@@ -99,6 +99,6 @@ describe('Search', () => {
 
         // # Go back to channel
         await ThreadScreen.back();
-        await SearchScreen.back();
+        await SearchScreen.cancel();
     });
 });
