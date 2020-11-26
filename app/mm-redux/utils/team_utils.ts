@@ -30,7 +30,7 @@ export function sortTeamsByUserPreference(teams: Array<Team>, locale: string, te
     const teamsOrderList = teamsOrder.split(',').filter((t) => t);
 
     if (!teamsOrderList.length) {
-        return teams.sort(sortTeamsWithLocale(locale));
+        return [...teams].sort(sortTeamsWithLocale(locale));
     }
 
     const customSortedTeams = teams.filter((team) => {
