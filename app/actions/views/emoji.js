@@ -108,10 +108,11 @@ export function addRecentUsedEmojisInMessage(message) {
         const emojis = message.match(RE_UNICODE_EMOJI);
         const namedEmojis = message.match(RE_NAMED_EMOJI);
         function emojiUnicode(input) {
-            if (input.length === 1) {
-                return input.codePointAt(0)?.toString(16);
+            const emoji = [];
+            for (const i of input) {
+                emoji.push(i.codePointAt(0).toString(16));
             }
-            return input.codePointAt(0)?.toString(16) + '-' + input.codePointAt(1)?.toString(16);
+            return emoji.join('-');
         }
         const emojisAvailableWithMatterMost = [];
         if (emojis) {
