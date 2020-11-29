@@ -16,7 +16,9 @@ export default function recentEmojis(state = [], action) {
         }
 
         nextState.unshift(action.emoji);
-
+        if (nextState.length > MAXIMUM_RECENT_EMOJI) {
+            nextState.splice(MAXIMUM_RECENT_EMOJI);
+        }
         return nextState;
     }
     case ViewTypes.ADD_RECENT_EMOJI_ARRAY: {
@@ -24,7 +26,7 @@ export default function recentEmojis(state = [], action) {
             return [emoji, ...currentState.filter((currentEmoji) => currentEmoji !== emoji)];
         }, state);
         if (nextRecentEmojis.length > MAXIMUM_RECENT_EMOJI) {
-            nextRecentEmojis.splice(0, recentEmojis.length - MAXIMUM_RECENT_EMOJI);
+            nextRecentEmojis.splice(MAXIMUM_RECENT_EMOJI);
         }
         return nextRecentEmojis;
     }
