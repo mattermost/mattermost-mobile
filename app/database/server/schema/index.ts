@@ -3,7 +3,7 @@
 import {AppSchema, appSchema, tableSchema} from '@nozbe/watermelondb';
 import {MM_TABLES} from '@constants/database';
 
-export const serverSchema: AppSchema = appSchema({
+export const defaultSchema: AppSchema = appSchema({
     version: 1,
     tables: [
         tableSchema({

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import keyMirror from '@utils/key_mirror';
-
 export const MM_TABLES = {
     DEFAULT: {
         APP: 'app',
@@ -41,12 +39,6 @@ export const MM_TABLES = {
     },
 };
 
-export const DB_NAME = keyMirror({
-    DEFAULT_DATABASE: null,
-    SERVER_DATABASE: null,
-});
-
 export default {
-    DB_NAME,
     MM_TABLES,
 };
