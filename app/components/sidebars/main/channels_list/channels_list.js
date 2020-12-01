@@ -127,13 +127,15 @@ export default class ChannelsList extends PureComponent {
             fontSize: 15,
         };
 
-        const switchTeamsButton = (
-            <SwitchTeamsButton
-                testID={switchTeamsButtonTestID}
-                onShowTeams={onShowTeams}
-            />
-        );
-        const leftComponent = onShowTeams ? switchTeamsButton : null;
+        let leftComponent;
+        if (onShowTeams) {
+            leftComponent = (
+                <SwitchTeamsButton
+                    testID={switchTeamsButtonTestID}
+                    onShowTeams={onShowTeams}
+                />
+            );
+        }
 
         const title = (
             <View
