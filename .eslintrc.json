@@ -22,6 +22,7 @@
     "__DEV__": true
   },
   "rules": {
+    "eol-last": ["error", "always"],
     "global-require": 0,
     "no-undefined": 0,
     "react/display-name": [2, { "ignoreTranspilerName": false }],
