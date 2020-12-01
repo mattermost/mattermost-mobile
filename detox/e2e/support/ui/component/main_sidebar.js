@@ -106,6 +106,12 @@ class MainSidebar {
             this.getTeamDisplayNameAtIndex(index),
         ).toHaveText(teamDisplayName);
     }
+
+    hasTeamIconContentAtIndex = async (index, teamIconContent) => {
+        await expect(
+            this.getTeamIconContentAtIndex(index),
+        ).toHaveText(teamIconContent);
+    }
 }
 
 const mainSidebar = new MainSidebar();

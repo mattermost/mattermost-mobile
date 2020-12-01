@@ -61,7 +61,7 @@ export default class TeamIcon extends React.PureComponent {
             styleText,
             styleImage,
         } = this.props;
-        const contentTestID = `${testID}.content.${teamId}`;
+        const contentTestID = `${testID}.content`;
         const styles = getStyleSheet(theme);
 
         let teamIconContent;

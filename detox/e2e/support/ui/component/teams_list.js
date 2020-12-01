@@ -8,6 +8,7 @@ class TeamsList {
         teamItemCurrent: 'main.sidebar.teams_list.flat_list.teams_list_item.current',
         teamItemDisplayName: 'main.sidebar.teams_list.flat_list.teams_list_item.display_name',
         teamItemIcon: 'main.sidebar.teams_list.flat_list.teams_list_item.team_icon',
+        teamItemIconContent: 'main.sidebar.teams_list.flat_list.teams_list_item.team_icon.content',
     }
 
     teamsList = element(by.id(this.testID.teamsList));
@@ -19,12 +20,14 @@ class TeamsList {
         const teamItemCurrentMatcher = by.id(this.testID.teamItemCurrent).withAncestor(teamItemMatcher);
         const teamItemDisplayNameMatcher = by.id(this.testID.teamItemDisplayName).withAncestor(teamItemMatcher);
         const teamItemIconMatcher = by.id(this.testID.teamItemIcon).withAncestor(teamItemMatcher);
+        const teamItemIconContentMatcher = by.id(this.testID.teamItemIconContent).withAncestor(teamItemMatcher);
 
         return {
             teamItem: element(teamItemMatcher),
             teamItemCurrent: element(teamItemCurrentMatcher),
             teamItemDisplayName: element(teamItemDisplayNameMatcher),
             teamItemIcon: element(teamItemIconMatcher),
+            teamItemIconContent: element(teamItemIconContentMatcher),
         };
     }
 
@@ -34,6 +37,10 @@ class TeamsList {
 
     getTeamDisplayNameAtIndex = (index) => {
         return element(by.id(this.testID.teamItemDisplayName)).atIndex(index);
+    }
+
+    getTeamIconContentAtIndex = (index) => {
+        return element(by.id(this.testID.teamItemIconContent)).atIndex(index);
     }
 }
 

@@ -37,7 +37,7 @@ exports[`TeamIcon should match snapshot 1`] = `
         Object {},
       ]
     }
-    testID="team_icon.content.team-id"
+    testID="team_icon.content"
   />
 </View>
 `;
