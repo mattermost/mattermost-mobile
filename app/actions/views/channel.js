@@ -248,6 +248,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
                 const myMemberships = getMyChannelMemberships(state);
                 if (!myMemberships[channel.id]) {
                     const currentUserId = getCurrentUserId(state);
+                    console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
                     const result = await dispatch(joinChannel(currentUserId, '', channel.id));
                     if (result.error || !result.data || !result.data.channel) {
                         return result;
