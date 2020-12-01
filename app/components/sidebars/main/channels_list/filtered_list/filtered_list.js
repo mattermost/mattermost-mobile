@@ -331,12 +331,7 @@ class FilteredList extends Component {
             return null;
         }
         return this.buildSectionsForSearch(props, props.term);
-    }, ([props], [prevProps]) => {
-        if (props.term !== prevProps.term) {
-            return false;
-        }
-        return true;
-    });
+    }, ([props], [prevProps]) => props.term === prevProps.term);
 
     keyExtractor = (item) => item.id || item;
 
