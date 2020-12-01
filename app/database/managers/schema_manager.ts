@@ -2,21 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {SQLiteAdapterOptions} from '@nozbe/watermelondb/adapters/sqlite';
-import {defaultSchema} from '../default/schema';
-import {DB_NAME} from '@constants/database';
-import {migrations as defaultMigration} from '../default/migration';
-import {migrations as serverMigration} from '../server/migration';
-import {schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
-import {serverSchema} from '../server/schema';
+import {AppSchema} from '@nozbe/watermelondb';
+import {Migration, schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
 
-export const default_schema_manager:SQLiteAdapterOptions = {
-    dbName: DB_NAME.DEFAULT_DATABASE,
-    schema: defaultSchema,
-    ...(defaultMigration.length > 0 && {migrations: schemaMigrations({migrations: defaultMigration})}),
-};
-
-export const server_schema_manager:SQLiteAdapterOptions = {
-    dbName: DB_NAME.SERVER_DATABASE,
-    schema: serverSchema,
-    ...(serverMigration.length > 0 && {migrations: schemaMigrations({migrations: serverMigration})}),
+/**
+ * Creates an adapter options object that will be used by the database manager.
+ * @param {string} dbPath - The dbName or filePath (e.g. AppGroup path) for the database
+ * @param {AppSchema} schema - The schema to be used for this connection
+ * @param {Migration} migrationSteps - The migration steps if any for this database
+ */
+// TODO : add callbacks for events 'started, success, error'
+export const create_schema_manager = (dbPath: string, schema: AppSchema, migrationSteps: Migration []):SQLiteAdapterOptions => {
+    return {
+        schema,
+        dbName: dbPath,
+        ...(migrationSteps.length > 0 && {migrations: schemaMigrations({migrations: migrationSteps})}),
+    };
 };
