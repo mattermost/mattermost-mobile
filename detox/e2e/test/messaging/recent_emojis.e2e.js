@@ -23,7 +23,7 @@ describe('Messaging', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T3495 RN apps: Recent emojis should include post message emojis', async () => {
+    it('MM-T3495 should include post message emojis in Recent Emojis section and Recently Used section', async () => {
         // * Verify channel screen is visible
         await ChannelScreen.toBeVisible();
 
