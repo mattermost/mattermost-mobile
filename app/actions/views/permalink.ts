@@ -106,9 +106,7 @@ function processShowPermaLink(postId: string, openAsPermalink: boolean) {
             showingPermalink = true;
             showModalOverCurrentContext(screen, passProps, options);
         }
-        return {
-            data: {},
-        };
+        return {data: true};
     };
 }
 
