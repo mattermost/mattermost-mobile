@@ -157,6 +157,7 @@ export default class SelectTeam extends PureComponent {
                 <View style={style.teamWrapper}>
                     <View style={style.teamContainer}>
                         <FormattedText
+                            testID='select_team.no_teams'
                             id={item.id}
                             defaultMessage={item.defaultMessage}
                             style={style.noTeam}
@@ -166,13 +167,25 @@ export default class SelectTeam extends PureComponent {
             );
         }
 
+        const testID = 'select_team.custom_list.team_item';
+        const itemTestID = `${testID}.${item.id}`;
+        const teamDisplayNameTestID = `${testID}.display_name`;
+        const teamIconTestID = `${testID}.team_icon`;
+
         return (
-            <View style={style.teamWrapper}>
+            <View
+                testID={testID}
+                style={style.teamWrapper}
+            >
                 <TouchableOpacity
                     onPress={preventDoubleTap(() => this.onSelectTeam(item))}
                 >
-                    <View style={style.teamContainer}>
+                    <View
+                        testID={itemTestID}
+                        style={style.teamContainer}
+                    >
                         <TeamIcon
+                            testID={teamIconTestID}
                             teamId={item.id}
                             styleContainer={style.teamIconContainer}
                             styleText={style.teamIconText}
@@ -180,6 +193,7 @@ export default class SelectTeam extends PureComponent {
                         />
                         <View style={style.teamNameContainer}>
                             <Text
+                                testID={teamDisplayNameTestID}
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
                                 style={style.teamName}
@@ -222,10 +236,14 @@ export default class SelectTeam extends PureComponent {
 
         if (this.props.currentUserIsGuest) {
             return (
-                <View style={style.container}>
+                <View
+                    testID='select_team.screen'
+                    style={style.container}
+                >
                     <StatusBar/>
                     <View style={style.headingContainer}>
                         <FormattedText
+                            testID='select_team.guest_cant_join_team'
                             id='mobile.select_team.guest_cant_join_team'
                             defaultMessage='Your guest account has no teams or channels assigned. Please contact an administrator.'
                             style={style.heading}
@@ -236,7 +254,10 @@ export default class SelectTeam extends PureComponent {
         }
 
         return (
-            <SafeAreaView style={style.container}>
+            <SafeAreaView
+                testID='select_team.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.headingContainer}>
                     <View style={style.headingWrapper}>
@@ -249,6 +270,7 @@ export default class SelectTeam extends PureComponent {
                     <View style={style.line}/>
                 </View>
                 <CustomList
+                    testID='select_team.custom_list'
                     data={teams}
                     loading={this.state.loading}
                     loadingComponent={

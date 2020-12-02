@@ -42,6 +42,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
       "flex": 1,
     }
   }
+  testID="select_team.screen"
 >
   <Connect(StatusBar) />
   <View
@@ -117,6 +118,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     renderItem={[Function]}
     shouldRenderSeparator={false}
     showNoResults={true}
+    testID="select_team.custom_list"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -157,6 +159,7 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
       "flex": 1,
     }
   }
+  testID="select_team.screen"
 >
   <Connect(StatusBar) />
   <View
@@ -178,6 +181,7 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
           "fontSize": 13,
         }
       }
+      testID="select_team.guest_cant_join_team"
     />
   </View>
 </View>
