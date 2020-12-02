@@ -114,13 +114,13 @@ export function addRecentUsedEmojisInMessage(message) {
             }
             return emoji.join('-');
         }
-        const emojisAvailableWithMatterMost = [];
+        const emojisAvailableWithMattermost = [];
         if (emojis) {
             for (const emoji of emojis) {
                 const unicode = emojiUnicode(emoji);
                 const index = EmojiIndicesByUnicode.get(unicode || '');
                 if (index) {
-                    emojisAvailableWithMatterMost.push(Emojis[index].aliases[0]);
+                    emojisAvailableWithMattermost.push(Emojis[index].aliases[0]);
                 }
             }
         }
@@ -128,13 +128,13 @@ export function addRecentUsedEmojisInMessage(message) {
             for (const emoji of namedEmojis) {
                 const index = EmojiIndicesByAlias.get(emoji.slice(1, -1));
                 if (index) {
-                    emojisAvailableWithMatterMost.push(Emojis[index].aliases[0]);
+                    emojisAvailableWithMattermost.push(Emojis[index].aliases[0]);
                 }
             }
         }
         dispatch({
             type: ViewTypes.ADD_RECENT_EMOJI_ARRAY,
-            emojis: emojisAvailableWithMatterMost,
+            emojis: emojisAvailableWithMattermost,
         });
     };
 }
