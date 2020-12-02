@@ -13,7 +13,7 @@ import {MigrationEvents} from '@typings/database';
  * @param {Migration} migrationSteps - The migration steps if any for this database
  * @param {MigrationEvents} migrationEvents - The migrationEvent object housing all the callbacks for the migration status onSuccess, onFailure and onStarted.
  */
-export const create_schema_manager = (dbPath: string, schema: AppSchema, migrationSteps?: Migration [], migrationEvents?: MigrationEvents):SQLiteAdapterOptions => {
+export const createSqliteAdaptorOptions = (dbPath: string, schema: AppSchema, migrationSteps?: Migration [], migrationEvents?: MigrationEvents):SQLiteAdapterOptions => {
     return {
         schema,
         dbName: dbPath,
