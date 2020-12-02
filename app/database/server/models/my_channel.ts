@@ -14,6 +14,6 @@ export default class MyChannel extends Model {
     @field('last_post_at') lastPostAt!: number
     @field('last_viewed_at') lastViewedAt!: number
     @field('mentions_count') mentionsCount!: number
-    @field('msg_count') msgCount!: number
+    @field('message_count') messageCount!: number
     @field('roles') roles!: string
 }

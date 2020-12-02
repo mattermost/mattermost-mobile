@@ -110,7 +110,7 @@ export const serverSchema: AppSchema = appSchema({
                 {name: 'last_post_at', type: 'number'},
                 {name: 'last_viewed_at', type: 'number'},
                 {name: 'mentions_count', type: 'number'},
-                {name: 'msg_count', type: 'number'},
+                {name: 'message_count', type: 'number'},
                 {name: 'roles', type: 'string'},
             ],
         }),

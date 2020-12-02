@@ -8,6 +8,6 @@ export default class MyChannel extends Model {
     lastPostAt: number;
     lastViewedAt: number;
     mentionsCount: number;
-    msgCount: number;
+    messageCount: number;
     roles: string;
 }
