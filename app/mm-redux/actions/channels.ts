@@ -1517,14 +1517,6 @@ export function getChannelMemberCountsByGroup(channelId: string, includeTimezone
     };
 }
 
-export function isChannelMember(channelId: string): ActionFunc {
-    return (_dispatch: DispatchFunc, getState: GetStateFunc) => {
-        return {
-            data: Boolean(getState().entities.channels?.membersInChannel[channelId]?.channel_id),
-        };
-    };
-}
-
 export default {
     selectChannel,
     createChannel,

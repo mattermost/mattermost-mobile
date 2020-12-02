@@ -8,7 +8,7 @@ import {showModalOverCurrentContext} from '@actions/navigation';
 import {loadChannelsByTeamName} from '@actions/views/channel';
 import {getPost} from '@actions/views/post';
 import {selectFocusedPostId} from '@mm-redux/actions/posts';
-import {getChannel, isChannelMember, joinChannel} from '@mm-redux/actions/channels';
+import {getChannel, joinChannel} from '@mm-redux/actions/channels';
 import {General} from '@mm-redux/constants';
 import type {DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
 import {permalinkBadTeam} from '@utils/general';
@@ -16,6 +16,7 @@ import {changeOpacity} from '@utils/theme';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/common';
 import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {isSystemAdmin} from '@mm-redux/utils/user_utils';
+import {isChannelMember} from '@utils/channels';
 
 export let showingPermalink = false;
 
@@ -36,7 +37,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
                 }
                 const channelId = postData.data?.channel_id;
                 if (channelId) {
-                    const {data: isMember} = await dispatch(isChannelMember(channelId));
+                    const {data: isMember} = isChannelMember(state, channelId);
                     if (!isMember) {
                         const {data: channelData, error: channelError} = await dispatch(getChannel(channelId));
                         if (channelError) {
@@ -105,7 +106,9 @@ function processShowPermaLink(postId: string, openAsPermalink: boolean) {
             showingPermalink = true;
             showModalOverCurrentContext(screen, passProps, options);
         }
-        return {};
+        return {
+            data: {},
+        };
     };
 }
 
