@@ -28,7 +28,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
                 intl.formatMessage({
                     id: 'mobile.failed_network_action.teams_channel_description',
                     defaultMessage: 'Channels could not be loaded for {teamName}.',
-                }, {teamName})
+                }, {teamName}),
             );
             return null;
         }
@@ -45,7 +45,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
                     intl.formatMessage({
                         id: 'permalink.unable_to_get_post',
                         defaultMessage: 'Unable to get the post data.',
-                    }, {teamName})
+                    }, {teamName}),
                 );
                 return {error: postData.data};
             }
@@ -59,7 +59,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
                             intl.formatMessage({
                                 id: 'permalink.unable_to_get_channel',
                                 defaultMessage: 'Unable to get the channel data.',
-                            }, {teamName})
+                            }, {teamName}),
                         );
                         return {error: channelError};
                     }
@@ -89,12 +89,12 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
                                     }),
                                     onPress: async () => {
                                         const joinResponse = await dispatch(joinChannel(currentUserId, teamName, channelId, channelData.name));
-                                        if(joinResponse.error) {
+                                        if (joinResponse.error) {
                                             Alert.alert(
                                                 intl.formatMessage({
                                                     id: 'permalink.unable_to_jon_channel',
                                                     defaultMessage: 'Unable to join the channel',
-                                                })
+                                                }),
                                             );
                                         } else {
                                             dispatch(processShowPermaLink(postId, openAsPermalink));
