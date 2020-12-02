@@ -1,0 +1,124 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+import React from 'react';
+import {injectIntl, intlShape} from 'react-intl';
+import {shallowEqual, useDispatch, useSelector} from 'react-redux';
+
+import type {GlobalState} from '@mm-redux/types/store';
+
+import {resetToChannel} from 'app/actions/navigation';
+import {ViewTypes} from 'app/constants';
+import tracker from 'app/utils/time_tracker';
+import {scheduleExpiredNotification} from '@actions/views/session';
+import {ssoLogin} from '@actions/views/user';
+import {Client4} from '@mm-redux/client';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+
+import SSOWithRedirectURL from './sso_with_redirect_url';
+import SSOWithWebView from './sso_with_webview';
+
+interface SSOProps {
+    intl: typeof intlShape;
+    ssoType: string;
+}
+
+function SSO({intl, ssoType}: SSOProps) {
+    const [config, serverUrl, theme] = useSelector((state: GlobalState) => ([
+        getConfig(state),
+        state.views.selectServer.serverUrl,
+        getTheme(state),
+    ]), shallowEqual);
+
+    const [error, setError] = React.useState(null);
+
+    const dispatch: any = useDispatch();
+
+    let completeUrlPath = '';
+    let loginUrl = '';
+    switch (ssoType) {
+    case ViewTypes.GOOGLE: {
+        completeUrlPath = '/signup/google/complete';
+        loginUrl = `${serverUrl}/oauth/google/mobile_login`;
+        break;
+    }
+    case ViewTypes.GITLAB: {
+        completeUrlPath = '/signup/gitlab/complete';
+        loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;
+        break;
+    }
+    case ViewTypes.SAML: {
+        completeUrlPath = '/login/sso/saml';
+        loginUrl = `${serverUrl}/login/sso/saml?action=mobile`;
+        break;
+    }
+    case ViewTypes.OFFICE365: {
+        completeUrlPath = '/signup/office365/complete';
+        loginUrl = `${serverUrl}/oauth/office365/login`;
+        break;
+    }
+    }
+
+    const onLoadEndError = (e: any) => {
+        console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
+        let error = e.message;
+        if (e.details) {
+            error += `\n${e.details.message}`;
+        }
+
+        if (e.url) {
+            error += `\nURL: ${e.url}`;
+        }
+        setError(error);
+    };
+
+    const onMMToken = (token: string) => {
+        Client4.setToken(token);
+        dispatch(ssoLogin()).then((result: any) => {
+            if (result.error) {
+                onLoadEndError(result.error);
+                return;
+            }
+            goToChannel();
+        }).catch((e) => {
+            console.log('enya', 'token', e);
+        });
+    };
+
+    const goToChannel = () => {
+        tracker.initialLoad = Date.now();
+        scheduleSessionExpiredNotification();
+        resetToChannel();
+    };
+
+    const scheduleSessionExpiredNotification = () => {
+        dispatch(scheduleExpiredNotification(intl));
+    };
+
+    const isSSOWithRedirectURLAvailable = true || isMinimumServerVersion(config.Version, 5, 40, 0);
+
+    const props = {
+        error,
+        loginUrl,
+        onCSRFToken: Client4.setCSRF,
+        onMMToken,
+        theme,
+    };
+
+    if (isSSOWithRedirectURLAvailable) {
+        return (
+            <SSOWithRedirectURL {...props}/>
+        );
+    }
+    return (
+        <SSOWithWebView
+            {...props}
+            completeUrlPath={completeUrlPath}
+            serverUrl={serverUrl}
+            ssoType={ssoType}
+        />
+    );
+}
+
+export default React.memo(injectIntl(SSO));
