@@ -1,13 +1,15 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 import React from 'react';
-import { Linking, Text, View } from 'react-native';
+import {Linking, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
 import Loading from 'app/components/loading';
-import { changeOpacity, makeStyleSheetFromTheme } from 'app/utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import { setDeepLinkURL } from '@actions/views/root';
-import { Theme } from '@mm-redux/types/preferences';
+import {setDeepLinkURL} from '@actions/views/root';
+import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
 
 interface SSOWithRedirectURLProps {
@@ -19,31 +21,32 @@ interface SSOWithRedirectURLProps {
 }
 
 function SSOWithRedirectURL({loginUrl, onCSRFToken, onMMToken, theme}: SSOWithRedirectURLProps) {
-    const [error, setError] = React.useState<string>('');
+    // @TODO
+    const [error/*, setError*/] = React.useState<string>('');
     const style = React.useMemo(() => getStyleSheet(theme), [theme]);
 
     // @TODO: REPLACE IT
-    const redirectUrl = `mattermost://callback`;
+    const redirectUrl = 'mattermost://callback';
 
     const init = () => {
         const parsedUrl = urlParse(loginUrl, true);
         parsedUrl.set('query', {
             ...parsedUrl.query,
-            redirect_to: redirectUrl
+            redirect_to: redirectUrl,
         });
         const url = parsedUrl.toString();
         Linking.canOpenURL(url).then(() => {
             Linking.openURL(url);
-        }).catch((error) => {
+        }).catch(() => {
             // @TODO: SHOW ERROR
         });
     };
 
-    const onURLChange = ({ url }: { url: string }) => {
+    const onURLChange = ({url}: { url: string }) => {
         if (url && url.startsWith(redirectUrl)) {
             Store?.redux?.dispatch(setDeepLinkURL(''));
             const parsedUrl = urlParse(url, true);
-            if(parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
+            if (parsedUrl.query && parsedUrl.query.MMCSRF && parsedUrl.query.MMAUTHTOKEN) {
                 onCSRFToken(parsedUrl.query.MMCSRF);
                 onMMToken(parsedUrl.query.MMAUTHTOKEN);
             } else {
@@ -64,12 +67,12 @@ function SSOWithRedirectURL({loginUrl, onCSRFToken, onMMToken, theme}: SSOWithRe
         <SafeAreaView style={style.container}>
             {error ? (
                 <View style={style.errorContainer}>
-                    <Text style={style.errorText}>...</Text>
+                    <Text style={style.errorText}>{'...'}</Text>
                 </View>
             ) : (
                 <View style={style.infoContainer}>
-                    <Loading />
-                    <Text></Text>
+                    <Loading/>
+                    <Text/>
                 </View>
             )}
         </SafeAreaView>
@@ -79,7 +82,7 @@ function SSOWithRedirectURL({loginUrl, onCSRFToken, onMMToken, theme}: SSOWithRe
 const getStyleSheet = makeStyleSheetFromTheme((theme: any) => {
     return {
         container: {
-            flex: 1
+            flex: 1,
         },
         errorContainer: {
             alignItems: 'center',
@@ -96,9 +99,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: any) => {
         infoContainer: {
             alignItems: 'center',
             flex: 1,
-            justifyContent: 'center'
-        }
+            justifyContent: 'center',
+        },
     };
-})
+});
 
 export default React.memo(SSOWithRedirectURL);

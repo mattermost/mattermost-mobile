@@ -62,15 +62,15 @@ function SSO({intl, ssoType}: SSOProps) {
 
     const onLoadEndError = (e: any) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
-        let error = e.message;
+        let errorMessage = e.message;
         if (e.details) {
-            error += `\n${e.details.message}`;
+            errorMessage += `\n${e.details.message}`;
         }
 
         if (e.url) {
-            error += `\nURL: ${e.url}`;
+            errorMessage += `\nURL: ${e.url}`;
         }
-        setError(error);
+        setError(errorMessage);
     };
 
     const onMMToken = (token: string) => {
@@ -81,8 +81,8 @@ function SSO({intl, ssoType}: SSOProps) {
                 return;
             }
             goToChannel();
-        }).catch((e) => {
-            console.log('enya', 'token', e);
+        }).catch(() => {
+            // @TODO
         });
     };
 
