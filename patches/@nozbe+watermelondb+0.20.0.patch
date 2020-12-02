@@ -1,0 +1,111 @@
+diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
+index 02ec451..13ce906 100644
+--- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
++++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
+@@ -26,19 +26,19 @@ var _makeDispatcher = require("./makeDispatcher");
+ /* eslint-disable global-require */
+ // Hacky-ish way to create an object with NativeModule-like shape, but that can dispatch method
+ // calls to async, synch NativeModule, or JSI implementation w/ type safety in rest of the impl
+-var SQLiteAdapter =
+-/*#__PURE__*/
+-function () {
++var SQLiteAdapter = /*#__PURE__*/function () {
+   function SQLiteAdapter(options) {
+     this._tag = (0, _common.connectionTag)();
+     // console.log(`---> Initializing new adapter (${this._tag})`)
+     var {
+       dbName: dbName,
+       schema: schema,
+-      migrations: migrations
++      migrations: migrations,
++      migrationEvents: migrationEvents
+     } = options;
+     this.schema = schema;
+     this.migrations = migrations;
++    this.migrationEvents = migrationEvents;
+     this._dbName = this._getName(dbName);
+     this._dispatcherType = (0, _makeDispatcher.getDispatcherType)(options);
+     this._dispatcher = (0, _makeDispatcher.makeDispatcher)(this._dispatcherType, this._tag, this._dbName);
+@@ -64,7 +64,7 @@ function () {
+         experimentalUseJSI: 'jsi' === this._dispatcherType
+       }, this.migrations ? {
+         migrations: this.migrations
+-      } : {}, {}, options));
++      } : {}, options));
+       (0, _common.invariant)(clone._dispatcherType === this._dispatcherType, 'testCloned adapter has bad dispatcher type');
+       return Promise.resolve(clone._initPromise).then(function () {
+         try {
+@@ -137,7 +137,7 @@ function () {
+ 
+   _proto._setUpWithMigrations = function _setUpWithMigrations(databaseVersion) {
+     return new Promise(function ($return, $error) {
+-      var _this2, migrationSteps;
++      var _this2, migrationSteps, _this$migrationEvents, _this$migrationEvents2, _this$migrationEvents3, _this$migrationEvents4, _this$migrationEvents5, _this$migrationEvents6;
+ 
+       _this2 = this;
+ 
+@@ -149,6 +149,8 @@ function () {
+       if (migrationSteps) {
+         _common.logger.log("[WatermelonDB][SQLite] Migrating from version ".concat(databaseVersion, " to ").concat(this.schema.version, "..."));
+ 
++        null === (_this$migrationEvents = this.migrationEvents) || void 0 === _this$migrationEvents ? void 0 : null === (_this$migrationEvents2 = _this$migrationEvents.onStarted) || void 0 === _this$migrationEvents2 ? void 0 : _this$migrationEvents2.call(_this$migrationEvents);
++
+         var $Try_1_Post = function () {
+           try {
+             return $If_4.call(this);
+@@ -161,11 +163,12 @@ function () {
+           try {
+             _common.logger.error('[WatermelonDB][SQLite] Migration failed', error);
+ 
++            null === (_this$migrationEvents5 = this.migrationEvents) || void 0 === _this$migrationEvents5 ? void 0 : null === (_this$migrationEvents6 = _this$migrationEvents5.onFailure) || void 0 === _this$migrationEvents6 ? void 0 : _this$migrationEvents6.call(_this$migrationEvents5, error);
+             throw error;
+           } catch ($boundEx) {
+             return $error($boundEx);
+           }
+-        };
++        }.bind(this);
+ 
+         try {
+           return Promise.resolve((0, _Result.toPromise)(function (callback) {
+@@ -174,11 +177,12 @@ function () {
+             try {
+               _common.logger.log('[WatermelonDB][SQLite] Migration successful');
+ 
++              null === (_this$migrationEvents3 = this.migrationEvents) || void 0 === _this$migrationEvents3 ? void 0 : null === (_this$migrationEvents4 = _this$migrationEvents3.onSuccess) || void 0 === _this$migrationEvents4 ? void 0 : _this$migrationEvents4.call(_this$migrationEvents3);
+               return $Try_1_Post();
+             } catch ($boundEx) {
+               return $Try_1_Catch($boundEx);
+             }
+-          }, $Try_1_Catch);
++          }.bind(this), $Try_1_Catch);
+         } catch (error) {
+           $Try_1_Catch(error)
+         }
+diff --git a/node_modules/@nozbe/watermelondb/native/.DS_Store b/node_modules/@nozbe/watermelondb/native/.DS_Store
+new file mode 100644
+index 0000000..e686f60
+Binary files /dev/null and b/node_modules/@nozbe/watermelondb/native/.DS_Store differ
+diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB.xcodeproj/project.xcworkspace/xcuserdata/avinashlingaloo.xcuserdatad/UserInterfaceState.xcuserstate b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB.xcodeproj/project.xcworkspace/xcuserdata/avinashlingaloo.xcuserdatad/UserInterfaceState.xcuserstate
+new file mode 100644
+index 0000000..6f190d2
+Binary files /dev/null and b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB.xcodeproj/project.xcworkspace/xcuserdata/avinashlingaloo.xcuserdatad/UserInterfaceState.xcuserstate differ
+diff --git a/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB.xcodeproj/xcuserdata/avinashlingaloo.xcuserdatad/xcschemes/xcschememanagement.plist b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB.xcodeproj/xcuserdata/avinashlingaloo.xcuserdatad/xcschemes/xcschememanagement.plist
+new file mode 100644
+index 0000000..7915787
+--- /dev/null
++++ b/node_modules/@nozbe/watermelondb/native/ios/WatermelonDB.xcodeproj/xcuserdata/avinashlingaloo.xcuserdatad/xcschemes/xcschememanagement.plist
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>SchemeUserState</key>
++	<dict>
++		<key>WatermelonDB.xcscheme_^#shared#^_</key>
++		<dict>
++			<key>orderHint</key>
++			<integer>0</integer>
++		</dict>
++	</dict>
++</dict>
++</plist>
