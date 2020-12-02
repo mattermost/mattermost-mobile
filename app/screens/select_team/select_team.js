@@ -26,6 +26,7 @@ import {resetToChannel, dismissModal} from 'app/actions/navigation';
 import {preventDoubleTap} from 'app/utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
+import memoize from 'memoize-one';
 
 const TEAMS_PER_PAGE = 50;
 
@@ -68,12 +69,6 @@ export default class SelectTeam extends PureComponent {
         this.getTeams();
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.teams !== nextProps.teams) {
-            this.buildData(nextProps);
-        }
-    }
-
     navigationButtonPressed({buttonId}) {
         const {logout} = this.props.actions;
 
@@ -98,17 +93,15 @@ export default class SelectTeam extends PureComponent {
         });
     }
 
-    buildData = (props) => {
-        if (props.teams.length) {
-            this.setState({teams: props.teams});
-        } else {
-            const teams = [{
-                id: t('mobile.select_team.no_teams'),
-                defaultMessage: 'There are no available teams for you to join.',
-            }];
-            this.setState({teams});
+    memoizedTeams = memoize((teams) => {
+        if (teams.length) {
+            return teams;
         }
-    };
+        return [{
+            id: t('mobile.select_team.no_teams'),
+            defaultMessage: 'There are no available teams for you to join.',
+        }];
+    })
 
     close = () => {
         dismissModal();
@@ -164,6 +157,7 @@ export default class SelectTeam extends PureComponent {
                 <View style={style.teamWrapper}>
                     <View style={style.teamContainer}>
                         <FormattedText
+                            testID='select_team.no_teams'
                             id={item.id}
                             defaultMessage={item.defaultMessage}
                             style={style.noTeam}
@@ -173,8 +167,9 @@ export default class SelectTeam extends PureComponent {
             );
         }
 
-        const testID = 'select_team.team_item';
+        const testID = 'select_team.custom_list.team_item';
         const itemTestID = `${testID}.${item.id}`;
+        const teamDisplayNameTestID = `${testID}.display_name`;
         const teamIconTestID = `${testID}.team_icon`;
 
         return (
@@ -198,6 +193,7 @@ export default class SelectTeam extends PureComponent {
                         />
                         <View style={style.teamNameContainer}>
                             <Text
+                                testID={teamDisplayNameTestID}
                                 numberOfLines={1}
                                 ellipsizeMode='tail'
                                 style={style.teamName}
@@ -220,7 +216,7 @@ export default class SelectTeam extends PureComponent {
 
     render() {
         const {theme} = this.props;
-        const {teams} = this.state;
+        const teams = this.memoizedTeams(this.props.teams);
         const style = getStyleFromTheme(theme);
 
         if (this.state.joining) {
@@ -240,10 +236,14 @@ export default class SelectTeam extends PureComponent {
 
         if (this.props.currentUserIsGuest) {
             return (
-                <View style={style.container}>
+                <View
+                    testID='select_team.screen'
+                    style={style.container}
+                >
                     <StatusBar/>
                     <View style={style.headingContainer}>
                         <FormattedText
+                            testID='select_team.guest_cant_join_team'
                             id='mobile.select_team.guest_cant_join_team'
                             defaultMessage='Your guest account has no teams or channels assigned. Please contact an administrator.'
                             style={style.heading}
@@ -270,6 +270,7 @@ export default class SelectTeam extends PureComponent {
                     <View style={style.line}/>
                 </View>
                 <CustomList
+                    testID='select_team.custom_list'
                     data={teams}
                     loading={this.state.loading}
                     loadingComponent={
