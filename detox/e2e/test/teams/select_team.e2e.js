@@ -36,6 +36,7 @@ describe('Select Team', () => {
 
     afterAll(async () => {
         await ChannelScreen.logout();
+        await Team.apiPatchTeams({allow_open_invite: true});
     });
 
     it('MM-T3619 should be able to select a team', async () => {
