@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SQLiteAdapterOptions} from '@nozbe/watermelondb/adapters/sqlite';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
 import {MMAdaptorOptions} from '@typings/database';
 import {defaultSchema} from '../default/schema';
@@ -18,11 +18,13 @@ export const createSqliteAdaptorOptions = ({
     migrationEvents = undefined,
     migrationSteps = undefined,
     schema = defaultSchema,
-}: MMAdaptorOptions):SQLiteAdapterOptions => {
-    return {
+}: MMAdaptorOptions): SQLiteAdapter => {
+    return new SQLiteAdapter({
         schema,
         dbName: dbPath,
         ...(Boolean(migrationEvents) && {migrationEvents}),
         ...(Boolean(migrationSteps) && migrationSteps!.length > 0 && {migrations: schemaMigrations({migrations: migrationSteps!})}),
-    };
+    });
 };
+
+// FIXME :  Update test

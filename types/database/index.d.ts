@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
-import {AppSchema} from '@nozbe/watermelondb';
+import {AppSchema, Model} from '@nozbe/watermelondb';
+import {DatabaseAdapter} from '@nozbe/watermelondb/adapters/type';
+import {Class} from '@nozbe/watermelondb/utils/common';
 
 export type MigrationEvents = {
     onSuccess?: () => void,
@@ -14,4 +16,10 @@ export type MMAdaptorOptions = {
     schema: AppSchema,
     migrationSteps?: Migration [],
     migrationEvents?: MigrationEvents
+}
+
+export type MMDatabaseConnection = {
+    actionsEnabled: boolean,
+    adapter: DatabaseAdapter,
+    modelClasses: Array<Class<Model>>
 }
