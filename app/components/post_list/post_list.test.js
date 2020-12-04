@@ -24,6 +24,7 @@ describe('PostList', () => {
             refreshChannelWithRetry: jest.fn(),
             showPermalink: jest.fn(),
             setDeepLinkURL: jest.fn(),
+            loadPostsIfNecessaryWithRetry: jest.fn(),
         },
         channelId: 'channel-id',
         deepLinkURL: '',
@@ -32,6 +33,7 @@ describe('PostList', () => {
         serverURL,
         siteURL: 'https://site-url.fake',
         theme: Preferences.THEMES.default,
+        connected: true,
     };
 
     const deepLinks = {
@@ -151,5 +153,15 @@ describe('PostList', () => {
         expect(EventEmitter.off).toHaveBeenCalledTimes(2);
         expect(EventEmitter.off).toHaveBeenCalledWith('scroll-to-bottom', instance.handleSetScrollToBottom);
         expect(EventEmitter.off).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, instance.handleClosePermalink);
+    });
+    test('should request changes on reconnection', () => {
+        const initialProps = {...baseProps, connected: false};
+        const wrapper = shallow(
+            <PostList {...initialProps}/>,
+        );
+
+        // reconnect
+        wrapper.setProps({connected: true});
+        expect(baseProps.actions.loadPostsIfNecessaryWithRetry).toHaveBeenCalled();
     });
 });
