@@ -154,14 +154,4 @@ describe('PostList', () => {
         expect(EventEmitter.off).toHaveBeenCalledWith('scroll-to-bottom', instance.handleSetScrollToBottom);
         expect(EventEmitter.off).toHaveBeenCalledWith(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, instance.handleClosePermalink);
     });
-    test('should request changes on reconnection', () => {
-        const initialProps = {...baseProps, connected: false};
-        const wrapper = shallow(
-            <PostList {...initialProps}/>,
-        );
-
-        // reconnect
-        wrapper.setProps({connected: true});
-        expect(baseProps.actions.loadPostsIfNecessaryWithRetry).toHaveBeenCalled();
-    });
 });

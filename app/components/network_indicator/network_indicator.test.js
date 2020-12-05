@@ -11,6 +11,8 @@ import {ViewTypes} from '@constants';
 
 import NetworkIndicator from './network_indicator';
 
+import * as Helpers from '@mm-redux/actions/helpers';
+
 jest.useFakeTimers();
 
 describe('AttachmentFooter', () => {
@@ -32,6 +34,7 @@ describe('AttachmentFooter', () => {
             setCurrentUserStatusOffline: jest.fn(),
             startPeriodicStatusUpdates: jest.fn(),
             stopPeriodicStatusUpdates: jest.fn(),
+            loadPostsIfNecessaryWithRetry: jest.fn(),
         },
     };
 
@@ -74,5 +77,18 @@ describe('AttachmentFooter', () => {
             expect(instance.visible).toBe(false);
             expect(wrapper.state('opacity')).toBe(0);
         });
+    });
+
+    test('should request changes on reconnection', () => {
+        // eslint-disable-next-line
+        Helpers.debounce = jest.fn((myfun) => myfun);
+        const initialProps = {...baseProps, isOnline: false, currentChannelId: '1'};
+        const wrapper = shallow(
+            <NetworkIndicator {...initialProps}/>,
+        );
+
+        // reconnect
+        wrapper.setProps({isOnline: true});
+        expect(baseProps.actions.loadPostsIfNecessaryWithRetry).toHaveBeenCalled();
     });
 });

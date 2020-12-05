@@ -46,7 +46,6 @@ export default class PostList extends PureComponent {
             refreshChannelWithRetry: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
             showPermalink: PropTypes.func.isRequired,
-            loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
@@ -145,9 +144,6 @@ export default class PostList extends PureComponent {
             this.props.extraData
         ) {
             this.loadToFillContent();
-        }
-        if (prevProps.connected !== this.props.connected && this.props.connected) {
-            actions.loadPostsIfNecessaryWithRetry(this.props.channelId);
         }
     }
 
