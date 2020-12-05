@@ -11,7 +11,6 @@ import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from '@mm-redux/ut
 
 import {handleSelectChannelByName, refreshChannelWithRetry} from 'app/actions/views/channel';
 import {setDeepLinkURL} from 'app/actions/views/root';
-import {getConnection} from 'app/selectors/device';
 
 import PostList from './post_list';
 
@@ -31,7 +30,6 @@ function makeMapStateToProps() {
             serverURL: getCurrentUrl(state),
             siteURL: getConfig(state).SiteURL,
             theme: getTheme(state),
-            connected: getConnection(state),
         };
     };
 }

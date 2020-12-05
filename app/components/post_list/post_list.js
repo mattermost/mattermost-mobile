@@ -72,7 +72,6 @@ export default class PostList extends PureComponent {
         location: PropTypes.string,
         scrollViewNativeID: PropTypes.string,
         showMoreMessagesButton: PropTypes.bool,
-        connected: PropTypes.bool,
     };
 
     static defaultProps = {
