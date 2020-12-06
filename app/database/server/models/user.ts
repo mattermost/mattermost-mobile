@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
+
 import children from '@nozbe/watermelondb/decorators/children';
-import TeamMembership from '@typings/database/team_membership';
+import field from '@nozbe/watermelondb/decorators/field';
+import json from '@nozbe/watermelondb/decorators/json';
+
+import {MM_TABLES} from '@constants/database';
+import Channel from '@typings/database/channel';
+import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
-import ChannelMembership from '@typings/database/channel_membership';
-import Post from '@typings/database/post';
-import Channel from '@typings/database/channel';
-import json from '@nozbe/watermelondb/decorators/json';
+import TeamMembership from '@typings/database/team_membership';
 
 export default class User extends Model {
     static table = MM_TABLES.SERVER.USER

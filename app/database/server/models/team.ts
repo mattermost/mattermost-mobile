@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
+
+import children from '@nozbe/watermelondb/decorators/children';
 import field from '@nozbe/watermelondb/decorators/field';
 import json from '@nozbe/watermelondb/decorators/json';
-import children from '@nozbe/watermelondb/decorators/children';
-import TeamChannelHistory from '@typings/database/team_channel_history';
-import SlashCommand from '@typings/database/slash_command';
-import MyTeam from '@typings/database/my_team';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import Channel from '@typings/database/channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyTeam from '@typings/database/my_team';
+import SlashCommand from '@typings/database/slash_command';
+import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
 import TeamSearchHistory from '@typings/database/team_search_history';
-import Channel from '@typings/database/channel';
 
 export default class Team extends Model {
     static table = MM_TABLES.SERVER.TEAM

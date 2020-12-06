@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
 import children from '@nozbe/watermelondb/decorators/children';
+import field from '@nozbe/watermelondb/decorators/field';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import GroupMembership from '@typings/database/group_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
-import GroupMembership from '@typings/database/group_membership';
 
 export default class Group extends Model {
     static table = MM_TABLES.SERVER.GROUP

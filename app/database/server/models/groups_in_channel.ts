@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {MM_TABLES} from '@constants/database';
+
 import field from '@nozbe/watermelondb/decorators/field';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import relation from '@nozbe/watermelondb/decorators/relation';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
 import Group from '@typings/database/group';
 
 export default class GroupsInChannel extends Model {

@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
+
 import field from '@nozbe/watermelondb/decorators/field';
 import relation from '@nozbe/watermelondb/decorators/relation';
-import User from '@typings/database/user';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Channel from '@typings/database/channel';
+import User from '@typings/database/user';
+
+import {MM_TABLES} from '@constants/database';
 
 export default class ChannelMembership extends Model {
     static table = MM_TABLES.SERVER.CHANNEL_MEMBERSHIP

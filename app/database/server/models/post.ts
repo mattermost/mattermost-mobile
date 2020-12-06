@@ -1,18 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
-import json from '@nozbe/watermelondb/decorators/json';
+
 import children from '@nozbe/watermelondb/decorators/children';
-import PostInThread from '@typings/database/post_in_thread';
-import PostMetadata from '@typings/database/post_metadata';
+import field from '@nozbe/watermelondb/decorators/field';
+import immutableRelation from '@nozbe/watermelondb/decorators/immutableRelation';
+import json from '@nozbe/watermelondb/decorators/json';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import Channel from '@typings/database/channel';
 import Draft from '@typings/database/draft';
 import File from '@typings/database/file';
-import User from '@typings/database/user';
-import immutableRelation from '@nozbe/watermelondb/decorators/immutableRelation';
+import PostInThread from '@typings/database/post_in_thread';
+import PostMetadata from '@typings/database/post_metadata';
 import Reaction from '@typings/database/reaction';
-import Channel from '@typings/database/channel';
+import User from '@typings/database/user';
 
 export default class Post extends Model {
     static table = MM_TABLES.SERVER.POST

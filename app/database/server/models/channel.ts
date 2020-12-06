@@ -1,22 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
 import children from '@nozbe/watermelondb/decorators/children';
-import Draft from '@typings/database/draft';
-import GroupsInChannel from '@typings/database/groups_in_channel';
-import PostInChannel from '@typings/database/post_in_channel';
-import MyChannelSettings from '@typings/database/my_channel_settings';
-import MyChannel from '@typings/database/my_channel';
-import ChannelInfo from '@typings/database/channel_info';
+import field from '@nozbe/watermelondb/decorators/field';
 import immutableRelation from '@nozbe/watermelondb/decorators/immutableRelation';
 import relation from '@nozbe/watermelondb/decorators/relation';
-import User from '@typings/database/user';
-import Team from '@typings/database/team';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import ChannelInfo from '@typings/database/channel_info';
 import ChannelMembership from '@typings/database/channel_membership';
+import Draft from '@typings/database/draft';
+import GroupsInChannel from '@typings/database/groups_in_channel';
+import MyChannel from '@typings/database/my_channel';
+import MyChannelSettings from '@typings/database/my_channel_settings';
 import Post from '@typings/database/post';
+import PostInChannel from '@typings/database/post_in_channel';
+import Team from '@typings/database/team';
+import User from '@typings/database/user';
 
 export default class Channel extends Model {
     static table = MM_TABLES.SERVER.CHANNEL
