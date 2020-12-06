@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import field from '@nozbe/watermelondb/decorators/field';
-import relation from '@nozbe/watermelondb/decorators/relation';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {field, relation} from '@nozbe/watermelondb/decorators';
 
 import Channel from '@typings/database/channel';
 import User from '@typings/database/user';

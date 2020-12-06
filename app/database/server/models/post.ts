@@ -1,11 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import children from '@nozbe/watermelondb/decorators/children';
-import field from '@nozbe/watermelondb/decorators/field';
-import immutableRelation from '@nozbe/watermelondb/decorators/immutableRelation';
-import json from '@nozbe/watermelondb/decorators/json';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';

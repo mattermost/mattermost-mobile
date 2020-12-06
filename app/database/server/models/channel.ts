@@ -1,11 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import children from '@nozbe/watermelondb/decorators/children';
-import field from '@nozbe/watermelondb/decorators/field';
-import immutableRelation from '@nozbe/watermelondb/decorators/immutableRelation';
-import relation from '@nozbe/watermelondb/decorators/relation';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {children, field, immutableRelation, relation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import ChannelInfo from '@typings/database/channel_info';
@@ -45,11 +42,11 @@ export default class Channel extends Model {
     @field('team_id') teamId! : string
     @field('type') type! : string
 
+    @children(MY_CHANNEL_SETTINGS) settings! : MyChannelSettings
     @children(CHANNEL_MEMBERSHIP) members! : ChannelMembership
     @children(DRAFT) draft! : Draft
     @children(GROUPS_IN_CHANNEL) groupsInChannel! : GroupsInChannel
     @children(MY_CHANNEL) membership! : MyChannel
-    @children(MY_CHANNEL_SETTINGS) settings! : MyChannelSettings
     @children(POST) posts! : Post
     @children(POSTS_IN_CHANNEL) postsInChannel! : PostInChannel
 
