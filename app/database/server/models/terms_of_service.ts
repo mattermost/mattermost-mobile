@@ -12,5 +12,4 @@ export default class Terms_of_service extends Model {
     static table = TERMS_OF_SERVICE
 
     @field('accepted_at') acceptedAt!: number
-    @field('term_of_service_id') termsOfServiceId!: string
 }

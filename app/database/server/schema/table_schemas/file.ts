@@ -12,7 +12,6 @@ export default tableSchema({
     columns: [
         {name: 'draft_id', type: 'string'},
         {name: 'extension', type: 'string'},
-        {name: 'file_id', type: 'string'},
         {name: 'height', type: 'number'},
         {name: 'image_thumbnail', type: 'string'},
         {name: 'local_path', type: 'string'},

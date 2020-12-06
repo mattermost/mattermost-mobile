@@ -11,6 +11,5 @@ export default tableSchema({
     name: TERMS_OF_SERVICE,
     columns: [
         {name: 'accepted_at', type: 'number'},
-        {name: 'term_of_service_id', type: 'string'},
     ],
 });

@@ -15,7 +15,6 @@ export default class File extends Model {
     }
 
     @field('extension') extension!: string
-    @field('file_id') fileId!: string
     @field('height') height!: number
     @field('image_thumbnail') imageThumbnail!: string
     @field('local_path') localPath!: string
