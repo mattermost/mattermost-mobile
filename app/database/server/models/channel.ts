@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import field from '@nozbe/watermelondb/decorators/field';
@@ -41,15 +42,15 @@ export default class Channel extends Model {
     @field('team_id') teamId! : string
     @field('type') type! : string
 
-    @children(MM_TABLES.SERVER.CHANNEL_MEMBERSHIP) channelMembership! : ChannelMembership
+    @children(MM_TABLES.SERVER.CHANNEL_MEMBERSHIP) members! : ChannelMembership
     @children(MM_TABLES.SERVER.DRAFT) draft! : Draft
     @children(MM_TABLES.SERVER.GROUPS_IN_CHANNEL) groupsInChannel! : GroupsInChannel
-    @children(MM_TABLES.SERVER.MY_CHANNEL) myChannel! : MyChannel
-    @children(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS) myChannelSettings! : MyChannelSettings
-    @children(MM_TABLES.SERVER.POST) post! : Post
-    @children(MM_TABLES.SERVER.POSTS_IN_CHANNEL) postInChannel! : PostInChannel
+    @children(MM_TABLES.SERVER.MY_CHANNEL) membership! : MyChannel
+    @children(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS) settings! : MyChannelSettings
+    @children(MM_TABLES.SERVER.POST) posts! : Post
+    @children(MM_TABLES.SERVER.POSTS_IN_CHANNEL) postsInChannel! : PostInChannel
 
-    @relation(MM_TABLES.SERVER.CHANNEL_INFO, 'channel_id') channelInfo!: ChannelInfo
-    @immutableRelation(MM_TABLES.SERVER.TEAM, 'team_id') channelTeam!: Team
-    @immutableRelation(MM_TABLES.SERVER.USER, 'creator_id') channelUser!: User
+    @relation(MM_TABLES.SERVER.CHANNEL_INFO, 'channel_id') info!: ChannelInfo
+    @immutableRelation(MM_TABLES.SERVER.TEAM, 'team_id') team!: Team
+    @immutableRelation(MM_TABLES.SERVER.USER, 'creator_id') creator!: User
 }
