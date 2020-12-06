@@ -5,9 +5,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     gem install bundler --version 2.1.4
   fi
   echo "Installing Gems"
-  npm run ios-gems &> /dev/null
+  npm run ios-gems
   echo "Getting Cocoapods dependencies"
-  npm run pod-install &> /dev/null
+  npm run pod-install
 fi
 
 ASSETS=$(node scripts/generate-assets.js)
