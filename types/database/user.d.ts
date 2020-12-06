@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import TeamMembership from '@typings/database/team_membership';
+
+import Channel from '@typings/database/channel';
+import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
+import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
-import ChannelMembership from '@typings/database/channel_membership';
-import Post from '@typings/database/post';
-import Channel from '@typings/database/channel';
+import TeamMembership from '@typings/database/team_membership';
+
 export default class User extends Model {
     static table: string;
     static associations: Associations;
