@@ -7,8 +7,10 @@ import {Model} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+const {SYSTEM} = MM_TABLES.SERVER;
+
 export default class System extends Model {
-    static table = MM_TABLES.SERVER.SYSTEM
+    static table = SYSTEM
 
     @field('name') name!: string
     @json('value', (rawJson) => rawJson) value!: string[]

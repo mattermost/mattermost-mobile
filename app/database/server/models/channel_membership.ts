@@ -10,16 +10,18 @@ import User from '@typings/database/user';
 
 import {MM_TABLES} from '@constants/database';
 
+const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
+
 export default class ChannelMembership extends Model {
-    static table = MM_TABLES.SERVER.CHANNEL_MEMBERSHIP
+    static table = CHANNEL_MEMBERSHIP
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
-        [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'user_id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [USER]: {type: 'belongs_to', key: 'user_id'},
     }
 
     @field('channel_id') channelId!: string
     @field('user_id') userId!: string
 
-    @relation(MM_TABLES.SERVER.CHANNEL, 'channel_id') memberChannel!: Channel
-    @relation(MM_TABLES.SERVER.USER, 'user_id') memberUser!: User
+    @relation(CHANNEL, 'channel_id') memberChannel!: Channel
+    @relation(USER, 'user_id') memberUser!: User
 }

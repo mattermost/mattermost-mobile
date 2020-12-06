@@ -6,8 +6,10 @@ import {Model} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+const {TERMS_OF_SERVICE} = MM_TABLES.SERVER;
+
 export default class Terms_of_service extends Model {
-    static table = MM_TABLES.SERVER.TERMS_OF_SERVICE
+    static table = TERMS_OF_SERVICE
 
     @field('accepted_at') acceptedAt!: number
     @field('term_of_service_id') termsOfServiceId!: string

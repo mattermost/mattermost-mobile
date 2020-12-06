@@ -15,16 +15,18 @@ import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
 import TeamSearchHistory from '@typings/database/team_search_history';
 
+const {CHANNEL, GROUPS_IN_TEAM, TEAM, MY_TEAM, SLASH_COMMAND, TEAM_CHANNEL_HISTORY, TEAM_MEMBERSHIP, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
+
 export default class Team extends Model {
-    static table = MM_TABLES.SERVER.TEAM
+    static table = TEAM
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'has_many', foreignKey: 'team_id'},
-        [MM_TABLES.SERVER.GROUPS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
-        [MM_TABLES.SERVER.MY_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
-        [MM_TABLES.SERVER.SLASH_COMMAND]: {type: 'has_many', foreignKey: 'team_id'},
-        [MM_TABLES.SERVER.TEAM_CHANNEL_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
-        [MM_TABLES.SERVER.TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'team_id'},
-        [MM_TABLES.SERVER.TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
+        [CHANNEL]: {type: 'has_many', foreignKey: 'team_id'},
+        [GROUPS_IN_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
+        [MY_TEAM]: {type: 'has_many', foreignKey: 'team_id'},
+        [SLASH_COMMAND]: {type: 'has_many', foreignKey: 'team_id'},
+        [TEAM_CHANNEL_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
+        [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'team_id'},
+        [TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
     }
 
     @field('allow_open_invite') allowOpenInvite!: boolean
@@ -36,11 +38,11 @@ export default class Team extends Model {
     @field('type') type!: string
     @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string[]
 
-    @children(MM_TABLES.SERVER.CHANNEL) channel!: Channel
-    @children(MM_TABLES.SERVER.GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
-    @children(MM_TABLES.SERVER.MY_TEAM) myTeam!: MyTeam
-    @children(MM_TABLES.SERVER.SLASH_COMMAND) slashCommand!: SlashCommand
-    @children(MM_TABLES.SERVER.TEAM_CHANNEL_HISTORY) teamChannelHistory!: TeamChannelHistory
-    @children(MM_TABLES.SERVER.TEAM_MEMBERSHIP) teamMembership!: TeamMembership
-    @children(MM_TABLES.SERVER.TEAM_SEARCH_HISTORY) teamSearchHistory!: TeamSearchHistory
+    @children(CHANNEL) channel!: Channel
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
+    @children(MY_TEAM) myTeam!: MyTeam
+    @children(SLASH_COMMAND) slashCommand!: SlashCommand
+    @children(TEAM_CHANNEL_HISTORY) teamChannelHistory!: TeamChannelHistory
+    @children(TEAM_MEMBERSHIP) teamMembership!: TeamMembership
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistory!: TeamSearchHistory
 }

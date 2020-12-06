@@ -15,16 +15,18 @@ import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
 import TeamMembership from '@typings/database/team_membership';
 
+const {CHANNEL, CHANNEL_MEMBERSHIP, GROUP_MEMBERSHIP, POST, PREFERENCE, REACTION, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
+
 export default class User extends Model {
-    static table = MM_TABLES.SERVER.USER
+    static table = USER
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'has_many', foreignKey: 'creator_id'},
-        [MM_TABLES.SERVER.CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
-        [MM_TABLES.SERVER.GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
-        [MM_TABLES.SERVER.POST]: {type: 'has_many', foreignKey: 'user_id'},
-        [MM_TABLES.SERVER.PREFERENCE]: {type: 'has_many', foreignKey: 'user_id'},
-        [MM_TABLES.SERVER.REACTION]: {type: 'has_many', foreignKey: 'user_id'},
-        [MM_TABLES.SERVER.TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+        [CHANNEL]: {type: 'has_many', foreignKey: 'creator_id'},
+        [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+        [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
+        [POST]: {type: 'has_many', foreignKey: 'user_id'},
+        [PREFERENCE]: {type: 'has_many', foreignKey: 'user_id'},
+        [REACTION]: {type: 'has_many', foreignKey: 'user_id'},
+        [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
     }
 
     @field('auth_service') authService! : string
@@ -45,11 +47,11 @@ export default class User extends Model {
     @json('props', (rawJson) => rawJson) props! : string[]
     @json('time_zone', (rawJson) => rawJson) timeZone! : string[]
 
-    @children(MM_TABLES.SERVER.CHANNEL) channel! : Channel
-    @children(MM_TABLES.SERVER.CHANNEL_MEMBERSHIP) channelMembership! : ChannelMembership
-    @children(MM_TABLES.SERVER.GROUP_MEMBERSHIP) groupMembership! : GroupMembership
-    @children(MM_TABLES.SERVER.POST) post! : Post
-    @children(MM_TABLES.SERVER.PREFERENCE) preference! : Preference
-    @children(MM_TABLES.SERVER.REACTION) reaction! : Reaction
-    @children(MM_TABLES.SERVER.TEAM_MEMBERSHIP) teamMembership! : TeamMembership
+    @children(CHANNEL) channel! : Channel
+    @children(CHANNEL_MEMBERSHIP) channelMembership! : ChannelMembership
+    @children(GROUP_MEMBERSHIP) groupMembership! : GroupMembership
+    @children(POST) post! : Post
+    @children(PREFERENCE) preference! : Preference
+    @children(REACTION) reaction! : Reaction
+    @children(TEAM_MEMBERSHIP) teamMembership! : TeamMembership
 }

@@ -7,8 +7,10 @@ import {Model} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+const {GLOBAL} = MM_TABLES.DEFAULT;
+
 export default class Global extends Model {
-    static table = MM_TABLES.DEFAULT.GLOBAL
+    static table = GLOBAL
 
     @field('name') name!: string
 

@@ -7,10 +7,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {POST, POST_METADATA} = MM_TABLES.SERVER;
+
 export default class PostMetadata extends Model {
-    static table = MM_TABLES.SERVER.POST_METADATA
+    static table = POST_METADATA
     static associations: Associations = {
-        [MM_TABLES.SERVER.POST]: {type: 'belongs_to', key: 'post_id'},
+        [POST]: {type: 'belongs_to', key: 'post_id'},
     }
 
     @field('post_id') postId!: string

@@ -6,8 +6,9 @@ import {Model} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+const {APP} = MM_TABLES.DEFAULT;
 export default class App extends Model {
-    static table = MM_TABLES.DEFAULT.APP
+    static table = APP
 
     @field('build_number') buildNumber!: string
     @field('created_at') createdAt!: number

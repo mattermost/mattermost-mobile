@@ -8,10 +8,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {TEAM, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
+
 export default class TeamSearchHistory extends Model {
-    static table = MM_TABLES.SERVER.TEAM_SEARCH_HISTORY
+    static table = TEAM_SEARCH_HISTORY
     static associations: Associations = {
-        [MM_TABLES.SERVER.TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
     @field('created_at') createdAt!: number

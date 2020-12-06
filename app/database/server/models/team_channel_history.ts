@@ -7,10 +7,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
+
 export default class TeamChannelHistory extends Model {
-    static table = MM_TABLES.SERVER.TEAM_CHANNEL_HISTORY
+    static table = TEAM_CHANNEL_HISTORY
     static associations: Associations = {
-        [MM_TABLES.SERVER.TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
     @field('team_id') teamId!: string

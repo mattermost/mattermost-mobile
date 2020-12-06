@@ -7,10 +7,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
+
 export default class MyTeam extends Model {
-    static table = MM_TABLES.SERVER.MY_TEAM
+    static table = MY_TEAM
     static associations: Associations = {
-        [MM_TABLES.SERVER.TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
     @field('is_unread') isUnread!: boolean

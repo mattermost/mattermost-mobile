@@ -6,10 +6,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
+
 export default class PostInThread extends Model {
-    static table = MM_TABLES.SERVER.POSTS_IN_THREAD
+    static table = POSTS_IN_THREAD
     static associations: Associations = {
-        [MM_TABLES.SERVER.POST]: {type: 'belongs_to', key: 'post_id'},
+        [POST]: {type: 'belongs_to', key: 'post_id'},
     }
 
     @field('earliest') earliest!: number

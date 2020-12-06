@@ -19,19 +19,21 @@ import PostInChannel from '@typings/database/post_in_channel';
 import Team from '@typings/database/team';
 import User from '@typings/database/user';
 
+const {CHANNEL, CHANNEL_INFO, CHANNEL_MEMBERSHIP, DRAFT, GROUPS_IN_CHANNEL, MY_CHANNEL, MY_CHANNEL_SETTINGS, POSTS_IN_CHANNEL, POST, TEAM, USER} = MM_TABLES.SERVER;
+
 export default class Channel extends Model {
-    static table = MM_TABLES.SERVER.CHANNEL
+    static table = CHANNEL
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL_INFO]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.DRAFT]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.MY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.MY_CHANNEL_SETTINGS]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.POST]: {type: 'has_many', foreignKey: 'channel_id'},
-        [MM_TABLES.SERVER.TEAM]: {type: 'belongs_to', key: 'team_id'},
-        [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'creator_id'},
+        [CHANNEL_INFO]: {type: 'has_many', foreignKey: 'channel_id'},
+        [CHANNEL_MEMBERSHIP]: {type: 'has_many', foreignKey: 'channel_id'},
+        [DRAFT]: {type: 'has_many', foreignKey: 'channel_id'},
+        [GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        [MY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        [MY_CHANNEL_SETTINGS]: {type: 'has_many', foreignKey: 'channel_id'},
+        [POSTS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        [POST]: {type: 'has_many', foreignKey: 'channel_id'},
+        [TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [USER]: {type: 'belongs_to', key: 'creator_id'},
     }
 
     @field('create_at') createAt! : number
@@ -43,15 +45,15 @@ export default class Channel extends Model {
     @field('team_id') teamId! : string
     @field('type') type! : string
 
-    @children(MM_TABLES.SERVER.CHANNEL_MEMBERSHIP) members! : ChannelMembership
-    @children(MM_TABLES.SERVER.DRAFT) draft! : Draft
-    @children(MM_TABLES.SERVER.GROUPS_IN_CHANNEL) groupsInChannel! : GroupsInChannel
-    @children(MM_TABLES.SERVER.MY_CHANNEL) membership! : MyChannel
-    @children(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS) settings! : MyChannelSettings
-    @children(MM_TABLES.SERVER.POST) posts! : Post
-    @children(MM_TABLES.SERVER.POSTS_IN_CHANNEL) postsInChannel! : PostInChannel
+    @children(CHANNEL_MEMBERSHIP) members! : ChannelMembership
+    @children(DRAFT) draft! : Draft
+    @children(GROUPS_IN_CHANNEL) groupsInChannel! : GroupsInChannel
+    @children(MY_CHANNEL) membership! : MyChannel
+    @children(MY_CHANNEL_SETTINGS) settings! : MyChannelSettings
+    @children(POST) posts! : Post
+    @children(POSTS_IN_CHANNEL) postsInChannel! : PostInChannel
 
-    @relation(MM_TABLES.SERVER.CHANNEL_INFO, 'channel_id') info!: ChannelInfo
-    @immutableRelation(MM_TABLES.SERVER.TEAM, 'team_id') team!: Team
-    @immutableRelation(MM_TABLES.SERVER.USER, 'creator_id') creator!: User
+    @relation(CHANNEL_INFO, 'channel_id') info!: ChannelInfo
+    @immutableRelation(TEAM, 'team_id') team!: Team
+    @immutableRelation(USER, 'creator_id') creator!: User
 }

@@ -10,19 +10,21 @@ import GroupMembership from '@typings/database/group_membership';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
 
+const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.SERVER;
+
 export default class Group extends Model {
-    static table = MM_TABLES.SERVER.GROUP
+    static table = GROUP
 
     static associations: Associations = {
-        [MM_TABLES.SERVER.GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'group_id'},
-        [MM_TABLES.SERVER.GROUPS_IN_TEAM]: {type: 'has_many', foreignKey: 'group_id'},
-        [MM_TABLES.SERVER.GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
+        [GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'group_id'},
+        [GROUPS_IN_TEAM]: {type: 'has_many', foreignKey: 'group_id'},
+        [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
     }
 
     @field('display_name') displayName!: string
     @field('name') name!: string
 
-    @children(MM_TABLES.SERVER.GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel
-    @children(MM_TABLES.SERVER.GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
-    @children(MM_TABLES.SERVER.GROUP_MEMBERSHIP) groupMembership!: GroupMembership
+    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
+    @children(GROUP_MEMBERSHIP) groupMembership!: GroupMembership
 }

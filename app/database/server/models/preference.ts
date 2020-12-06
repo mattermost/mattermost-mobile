@@ -6,10 +6,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {PREFERENCE, USER} = MM_TABLES.SERVER;
+
 export default class Preference extends Model {
-    static table = MM_TABLES.SERVER.PREFERENCE
+    static table = PREFERENCE
     static associations: Associations = {
-        [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'user_id'},
+        [USER]: {type: 'belongs_to', key: 'user_id'},
     }
 
     @field('category') category!: string

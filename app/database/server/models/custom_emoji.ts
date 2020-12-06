@@ -6,8 +6,10 @@ import {Model} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+const {CUSTOM_EMOJI} = MM_TABLES.SERVER;
+
 export default class CustomEmoji extends Model {
-    static table = MM_TABLES.SERVER.CUSTOM_EMOJI
+    static table = CUSTOM_EMOJI
 
     @field('emoji_id') emojiId!: string
     @field('name') name!: string

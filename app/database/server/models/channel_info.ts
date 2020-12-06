@@ -6,10 +6,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
+
 export default class ChannelInfo extends Model {
-    static table = MM_TABLES.SERVER.CHANNEL_INFO
+    static table = CHANNEL_INFO
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     }
 
     @field('channel_id') channelId!: string

@@ -6,10 +6,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
+
 export default class PostInChannel extends Model {
-    static table = MM_TABLES.SERVER.POSTS_IN_CHANNEL
+    static table = POSTS_IN_CHANNEL
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     }
 
     @field('channel_id') channelId!: string

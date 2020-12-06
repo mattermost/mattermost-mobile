@@ -6,10 +6,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {POST} = MM_TABLES.SERVER;
+
 export default class File extends Model {
     static table = MM_TABLES.SERVER.FILE
     static associations: Associations = {
-        [MM_TABLES.SERVER.POST]: {type: 'belongs_to', key: 'post_id'},
+        [POST]: {type: 'belongs_to', key: 'post_id'},
     }
 
     @field('extension') extension!: string

@@ -6,10 +6,12 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+const {TEAM} = MM_TABLES.SERVER;
+
 export default class SlashCommand extends Model {
     static table = MM_TABLES.SERVER.SLASH_COMMAND
     static associations: Associations = {
-        [MM_TABLES.SERVER.TEAM]: {type: 'belongs_to', key: 'team_id'},
+        [TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
     @field('auto_complete') autoComplete!: boolean

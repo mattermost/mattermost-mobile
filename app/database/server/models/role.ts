@@ -7,8 +7,10 @@ import {Model} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+const {ROLE} = MM_TABLES.SERVER;
+
 export default class Role extends Model {
-    static table = MM_TABLES.SERVER.ROLE
+    static table = ROLE
 
     @field('name') name!: string
     @field('role_id') roleId! : string

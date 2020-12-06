@@ -16,16 +16,18 @@ import PostMetadata from '@typings/database/post_metadata';
 import Reaction from '@typings/database/reaction';
 import User from '@typings/database/user';
 
+const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, POST_METADATA, REACTION, USER} = MM_TABLES.SERVER;
+
 export default class Post extends Model {
-    static table = MM_TABLES.SERVER.POST
+    static table = POST
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
-        [MM_TABLES.SERVER.DRAFT]: {type: 'has_many', foreignKey: 'root_id'},
-        [MM_TABLES.SERVER.FILE]: {type: 'has_many', foreignKey: 'post_id'},
-        [MM_TABLES.SERVER.POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'post_id'},
-        [MM_TABLES.SERVER.POST_METADATA]: {type: 'has_many', foreignKey: 'post_id'},
-        [MM_TABLES.SERVER.REACTION]: {type: 'has_many', foreignKey: 'post_id'},
-        [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'user_id'},
+        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+        [DRAFT]: {type: 'has_many', foreignKey: 'root_id'},
+        [FILE]: {type: 'has_many', foreignKey: 'post_id'},
+        [POSTS_IN_THREAD]: {type: 'has_many', foreignKey: 'post_id'},
+        [POST_METADATA]: {type: 'has_many', foreignKey: 'post_id'},
+        [REACTION]: {type: 'has_many', foreignKey: 'post_id'},
+        [USER]: {type: 'belongs_to', key: 'user_id'},
     }
 
     @field('channel_id') channelId!: string
@@ -42,12 +44,12 @@ export default class Post extends Model {
     @field('user_id') userId!: string
     @json('props', (rawJson) => rawJson) props!: string[]
 
-    @children(MM_TABLES.SERVER.DRAFT) draft!: Draft
-    @children(MM_TABLES.SERVER.FILE) file!: File
-    @children(MM_TABLES.SERVER.POSTS_IN_THREAD) postInThread!: PostInThread
-    @children(MM_TABLES.SERVER.POST_METADATA) postMetadata!: PostMetadata
-    @children(MM_TABLES.SERVER.REACTION) reaction!: Reaction
+    @children(DRAFT) draft!: Draft
+    @children(FILE) file!: File
+    @children(POSTS_IN_THREAD) postInThread!: PostInThread
+    @children(POST_METADATA) postMetadata!: PostMetadata
+    @children(REACTION) reaction!: Reaction
 
-    @immutableRelation(MM_TABLES.SERVER.USER, 'user_id') postUser!: User
-    @immutableRelation(MM_TABLES.SERVER.CHANNEL, 'channel_id') postChannel!: Channel
+    @immutableRelation(USER, 'user_id') postUser!: User
+    @immutableRelation(CHANNEL, 'channel_id') postChannel!: Channel
 }
