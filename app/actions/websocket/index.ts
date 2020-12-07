@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {loadChannelsForTeam} from '@actions/views/channel';
-import {getPosts} from '@actions/views/post';
+import {getPostsSince} from '@actions/views/post';
 import {loadMe} from '@actions/views/user';
 import {WebsocketEvents} from '@constants';
 import {ChannelTypes, GeneralTypes, PreferenceTypes, TeamTypes, UserTypes, RoleTypes} from '@mm-redux/action_types';
@@ -44,6 +44,8 @@ import {handleAddEmoji, handleReactionAddedEvent, handleReactionRemovedEvent} fr
 import {handleRoleAddedEvent, handleRoleRemovedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLeaveTeamEvent, handleUpdateTeamEvent, handleTeamAddedEvent} from './teams';
 import {handleStatusChangedEvent, handleUserAddedEvent, handleUserRemovedEvent, handleUserRoleUpdated, handleUserUpdatedEvent} from './users';
+import {getChannelSinceValue} from '@utils/channels';
+import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
 
 export function init(additionalOptions: any = {}) {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
@@ -168,7 +170,9 @@ export function doReconnect(now: number) {
                         if (!stillMemberOfCurrentChannel || !channelStillExists || (!viewArchivedChannels && channelStillExists.delete_at !== 0)) {
                             EventEmitter.emit(General.SWITCH_TO_DEFAULT_CHANNEL, currentTeamId);
                         } else {
-                            dispatch(getPosts(currentChannelId));
+                            const postIds = getPostIdsInChannel(state, currentChannelId);
+                            const since = getChannelSinceValue(state, currentChannelId, postIds);
+                            dispatch(getPostsSince(currentChannelId, since));
                         }
                     }
 

@@ -26,7 +26,6 @@ import {t} from '@utils/i18n';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import PushNotifications from '@init/push_notifications';
-import {debounce} from '@mm-redux/actions/helpers';
 
 const MAX_WEBSOCKET_RETRIES = 3;
 const CONNECTION_RETRY_SECONDS = 5;
@@ -52,7 +51,6 @@ export default class NetworkIndicator extends PureComponent {
             setCurrentUserStatusOffline: PropTypes.func.isRequired,
             startPeriodicStatusUpdates: PropTypes.func.isRequired,
             stopPeriodicStatusUpdates: PropTypes.func.isRequired,
-            loadPostsIfNecessaryWithRetry: PropTypes.func.isRequired,
         }).isRequired,
         currentChannelId: PropTypes.string,
         isLandscape: PropTypes.bool,
@@ -127,9 +125,6 @@ export default class NetworkIndicator extends PureComponent {
             } else if (websocketStatus === RequestStatus.FAILURE) {
                 this.show();
             }
-            if (!prevProps.isOnline && this.props.currentChannelId) {
-                this.retrieveUpdates();
-            }
         } else {
             this.offline();
         }
@@ -148,10 +143,6 @@ export default class NetworkIndicator extends PureComponent {
         clearTimeout(this.connectionRetryTimeout);
         this.connectionRetryTimeout = null;
     }
-
-    retrieveUpdates = debounce(() => {
-        this.props.actions.loadPostsIfNecessaryWithRetry(this.props.currentChannelId);
-    }, 100)
 
     connect = (displayBar = false) => {
         const {connection, startPeriodicStatusUpdates} = this.props.actions;

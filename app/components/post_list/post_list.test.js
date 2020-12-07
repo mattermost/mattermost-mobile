@@ -24,7 +24,6 @@ describe('PostList', () => {
             refreshChannelWithRetry: jest.fn(),
             showPermalink: jest.fn(),
             setDeepLinkURL: jest.fn(),
-            loadPostsIfNecessaryWithRetry: jest.fn(),
         },
         channelId: 'channel-id',
         deepLinkURL: '',
@@ -33,7 +32,6 @@ describe('PostList', () => {
         serverURL,
         siteURL: 'https://site-url.fake',
         theme: Preferences.THEMES.default,
-        connected: true,
     };
 
     const deepLinks = {
