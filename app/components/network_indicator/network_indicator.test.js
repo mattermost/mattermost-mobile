@@ -32,7 +32,6 @@ describe('AttachmentFooter', () => {
             setCurrentUserStatusOffline: jest.fn(),
             startPeriodicStatusUpdates: jest.fn(),
             stopPeriodicStatusUpdates: jest.fn(),
-            loadPostsIfNecessaryWithRetry: jest.fn(),
         },
     };
 
