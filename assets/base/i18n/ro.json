@@ -53,7 +53,7 @@
   "combined_system_message.added_to_channel.one": "{firstUser} **a fost adăugat la canalul** de către {actor}.",
   "combined_system_message.added_to_channel.one_you": "Ai fost **adăugat la canalul** de {actor}.",
   "combined_system_message.added_to_channel.two": "{firstUser} și {secondUser} **au adăugat la canal** de {actor}.",
-  "combined_system_message.added_to_team.many_expanded": "{users} și {lastUser} au fost  **adăugați la echipa** de către {actor}.",
+  "combined_system_message.added_to_team.many_expanded": "{users} și {lastUser} au fost **adăugați la echipa** de către {actor}.",
   "combined_system_message.added_to_team.one": "{firstUser} **a adăugat la echipa** de {actor}.",
   "combined_system_message.added_to_team.one_you": "Ai fost **adăugat la echipa** de {actor}.",
   "combined_system_message.added_to_team.two": "{firstUser} și {secondUser} **au adăugat echipei** de către {actor}.",
