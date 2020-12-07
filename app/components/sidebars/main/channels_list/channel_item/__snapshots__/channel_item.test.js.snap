@@ -999,6 +999,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
             "position": "relative",
           }
         }
+        testID="main.sidebar.channels_list.list.channel_item.badge"
       />
     </View>
   </View>

@@ -51,9 +51,11 @@ export default class SwitchTeamsButton extends React.PureComponent {
         const minWidth = lowMentionCount ? 8 : 20;
         const badgeStyle = lowMentionCount ? styles.smallBadge : styles.badge;
         const containerStyle = lowMentionCount ? styles.smallBadgeContainer : styles.badgeContainer;
+        const badgeTestID = `${testID}.badge`;
 
         const badge = (
             <Badge
+                testID={badgeTestID}
                 containerStyle={containerStyle}
                 style={badgeStyle}
                 countStyle={styles.mention}

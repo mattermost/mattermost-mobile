@@ -134,8 +134,11 @@ export default class ChannelItem extends PureComponent {
 
         let badge;
         if (mentions) {
+            const badgeTestID = `${testID}.badge`;
+
             badge = (
                 <Badge
+                    testID={badgeTestID}
                     containerStyle={style.badgeContainer}
                     style={style.badge}
                     countStyle={style.mention}
