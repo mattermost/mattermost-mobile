@@ -82,7 +82,7 @@ export const apiAddUserToChannel = async (userId, channelId) => {
  * See https://api.mattermost.com/#tag/channels/paths/~1channels~1{channel_id}~1members~1{user_id}/delete
  * @param {string} channelId - The channel ID
  * @param {string} userId - The user ID to be removed from channel
- * @return {Object} returns status on success or {error, status} on error
+ * @return {Object} returns {status} on success or {error, status} on error
  */
 export const apiDeleteUserFromChannel = async (channelId, userId) => {
     try {
@@ -90,7 +90,7 @@ export const apiDeleteUserFromChannel = async (channelId, userId) => {
             `/api/v4/channels/${channelId}/members/${userId}`,
         );
 
-        return response;
+        return {status: response.status};
     } catch (err) {
         return getResponseFromError(err);
     }

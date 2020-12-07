@@ -329,12 +329,12 @@ export default class Permalink extends PureComponent {
 
         return (
             <SafeAreaView
-                testID='permalink.screen'
                 backgroundColor='transparent'
                 excludeHeader={true}
                 footerColor='transparent'
             >
                 <View
+                    testID='permalink.screen'
                     style={style.container}
                 >
                     <Animatable.View
@@ -381,6 +381,7 @@ export default class Permalink extends PureComponent {
                             onPress={this.handlePress}
                         >
                             <FormattedText
+                                testID='permalink.search.jump'
                                 id='mobile.search.jump'
                                 defautMessage='Jump to recent messages'
                                 style={style.jump}
