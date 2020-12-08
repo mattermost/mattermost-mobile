@@ -7,6 +7,7 @@ import Button from 'react-native-button';
 import {intlShape} from 'react-intl';
 
 import {
+    Image,
     StyleSheet,
     Text,
     TextInput,
@@ -15,7 +16,6 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
@@ -158,10 +158,9 @@ export default class ForgotPassword extends PureComponent {
                     onPress={this.blur}
                 >
                     <View style={style.innerContainer}>
-                        <CompassIcon
-                            name='mattermost'
-                            size={76}
-                            style={GlobalStyles.logo}
+                        <Image
+                            source={require('@assets/images/logo.png')}
+                            style={{height: 72, resizeMode: 'contain'}}
                         />
                         {displayError}
                         {passwordFormView}

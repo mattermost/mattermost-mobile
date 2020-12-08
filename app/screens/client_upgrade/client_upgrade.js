@@ -6,6 +6,7 @@ import {Navigation} from 'react-native-navigation';
 import PropTypes from 'prop-types';
 import {
     Alert,
+    Image,
     Linking,
     ScrollView,
     TouchableOpacity,
@@ -15,13 +16,11 @@ import {intlShape} from 'react-intl';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {popTopScreen, dismissModal} from '@actions/navigation';
-import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {UpgradeTypes} from '@constants';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {GlobalStyles} from 'app/styles';
 
 export default class ClientUpgrade extends PureComponent {
     static propTypes = {
@@ -263,10 +262,9 @@ export default class ClientUpgrade extends PureComponent {
                     style={styles.scrollView}
                     contentContainerStyle={styles.scrollViewContent}
                 >
-                    <CompassIcon
-                        name='mattermost'
-                        size={76}
-                        style={[GlobalStyles.logo, styles.logo]}
+                    <Image
+                        source={require('@assets/images/logo.png')}
+                        style={{height: 72, resizeMode: 'contain'}}
                     />
                     {this.renderMessageContent()}
                 </ScrollView>
