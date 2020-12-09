@@ -105,7 +105,11 @@ export default class ClientUpgrade extends PureComponent {
         const {downloadLink} = this.props;
         const {intl} = this.context;
 
-        Linking.openURL(downloadLink).catch(() => {
+        Linking.canOpenURL(downloadLink).then((supported) => {
+            if (supported) {
+                return Linking.openURL(downloadLink);
+            }
+
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
@@ -116,6 +120,8 @@ export default class ClientUpgrade extends PureComponent {
                     defaultMessage: 'An error occurred while trying to open the download link.',
                 }),
             );
+
+            return false;
         });
     };
 
