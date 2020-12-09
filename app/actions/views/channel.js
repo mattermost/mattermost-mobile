@@ -39,6 +39,7 @@ import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
+import {fetchAppBindings} from '@mm-redux/actions/apps';
 
 const MAX_RETRIES = 3;
 
@@ -185,6 +186,7 @@ export function handleSelectChannel(channelId) {
     return async (dispatch, getState) => {
         const dt = Date.now();
         const state = getState();
+        const {currentUserId} = state.entities.users;
         const {channels, currentChannelId, myMembers} = state.entities.channels;
         const {currentTeamId} = state.entities.teams;
         const channel = channels[channelId];
@@ -211,6 +213,8 @@ export function handleSelectChannel(channelId) {
 
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 
+            //TODO improve sync method
+            dispatch(fetchAppBindings(currentUserId, channelId));
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
     };
