@@ -20,6 +20,7 @@ import {preventDoubleTap} from '@utils/tap';
 
 import PostOption from './post_option';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
+import Bindings from './bindings';
 
 export default class PostOptions extends PureComponent {
     static propTypes = {
@@ -234,6 +235,16 @@ export default class PostOptions extends PureComponent {
         return null;
     };
 
+    getAppsOptions = () => {
+        const {post} = this.props;
+        return (
+            <Bindings
+                post={post}
+                closeWithAnimation={this.closeWithAnimation}
+            />
+        );
+    }
+
     getPostOptions = () => {
         const actions = [
             this.getReplyOption(),
@@ -244,6 +255,7 @@ export default class PostOptions extends PureComponent {
             this.getPinOption(),
             this.getEditOption(),
             this.getDeleteOption(),
+            this.getAppsOptions(),
         ];
 
         return actions.filter((a) => a !== null);

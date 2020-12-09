@@ -14,12 +14,16 @@ import {
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {preventDoubleTap} from '@utils/tap';
+import FastImage from 'react-native-fast-image';
 
 export default class PostOption extends PureComponent {
     static propTypes = {
         testID: PropTypes.string,
         destructive: PropTypes.bool,
-        icon: PropTypes.string.isRequired,
+        icon: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.object,
+        ]).isRequired,
         onPress: PropTypes.func.isRequired,
         text: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
@@ -50,6 +54,26 @@ export default class PostOption extends PureComponent {
             },
         });
 
+        const imageStyle = [style.icon, destructive ? style.destructive : null];
+        let image;
+        if (icon.uri) {
+            imageStyle.push({width: 24, height: 24});
+            image = (
+                <FastImage
+                    source={icon}
+                    style={imageStyle}
+                />
+            );
+        } else {
+            image = (
+                <CompassIcon
+                    name={icon}
+                    size={24}
+                    style={[style.icon, destructive ? style.destructive : null]}
+                />
+            );
+        }
+
         return (
             <View
                 testID={testID}
@@ -62,11 +86,7 @@ export default class PostOption extends PureComponent {
                 >
                     <View style={style.row}>
                         <View style={[style.iconContainer]}>
-                            <CompassIcon
-                                name={icon}
-                                size={24}
-                                style={[style.icon, destructive ? style.destructive : null]}
-                            />
+                            {image}
                         </View>
                         <View style={style.textContainer}>
                             <Text style={[style.text, destructive ? style.destructive : null]}>
