@@ -72,17 +72,17 @@ export default class Avatars extends PureComponent<AvatarsProps> {
     render() {
         const {size, userIds, breakAt, theme} = this.props;
         const displayUserIds = userIds.slice(0, breakAt);
-        const overflowUsersCount = Math.min(Math.max(userIds.length - displayUserIds.length, 0), OVERFLOW_DISPLAY_LIMIT);
+        const overflowUsersCount = Math.min(userIds.length - displayUserIds.length, OVERFLOW_DISPLAY_LIMIT);
 
-        const ss = getStyleSheet(theme, size);
+        const style = getStyleSheet(theme, size);
 
         return (
             <TouchableWithFeedback>
-                <View style={ss.container}>
+                <View style={style.container}>
                     {displayUserIds.map((userId: string, i: number) => (
                         <View
                             key={'participants' + userId}
-                            style={i > 0 ? ss.notFirstAvatars : null}
+                            style={i > 0 ? style.notFirstAvatars : null}
                         >
                             <ProfilePicture
                                 userId={userId}
@@ -92,9 +92,9 @@ export default class Avatars extends PureComponent<AvatarsProps> {
                         </View>
                     ))}
                     {Boolean(overflowUsersCount) && (
-                        <View style={ss.overflowContainer}>
-                            <View style={ss.overflowItem}>
-                                <Text style={ss.overflowText} >
+                        <View style={style.overflowContainer}>
+                            <View style={style.overflowItem}>
+                                <Text style={style.overflowText} >
                                     {'+' + overflowUsersCount.toString()}
                                 </Text>
                             </View>
