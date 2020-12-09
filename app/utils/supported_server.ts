@@ -36,18 +36,9 @@ function unsupportedServerAdminAlert(formatMessage: FormatMessageType) {
         style: 'cancel',
         onPress: () => {
             const url = 'https://mattermost.com/blog/support-for-esr-5-9-has-ended/';
-            Linking.openURL(url).catch(() => {
-                Alert.alert(
-                    formatMessage({
-                        id: 'mobile.link.error.title',
-                        defaultMessage: 'Error',
-                    }),
-                    formatMessage({
-                        id: 'mobile.link.error.text',
-                        defaultMessage: 'Unable to open the link.',
-                    }),
-                );
-            });
+            if (Linking.canOpenURL(url)) {
+                Linking.openURL(url);
+            }
         },
     };
     const buttons: AlertButton[] = [cancel, learnMore];
