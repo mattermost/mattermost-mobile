@@ -16,7 +16,7 @@ import {GalleryItemProps} from 'types/screens/gallery';
 
 import VideoControls, {VideoControlsRef} from './video_controls';
 
-const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, onDoubleTap, theme}: GalleryItemProps) => {
+const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, showHideHeaderFooter, theme}: GalleryItemProps) => {
     const statusBar = DeviceTypes.IS_IPHONE_WITH_INSETS ? 0 : 20;
     const width = deviceWidth;
     const height = deviceHeight - statusBar;
@@ -25,16 +25,6 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, onDouble
     const [paused, setPaused] = useState(true);
     const videoRef = useRef<Video>(null);
     const controlsRef = useRef<VideoControlsRef>(null);
-    const doubleTapRef = useRef<TapGestureHandler>(null);
-
-    const doubleTap = (e: TapGestureHandlerStateChangeEvent) => {
-        if (e.nativeEvent.state === State.ACTIVE) {
-            if (onDoubleTap) {
-                onDoubleTap();
-            }
-        }
-    };
-
     const onPlayPause = () => {
         setPaused(!paused);
     };
@@ -120,30 +110,21 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, onDouble
             <TapGestureHandler
                 numberOfTaps={1}
                 onHandlerStateChange={singleTap}
-                waitFor={doubleTapRef}
             >
                 <View>
-                    <TapGestureHandler
-                        ref={doubleTapRef}
-                        numberOfTaps={2}
-                        onHandlerStateChange={doubleTap}
-                    >
-                        <View>
-                            <Video
-                                ref={videoRef}
-                                style={{width, height}}
-                                resizeMode='contain'
-                                source={{uri}}
-                                volume={1.0}
-                                paused={paused}
-                                controls={false}
-                                onEnd={videoEnded}
-                                onLoad={videoLoaded}
-                                onProgress={videoProgress}
-                                onError={videoError}
-                            />
-                        </View>
-                    </TapGestureHandler>
+                    <Video
+                        ref={videoRef}
+                        style={{width, height}}
+                        resizeMode='contain'
+                        source={{uri}}
+                        volume={1.0}
+                        paused={paused}
+                        controls={false}
+                        onEnd={videoEnded}
+                        onLoad={videoLoaded}
+                        onProgress={videoProgress}
+                        onError={videoError}
+                    />
                 </View>
             </TapGestureHandler>
             <VideoControls
@@ -153,6 +134,7 @@ const GalleryVideo = ({file, deviceHeight, deviceWidth, intl, isActive, onDouble
                 paused={paused}
                 onPlayPause={onPlayPause}
                 onSeek={onSeek}
+                showHideHeaderFooter={showHideHeaderFooter}
             />
         </>
     );

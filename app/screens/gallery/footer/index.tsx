@@ -129,6 +129,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
 
     useImperativeHandle(ref, () => ({
         isVisible,
+        setVisible,
         toggle,
     }), [visible]);
 
