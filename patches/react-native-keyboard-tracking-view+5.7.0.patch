@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
-index 1333a10..1f10067 100644
+index 1333a10..2d57f2b 100644
 --- a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 +++ b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 @@ -23,7 +23,7 @@
@@ -197,7 +197,7 @@ index 1333a10..1f10067 100644
              }
          }
          else if(self.scrollBehavior == KeyboardTrackingScrollBehaviorFixedOffset && !self.isDraggingScrollView)
-@@ -422,16 +459,24 @@ - (void)_updateScrollViewInsets
+@@ -422,16 +459,20 @@ - (void)_updateScrollViewInsets
              self.scrollViewToManage.contentOffset = CGPointMake(originalOffset.x, originalOffset.y + insetsDiff);
          }
          
@@ -206,12 +206,8 @@ index 1333a10..1f10067 100644
 -        {
 -            insets.top = bottomInset;
 +        CGFloat kHeight = _observingInputAccessoryView.keyboardHeight;
-+        if ((_observingInputAccessoryView.keyboardState == KeyboardStateShown || _observingInputAccessoryView.keyboardState == KeyboardStateWillShow)) {
-+            if (@available(iOS 14.2, *)) {
++        if (_observingInputAccessoryView.keyboardState == KeyboardStateShown || _observingInputAccessoryView.keyboardState == KeyboardStateWillShow) {
 +                kHeight -= bottomSafeArea;
-+            } else {
-+                kHeight = bottomSafeArea;
-+            }
          }
 -        else
 -        {
@@ -230,7 +226,7 @@ index 1333a10..1f10067 100644
      }
  }
  
-@@ -448,7 +493,6 @@ -(void)addBottomViewIfNecessary
+@@ -448,7 +489,6 @@ -(void)addBottomViewIfNecessary
      if (self.addBottomView && _bottomView == nil)
      {
          _bottomView = [UIView new];
@@ -238,7 +234,7 @@ index 1333a10..1f10067 100644
          [self addSubview:_bottomView];
          [self updateBottomViewFrame];
      }
-@@ -467,6 +511,12 @@ -(void)updateBottomViewFrame
+@@ -467,6 +507,12 @@ -(void)updateBottomViewFrame
      }
  }
  
@@ -251,7 +247,7 @@ index 1333a10..1f10067 100644
  #pragma mark - safe area
  
  -(void)safeAreaInsetsDidChange
-@@ -510,7 +560,7 @@ -(void)updateTransformAndInsets
+@@ -510,7 +556,7 @@ -(void)updateTransformAndInsets
      CGFloat accessoryTranslation = MIN(-bottomSafeArea, -_observingInputAccessoryView.keyboardHeight);
      
      if (_observingInputAccessoryView.keyboardHeight <= bottomSafeArea) {
@@ -260,7 +256,7 @@ index 1333a10..1f10067 100644
      } else if (_observingInputAccessoryView.keyboardState != KeyboardStateWillHide) {
          _bottomViewHeight = 0;
      }
-@@ -582,6 +632,8 @@ - (void)scrollViewDidScroll:(UIScrollView *)scrollView
+@@ -582,6 +628,8 @@ - (void)scrollViewDidScroll:(UIScrollView *)scrollView
  - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
  {
      self.isDraggingScrollView = YES;
@@ -269,7 +265,7 @@ index 1333a10..1f10067 100644
  }
  
  - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
-@@ -592,6 +644,15 @@ - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoi
+@@ -592,6 +640,15 @@ - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoi
  - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
  {
      self.isDraggingScrollView = NO;
@@ -285,7 +281,7 @@ index 1333a10..1f10067 100644
  }
  
  - (CGFloat)getKeyboardHeight
-@@ -634,6 +695,12 @@ @implementation KeyboardTrackingViewManager
+@@ -634,6 +691,12 @@ @implementation KeyboardTrackingViewManager
  RCT_REMAP_VIEW_PROPERTY(addBottomView, addBottomView, BOOL)
  RCT_REMAP_VIEW_PROPERTY(scrollToFocusedInput, scrollToFocusedInput, BOOL)
  RCT_REMAP_VIEW_PROPERTY(allowHitsOutsideBounds, allowHitsOutsideBounds, BOOL)
@@ -298,7 +294,7 @@ index 1333a10..1f10067 100644
  
  + (BOOL)requiresMainQueueSetup
  {
-@@ -654,6 +721,20 @@ - (UIView *)view
+@@ -654,6 +717,20 @@ - (UIView *)view
      return [[KeyboardTrackingView alloc] init];
  }
  
