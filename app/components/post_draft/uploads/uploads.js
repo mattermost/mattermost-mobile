@@ -337,7 +337,8 @@ export default class Uploads extends PureComponent {
                             <FormattedText
                                 style={style.warning}
                                 id='mobile.file_upload.max_warning'
-                                defaultMessage='Uploads limited to 5 files maximum.'
+                                values={{maxFileCount: MAX_FILE_COUNT}}
+                                defaultMessage='Uploads limited to {maxFileCount} files maximum.'
                             />
                         )}
                         {Boolean(fileSizeWarning) &&

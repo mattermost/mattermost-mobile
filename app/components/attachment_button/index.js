@@ -27,6 +27,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {lookupMimeType} from '@mm-redux/utils/file_utils';
 import {t} from '@utils/i18n';
 import {changeOpacity} from '@utils/theme';
+import {MAX_FILE_COUNT} from '@constants/post_draft';
 
 const ShareExtension = NativeModules.MattermostShare;
 
@@ -60,7 +61,7 @@ export default class AttachmentButton extends PureComponent {
         canBrowseVideoLibrary: true,
         canTakePhoto: true,
         canTakeVideo: true,
-        maxFileCount: 5,
+        maxFileCount: MAX_FILE_COUNT,
         extraOptions: null,
     };
 
