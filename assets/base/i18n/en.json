@@ -265,6 +265,7 @@
   "mobile.extension.title": "Share in Mattermost",
   "mobile.failed_network_action.retry": "Try again",
   "mobile.failed_network_action.shortDescription": "Messages will load when you have an internet connection.",
+  "mobile.failed_network_action.teams_channel_description": "Channels could not be loaded for {teamName}.",
   "mobile.failed_network_action.teams_description": "Teams could not be loaded.",
   "mobile.failed_network_action.teams_title": "Something went wrong",
   "mobile.failed_network_action.title": "No internet connection",

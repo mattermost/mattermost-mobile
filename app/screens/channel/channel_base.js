@@ -270,6 +270,7 @@ export default class ChannelBase extends PureComponent {
                 <Loading
                     channelIsLoading={true}
                     color={theme.centerChannelColor}
+                    retryLoadChannels={this.retryLoadChannels}
                 />
             );
         }

@@ -12,10 +12,32 @@ describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
         theme: Preferences.THEMES.default,
+        retryLoadChannels: jest.fn(),
     };
 
     test('should match snapshot', () => {
         const wrapper = shallow(<ChannelLoader {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should call setTimeout and setInterval for showIndicator and retryLoadChannels on mount', () => {
+        jest.useFakeTimers();
+
+        const wrapper = shallow(<ChannelLoader {...baseProps}/>);
+        const instance = wrapper.instance();
+
+        expect(setTimeout).toHaveBeenCalledWith(instance.showIndicator, 10000);
+        expect(setInterval).toHaveBeenCalledWith(baseProps.retryLoadChannels, 10000);
+    });
+
+    test('should clear timer and interval on unmount', () => {
+        jest.useFakeTimers();
+
+        const wrapper = shallow(<ChannelLoader {...baseProps}/>);
+        const instance = wrapper.instance();
+        instance.componentWillUnmount();
+
+        expect(clearTimeout).toHaveBeenCalledWith(instance.stillLoadingTimeout);
+        expect(clearInterval).toHaveBeenCalledWith(instance.retryLoadInterval);
     });
 });
