@@ -65,7 +65,7 @@ class PushNotifications {
     }
 
     clearNotifications = () => {
-        this.setApplicationIconBadgeNumber(0);
+        this.setApplicationIconBadgeNumber(0, true);
 
         // TODO: Only cancel the local notifications that belong to this server
         this.cancelAllLocalNotifications();
@@ -233,10 +233,13 @@ class PushNotifications {
         }
     };
 
-    setApplicationIconBadgeNumber = (value: number) => {
+    setApplicationIconBadgeNumber = async (value: number, force = false) => {
         if (Platform.OS === 'ios') {
             const count = value < 0 ? 0 : value;
-            Notifications.ios.setBadgeCount(count);
+            const notifications = await Notifications.ios.getDeliveredNotifications();
+            if (count === 0 && (force || notifications.length === 0)) {
+                Notifications.ios.setBadgeCount(count);
+            }
         }
     };
 
