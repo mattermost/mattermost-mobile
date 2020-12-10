@@ -163,8 +163,8 @@ export default class DraftInput extends PureComponent {
             message: value,
         };
 
-        createPost(post, postFiles).then(({failed}) => {
-            if (!failed) {
+        createPost(post, postFiles).then(({data}) => {
+            if (data) {
                 this.props.addRecentUsedEmojisInMessage(message);
             }
         });

@@ -216,8 +216,6 @@ export function createPost(post: Post, files: any[] = []) {
 
         dispatch(batchActions(actions, 'BATCH_CREATE_POST_INIT'));
 
-        let failed = true;
-
         try {
             const created = await Client4.createPost({...newPost, create_at: 0});
 
@@ -248,7 +246,7 @@ export function createPost(post: Post, files: any[] = []) {
             }
 
             dispatch(batchActions(actions, 'BATCH_CREATE_POST'));
-            failed = false;
+            return {data: true};
         } catch (error) {
             const data = {
                 ...newPost,
@@ -270,10 +268,8 @@ export function createPost(post: Post, files: any[] = []) {
             }
 
             dispatch(batchActions(actions, 'BATCH_CREATE_POST_FAILED'));
-            failed = true;
+            return {data: false};
         }
-
-        return {data: true, failed};
     };
 }
 
