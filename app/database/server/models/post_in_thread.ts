@@ -10,7 +10,7 @@ import Post from '@typings/database/post';
 const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
 
 /**
- * PostInThread model helps us to combine adjacent threads together without missing
+ * PostInThread model helps us to combine adjacent threads together without leaving
  * gaps in between for an efficient user reading experience for threads.
  */
 export default class PostInThread extends Model {

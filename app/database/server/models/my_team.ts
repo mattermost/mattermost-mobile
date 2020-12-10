@@ -8,6 +8,7 @@ import {MM_TABLES} from '@constants/database';
 
 const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
 
+// FIXME : 1:1 relationship with Team
 export default class MyTeam extends Model {
     static table = MY_TEAM
     static associations: Associations = {

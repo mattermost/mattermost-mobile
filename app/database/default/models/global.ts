@@ -13,7 +13,7 @@ const {GLOBAL} = MM_TABLES.DEFAULT;
 
 /**
  * The Global model will act as a dictionary of name-value pairs.  The value field can be a JSON object or any other
- * data type.
+ * data type.  It will hold information that applies to the whole app ( e.g. sidebar settings for tablets)
  */
 export default class Global extends Model {
     /** table (entity name) : global */
