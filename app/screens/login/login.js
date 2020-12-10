@@ -7,6 +7,7 @@ import {intlShape} from 'react-intl';
 import {
     ActivityIndicator,
     Dimensions,
+    Image,
     InteractionManager,
     Keyboard,
     StyleSheet,
@@ -20,7 +21,6 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {resetToChannel, goToScreen} from '@actions/navigation';
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
@@ -381,10 +381,9 @@ export default class Login extends PureComponent {
                         keyboardShouldPersistTaps='handled'
                         enableOnAndroid={true}
                     >
-                        <CompassIcon
-                            name='mattermost'
-                            size={76}
-                            style={GlobalStyles.logo}
+                        <Image
+                            source={require('@assets/images/logo.png')}
+                            style={{height: 72, resizeMode: 'contain'}}
                         />
                         <View testID='login.screen'>
                             <Text style={GlobalStyles.header}>
