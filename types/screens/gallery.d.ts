@@ -54,6 +54,7 @@ export interface FooterProps {
 export interface FooterRef {
     toggle(): boolean;
     isVisible(): boolean;
+    setVisibility(display: boolean): void;
 }
 
 export interface GalleryProps {
@@ -75,7 +76,7 @@ export interface GalleryItemProps {
     deviceWidth: number;
     intl?: typeof intlShape;
     isActive?: boolean;
-    onDoubleTap?: CallbackFunctionWithoutArguments;
+    showHideHeaderFooter?(display: boolean): void;
     style?: StyleProp<Animated.AnimateStyle>;
     theme?: Theme;
 }

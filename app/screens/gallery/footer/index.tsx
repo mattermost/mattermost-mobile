@@ -79,6 +79,10 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
         });
     };
 
+    const setVisibility = (display: boolean) => {
+        setVisible(display);
+    };
+
     const startDownload = async (): Promise<string | undefined> => {
         let path;
         if (prepareRef.current) {
@@ -129,6 +133,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
 
     useImperativeHandle(ref, () => ({
         isVisible,
+        setVisibility,
         toggle,
     }), [visible]);
 
