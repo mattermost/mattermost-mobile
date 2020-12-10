@@ -106,5 +106,5 @@ describe('PushNotification', () => {
         Notifications.setDeliveredNotifications(deliveredNotifications);
         await PushNotification.setApplicationIconBadgeNumber(0);
         expect(setBadgeCount).toHaveBeenCalledWith(0);
-    })
+    });
 });
