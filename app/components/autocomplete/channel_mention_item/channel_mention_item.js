@@ -94,7 +94,7 @@ const ChannelMentionItem = (props) => {
         component = (
             <TouchableWithFeedback
                 key={channelId}
-                onPress={this.completeMention}
+                onPress={completeMention}
                 style={margins}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                 type={'native'}
