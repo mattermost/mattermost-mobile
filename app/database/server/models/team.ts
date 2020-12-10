@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {children, field, json} from '@nozbe/watermelondb/decorators';
+import {children, field, json, lazy} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
@@ -78,9 +79,8 @@ export default class Team extends Model {
     /** groupsInTeam : All the groups associated with this team */
     @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
 
-    // FIXME : define 1:1 @lazy query here
-    // /** membership : All the channels associated with this team */
-    // @children(MY_TEAM) membership!: MyTeam
+    /** myTeams : Lazy query property returning only the teams that this user is part of  */
+    @lazy myTeams = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id))
 
     /** slashCommands : All the slash commands associated with this team */
     @children(SLASH_COMMAND) slashCommands!: SlashCommand

@@ -8,7 +8,6 @@ import {MM_TABLES} from '@constants/database';
 import ChannelMembership from '@typings/database/channel_membership';
 import Draft from '@typings/database/draft';
 import GroupsInChannel from '@typings/database/groups_in_channel';
-import MyChannel from '@typings/database/my_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import Post from '@typings/database/post';
 import PostsInChannel from '@typings/database/posts_in_channel';
@@ -39,7 +38,7 @@ export default class Channel extends Model {
         /** A CHANNEL can be associated to multiple records from entity GROUPS_IN_CHANNEL  ( relationship is 1:N) */
         [GROUPS_IN_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
-        /** A CHANNEL can be associated to multiple records from entity MY_CHANNEL ( relationship is 1:N) */
+        /** A CHANNEL can be associated to multiple records from entity MY_CHANNEL ( relationship is 1:1) */
         [MY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
 
         /** A CHANNEL can be associated to multiple records from entity MY_CHANNEL_SETTINGS ( relationship is 1:N) */
@@ -59,49 +58,46 @@ export default class Channel extends Model {
     }
 
     /** create_at : The creation date for this channel */
-    @field('create_at') createAt! : number
+    @field('create_at') createAt!: number
 
     /** creator_id : The user who created this channel */
-    @field('creator_id') creatorId! : string
+    @field('creator_id') creatorId!: string
 
     /** delete_at : The deletion/archived date of this channel */
-    @field('delete_at') deleteAt! : number
+    @field('delete_at') deleteAt!: number
 
     /** display_name : The channel display name (e.g. Contributors ) */
-    @field('display_name') displayName! : string
+    @field('display_name') displayName!: string
 
     /** is_group_constrained : If group is restricted to certain users/teams only */
-    @field('is_group_constrained') isGroupConstrained! : boolean
+    @field('is_group_constrained') isGroupConstrained!: boolean
 
     /** name : The name of the channel (e.g core) */
-    @field('name') name! : string
+    @field('name') name!: string
 
     /** team_id : The team to which this channel belongs.  It can be null/empty for direct/group message. */
-    @field('team_id') teamId! : string
+    @field('team_id') teamId!: string
 
     /** type : The type of message in this channel ( e.g. G: grouped message, D: direct message, P: private message and O: public message) */
-    @field('type') type! : string
+    @field('type') type!: string
 
     /** settings: User specific settings/preferences for this channel */
-    @children(MY_CHANNEL_SETTINGS) settings! : MyChannelSettings
+    @children(MY_CHANNEL_SETTINGS) settings!: MyChannelSettings
 
     /** members : Users belonging to this channel */
-    @children(CHANNEL_MEMBERSHIP) members! : ChannelMembership
+    @children(CHANNEL_MEMBERSHIP) members!: ChannelMembership
 
     /** draft : All drafts for this channel */
-    @children(DRAFT) draft! : Draft
+    @children(DRAFT) draft!: Draft
 
     /** groupsInChannel : Every group contained in this channel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel! : GroupsInChannel
-
-    /** membership: all the channels that belongs to a user */
-    @children(MY_CHANNEL) membership! : MyChannel
+    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel
 
     /** posts : all posts made in that channel */
-    @children(POST) posts! : Post
+    @children(POST) posts!: Post
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    @children(POSTS_IN_CHANNEL) postsInChannel! : PostsInChannel
+    @children(POSTS_IN_CHANNEL) postsInChannel!: PostsInChannel
 
     /** team : The 'Relation' property to the record from entity TEAM */
     @immutableRelation(TEAM, 'team_id') team!: Team
@@ -109,6 +105,9 @@ export default class Channel extends Model {
     /** creator : The 'Relation' property to the record from entity USER */
     @immutableRelation(USER, 'creator_id') creator!: User
 
-    /** info : The lazy query property to the record from entity CHANNEL_INFO */
+    /** info : Query returning extra information about this channel from entity CHANNEL_INFO */
     @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id))
+
+    /** membership : Query returning all the channels that this user belongs to - from entity MY_CHANNEL */
+    @lazy membership = this.collections.get(MY_CHANNEL).query(Q.on(CHANNEL, 'id', this.id))
 }

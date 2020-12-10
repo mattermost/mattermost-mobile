@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, lazy} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import Channel from '@typings/database/channel';
 
 const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
 
@@ -39,8 +39,6 @@ export default class MyChannel extends Model {
     /** roles : The user's privileges on this channel */
     @field('roles') roles!: string
 
-    /** channel : The related parent record to the Channel model */
-    @relation(CHANNEL, 'channel_id') channel!: Channel
+    /** channel : The lazy query property to the record from entity CHANNEL */
+    @lazy channel = this.collections.get(CHANNEL).query(Q.on(MY_CHANNEL, 'channel_id', this.channelId))
 }
-
-// FIXME : create a 1:1 relationship between MyChannel and Channel
