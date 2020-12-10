@@ -10,18 +10,15 @@ import {
     Animated,
 } from 'react-native';
 
-import {getLastPostIndex} from '@mm-redux/utils/post_list';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-
-import AnnouncementBanner from 'app/components/announcement_banner';
-import PostList from 'app/components/post_list';
-import RetryBarIndicator from 'app/components/retry_bar_indicator';
-import tracker from 'app/utils/time_tracker';
-import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import telemetry from 'app/telemetry';
-import {goToScreen} from 'app/actions/navigation';
-
+import {goToScreen} from '@actions/navigation';
+import PostList from '@components/post_list';
+import RetryBarIndicator from '@components/retry_bar_indicator';
 import {TYPING_HEIGHT} from '@constants/post_draft';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getLastPostIndex} from '@mm-redux/utils/post_list';
+import tracker from '@utils/time_tracker';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import telemetry from '@telemetry';
 
 let ChannelIntro = null;
 let LoadMorePosts = null;
@@ -195,6 +192,7 @@ export default class ChannelPostList extends PureComponent {
         } else {
             component = (
                 <PostList
+                    testID='channel.post_list'
                     postIds={postIds}
                     lastPostIndex={Platform.OS === 'android' ? getLastPostIndex(postIds) : -1}
                     extraData={postIds.length !== 0}
@@ -221,7 +219,6 @@ export default class ChannelPostList extends PureComponent {
             <Animated.View style={[style.container, {paddingBottom: this.bottomPadding}]}>
                 <View style={style.separator}/>
                 {component}
-                <AnnouncementBanner/>
                 <RetryBarIndicator/>
             </Animated.View>
         );

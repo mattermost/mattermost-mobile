@@ -8,7 +8,6 @@ import {getTheme, get as getPreference} from '@mm-redux/selectors/entities/prefe
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {savePreferences} from '@mm-redux/actions/preferences';
 import Preferences from '@mm-redux/constants/preferences';
-import {isLandscape} from 'app/selectors/device';
 import ClockDisplay from './clock_display';
 
 function mapStateToProps(state) {
@@ -19,7 +18,6 @@ function mapStateToProps(state) {
         userId: currentUserId,
         theme: getTheme(state),
         militaryTime,
-        isLandscape: isLandscape(state),
     };
 }
 

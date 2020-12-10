@@ -1,76 +1,67 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`FileAttachment should match snapshot 1`] = `
-<View
+<TouchableWithFeedbackIOS
+  onPress={[Function]}
   style={
-    Array [
-      Object {
-        "borderColor": "rgba(61,60,64,0.4)",
-        "borderRadius": 5,
-        "borderWidth": 1,
-        "flex": 1,
-        "flexDirection": "row",
-        "marginTop": 10,
-      },
-    ]
+    Object {
+      "width": undefined,
+    }
   }
+  type="opacity"
 >
-  <View
-    style={
+  <FileAttachmentImage
+    file={
       Object {
-        "marginBottom": 8.2,
-        "marginLeft": 8,
-        "marginRight": 6,
-        "marginTop": 7.8,
+        "create_at": 1546893090093,
+        "data": Object {
+          "mime_type": "image/png",
+        },
+        "delete_at": 0,
+        "extension": "png",
+        "has_preview_image": true,
+        "height": 171,
+        "id": "fileId",
+        "name": "image.png",
+        "post_id": "postId",
+        "size": 14894,
+        "update_at": 1546893090093,
+        "user_id": "userId",
+        "width": 425,
       }
     }
-  >
-    <TouchableWithFeedbackIOS
-      onPress={[Function]}
-      type="opacity"
-    >
-      <FileAttachmentIcon
-        defaultImage={false}
-        failed={false}
-        file={
-          Object {
-            "mime_type": "image/png",
-          }
-        }
-        iconSize={48}
-        onCaptureRef={[Function]}
-        smallImage={false}
-        theme={
-          Object {
-            "awayIndicator": "#ffbc42",
-            "buttonBg": "#166de0",
-            "buttonColor": "#ffffff",
-            "centerChannelBg": "#ffffff",
-            "centerChannelColor": "#3d3c40",
-            "codeTheme": "github",
-            "dndIndicator": "#f74343",
-            "errorTextColor": "#fd5960",
-            "linkColor": "#2389d7",
-            "mentionBg": "#ffffff",
-            "mentionBj": "#ffffff",
-            "mentionColor": "#145dbf",
-            "mentionHighlightBg": "#ffe577",
-            "mentionHighlightLink": "#166de0",
-            "newMessageSeparator": "#ff8800",
-            "onlineIndicator": "#06d6a0",
-            "sidebarBg": "#145dbf",
-            "sidebarHeaderBg": "#1153ab",
-            "sidebarHeaderTextColor": "#ffffff",
-            "sidebarText": "#ffffff",
-            "sidebarTextActiveBorder": "#579eff",
-            "sidebarTextActiveColor": "#ffffff",
-            "sidebarTextHoverBg": "#4578bf",
-            "sidebarUnreadText": "#ffffff",
-            "type": "Mattermost",
-          }
-        }
-      />
-    </TouchableWithFeedbackIOS>
-  </View>
-</View>
+    imageDimensions={null}
+    resizeMethod="resize"
+    resizeMode="cover"
+    theme={
+      Object {
+        "awayIndicator": "#ffbc42",
+        "buttonBg": "#166de0",
+        "buttonColor": "#ffffff",
+        "centerChannelBg": "#ffffff",
+        "centerChannelColor": "#3d3c40",
+        "codeTheme": "github",
+        "dndIndicator": "#f74343",
+        "errorTextColor": "#fd5960",
+        "linkColor": "#2389d7",
+        "mentionBg": "#ffffff",
+        "mentionBj": "#ffffff",
+        "mentionColor": "#145dbf",
+        "mentionHighlightBg": "#ffe577",
+        "mentionHighlightLink": "#166de0",
+        "newMessageSeparator": "#ff8800",
+        "onlineIndicator": "#06d6a0",
+        "sidebarBg": "#145dbf",
+        "sidebarHeaderBg": "#1153ab",
+        "sidebarHeaderTextColor": "#ffffff",
+        "sidebarText": "#ffffff",
+        "sidebarTextActiveBorder": "#579eff",
+        "sidebarTextActiveColor": "#ffffff",
+        "sidebarTextHoverBg": "#4578bf",
+        "sidebarUnreadText": "#ffffff",
+        "type": "Mattermost",
+      }
+    }
+  />
+</TouchableWithFeedbackIOS>
 `;

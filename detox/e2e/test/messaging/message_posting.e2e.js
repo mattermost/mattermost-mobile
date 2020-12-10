@@ -7,33 +7,49 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
-
+import {ChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Messaging', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
 
-        await toChannelScreen(user);
+        // # Open channel screen
+        await ChannelScreen.open(user);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
-    it('should post a message on tap to paper send button', async () => {
-        await expect(element(by.id('channel_screen'))).toBeVisible();
-        await expect(element(by.id('post_input'))).toExist();
-        await expect(element(by.id('send_button'))).not.toExist();
-        await element(by.id('post_input')).tap();
+    it('MM-T3486 should post a message when send button is tapped', async () => {
+        // * Verify channel screen is visible
+        await ChannelScreen.toBeVisible();
 
-        const text = Date.now().toString();
-        await element(by.id('post_input')).typeText(text);
+        const {
+            postInput,
+            sendButton,
+            sendButtonDisabled,
+        } = ChannelScreen;
 
-        await expect(element(by.id('send_button'))).toBeVisible();
-        await element(by.id('send_button')).tap();
+        // * Verify post input is visible and send button is disabled
+        await expect(postInput).toBeVisible();
+        await expect(sendButtonDisabled).toBeVisible();
 
-        await expect(element(by.text(text))).toExist();
+        // # Tap on post input
+        await postInput.tap();
+
+        // # Type message on post input
+        const message = Date.now().toString();
+        await postInput.typeText(message);
+
+        // * Verify send button is enabled
+        await expect(sendButton).toBeVisible();
+
+        // # Tap send button
+        await sendButton.tap();
+
+        // * Verify message is posted
+        await expect(element(by.text(message))).toBeVisible();
     });
 });

@@ -9,15 +9,15 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface MuteProps {
+    testID?: string;
     channelId: string;
     isChannelMuted: boolean;
-    isLandscape: boolean;
     theme: Theme;
     updateChannelNotifyProps: (userId: string, channelId: string, opts: {mark_unread: string}) => void;
     userId: string;
 }
 
-const Mute = ({channelId, isChannelMuted, isLandscape, updateChannelNotifyProps, userId, theme}: MuteProps) => {
+const Mute = ({channelId, isChannelMuted, updateChannelNotifyProps, userId, testID, theme}: MuteProps) => {
     const [muted, setMuted] = useState(isChannelMuted);
 
     const handleMuteChannel = preventDoubleTap(() => {
@@ -31,6 +31,7 @@ const Mute = ({channelId, isChannelMuted, isLandscape, updateChannelNotifyProps,
 
     return (
         <ChannelInfoRow
+            testID={testID}
             action={handleMuteChannel}
             defaultMessage='Mute channel'
             detail={muted}
@@ -38,7 +39,6 @@ const Mute = ({channelId, isChannelMuted, isLandscape, updateChannelNotifyProps,
             textId={t('channel_notifications.muteChannel.settings')}
             togglable={true}
             theme={theme}
-            isLandscape={isLandscape}
         />
     );
 };

@@ -69,7 +69,6 @@ NotificationSettings {
       "textComponent": "span",
       "timeZone": null,
     },
-    "isLandscape": false,
     "theme": Object {
       "awayIndicator": "#ffbc42",
       "buttonBg": "#166de0",
@@ -193,7 +192,6 @@ NotificationSettings {
             "timeZone": null,
           }
         }
-        isLandscape={false}
         theme={
           Object {
             "awayIndicator": "#ffbc42",
@@ -232,13 +230,20 @@ NotificationSettings {
       "_newState": null,
       "_numberOfReRenders": 0,
       "_renderPhaseUpdates": null,
-      "_rendered": <View
+      "_rendered": <RNCSafeAreaView
+        edges={
+          Array [
+            "left",
+            "right",
+          ]
+        }
         style={
           Object {
             "backgroundColor": "#ffffff",
             "flex": 1,
           }
         }
+        testID="notification_settings.screen"
       >
         <Connect(StatusBar) />
         <ScrollView
@@ -265,7 +270,6 @@ NotificationSettings {
             i18nId="mobile.notification_settings.mentions_replies"
             iconName="at"
             isDestructor={false}
-            isLandscape={false}
             isLink={false}
             onPress={[Function]}
             separator={true}
@@ -305,11 +309,11 @@ NotificationSettings {
             i18nId="mobile.notification_settings.mobile"
             iconName="cellphone"
             isDestructor={false}
-            isLandscape={false}
             isLink={false}
             onPress={[Function]}
             separator={true}
             showArrow={true}
+            testID="notification_settings.mobile.action"
             theme={
               Object {
                 "awayIndicator": "#ffbc42",
@@ -345,7 +349,6 @@ NotificationSettings {
             i18nId="mobile.notification_settings.email"
             iconName="email-outline"
             isDestructor={false}
-            isLandscape={false}
             isLink={false}
             onPress={[Function]}
             separator={false}
@@ -390,7 +393,7 @@ NotificationSettings {
             }
           />
         </ScrollView>
-      </View>,
+      </RNCSafeAreaView>,
       "_rendering": false,
       "_updater": [Circular],
       "_workInProgressHook": null,

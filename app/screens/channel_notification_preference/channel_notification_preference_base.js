@@ -16,7 +16,7 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
             updateChannelNotifyProps: PropTypes.func.isRequired,
         }),
         channelId: PropTypes.string.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
+        globalNotifyProps: PropTypes.object.isRequired,
         notifyProps: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         userId: PropTypes.string.isRequired,
@@ -35,25 +35,33 @@ export default class ChannelNotificationPreferenceBase extends PureComponent {
     }
 
     getItems = () => {
+        const {formatMessage} = this.context.intl;
+        const {globalNotifyProps} = this.props;
         const {notificationLevel} = this.state;
+        const defaultNotificationLevel = formatMessage({id: `channel_header.notificationPreference.${globalNotifyProps?.push.toLowerCase()}`});
+
         return [{
             id: t('channel_notifications.preference.global_default'),
-            defaultMessage: 'Global default (Mentions)',
+            defaultMessage: 'Global default ({notifyLevel})',
+            labelValues: {notifyLevel: defaultNotificationLevel},
             value: ViewTypes.NotificationLevels.DEFAULT,
             checked: notificationLevel === ViewTypes.NotificationLevels.DEFAULT,
         }, {
             id: t('channel_notifications.preference.all_activity'),
             defaultMessage: 'For all activity',
+            labelValues: undefined,
             value: ViewTypes.NotificationLevels.ALL,
             checked: notificationLevel === ViewTypes.NotificationLevels.ALL,
         }, {
             id: t('channel_notifications.preference.only_mentions'),
             defaultMessage: 'Only mentions and direct messages',
+            labelValues: undefined,
             value: ViewTypes.NotificationLevels.MENTION,
             checked: notificationLevel === ViewTypes.NotificationLevels.MENTION,
         }, {
             id: t('channel_notifications.preference.never'),
             defaultMessage: 'Never',
+            labelValues: undefined,
             value: ViewTypes.NotificationLevels.NONE,
             checked: notificationLevel === ViewTypes.NotificationLevels.NONE,
         }];

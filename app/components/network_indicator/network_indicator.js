@@ -12,19 +12,20 @@ import {
     View,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {RequestStatus} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {DeviceTypes, ViewTypes} from '@constants';
+import {ViewTypes} from '@constants';
 import {INDICATOR_BAR_HEIGHT} from '@constants/view';
 import networkConnectionListener, {checkConnection} from '@utils/network';
 import {t} from '@utils/i18n';
 
 import mattermostBucket from 'app/mattermost_bucket';
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from '@init/push_notifications';
 
 const MAX_WEBSOCKET_RETRIES = 3;
 const CONNECTION_RETRY_SECONDS = 5;
@@ -33,9 +34,10 @@ const {
     ANDROID_TOP_LANDSCAPE,
     ANDROID_TOP_PORTRAIT,
     IOS_TOP_LANDSCAPE,
-    IOS_TOP_PORTRAIT,
     IOS_INSETS_TOP_PORTRAIT,
 } = ViewTypes;
+
+const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
 export default class NetworkIndicator extends PureComponent {
     static propTypes = {
@@ -64,12 +66,17 @@ export default class NetworkIndicator extends PureComponent {
     constructor(props) {
         super(props);
 
+        const navBarHeight = Platform.select({
+            android: props.isLandscape ? ANDROID_TOP_LANDSCAPE : ANDROID_TOP_PORTRAIT,
+            ios: props.isLandscape ? IOS_TOP_LANDSCAPE : IOS_INSETS_TOP_PORTRAIT,
+        });
+
         this.state = {
             opacity: 0,
+            navBarHeight,
         };
 
-        const navBar = this.getNavBarHeight(props.isLandscape);
-        this.top = new Animated.Value(navBar - INDICATOR_BAR_HEIGHT);
+        this.top = new Animated.Value(navBarHeight - INDICATOR_BAR_HEIGHT);
         this.clearNotificationTimeout = null;
 
         this.backgroundColor = new Animated.Value(0);
@@ -83,29 +90,28 @@ export default class NetworkIndicator extends PureComponent {
         this.mounted = true;
 
         AppState.addEventListener('change', this.handleAppStateChange);
+        EventEmitter.on(ViewTypes.CHANNEL_NAV_BAR_CHANGED, this.getNavBarHeight);
 
         // Attempt to connect when this component mounts
         // if the websocket is already connected it does not try and connect again
         this.connect(true);
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         const {
             currentChannelId: prevChannelId,
-            isLandscape: prevIsLandscape,
             websocketStatus: previousWebsocketStatus,
         } = prevProps;
-        const {currentChannelId, isLandscape, websocketErrorCount, websocketStatus} = this.props;
+        const {currentChannelId, websocketErrorCount, websocketStatus} = this.props;
 
         if (currentChannelId !== prevChannelId && this.clearNotificationTimeout) {
             clearTimeout(this.clearNotificationTimeout);
             this.clearNotificationTimeout = null;
         }
 
-        if (isLandscape !== prevIsLandscape) {
-            const navBar = this.getNavBarHeight(isLandscape);
+        if (prevState.navBarHeight !== this.state.navBarHeight) {
             const initialTop = websocketErrorCount || previousWebsocketStatus === RequestStatus.FAILURE || previousWebsocketStatus === RequestStatus.NOT_STARTED ? 0 : INDICATOR_BAR_HEIGHT;
-            this.top.setValue(navBar - initialTop);
+            this.top.setValue(this.state.navBarHeight - initialTop);
         }
 
         if (this.props.isOnline) {
@@ -132,6 +138,7 @@ export default class NetworkIndicator extends PureComponent {
         stopPeriodicStatusUpdates();
         this.networkListener.removeEventListener();
         AppState.removeEventListener('change', this.handleAppStateChange);
+        EventEmitter.off(ViewTypes.CHANNEL_NAV_BAR_CHANGED, this.getNavBarHeight);
 
         clearTimeout(this.connectionRetryTimeout);
         this.connectionRetryTimeout = null;
@@ -180,7 +187,7 @@ export default class NetworkIndicator extends PureComponent {
                 ),
                 Animated.timing(
                     this.top, {
-                        toValue: (this.getNavBarHeight() - INDICATOR_BAR_HEIGHT),
+                        toValue: (this.state.navBarHeight - INDICATOR_BAR_HEIGHT),
                         duration: 300,
                         delay: 500,
                         useNativeDriver: false,
@@ -196,26 +203,8 @@ export default class NetworkIndicator extends PureComponent {
         }
     };
 
-    getNavBarHeight = (isLandscape = this.props.isLandscape) => {
-        if (Platform.OS === 'android') {
-            if (isLandscape) {
-                return ANDROID_TOP_LANDSCAPE;
-            }
-
-            return ANDROID_TOP_PORTRAIT;
-        }
-
-        const iPhoneWithInsets = DeviceTypes.IS_IPHONE_WITH_INSETS;
-
-        if (iPhoneWithInsets && isLandscape) {
-            return IOS_TOP_LANDSCAPE;
-        } else if (iPhoneWithInsets) {
-            return IOS_INSETS_TOP_PORTRAIT;
-        } else if (isLandscape && !DeviceTypes.IS_TABLET) {
-            return IOS_TOP_LANDSCAPE;
-        }
-
-        return IOS_TOP_PORTRAIT;
+    getNavBarHeight = (navBarHeight) => {
+        this.setState({navBarHeight});
     };
 
     handleWebSocket = (open) => {
@@ -329,7 +318,7 @@ export default class NetworkIndicator extends PureComponent {
 
             Animated.timing(
                 this.top, {
-                    toValue: this.getNavBarHeight(),
+                    toValue: this.state.navBarHeight,
                     duration: 300,
                     useNativeDriver: false,
                 },
@@ -391,14 +380,17 @@ export default class NetworkIndicator extends PureComponent {
                 pointerEvents='none'
                 style={[styles.container, {top: this.top, backgroundColor: background, opacity: this.state.opacity}]}
             >
-                <Animated.View style={styles.wrapper}>
+                <AnimatedSafeAreaView
+                    edges={['left', 'right']}
+                    style={styles.wrapper}
+                >
                     <FormattedText
                         defaultMessage={defaultMessage}
                         id={i18nId}
                         style={styles.message}
                     />
                     {action}
-                </Animated.View>
+                </AnimatedSafeAreaView>
             </Animated.View>
         );
     }

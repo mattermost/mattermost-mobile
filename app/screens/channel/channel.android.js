@@ -6,6 +6,7 @@ import {StyleSheet, View, BackHandler, ToastAndroid} from 'react-native';
 
 import {openMainSideMenu, openSettingsSideMenu} from '@actions/navigation';
 import LocalConfig from '@assets/config';
+import AnnouncementBanner from 'app/components/announcement_banner';
 import KeyboardLayout from '@components/layout/keyboard_layout';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
@@ -67,12 +68,13 @@ export default class ChannelAndroid extends ChannelBase {
             component = (
                 <KeyboardLayout>
                     <View
-                        testID='channel_screen'
+                        testID='channel.screen'
                         style={style.flex}
                     >
                         <ChannelPostList registerTypingAnimation={this.registerTypingAnimation}/>
                     </View>
                     <PostDraft
+                        testID='channel.post_draft'
                         ref={this.postDraft}
                         screenId={this.props.componentId}
                         registerTypingAnimation={this.registerTypingAnimation}
@@ -90,6 +92,7 @@ export default class ChannelAndroid extends ChannelBase {
                 />
                 {component}
                 <NetworkIndicator/>
+                <AnnouncementBanner/>
                 {LocalConfig.EnableMobileClientUpgrade && <ClientUpgradeListener/>}
             </>
         );

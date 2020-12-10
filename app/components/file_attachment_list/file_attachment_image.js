@@ -33,13 +33,13 @@ export default class FileAttachmentImage extends PureComponent {
             IMAGE_SIZE.Thumbnail,
         ]),
         imageWidth: PropTypes.number,
-        onCaptureRef: PropTypes.func,
         theme: PropTypes.object,
         resizeMode: PropTypes.string,
         resizeMethod: PropTypes.string,
         isSingleImage: PropTypes.bool,
         imageDimensions: PropTypes.object,
         backgroundColor: PropTypes.string,
+        inViewPort: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -58,14 +58,6 @@ export default class FileAttachmentImage extends PureComponent {
         return (<View style={style.boxPlaceholder}/>);
     };
 
-    handleCaptureRef = (ref) => {
-        const {onCaptureRef} = this.props;
-
-        if (onCaptureRef) {
-            onCaptureRef(ref);
-        }
-    };
-
     handleError = () => {
         this.setState({failed: true});
     }
@@ -76,8 +68,13 @@ export default class FileAttachmentImage extends PureComponent {
         if (file.localPath) {
             imageProps.defaultSource = {uri: file.localPath};
         } else if (file.id) {
-            imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
+            if (file.mini_preview && file.mime_type) {
+                imageProps.thumbnailUri = `data:${file.mime_type};base64,${file.mini_preview}`;
+            } else {
+                imageProps.thumbnailUri = Client4.getFileThumbnailUrl(file.id);
+            }
             imageProps.imageUri = Client4.getFilePreviewUrl(file.id);
+            imageProps.inViewPort = this.props.inViewPort;
         }
         return imageProps;
     };
@@ -97,7 +94,6 @@ export default class FileAttachmentImage extends PureComponent {
 
         return (
             <View
-                ref={this.handleCaptureRef}
                 style={[
                     wrapperStyle,
                     style.smallImageBorder,
@@ -110,6 +106,7 @@ export default class FileAttachmentImage extends PureComponent {
                 {this.boxPlaceholder()}
                 <View style={style.smallImageOverlay}>
                     <ProgressiveImage
+                        id={file.id}
                         style={{height: file.height, width: file.width}}
                         tintDefaultSource={!file.localPath && !this.state.failed}
                         filename={file.name}
@@ -152,11 +149,11 @@ export default class FileAttachmentImage extends PureComponent {
 
         return (
             <View
-                ref={this.handleCaptureRef}
                 style={style.fileImageWrapper}
             >
                 {this.boxPlaceholder()}
                 <ProgressiveImage
+                    id={file.id}
                     style={[this.props.isSingleImage ? null : style.imagePreview, imageDimensions]}
                     tintDefaultSource={!file.localPath && !this.state.failed}
                     filename={file.name}

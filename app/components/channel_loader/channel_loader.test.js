@@ -12,7 +12,6 @@ describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {

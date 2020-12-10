@@ -12,6 +12,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import * as Sentry from '@sentry/react-native';
 
 import {dismissAllModals} from '@actions/navigation';
@@ -31,7 +32,6 @@ class AdvancedSettings extends Component {
         }).isRequired,
         intl: intlShape.isRequired,
         theme: PropTypes.object,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     state = {
@@ -110,7 +110,7 @@ class AdvancedSettings extends Component {
             return null;
         }
 
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
@@ -122,7 +122,6 @@ class AdvancedSettings extends Component {
                     separator={false}
                     showArrow={false}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
                 <View style={style.divider}/>
                 <SettingsItem
@@ -132,7 +131,6 @@ class AdvancedSettings extends Component {
                     separator={false}
                     showArrow={false}
                     theme={theme}
-                    isLandscape={isLandscape}
                 />
                 <View style={style.divider}/>
             </View>
@@ -140,11 +138,14 @@ class AdvancedSettings extends Component {
     };
 
     render() {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     contentContainerStyle={style.wrapper}
@@ -161,12 +162,11 @@ class AdvancedSettings extends Component {
                         showArrow={false}
                         rightComponent={this.renderCacheFileSize()}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                     <View style={style.divider}/>
                     {this.renderSentryDebugOptions()}
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

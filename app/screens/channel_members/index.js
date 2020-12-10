@@ -10,7 +10,6 @@ import {makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 import {getProfilesInChannel, searchProfiles} from '@mm-redux/actions/users';
 
 import {handleRemoveChannelMembers} from 'app/actions/views/channel_members';
-import {isLandscape} from 'app/selectors/device';
 import ChannelMembers from './channel_members';
 
 function makeMapStateToProps() {
@@ -31,7 +30,6 @@ function makeMapStateToProps() {
             currentChannelMembers,
             currentUserId: state.entities.users.currentUserId,
             theme: getTheme(state),
-            isLandscape: isLandscape(state),
         };
     };
 }

@@ -8,61 +8,53 @@
 // *******************************************************************
 
 import {Ldap, Setup, System, Team, User} from '@support/server_api';
-import {logoutUser} from '@support/ui/screen';
-import {serverUrl} from '@support/test_config';
+import {ChannelScreen, LoginScreen} from '@support/ui/screen';
 import ldapUsers from '@support/fixtures/ldap_users.json';
 
 describe('Smoke Tests', () => {
     const testOne = ldapUsers['test-1'];
-    let config;
 
     beforeAll(async () => {
         // * Verify that the server has license with LDAP feature
         await System.apiRequireLicenseForFeature('LDAP');
 
         // # Enable LDAP
-        ({config} = await System.apiUpdateConfig({LdapSettings: {Enable: true}}));
+        await System.apiUpdateConfig({LdapSettings: {Enable: true}});
 
         // * Check that LDAP server can connect and is synchronized with Mattermost server
         await Ldap.apiRequireLDAPServer();
 
+        // # Ensure user has team
         await ensureUserHasTeam(testOne);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('MM-T3180 Log in - LDAP', async () => {
-        // * Verify that it starts with the Select Server screen
-        await expect(element(by.id('select_server_screen'))).toBeVisible();
+        // # Navigate to Login screen
+        const loginScreen = await LoginScreen.open();
 
-        // # Type in the server URL
-        await element(by.id('server_url_input')).replaceText(serverUrl);
-
-        // # Tap connect button
-        await element(by.text('Connect')).tap();
-
-        // # Verify that it goes into Login screen
-        await expect(element(by.id('login_screen'))).toBeVisible();
+        const {usernameInput, passwordInput, signinButton} = LoginScreen;
 
         // # Type in username
-        await element(by.id('username_input')).replaceText(testOne.username);
+        await usernameInput.replaceText(testOne.username);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text(config.TeamSettings.SiteName)).tap();
+        await loginScreen.tap({x: 5, y: 10});
 
         // # Type in password
-        await element(by.id('password_input')).replaceText(testOne.password);
+        await passwordInput.replaceText(testOne.password);
 
         // # Tap anywhere to hide keyboard
-        await element(by.text(config.TeamSettings.SiteName)).tap();
+        await loginScreen.tap({x: 5, y: 10});
 
         // # Tap "Sign in" button
-        await element(by.text('Sign in')).tap();
+        await signinButton.tap();
 
         // * Verify that the user has successfully logged in by checking it redirects into the Channel screen
-        await expect(element(by.id('channel_screen'))).toBeVisible();
+        await ChannelScreen.toBeVisible();
     });
 });
 
@@ -73,7 +65,7 @@ async function ensureUserHasTeam(ldapUser) {
     // # Login as sysadmin and ensure LDAP user is member of at least one team
     await User.apiAdminLogin();
     const {user} = await User.apiGetUserByUsername(ldapUser.username);
-    const {teams} = await Team.apiGetTeamMembersForUser(user.id);
+    const {teams} = await Team.apiGetTeamsForUser(user.id);
 
     if (!teams?.length) {
         const {team} = await Setup.apiInit();

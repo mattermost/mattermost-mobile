@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const ActionTypes = {
@@ -22,6 +21,7 @@ const ActionTypes = {
 
 function sectionItem(props) {
     const {
+        testID,
         action,
         actionType,
         actionValue,
@@ -29,7 +29,6 @@ function sectionItem(props) {
         theme,
         selected,
         description,
-        isLandscape,
     } = props;
 
     const style = getStyleSheet(theme);
@@ -73,7 +72,10 @@ function sectionItem(props) {
     }
 
     const component = (
-        <View style={[style.container, padding(isLandscape)]}>
+        <View
+            testID={testID}
+            style={style.container}
+        >
             <View style={description ? style.doubleContainer : style.singleContainer}>
                 {labelComponent}
                 {descriptionComponent}

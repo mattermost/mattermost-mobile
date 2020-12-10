@@ -5,7 +5,6 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape, injectIntl} from 'react-intl';
 import {
-    Alert,
     Linking,
     Platform,
     ScrollView,
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {goToScreen, dismissModal} from '@actions/navigation';
 import LocalConfig from '@assets/config';
@@ -37,7 +37,6 @@ class Settings extends PureComponent {
         intl: intlShape.isRequired,
         joinableTeams: PropTypes.array.isRequired,
         theme: PropTypes.object,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -136,47 +135,32 @@ class Settings extends PureComponent {
     });
 
     openErrorEmail = preventDoubleTap(() => {
-        const {config, intl} = this.props;
+        const {config} = this.props;
         const recipient = config.SupportEmail;
         const subject = `Problem with ${config.SiteName} React Native app`;
         const mailTo = `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`;
 
-        Linking.openURL(mailTo).then(() => {
-            this.props.actions.clearErrors();
-        }).catch(() => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.mailTo.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.mailTo.error.text',
-                    defaultMessage: 'Unable to open an email client.',
-                }),
-            );
+        Linking.canOpenURL(mailTo).then((supported) => {
+            if (supported) {
+                Linking.openURL(mailTo);
+                this.props.actions.clearErrors();
+            }
         });
     });
 
     openHelp = preventDoubleTap(() => {
-        const {config, intl} = this.props;
+        const {config} = this.props;
         const link = config.HelpLink ? config.HelpLink.toLowerCase() : '';
 
-        Linking.openURL(link).catch(() => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
+        Linking.canOpenURL(link).then((supported) => {
+            if (supported) {
+                Linking.openURL(link);
+            }
         });
     });
 
     render() {
-        const {config, joinableTeams, theme, isLandscape} = this.props;
+        const {config, joinableTeams, theme} = this.props;
         const style = getStyleSheet(theme);
         const showTeams = joinableTeams.length > 0;
         const showHelp = isValidUrl(config.HelpLink);
@@ -189,7 +173,11 @@ class Settings extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                testID='general_settings.screen'
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     alwaysBounceVertical={false}
@@ -197,6 +185,7 @@ class Settings extends PureComponent {
                 >
                     <View style={style.divider}/>
                     <SettingsItem
+                        testID='general_settings.notifications.action'
                         defaultMessage='Notifications'
                         i18nId={t('user.settings.modal.notifications')}
                         iconName='bell-outline'
@@ -204,9 +193,9 @@ class Settings extends PureComponent {
                         showArrow={showArrow}
                         theme={theme}
                         separator={true}
-                        isLandscape={isLandscape}
                     />
                     <SettingsItem
+                        testID='general_settings.display.action'
                         defaultMessage='Display'
                         i18nId={t('user.settings.modal.display')}
                         iconName='layers-outline'
@@ -214,11 +203,10 @@ class Settings extends PureComponent {
                         showArrow={showArrow}
                         theme={theme}
                         separator={true}
-                        isLandscape={isLandscape}
                     />
                     {showTeams &&
-                    <React.Fragment>
                         <SettingsItem
+                            testID='general_settings.select_team.action'
                             defaultMessage='Open teams you can join'
                             i18nId={t('mobile.select_team.join_open')}
                             iconName='menu'
@@ -226,11 +214,10 @@ class Settings extends PureComponent {
                             showArrow={showArrow}
                             theme={theme}
                             separator={true}
-                            isLandscape={isLandscape}
                         />
-                    </React.Fragment>
                     }
                     <SettingsItem
+                        testID='general_settings.advanced.action'
                         defaultMessage='Advanced Settings'
                         i18nId={t('mobile.advanced_settings.title')}
                         iconName='tune'
@@ -238,11 +225,10 @@ class Settings extends PureComponent {
                         showArrow={showArrow}
                         theme={theme}
                         separator={true}
-                        isLandscape={isLandscape}
                     />
                     {LocalConfig.EnableMobileClientUpgrade && LocalConfig.EnableMobileClientUpgradeUserSetting &&
-                    <React.Fragment>
                         <SettingsItem
+                            testID='general_settings.check_for_upgrade.action'
                             defaultMessage='Check for Upgrade'
                             i18nId={t('mobile.settings.modal.check_for_upgrade')}
                             iconName='update'
@@ -250,11 +236,10 @@ class Settings extends PureComponent {
                             showArrow={showArrow}
                             theme={theme}
                             separator={true}
-                            isLandscape={isLandscape}
                         />
-                    </React.Fragment>
                     }
                     <SettingsItem
+                        testID='general_settings.about.action'
                         defaultMessage='About {appTitle}'
                         messageValues={{appTitle: config.SiteName || 'Mattermost'}}
                         i18nId={t('about.title')}
@@ -263,36 +248,33 @@ class Settings extends PureComponent {
                         separator={false}
                         showArrow={showArrow}
                         theme={theme}
-                        isLandscape={isLandscape}
                     />
                     <View style={middleDividerStyle}/>
                     {showHelp &&
-                    <React.Fragment>
                         <SettingsItem
+                            testID='general_settings.help.action'
                             defaultMessage='Help'
                             i18nId={t('mobile.help.title')}
                             onPress={this.openHelp}
                             showArrow={false}
                             theme={theme}
                             separator={true}
-                            isLandscape={isLandscape}
                             isLink={true}
                         />
-                    </React.Fragment>
                     }
                     <SettingsItem
+                        testID='general_settings.report.action'
                         defaultMessage='Report a Problem'
                         i18nId={t('sidebar_right_menu.report')}
                         onPress={this.openErrorEmail}
                         showArrow={false}
                         theme={theme}
                         separator={false}
-                        isLandscape={isLandscape}
                         isLink={true}
                     />
                     <View style={style.divider}/>
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

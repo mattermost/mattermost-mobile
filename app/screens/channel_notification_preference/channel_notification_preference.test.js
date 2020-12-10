@@ -6,7 +6,7 @@ import {ViewTypes} from '@constants';
 import Preferences from '@mm-redux/constants/preferences';
 import SectionItem from '@screens/settings/section_item';
 
-import {shallowWithIntl} from 'test/intl-test-helper';
+import {shallowWithIntlMessages} from 'test/intl-test-helper';
 import ChannelNotificationPreference from './channel_notification_preference';
 
 function makeProps(pushNotificationLevel) {
@@ -15,17 +15,19 @@ function makeProps(pushNotificationLevel) {
             updateChannelNotifyProps: jest.fn(),
         },
         channelId: 'channel_id',
+        globalNotifyProps: {
+            push: 'mention',
+        },
         userId: 'user_id',
         notifyProps: {
             push: pushNotificationLevel,
         },
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 }
 
 function checkNotificationSelected(pushNotificationLevel, trueIdx) {
-    const wrapper = shallowWithIntl(
+    const wrapper = shallowWithIntlMessages(
         <ChannelNotificationPreference
             {...makeProps(pushNotificationLevel)}
         />,
@@ -42,6 +44,15 @@ function checkNotificationSelected(pushNotificationLevel, trueIdx) {
 }
 
 describe('ChannelNotificationPreference', () => {
+    test('should match snapshot', () => {
+        const baseProps = makeProps('default');
+        const wrapper = shallowWithIntlMessages(
+            <ChannelNotificationPreference {...baseProps}/>,
+        );
+
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
     test('should have correct setting selected', () => {
         checkNotificationSelected(null, 0);
         checkNotificationSelected(ViewTypes.NotificationLevels.DEFAULT, 0);
@@ -52,7 +63,7 @@ describe('ChannelNotificationPreference', () => {
 
     test('should save on click', () => {
         const props = makeProps('default');
-        const wrapper = shallowWithIntl(
+        const wrapper = shallowWithIntlMessages(
             <ChannelNotificationPreference {...props}/>,
         );
 

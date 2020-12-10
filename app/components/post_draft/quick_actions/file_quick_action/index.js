@@ -20,6 +20,7 @@ const ShareExtension = NativeModules.MattermostShare;
 
 export default class FileQuickAction extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         disabled: PropTypes.bool,
         fileCount: PropTypes.number,
         maxFileCount: PropTypes.number,
@@ -139,13 +140,17 @@ export default class FileQuickAction extends PureComponent {
     };
 
     render() {
-        const {disabled, theme} = this.props;
+        const {testID, disabled, theme} = this.props;
+        const actionTestID = disabled ?
+            `${testID}.disabled` :
+            testID;
         const color = disabled ?
             changeOpacity(theme.centerChannelColor, 0.16) :
             changeOpacity(theme.centerChannelColor, 0.64);
 
         return (
             <TouchableWithFeedback
+                testID={actionTestID}
                 disabled={disabled}
                 onPress={this.handleButtonPress}
                 style={style.icon}

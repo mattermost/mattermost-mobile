@@ -11,6 +11,7 @@ import CustomPropTypes from 'app/constants/custom_prop_types';
 
 export default class TouchableWithFeedbackAndroid extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         children: CustomPropTypes.Children,
         underlayColor: PropTypes.string,
         type: PropTypes.oneOf(['native', 'opacity', 'none']),
@@ -21,12 +22,13 @@ export default class TouchableWithFeedbackAndroid extends PureComponent {
     };
 
     render() {
-        const {children, underlayColor, type, ...props} = this.props;
+        const {testID, children, underlayColor, type, ...props} = this.props;
 
         switch (type) {
         case 'native':
             return (
                 <TouchableNativeFeedback
+                    testID={testID}
                     {...props}
                     background={TouchableNativeFeedback.Ripple(underlayColor || '#000', false)}
                 >
@@ -38,6 +40,7 @@ export default class TouchableWithFeedbackAndroid extends PureComponent {
         case 'opacity':
             return (
                 <TouchableOpacity
+                    testID={testID}
                     {...props}
                 >
                     {children}
@@ -46,6 +49,7 @@ export default class TouchableWithFeedbackAndroid extends PureComponent {
         case 'none':
             return (
                 <TouchableWithoutFeedback
+                    testID={testID}
                     {...props}
                 >
                     {children}

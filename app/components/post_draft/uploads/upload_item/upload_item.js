@@ -3,16 +3,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 import {Client4} from '@mm-redux/client';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import FileAttachmentImage from '@components/file_attachment_list/file_attachment_image';
 import FileAttachmentIcon from '@components/file_attachment_list/file_attachment_icon';
-import {buildFileUploadData, encodeHeaderURIStringToUTF8} from '@utils/file';
+import ProgressBar from '@components/progress_bar';
+import {buildFileUploadData, encodeHeaderURIStringToUTF8, isImage} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import ImageCacheManager from '@utils/image_cache_manager';
 import {changeOpacity} from '@utils/theme';
@@ -26,6 +26,7 @@ export default class UploadItem extends PureComponent {
         channelId: PropTypes.string.isRequired,
         file: PropTypes.object.isRequired,
         handleRemoveFile: PropTypes.func.isRequired,
+        onPress: PropTypes.func,
         retryFileUpload: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         theme: PropTypes.object.isRequired,
@@ -51,6 +52,10 @@ export default class UploadItem extends PureComponent {
         if (prevFile.failed !== file.failed && file.loading) {
             this.downloadAndUploadFile(file);
         }
+    }
+
+    handlePress = () => {
+        this.props.onPress(this.props.file);
     }
 
     handleRetryFileUpload = (file) => {
@@ -99,18 +104,8 @@ export default class UploadItem extends PureComponent {
     };
 
     handleUploadProgress = (loaded, total) => {
-        this.setState({progress: Math.floor((loaded / total) * 100)});
-    };
-
-    isImageType = () => {
-        const {file} = this.props;
-
-        if (file.has_preview_image || file.mime_type === 'image/gif' ||
-            (file.localPath && file.type && file.type.includes('image'))) {
-            return true;
-        }
-
-        return false;
+        const progress = parseFloat((loaded / total).toFixed(1));
+        this.setState({progress});
     };
 
     downloadAndUploadFile = async (file) => {
@@ -161,18 +156,6 @@ export default class UploadItem extends PureComponent {
         this.uploadPromise.then(this.handleUploadCompleted).catch(this.handleUploadError);
     };
 
-    renderProgress = (fill) => {
-        const realFill = Number(fill.toFixed(0));
-
-        return (
-            <View>
-                <Text style={styles.progressText}>
-                    {`${realFill}%`}
-                </Text>
-            </View>
-        );
-    };
-
     render() {
         const {
             channelId,
@@ -183,26 +166,29 @@ export default class UploadItem extends PureComponent {
         const {progress} = this.state;
         let filePreviewComponent;
 
-        if (this.isImageType()) {
+        if (isImage(file)) {
             filePreviewComponent = (
-                <View style={styles.filePreview}>
-                    <FileAttachmentImage
-                        file={file}
-                        theme={theme}
-                        resizeMode='center'
-                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
-                    />
-                </View>
+                <TouchableOpacity onPress={this.handlePress}>
+                    <View style={styles.filePreview}>
+                        <FileAttachmentImage
+                            file={file}
+                            theme={theme}
+                            resizeMode='cover'
+                        />
+                    </View>
+                </TouchableOpacity>
             );
         } else {
             filePreviewComponent = (
-                <View style={styles.filePreview}>
-                    <FileAttachmentIcon
-                        file={file}
-                        theme={theme}
-                        backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
-                    />
-                </View>
+                <TouchableOpacity onPress={this.handlePress}>
+                    <View style={styles.filePreview}>
+                        <FileAttachmentIcon
+                            file={file}
+                            theme={theme}
+                            backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
+                        />
+                    </View>
+                </TouchableOpacity>
             );
         }
 
@@ -220,17 +206,11 @@ export default class UploadItem extends PureComponent {
                     />
                     }
                     {file.loading && !file.failed &&
-                    <View style={styles.progressCircleContent}>
-                        <AnimatedCircularProgress
-                            size={36}
-                            fill={progress}
-                            width={2}
-                            backgroundColor='rgba(255, 255, 255, 0.5)'
-                            tintColor='white'
-                            rotation={0}
-                        >
-                            {this.renderProgress}
-                        </AnimatedCircularProgress>
+                    <View style={styles.progress}>
+                        <ProgressBar
+                            progress={progress}
+                            color={this.props.theme.buttonBg}
+                        />
                     </View>
                     }
                 </View>
@@ -256,19 +236,15 @@ const styles = StyleSheet.create({
         width: 56,
         borderRadius: 4,
     },
-    progressCircleContent: {
+    progress: {
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        height: 56,
-        width: 56,
-        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        height: 53,
+        width: 53,
+        justifyContent: 'flex-end',
         position: 'absolute',
         borderRadius: 4,
-    },
-    progressText: {
-        color: 'white',
-        fontSize: 9,
-        fontWeight: 'bold',
+        paddingLeft: 3,
     },
     filePreview: {
         width: 56,

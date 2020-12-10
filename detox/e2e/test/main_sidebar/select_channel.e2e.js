@@ -7,7 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {MainSidebar} from '@support/ui/component';
+import {ChannelScreen} from '@support/ui/screen';
 import {isAndroid} from '@support/utils';
 import {Setup} from '@support/server_api';
 
@@ -18,35 +19,37 @@ describe('Select channel', () => {
         const {user, channel} = await Setup.apiInit();
         newChannel = channel;
 
-        await toChannelScreen(user);
+        // # Open channel screen
+        await ChannelScreen.open(user);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('MM-T3412 should close the sidebar menu when selecting the same channel', async () => {
-        // # Open channel drawer (with at least one unread channel)
-        await element(by.id('channel_drawer.button')).tap();
+        const {channelNavBarTitle} = ChannelScreen;
 
-        // * Main sidebar should be visible
-        await expect(element(by.id('main_sidebar'))).toBeVisible();
+        // # Open main sidebar (with at least one unread channel)
+        await ChannelScreen.openMainSidebar();
 
         // # Tap a channel to view it
-        await element(by.text(newChannel.display_name).withAncestor(by.id('channels_list'))).tap();
+        const channelItem = MainSidebar.getChannelByDisplayName(newChannel.display_name);
+        await channelItem.tap();
 
         // * Selected channel should be visible
-        await expect(element(by.id('channel.nav_bar.title'))).toHaveText(newChannel.display_name);
+        await expect(channelNavBarTitle).toHaveText(newChannel.display_name);
 
-        // # Open channel drawer again and select the same channel
-        await element(by.id('channel_drawer.button')).tap();
-        await element(by.text(newChannel.display_name).withAncestor(by.id('channels_list'))).tap();
+        // # Open main sidebar again and select the same channel
+        await ChannelScreen.openMainSidebar();
+        await channelItem.tap();
+
+        // * Drawer should not be visible on Android
+        if (isAndroid()) {
+            await expect(MainSidebar.mainSidebar).not.toBeVisible();
+        }
 
         // * Selected channel should remain the same
-        if (isAndroid()) {
-            // * drawer should not be visible on Android
-            await expect(element(by.id('main_sidebar'))).not.toBeVisible();
-        }
-        await expect(element(by.id('channel.nav_bar.title'))).toHaveText(newChannel.display_name);
+        await expect(channelNavBarTitle).toHaveText(newChannel.display_name);
     });
 });

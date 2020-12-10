@@ -1,6 +1,6 @@
 {
   "name": "compass-icons",
-  "css_prefix_text": "",
+  "css_prefix_text": "icon-",
   "css_use_suffix": false,
   "hinting": true,
   "units_per_em": 1000,
@@ -2832,6 +2832,62 @@
       },
       "search": [
         "image-broken-outline"
+      ]
+    },
+    {
+      "uid": "fa00bedd769856d21de9c9cecfacb8f1",
+      "css": "format-header",
+      "code": 59421,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M291.7 166.7H375V416.7H625V166.7H708.3V750H625V500H375V750H291.7V166.7",
+        "width": 1000
+      },
+      "search": [
+        "format-header"
+      ]
+    },
+    {
+      "uid": "68748157a35491e06ccd1482c8393ff3",
+      "css": "radiobox-marked",
+      "code": 984126,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M500 833.3A333.3 333.3 0 0 1 166.7 500 333.3 333.3 0 0 1 500 166.7 333.3 333.3 0 0 1 833.3 500 333.3 333.3 0 0 1 500 833.3M500 83.3A416.7 416.7 0 0 0 83.3 500 416.7 416.7 0 0 0 500 916.7 416.7 416.7 0 0 0 916.7 500 416.7 416.7 0 0 0 500 83.3M500 291.7A208.3 208.3 0 0 0 291.7 500 208.3 208.3 0 0 0 500 708.3 208.3 208.3 0 0 0 708.3 500 208.3 208.3 0 0 0 500 291.7Z",
+        "width": 1000
+      },
+      "search": [
+        "radiobox-marked"
+      ]
+    },
+    {
+      "uid": "3594dc48b84eebb8b600ea70e342c459",
+      "css": "radiobox-blank",
+      "code": 984125,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M500 833.3A333.3 333.3 0 0 1 166.7 500 333.3 333.3 0 0 1 500 166.7 333.3 333.3 0 0 1 833.3 500 333.3 333.3 0 0 1 500 833.3M500 83.3A416.7 416.7 0 0 0 83.3 500 416.7 416.7 0 0 0 500 916.7 416.7 416.7 0 0 0 916.7 500 416.7 416.7 0 0 0 500 83.3Z",
+        "width": 1000
+      },
+      "search": [
+        "radiobox-blank"
+      ]
+    },
+    {
+      "uid": "53586a0ccc205f12eb53587faa230a71",
+      "css": "export-variant",
+      "code": 986003,
+      "src": "custom_icons",
+      "selected": true,
+      "svg": {
+        "path": "M500 41.7L333.3 208.3H458.3V583.3H541.7V208.3H666.7M750 958.3H250C203.7 958.3 166.7 920.8 166.7 875V375A83.3 83.3 0 0 1 250 291.7H375V375H250V875H750V375H625V291.7H750A83.3 83.3 0 0 1 833.3 375V875A83.3 83.3 0 0 1 750 958.3Z",
+        "width": 1000
+      },
+      "search": [
+        "export-variant"
       ]
     }
   ]

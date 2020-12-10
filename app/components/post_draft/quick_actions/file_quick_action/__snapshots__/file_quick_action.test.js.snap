@@ -10,6 +10,7 @@ exports[`FileQuickAction should match snapshot 1`] = `
       "padding": 10,
     }
   }
+  testID="post_draft.quick_actions.file_action"
   type="opacity"
 >
   <CompassIcon

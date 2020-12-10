@@ -20,7 +20,6 @@ describe('ChannelInfo -> Add Members', () => {
     const baseProps = {
         canManageUsers: true,
         groupConstrained: false,
-        isLandscape: false,
         theme: Preferences.THEMES.default,
     };
 

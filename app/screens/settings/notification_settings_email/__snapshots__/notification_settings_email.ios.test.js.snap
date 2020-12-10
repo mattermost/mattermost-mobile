@@ -7,7 +7,6 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
   footerId="user.settings.notifications.emailInfo"
   headerDefaultMessage="SEND EMAIL NOTIFICATIONS"
   headerId="mobile.notification_settings.email.send"
-  isLandscape={false}
   theme={
     Object {
       "awayIndicator": "#ffbc42",
@@ -43,7 +42,6 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       action={[Function]}
       actionType="select"
       actionValue="30"
-      isLandscape={false}
       label={
         <FormattedText
           defaultMessage="Immediately"
@@ -95,7 +93,6 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       action={[Function]}
       actionType="select"
       actionValue="0"
-      isLandscape={false}
       label={
         <FormattedText
           defaultMessage="Never"

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, FlatList, Platform, RefreshControl, StyleSheet} from 'react-native';
+import {Alert, DeviceEventEmitter, FlatList, Platform, RefreshControl, StyleSheet} from 'react-native';
 import {intlShape} from 'react-intl';
 
 import {Posts} from '@mm-redux/constants';
@@ -15,10 +15,8 @@ import Post from 'app/components/post';
 import {DeepLinkTypes, ListTypes, NavigationTypes} from '@constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
-import {changeOpacity} from 'app/utils/theme';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
-import {showModalOverCurrentContext} from 'app/actions/navigation';
 import {alertErrorWithFallback} from 'app/utils/general';
 import {t} from 'app/utils/i18n';
 
@@ -41,12 +39,13 @@ const SCROLL_POSITION_CONFIG = {
 
 export default class PostList extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         actions: PropTypes.shape({
+            closePermalink: PropTypes.func.isRequired,
             handleSelectChannelByName: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             refreshChannelWithRetry: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             setDeepLinkURL: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
         deepLinkURL: PropTypes.string,
@@ -60,7 +59,6 @@ export default class PostList extends PureComponent {
         loadMorePostsVisible: PropTypes.bool,
         onLoadMoreUp: PropTypes.func,
         onHashtagPress: PropTypes.func,
-        onPermalinkPress: PropTypes.func,
         onPostPress: PropTypes.func,
         onRefresh: PropTypes.func,
         postIds: PropTypes.array.isRequired,
@@ -171,10 +169,8 @@ export default class PostList extends PureComponent {
     };
 
     handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
+        this.props.actions.closePermalink();
+    }
 
     handleContentSizeChange = (contentWidth, contentHeight, forceLoad) => {
         this.contentHeight = contentHeight;
@@ -220,14 +216,9 @@ export default class PostList extends PureComponent {
 
     handlePermalinkPress = (postId, teamName) => {
         telemetry.start(['post_list:permalink']);
-        const {actions, onPermalinkPress} = this.props;
+        const {showPermalink} = this.props.actions;
 
-        if (onPermalinkPress) {
-            onPermalinkPress(postId, true);
-        } else {
-            actions.loadChannelsByTeamName(teamName, this.permalinkBadTeam);
-            this.showPermalinkView(postId);
-        }
+        showPermalink(this.context.intl, teamName, postId);
     };
 
     handleRefresh = () => {
@@ -286,16 +277,6 @@ export default class PostList extends PureComponent {
         });
     };
 
-    permalinkBadTeam = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_team.error'),
-            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
-        };
-
-        alertErrorWithFallback(intl, {}, message);
-    };
-
     permalinkBadChannel = () => {
         const {intl} = this.context;
         const message = {
@@ -308,6 +289,7 @@ export default class PostList extends PureComponent {
 
     renderItem = ({item, index}) => {
         const {
+            testID,
             highlightPinnedOrFlagged,
             highlightPostId,
             isSearchResult,
@@ -380,6 +362,7 @@ export default class PostList extends PureComponent {
         const postId = item;
         return (
             <MemoizedPost
+                testID={testID}
                 postId={postId}
                 highlight={highlightPostId === postId}
                 isLastPost={lastPostIndex === index}
@@ -452,29 +435,6 @@ export default class PostList extends PureComponent {
         }
     };
 
-    showPermalinkView = (postId, error = '') => {
-        const {actions} = this.props;
-
-        actions.selectFocusedPostId(postId);
-
-        if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink: true,
-                onClose: this.handleClosePermalink,
-                error,
-            };
-            const options = {
-                layout: {
-                    componentBackgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-
-            this.showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
-        }
-    };
-
     registerViewableItemsListener = (listener) => {
         this.onViewableItemsChangedListener = listener;
         const removeListener = () => {
@@ -494,11 +454,22 @@ export default class PostList extends PureComponent {
     }
 
     onViewableItemsChanged = ({viewableItems}) => {
-        if (!this.onViewableItemsChangedListener || !viewableItems.length || this.props.deepLinkURL) {
+        if (!viewableItems.length) {
             return;
         }
 
-        this.onViewableItemsChangedListener(viewableItems);
+        const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
+            if (isViewable) {
+                acc[item] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+
+        if (this.onViewableItemsChangedListener && !this.props.deepLinkURL) {
+            this.onViewableItemsChangedListener(viewableItems);
+        }
     }
 
     render() {
@@ -558,7 +529,7 @@ export default class PostList extends PureComponent {
                         itemVisiblePercentThreshold: 1,
                         minimumViewTime: 100,
                     }}
-                    onViewableItemsChanged={showMoreMessagesButton ? this.onViewableItemsChanged : null}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
                 />
                 {showMoreMessagesButton &&
                     <MoreMessagesButton
@@ -577,9 +548,12 @@ export default class PostList extends PureComponent {
     }
 }
 
-function PostComponent({postId, highlightPostId, lastPostIndex, index, ...postProps}) {
+function PostComponent({testID, postId, highlightPostId, lastPostIndex, index, ...postProps}) {
+    const postTestID = `${testID}.post.${postId}`;
+
     return (
         <Post
+            testID={postTestID}
             postId={postId}
             highlight={highlightPostId === postId}
             isLastPost={lastPostIndex === index}
@@ -589,6 +563,7 @@ function PostComponent({postId, highlightPostId, lastPostIndex, index, ...postPr
 }
 
 PostComponent.propTypes = {
+    testID: PropTypes.string,
     postId: PropTypes.string.isRequired,
     highlightPostId: PropTypes.string,
     lastPostIndex: PropTypes.number,

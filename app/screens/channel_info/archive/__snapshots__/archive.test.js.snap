@@ -38,7 +38,6 @@ exports[`ChannelInfo -> Archive should match snapshot for Archive Channel 1`] = 
     defaultMessage="Archive Channel"
     icon="archive-outline"
     iconColor="#CA3B27"
-    isLandscape={false}
     rightArrow={false}
     shouldRender={true}
     textColor="#CA3B27"
@@ -114,7 +113,6 @@ exports[`ChannelInfo -> Archive should match snapshot for Unarchive Channel 1`] 
     action={[Function]}
     defaultMessage="Unarchive Channel"
     icon="archive-arrow-up-outline"
-    isLandscape={false}
     rightArrow={false}
     shouldRender={true}
     textId="mobile.routes.channelInfo.unarchive_channel"

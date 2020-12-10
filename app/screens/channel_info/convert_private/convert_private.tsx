@@ -14,11 +14,11 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface ConvertPrivateProps {
+    testID?: string;
     canConvert: boolean;
     channelId: string;
     convertChannelToPrivate: (channelId: string) => Promise<ActionResult>;
     displayName: string;
-    isLandscape: boolean;
     theme: Theme;
 }
 
@@ -79,7 +79,7 @@ export default class ConvertPrivate extends PureComponent<ConvertPrivateProps> {
     });
 
     render() {
-        const {canConvert, isLandscape, theme} = this.props;
+        const {canConvert, testID, theme} = this.props;
 
         if (!canConvert) {
             return null;
@@ -89,10 +89,10 @@ export default class ConvertPrivate extends PureComponent<ConvertPrivateProps> {
             <>
                 <Separator theme={theme}/>
                 <ChannelInfoRow
+                    testID={testID}
                     action={this.handleConvertToPrivate}
                     defaultMessage='Convert to Private Channel'
                     icon='lock'
-                    isLandscape={isLandscape}
                     rightArrow={false}
                     theme={theme}
                     textId={t('mobile.channel_info.convert')}

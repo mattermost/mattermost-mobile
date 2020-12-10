@@ -1,9 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SelectTeam should match snapshot for fail of teams 1`] = `
-<FailedNetworkAction
+<Connect(FailedNetworkAction)
   onRetry={[Function]}
-  showAction={true}
   theme={
     Object {
       "awayIndicator": "#ffbc42",
@@ -37,12 +36,13 @@ exports[`SelectTeam should match snapshot for fail of teams 1`] = `
 `;
 
 exports[`SelectTeam should match snapshot for teams 1`] = `
-<View
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
     }
   }
+  testID="select_team.screen"
 >
   <Connect(StatusBar) />
   <View
@@ -57,12 +57,9 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
-            "marginRight": 15,
-          },
-          null,
-        ]
+        Object {
+          "marginRight": 15,
+        }
       }
     >
       <FormattedText
@@ -80,17 +77,24 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
       style={
         Object {
           "backgroundColor": undefined,
+          "flex": 1,
           "height": 1,
-          "width": "100%",
         }
       }
     />
   </View>
   <CustomList
     canRefresh={true}
-    data={Array []}
+    data={
+      Array [
+        Object {
+          "id": "kemjcpu9bi877yegqjs18ndp4r",
+          "invite_id": "ojsnudhqzbfzpk6e4n6ip1hwae",
+          "name": "test",
+        },
+      ]
+    }
     extraData={false}
-    isLandscape={false}
     listType="flat"
     loading={false}
     loadingComponent={
@@ -114,6 +118,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     renderItem={[Function]}
     shouldRenderSeparator={false}
     showNoResults={true}
+    testID="select_team.custom_list"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -144,7 +149,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
       }
     }
   />
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`SelectTeam should match snapshot when user is a guest 1`] = `
@@ -154,6 +159,7 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
       "flex": 1,
     }
   }
+  testID="select_team.screen"
 >
   <Connect(StatusBar) />
   <View
@@ -175,6 +181,7 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
           "fontSize": 13,
         }
       }
+      testID="select_team.guest_cant_join_team"
     />
   </View>
 </View>

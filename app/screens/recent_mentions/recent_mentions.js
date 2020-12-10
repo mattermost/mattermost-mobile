@@ -5,41 +5,35 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
+    DeviceEventEmitter,
     Keyboard,
     FlatList,
     StyleSheet,
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {dismissModal, goToScreen, showSearchModal} from '@actions/navigation';
+import ChannelLoader from '@components/channel_loader';
+import DateHeader from '@components/post_list/date_header';
+import FailedNetworkAction from '@components/failed_network_action';
+import NoResults from '@components/no_results';
+import PostSeparator from '@components/post_separator';
+import StatusBar from '@components/status_bar';
 import {isDateLine, getDateForDateLine} from '@mm-redux/utils/post_list';
-
-import ChannelLoader from 'app/components/channel_loader';
-import DateHeader from 'app/components/post_list/date_header';
-import FailedNetworkAction from 'app/components/failed_network_action';
-import NoResults from 'app/components/no_results';
-import PostSeparator from 'app/components/post_separator';
-import StatusBar from 'app/components/status_bar';
+import SearchResultPost from '@screens/search/search_result_post';
+import ChannelDisplayName from '@screens/search/channel_display_name';
 import mattermostManaged from 'app/mattermost_managed';
-import SearchResultPost from 'app/screens/search/search_result_post';
-import ChannelDisplayName from 'app/screens/search/channel_display_name';
-import {changeOpacity} from 'app/utils/theme';
-import {
-    goToScreen,
-    showModalOverCurrentContext,
-    showSearchModal,
-    dismissModal,
-} from 'app/actions/navigation';
 
 export default class RecentMentions extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             clearSearch: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getRecentMentions: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }).isRequired,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
@@ -102,15 +96,8 @@ export default class RecentMentions extends PureComponent {
         goToScreen(screen, title, passProps);
     };
 
-    handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
-
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
-        this.showPermalinkView(postId, true);
+        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
     handleHashtagPress = async (hashtag) => {
@@ -126,10 +113,23 @@ export default class RecentMentions extends PureComponent {
         }
     }
 
-    previewPost = (post) => {
-        Keyboard.dismiss();
+    onViewableItemsChanged = ({viewableItems}) => {
+        if (!viewableItems.length) {
+            return;
+        }
 
-        this.showPermalinkView(post.id, false);
+        const viewableItemsMap = viewableItems.reduce((acc, {item, isViewable}) => {
+            if (isViewable) {
+                acc[item] = true;
+            }
+            return acc;
+        }, {});
+
+        DeviceEventEmitter.emit('scrolled', viewableItemsMap);
+    };
+
+    previewPost = (post) => {
+        this.props.actions.showPermalink(this.context.intl, '', post.id, false);
     };
 
     renderEmpty = () => {
@@ -185,28 +185,6 @@ export default class RecentMentions extends PureComponent {
         );
     };
 
-    showPermalinkView = (postId, isPermalink) => {
-        const {actions} = this.props;
-
-        actions.selectFocusedPostId(postId);
-
-        if (!this.showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink,
-                onClose: this.handleClosePermalink,
-            };
-            const options = {
-                layout: {
-                    backgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-
-            this.showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
-        }
-    };
-
     retry = () => {
         this.getRecentMentions();
     };
@@ -237,6 +215,7 @@ export default class RecentMentions extends PureComponent {
                     keyboardShouldPersistTaps='always'
                     keyboardDismissMode='interactive'
                     renderItem={this.renderPost}
+                    onViewableItemsChanged={this.onViewableItemsChanged}
                 />
             );
         } else {
@@ -244,10 +223,13 @@ export default class RecentMentions extends PureComponent {
         }
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                style={style.container}
+                testID='recent_mentions.screen'
+            >
                 <StatusBar/>
                 {component}
-            </View>
+            </SafeAreaView>
         );
     }
 }

@@ -9,15 +9,15 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 
 interface FavoriteProps {
+    testID?: string;
     channelId: string;
     favoriteChannel: (channelId: string) => void;
     isFavorite: boolean;
-    isLandscape: boolean;
     unfavoriteChannel: (channelId: string) => void;
     theme: Theme;
 }
 
-const Favorite = ({channelId, favoriteChannel, isLandscape, isFavorite, unfavoriteChannel, theme}: FavoriteProps) => {
+const Favorite = ({channelId, favoriteChannel, isFavorite, unfavoriteChannel, testID, theme}: FavoriteProps) => {
     const [favorite, setFavorite] = useState(isFavorite);
 
     const handleFavorite = preventDoubleTap(() => {
@@ -28,6 +28,7 @@ const Favorite = ({channelId, favoriteChannel, isLandscape, isFavorite, unfavori
 
     return (
         <ChannelInfoRow
+            testID={testID}
             action={handleFavorite}
             defaultMessage='Favorite'
             detail={favorite}
@@ -35,7 +36,6 @@ const Favorite = ({channelId, favoriteChannel, isLandscape, isFavorite, unfavori
             textId={t('mobile.routes.channelInfo.favorite')}
             togglable={true}
             theme={theme}
-            isLandscape={isLandscape}
         />
     );
 };

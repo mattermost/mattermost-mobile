@@ -46,15 +46,21 @@ export function loadChannelsByTeamName(teamName, errorHandler) {
     return async (dispatch, getState) => {
         const state = getState();
         const {currentTeamId} = state.entities.teams;
-        const team = getTeamByName(state, teamName);
 
-        if (!team && errorHandler) {
-            errorHandler();
+        if (teamName) {
+            const team = getTeamByName(state, teamName);
+
+            if (!team && errorHandler) {
+                errorHandler();
+                return {error: true};
+            }
+
+            if (team && team.id !== currentTeamId) {
+                await dispatch(fetchMyChannelsAndMembers(team.id));
+            }
         }
 
-        if (team && team.id !== currentTeamId) {
-            await dispatch(fetchMyChannelsAndMembers(team.id));
-        }
+        return {data: true};
     };
 }
 
@@ -243,9 +249,9 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
                 if (!myMemberships[channel.id]) {
                     const currentUserId = getCurrentUserId(state);
                     console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
-                    const result = await dispatch(joinChannel(currentUserId, teamName, channel.id));
+                    const result = await dispatch(joinChannel(currentUserId, '', channel.id));
                     if (result.error || !result.data || !result.data.channel) {
-                        return {error};
+                        return result;
                     }
                 }
             }
@@ -287,6 +293,8 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
         const actions = markAsViewedAndReadBatch(state, channelId, previousChannelId, markOnServer);
 
         dispatch(batchActions(actions, 'BATCH_MARK_CHANNEL_VIEWED_AND_READ'));
+
+        return {data: true};
     };
 }
 

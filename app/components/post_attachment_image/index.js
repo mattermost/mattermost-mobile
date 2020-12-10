@@ -12,6 +12,7 @@ import {isGifTooLarge} from 'app/utils/images';
 export default class PostAttachmentImage extends React.PureComponent {
     static propTypes = {
         height: PropTypes.number.isRequired,
+        id: PropTypes.string,
         imageMetadata: PropTypes.object,
         onError: PropTypes.func.isRequired,
         onImagePress: PropTypes.func.isRequired,
@@ -23,14 +24,8 @@ export default class PostAttachmentImage extends React.PureComponent {
         frameCount: 0,
     };
 
-    constructor(props) {
-        super(props);
-
-        this.image = React.createRef();
-    }
-
     handlePress = () => {
-        this.props.onImagePress(this.image.current);
+        this.props.onImagePress();
     };
 
     render() {
@@ -46,8 +41,9 @@ export default class PostAttachmentImage extends React.PureComponent {
                 style={[styles.imageContainer, {height: this.props.height}]}
                 type={'none'}
             >
-                <View ref={this.image}>
+                <View>
                     <ProgressiveImage
+                        id={this.props.id}
                         style={[styles.image, {width: this.props.width, height: this.props.height}]}
                         imageUri={this.props.uri}
                         resizeMode='contain'

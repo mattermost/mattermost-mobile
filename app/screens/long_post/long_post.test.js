@@ -21,7 +21,6 @@ describe('LongPost', () => {
         },
         postId: 'post-id',
         theme: Preferences.THEMES.default,
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {

@@ -20,6 +20,7 @@ import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import EphemeralStore from '@store/ephemeral_store';
+import {openGalleryAtIndex} from '@utils/images';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';
@@ -30,6 +31,7 @@ const hideError = {height: 0};
 
 export default class Uploads extends PureComponent {
     static propTypes = {
+        canUploadFiles: PropTypes.bool.isRequired,
         channelId: PropTypes.string.isRequired,
         channelIsLoading: PropTypes.bool,
         files: PropTypes.array.isRequired,
@@ -55,7 +57,6 @@ export default class Uploads extends PureComponent {
         showFileMaxWarning: false,
     };
 
-    errorRef = React.createRef();
     errorContainerRef = React.createRef();
     containerRef = React.createRef();
 
@@ -96,12 +97,19 @@ export default class Uploads extends PureComponent {
                     key={file.clientId}
                     channelId={this.props.channelId}
                     file={file}
+                    onPress={this.onPress}
                     rootId={this.props.rootId}
                     theme={this.props.theme}
                 />
             );
         });
     };
+
+    onPress = (file) => {
+        const {files} = this.props;
+        const index = files.indexOf(file);
+        openGalleryAtIndex(index, files.filter((f) => !f.failed && !f.loading));
+    }
 
     clearErrorsFromState = (delay) => {
         setTimeout(() => {
@@ -123,7 +131,7 @@ export default class Uploads extends PureComponent {
 
     handleFileMaxWarning = () => {
         this.setState({showFileMaxWarning: true});
-        if (this.errorRef.current) {
+        if (this.errorContainerRef.current) {
             this.makeErrorVisible(true, 20);
             setTimeout(() => {
                 this.makeErrorVisible(false, 20);
@@ -132,7 +140,7 @@ export default class Uploads extends PureComponent {
     };
 
     handleFileSizeWarning = () => {
-        if (this.errorRef.current) {
+        if (this.errorContainerRef.current) {
             const {formatMessage} = this.context.intl;
             const message = formatMessage({
                 id: 'file_upload.fileAbove',
@@ -159,8 +167,14 @@ export default class Uploads extends PureComponent {
             return;
         }
 
-        const {maxFileSize} = this.props;
+        const {canUploadFiles, maxFileSize} = this.props;
         const availableCount = MAX_FILE_COUNT - this.props.files.length;
+
+        if (!canUploadFiles) {
+            this.handleUploadDisabled();
+            return;
+        }
+
         if (files.length > availableCount) {
             this.handleFileMaxWarning();
             return;
@@ -173,6 +187,24 @@ export default class Uploads extends PureComponent {
         }
 
         this.handleUploadFiles(files);
+    };
+
+    handleUploadDisabled = () => {
+        if (this.errorContainerRef.current) {
+            const {formatMessage} = this.context.intl;
+            const message = formatMessage({
+                id: 'mobile.file_upload.disabled2',
+                defaultMessage: 'File uploads from mobile are disabled.',
+            }, {
+                max: getFormattedFileSize({size: this.props.maxFileSize}),
+            });
+
+            this.setState({fileSizeWarning: message});
+            this.makeErrorVisible(true, 20);
+            setTimeout(() => {
+                this.makeErrorVisible(false, 20);
+            }, 5000);
+        }
     };
 
     handleUploadFiles = async (files) => {
@@ -286,12 +318,7 @@ export default class Uploads extends PureComponent {
                     style={style.errorContainer}
                     isInteraction={true}
                 >
-                    <Animatable.View
-                        ref={this.errorRef}
-                        isInteraction={true}
-                        style={style.errorTextContainer}
-                        useNativeDriver={true}
-                    >
+                    <View style={style.errorTextContainer}>
                         {showFileMaxWarning && (
                             <FormattedText
                                 style={style.warning}
@@ -304,7 +331,7 @@ export default class Uploads extends PureComponent {
                                 {fileSizeWarning}
                             </Text>
                         }
-                    </Animatable.View>
+                    </View>
                 </Animatable.View>
             </View>
         );

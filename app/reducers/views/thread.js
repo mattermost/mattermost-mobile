@@ -66,7 +66,7 @@ function handleReceivedPostSelected(state, action) {
     return data;
 }
 
-function handleSetTempUploadFilesForPostDraft(state, action) {
+export function handleSetTempUploadFilesForPostDraft(state, action) {
     if (!action.rootId) {
         return state;
     }

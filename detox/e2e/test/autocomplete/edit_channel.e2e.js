@@ -7,36 +7,42 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {Autocomplete} from '@support/ui/component';
+import {
+    ChannelScreen,
+    ChannelInfoScreen,
+    EditChannelScreen,
+} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Autocomplete', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
-        await toChannelScreen(user);
+
+        // # Open channel screen
+        await ChannelScreen.open(user);
     });
 
     afterAll(async () => {
-        await logoutUser();
+        await ChannelScreen.logout();
     });
 
     it('MM-T3390 should render autocomplete in channel header edit screen', async () => {
-        // # Open channel info modal
-        await element(by.id('channel.title.button')).tap();
-
-        // # Open edit channel menu
-        await element(by.text('Edit Channel')).tap();
+        // # Open edit channel screen
+        await ChannelInfoScreen.open();
+        await EditChannelScreen.open();
 
         // # Activate at_mention autocomplete
-        await element(by.id('edit_channel.header.input')).typeText('@');
+        await EditChannelScreen.headerInput.typeText('@');
 
         // * Expect autocomplete to render
-        await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
+        await Autocomplete.toBeVisible();
+        await expect(Autocomplete.atMentionSuggestionList).toExist();
 
-        // Go to previous screen
-        await element(by.id('screen.back.button')).tap();
+        // # Go to previous screen
+        await EditChannelScreen.back();
 
-        // close channel info screen
-        await element(by.id('screen.channel_info.close')).tap();
+        // # Close channel info screen
+        await ChannelInfoScreen.close();
     });
 });

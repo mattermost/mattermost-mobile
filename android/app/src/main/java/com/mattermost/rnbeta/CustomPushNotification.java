@@ -300,11 +300,11 @@ public class CustomPushNotification extends PushNotification {
 
     private Notification.MessagingStyle getMessagingStyle(Bundle bundle) {
         Notification.MessagingStyle messagingStyle;
+        String senderId = bundle.getString("sender_id");
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || senderId == null) {
             messagingStyle = new Notification.MessagingStyle("");
         } else {
-            String senderId = bundle.getString("sender_id");
             Person sender = new Person.Builder()
                 .setKey(senderId)
                 .setName("")
@@ -364,7 +364,7 @@ public class CustomPushNotification extends PushNotification {
         int bundleCount = bundleList.size() - 1;
         for (int i = bundleCount; i >= 0; i--) {
             Bundle data = bundleList.get(i);
-            String message = data.getString("message");
+            String message = data.getString("message", data.getString("body"));
             String senderId = data.getString("sender_id");
             if (senderId == null) {
                 senderId = "sender_id";
@@ -372,7 +372,7 @@ public class CustomPushNotification extends PushNotification {
             Bundle userInfoBundle = data.getBundle("userInfo");
             String senderName = getSenderName(data);
             if (userInfoBundle != null) {
-                boolean localPushNotificationTest = userInfoBundle.getBoolean("localTest");
+                boolean localPushNotificationTest = userInfoBundle.getBoolean("test");
                 if (localPushNotificationTest) {
                     senderName = "Test";
                 }
@@ -403,13 +403,15 @@ public class CustomPushNotification extends PushNotification {
 
         NotificationChannel notificationChannel = mHighImportanceChannel;
 
-        boolean localPushNotificationTest = false;
+        boolean testNotification = false;
+        boolean localNotification = false;
         Bundle userInfoBundle = bundle.getBundle("userInfo");
         if (userInfoBundle != null) {
-            localPushNotificationTest = userInfoBundle.getBoolean("localTest");
+            testNotification = userInfoBundle.getBoolean("test");
+            localNotification = userInfoBundle.getBoolean("local");
         }
 
-        if (mAppLifecycleFacade.isAppVisible() && !localPushNotificationTest) {
+        if (mAppLifecycleFacade.isAppVisible() && !testNotification && !localNotification) {
             notificationChannel = mMinImportanceChannel;
         }
 

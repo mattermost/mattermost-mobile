@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal, setButtons} from '@actions/navigation';
 import FailedNetworkAction from '@components/failed_network_action';
@@ -247,7 +248,7 @@ export default class TermsOfService extends PureComponent {
         }
 
         return (
-            <React.Fragment>
+            <SafeAreaView style={styles.container}>
                 <StatusBar/>
                 <ScrollView
                     style={styles.scrollView}
@@ -261,9 +262,10 @@ export default class TermsOfService extends PureComponent {
                         disableHashtags={true}
                         disableAtMentions={true}
                         disableChannelLink={true}
+                        disableGallery={true}
                     />
                 </ScrollView>
-            </React.Fragment>
+            </SafeAreaView>
         );
     }
 }

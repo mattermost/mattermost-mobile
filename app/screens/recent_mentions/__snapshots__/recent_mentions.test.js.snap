@@ -1,47 +1,49 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`RecentMentions should match snapshot 1`] = `
-<View
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
     }
   }
+  testID="recent_mentions.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`RecentMentions should match snapshot when component waiting for response 1`] = `
-<View
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
     }
   }
+  testID="recent_mentions.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] = `
-<View
+<RNCSafeAreaView
   style={
     Object {
       "flex": 1,
     }
   }
+  testID="recent_mentions.screen"
 >
   <Connect(StatusBar) />
-  <FailedNetworkAction
+  <Connect(FailedNetworkAction)
     onRetry={[Function]}
-    showAction={true}
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -72,5 +74,5 @@ exports[`RecentMentions should match snapshot when getRecentMentions failed 1`] 
       }
     }
   />
-</View>
+</RNCSafeAreaView>
 `;

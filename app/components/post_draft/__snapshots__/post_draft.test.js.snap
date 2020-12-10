@@ -13,6 +13,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
       "paddingTop": 10,
     }
   }
+  testID="post_draft.archived"
 >
   <Text>
     <Text
@@ -116,6 +117,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
       "paddingTop": 10,
     }
   }
+  testID="post_draft.archived"
 >
   <Text>
     <Text
@@ -215,57 +217,42 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       }
     }
   >
-    <View
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
       style={
         Object {
-          "backgroundColor": "#ffffff",
-          "flex": 1,
-          "marginLeft": 0,
-          "marginRight": 0,
+          "backgroundColor": "transparent",
+          "color": "#3d3c40",
+          "fontSize": 11,
+          "marginBottom": 2,
+          "paddingLeft": 10,
+          "paddingTop": 3,
+          "position": "absolute",
         }
       }
-    >
-      <Text
-        ellipsizeMode="tail"
-        numberOfLines={1}
-        style={
-          Object {
-            "backgroundColor": "transparent",
-            "color": "#3d3c40",
-            "fontSize": 11,
-            "marginBottom": 2,
-            "paddingLeft": 10,
-            "paddingTop": 3,
-            "position": "absolute",
-          }
-        }
-      />
-      <View
-        style={
-          Object {
-            "backgroundColor": "#ffffff",
-            "height": 0,
-          }
-        }
-      />
-    </View>
+    />
   </View>
-  <View
-    onLayout={[Function]}
-    style={
+  <RNCSafeAreaView
+    edges={
       Array [
-        Object {
-          "alignItems": "flex-end",
-          "backgroundColor": "#ffffff",
-          "borderTopColor": "rgba(61,60,64,0.2)",
-          "borderTopWidth": 1,
-          "flexDirection": "row",
-          "justifyContent": "center",
-          "paddingBottom": 2,
-        },
-        null,
+        "left",
+        "right",
       ]
     }
+    onLayout={[Function]}
+    style={
+      Object {
+        "alignItems": "flex-end",
+        "backgroundColor": "#ffffff",
+        "borderTopColor": "rgba(61,60,64,0.2)",
+        "borderTopWidth": 1,
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "paddingBottom": 2,
+      }
+    }
+    testID="post_draft"
   >
     <RCTScrollView
       contentContainerStyle={
@@ -291,6 +278,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       <View>
         <TextInput
           allowFontScaling={true}
+          autoCompleteType="off"
           blurOnSubmit={false}
           disableFullscreenUI={true}
           keyboardAppearance="light"
@@ -315,7 +303,8 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               "paddingTop": 6,
             }
           }
-          testID="post_input"
+          testID="post_draft.post.input"
+          textContentType="none"
           underlineColorAndroid="transparent"
         />
         <View
@@ -366,8 +355,6 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             }
           >
             <View
-              forwardedRef={[Function]}
-              isInteraction={true}
               style={
                 Object {
                   "flex": 1,
@@ -397,6 +384,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 "height": 44,
               }
             }
+            testID="post_draft.quick_actions"
           >
             <View
               accessible={true}
@@ -416,6 +404,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.quick_actions.at_input_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -441,6 +430,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.quick_actions.slash_input_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -466,6 +456,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.quick_actions.file_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -491,6 +482,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.quick_actions.image_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -516,6 +508,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                   "padding": 10,
                 }
               }
+              testID="post_draft.quick_actions.camera_action"
             >
               <Icon
                 color="rgba(61,60,64,0.64)"
@@ -531,7 +524,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                 "paddingRight": 8,
               }
             }
-            testID="disabled_send_button"
+            testID="post_draft.send_action.send.button.disabled"
           >
             <View
               style={
@@ -560,13 +553,17 @@ exports[`PostDraft Should render the DraftInput 1`] = `
         </View>
       </View>
     </RCTScrollView>
-  </View>
+  </RNCSafeAreaView>
 </KeyboardTrackingView>
 `;
 
 exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
-<RCTSafeAreaView
-  emulateUnlessSupported={true}
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+    ]
+  }
   style={
     Object {
       "backgroundColor": "rgba(61,60,64,0.04)",
@@ -584,6 +581,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
         "paddingHorizontal": 12,
       }
     }
+    testID="post_draft.read_only"
   >
     <Icon
       color="#3d3c40"
@@ -610,12 +608,16 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
       This channel is read-only.
     </Text>
   </View>
-</RCTSafeAreaView>
+</RNCSafeAreaView>
 `;
 
 exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
-<RCTSafeAreaView
-  emulateUnlessSupported={true}
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+    ]
+  }
   style={
     Object {
       "backgroundColor": "rgba(61,60,64,0.04)",
@@ -633,6 +635,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
         "paddingHorizontal": 12,
       }
     }
+    testID="post_draft.read_only"
   >
     <Icon
       color="#3d3c40"
@@ -659,5 +662,5 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
       This channel is read-only.
     </Text>
   </View>
-</RCTSafeAreaView>
+</RNCSafeAreaView>
 `;

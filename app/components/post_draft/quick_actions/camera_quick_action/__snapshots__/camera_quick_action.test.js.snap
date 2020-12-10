@@ -10,6 +10,7 @@ exports[`CameraButton should match snapshot 1`] = `
       "padding": 10,
     }
   }
+  testID="post_draft.quick_actions.camera_action"
   type="opacity"
 >
   <CompassIcon

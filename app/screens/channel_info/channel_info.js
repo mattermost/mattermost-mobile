@@ -9,9 +9,12 @@ import {
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {dismissModal, showModalOverCurrentContext} from '@actions/navigation';
+import {dismissModal} from '@actions/navigation';
 import StatusBar from '@components/status_bar';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddMembers from './add_members';
@@ -32,10 +35,9 @@ export default class ChannelInfo extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
-            loadChannelsByTeamName: PropTypes.func.isRequired,
             getCustomEmojisInText: PropTypes.func.isRequired,
-            selectFocusedPostId: PropTypes.func.isRequired,
             setChannelDisplayName: PropTypes.func.isRequired,
+            showPermalink: PropTypes.func.isRequired,
         }),
         currentChannel: PropTypes.object.isRequired,
         currentChannelCreatorName: PropTypes.string,
@@ -80,43 +82,26 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
-    handleClosePermalink = () => {
-        const {actions} = this.props;
-        actions.selectFocusedPostId('');
-        this.showingPermalink = false;
-    };
-
     handlePermalinkPress = (postId, teamName) => {
-        this.props.actions.loadChannelsByTeamName(teamName);
-        this.showPermalinkView(postId);
+        this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
-    showPermalinkView = (postId) => {
-        const {actions} = this.props;
-        const screen = 'Permalink';
-        const passProps = {
-            isPermalink: true,
-            onClose: this.handleClosePermalink,
-        };
-        const options = {
-            layout: {
-                backgroundColor: changeOpacity('#000', 0.2),
-            },
+    permalinkBadTeam = () => {
+        const {intl} = this.context;
+        const message = {
+            id: t('mobile.server_link.unreachable_team.error'),
+            defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
         };
 
-        actions.selectFocusedPostId(postId);
-
-        this.showingPermalink = true;
-        showModalOverCurrentContext(screen, passProps, options);
+        alertErrorWithFallback(intl, {}, message);
     };
 
     actionsRows = (channelIsArchived) => {
-        const {currentChannel, currentUserId, isLandscape, isDirectMessage, theme} = this.props;
+        const {currentChannel, currentUserId, isDirectMessage, theme} = this.props;
 
         if (channelIsArchived) {
             return (
                 <ManageMembers
-                    isLandscape={isLandscape}
                     theme={theme}
                     separator={false}
                 />);
@@ -125,52 +110,52 @@ export default class ChannelInfo extends PureComponent {
         return (
             <>
                 <Favorite
+                    testID='channel_info.favorite.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
                 <Separator theme={theme}/>
                 <Mute
+                    testID='channel_info.mute.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     userId={currentUserId}
                     theme={theme}
                 />
                 <Separator theme={theme}/>
                 <IgnoreMentions
+                    testID='channel_info.ignore_mentions.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
                 <Separator theme={theme}/>
                 {!isDirectMessage &&
                 <>
                     <NotificationPreference
-                        isLandscape={isLandscape}
+                        testID='channel_info.notification_preference.action'
                         theme={theme}
                     />
                     <Separator theme={theme}/>
                 </>
                 }
                 <Pinned
+                    testID='channel_info.pinned.action'
                     channelId={currentChannel.id}
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
                 <ManageMembers
-                    isLandscape={isLandscape}
+                    testID='channel_info.manage_members.action'
                     theme={theme}
                 />
                 <AddMembers
-                    isLandscape={isLandscape}
+                    testID='channel_info.add_members.action'
                     theme={theme}
                 />
                 <ConvertPrivate
-                    isLandscape={isLandscape}
+                    testID='channel_info.convert_private.action'
                     theme={theme}
                 />
                 <EditChannel
-                    isLandscape={isLandscape}
+                    testID='channel_info.edit_channel.action'
                     theme={theme}
                 />
             </>
@@ -187,14 +172,17 @@ export default class ChannelInfo extends PureComponent {
             theme,
             isBot,
             isTeammateGuest,
-            isLandscape,
         } = this.props;
 
         const style = getStyleSheet(theme);
         const channelIsArchived = currentChannel.delete_at !== 0;
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                testID='channel_info.screen'
+                style={style.container}
+                edges={['bottom', 'left', 'right']}
+            >
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
@@ -216,7 +204,6 @@ export default class ChannelInfo extends PureComponent {
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
-                        isLandscape={isLandscape}
                     />
                     }
                     <View style={style.rowsContainer}>
@@ -225,17 +212,15 @@ export default class ChannelInfo extends PureComponent {
                     <View style={style.footer}>
                         <Leave
                             close={this.close}
-                            isLandscape={isLandscape}
                             theme={theme}
                         />
                         <Archive
                             close={this.close}
-                            isLandscape={isLandscape}
                             theme={theme}
                         />
                     </View>
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

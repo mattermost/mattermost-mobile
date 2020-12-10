@@ -4,9 +4,8 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {setChannelDisplayName} from 'app/actions/views/channel';
-import {makeDirectChannel} from 'app/actions/views/more_dms';
-import {isLandscape} from 'app/selectors/device';
+import {setChannelDisplayName} from '@actions/views/channel';
+import {makeDirectChannel} from '@actions/views/more_dms';
 import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTeammateNameDisplaySetting, getTheme, getBool} from '@mm-redux/selectors/entities/preferences';
 import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
@@ -34,7 +33,6 @@ function mapStateToProps(state, ownProps) {
         militaryTime,
         theme: getTheme(state),
         isMyUser: getCurrentUserId(state) === ownProps.userId,
-        isLandscape: isLandscape(state),
     };
 }
 

@@ -62,17 +62,21 @@ export default class ClientUpgradeListener extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {forceUpgrade, latestVersion, minVersion} = this.props;
-        const {latestVersion: nextLatestVersion, minVersion: nextMinVersion, lastUpgradeCheck} = nextProps;
+    setTop(top) {
+        this.setState({top});
+    }
+
+    componentDidUpdate(prevProps) {
+        const {forceUpgrade, latestVersion, minVersion} = prevProps;
+        const {latestVersion: nextLatestVersion, minVersion: nextMinVersion, lastUpgradeCheck} = this.props;
 
         const versionMismatch = latestVersion !== nextLatestVersion || minVersion !== nextMinVersion;
         if (versionMismatch && (forceUpgrade || Date.now() - lastUpgradeCheck > UPDATE_TIMEOUT)) {
-            this.checkUpgrade(minVersion, latestVersion, nextProps.isLandscape);
-        } else if (this.props.isLandscape !== nextProps.isLandscape &&
+            this.checkUpgrade(minVersion, latestVersion, this.props.isLandscape);
+        } else if (prevProps.isLandscape !== this.props.isLandscape &&
             isUpgradeAvailable(this.state.upgradeType) && DeviceTypes.IS_IPHONE_WITH_INSETS) {
-            const newTop = nextProps.isLandscape ? 45 : 100;
-            this.setState({top: new Animated.Value(newTop)});
+            const newTop = this.props.isLandscape ? 45 : 100;
+            this.setTop(new Animated.Value(newTop));
         }
     }
 
@@ -117,7 +121,11 @@ export default class ClientUpgradeListener extends PureComponent {
         const {downloadLink} = this.props;
         const {intl} = this.context;
 
-        Linking.openURL(downloadLink).catch(() => {
+        Linking.canOpenURL(downloadLink).then((supported) => {
+            if (supported) {
+                return Linking.openURL(downloadLink);
+            }
+
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
@@ -128,6 +136,8 @@ export default class ClientUpgradeListener extends PureComponent {
                     defaultMessage: 'An error occurred while trying to open the download link.',
                 }),
             );
+
+            return false;
         });
 
         this.toggleUpgradeMessage(false);

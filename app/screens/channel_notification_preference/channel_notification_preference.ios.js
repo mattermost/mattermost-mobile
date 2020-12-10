@@ -6,38 +6,40 @@ import {
     ScrollView,
     View,
 } from 'react-native';
-import SafeAreaView from 'app/components/safe_area_view';
+import {SafeAreaView} from 'react-native-safe-area-context';
+
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import SectionItem from 'app/screens/settings/section_item';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ChannelNotificationPreferenceBase from './channel_notification_preference_base';
 
 export default class ChannelNotificationPreferenceIos extends ChannelNotificationPreferenceBase {
     render() {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const style = getStyleSheet(theme);
 
         const items = this.getItems();
 
         return (
-            <SafeAreaView
-                excludeHeader={true}
-                excludeFooter={true}
+            <View
+                testID='channel_notification_preference.screen'
+                style={style.container}
             >
-                <View style={style.container}>
-                    <StatusBar/>
+                <StatusBar/>
+                <SafeAreaView edges={['left', 'right']}>
                     <FormattedText
                         id='channel_notifications.preference.header'
                         defaultMessage='Send Notifications'
-                        style={[style.header, padding(isLandscape)]}
+                        style={style.header}
                     />
-                    <ScrollView
-                        contentContainerStyle={style.scrollView}
-                        alwaysBounceVertical={false}
-                    >
-                        <View style={style.contentContainer}>
+                </SafeAreaView>
+                <ScrollView
+                    contentContainerStyle={style.scrollView}
+                    alwaysBounceVertical={false}
+                >
+                    <View style={style.contentContainer}>
+                        <SafeAreaView edges={['left', 'right']}>
                             {items.map((item) => (
                                 <View key={item.id}>
                                     <View style={style.divider}/>
@@ -46,6 +48,7 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                                             <FormattedText
                                                 id={item.id}
                                                 defaultMessage={item.defaultMessage}
+                                                values={item.labelValues}
                                             />
                                         )}
                                         action={this.handlePress}
@@ -53,15 +56,14 @@ export default class ChannelNotificationPreferenceIos extends ChannelNotificatio
                                         actionValue={item.value}
                                         selected={item.checked}
                                         theme={theme}
-                                        isLandscape={isLandscape}
                                     />
                                 </View>),
                             )}
-                            <View style={style.divider}/>
-                        </View>
-                    </ScrollView>
-                </View>
-            </SafeAreaView>
+                        </SafeAreaView>
+                        <View style={style.divider}/>
+                    </View>
+                </ScrollView>
+            </View>
         );
     }
 }
