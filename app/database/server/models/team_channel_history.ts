@@ -2,18 +2,34 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json} from '@nozbe/watermelondb/decorators';
+import {field, json, relation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
+import Team from '@typings/database/team';
 
 const {TEAM, TEAM_CHANNEL_HISTORY} = MM_TABLES.SERVER;
 
+/**
+ * The TeamChannelHistory model helps keeping track of the last channel visited
+ * by the user.
+ */
 export default class TeamChannelHistory extends Model {
+    /** table (entity name) : TeamChannelHistory */
     static table = TEAM_CHANNEL_HISTORY
+
+    /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
+
+        /** A TEAM can have multiple Channel history */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
+    /** team_id : The foreign key to the related Team record */
     @field('team_id') teamId!: string
+
+    /** channelIds : An array containing all the channels visited within this team */
     @json('channel_ids', (rawJson) => rawJson) channelIds!: string[]
+
+    /** team : The related record from the parent Team model */
+    @relation(TEAM, 'team_id') team!: Team
 }

@@ -5,21 +5,43 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, relation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
+import Group from '@typings/database/group';
 import Team from '@typings/database/team';
 
 const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;
 
+/**
+ * The GroupsInTeam links the Team model with the Group model
+ */
 export default class GroupsInTeam extends Model {
+    /** table (entity name) : GroupsInTeam */
     static table = GROUPS_IN_TEAM
+
+    /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
+
+        /** GroupsInTeam can belong to only one Group */
         [GROUP]: {type: 'belongs_to', key: 'group_id'},
+
+        /** GroupsInTeam can belong to only one Team */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     }
 
+    /** group_id : The foreign key to the related Group record */
     @field('group_id') groupId!: string
+
+    /** member_count : The number of users in that group */
     @field('member_count') memberCount!: number
+
+    /** team_id : The foreign key to the related Team record */
     @field('team_id') teamId!: string
+
+    /** timezone_count : The number of timezones */
     @field('timezone_count') timezoneCount!: number
 
-    @relation(TEAM, 'team_id') groupTeam!: Team
+    /** team : The related record to the parent Team model */
+    @relation(TEAM, 'team_id') team!: Team
+
+    /** group : The related record to the parent Team model */
+    @relation(GROUP, 'group_id') group!: Group
 }

@@ -8,8 +8,13 @@ import {MM_TABLES} from '@constants/database';
 
 const {TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
+/**
+ * The model for Terms of Service
+ */
 export default class Terms_of_service extends Model {
+    /** table (entity name) : TermsOfService */
     static table = TERMS_OF_SERVICE
 
+    /** accepted_at : the date the term has been accepted */
     @field('accepted_at') acceptedAt!: number
 }
