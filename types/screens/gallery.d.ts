@@ -21,6 +21,7 @@ export interface ActionProps {
 
 export interface ActionsProps {
     canDownloadFiles: boolean;
+    enablePublicLink: boolean;
     downloadAction: ActionCallback;
     file: FileInfo;
     linkAction: ActionCallback;
