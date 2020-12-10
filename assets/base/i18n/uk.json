@@ -271,7 +271,6 @@
   "mobile.ios.photos_permission_denied_description": "Щоб зберегти зображення та відео в бібліотеці, змініть налаштування вашого дозволу.",
   "mobile.ios.photos_permission_denied_title": "Потрібен доступ до фото-бібліотеки",
   "mobile.join_channel.error": "Ми не можемо підключитися до каналу {displayName}. Будь-ласка, перевірте підключення та спробуйте знову.",
-  "mobile.link.error.title": "Помилка",
   "mobile.loading_channels": "Завантаження списку каналів...",
   "mobile.loading_members": "Завантаження списку учасників...",
   "mobile.loading_options": "Параметри завантаження...",
