@@ -4,7 +4,7 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import testHelper from 'test/test_helper';
+import testHelper from '@test/test_helper';
 
 import * as ChannelActions from '@actions/views/channel';
 import {ViewTypes} from '@constants';
@@ -12,6 +12,14 @@ import {ChannelTypes} from '@mm-redux/action_types';
 import postReducer from '@mm-redux/reducers/entities/posts';
 import initialState from '@store/initial_state';
 import {General} from '@mm-redux/constants';
+import {IDMappedObjects, RelationOneToOne} from '@mm-redux/types/utilities';
+import {Post, PostsState} from '@mm-redux/types/posts';
+import {GlobalState} from '@mm-redux/types/store';
+import {Channel, ChannelMembership} from '@mm-redux/types/channels';
+import {Team} from '@mm-redux/types/teams';
+import {DispatchFunc} from '@mm-redux/types/actions';
+import {AnyAction} from 'redux';
+import {WebSocketState} from '@mm-redux/types/websocket';
 
 const {
     handleSelectChannel,
@@ -39,7 +47,7 @@ jest.mock('@mm-redux/selectors/entities/teams', () => {
     };
 });
 
-const mockStore = configureStore([thunk]);
+const mockStore = configureStore<GlobalState, DispatchFunc>([thunk]);
 
 describe('Actions.Views.Channel', () => {
     let store;
@@ -85,7 +93,7 @@ describe('Actions.Views.Channel', () => {
 
     postActions.getPosts = jest.fn((channelId) => {
         const order = [];
-        const posts = {};
+        const posts = {} as IDMappedObjects<Post>;
 
         for (let i = 0; i < 60; i++) {
             const p = testHelper.fakePost(channelId);
@@ -107,7 +115,7 @@ describe('Actions.Views.Channel', () => {
         return array[0].create_at;
     });
 
-    let nextPostState = {};
+    let nextPostState = {} as PostsState;
     const currentUserId = 'current-user-id';
     const currentChannelId = 'channel-id';
     const currentChannelName = 'channel-name';
@@ -124,13 +132,13 @@ describe('Actions.Views.Channel', () => {
                 currentChannelId,
                 manuallyUnread: {},
                 channels: {
-                    'channel-id': {id: 'channel-id', display_name: 'Test Channel'},
-                    'channel-id-2': {id: 'channel-id-2', display_name: 'Test Channel'},
-                },
+                    'channel-id': {id: 'channel-id', display_name: 'Test Channel'} as Channel,
+                    'channel-id-2': {id: 'channel-id-2', display_name: 'Test Channel'} as Channel,
+                } as IDMappedObjects<Channel>,
                 myMembers: {
-                    'channel-id': {channel_id: 'channel-id', user_id: currentUserId, mention_count: 0, msg_count: 0},
-                    'channel-id-2': {channel_id: 'channel-id-2', user_id: currentUserId, mention_count: 0, msg_count: 0},
-                },
+                    'channel-id': {channel_id: 'channel-id', user_id: currentUserId, mention_count: 0, msg_count: 0} as ChannelMembership,
+                    'channel-id-2': {channel_id: 'channel-id-2', user_id: currentUserId, mention_count: 0, msg_count: 0} as ChannelMembership,
+                }as RelationOneToOne<Channel, ChannelMembership>,
             },
             teams: {
                 currentTeamId,
@@ -138,18 +146,18 @@ describe('Actions.Views.Channel', () => {
                     [currentTeamId]: {
                         id: currentTeamId,
                         name: currentTeamName,
-                    },
-                },
+                    } as Team,
+                } as IDMappedObjects<Team>,
             },
         },
-    };
+    } as GlobalState;
 
     const channelSelectors = require('@mm-redux/selectors/entities/channels');
     channelSelectors.getChannel = jest.fn((state, channelId) => ({data: channelId}));
     channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
     channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));
 
-    const appChannelSelectors = require('app/selectors/channel');
+    const appChannelSelectors = require('@selectors/channel');
     appChannelSelectors.getChannelReachable = jest.fn(() => true);
 
     test('handleSelectChannelByName success', async () => {
@@ -170,7 +178,8 @@ describe('Actions.Views.Channel', () => {
         failStoreObj.entities.teams.currentTeamId = 'not-in-current-teams';
         store = mockStore(failStoreObj);
 
-        await store.dispatch(handleSelectChannelByName(currentChannelName, null));
+        // Should it accept null? Should this testcase be renamed?
+        await store.dispatch(handleSelectChannelByName(currentChannelName, ''));
 
         const storeActions = store.getActions();
         const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
@@ -241,15 +250,15 @@ describe('Actions.Views.Channel', () => {
         const storeActions = store.getActions();
         const storeBatchActions = storeActions.filter(({type}) => type === 'BATCH_LOAD_POSTS_IN_CHANNEL');
         const receivedPosts = storeActions.find(({type}) => type === MOCK_RECEIVED_POSTS);
-        const receivedPostsAtAction = storeBatchActions[0].payload.some((action) => action.type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
+        const receivedPostsAtAction = storeBatchActions[0].payload.some((action: AnyAction) => action.type === ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME);
 
-        nextPostState = postReducer(store.getState().entities.posts, receivedPosts);
+        nextPostState = postReducer(store.getState().entities.posts, receivedPosts) as PostsState;
         nextPostState = postReducer(nextPostState, {
             type: MOCK_RECEIVED_POSTS_IN_CHANNEL,
             channelId: currentChannelId,
             data: receivedPosts.data,
             recent: true,
-        });
+        }) as PostsState;
 
         expect(receivedPostsAtAction).toBe(true);
     });
@@ -300,7 +309,7 @@ describe('Actions.Views.Channel', () => {
             },
             websocket: {
                 lastConnectAt: time + (1 * 60 * 1000),
-            },
+            } as WebSocketState,
         });
 
         await store.dispatch(loadPostsIfNecessaryWithRetry(currentChannelId));
@@ -326,7 +335,7 @@ describe('Actions.Views.Channel', () => {
         await store.dispatch(handleSelectChannel(channelId));
         const storeActions = store.getActions();
         const storeBatchActions = storeActions.find(({type}) => type === 'BATCH_SWITCH_CHANNEL');
-        const selectChannelWithMember = storeBatchActions?.payload.find(({type}) => type === ChannelTypes.SELECT_CHANNEL);
+        const selectChannelWithMember = storeBatchActions?.payload.find(({type}: AnyAction) => type === ChannelTypes.SELECT_CHANNEL);
         const viewedAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_VIEWED);
         const readAction = storeActions.find(({type}) => type === MOCK_CHANNEL_MARK_AS_READ);
 

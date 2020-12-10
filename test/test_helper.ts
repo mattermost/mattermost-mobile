@@ -6,12 +6,31 @@ import nock from 'nock';
 
 import Config from '@assets/config.json';
 import Client from '@mm-redux/client/client4';
-import {DEFAULT_LOCALE} from '@mm-redux/constants/general';
+import CONSTANTS from '@mm-redux/constants/general';
 import {generateId} from '@mm-redux/utils/helpers';
-
-const PASSWORD = 'password1';
+import {Channel, ChannelMembership} from '@mm-redux/types/channels';
+import {Post} from '@mm-redux/types/posts';
+import {Team, TeamMembership} from '@mm-redux/types/teams';
+import {UserProfile} from '@mm-redux/types/users';
+import {IncomingWebhook, OAuthApp, OutgoingWebhook} from '@mm-redux/types/integrations';
+import {FileInfo} from '@mm-redux/types/files';
+import {Bot} from '@mm-redux/types/bots';
+import {Scheme} from '@mm-redux/types/schemes';
+import {Role} from '@mm-redux/types/roles';
+import {Dictionary} from '@mm-redux/types/utilities';
 
 class TestHelper {
+    basicUser: UserProfile | null;
+    basicTeam: Team | null;
+    basicTeamMember: TeamMembership | null;
+    basicChannel: Channel | null;
+    basicChannelMember: ChannelMembership | null;
+    basicPost: Post | null;
+    basicRoles: Dictionary<Role> | null;
+    basicScheme: Scheme | null;
+    basicClient: Client | null;
+    basicClient4: Client | null;
+
     constructor() {
         this.basicClient = null;
         this.basicClient4 = null;
@@ -32,7 +51,8 @@ class TestHelper {
         }
     }
 
-    assertStatusOkay = (data) => {
+    // TODO improve typing
+    assertStatusOkay = (data: any) => {
         assert(data);
         assert(data.status === 'OK');
     };
@@ -49,7 +69,7 @@ class TestHelper {
         return client;
     };
 
-    fakeChannel = (teamId) => {
+    fakeChannel = (teamId: string) => {
         const name = this.generateId();
 
         return {
@@ -60,20 +80,20 @@ class TestHelper {
             delete_at: 0,
             total_msg_count: 0,
             scheme_id: this.generateId(),
-        };
+        } as Channel;
     };
 
-    fakeChannelWithId = (teamId) => {
+    fakeChannelWithId = (teamId: string) => {
         return {
             ...this.fakeChannel(teamId),
             id: this.generateId(),
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-        };
+        } as Channel;
     };
 
-    fakeDmChannel = (userId, otherUserId) => {
+    fakeDmChannel = (userId: string, otherUserId: string) => {
         return {
             name: userId > otherUserId ? otherUserId + '__' + userId : userId + '__' + otherUserId,
             team_id: '',
@@ -83,10 +103,10 @@ class TestHelper {
             teammate_id: `${otherUserId}`,
             id: this.generateId(),
             delete_at: 0,
-        };
+        } as Channel;
     }
 
-    fakeChannelMember = (userId, channelId) => {
+    fakeChannelMember = (userId: string, channelId: string) => {
         return {
             user_id: userId,
             channel_id: channelId,
@@ -96,14 +116,14 @@ class TestHelper {
             mention_count: 0,
             scheme_user: false,
             scheme_admin: false,
-        };
+        } as ChannelMembership;
     };
 
     fakeEmail = () => {
         return 'success' + this.generateId() + '@simulator.amazonses.com';
     };
 
-    fakePost = (channelId) => {
+    fakePost = (channelId: string) => {
         const time = Date.now();
 
         return {
@@ -113,17 +133,17 @@ class TestHelper {
             update_at: time,
             message: `Unit Test ${this.generateId()}`,
             type: '',
-        };
+        } as Post;
     };
 
-    fakePostWithId = (channelId) => {
+    fakePostWithId = (channelId: string) => {
         return {
             ...this.fakePost(channelId),
             id: this.generateId(),
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-        };
+        } as Post;
     };
 
     fakeTeam = () => {
@@ -141,7 +161,7 @@ class TestHelper {
             allowed_domains: '',
             invite_id: inviteId,
             scheme_id: this.generateId(),
-        };
+        } as Team;
     };
 
     fakeTeamWithId = () => {
@@ -151,10 +171,10 @@ class TestHelper {
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-        };
+        } as Team;
     };
 
-    fakeTeamMember = (userId, teamId) => {
+    fakeTeamMember = (userId: string, teamId: string) => {
         return {
             user_id: userId,
             team_id: teamId,
@@ -162,22 +182,23 @@ class TestHelper {
             delete_at: 0,
             scheme_user: false,
             scheme_admin: false,
-        };
+        } as TeamMembership;
     };
 
     fakeUser = () => {
         return {
             email: this.fakeEmail(),
-            allow_marketing: true,
-            password: PASSWORD,
-            locale: DEFAULT_LOCALE,
+
+            // allow_marketing: true,
+            // password: PASSWORD,
+            locale: CONSTANTS.DEFAULT_LOCALE,
             username: this.generateId(),
             first_name: this.generateId(),
             last_name: this.generateId(),
             create_at: Date.now(),
             delete_at: 0,
             roles: 'system_user',
-        };
+        } as UserProfile;
     };
 
     fakeUserWithId = (id = this.generateId()) => {
@@ -187,28 +208,28 @@ class TestHelper {
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-        };
+        } as UserProfile;
     };
 
-    fakeOutgoingHook = (teamId) => {
+    fakeOutgoingHook = (teamId: string) => {
         return {
             team_id: teamId,
-        };
+        } as OutgoingWebhook;
     };
 
-    fakeOutgoingHookWithId = (teamId) => {
+    fakeOutgoingHookWithId = (teamId: string) => {
         return {
             ...this.fakeOutgoingHook(teamId),
             id: this.generateId(),
-        };
+        } as OutgoingWebhook;
     };
 
-    fakeFiles = (count) => {
-        const files = [];
+    fakeFiles = (count: number) => {
+        const files: FileInfo[] = [];
         while (files.length < count) {
             files.push({
                 id: this.generateId(),
-            });
+            } as FileInfo);
         }
 
         return files;
@@ -223,14 +244,14 @@ class TestHelper {
             is_trusted: false,
             icon_url: 'http://localhost/notrealurl',
             update_at: 1507841118796,
-        };
+        } as OAuthApp;
     };
 
     fakeOAuthAppWithId = () => {
         return {
             ...this.fakeOAuthApp(),
             id: this.generateId(),
-        };
+        } as OAuthApp;
     };
 
     fakeBot = () => {
@@ -242,33 +263,17 @@ class TestHelper {
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-        };
+        } as Bot;
     }
 
-    generateId = () => {
-        // Implementation taken from http://stackoverflow.com/a/2117523
-        let id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-
-        id = id.replace(/[xy]/g, (c) => {
-            const r = Math.floor(Math.random() * 16);
-
-            let v;
-            if (c === 'x') {
-                v = r;
-            } else {
-                v = (r & 0x3) | 0x8;
-            }
-
-            return v.toString(16);
-        });
-
-        return 'uid' + id;
-    };
-
     mockLogin = () => {
+        if (!this.basicClient4) {
+            return;
+        }
+
         nock(this.basicClient4.getBaseRoute()).
             post('/users/login').
-            reply(200, this.basicUser, {'X-Version-Id': 'Server Version'});
+            reply(200, this.basicUser || '', {'X-Version-Id': 'Server Version'});
 
         nock(this.basicClient4.getBaseRoute()).
             get('/users/me/teams/members').
@@ -276,7 +281,7 @@ class TestHelper {
 
         nock(this.basicClient4.getBaseRoute()).
             get('/users/me/teams/unread').
-            reply(200, [{team_id: this.basicTeam.id, msg_count: 0, mention_count: 0}]);
+            reply(200, [{team_id: this.basicTeam?.id, msg_count: 0, mention_count: 0}]);
 
         nock(this.basicClient4.getBaseRoute()).
             get('/users/me/teams').
@@ -284,7 +289,7 @@ class TestHelper {
 
         nock(this.basicClient4.getBaseRoute()).
             get('/users/me/preferences').
-            reply(200, [{user_id: this.basicUser.id, category: 'tutorial_step', name: this.basicUser.id, value: '999'}]);
+            reply(200, [{user_id: this.basicUser?.id, category: 'tutorial_step', name: this.basicUser?.id, value: '999'}]);
     }
 
     initMockEntities = () => {
@@ -306,7 +311,7 @@ class TestHelper {
                 ],
                 scheme_managed: true,
                 built_in: true,
-            },
+            } as Role,
             system_user: {
                 id: this.generateId(),
                 name: 'system_user',
@@ -317,7 +322,7 @@ class TestHelper {
                 ],
                 scheme_managed: true,
                 built_in: true,
-            },
+            } as Role,
             team_admin: {
                 id: this.generateId(),
                 name: 'team_admin',
@@ -328,7 +333,7 @@ class TestHelper {
                 ],
                 scheme_managed: true,
                 built_in: true,
-            },
+            } as Role,
             team_user: {
                 id: this.generateId(),
                 name: 'team_user',
@@ -339,7 +344,7 @@ class TestHelper {
                 ],
                 scheme_managed: true,
                 built_in: true,
-            },
+            } as Role,
             channel_admin: {
                 id: this.generateId(),
                 name: 'channel_admin',
@@ -350,7 +355,7 @@ class TestHelper {
                 ],
                 scheme_managed: true,
                 built_in: true,
-            },
+            } as Role,
             channel_user: {
                 id: this.generateId(),
                 name: 'channel_user',
@@ -361,7 +366,7 @@ class TestHelper {
                 ],
                 scheme_managed: true,
                 built_in: true,
-            },
+            } as Role,
         };
         this.basicScheme = this.mockSchemeWithId();
     }
@@ -389,9 +394,9 @@ class TestHelper {
             name: this.generateId(),
             description: this.generateId(),
             scope: 'channel',
-            defaultchanneladminrole: false,
-            defaultchanneluserrole: false,
-        };
+            default_channel_admin_role: 'false',
+            default_channel_user_role: 'false',
+        } as Scheme;
     };
 
     mockSchemeWithId = () => {
@@ -401,7 +406,7 @@ class TestHelper {
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-        };
+        } as Scheme;
     };
 
     testIncomingHook = () => {
@@ -410,12 +415,12 @@ class TestHelper {
             create_at: 1507840900004,
             update_at: 1507840900004,
             delete_at: 0,
-            user_id: this.basicUser.id,
-            channel_id: this.basicChannel.id,
-            team_id: this.basicTeam.id,
+            user_id: this.basicUser?.id,
+            channel_id: this.basicChannel?.id,
+            team_id: this.basicTeam?.id,
             display_name: 'test',
             description: 'test',
-        };
+        } as IncomingWebhook;
     };
 
     testOutgoingHook = () => {
@@ -425,26 +430,26 @@ class TestHelper {
             create_at: 1507841118796,
             update_at: 1507841118796,
             delete_at: 0,
-            creator_id: this.basicUser.id,
-            channel_id: this.basicChannel.id,
-            team_id: this.basicTeam.id,
+            creator_id: this.basicUser?.id,
+            channel_id: this.basicChannel?.id,
+            team_id: this.basicTeam?.id,
             trigger_words: ['testword'],
             trigger_when: 0,
             callback_urls: ['http://localhost/notarealendpoint'],
             display_name: 'test',
             description: '',
             content_type: 'application/x-www-form-urlencoded',
-        };
+        } as OutgoingWebhook;
     }
 
-    testCommand = (teamId) => {
+    testCommand = (teamId: string) => {
         return {
             trigger: this.generateId(),
             method: 'P',
             create_at: 1507841118796,
             update_at: 1507841118796,
             delete_at: 0,
-            creator_id: this.basicUser.id,
+            creator_id: this.basicUser?.id,
             team_id: teamId,
             username: 'test',
             icon_url: 'http://localhost/notarealendpoint',
@@ -470,7 +475,7 @@ class TestHelper {
         this.basicPost = null;
     }
 
-    wait = (time) => new Promise((resolve) => setTimeout(resolve, time))
+    wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 }
 
 export default new TestHelper();

@@ -12,7 +12,7 @@ import {createCustomEmoji} from '@mm-redux/actions/emojis';
 import {Client4} from '@mm-redux/client';
 import {Preferences, Posts, RequestStatus} from '../constants';
 import {ChannelTypes, PostTypes} from '@mm-redux/action_types';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 

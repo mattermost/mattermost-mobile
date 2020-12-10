@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
+import {bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
 
 import {
@@ -30,11 +30,27 @@ import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions} from 'app/selectors/device';
 
 import PostOptions from './post_options';
+import {GlobalState} from '@mm-redux/types/store';
+import {Post} from '@mm-redux/types/posts';
+
+// Exported for tests
+export type OwnProps = {
+    post: Post,
+    canDelete: boolean,
+    location: string,
+    channelIsReadOnly: boolean,
+    isSystemMessage: boolean,
+    hasBeenDeleted: boolean,
+    showAddReaction: boolean,
+
+    // TODO Improve typing
+    managedConfig?: any,
+}
 
 export function makeMapStateToProps() {
     const getReactionsForPostSelector = makeGetReactionsForPost();
 
-    return (state, ownProps) => {
+    return (state: GlobalState, ownProps: OwnProps) => {
         const post = ownProps.post;
         const channel = getChannel(state, post.channel_id) || {};
         const config = getConfig(state);
@@ -91,9 +107,9 @@ export function makeMapStateToProps() {
         } else {
             canEdit = canEditPost(state, config, license, currentTeamId, currentChannelId, currentUserId, post);
             if (canEdit && license.IsLicensed === 'true' &&
-                (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (config.PostEditTimeLimit !== -1 && config.PostEditTimeLimit !== '-1'))
+                (config.AllowEditPost === General.ALLOW_EDIT_POST_TIME_LIMIT || (Number(config.PostEditTimeLimit) !== -1 && config.PostEditTimeLimit !== '-1'))
             ) {
-                canEditUntil = post.create_at + (config.PostEditTimeLimit * 1000);
+                canEditUntil = post.create_at + (Number(config.PostEditTimeLimit) * 1000);
             }
         }
 
@@ -148,7 +164,7 @@ export function makeMapStateToProps() {
     };
 }
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch: Dispatch) {
     return {
         actions: bindActionCreators({
             addReaction,

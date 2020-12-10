@@ -5,7 +5,7 @@ import assert from 'assert';
 import nock from 'nock';
 
 import {ClientError, HEADER_X_VERSION_ID} from '@mm-redux/client/client4';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 describe('Client4', () => {

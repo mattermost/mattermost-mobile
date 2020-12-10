@@ -20,6 +20,7 @@ import {PreferenceType} from './preferences';
 import {Bot} from './bots';
 import {ChannelCategoriesState} from './channel_categories';
 import {Dictionary} from './utilities';
+import {WebSocketState} from './websocket';
 
 export type GlobalState = {
     entities: {
@@ -65,9 +66,5 @@ export type GlobalState = {
         jobs: JobsRequestsStatuses;
     };
     views: any;
-    websocket: {
-        connected: boolean;
-        lastConnectAt: number;
-        lastDisconnectAt: number;
-    };
+    websocket: WebSocketState;
 };

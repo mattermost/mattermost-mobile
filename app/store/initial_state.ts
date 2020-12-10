@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import Config from '@assets/config.json';
+import {GlobalState} from '@mm-redux/types/store';
 
 const state = {
-    app: {
-        version: '',
-        build: '',
-    },
+
+    // app: {
+    //     version: '',
+    //     build: '',
+    // },
     entities: {
         general: {
             appState: false,
@@ -20,8 +22,8 @@ const state = {
         },
         users: {
             currentUserId: '',
-            mySessions: [],
-            myAudits: [],
+            mySessions: [] as Array<any>,
+            myAudits: [] as Array<any>,
             profiles: {},
             profilesInTeam: {},
             profilesInChannel: {},
@@ -52,11 +54,11 @@ const state = {
             myPreferences: {},
         },
         search: {
-            recent: [],
+            recent: {},
         },
         typing: {},
     },
-    errors: [],
+    errors: [] as Array<any>,
     requests: {
         channels: {
             getChannels: {
@@ -125,9 +127,10 @@ const state = {
             },
         },
     },
-    device: {
-        connection: true,
-    },
+
+    // device: {
+    //     connection: true,
+    // },
     views: {
         channel: {
             drafts: {},
@@ -154,6 +157,6 @@ const state = {
         lastConnectAt: 0,
         lastDisconnectAt: 0,
     },
-};
+} as GlobalState;
 
 export default state;

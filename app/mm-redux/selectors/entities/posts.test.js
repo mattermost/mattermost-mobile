@@ -8,7 +8,7 @@ import {Posts, Preferences} from '../../constants';
 import * as Selectors from '@mm-redux/selectors/entities/posts';
 import {makeGetProfilesForReactions} from '@mm-redux/selectors/entities/users';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 

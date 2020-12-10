@@ -6,9 +6,11 @@ import {createSelector} from 'reselect';
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getChannelByName} from '@mm-redux/selectors/entities/channels';
 import {getTeamByName} from '@mm-redux/selectors/entities/teams';
+import {GlobalState} from '@mm-redux/types/store';
+import {Channel} from '@mm-redux/types/channels';
 
 const getOtherUserIdForDm = createSelector(
-    (state, channel) => channel,
+    (state:GlobalState, channel: Channel) => channel,
     getCurrentUserId,
     (channel, currentUserId) => {
         if (!channel) {
@@ -20,7 +22,7 @@ const getOtherUserIdForDm = createSelector(
 );
 
 export const getChannelMembersForDm = createSelector(
-    (state, channel) => getUser(state, getOtherUserIdForDm(state, channel)),
+    (state: GlobalState, channel: Channel) => getUser(state, getOtherUserIdForDm(state, channel)),
     (otherUser) => {
         if (!otherUser) {
             return [];
@@ -31,7 +33,7 @@ export const getChannelMembersForDm = createSelector(
 );
 
 export const getChannelNameForSearchAutocomplete = createSelector(
-    (state, channelId) => state.entities.channels.channels[channelId],
+    (state: GlobalState, channelId: string) => state.entities.channels.channels[channelId],
     (channel) => {
         if (channel && channel.display_name) {
             return channel.display_name;
@@ -40,8 +42,8 @@ export const getChannelNameForSearchAutocomplete = createSelector(
     },
 );
 
-const getTeam = (state, channelName, teamName) => getTeamByName(state, teamName);
-const getChannel = (state, channelName) => getChannelByName(state, channelName);
+const getTeam = (state: GlobalState, channelName: string, teamName: string) => getTeamByName(state, teamName);
+const getChannel = (state: GlobalState, channelName: string) => getChannelByName(state, channelName);
 
 export const getChannelReachable = createSelector(
     getTeam,

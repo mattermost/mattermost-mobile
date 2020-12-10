@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import {sortChannelsByDisplayName, getDirectChannelName} from '@mm-redux/utils/channel_utils';
 import * as Selectors from '@mm-redux/selectors/entities/channels';
 import {General, Preferences, Permissions} from '../../constants';

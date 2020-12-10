@@ -13,7 +13,7 @@ import {getMyPreferences, getTheme} from '@mm-redux/selectors/entities/preferenc
 import {isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 
-import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
+import {insertToDraft, setPostTooltipVisible} from '@actions/views/channel';
 
 import Post from './post';
 

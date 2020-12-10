@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 import {Alert, StyleSheet, View} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import {intlShape} from 'react-intl';
@@ -20,42 +19,46 @@ import {preventDoubleTap} from '@utils/tap';
 
 import PostOption from './post_option';
 import {OPTION_HEIGHT, getInitialPosition} from './post_options_utils';
+import {Post} from '@mm-redux/types/posts';
+import {Theme} from '@mm-redux/types/preferences';
 
-export default class PostOptions extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            addReaction: PropTypes.func.isRequired,
-            deletePost: PropTypes.func.isRequired,
-            flagPost: PropTypes.func.isRequired,
-            pinPost: PropTypes.func.isRequired,
-            removePost: PropTypes.func.isRequired,
-            unflagPost: PropTypes.func.isRequired,
-            unpinPost: PropTypes.func.isRequired,
-            setUnreadPost: PropTypes.func.isRequired,
-        }).isRequired,
-        canAddReaction: PropTypes.bool,
-        canReply: PropTypes.bool,
-        canCopyPermalink: PropTypes.bool,
-        canCopyText: PropTypes.bool,
-        canDelete: PropTypes.bool,
-        canFlag: PropTypes.bool,
-        canPin: PropTypes.bool,
-        canEdit: PropTypes.bool,
-        canMarkAsUnread: PropTypes.bool, //#backwards-compatibility:5.18v
-        canEditUntil: PropTypes.number.isRequired,
-        currentTeamUrl: PropTypes.string.isRequired,
-        currentUserId: PropTypes.string.isRequired,
-        deviceHeight: PropTypes.number.isRequired,
-        isFlagged: PropTypes.bool,
-        post: PropTypes.object.isRequired,
-        theme: PropTypes.object.isRequired,
-    };
+type Props = {
+    actions: {
+        addReaction: (postId: string, emojiName: string) => void,
+        deletePost: (post: Post) => void,
+        flagPost: (postId: string) => void,
+        pinPost: (postId: string) => void,
+        removePost: (post: Post) => void,
+        unflagPost: (postId: string) => void,
+        unpinPost: (postId: string) => void,
+        setUnreadPost: (userId: string, postId: string) => void,
+    },
+    canAddReaction?: boolean,
+    canReply?: boolean,
+    canCopyPermalink?: boolean,
+    canCopyText?: boolean,
+    canDelete?: boolean,
+    canFlag?: boolean,
+    canPin?: boolean,
+    canEdit?: boolean,
+    canMarkAsUnread?: boolean, //#backwards-compatibility:5.18v
+    canEditUntil: number,
+    currentTeamUrl: string,
+    currentUserId: string,
+    deviceHeight: number,
+    isFlagged?: boolean,
+    post: Post,
+    theme: Theme,
+}
 
+export default class PostOptions extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
-    close = async (cb) => {
+    slideUpPanel: typeof SlideUpPanel;
+
+    close = async (cb?: () => void) => {
         await dismissModal();
 
         if (typeof cb === 'function') {
@@ -63,7 +66,7 @@ export default class PostOptions extends PureComponent {
         }
     };
 
-    closeWithAnimation = (cb) => {
+    closeWithAnimation = (cb?: () => void) => {
         if (this.slideUpPanel) {
             this.slideUpPanel.closeWithAnimation(cb);
         } else {
@@ -71,7 +74,7 @@ export default class PostOptions extends PureComponent {
         }
     };
 
-    getOption = (key, icon, message, onPress, destructive = false) => {
+    getOption = (key: string | number, icon: string, message: {id: string, defaultMessage: string}, onPress: () => void, destructive = false) => {
         const {formatMessage} = this.context.intl;
         const {theme} = this.props;
         const testID = `post.options.${key}.action`;
@@ -272,12 +275,12 @@ export default class PostOptions extends PureComponent {
         });
     };
 
-    handleAddReaction = preventDoubleTap((emoji) => {
+    handleAddReaction = preventDoubleTap((emoji: string) => {
         this.handleAddReactionToPost(emoji);
         this.closeWithAnimation();
     }, 500);
 
-    handleAddReactionToPost = (emoji) => {
+    handleAddReactionToPost = (emoji: string) => {
         const {actions, post} = this.props;
 
         actions.addReaction(post.id, emoji);
@@ -385,7 +388,7 @@ export default class PostOptions extends PureComponent {
         });
     };
 
-    refSlideUpPanel = (r) => {
+    refSlideUpPanel = (r: typeof SlideUpPanel) => {
         this.slideUpPanel = r;
     };
 

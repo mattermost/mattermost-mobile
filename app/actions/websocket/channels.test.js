@@ -19,7 +19,7 @@ import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';
 import globalInitialState from '@store/initial_state';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 
 global.WebSocket = MockWebSocket;

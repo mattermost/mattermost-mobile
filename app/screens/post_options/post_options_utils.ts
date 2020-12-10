@@ -5,7 +5,7 @@ export const OPTION_HEIGHT = 50;
 const BOTTOM_HEIGHT = 18;
 export const MAX_INITIAL_POSITION_MULTIPLIER = 0.75;
 
-export function getInitialPosition(deviceHeight, marginFromTop) {
+export function getInitialPosition(deviceHeight: number, marginFromTop: number) {
     const computedSlidePanelHeight = deviceHeight - marginFromTop;
     const maxInitialPosition = deviceHeight * MAX_INITIAL_POSITION_MULTIPLIER;
 

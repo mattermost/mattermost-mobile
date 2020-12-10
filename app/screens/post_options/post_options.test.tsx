@@ -8,6 +8,7 @@ import {shallow} from 'enzyme';
 import Preferences from '@mm-redux/constants/preferences';
 
 import PostOptions from './post_options';
+import {Post} from '@mm-redux/types/posts';
 
 jest.mock('react-intl');
 
@@ -29,7 +30,7 @@ describe('PostOptions', () => {
         message: 'message',
         is_pinned: false,
         channel_id: 'channel_id',
-    };
+    } as Post;
 
     const baseProps = {
         actions,
@@ -54,12 +55,12 @@ describe('PostOptions', () => {
     };
 
     function getWrapper(props = {}) {
-        return shallow(
+        return shallow<PostOptions>(
             <PostOptions
                 {...baseProps}
                 {...props}
             />,
-            {context: {intl: {formatMessage: ({defaultMessage}) => defaultMessage}}},
+            {context: {intl: {formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage}}},
         );
     }
 
@@ -111,13 +112,14 @@ describe('PostOptions', () => {
 
         // Trigger on press of Delete in the Alert
         const closeWithAnimation = jest.spyOn(wrapper.instance(), 'closeWithAnimation');
-        Alert.alert.mock.calls[0][2][1].onPress();
+        const alert = jest.spyOn(Alert, 'alert');
+        alert.mock.calls[0][2]![1].onPress!();
         expect(closeWithAnimation).toBeCalled();
 
         // get the callback that gets called by closeWithAnimation
         const callback = closeWithAnimation.mock.calls[0][0];
 
-        callback();
+        callback!();
         expect(actions.deletePost).toBeCalled();
         expect(actions.removePost).toBeCalled();
     });

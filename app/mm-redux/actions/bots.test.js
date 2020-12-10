@@ -7,7 +7,7 @@ import nock from 'nock';
 import * as BotActions from '@mm-redux/actions/bots';
 import {Client4} from '@mm-redux/client';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 
 describe('Actions.Bots', () => {

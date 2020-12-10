@@ -9,7 +9,7 @@ import {login} from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
 import {Preferences} from '../constants';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 
 const OK_RESPONSE = {status: 'OK'};

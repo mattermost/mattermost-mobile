@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import * as Selectors from '@mm-redux/selectors/entities/roles';
 import {General} from '../../constants';
 import {getMySystemPermissions, getMySystemRoles, getRoles} from '@mm-redux/selectors/entities/roles_helpers';

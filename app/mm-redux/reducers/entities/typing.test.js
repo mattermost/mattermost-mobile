@@ -7,7 +7,7 @@ import {WebsocketEvents} from '@constants';
 
 import typingReducer from '@mm-redux/reducers/entities/typing';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 
 describe('Reducers.Typing', () => {
     it('initial state', async () => {

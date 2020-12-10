@@ -39,11 +39,16 @@ import {getChannelReachable} from '@selectors/channel';
 import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
+import {Action, DispatchFunc, GetStateFunc} from '@mm-redux/types/actions';
+import {GlobalState} from '@mm-redux/types/store';
+import {Channel, ChannelMembership} from '@mm-redux/types/channels';
+import {Role} from '@mm-redux/types/roles';
+import {AnyAction} from 'redux';
 
 const MAX_RETRIES = 3;
 
-export function loadChannelsByTeamName(teamName, errorHandler) {
-    return async (dispatch, getState) => {
+export function loadChannelsByTeamName(teamName: string, errorHandler: () => void) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {currentTeamId} = state.entities.teams;
 
@@ -64,8 +69,8 @@ export function loadChannelsByTeamName(teamName, errorHandler) {
     };
 }
 
-export function loadPostsIfNecessaryWithRetry(channelId) {
-    return async (dispatch, getState) => {
+export function loadPostsIfNecessaryWithRetry(channelId: string) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const postIds = getPostIdsInChannel(state, channelId);
         const actions = [];
@@ -84,7 +89,7 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
 
         const received = await dispatch(fetchPostActionWithRetry(postAction));
 
-        if (received) {
+        if (received.data) {
             actions.push({
                 type: ViewTypes.RECEIVED_POSTS_FOR_CHANNEL_AT_TIME,
                 channelId,
@@ -92,44 +97,48 @@ export function loadPostsIfNecessaryWithRetry(channelId) {
             },
             setChannelRetryFailed(false));
 
-            if (received?.order) {
-                const count = received.order.length;
+            if (received.data?.order) {
+                const count = received.data.order.length;
                 loadMorePostsVisible = count >= ViewTypes.POST_VISIBILITY_CHUNK_SIZE;
             }
         }
 
         actions.push(setLoadMorePostsVisible(loadMorePostsVisible));
         dispatch(batchActions(actions, 'BATCH_LOAD_POSTS_IN_CHANNEL'));
+
+        return {};
     };
 }
 
-export function fetchPostActionWithRetry(action, maxTries = MAX_RETRIES) {
-    return async (dispatch) => {
+export function fetchPostActionWithRetry(action: Action, maxTries = MAX_RETRIES) {
+    return async (dispatch: DispatchFunc) => {
         for (let i = 0; i <= maxTries; i++) {
             const {data} = await dispatch(action); // eslint-disable-line no-await-in-loop
 
             if (data) {
-                return data;
+                return {data};
             }
         }
 
         dispatch(setChannelRetryFailed(true));
 
-        return null;
+        return {};
     };
 }
 
-export function selectInitialChannel(teamId) {
-    return (dispatch, getState) => {
+export function selectInitialChannel(teamId: string) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const channelId = lastChannelIdForTeam(state, teamId);
 
         dispatch(handleSelectChannel(channelId));
+
+        return {};
     };
 }
 
-export function selectPenultimateChannel(teamId) {
-    return (dispatch, getState) => {
+export function selectPenultimateChannel(teamId: string) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {channels, myMembers} = state.entities.channels;
         const {currentUserId} = state.entities.users;
@@ -158,8 +167,8 @@ export function selectPenultimateChannel(teamId) {
     };
 }
 
-export function selectDefaultChannel(teamId) {
-    return (dispatch, getState) => {
+export function selectDefaultChannel(teamId: string) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
 
         const channelsInTeam = getChannelsNameMapInTeam(state, teamId);
@@ -178,11 +187,13 @@ export function selectDefaultChannel(teamId) {
         if (channelId) {
             dispatch(handleSelectChannel(channelId));
         }
+
+        return {};
     };
 }
 
-export function handleSelectChannel(channelId) {
-    return async (dispatch, getState) => {
+export function handleSelectChannel(channelId: string) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const dt = Date.now();
         const state = getState();
         const {channels, currentChannelId, myMembers} = state.entities.channels;
@@ -193,12 +204,12 @@ export function handleSelectChannel(channelId) {
         if (channel) {
             dispatch(loadPostsIfNecessaryWithRetry(channelId));
 
-            let previousChannelId = null;
+            let previousChannelId: string | undefined;
             if (currentChannelId !== channelId) {
                 previousChannelId = currentChannelId;
             }
 
-            const actions = markAsViewedAndReadBatch(state, channelId, previousChannelId);
+            const actions: AnyAction[] = markAsViewedAndReadBatch(state, channelId, previousChannelId);
             actions.push({
                 type: ChannelTypes.SELECT_CHANNEL,
                 data: channelId,
@@ -213,11 +224,13 @@ export function handleSelectChannel(channelId) {
 
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
+
+        return {};
     };
 }
 
-export function handleSelectChannelByName(channelName, teamName, errorHandler) {
-    return async (dispatch, getState) => {
+export function handleSelectChannelByName(channelName: string, teamName: string, errorHandler?: () => void) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         let state = getState();
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
@@ -240,7 +253,11 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
 
         if (teamName && teamName !== currentTeamName) {
             const team = getTeamByName(state, teamName);
-            dispatch(selectTeam(team));
+            if (team) {
+                dispatch(selectTeam(team));
+            }
+
+            // TODO should handle case where team is undefined?
         }
 
         if (channel && currentChannelId !== channel.id) {
@@ -249,7 +266,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
                 if (!myMemberships[channel.id]) {
                     const currentUserId = getCurrentUserId(state);
                     console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
-                    const result = await dispatch(joinChannel(currentUserId, '', channel.id));
+                    const result = await dispatch(joinChannel(currentUserId, '', channel.id, ''));
                     if (result.error || !result.data || !result.data.channel) {
                         return result;
                     }
@@ -258,12 +275,12 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
             dispatch(handleSelectChannel(channel.id));
         }
 
-        return null;
+        return {};
     };
 }
 
-export function handlePostDraftChanged(channelId, draft) {
-    return (dispatch, getState) => {
+export function handlePostDraftChanged(channelId: string, draft: string) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
 
         if (state.views.channel.drafts[channelId]?.draft !== draft) {
@@ -276,8 +293,8 @@ export function handlePostDraftChanged(channelId, draft) {
     };
 }
 
-export function insertToDraft(value) {
-    return (dispatch, getState) => {
+export function insertToDraft(value: string) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const threadId = state.entities.posts.selectedPostId;
 
@@ -287,8 +304,8 @@ export function insertToDraft(value) {
     };
 }
 
-export function markChannelViewedAndRead(channelId, previousChannelId, markOnServer = true) {
-    return (dispatch, getState) => {
+export function markChannelViewedAndRead(channelId: string, previousChannelId?: string, markOnServer = true) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const actions = markAsViewedAndReadBatch(state, channelId, previousChannelId, markOnServer);
 
@@ -298,7 +315,7 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
     };
 }
 
-export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', markOnServer = true) {
+export function markAsViewedAndReadBatch(state: GlobalState, channelId: string, prevChannelId = '', markOnServer = true) {
     const actions = [];
     const {channels, myMembers} = state.entities.channels;
     const channel = channels[channelId];
@@ -382,8 +399,8 @@ export function markAsViewedAndReadBatch(state, channelId, prevChannelId = '', m
     return actions;
 }
 
-export function markChannelViewedAndReadOnReconnect(channelId) {
-    return (dispatch, getState) => {
+export function markChannelViewedAndReadOnReconnect(channelId: string) {
+    return (dispatch: DispatchFunc, getState: GetStateFunc) => {
         if (isManuallyUnread(getState(), channelId)) {
             return;
         }
@@ -392,8 +409,8 @@ export function markChannelViewedAndReadOnReconnect(channelId) {
     };
 }
 
-export function toggleDMChannel(otherUserId, visible, channelId) {
-    return async (dispatch, getState) => {
+export function toggleDMChannel(otherUserId: string, visible: string, channelId?: string) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {currentUserId} = state.entities.users;
 
@@ -405,16 +422,18 @@ export function toggleDMChannel(otherUserId, visible, channelId) {
         }, {
             user_id: currentUserId,
             category: Preferences.CATEGORY_CHANNEL_OPEN_TIME,
-            name: channelId,
+            name: channelId || '',
             value: Date.now().toString(),
         }];
 
         dispatch(savePreferences(currentUserId, dm));
+
+        return {};
     };
 }
 
-export function toggleGMChannel(channelId, visible) {
-    return async (dispatch, getState) => {
+export function toggleGMChannel(channelId: string, visible: string) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {currentUserId} = state.entities.users;
 
@@ -429,20 +448,20 @@ export function toggleGMChannel(channelId, visible) {
     };
 }
 
-export function closeDMChannel(channel) {
-    return async (dispatch, getState) => {
+export function closeDMChannel(channel: Channel) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
-        dispatch(toggleDMChannel(channel.teammate_id, 'false'));
+        dispatch(toggleDMChannel(channel.teammate_id || '', 'false'));
         if (channel.id === currentChannelId) {
             dispatch(selectInitialChannel(state.entities.teams.currentTeamId));
         }
     };
 }
 
-export function closeGMChannel(channel) {
-    return async (dispatch, getState) => {
+export function closeGMChannel(channel: Channel) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentChannelId = getCurrentChannelId(state);
 
@@ -453,23 +472,24 @@ export function closeGMChannel(channel) {
     };
 }
 
-export function refreshChannelWithRetry(channelId) {
-    return async (dispatch) => {
+export function refreshChannelWithRetry(channelId: string) {
+    return async (dispatch: DispatchFunc) => {
         dispatch(setChannelRefreshing(true));
-        const posts = await dispatch(fetchPostActionWithRetry(getPosts(channelId)));
-        const actions = [setChannelRefreshing(false)];
+        const received = await dispatch(fetchPostActionWithRetry(getPosts(channelId)));
+        const posts = received.data;
+        const actions: AnyAction[] = [setChannelRefreshing(false)];
 
         if (posts) {
             actions.push(setChannelRetryFailed(false));
         }
 
         dispatch(batchActions(actions, 'BATCH_REEFRESH_CHANNEL'));
-        return posts;
+        return {data: posts};
     };
 }
 
-export function leaveChannel(channel, reset = false) {
-    return async (dispatch, getState) => {
+export function leaveChannel(channel: Channel, reset = false) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {currentChannelId} = state.entities.channels;
         const {currentTeamId} = state.entities.teams;
@@ -517,7 +537,7 @@ export function setChannelRetryFailed(failed = true) {
     };
 }
 
-export function setChannelDisplayName(displayName) {
+export function setChannelDisplayName(displayName: string) {
     return {
         type: ViewTypes.SET_CHANNEL_DISPLAY_NAME,
         displayName,
@@ -525,8 +545,8 @@ export function setChannelDisplayName(displayName) {
 }
 
 // Returns true if there are more posts to load
-export function increasePostVisibility(channelId, postId) {
-    return async (dispatch, getState) => {
+export function increasePostVisibility(channelId: string, postId: string) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {loadingPosts} = state.views.channel;
         const currentUserId = getCurrentUserId(state);
@@ -559,19 +579,19 @@ export function increasePostVisibility(channelId, postId) {
         const postAction = getPostsBefore(channelId, postId, 0, pageSize);
         const result = await dispatch(fetchPostActionWithRetry(postAction));
 
-        const actions = [{
+        const actions: AnyAction[] = [{
             type: ViewTypes.LOADING_POSTS,
             data: false,
             channelId,
         }];
 
-        if (result) {
+        if (result.data) {
             actions.push(setChannelRetryFailed(false));
         }
 
         let hasMorePost = false;
-        if (result?.order) {
-            const count = result.order.length;
+        if (result.data?.order) {
+            const count = result.data.order.length;
             hasMorePost = count >= pageSize;
 
             actions.push(setLoadMorePostsVisible(hasMorePost));
@@ -585,7 +605,7 @@ export function increasePostVisibility(channelId, postId) {
     };
 }
 
-function setLoadMorePostsVisible(visible) {
+function setLoadMorePostsVisible(visible: boolean) {
     return {
         type: ViewTypes.SET_LOAD_MORE_POSTS_VISIBLE,
         data: visible,
@@ -593,7 +613,7 @@ function setLoadMorePostsVisible(visible) {
 }
 
 function loadGroupData() {
-    return async (dispatch, getState) => {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const actions = [];
         const team = getCurrentTeam(state);
@@ -673,11 +693,20 @@ function loadGroupData() {
     };
 }
 
-export function loadChannelsForTeam(teamId, skipDispatch = false) {
-    return async (dispatch, getState) => {
+type LoadChannelsForTeamData = {
+    sync: boolean,
+    teamId: string,
+    teamChannels: string[],
+    channels?: Channel[],
+    channelMembers?: ChannelMembership[],
+    roles?: Role[],
+}
+
+export function loadChannelsForTeam(teamId: string, skipDispatch = false) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const currentUserId = getCurrentUserId(state);
-        const data = {
+        const data: LoadChannelsForTeamData = {
             sync: true,
             teamId,
             teamChannels: getChannelsIdForTeam(state, teamId),
@@ -699,7 +728,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                     break;
                 } catch (err) {
                     if (i === MAX_RETRIES) {
-                        const hasChannelsLoaded = state.entities.channels.channelsInTeam[teamId]?.size > 0;
+                        const hasChannelsLoaded = state.entities.channels.channelsInTeam[teamId]?.length > 0;
                         return {error: hasChannelsLoaded ? null : err};
                     }
                 }
@@ -712,8 +741,8 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                 });
 
                 if (!skipDispatch) {
-                    const rolesToLoad = new Set();
-                    const members = data.channelMembers;
+                    const rolesToLoad = new Set<string>();
+                    const members = data.channelMembers || [];
                     for (const member of members) {
                         for (const role of member.roles.split(' ')) {
                             rolesToLoad.add(role);
@@ -723,7 +752,7 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
                     if (rolesToLoad.size > 0) {
                         try {
                             data.roles = await Client4.getRolesByNames(Array.from(rolesToLoad));
-                            if (data.roles.length) {
+                            if (data.roles?.length) {
                                 actions.push({
                                     type: RoleTypes.RECEIVED_ROLES,
                                     data: data.roles,
@@ -751,12 +780,12 @@ export function loadChannelsForTeam(teamId, skipDispatch = false) {
     };
 }
 
-export function loadSidebar(data) {
-    return async (dispatch, getState) => {
+export function loadSidebar(data: LoadChannelsForTeamData) {
+    return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
         const state = getState();
         const {channels, channelMembers} = data;
 
-        const sidebarActions = await loadSidebarDirectMessagesProfiles(state, channels, channelMembers);
+        const sidebarActions = await loadSidebarDirectMessagesProfiles(state, channels || [], channelMembers || []);
         if (sidebarActions.length) {
             dispatch(batchActions(sidebarActions, 'BATCH_LOAD_SIDEBAR'));
         }
@@ -765,8 +794,8 @@ export function loadSidebar(data) {
     };
 }
 
-export function resetUnreadMessageCount(channelId) {
-    return async (dispatch) => {
+export function resetUnreadMessageCount(channelId: string) {
+    return async (dispatch: DispatchFunc) => {
         dispatch({
             type: ChannelTypes.SET_UNREAD_MSG_COUNT,
             data: {

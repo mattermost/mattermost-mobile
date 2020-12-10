@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
 import {
     ScrollView,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {EventSubscription, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {dismissModal} from '@actions/navigation';
@@ -30,27 +29,31 @@ import ManageMembers from './manage_members';
 import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
+import {Channel} from '@mm-redux/types/channels';
+import {Theme} from '@mm-redux/types/preferences';
 
-export default class ChannelInfo extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            getChannelStats: PropTypes.func.isRequired,
-            getCustomEmojisInText: PropTypes.func.isRequired,
-            setChannelDisplayName: PropTypes.func.isRequired,
-            showPermalink: PropTypes.func.isRequired,
-        }),
-        currentChannel: PropTypes.object.isRequired,
-        currentChannelCreatorName: PropTypes.string,
-        currentChannelGuestCount: PropTypes.number,
-        currentChannelMemberCount: PropTypes.number,
-        currentUserId: PropTypes.string,
-        isBot: PropTypes.bool.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
-        isTeammateGuest: PropTypes.bool.isRequired,
-        isDirectMessage: PropTypes.bool.isRequired,
-        status: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-    };
+type Props = {
+    actions: {
+        getChannelStats: (channelId: string) => void,
+        getCustomEmojisInText: (text: string) => void,
+        setChannelDisplayName: (name: string) => void,
+        showPermalink: (intl: typeof intlShape, teamName: string, postId: string) => void,
+    },
+    currentChannel: Channel,
+    currentChannelCreatorName?: string,
+    currentChannelGuestCount?: number,
+    currentChannelMemberCount?: number,
+    currentUserId?: string,
+    isBot: boolean,
+    isLandscape: boolean,
+    isTeammateGuest: boolean,
+    isDirectMessage: boolean,
+    status?: string,
+    theme: Theme,
+}
+
+export default class ChannelInfo extends PureComponent<Props> {
+    navigationEventListener: EventSubscription | undefined;
 
     static defaultProps = {
         currentChannelGuestCount: 0,
@@ -66,7 +69,7 @@ export default class ChannelInfo extends PureComponent {
         this.props.actions.getCustomEmojisInText(this.props.currentChannel.header);
     }
 
-    navigationButtonPressed({buttonId}) {
+    navigationButtonPressed({buttonId}: {buttonId: string}) {
         if (buttonId === 'close-info') {
             dismissModal();
         }
@@ -82,7 +85,7 @@ export default class ChannelInfo extends PureComponent {
         dismissModal();
     };
 
-    handlePermalinkPress = (postId, teamName) => {
+    handlePermalinkPress = (postId: string, teamName: string) => {
         this.props.actions.showPermalink(this.context.intl, teamName, postId);
     };
 
@@ -96,7 +99,7 @@ export default class ChannelInfo extends PureComponent {
         alertErrorWithFallback(intl, {}, message);
     };
 
-    actionsRows = (channelIsArchived) => {
+    actionsRows = (channelIsArchived: boolean) => {
         const {currentChannel, currentUserId, isDirectMessage, theme} = this.props;
 
         if (channelIsArchived) {
@@ -202,7 +205,7 @@ export default class ChannelInfo extends PureComponent {
                         isArchived={channelIsArchived}
                         isBot={isBot}
                         isTeammateGuest={isTeammateGuest}
-                        hasGuests={currentChannelGuestCount > 0}
+                        hasGuests={(currentChannelGuestCount || 0) > 0}
                         isGroupConstrained={currentChannel.group_constrained}
                     />
                     }
@@ -225,7 +228,7 @@ export default class ChannelInfo extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,

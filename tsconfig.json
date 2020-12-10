@@ -45,9 +45,11 @@
             "@share/*": ["share_extension/*"],
             "@store": ["app/store/index"],
             "@store/*": ["app/store/*"],
-            "@telemetry/*": ["/app/telemetry/*"],
+            "@telemetry": ["app/telemetry/index"],
+            "@telemetry/*": ["app/telemetry/*"],
             "@utils/*": ["app/utils/*"],
             "@websocket": ["app/client/websocket"],
+            "@test/*": ["test/*"],
             "*": ["./*", "node_modules/*"],
             "react-native-redash/lib/module/v1": [
                 "./node_modules/react-native-redash/lib/typescript/v1/index.d.ts"

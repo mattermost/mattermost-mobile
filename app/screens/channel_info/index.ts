@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {bindActionCreators} from 'redux';
+import {bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
 
 import {setChannelDisplayName} from '@actions/views/channel';
@@ -18,12 +18,13 @@ import {isLandscape} from '@selectors/device';
 import {isGuest} from '@utils/users';
 
 import ChannelInfo from './channel_info';
+import {GlobalState} from '@mm-redux/types/store';
 
-function mapStateToProps(state) {
+function mapStateToProps(state: GlobalState) {
     const currentChannel = getCurrentChannel(state) || {};
     const currentChannelCreator = getUser(state, currentChannel.creator_id);
     const teammateNameDisplay = getTeammateNameDisplaySetting(state);
-    const currentChannelCreatorName = displayUsername(currentChannelCreator, teammateNameDisplay);
+    const currentChannelCreatorName = displayUsername(currentChannelCreator, teammateNameDisplay || '');
     const currentChannelStats = getCurrentChannelStats(state);
     let currentChannelMemberCount = currentChannelStats && currentChannelStats.member_count;
     let currentChannelGuestCount = (currentChannelStats && currentChannelStats.guest_count) || 0;
@@ -65,7 +66,7 @@ function mapStateToProps(state) {
     };
 }
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch: Dispatch) {
     return {
         actions: bindActionCreators({
             getChannelStats,

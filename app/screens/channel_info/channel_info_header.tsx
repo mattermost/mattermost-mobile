@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
     Platform,
     Text,
@@ -24,32 +23,34 @@ import {getMarkdownTextStyles, getMarkdownBlockStyles} from 'app/utils/markdown'
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {popToRoot} from 'app/actions/navigation';
+import {Theme} from '@mm-redux/types/preferences';
 
-export default class ChannelInfoHeader extends React.PureComponent {
-    static propTypes = {
-        createAt: PropTypes.number.isRequired,
-        creator: PropTypes.string,
-        memberCount: PropTypes.number,
-        displayName: PropTypes.string.isRequired,
-        header: PropTypes.string,
-        onPermalinkPress: PropTypes.func,
-        purpose: PropTypes.string,
-        status: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        type: PropTypes.string.isRequired,
-        isArchived: PropTypes.bool.isRequired,
-        isBot: PropTypes.bool.isRequired,
-        isTeammateGuest: PropTypes.bool.isRequired,
-        hasGuests: PropTypes.bool.isRequired,
-        isGroupConstrained: PropTypes.bool,
-        timeZone: PropTypes.string,
-    };
+type Props = {
+    createAt: number,
+    creator?: string,
+    memberCount?: number,
+    displayName: string,
+    header?: string,
+    onPermalinkPress?: (postId: string, teamName: string) => void,
+    purpose?: string,
+    status?: string,
+    theme: Theme,
+    type: string,
+    isArchived: boolean,
+    isBot: boolean,
+    isTeammateGuest: boolean,
+    hasGuests: boolean,
+    isGroupConstrained?: boolean,
+    timeZone?: string,
+}
 
+export default class ChannelInfoHeader extends React.PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
 
-    renderHasGuestText = (style) => {
+    // TODO consider typing the style
+    renderHasGuestText = (style: any) => {
         const {type, hasGuests, isTeammateGuest} = this.props;
         if (!hasGuests) {
             return null;
@@ -84,7 +85,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         );
     }
 
-    handleLongPress = (text, actionText) => {
+    handleLongPress = (text: string, actionText: string) => {
         const {formatMessage} = this.context.intl;
 
         const config = mattermostManaged.getCachedConfig();
@@ -95,7 +96,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
             BottomSheet.showBottomSheetWithOptions({
                 options: [actionText, cancelText],
                 cancelButtonIndex: 1,
-            }, (value) => {
+            }, (value: number) => {
                 if (value === 0) {
                     this.handleCopy(text);
                 }
@@ -103,7 +104,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         }
     };
 
-    handleCopy = (text) => {
+    handleCopy = (text: string) => {
         Clipboard.setString(text);
     }
 
@@ -111,7 +112,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const {formatMessage} = this.context.intl;
         const {header} = this.props;
         this.handleLongPress(
-            header,
+            header || '',
             formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'}),
         );
     }
@@ -120,7 +121,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const {formatMessage} = this.context.intl;
         const {purpose} = this.props;
         this.handleLongPress(
-            purpose,
+            purpose || '',
             formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'}),
         );
     }
@@ -172,7 +173,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                     </Text>
                 </View>
                 {this.renderHasGuestText(style)}
-                {purpose.length > 0 &&
+                {purpose && purpose.length > 0 &&
                     <View style={style.section}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
@@ -191,7 +192,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                         </TouchableHighlight>
                     </View>
                 }
-                {header.length > 0 &&
+                {header && header.length > 0 &&
                     <View style={style.section}>
                         <TouchableHighlight
                             underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
@@ -246,7 +247,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,

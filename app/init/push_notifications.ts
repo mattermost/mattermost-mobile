@@ -149,7 +149,7 @@ class PushNotifications {
             waitForHydration(Store.redux, async () => {
                 switch (payload.type) {
                 case NOTIFICATION_TYPE.CLEAR:
-                    dispatch(markChannelViewedAndRead(payload.channel_id, null, false));
+                    dispatch(markChannelViewedAndRead(payload.channel_id, '', false));
                     break;
                 case NOTIFICATION_TYPE.MESSAGE:
                     // get the posts for the channel as soon as possible

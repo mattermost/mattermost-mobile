@@ -6,7 +6,7 @@ import {shallow} from 'enzyme';
 import Preferences from '@mm-redux/constants/preferences';
 import {General} from '@mm-redux/constants';
 
-import ChannelInfoHeader from './channel_info_header.js';
+import ChannelInfoHeader from './channel_info_header';
 
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');

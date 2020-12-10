@@ -7,7 +7,7 @@ import {Posts, Preferences} from '../constants';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 
 import {
     combineUserActivitySystemPost,

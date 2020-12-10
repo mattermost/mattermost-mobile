@@ -10,7 +10,7 @@ import {logout} from '@actions/views/user';
 import * as Actions from '@mm-redux/actions/users';
 import {Client4} from '@mm-redux/client';
 import {RequestStatus} from '../constants';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 import deepFreeze from '@mm-redux/utils/deep_freeze';
 import EventEmitter from '@mm-redux/utils/event_emitter';

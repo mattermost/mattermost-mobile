@@ -9,7 +9,7 @@ import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makePreparePostIdsForPostList, START_OF_NEW_MESSAGES} from '@mm-redux/utils/post_list';
 
-import {handleSelectChannelByName, refreshChannelWithRetry} from 'app/actions/views/channel';
+import {handleSelectChannelByName, refreshChannelWithRetry} from '@actions/views/channel';
 import {setDeepLinkURL} from 'app/actions/views/root';
 
 import PostList from './post_list';

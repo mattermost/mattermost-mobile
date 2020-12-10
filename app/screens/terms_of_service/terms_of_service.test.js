@@ -7,7 +7,7 @@ import {shallow} from 'enzyme';
 import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from '@actions/navigation';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 
 import TermsOfService from './terms_of_service.js';
 

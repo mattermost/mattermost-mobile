@@ -9,7 +9,7 @@ import {Client4} from '@mm-redux/client';
 import * as Actions from '@actions/websocket';
 import {WebsocketEvents} from '@constants';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 
 global.WebSocket = MockWebSocket;

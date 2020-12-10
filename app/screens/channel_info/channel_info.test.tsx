@@ -9,6 +9,7 @@ import {General} from '@mm-redux/constants';
 
 import ChannelInfo from './channel_info';
 import NotificationPreference from './notification_preference';
+import {Channel} from '@mm-redux/types/channels';
 
 jest.mock('@utils/theme', () => {
     const original = jest.requireActual('../../utils/theme');
@@ -39,7 +40,7 @@ describe('channelInfo', () => {
             header: '',
             purpose: 'Purpose',
             group_constrained: false,
-        },
+        } as Channel,
         currentChannelCreatorName: 'Creator',
         currentChannelMemberCount: 2,
         currentChannelGuestCount: 0,
@@ -49,6 +50,7 @@ describe('channelInfo', () => {
         isBot: false,
         isTeammateGuest: false,
         isDirectMessage: false,
+        isLandscape: false,
         actions: {
             getChannelStats: jest.fn(),
             getCustomEmojisInText: jest.fn(),
@@ -69,7 +71,7 @@ describe('channelInfo', () => {
 
     test('should dismiss modal on close', () => {
         const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
-        const wrapper = shallow(
+        const wrapper = shallow<ChannelInfo>(
             <ChannelInfo
                 {...baseProps}
             />,
@@ -83,18 +85,18 @@ describe('channelInfo', () => {
     });
 
     test('should not include NotificationPreference for direct message', () => {
-        const wrapper = shallow(
+        const wrapper = shallow<ChannelInfo>(
             <ChannelInfo
                 {...baseProps}
             />,
             {context: {intl: intlMock}},
         );
 
-        expect(wrapper.instance().actionsRows()).toMatchSnapshot();
+        expect(wrapper.instance().actionsRows(false)).toMatchSnapshot();
         expect(wrapper.find(NotificationPreference).exists()).toEqual(true);
 
         wrapper.setProps({isDirectMessage: true});
-        expect(wrapper.instance().actionsRows()).toMatchSnapshot();
+        expect(wrapper.instance().actionsRows(false)).toMatchSnapshot();
         expect(wrapper.find(NotificationPreference).exists()).toEqual(false);
     });
 });

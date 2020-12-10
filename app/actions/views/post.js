@@ -479,5 +479,7 @@ export function loadUnreadChannelPosts(channels, channelMembers) {
 
             dispatch(batchActions(actions));
         }
+
+        return {};
     };
 }

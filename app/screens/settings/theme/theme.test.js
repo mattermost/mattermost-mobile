@@ -26,6 +26,7 @@ describe('Theme', () => {
         teamId: 'test-team',
         theme: Preferences.THEMES.default,
         userId: 'test-user',
+        isLandscape: false,
     };
 
     test('should match snapshot', () => {

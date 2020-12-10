@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
     Image,
     Switch,
@@ -14,8 +13,9 @@ import {
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {Theme} from '@mm-redux/types/preferences';
 
-function createTouchableComponent(children, action) {
+function createTouchableComponent(children: JSX.Element, action: () => void) {
     return (
         <TouchableHighlight onPress={action}>
             {children}
@@ -23,7 +23,25 @@ function createTouchableComponent(children, action) {
     );
 }
 
-function channelInfoRow(props) {
+type Props = {
+    testID?: string,
+    action: () => void,
+    defaultMessage: string,
+    detail?: string | number | boolean,
+    icon?: string,
+    iconColor?: string,
+    image?: number,
+    imageTintColor?: string,
+    isLandscape?: boolean,
+    rightArrow?: boolean,
+    textId: string,
+    togglable?: boolean,
+    textColor?: string,
+    theme: Theme,
+    shouldRender?: boolean,
+}
+
+function channelInfoRow(props: Props) {
     const {testID, action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender} = props;
 
     if (!shouldRender) {
@@ -36,7 +54,7 @@ function channelInfoRow(props) {
     if (image == null) {
         iconElement = (
             <CompassIcon
-                name={icon}
+                name={icon || ''}
                 size={24}
                 color={iconColor || changeOpacity(theme.centerChannelColor, 0.64)}
             />
@@ -55,7 +73,7 @@ function channelInfoRow(props) {
         actionElement = (
             <Switch
                 onValueChange={action}
-                value={detail}
+                value={Boolean(detail)}
             />
         );
     } else if (rightArrow) {
@@ -91,34 +109,13 @@ function channelInfoRow(props) {
     return createTouchableComponent(RowComponent, action);
 }
 
-channelInfoRow.propTypes = {
-    testID: PropTypes.string,
-    action: PropTypes.func.isRequired,
-    defaultMessage: PropTypes.string.isRequired,
-    detail: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number,
-        PropTypes.bool,
-    ]),
-    icon: PropTypes.string,
-    iconColor: PropTypes.string,
-    image: PropTypes.number,
-    imageTintColor: PropTypes.string,
-    isLandscape: PropTypes.bool,
-    rightArrow: PropTypes.bool,
-    textId: PropTypes.string.isRequired,
-    togglable: PropTypes.bool,
-    textColor: PropTypes.string,
-    theme: PropTypes.object.isRequired,
-};
-
 channelInfoRow.defaultProps = {
     rightArrow: true,
     togglable: false,
     shouldRender: true,
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,

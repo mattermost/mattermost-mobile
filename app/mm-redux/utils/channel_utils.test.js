@@ -4,7 +4,7 @@
 import assert from 'assert';
 
 import {General, Users} from '../constants';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 
 import {
     areChannelMentionsIgnored,

@@ -9,7 +9,7 @@ import {GeneralTypes} from '@mm-redux/action_types';
 import * as Actions from '@mm-redux/actions/general';
 import {Client4} from '@mm-redux/client';
 
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 
 describe('Actions.General', () => {

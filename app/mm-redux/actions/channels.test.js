@@ -11,7 +11,7 @@ import {createIncomingHook, createOutgoingHook} from '@mm-redux/actions/integrat
 import {Client4} from '@mm-redux/client';
 import {General, RequestStatus, Preferences, Permissions} from '../constants';
 import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
-import TestHelper from 'test/test_helper';
+import TestHelper from '@test/test_helper';
 import configureStore from 'test/test_store';
 
 const OK_RESPONSE = {status: 'OK'};

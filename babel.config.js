@@ -26,6 +26,7 @@ module.exports = {
                 '@telemetry': './app/telemetry',
                 '@utils': './app/utils',
                 '@websocket': './app/client/websocket',
+                '@test': './test',
             },
         }],
         ['module:react-native-dotenv', {
