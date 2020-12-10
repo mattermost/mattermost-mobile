@@ -9,7 +9,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import MyChannel from '@typings/database/my_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import Post from '@typings/database/post';
-import PostInChannel from '@typings/database/post_in_channel';
+import PostsInChannel from '@typings/database/posts_in_channel';
 import Team from '@typings/database/team';
 import User from '@typings/database/user';
 
@@ -30,7 +30,7 @@ export default class Channel extends Model {
     myChannel: MyChannel;
     myChannelSettings: MyChannelSettings;
     post: Post;
-    postInChannel: PostInChannel;
+    postInChannel: PostsInChannel;
     channelInfo: ChannelInfo;
     channelTeam: Team;
     channelUser: User;

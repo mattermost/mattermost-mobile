@@ -5,7 +5,7 @@ import Channel from '@typings/database/channel';
 import Draft from '@typings/database/draft';
 import File from '@typings/database/file';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import PostInThread from '@typings/database/post_in_thread';
+import PostInThread from '@typings/database/posts_in_thread';
 import PostMetadata from '@typings/database/post_metadata';
 import Reaction from '@typings/database/reaction';
 import User from '@typings/database/user';

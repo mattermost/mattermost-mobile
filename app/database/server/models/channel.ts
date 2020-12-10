@@ -11,7 +11,7 @@ import GroupsInChannel from '@typings/database/groups_in_channel';
 import MyChannel from '@typings/database/my_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import Post from '@typings/database/post';
-import PostInChannel from '@typings/database/post_in_channel';
+import PostsInChannel from '@typings/database/posts_in_channel';
 import Team from '@typings/database/team';
 import User from '@typings/database/user';
 
@@ -101,7 +101,7 @@ export default class Channel extends Model {
     @children(POST) posts! : Post
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    @children(POSTS_IN_CHANNEL) postsInChannel! : PostInChannel
+    @children(POSTS_IN_CHANNEL) postsInChannel! : PostsInChannel
 
     /** team : The 'Relation' property to the record from entity TEAM */
     @immutableRelation(TEAM, 'team_id') team!: Team

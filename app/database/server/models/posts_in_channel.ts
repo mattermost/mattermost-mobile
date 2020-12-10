@@ -10,10 +10,10 @@ import Channel from '@typings/database/channel';
 const {CHANNEL, POSTS_IN_CHANNEL} = MM_TABLES.SERVER;
 
 /**
- * PostInChannel model helps us to combine adjacent posts together without leaving
+ * PostsInChannel model helps us to combine adjacent posts together without leaving
  * gaps in between for an efficient user reading experience of posts.
  */
-export default class PostInChannel extends Model {
+export default class PostsInChannel extends Model {
     /** table (entity name) : PostsInChannel */
     static table = POSTS_IN_CHANNEL
 
