@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
-index 1333a10..2d57f2b 100644
+index 1333a10..53b73a6 100644
 --- a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 +++ b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 @@ -23,7 +23,7 @@
@@ -206,7 +206,7 @@ index 1333a10..2d57f2b 100644
 -        {
 -            insets.top = bottomInset;
 +        CGFloat kHeight = _observingInputAccessoryView.keyboardHeight;
-+        if (_observingInputAccessoryView.keyboardState == KeyboardStateShown || _observingInputAccessoryView.keyboardState == KeyboardStateWillShow) {
++        if (kHeight != 0 && (_observingInputAccessoryView.keyboardState == KeyboardStateShown || _observingInputAccessoryView.keyboardState == KeyboardStateWillShow)) {
 +                kHeight -= bottomSafeArea;
          }
 -        else
