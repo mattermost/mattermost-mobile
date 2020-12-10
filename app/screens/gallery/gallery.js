@@ -134,7 +134,7 @@ export default class Gallery extends PureComponent {
             visible = this.footer.current?.getWrappedInstance()?.toggle();
         } else {
             visible = display;
-            this.footer.current?.getWrappedInstance()?.setVisibility(display);
+            this.footer.current?.getWrappedInstance()?.setVisible(display);
         }
 
         const options = {

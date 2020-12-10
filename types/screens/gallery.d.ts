@@ -54,7 +54,7 @@ export interface FooterProps {
 export interface FooterRef {
     toggle(): boolean;
     isVisible(): boolean;
-    setVisibility(display: boolean): void;
+    setVisible(visible: boolean): void;
 }
 
 export interface GalleryProps {
