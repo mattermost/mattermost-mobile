@@ -166,7 +166,8 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             imageUrl = link;
         } else if (isYoutubeLink(link)) {
             const videoId = getYouTubeVideoId(link);
-            imageUrl = Object.keys(this.props.metadata.images)[0] || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            const images = Object.keys(this.props.metadata?.images || {});
+            imageUrl = images[0] || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         }
 
         return imageUrl;
