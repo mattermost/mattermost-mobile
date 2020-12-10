@@ -71,7 +71,8 @@ export default class Post extends Model {
     /** pending_post_id : The id given to a post before it is published on the server */
     @field('pending_post_id') pendingPostId!: string
 
-    /** previous_post_id : Id of the previous post; used for sorting purposes. */
+    /** previous_post_id : Id of the previous post.  If this value is null, this implies that it
+     * is not in the db and we will request it from server */
     @field('previous_post_id') previousPostId!: string
 
     /** root_id : Used in threads. All posts under a thread will have this id in common */
