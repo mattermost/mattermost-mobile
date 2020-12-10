@@ -17,7 +17,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import gitlab from '@assets/images/gitlab.png';
-import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
@@ -260,10 +259,9 @@ export default class LoginOptions extends PureComponent {
                     ref={this.scrollRef}
                 >
                     <StatusBar/>
-                    <CompassIcon
-                        name='mattermost'
-                        size={76}
-                        style={GlobalStyles.logo}
+                    <Image
+                        source={require('@assets/images/logo.png')}
+                        style={{height: 72, resizeMode: 'contain'}}
                     />
                     <Text style={GlobalStyles.header}>
                         {this.props.config.SiteName}
