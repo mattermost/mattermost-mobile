@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Post from '@typings/database/post';
@@ -34,5 +34,5 @@ export default class PostsInThread extends Model {
     @field('post_id') postId!: number
 
     /** post : The related record to the parent Post model */
-    @relation(POST, 'post_id') post!: Post
+    @immutableRelation(POST, 'post_id') post!: Post
 }

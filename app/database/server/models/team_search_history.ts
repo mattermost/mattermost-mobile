@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json, relation, text} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation, json, text} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
@@ -37,5 +37,5 @@ export default class TeamSearchHistory extends Model {
     @text('term') term!: number
 
     /** team : The related record to the parent team model */
-    @relation(TEAM, 'team_id') team!: Team
+    @immutableRelation(TEAM, 'team_id') team!: Team
 }

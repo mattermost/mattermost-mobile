@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import User from '@typings/database/user';
@@ -40,8 +40,8 @@ export default class Reaction extends Model {
     @field('user_id') userId!: string
 
     /** reactionUser : The related record to the User model */
-    @relation(USER, 'user_id') reactionUser!: User
+    @immutableRelation(USER, 'user_id') reactionUser!: User
 
     /** reactionPost : The related record to the Post model */
-    @relation(POST, 'post_id') reactionPost!: Post
+    @immutableRelation(POST, 'post_id') reactionPost!: Post
 }

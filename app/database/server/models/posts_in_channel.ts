@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
@@ -34,5 +34,5 @@ export default class PostsInChannel extends Model {
     @field('latest') latest!: number
 
     /** channel : The parent record of the channel for those posts */
-    @relation(CHANNEL, 'channel_id') channel!: Channel
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel
 }

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Post from '@typings/database/post';
@@ -51,5 +51,5 @@ export default class File extends Model {
     @field('width') width!: number
 
     /** post : The related Post record for this file */
-    @relation(POST, 'post_id') post!: Post
+    @immutableRelation(POST, 'post_id') post!: Post
 }

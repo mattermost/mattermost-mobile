@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Group from '@typings/database/group';
@@ -40,8 +40,8 @@ export default class GroupsInTeam extends Model {
     @field('timezone_count') timezoneCount!: number
 
     /** team : The related record to the parent Team model */
-    @relation(TEAM, 'team_id') team!: Team
+    @immutableRelation(TEAM, 'team_id') team!: Team
 
     /** group : The related record to the parent Team model */
-    @relation(GROUP, 'group_id') group!: Group
+    @immutableRelation(GROUP, 'group_id') group!: Group
 }

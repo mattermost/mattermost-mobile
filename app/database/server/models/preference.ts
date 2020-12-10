@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import User from '@typings/database/user';
@@ -37,5 +37,5 @@ export default class Preference extends Model {
     @field('value') value!: string
 
     /** user : The related record to the parent User model */
-    @relation(USER, 'user_id') user!: User
+    @immutableRelation(USER, 'user_id') user!: User
 }

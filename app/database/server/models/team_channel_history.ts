@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
@@ -31,5 +31,5 @@ export default class TeamChannelHistory extends Model {
     @json('channel_ids', (rawJson) => rawJson) channelIds!: string[]
 
     /** team : The related record from the parent Team model */
-    @relation(TEAM, 'team_id') team!: Team
+    @immutableRelation(TEAM, 'team_id') team!: Team
 }

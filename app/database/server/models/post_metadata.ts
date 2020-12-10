@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Post from '@typings/database/post';
@@ -33,5 +33,5 @@ export default class PostMetadata extends Model {
     @json('data', (rawJson) => rawJson) data!: string[]
 
     /** post: The record representing the POST parent.  */
-    @relation(POST, 'post_id') post!: Post
+    @immutableRelation(POST, 'post_id') post!: Post
 }

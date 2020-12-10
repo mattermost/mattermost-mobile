@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Group from '@typings/database/group';
@@ -39,8 +39,8 @@ export default class GroupsInChannel extends Model {
     @field('timezone_count') timeZoneCount! : number
 
     /** channel : The related record to the parent Channel model */
-    @relation(CHANNEL, 'channel_id') channel!: Group
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Group
 
     /** group : The related record to the parent Group model */
-    @relation(GROUP, 'group_id') group!: Group
+    @immutableRelation(GROUP, 'group_id') group!: Group
 }

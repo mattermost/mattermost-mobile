@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import User from '@typings/database/user';
@@ -31,5 +31,5 @@ export default class MyChannelSettings extends Model {
     @json('notify_props', (rawJson) => rawJson) notifyProps! : string[]
 
     /** channel : The parent Channel record */
-    @relation(CHANNEL, 'channel_id') channel!: User
+    @immutableRelation(CHANNEL, 'channel_id') channel!: User
 }

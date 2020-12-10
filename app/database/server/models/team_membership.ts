@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {relation} from '@nozbe/watermelondb/decorators';
+import {immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import User from '@typings/database/user';
@@ -25,8 +25,8 @@ export default class TeamMembership extends Model {
     }
 
     /** memberUser: The related user in the teams */
-    @relation(USER, 'user_id') memberUser! : User
+    @immutableRelation(USER, 'user_id') memberUser! : User
 
     /** memberTeam : The related team of users */
-    @relation(TEAM, 'team_id') memberTeam! : Team
+    @immutableRelation(TEAM, 'team_id') memberTeam! : Team
 }

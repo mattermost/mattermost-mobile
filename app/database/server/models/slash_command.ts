@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
@@ -48,5 +48,5 @@ export default class SlashCommand extends Model {
     @field('trigger') trigger!: string
 
     /** team : The related parent TEAM record */
-    @relation(TEAM, 'team_id') team! : Team
+    @immutableRelation(TEAM, 'team_id') team! : Team
 }
