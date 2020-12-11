@@ -1,3 +1,26 @@
+diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
+index 4c01d25..901c8ac 100644
+--- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
++++ b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.d.ts
+@@ -20,10 +20,17 @@ declare module '@nozbe/watermelondb/adapters/sqlite' {
+ 
+   export type SQLiteQuery = [SQL, SQLiteArg[]]
+ 
++  export type MigrationEvents = {
++    onSuccess?: () => void,
++    onStarted?: () => void,
++    onFailure?: (error: string) => void,
++  }
++
+   export interface SQLiteAdapterOptions {
+     dbName?: string
+     migrations?: SchemaMigrations
+-    schema: AppSchema
++    schema: AppSchema,
++    migrationEvents?: MigrationEvents
+   }
+ 
+   export default class SQLiteAdapter implements DatabaseAdapter {
 diff --git a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js b/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js
 index 02ec451..d808d61 100644
 --- a/node_modules/@nozbe/watermelondb/adapters/sqlite/index.js

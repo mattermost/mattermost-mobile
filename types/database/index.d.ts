@@ -6,9 +6,9 @@ import {DatabaseAdapter} from '@nozbe/watermelondb/adapters/type';
 import {Class} from '@nozbe/watermelondb/utils/common';
 
 export type MigrationEvents = {
-    onSuccess?: () => void,
-    onStarted?: () => void,
-    onFailure?: (error: string) => void,
+    onSuccess: () => void,
+    onStarted: () => void,
+    onFailure: (error: string) => void,
 }
 
 export type MMAdaptorOptions = {
