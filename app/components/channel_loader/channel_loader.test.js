@@ -8,6 +8,8 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import ChannelLoader from './channel_loader';
 
+jest.useFakeTimers();
+
 describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
@@ -21,8 +23,6 @@ describe('ChannelLoader', () => {
     });
 
     test('should call setTimeout and setInterval for showIndicator and retryLoad on mount', () => {
-        jest.useFakeTimers();
-
         const wrapper = shallow(<ChannelLoader {...baseProps}/>);
         const instance = wrapper.instance();
 
@@ -31,8 +31,6 @@ describe('ChannelLoader', () => {
     });
 
     test('should clear timer and interval on unmount', () => {
-        jest.useFakeTimers();
-
         const wrapper = shallow(<ChannelLoader {...baseProps}/>);
         const instance = wrapper.instance();
         instance.componentWillUnmount();
