@@ -8,14 +8,34 @@ import Preferences from '@mm-redux/constants/preferences';
 
 import ChannelLoader from './channel_loader';
 
+jest.useFakeTimers();
+
 describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
         theme: Preferences.THEMES.default,
+        retryLoad: jest.fn(),
     };
 
     test('should match snapshot', () => {
         const wrapper = shallow(<ChannelLoader {...baseProps}/>);
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should call setTimeout and setInterval for showIndicator and retryLoad on mount', () => {
+        const wrapper = shallow(<ChannelLoader {...baseProps}/>);
+        const instance = wrapper.instance();
+
+        expect(setTimeout).toHaveBeenCalledWith(instance.showIndicator, 10000);
+        expect(setInterval).toHaveBeenCalledWith(baseProps.retryLoad, 10000);
+    });
+
+    test('should clear timer and interval on unmount', () => {
+        const wrapper = shallow(<ChannelLoader {...baseProps}/>);
+        const instance = wrapper.instance();
+        instance.componentWillUnmount();
+
+        expect(clearTimeout).toHaveBeenCalledWith(instance.stillLoadingTimeout);
+        expect(clearInterval).toHaveBeenCalledWith(instance.retryLoadInterval);
     });
 });
