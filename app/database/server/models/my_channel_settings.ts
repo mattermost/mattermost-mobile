@@ -1,16 +1,35 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
-import json from '@nozbe/watermelondb/decorators/json';
 
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
+
+import {MM_TABLES} from '@constants/database';
+import User from '@typings/database/user';
+
+const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
+
+/**
+ * The MyChannelSettings model represents the specific user's configuration to
+ * the channel that user belongs to.
+ */
 export default class MyChannelSettings extends Model {
-    static table = MM_TABLES.SERVER.MY_CHANNEL_SETTINGS
+    /** table (entity name) : MyChannelSettings */
+    static table = MY_CHANNEL_SETTINGS
+
+    /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+
+        /** A CHANNEL model can have multiple MY_CHANNEL_SETTINGS ( relationship is 1:N) */
+        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     }
 
+    /** channelId : The foreign key to the related CHANNEL record */
     @field('channel_id') channelId! : string
+
+    /** notifyProps : Configurations with regards to this channel */
     @json('notify_props', (rawJson) => rawJson) notifyProps! : string[]
+
+    /** channel : The parent Channel record */
+    @immutableRelation(CHANNEL, 'channel_id') channel!: User
 }

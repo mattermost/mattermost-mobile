@@ -3,14 +3,32 @@
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import User from '@typings/database/user';
 import Post from '@typings/database/post';
+
+/**
+ * The Reaction Model is used to present the reactions a user had on a particular post
+ */
 export default class Reaction extends Model {
+    /** table (entity name) : Reaction */
     static table: string;
+
+    /** associations : Describes every relationship to this entity. */
     static associations: Associations;
+
+    /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
     createAt: number;
+
+    /** emoji_name : The emoticon used to express the reaction */
     emojiName: string;
+
+    /** post_id : The related Post's foreign key on which this reaction was expressed */
     postId: string;
-    reactionId: string;
+
+    /** user_id : The related User's foreign key by which this reaction was expressed */
     userId: string;
+
+    /** reactionUser : The related record to the User model */
     reactionUser: User;
+
+    /** reactionPost : The related record to the Post model */
     reactionPost: Post;
 }

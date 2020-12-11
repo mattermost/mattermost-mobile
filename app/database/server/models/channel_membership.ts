@@ -1,22 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
-import relation from '@nozbe/watermelondb/decorators/relation';
-import User from '@typings/database/user';
-import Channel from '@typings/database/channel';
 
+import {immutableRelation} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import Channel from '@typings/database/channel';
+import User from '@typings/database/user';
+
+import {MM_TABLES} from '@constants/database';
+
+const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
+
+/**
+ * The ChannelMembership model represents the 'association table' where many channels have users and many users are on
+ * channels ( N:N relationship between model Users and model Channel)
+ */
 export default class ChannelMembership extends Model {
-    static table = MM_TABLES.SERVER.CHANNEL_MEMBERSHIP
+    /** table (entity name) : ChannelMembership */
+    static table = CHANNEL_MEMBERSHIP
+
+    /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
-        [MM_TABLES.SERVER.CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
-        [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'user_id'},
+
+        /** A CHANNEL can have multiple users */
+        [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
+
+        /** A USER can belong to multiple channels */
+        [USER]: {type: 'belongs_to', key: 'user_id'},
     }
 
-    @field('channel_id') channelId!: string
-    @field('user_id') userId!: string
+    /** memberChannel : The related channel this member belongs to */
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel
 
-    @relation(MM_TABLES.SERVER.CHANNEL, 'channel_id') memberChannel!: Channel
-    @relation(MM_TABLES.SERVER.USER, 'user_id') memberUser!: User
+    /** memberUser : The related member belong to the channel */
+    @immutableRelation(USER, 'user_id') user!: User
 }

@@ -2,13 +2,24 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
+import {field, json} from '@nozbe/watermelondb/decorators';
+
 import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
-import json from '@nozbe/watermelondb/decorators/json';
 
+const {SYSTEM} = MM_TABLES.SERVER;
+
+/**
+ * The System model is another set of key-value pair combination but this one
+ * will mostly hold configuration information about the client, the licences and some
+ * custom data (e.g. recent emoji used)
+ */
 export default class System extends Model {
-    static table = MM_TABLES.SERVER.SYSTEM
+    /** table (entity name) : System */
+    static table = SYSTEM
 
+    /** name : The name or key value for the config */
     @field('name') name!: string
+
+    /** value : The value for that config/information */
     @json('value', (rawJson) => rawJson) value!: string[]
 }
