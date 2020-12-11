@@ -2,12 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
+import {field} from '@nozbe/watermelondb/decorators';
+
 import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
 
+const {TERMS_OF_SERVICE} = MM_TABLES.SERVER;
+
+/**
+ * The model for Terms of Service
+ */
 export default class Terms_of_service extends Model {
-    static table = MM_TABLES.SERVER.TERMS_OF_SERVICE
+    /** table (entity name) : TermsOfService */
+    static table = TERMS_OF_SERVICE
 
+    /** accepted_at : the date the term has been accepted */
     @field('accepted_at') acceptedAt!: number
-    @field('term_of_service_id') termsOfServiceId!: string
 }

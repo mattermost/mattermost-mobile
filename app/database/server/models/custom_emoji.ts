@@ -2,12 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
+import {field} from '@nozbe/watermelondb/decorators';
+
 import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
 
+const {CUSTOM_EMOJI} = MM_TABLES.SERVER;
+
+/**  The CustomEmoji model describes all the custom emojis used in the Mattermost app */
 export default class CustomEmoji extends Model {
-    static table = MM_TABLES.SERVER.CUSTOM_EMOJI
+    /** table (entity name) : CustomEmoji */
+    static table = CUSTOM_EMOJI
 
-    @field('emoji_id') emojiId!: string
+    /** name :  The custom emoji's name*/
     @field('name') name!: string
 }

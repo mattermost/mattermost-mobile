@@ -1,22 +1,36 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {immutableRelation} from '@nozbe/watermelondb/decorators';
+
 import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
-import relation from '@nozbe/watermelondb/decorators/relation';
 import Group from '@typings/database/group';
 import User from '@typings/database/user';
 
+const {GROUP, GROUP_MEMBERSHIP, USER} = MM_TABLES.SERVER;
+
+/**
+ * The GroupMembership model represents the 'association table' where many groups have users and many users are in
+ * groups ( relationship type N:N)
+ */
 export default class GroupMembership extends Model {
-    static table = MM_TABLES.SERVER.GROUP_MEMBERSHIP
+    /** table (entity name) : GroupMembership */
+    static table = GROUP_MEMBERSHIP
+
+    /** associations : Describes every relationship to this entity */
     static associations: Associations = {
-        [MM_TABLES.SERVER.GROUP]: {type: 'belongs_to', key: 'group_id'},
-        [MM_TABLES.SERVER.USER]: {type: 'belongs_to', key: 'user_id'},
+
+        /** A GROUP can have multiple users in it */
+        [GROUP]: {type: 'belongs_to', key: 'group_id'},
+
+        /** A USER can be part of multiple groups */
+        [USER]: {type: 'belongs_to', key: 'user_id'},
     }
 
-    @field('group_id') groupId! : string
-    @field('user_id') userId! : string
+    /** memberGroup : The related group this user belongs to */
+    @immutableRelation(GROUP, 'group_id') group!: Group
 
-    @relation(MM_TABLES.SERVER.GROUP, 'group_id') memberGroup!: Group
-    @relation(MM_TABLES.SERVER.USER, 'user_id') memberUser!: User
+    /** memberUser : The related user in the group */
+    @immutableRelation(USER, 'user_id') user!: User
 }

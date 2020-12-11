@@ -1,14 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {Model} from '@nozbe/watermelondb';
+import {field, json} from '@nozbe/watermelondb/decorators';
+
 import {MM_TABLES} from '@constants/database';
-import field from '@nozbe/watermelondb/decorators/field';
-import json from '@nozbe/watermelondb/decorators/json';
 
+const {ROLE} = MM_TABLES.SERVER;
+
+/**  The Role model will describe the set of permissions for each role */
 export default class Role extends Model {
-    static table = MM_TABLES.SERVER.ROLE
+    /** table (entity name) : Role */
+    static table = ROLE
 
+    /** name  : The role's name */
     @field('name') name!: string
-    @field('role_id') roleId! : string
+
+    /** permissions : The different permissions associated to that role */
     @json('permissions', (rawJson) => rawJson) permissions!: string[]
 }
+
