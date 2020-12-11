@@ -42,7 +42,7 @@ export default class ChannelLoader extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         height: PropTypes.number,
-        retryLoadChannels: PropTypes.func.isRequired,
+        retryLoad: PropTypes.func.isRequired,
     };
 
     constructor(props) {
@@ -75,22 +75,26 @@ export default class ChannelLoader extends PureComponent {
     }
 
     componentDidMount() {
+        this.mounted = true;
         this.stillLoadingTimeout = setTimeout(this.showIndicator, 10000);
-        this.retryLoadInterval = setInterval(this.props.retryLoadChannels, 10000);
+        this.retryLoadInterval = setInterval(this.props.retryLoad, 10000);
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         clearTimeout(this.stillLoadingTimeout);
         clearInterval(this.retryLoadInterval);
     }
 
     showIndicator = () => {
-        Animated.timing(this.top, {
-            toValue: 0,
-            duration: 300,
-            delay: 500,
-            useNativeDriver: false,
-        }).start();
+        if (this.mounted) {
+            Animated.timing(this.top, {
+                toValue: 0,
+                duration: 300,
+                delay: 500,
+                useNativeDriver: false,
+            }).start();
+        }
     }
 
     buildSections({key, style, bg, color}) {
