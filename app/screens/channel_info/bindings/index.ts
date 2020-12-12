@@ -13,11 +13,11 @@ import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 function mapStateToProps(state: GlobalState) {
     const currentChannel = getCurrentChannel(state) || {};
-    const plugins = getAppsBindings(state, AppsBindings.CHANNEL_HEADER_ICON);
+    const bindings = getAppsBindings(state, AppsBindings.CHANNEL_HEADER_ICON);
     const currentUser = getCurrentUser(state) || {};
 
     return {
-        plugins,
+        bindings,
         currentChannel,
         currentUser,
     };

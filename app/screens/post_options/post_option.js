@@ -56,14 +56,19 @@ export default class PostOption extends PureComponent {
 
         const imageStyle = [style.icon, destructive ? style.destructive : null];
         let image;
-        if (icon.uri) {
-            imageStyle.push({width: 24, height: 24});
-            image = (
-                <FastImage
-                    source={icon}
-                    style={imageStyle}
-                />
-            );
+        let iconStyle = [style.iconContainer];
+        if (typeof icon === 'object') {
+            if (icon.uri) {
+                imageStyle.push({width: 24, height: 24});
+                image = (
+                    <FastImage
+                        source={icon}
+                        style={imageStyle}
+                    />
+                );
+            } else {
+                iconStyle = [style.noIconContainer];
+            }
         } else {
             image = (
                 <CompassIcon
@@ -85,7 +90,7 @@ export default class PostOption extends PureComponent {
                     style={style.row}
                 >
                     <View style={style.row}>
-                        <View style={[style.iconContainer]}>
+                        <View style={iconStyle}>
                             {image}
                         </View>
                         <View style={style.textContainer}>
@@ -119,6 +124,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 50,
             justifyContent: 'center',
             width: 60,
+        },
+        noIconContainer: {
+            height: 50,
+            width: 18,
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.64),

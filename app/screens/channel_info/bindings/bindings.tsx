@@ -12,6 +12,7 @@ import {Channel} from '@mm-redux/types/channels';
 import {doAppCall} from '@actions/apps';
 import {AppsBindings} from '@mm-redux/constants/apps';
 import {UserProfile} from '@mm-redux/types/users';
+import {dismissModal} from '@actions/navigation';
 
 type Props = {
     bindings: AppBinding[];
@@ -64,6 +65,8 @@ const Option = (props: OptionProps) => {
             },
             url: props.binding.call?.url || '',
         });
+
+        dismissModal();
     };
 
     const {binding, theme} = props;

@@ -46,7 +46,7 @@ function channelInfoRow(props) {
         iconElement = (
             <FastImage
                 source={image}
-                style={{width: 15, height: 15}}
+                style={{width: 24, height: 24}}
             />
         );
     } else {

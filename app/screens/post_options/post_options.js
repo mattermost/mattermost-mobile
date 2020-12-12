@@ -239,6 +239,7 @@ export default class PostOptions extends PureComponent {
         const {post} = this.props;
         return (
             <Bindings
+                key='bindings'
                 post={post}
                 closeWithAnimation={this.closeWithAnimation}
             />
