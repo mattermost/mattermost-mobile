@@ -198,6 +198,7 @@
   "mobile.channel_list.members": "MIEMBROS",
   "mobile.channel_list.not_member": "NO MIEMBRO DE",
   "mobile.channel_list.unreads": "SIN LEER",
+  "mobile.channel_loader.still_loading": "Seguimos intentando cargar tu contenido ...",
   "mobile.channel_members.add_members_alert": "Debes seleccionar al menos un miembro a agregar al canal.",
   "mobile.client_upgrade": "Actualizar App",
   "mobile.client_upgrade.can_upgrade_subtitle": "Una nueva versión está disponible para su descarga.",
