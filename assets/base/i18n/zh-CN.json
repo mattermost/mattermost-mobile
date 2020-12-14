@@ -1,5 +1,5 @@
 {
-  "about.date": "创建日期：",
+  "about.date": "编译日期：",
   "about.enterpriseEditionLearn": "了解更多关于企业版 ",
   "about.enterpriseEditionSt": "位于防火墙后的现代通讯方式。",
   "about.enterpriseEditione1": "企业版",
@@ -8,7 +8,7 @@
   "about.teamEditionLearn": "加入 Mattermost 社区 ",
   "about.teamEditionSt": "所有团队的通讯一站式解决，随时随地可搜索和访问。",
   "about.teamEditiont0": "团队版本",
-  "about.teamEditiont1": "企业版本",
+  "about.teamEditiont1": "企业版",
   "about.title": "关于 {appTitle}",
   "announcment_banner.dont_show_again": "不再显示",
   "api.channel.add_member.added": "{addedUsername} 被 {username} 添加到此频道.",
@@ -198,6 +198,7 @@
   "mobile.channel_list.members": "成员",
   "mobile.channel_list.not_member": "非成员",
   "mobile.channel_list.unreads": "未读",
+  "mobile.channel_loader.still_loading": "仍在尝试加载你的内容...",
   "mobile.channel_members.add_members_alert": "您必须至少选择一个成员添加到频道。",
   "mobile.client_upgrade": "更新应用",
   "mobile.client_upgrade.can_upgrade_subtitle": "有新版本可下载。",
