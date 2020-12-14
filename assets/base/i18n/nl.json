@@ -198,6 +198,7 @@
   "mobile.channel_list.members": "LEDEN",
   "mobile.channel_list.not_member": "GEEN LID",
   "mobile.channel_list.unreads": "ONGELEZEN BERICHTEN",
+  "mobile.channel_loader.still_loading": "Nog steeds je inhoud aan het laden...",
   "mobile.channel_members.add_members_alert": "Je moet ten minste één lid selecteren om aan het kanaal toe te voegen.",
   "mobile.client_upgrade": "App Updaten",
   "mobile.client_upgrade.can_upgrade_subtitle": "Er is een nieuwe versie beschikbaar om te downloaden.",
