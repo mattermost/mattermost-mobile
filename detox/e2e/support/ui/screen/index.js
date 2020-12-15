@@ -16,6 +16,7 @@ import MoreDirectMessagesScreen from './more_direct_messages';
 import NotificationScreen from './notification';
 import NotificationSettingsMobileScreen from './notification_settings_mobile';
 import NotificationSettingsScreen from './notification_settings';
+import PermalinkScreen from './permalink';
 import PinnedMessagesScreen from './pinned_messages';
 import RecentMentionsScreen from './recent_mentions';
 import SavedMessagesScreen from './saved_messages';
@@ -41,6 +42,7 @@ export {
     NotificationScreen,
     NotificationSettingsMobileScreen,
     NotificationSettingsScreen,
+    PermalinkScreen,
     PinnedMessagesScreen,
     RecentMentionsScreen,
     SavedMessagesScreen,

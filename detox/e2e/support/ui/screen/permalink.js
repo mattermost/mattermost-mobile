@@ -8,9 +8,11 @@ class PermalinkScreen {
     testID = {
         permalinkScreenPrefix: 'permalink.',
         permalinkScreen: 'permalink.screen',
+        searchJump: 'permalink.search.jump',
     }
 
     permalinkScreen = element(by.id(this.testID.permalinkScreen));
+    searchJump = element(by.id(this.testID.searchJump));
 
     postList = new PostList(this.testID.permalinkScreenPrefix);
 
@@ -28,6 +30,18 @@ class PermalinkScreen {
 
     getPostMessageAtIndex = (index) => {
         return this.postList.getPostMessageAtIndex(index);
+    }
+
+    toBeVisible = async () => {
+        await expect(this.permalinkScreen).toBeVisible();
+
+        return this.permalinkScreen;
+    }
+
+    jumpToRecentMessages = async () => {
+        // # Jump to recent messages
+        await this.searchJump.tap();
+        await expect(this.permalinkScreen).not.toBeVisible();
     }
 
     hasLongPostMessage = async (postMessage) => {
