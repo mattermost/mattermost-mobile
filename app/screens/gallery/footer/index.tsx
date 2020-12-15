@@ -50,7 +50,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
             const message = formatMessage({id: 'mobile.public_link.copied', defaultMessage: 'Public link copied'});
             const res = await Client4.getFilePublicLink(props.file.id);
             Clipboard.setString(res.link);
-            showToast(message, undefined, callback);
+            showToast(message, 100, callback);
         } catch (e) {
             // eslint-disable-next-line no-console
             console.log('An error occurred, we should show a different toast', e);
@@ -129,6 +129,7 @@ const Footer = forwardRef<FooterRef, FooterProps>((props: FooterProps, ref) => {
 
     useImperativeHandle(ref, () => ({
         isVisible,
+        setVisible,
         toggle,
     }), [visible]);
 
