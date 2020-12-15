@@ -23,9 +23,17 @@ RCT_EXPORT_MODULE();
     return appGroupId;
 }
 
+
+-(NSString * ) appGroupSharedDirectory {
+  NSURL *sharedDirectory = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier: [self appGroupId]];
+  
+  return [sharedDirectory path];
+}
+
 - (NSDictionary *)constantsToExport {
   return @{
-           @"appGroupIdentifier": [self appGroupId]
+           @"appGroupIdentifier": [self appGroupId],
+           @"appGroupSharedDirectory" : [self appGroupSharedDirectory]
            };
 }
 

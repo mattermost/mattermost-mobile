@@ -18,8 +18,16 @@ export type MMAdaptorOptions = {
     migrationEvents?: MigrationEvents
 }
 
+export enum DatabaseType {
+    DEFAULT,
+    SERVER
+}
+
 export type MMDatabaseConnection = {
     actionsEnabled: boolean,
     adapter: DatabaseAdapter,
-    modelClasses: Array<Class<Model>>
+    dbName: string,
+    dbType: DatabaseType.DEFAULT | DatabaseType.SERVER,
+    migrationEvents? : MigrationEvents
+    modelClasses: Array<Class<Model>>,
 }
