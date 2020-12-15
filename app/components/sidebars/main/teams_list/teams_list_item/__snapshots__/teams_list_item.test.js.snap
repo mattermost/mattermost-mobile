@@ -71,6 +71,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
               "padding": 3,
             }
           }
+          testID="main.sidebar.teams_list.flat_list.teams_list_item.badge"
         />
       </View>
       <View

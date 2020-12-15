@@ -21,6 +21,9 @@ class MainSidebar {
     channelsList = ChannelsList.channelsList;
     filteredChannelsList = ChannelsList.filteredChannelsList;
     switchTeamsButton = ChannelsList.switchTeamsButton;
+    switchTeamsButtonBadge = ChannelsList.switchTeamsButtonBadge;
+    switchTeamsButtonBadgeUnreadCount = ChannelsList.switchTeamsButtonBadgeUnreadCount;
+    switchTeamsButtonBadgeUnreadIndicator = ChannelsList.switchTeamsButtonBadgeUnreadIndicator;
     teamsList = TeamsList.teamsList;
 
     getChannel = (channelId, displayName) => {
@@ -55,8 +58,16 @@ class MainSidebar {
         return TeamsList.getTeamByDisplayName(displayName);
     }
 
+    getTeamBadgeUnreadCountAtIndex = (index) => {
+        return TeamsList.getTeamBadgeUnreadCountAtIndex(index);
+    }
+
     getTeamDisplayNameAtIndex = (index) => {
         return TeamsList.getTeamDisplayNameAtIndex(index);
+    }
+
+    getTeamIconContentAtIndex = (index) => {
+        return TeamsList.getTeamIconContentAtIndex(index);
     }
 
     toBeVisible = async () => {
@@ -99,6 +110,12 @@ class MainSidebar {
         await expect(
             this.getFilteredChannelDisplayNameAtIndex(index),
         ).toHaveText(channelDisplayName);
+    }
+
+    hasTeamBadgeUnreadCountAtIndex = async (index, teamBadUnreadCount) => {
+        await expect(
+            this.getTeamBadgeUnreadCountAtIndex(index),
+        ).toHaveText(teamBadUnreadCount);
     }
 
     hasTeamDisplayNameAtIndex = async (index, teamDisplayName) => {

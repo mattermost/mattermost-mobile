@@ -89,6 +89,7 @@ exports[`SwitchTeamsButton should match snapshot 1`] = `
         "padding": 3,
       }
     }
+    testID="main.sidebar.channels_list.switch_teams.button.badge"
   />
 </View>
 `;

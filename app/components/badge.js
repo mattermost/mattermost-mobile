@@ -21,6 +21,7 @@ export default class Badge extends PureComponent {
     };
 
     static propTypes = {
+        testID: PropTypes.string,
         containerStyle: ViewPropTypes.style,
         count: PropTypes.number.isRequired,
         extraPaddingHorizontal: PropTypes.number,
@@ -108,12 +109,15 @@ export default class Badge extends PureComponent {
     };
 
     renderText = () => {
-        const {containerStyle, count, style} = this.props;
+        const {testID, containerStyle, count, style} = this.props;
+        const unreadCountTestID = `${testID}.unread_count`;
+        const unreadIndicatorID = `${testID}.unread_indicator`;
         let unreadCount = null;
         let unreadIndicator = null;
         if (count < 0) {
             unreadIndicator = (
                 <View
+                    testID={unreadIndicatorID}
                     style={[styles.text, this.props.countStyle]}
                     onLayout={this.onLayout}
                 />
@@ -127,6 +131,7 @@ export default class Badge extends PureComponent {
             unreadCount = (
                 <View style={styles.verticalAlign}>
                     <Text
+                        testID={unreadCountTestID}
                         style={[styles.text, this.props.countStyle]}
                         onLayout={this.onLayout}
                     >
@@ -137,7 +142,10 @@ export default class Badge extends PureComponent {
         }
 
         return (
-            <View style={[styles.badgeContainer, containerStyle]}>
+            <View
+                testID={testID}
+                style={[styles.badgeContainer, containerStyle]}
+            >
                 <View
                     ref={this.setBadgeRef}
                     style={[styles.badge, style, {opacity: 0}]}

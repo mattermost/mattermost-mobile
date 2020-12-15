@@ -10,11 +10,17 @@ class ChannelsList {
         filteredChannelItem: 'main.sidebar.channels_list.filtered_list.channel_item',
         filteredChannelItemDisplayName: 'main.sidebar.channels_list.filtered_list.channel_item.display_name',
         switchTeamsButton: 'main.sidebar.channels_list.switch_teams.button',
+        switchTeamsButtonBadge: 'main.sidebar.channels_list.switch_teams.button.badge',
+        switchTeamsButtonBadgeUnreadCount: 'main.sidebar.channels_list.switch_teams.button.badge.unread_count',
+        switchTeamsButtonBadgeUnreadIndicator: 'main.sidebar.channels_list.switch_teams.button.badge.unread_indicator',
     }
 
     channelsList = element(by.id(this.testID.channelsList));
     filteredChannelsList = element(by.id(this.testID.channelsList));
     switchTeamsButton = element(by.id(this.testID.switchTeamsButton));
+    switchTeamsButtonBadge = element(by.id(this.testID.switchTeamsButtonBadge));
+    switchTeamsButtonBadgeUnreadCount = element(by.id(this.testID.switchTeamsButtonBadgeUnreadCount));
+    switchTeamsButtonBadgeUnreadIndicator = element(by.id(this.testID.switchTeamsButtonBadgeUnreadIndicator));
 
     getChannelItem = (channelId, displayName) => {
         const channelItemTestID = `${this.testID.channelItem}.${channelId}`;

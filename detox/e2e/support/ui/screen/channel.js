@@ -25,6 +25,9 @@ class ChannelScreen {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         mainSidebarDrawerButton: 'main_sidebar_drawer.button',
+        mainSidebarDrawerButtonBadge: 'main_sidebar_drawer.button.badge',
+        mainSidebarDrawerButtonBadgeUnreadCount: 'main_sidebar_drawer.button.badge.unread_count',
+        mainSidebarDrawerButtonBadgeUnreadIndicator: 'main_sidebar_drawer.button.badge.unread_indicator',
         channelIntro: 'channel_intro.beginning.text',
         channelNavBarTitle: 'channel.nav_bar.title',
         channelSearchButton: 'channel.search.button',
@@ -34,6 +37,9 @@ class ChannelScreen {
 
     channelScreen = element(by.id(this.testID.channelScreen));
     mainSidebarDrawerButton = element(by.id(this.testID.mainSidebarDrawerButton));
+    mainSidebarDrawerButtonBadge = element(by.id(this.testID.mainSidebarDrawerButtonBadge));
+    mainSidebarDrawerButtonBadgeUnreadCount = element(by.id(this.testID.mainSidebarDrawerButtonBadgeUnreadCount));
+    mainSidebarDrawerButtonBadgeUnreadIndicator = element(by.id(this.testID.mainSidebarDrawerButtonBadgeUnreadIndicator));
     channelIntro = element(by.id(this.testID.channelIntro));
     channelNavBarTitle = element(by.id(this.testID.channelNavBarTitle));
     channelSearchButton = element(by.id(this.testID.channelSearchButton));
