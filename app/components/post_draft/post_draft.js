@@ -23,6 +23,7 @@ export default class PostDraft extends PureComponent {
         channelIsReadOnly: PropTypes.bool.isRequired,
         cursorPositionEvent: PropTypes.string,
         deactivatedChannel: PropTypes.bool.isRequired,
+        onLayout: PropTypes.func,
         registerTypingAnimation: PropTypes.func.isRequired,
         rootId: PropTypes.string,
         screenId: PropTypes.string.isRequired,
@@ -70,6 +71,7 @@ export default class PostDraft extends PureComponent {
             scrollViewNativeID,
             theme,
             valueEvent,
+            onLayout,
         } = this.props;
 
         if (channelIsArchived || deactivatedChannel) {
@@ -121,6 +123,7 @@ export default class PostDraft extends PureComponent {
                 accessoriesContainerID={accessoriesContainerID}
                 ref={this.keyboardTracker}
                 scrollViewNativeID={scrollViewNativeID}
+                onLayout={onLayout}
             >
                 {draftInput}
             </KeyboardTrackingView>

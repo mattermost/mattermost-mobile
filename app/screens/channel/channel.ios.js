@@ -52,8 +52,11 @@ export default class ChannelIOS extends ChannelBase {
         }
     };
 
+    setPostDraftHeight = ({nativeEvent}) => this.setState({postDraftHeight: nativeEvent.layout.height});
+
     render() {
         const {currentChannelId, theme} = this.props;
+        const {postDraftHeight} = this.state;
         let component = this.renderLoadingOrFailedChannel();
         let renderDraftArea = false;
 
@@ -86,6 +89,7 @@ export default class ChannelIOS extends ChannelBase {
                 />
             </>
         );
+        const autocompleteOffsetY = postDraftHeight ? postDraftHeight - 16 : undefined;
         const drawerContent = (
             <>
                 <StatusBar/>
@@ -108,6 +112,7 @@ export default class ChannelIOS extends ChannelBase {
                         screenId={this.props.componentId}
                         scrollViewNativeID={currentChannelId}
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                        onLayout={this.setPostDraftHeight}
                     />
                 }
                 <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
@@ -117,6 +122,7 @@ export default class ChannelIOS extends ChannelBase {
                         cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                         channelId={currentChannelId}
+                        offsetY={autocompleteOffsetY}
                     />
                 </View>
             </>
