@@ -60,7 +60,6 @@ export default class ChannelBase extends PureComponent {
 
         this.state = {
             channelsRequestFailed: false,
-            postDraftHeight: undefined,
         };
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
