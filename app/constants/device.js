@@ -16,7 +16,7 @@ const deviceTypes = keyMirror({
 
 const isPhoneWithInsets = Platform.OS === 'ios' && DeviceInfo.hasNotch();
 const isTablet = DeviceInfo.isTablet();
-const isIPhone12Mini = DeviceInfo.getModel() ==='iPhone 12 mini';
+const isIPhone12Mini = DeviceInfo.getModel() === 'iPhone 12 mini';
 
 export default {
     ...deviceTypes,
@@ -28,5 +28,5 @@ export default {
     PERMANENT_SIDEBAR_SETTINGS: '@PERMANENT_SIDEBAR_SETTINGS',
     TABLET_WIDTH: 250,
     AUTOCOMPLETE_MAX_HEIGHT: (isPhoneWithInsets && !isIPhone12Mini) || isTablet ? 200 : 145,
-    POST_INPUT_MAX_HEIGHT: (isPhoneWithInsets && !isIPhone12Mini) || isTablet ? 150: 88,
+    POST_INPUT_MAX_HEIGHT: (isPhoneWithInsets && !isIPhone12Mini) || isTablet ? 150 : 88,
 };
