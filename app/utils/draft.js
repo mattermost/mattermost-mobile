@@ -8,8 +8,6 @@ import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import {General} from '@mm-redux/constants';
 import {alertErrorWithFallback} from '@utils/general';
 import {t} from '@utils/i18n';
-import {matchDeepLink, normalizeProtocol} from '@utils/url';
-import {getCurrentServerUrl} from '@init/credentials';
 
 export function alertAttachmentFail(formatMessage, accept, cancel) {
     Alert.alert(
@@ -119,32 +117,6 @@ export function errorBadUser(intl) {
     };
 
     alertErrorWithFallback(intl, {}, message);
-}
-
-export function errorPermalinkBadTeam(intl) {
-    const message = {
-        id: t('mobile.server_link.unreachable_team.error'),
-        defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
-    };
-
-    alertErrorWithFallback(intl, {}, message);
-}
-
-export async function getURLAndMatch(href, serverURL, siteURL) {
-    const url = normalizeProtocol(href);
-
-    if (!url) {
-        return {};
-    }
-
-    let serverUrl = serverURL;
-    if (!serverUrl) {
-        serverUrl = await getCurrentServerUrl();
-    }
-
-    const match = matchDeepLink(url, serverURL, siteURL);
-
-    return {url, match};
 }
 
 export function alertSlashCommandFailed(formatMessage, error) {

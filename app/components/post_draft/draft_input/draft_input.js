@@ -14,7 +14,6 @@ import QuickActions from '@components/post_draft/quick_actions';
 import SendAction from '@components/post_draft/send_action';
 import Typing from '@components/post_draft/typing';
 import Uploads from '@components/post_draft/uploads';
-import {NavigationTypes} from '@constants';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -61,7 +60,6 @@ export default class DraftInput extends PureComponent {
         useGroupMentions: PropTypes.bool.isRequired,
         channelMemberCountsByGroup: PropTypes.object,
         groupsWithAllowReference: PropTypes.object,
-        selectFocusedPostId: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -93,7 +91,6 @@ export default class DraftInput extends PureComponent {
         const {getChannelMemberCountsByGroup, channelId, isTimezoneEnabled, useGroupMentions, value} = this.props;
 
         HWKeyboardEvent.onHWKeyPressed(this.handleHardwareEnterPress);
-        EventEmitter.on(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, this.handleClosePermalink);
 
         if (value) {
             this.setInputValue(value);
@@ -132,7 +129,6 @@ export default class DraftInput extends PureComponent {
 
     componentWillUnmount() {
         HWKeyboardEvent.removeOnHWKeyPressed();
-        EventEmitter.off(NavigationTypes.NAVIGATION_DISMISS_AND_POP_TO_ROOT, this.handleClosePermalink);
     }
 
     canSend = () => {
@@ -314,10 +310,6 @@ export default class DraftInput extends PureComponent {
         if (data.goto_location) {
             this.props.handleGotoLocation(data.goto_location, this.context.intl);
         }
-    };
-
-    handleClosePermalink = () => {
-        this.props.selectFocusedPostId('');
     };
 
     sendMessage = (value = '') => {

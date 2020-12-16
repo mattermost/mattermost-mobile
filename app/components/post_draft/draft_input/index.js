@@ -9,7 +9,7 @@ import {handleClearFiles, handleClearFailedFiles} from '@actions/views/file_uplo
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
-import {createPost, selectFocusedPostId} from '@mm-redux/actions/posts';
+import {createPost} from '@mm-redux/actions/posts';
 import {setStatus} from '@mm-redux/actions/users';
 import {General, Permissions} from '@mm-redux/constants';
 import {getCurrentChannel, getChannel, getChannelStats, getChannelMemberCountsByGroup as selectChannelMemberCountsByGroup} from '@mm-redux/selectors/entities/channels';
@@ -103,7 +103,6 @@ const mapDispatchToProps = {
     handleGotoLocation,
     setStatus,
     getChannelMemberCountsByGroup,
-    selectFocusedPostId,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(PostDraft);

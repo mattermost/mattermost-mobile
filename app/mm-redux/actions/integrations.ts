@@ -14,15 +14,16 @@ import {Command, DialogSubmission, IncomingWebhook, OAuthApp, OutgoingWebhook} f
 
 import {logError} from './errors';
 import {bindClientFunc, forceLogoutIfNecessary, requestSuccess, requestFailure} from './helpers';
-import {DeepLinkTypes} from '@constants';
-import * as DraftUtils from '@utils/draft';
-import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import {makeGroupMessageVisibleIfNecessary} from './preferences';
 import {handleSelectChannel, handleSelectChannelByName, loadChannelsByTeamName} from '@actions/views/channel';
-import {getUserByUsername} from '@mm-redux/actions/users';
 import {makeDirectChannel} from '@actions/views/more_dms';
-import {selectFocusedPostId} from '@mm-redux/actions/posts';
-import {showModalOverCurrentContext} from '@actions/navigation';
-import {changeOpacity} from '@mm-redux/utils/theme_utils';
+import {showPermalink} from '@actions/views/permalink';
+import {DeepLinkTypes} from '@constants';
+import {getUserByUsername} from '@mm-redux/actions/users';
+import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
+import * as DraftUtils from '@utils/draft';
+import {permalinkBadTeam} from '@utils/general';
+import {getURLAndMatch} from '@utils/url';
 
 export function createIncomingHook(hook: IncomingWebhook): ActionFunc {
     return bindClientFunc({
@@ -415,7 +416,7 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
         const state = getState();
         const config = getConfig(state);
 
-        const {url, match} = await DraftUtils.getURLAndMatch(href, getCurrentUrl(state), config.SiteURL);
+        const {url, match} = await getURLAndMatch(href, getCurrentUrl(state), config.SiteURL);
 
         if (match) {
             switch (match.type) {
@@ -423,13 +424,18 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
                 dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(intl)));
                 break;
             case DeepLinkTypes.PERMALINK:
-                dispatch(loadChannelsByTeamName(match.teamName, () => DraftUtils.errorPermalinkBadTeam(intl)));
+                dispatch(loadChannelsByTeamName(match.teamName, () => permalinkBadTeam(intl)));
                 if (match.postId) {
-                    dispatch(showPermalinkView(match.postId));
+                    dispatch(showPermalink(intl, match.teamName, match.postId));
                 }
                 break;
             case DeepLinkTypes.DMCHANNEL: {
-                const {data} = await dispatch(getUserByUsername(match.userName || ''));
+                if (!match.userName) {
+                    DraftUtils.errorBadUser(intl);
+                    return {data: false};
+                }
+
+                const {data} = await dispatch(getUserByUsername(match.userName));
                 if (!data) {
                     DraftUtils.errorBadUser(intl);
                     return {data: false};
@@ -438,33 +444,17 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
                 break;
             }
             case DeepLinkTypes.GROUPCHANNEL:
+                if (!match.id) {
+                    DraftUtils.errorBadChannel(intl);
+                    return {data: false};
+                }
+                dispatch(makeGroupMessageVisibleIfNecessary(match.id));
                 dispatch(handleSelectChannel(match.id));
                 break;
             }
         } else {
             DraftUtils.tryOpenURL(url);
         }
-        return {data: true};
-    };
-}
-
-export function showPermalinkView(postId: string, error = ''): ActionFunc {
-    return async (dispatch: DispatchFunc) => {
-        dispatch(selectFocusedPostId(postId));
-
-        const screen = 'Permalink';
-        const passProps = {
-            isPermalink: true,
-            onClose: () => selectFocusedPostId(''),
-            error,
-        };
-        const options = {
-            layout: {
-                componentBackgroundColor: changeOpacity('#000', 0.2),
-            },
-        };
-        showModalOverCurrentContext(screen, passProps, options);
-
         return {data: true};
     };
 }

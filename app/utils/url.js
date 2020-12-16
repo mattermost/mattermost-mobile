@@ -5,6 +5,7 @@ import {latinise} from './latinise.js';
 import {escapeRegex} from './markdown';
 
 import {Files} from '@mm-redux/constants';
+import {getCurrentServerUrl} from '@init/credentials';
 
 import {DeepLinkTypes} from 'app/constants';
 
@@ -161,4 +162,21 @@ export function getYouTubeVideoId(link) {
     }
 
     return '';
+}
+
+export async function getURLAndMatch(href, serverURL, siteURL) {
+    const url = normalizeProtocol(href);
+
+    if (!url) {
+        return {};
+    }
+
+    let serverUrl = serverURL;
+    if (!serverUrl) {
+        serverUrl = await getCurrentServerUrl();
+    }
+
+    const match = matchDeepLink(url, serverURL, siteURL);
+
+    return {url, match};
 }
