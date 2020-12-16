@@ -15,14 +15,23 @@ import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
 import TeamSearchHistory from '@typings/database/team_search_history';
 
-const {CHANNEL, GROUPS_IN_TEAM, TEAM, MY_TEAM, SLASH_COMMAND, TEAM_CHANNEL_HISTORY, TEAM_MEMBERSHIP, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
+const {
+    CHANNEL,
+    GROUPS_IN_TEAM,
+    TEAM,
+    MY_TEAM,
+    SLASH_COMMAND,
+    TEAM_CHANNEL_HISTORY,
+    TEAM_MEMBERSHIP,
+    TEAM_SEARCH_HISTORY,
+} = MM_TABLES.SERVER;
 
 /**
  * A Team houses and enables communication to happen across channels and users.
  */
 export default class Team extends Model {
     /** table (entity name) : Team */
-    static table = TEAM
+    static table = TEAM;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -47,50 +56,50 @@ export default class Team extends Model {
 
         /** A TEAM has a 1:N relationship with TEAM_SEARCH_HISTORY. A TEAM can possess multiple channels recently visited*/
         [TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
-    }
+    };
 
     /** allow_open_invite : Boolean flag indicating if this team is open to the public */
-    @field('allow_open_invite') allowOpenInvite!: boolean
+    @field('allow_open_invite') allowOpenInvite: boolean | undefined;
 
     /** description : The description for the team */
-    @field('description') description!: string
+    @field('description') description: string | undefined;
 
     /** display_name : The display name for the team */
-    @field('display_name') displayName!: string
+    @field('display_name') displayName: string | undefined;
 
     /** is_group_constrained : Boolean flag indicating if members are managed groups */
-    @field('is_group_constrained') isGroupConstrained!: boolean
+    @field('is_group_constrained') isGroupConstrained: boolean | undefined;
 
     /** last_team_icon_updated_at : Timestamp for when this team's icon has been updated last */
-    @field('last_team_icon_updated_at') lastTeamIconUpdatedAt!: number
+    @field('last_team_icon_updated_at') lastTeamIconUpdatedAt: number | undefined;
 
     /** name : The name for the team */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** type : The type of team ( e.g. open/private ) */
-    @field('type') type!: string
+    @field('type') type: string | undefined;
 
     /** allowed_domains : List of domains that can join this team */
-    @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string[]
+    @json('allowed_domains', (rawJson) => rawJson) allowedDomains: string[] | undefined;
 
     /** channels : All the channels associated with this team */
-    @children(CHANNEL) channels!: Channel
+    @children(CHANNEL) channels: Channel | undefined;
 
     /** groupsInTeam : All the groups associated with this team */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
+    @children(GROUPS_IN_TEAM) groupsInTeam: GroupsInTeam | undefined;
 
     /** myTeams : Lazy query property returning only the teams that this user is part of  */
-    @lazy myTeams = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id))
+    @lazy myTeams = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id));
 
     /** slashCommands : All the slash commands associated with this team */
-    @children(SLASH_COMMAND) slashCommands!: SlashCommand
+    @children(SLASH_COMMAND) slashCommands: SlashCommand | undefined;
 
     /** teamChannelHistories : All the channel history with this team */
-    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories!: TeamChannelHistory
+    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories: TeamChannelHistory | undefined;
 
     /** members : All the users associated with this team */
-    @children(TEAM_MEMBERSHIP) members!: TeamMembership
+    @children(TEAM_MEMBERSHIP) members: TeamMembership | undefined;
 
     /** teamSearchHistories : All the searches performed on this team */
-    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistory
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistories: TeamSearchHistory | undefined;
 }

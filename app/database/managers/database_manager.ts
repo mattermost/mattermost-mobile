@@ -5,7 +5,7 @@ import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import {Database, Model} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {Class} from '@nozbe/watermelondb/utils/common';
-import {DatabaseType, DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database';
+import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import Server from '@typings/database/servers';
 
 import EventEmitter from '@utils/event_emitter';
@@ -55,10 +55,16 @@ import {getIOSAppGroupDetails} from './utils';
 
 // TODO [] : delete server db and removes its record in default db
 // TODO [] : factory reset - wipe every data on the phone
+
 // TODO [] : retrieve all dbs or a subset via the url and it then returns db instances
 // TODO [] : how do we track down if migration succeeded on all the instances of 'server db'
 
 type Models = Class<Model>[]
+
+export enum DatabaseType {
+    DEFAULT,
+    SERVER
+}
 
 class DatabaseManager {
     activeDatabase: Database | undefined
@@ -84,6 +90,7 @@ class DatabaseManager {
         } = databaseConnection;
 
         const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
+
         const dbFilePath = this.getDBDirectory({dbName: databaseName});
         const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
         const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
@@ -183,10 +190,24 @@ class DatabaseManager {
      */
     private getDBDirectory = ({dbName}: { dbName: string }): string => {
         if (Platform.OS === 'ios') {
-            return `${getIOSAppGroupDetails().appGroupSharedDirectory}/databases/${dbName}.db`;
+            return `${getIOSAppGroupDetails().appGroupDatabase}/${dbName}.db`;
         }
         return FileSystem.documentDirectory + `/databases/${dbName}.db`;
     };
+
+    getAllServerDatabases = (serverUrls: string []) => {
+        // sentence.includes(word)
+
+        // Retrieve all server records from the default db
+        const defaultDatabase = this.getDefaultDatabase();
+        const serverCollections = defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS);
+
+        const servers = serverCollections.query().fetch();
+
+        console.log('all servers ', servers);
+
+        return null;
+    }
 }
 
 export default new DatabaseManager();

@@ -24,10 +24,20 @@ RCT_EXPORT_MODULE();
 }
 
 
--(NSString * ) appGroupSharedDirectory {
-  NSURL *sharedDirectory = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier: [self appGroupId]];
+-(NSDictionary * ) appGroupSharedDirectory {
   
-  return [sharedDirectory path];
+  NSURL *sharedDirectory = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier: [self appGroupId]];
+  NSURL * databasePath = [sharedDirectory URLByAppendingPathComponent:@"databases"];
+  
+  [[NSFileManager defaultManager] createDirectoryAtPath:[databasePath path]
+                                  withIntermediateDirectories:true
+                                  attributes:nil
+                                  error:nil
+   ];
+   return  @{
+             @"sharedDirectory": [sharedDirectory path ],
+             @"databasePath" : [databasePath path]
+   };
 }
 
 - (NSDictionary *)constantsToExport {

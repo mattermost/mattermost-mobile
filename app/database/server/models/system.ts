@@ -15,11 +15,11 @@ const {SYSTEM} = MM_TABLES.SERVER;
  */
 export default class System extends Model {
     /** table (entity name) : System */
-    static table = SYSTEM
+    static table = SYSTEM;
 
     /** name : The name or key value for the config */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** value : The value for that config/information */
-    @json('value', (rawJson) => rawJson) value!: string[]
+    @json('value', (rawJson) => rawJson) value: string[] | undefined;
 }

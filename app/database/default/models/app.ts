@@ -14,14 +14,14 @@ const {APP} = MM_TABLES.DEFAULT;
  */
 export default class App extends Model {
     /** table (entity name) : app */
-    static table = APP
+    static table = APP;
 
     /** build_number : Build number for the app */
-    @field('build_number') buildNumber!: string
+    @field('build_number') buildNumber: string | undefined;
 
     /** created_at : Date of creation for this version */
-    @field('created_at') createdAt!: number
+    @field('created_at') createdAt: number | undefined;
 
     /** version_number : Version number for the app */
-    @field('version_number') versionNumber!: string
+    @field('version_number') versionNumber: string | undefined;
 }

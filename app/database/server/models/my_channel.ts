@@ -14,31 +14,31 @@ const {CHANNEL, MY_CHANNEL} = MM_TABLES.SERVER;
  */
 export default class MyChannel extends Model {
     /** table (entity name) : MyChannel */
-    static table = MY_CHANNEL
+    static table = MY_CHANNEL;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
-    }
+    };
 
     /** channel_id : The foreign key to the related Channel record  */
-    @field('channel_id') channelId!: string
+    @field('channel_id') channelId: string | undefined;
 
     /** last_post_at : the timestamp for any last post on this channel */
-    @field('last_post_at') lastPostAt!: number
+    @field('last_post_at') lastPostAt: number | undefined;
 
     /** last_viewed_at : timestamp showing the user's last viewed post on this channel */
-    @field('last_viewed_at') lastViewedAt!: number
+    @field('last_viewed_at') lastViewedAt: number | undefined;
 
     /** mentionsCount : The number of mentions on this channel */
-    @field('mentions_count') mentionsCount!: number
+    @field('mentions_count') mentionsCount: number | undefined;
 
     /** messageCount : The derived number of unread messages on this channel */
-    @field('message_count') messageCount!: number
+    @field('message_count') messageCount: number | undefined;
 
     /** roles : The user's privileges on this channel */
-    @field('roles') roles!: string
+    @field('roles') roles: string | undefined;
 
     /** channel : The lazy query property to the record from entity CHANNEL */
-    @lazy channel = this.collections.get(CHANNEL).query(Q.on(MY_CHANNEL, 'channel_id', this.channelId))
+    @lazy channel = this.collections.get(CHANNEL).query(Q.on(MY_CHANNEL, 'channel_id', this.channelId));
 }

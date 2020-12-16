@@ -16,7 +16,7 @@ const {GROUP, GROUP_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  */
 export default class GroupMembership extends Model {
     /** table (entity name) : GroupMembership */
-    static table = GROUP_MEMBERSHIP
+    static table = GROUP_MEMBERSHIP;
 
     /** associations : Describes every relationship to this entity */
     static associations: Associations = {
@@ -26,11 +26,11 @@ export default class GroupMembership extends Model {
 
         /** A USER can be part of multiple groups */
         [USER]: {type: 'belongs_to', key: 'user_id'},
-    }
+    };
 
     /** memberGroup : The related group this user belongs to */
-    @immutableRelation(GROUP, 'group_id') group!: Group
+    @immutableRelation(GROUP, 'group_id') group: Group | undefined;
 
     /** memberUser : The related user in the group */
-    @immutableRelation(USER, 'user_id') user!: User
+    @immutableRelation(USER, 'user_id') user: User | undefined;
 }

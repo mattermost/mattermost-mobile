@@ -15,7 +15,7 @@ const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;
  */
 export default class GroupsInTeam extends Model {
     /** table (entity name) : GroupsInTeam */
-    static table = GROUPS_IN_TEAM
+    static table = GROUPS_IN_TEAM;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -25,23 +25,23 @@ export default class GroupsInTeam extends Model {
 
         /** GroupsInTeam can belong to only one Team */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
-    }
+    };
 
     /** group_id : The foreign key to the related Group record */
-    @field('group_id') groupId!: string
+    @field('group_id') groupId: string | undefined;
 
     /** member_count : The number of users in that group */
-    @field('member_count') memberCount!: number
+    @field('member_count') memberCount: number | undefined;
 
     /** team_id : The foreign key to the related Team record */
-    @field('team_id') teamId!: string
+    @field('team_id') teamId: string | undefined;
 
     /** timezone_count : The number of timezones */
-    @field('timezone_count') timezoneCount!: number
+    @field('timezone_count') timezoneCount: number | undefined;
 
     /** team : The related record to the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team!: Team
+    @immutableRelation(TEAM, 'team_id') team: Team | undefined;
 
     /** group : The related record to the parent Team model */
-    @immutableRelation(GROUP, 'group_id') group!: Group
+    @immutableRelation(GROUP, 'group_id') group: Group | undefined;
 }

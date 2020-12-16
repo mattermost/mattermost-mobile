@@ -15,27 +15,27 @@ const {TEAM, TEAM_SEARCH_HISTORY} = MM_TABLES.SERVER;
  */
 export default class TeamSearchHistory extends Model {
     /** table (entity name) : TeamSearchHistory */
-    static table = TEAM_SEARCH_HISTORY
+    static table = TEAM_SEARCH_HISTORY;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
         /** A TEAM can have multiple search terms  */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
-    }
+    };
 
     /** createdAt : The timestamp at which this search was performed */
-    @field('created_at') createdAt!: number
+    @field('created_at') createdAt: number | undefined;
 
     /** teamId : The foreign key to the parent Team model */
-    @field('team_id') teamId!: number
+    @field('team_id') teamId: number | undefined;
 
     /** displayTerm : The term that we display to the user after being processed by the server */
-    @json('display_term', (rawJson) => rawJson) displayTerm!: string []
+    @json('display_term', (rawJson) => rawJson) displayTerm: string [] | undefined;
 
     /** term : The keyword the user looked for */
-    @text('term') term!: number
+    @text('term') term: number | undefined;
 
     /** team : The related record to the parent team model */
-    @immutableRelation(TEAM, 'team_id') team!: Team
+    @immutableRelation(TEAM, 'team_id') team: Team | undefined;
 }

@@ -14,7 +14,7 @@ const {GROUP, GROUPS_IN_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
  */
 export default class GroupsInChannel extends Model {
     /** table (entity name) : GroupsInChannel */
-    static table = GROUPS_IN_CHANNEL
+    static table = GROUPS_IN_CHANNEL;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -24,23 +24,23 @@ export default class GroupsInChannel extends Model {
 
         /** GROUPS_IN_CHANNEL can belong to only one CHANNEL  */
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
-    }
+    };
 
     /** channel_id : The foreign key of the related CHANNEL model */
-    @field('channel_id') channelId! : string
+    @field('channel_id') channelId: string | undefined;
 
     /** group_id : The foreign key of the related GROUP model */
-    @field('group_id') groupId! : string
+    @field('group_id') groupId: string | undefined;
 
     /** member_count : The number of members in that group */
-    @field('member_count') memberCount! : number
+    @field('member_count') memberCount: number | undefined;
 
     /** timezone_count : The number of timezones in that group */
-    @field('timezone_count') timeZoneCount! : number
+    @field('timezone_count') timeZoneCount: number | undefined;
 
     /** channel : The related record to the parent Channel model */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Group
+    @immutableRelation(CHANNEL, 'channel_id') channel: Group | undefined;
 
     /** group : The related record to the parent Group model */
-    @immutableRelation(GROUP, 'group_id') group!: Group
+    @immutableRelation(GROUP, 'group_id') group: Group | undefined;
 }

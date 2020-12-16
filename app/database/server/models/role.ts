@@ -11,12 +11,12 @@ const {ROLE} = MM_TABLES.SERVER;
 /**  The Role model will describe the set of permissions for each role */
 export default class Role extends Model {
     /** table (entity name) : Role */
-    static table = ROLE
+    static table = ROLE;
 
     /** name  : The role's name */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** permissions : The different permissions associated to that role */
-    @json('permissions', (rawJson) => rawJson) permissions!: string[]
+    @json('permissions', (rawJson) => rawJson) permissions: string[] | undefined;
 }
 

@@ -11,8 +11,8 @@ const {CUSTOM_EMOJI} = MM_TABLES.SERVER;
 /**  The CustomEmoji model describes all the custom emojis used in the Mattermost app */
 export default class CustomEmoji extends Model {
     /** table (entity name) : CustomEmoji */
-    static table = CUSTOM_EMOJI
+    static table = CUSTOM_EMOJI;
 
     /** name :  The custom emoji's name*/
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 }

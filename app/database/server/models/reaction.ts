@@ -15,7 +15,7 @@ const {POST, REACTION, USER} = MM_TABLES.SERVER;
  */
 export default class Reaction extends Model {
     /** table (entity name) : Reaction */
-    static table = REACTION
+    static table = REACTION;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -25,23 +25,23 @@ export default class Reaction extends Model {
 
         /** A REACTION is created by a USER */
         [USER]: {type: 'belongs_to', key: 'user_id'},
-    }
+    };
 
     /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
-    @field('create_at') createAt!: number
+    @field('create_at') createAt: number | undefined;
 
     /** emoji_name : The emoticon used to express the reaction */
-    @field('emoji_name') emojiName!: string
+    @field('emoji_name') emojiName: string | undefined;
 
     /** post_id : The related Post's foreign key on which this reaction was expressed */
-    @field('post_id') postId!: string
+    @field('post_id') postId: string | undefined;
 
     /** user_id : The related User's foreign key by which this reaction was expressed */
-    @field('user_id') userId!: string
+    @field('user_id') userId: string | undefined;
 
     /** reactionUser : The related record to the User model */
-    @immutableRelation(USER, 'user_id') reactionUser!: User
+    @immutableRelation(USER, 'user_id') reactionUser: User | undefined;
 
     /** reactionPost : The related record to the Post model */
-    @immutableRelation(POST, 'post_id') reactionPost!: Post
+    @immutableRelation(POST, 'post_id') reactionPost: Post | undefined;
 }

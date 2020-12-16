@@ -16,17 +16,17 @@ const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  */
 export default class TeamMembership extends Model {
     /** table (entity name) : ChannelMembership */
-    static table = TEAM_MEMBERSHIP
+    static table = TEAM_MEMBERSHIP;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
         [USER]: {type: 'belongs_to', key: 'user_id'},
-    }
+    };
 
     /** memberUser: The related user in the teams */
-    @immutableRelation(USER, 'user_id') memberUser! : User
+    @immutableRelation(USER, 'user_id') memberUser: User | undefined;
 
     /** memberTeam : The related team of users */
-    @immutableRelation(TEAM, 'team_id') memberTeam! : Team
+    @immutableRelation(TEAM, 'team_id') memberTeam: Team | undefined;
 }

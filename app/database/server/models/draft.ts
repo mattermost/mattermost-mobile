@@ -13,7 +13,7 @@ const {CHANNEL, POST} = MM_TABLES.SERVER;
  */
 export default class Draft extends Model {
     /** table (entity name) : Draft */
-    static table = MM_TABLES.SERVER.DRAFT
+    static table = MM_TABLES.SERVER.DRAFT;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -23,17 +23,17 @@ export default class Draft extends Model {
 
         /** A DRAFT is associated to only one POST */
         [POST]: {type: 'belongs_to', key: 'root_id'},
-    }
+    };
 
     /** channel_id : The foreign key pointing to the channel in which the draft was made */
-    @field('channel_id') channelId!: string
+    @field('channel_id') channelId: string | undefined;
 
     /** message : The draft message */
-    @field('message') message!: string
+    @field('message') message: string | undefined;
 
     /** root_id : The root_id will be null for Direct Message and have a value for draft replies of a thread */
-    @field('root_id') rootId!: string
+    @field('root_id') rootId: string | undefined;
 
     /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE entity */
-    @json('files', (rawJson) => rawJson) files!: string[]
+    @json('files', (rawJson) => rawJson) files: string[] | undefined;
 }

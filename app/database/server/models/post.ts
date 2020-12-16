@@ -20,7 +20,7 @@ const {CHANNEL, DRAFT, FILE, POST, POSTS_IN_THREAD, POST_METADATA, REACTION, USE
  */
 export default class Post extends Model {
     /** table (entity name) : Post */
-    static table = POST
+    static table = POST;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -45,66 +45,66 @@ export default class Post extends Model {
 
         /** A USER has a 1:N relationship with POST.  A user can author several posts*/
         [USER]: {type: 'belongs_to', key: 'user_id'},
-    }
+    };
 
     /** channel_id : The foreign key for the Channel to which this post belongs to. */
-    @field('channel_id') channelId!: string
+    @field('channel_id') channelId: string | undefined;
 
     /** create_at : timestamp to when this post was first created */
-    @field('create_at') createAt!: number
+    @field('create_at') createAt: number | undefined;
 
     /** delete_at : timestamp to when this post was last archived/deleted */
-    @field('delete_at') deleteAt!: number
+    @field('delete_at') deleteAt: number | undefined;
 
     /** edit_at : timestamp to when this post was last edited */
-    @field('edit_at') editAt!: number
+    @field('edit_at') editAt: number | undefined;
 
     /** is_pinned : Boolean flag indicating if this Post is pinned */
-    @field('is_pinned') isPinned!: boolean
+    @field('is_pinned') isPinned: boolean | undefined;
 
     /** message : Message in the post */
-    @field('message') message!: string
+    @field('message') message: string | undefined;
 
     /** original_id : Any post will have this value null unless it is updated */
-    @field('original_id') originalId!: string
+    @field('original_id') originalId: string | undefined;
 
     /** pending_post_id : The id given to a post before it is published on the server */
-    @field('pending_post_id') pendingPostId!: string
+    @field('pending_post_id') pendingPostId: string | undefined;
 
     /** previous_post_id : Id of the previous post.  If this value is null, this implies that it
      * is not in the db and we will request it from server */
-    @field('previous_post_id') previousPostId!: string
+    @field('previous_post_id') previousPostId: string | undefined;
 
     /** root_id : Used in threads. All posts under a thread will have this id in common */
-    @field('root_id') rootId!: string
+    @field('root_id') rootId: string | undefined;
 
     /** type : Type of props (e.g. system message) */
-    @field('type') type!: string
+    @field('type') type: string | undefined;
 
     /** user_id : The foreign key of the User who authored this post. */
-    @field('user_id') userId!: string
+    @field('user_id') userId: string | undefined;
 
     /** props : Additional attributes for this props */
-    @json('props', (rawJson) => rawJson) props!: string[]
+    @json('props', (rawJson) => rawJson) props: string[] | undefined;
 
     /** drafts  : Every drafts associated with this Post */
-    @children(DRAFT) drafts!: Draft
+    @children(DRAFT) drafts: Draft | undefined;
 
     /** files: All the files associated with this Post */
-    @children(FILE) files!: File
+    @children(FILE) files: File | undefined;
 
     /** postsInThread: Every posts associated to a thread */
-    @children(POSTS_IN_THREAD) postsInThread!: PostInThread
+    @children(POSTS_IN_THREAD) postsInThread: PostInThread | undefined;
 
     /** metadata: All the extra data associated with this Post */
-    @children(POST_METADATA) metadata!: PostMetadata
+    @children(POST_METADATA) metadata: PostMetadata | undefined;
 
     /** reactions: All the reactions associated with this Post */
-    @children(REACTION) reactions!: Reaction
+    @children(REACTION) reactions: Reaction | undefined;
 
     /** author: The author of this Post */
-    @immutableRelation(USER, 'user_id') author!: User
+    @immutableRelation(USER, 'user_id') author: User | undefined;
 
     /** channel: The channel which is presenting this Post */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel
+    @immutableRelation(CHANNEL, 'channel_id') channel: Channel | undefined;
 }
