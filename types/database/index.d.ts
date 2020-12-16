@@ -24,10 +24,14 @@ export enum DatabaseType {
 }
 
 export type MMDatabaseConnection = {
-    actionsEnabled: boolean,
-    adapter: DatabaseAdapter,
+    actionsEnabled?: boolean,
     dbName: string,
-    dbType: DatabaseType.DEFAULT | DatabaseType.SERVER,
-    migrationEvents? : MigrationEvents
-    modelClasses: Array<Class<Model>>,
+    dbType?: DatabaseType.DEFAULT | DatabaseType.SERVER,
+    serverUrl?: string,
+}
+
+export type DefaultNewServer = {
+    dbFilePath: string,
+    displayName: string,
+    serverUrl: string
 }
