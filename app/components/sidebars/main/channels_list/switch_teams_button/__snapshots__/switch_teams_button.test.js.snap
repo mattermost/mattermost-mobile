@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SwitchTeamsButton should match snapshot 1`] = `
+<View
+  testID="main.sidebar.channels_list.switch_teams.button"
+>
+  <ForwardRef
+    onPress={[Function]}
+    underlayColor="rgba(17,83,171,0.5)"
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderRadius": 2,
+          "flexDirection": "row",
+          "height": 36,
+          "justifyContent": "center",
+          "marginRight": 12,
+          "width": 57,
+        }
+      }
+      testID="main.sidebar.channels_list.switch_teams.button.current-team-id"
+    >
+      <CompassIcon
+        name="chevron-left"
+        size={24}
+        style={
+          Object {
+            "color": "#1153ab",
+            "left": -2,
+            "top": 1,
+          }
+        }
+      />
+      <Connect(TeamIcon)
+        styleContainer={
+          Object {
+            "alignItems": "center",
+            "height": 24,
+            "justifyContent": "center",
+            "width": 24,
+          }
+        }
+        styleImage={
+          Object {
+            "height": 24,
+            "width": 24,
+          }
+        }
+        styleText={
+          Object {
+            "fontFamily": "Open Sans",
+            "fontSize": 14,
+          }
+        }
+        teamId="current-team-id"
+        testID="main.sidebar.channels_list.switch_teams.button.team_icon"
+      />
+    </View>
+  </ForwardRef>
+  <Badge
+    containerStyle={
+      Object {
+        "borderColor": "#145dbf",
+        "borderRadius": 14,
+        "borderWidth": 2,
+        "position": "absolute",
+        "right": 0,
+        "top": -9,
+      }
+    }
+    count={1}
+    countStyle={
+      Object {
+        "color": "#145dbf",
+        "fontSize": 10,
+        "fontWeight": "bold",
+      }
+    }
+    extraPaddingHorizontal={10}
+    minHeight={20}
+    minWidth={20}
+    style={
+      Object {
+        "backgroundColor": "#ffffff",
+        "height": 20,
+        "padding": 3,
+      }
+    }
+    testID="main.sidebar.channels_list.switch_teams.button.badge"
+  />
+</View>
+`;

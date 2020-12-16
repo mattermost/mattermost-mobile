@@ -73,6 +73,7 @@ const ChannelList = ({intl}: ChannnelListProps) => {
     );
     const renderItem = ({item}: SectionListRenderItemInfo<Channel>) => (
         <ChannelItem
+            testID='share_extension.channel_list.channel_item'
             channel={item}
             onSelect={onSelectChannel}
             selected={item.id === currentChannelId}

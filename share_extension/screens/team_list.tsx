@@ -73,6 +73,7 @@ const TeamList = () => {
 
     return (
         <FlatList
+            testID='share_extension.team_list.screen'
             data={teams}
             ItemSeparatorComponent={renderItemSeparator}
             renderItem={renderItem}

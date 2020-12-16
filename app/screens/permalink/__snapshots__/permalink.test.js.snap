@@ -13,6 +13,7 @@ exports[`Permalink should match snapshot 1`] = `
         "marginTop": 20,
       }
     }
+    testID="permalink.screen"
   >
     <withAnimatable(View)
       animation="zoomIn"

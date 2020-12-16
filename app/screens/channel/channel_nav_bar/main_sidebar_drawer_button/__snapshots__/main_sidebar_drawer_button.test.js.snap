@@ -103,6 +103,7 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
             "padding": 3,
           }
         }
+        testID="main_sidebar_drawer.button.badge"
       />
     </View>
   </View>
