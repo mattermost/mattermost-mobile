@@ -233,6 +233,15 @@ export default class ChannelBase extends PureComponent {
         }
     };
 
+    retryLoad = () => {
+        const {currentTeamId, actions} = this.props;
+        if (currentTeamId) {
+            this.loadChannels(currentTeamId);
+        } else {
+            actions.selectDefaultTeam();
+        }
+    }
+
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
     };
@@ -270,6 +279,7 @@ export default class ChannelBase extends PureComponent {
                 <Loading
                     channelIsLoading={true}
                     color={theme.centerChannelColor}
+                    retryLoad={this.retryLoad}
                 />
             );
         }

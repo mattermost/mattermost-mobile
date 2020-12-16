@@ -65,7 +65,7 @@ async function ensureUserHasTeam(ldapUser) {
     // # Login as sysadmin and ensure LDAP user is member of at least one team
     await User.apiAdminLogin();
     const {user} = await User.apiGetUserByUsername(ldapUser.username);
-    const {teams} = await Team.apiGetTeamMembersForUser(user.id);
+    const {teams} = await Team.apiGetTeamsForUser(user.id);
 
     if (!teams?.length) {
         const {team} = await Setup.apiInit();

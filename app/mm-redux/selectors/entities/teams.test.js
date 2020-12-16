@@ -6,7 +6,8 @@ import assert from 'assert';
 import deepFreezeAndThrowOnMutation from '@mm-redux/utils/deep_freeze';
 import TestHelper from 'test/test_helper';
 import * as Selectors from '@mm-redux/selectors/entities/teams';
-import {General} from '../../constants';
+import {getPreferenceKey} from '@mm-redux/utils/preference_utils';
+import {General, Preferences} from '@mm-redux/constants';
 
 describe('Selectors.Teams', () => {
     TestHelper.initMockEntities();
@@ -67,6 +68,9 @@ describe('Selectors.Teams', () => {
             },
             general: {
                 serverVersion: '5.8.0',
+            },
+            preferences: {
+                myPreferences: {},
             },
         },
     });
@@ -416,15 +420,37 @@ describe('Selectors.Teams', () => {
             },
         };
 
+        const preferenceState = {
+            ...testState,
+            entities: {
+                ...testState.entities,
+                teams: {
+                    ...testState.entities.teams,
+                    teams: {
+                        ...testState.entities.teams.teams,
+                    },
+                },
+                preferences: {
+                    myPreferences: {
+                        [getPreferenceKey(Preferences.TEAMS_ORDER, '')]: {value: [team1.id, team2.id].join(',')},
+                    },
+                },
+            },
+        };
+
         const fromOriginalState = Selectors.getMySortedTeamIds(testState);
         const fromModifiedState = Selectors.getMySortedTeamIds(modifiedState);
         const fromUpdateState = Selectors.getMySortedTeamIds(updateState);
+        const fromPreferenceState = Selectors.getMySortedTeamIds(preferenceState);
 
         assert.ok(fromOriginalState === fromModifiedState);
         assert.ok(fromModifiedState[0] === team2.id);
 
         assert.ok(fromModifiedState !== fromUpdateState);
         assert.ok(fromUpdateState[0] === team1.id);
+
+        assert.ok(fromPreferenceState !== fromOriginalState);
+        assert.ok(fromPreferenceState[0] === team1.id);
     });
 
     it('getMyTeamsCount', () => {

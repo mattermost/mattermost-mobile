@@ -96,6 +96,7 @@ export default class MainSidebarDrawerButton extends PureComponent {
 
             badge = (
                 <Badge
+                    testID='main_sidebar_drawer.button.badge'
                     containerStyle={containerStyle}
                     style={badgeStyle}
                     countStyle={style.mention}

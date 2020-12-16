@@ -37,6 +37,24 @@ export const capitalize = (text) => {
     return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
+/**
+ * @param {map} testIDMap - map of testIDs
+ * @return {map} map of testID matchers
+ */
+export const testIDMatcherMap = (testIDMap) => {
+    const testIDFilter = (k, v) => {
+        const key = k.toLowerCase();
+        if (key.endsWith('prefix') ||
+            key.endsWith('suffix') ||
+            v.startsWith('.') ||
+            v.endsWith('.')) {
+            return false;
+        }
+        return true;
+    };
+    return testIDMap.filter(([k, v]) => testIDFilter(k, v)).map(([k, v]) => [k, by.id(v)]);
+};
+
 const SECOND = 1000;
 const MINUTE = 60 * 1000;
 

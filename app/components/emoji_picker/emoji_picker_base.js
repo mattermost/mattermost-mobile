@@ -232,15 +232,17 @@ export default class EmojiPicker extends PureComponent {
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
-    renderItem = ({item}) => {
+    renderItem = ({item, section}) => {
         return (
-            <EmojiPickerRow
-                key={item.key}
-                emojiGutter={EMOJI_GUTTER}
-                emojiSize={EMOJI_SIZE}
-                items={item.items}
-                onEmojiPress={this.props.onEmojiPress}
-            />
+            <View testID={section.defaultMessage}>
+                <EmojiPickerRow
+                    key={item.key}
+                    emojiGutter={EMOJI_GUTTER}
+                    emojiSize={EMOJI_SIZE}
+                    items={item.items}
+                    onEmojiPress={this.props.onEmojiPress}
+                />
+            </View>
         );
     };
 

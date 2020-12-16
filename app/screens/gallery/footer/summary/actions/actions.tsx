@@ -40,7 +40,7 @@ const Actions = (props: ActionsProps) => {
         };
     }, []);
 
-    let linkActionVisible = !props.file.id.startsWith('uid');
+    let linkActionVisible = !props.file.id.startsWith('uid') && props.enablePublicLink;
     if (managedConfig?.copyPasteProtection === 'true') {
         linkActionVisible = false;
     }

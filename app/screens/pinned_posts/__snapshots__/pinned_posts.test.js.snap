@@ -14,6 +14,7 @@ exports[`PinnedPosts should match snapshot 1`] = `
       "flex": 1,
     }
   }
+  testID="pinned_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
@@ -36,6 +37,7 @@ exports[`PinnedPosts should match snapshot when component waiting for response 1
       "flex": 1,
     }
   }
+  testID="pinned_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
@@ -58,6 +60,7 @@ exports[`PinnedPosts should match snapshot when getPinnedPosts failed 1`] = `
       "flex": 1,
     }
   }
+  testID="pinned_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(FailedNetworkAction)

@@ -539,7 +539,7 @@ export default class PostList extends PureComponent {
 }
 
 function PostComponent({testID, postId, highlightPostId, lastPostIndex, index, ...postProps}) {
-    const postTestID = `${testID}.post.${postId}`;
+    const postTestID = `${testID}.post`;
 
     return (
         <Post
