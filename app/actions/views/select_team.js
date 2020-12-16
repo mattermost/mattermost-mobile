@@ -7,8 +7,10 @@ import {lastChannelIdForTeam} from '@actions/helpers/channels';
 import {NavigationTypes} from '@constants';
 import {ChannelTypes, TeamTypes} from '@mm-redux/action_types';
 import {getMyTeams} from '@mm-redux/actions/teams';
-import {RequestStatus} from '@mm-redux/constants';
+import {Preferences, RequestStatus} from '@mm-redux/constants';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {get as getPreference} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentLocale} from 'app/selectors/i18n';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {selectFirstAvailableTeam} from '@utils/teams';
 
@@ -50,6 +52,8 @@ export function selectDefaultTeam() {
         const state = getState();
 
         const {ExperimentalPrimaryTeam} = getConfig(state);
+        const locale = getCurrentLocale(state);
+        const userTeamOrderPreference = getPreference(state, Preferences.TEAMS_ORDER, '', '');
         const {teams, myMembers} = state.entities.teams;
         const myTeams = Object.keys(teams).reduce((result, id) => {
             if (myMembers[id]) {
@@ -59,7 +63,7 @@ export function selectDefaultTeam() {
             return result;
         }, []);
 
-        let defaultTeam = selectFirstAvailableTeam(myTeams, ExperimentalPrimaryTeam);
+        let defaultTeam = selectFirstAvailableTeam(myTeams, locale, userTeamOrderPreference, ExperimentalPrimaryTeam);
 
         if (defaultTeam) {
             dispatch(handleTeamChange(defaultTeam.id));
@@ -75,7 +79,7 @@ export function selectDefaultTeam() {
             }
 
             if (data) {
-                defaultTeam = selectFirstAvailableTeam(data, ExperimentalPrimaryTeam);
+                defaultTeam = selectFirstAvailableTeam(data, locale, userTeamOrderPreference, ExperimentalPrimaryTeam);
             }
 
             if (defaultTeam) {

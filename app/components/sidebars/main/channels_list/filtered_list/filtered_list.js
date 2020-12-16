@@ -19,6 +19,7 @@ import {General} from '@mm-redux/constants';
 import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {t} from '@utils/i18n';
+import memoize from 'memoize-one';
 
 const VIEWABILITY_CONFIG = ListTypes.VISIBILITY_CONFIG_DEFAULTS;
 
@@ -66,7 +67,6 @@ class FilteredList extends Component {
         };
 
         this.state = {
-            dataSource: this.buildData(props),
         };
     }
 
@@ -80,14 +80,16 @@ class FilteredList extends Component {
         return !deepEqual(this.props, nextProps, {strict: true}) || !deepEqual(this.state, nextState, {strict: true});
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.term !== nextProps.term) {
-            const {actions, currentTeam} = this.props;
-            const {term} = nextProps;
+    setDataSourceAndTerm(dataSource, term) {
+        this.setState({dataSource, term});
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.term !== this.props.term) {
+            const {actions, currentTeam, term} = this.props;
             const {searchChannels, searchProfiles} = actions;
             const dataSource = this.buildData(this.props, term);
-
-            this.setState({dataSource, term});
+            this.setDataSourceAndTerm(dataSource, term);
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
@@ -329,13 +331,12 @@ class FilteredList extends Component {
         return sections;
     };
 
-    buildData = (props, term) => {
+    buildData = memoize((props) => {
         if (!props.currentChannel) {
             return null;
         }
-
-        return this.buildSectionsForSearch(props, term);
-    };
+        return this.buildSectionsForSearch(props, props.term);
+    }, ([props], [prevProps]) => props.term === prevProps.term);
 
     keyExtractor = (item) => item.id || item;
 
@@ -376,8 +377,8 @@ class FilteredList extends Component {
     };
 
     render() {
-        const {testID, styles} = this.props;
-        const {dataSource} = this.state;
+        const {styles, testID} = this.props;
+        const dataSource = this.buildData(this.props);
         return (
             <View
                 testID={testID}

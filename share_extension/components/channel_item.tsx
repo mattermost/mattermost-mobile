@@ -53,6 +53,7 @@ const ChannelItem = ({onSelect, selected, channel}: ChannelItemProps) => {
                 <View style={styles.item}>
                     {channelTypes[channel.type] || PublicChannel}
                     <Text
+                        testID='share_extension.channel_item.display_name'
                         style={[styles.text]}
                         ellipsizeMode='tail'
                         numberOfLines={1}

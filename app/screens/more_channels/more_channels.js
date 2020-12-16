@@ -102,22 +102,26 @@ export default class MoreChannels extends PureComponent {
         this.mounted = false;
     }
 
-    componentWillReceiveProps(nextProps) {
+    setChannelsOrArchivedChannels(state) {
+        this.setState(state);
+    }
+
+    componentDidUpdate(prevProps) {
         const {term} = this.state;
         let channels;
         let archivedChannels;
 
-        if (nextProps.channels !== this.props.channels) {
-            channels = nextProps.channels;
+        if (this.props.channels !== prevProps.channels) {
+            channels = this.props.channels;
             if (term) {
-                channels = this.filterChannels(nextProps.channels, term);
+                channels = this.filterChannels(this.props.channels, term);
             }
         }
 
-        if (nextProps.archivedChannels !== this.props.archivedChannels) {
-            archivedChannels = nextProps.archivedChannels;
+        if (this.props.archivedChannels !== prevProps.archivedChannels) {
+            archivedChannels = this.props.archivedChannels;
             if (term) {
-                archivedChannels = this.filterChannels(nextProps.archivedChannels, term);
+                archivedChannels = this.filterChannels(this.props.archivedChannels, term);
             }
         }
 
@@ -131,7 +135,7 @@ export default class MoreChannels extends PureComponent {
         }
 
         if (nextState.archivedChannels || nextState.channels) {
-            this.setState(nextState);
+            this.setChannelsOrArchivedChannels(nextState);
         }
     }
 

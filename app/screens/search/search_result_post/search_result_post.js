@@ -42,11 +42,9 @@ export default class SearchResultPost extends PureComponent {
             postComponentProps.skipPinnedHeader = this.props.skipPinnedHeader;
         }
 
-        const testID = `search_result_post.post.${this.props.postId}`;
-
         return (
             <Post
-                testID={testID}
+                testID='search_result_post.post'
                 postId={this.props.postId}
                 {...postComponentProps}
                 isSearchResult={true}

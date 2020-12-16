@@ -320,6 +320,7 @@ export default class Post extends PureComponent {
         }
         const replyBarStyle = this.replyBarStyle();
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
+        const itemTestID = `${testID}.${post.id}`;
 
         return (
             <View
@@ -327,6 +328,7 @@ export default class Post extends PureComponent {
                 style={[style.postStyle, highlighted]}
             >
                 <TouchableWithFeedback
+                    testID={itemTestID}
                     onPress={this.handlePress}
                     onLongPress={this.showPostOptions}
                     delayLongPress={200}

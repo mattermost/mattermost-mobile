@@ -18,6 +18,7 @@ import {
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ReactionButton from './reaction_button';
+import {EmojiIndicesByAlias} from '@utils/emojis';
 
 const ReactionPicker = (props) => {
     const {theme} = props;
@@ -37,7 +38,11 @@ const ReactionPicker = (props) => {
         iconSize = SMALL_ICON_SIZE;
     }
 
-    const emojis = Array.from(new Set(props.recentEmojis.concat(DEFAULT_EMOJIS))).splice(0, 6);
+    const recentEmojisIndices = props.recentEmojis.map((recentEmoji) => EmojiIndicesByAlias.get(recentEmoji));
+    const emojis = props.recentEmojis.
+        concat(DEFAULT_EMOJIS.filter((defaultEmoji) => !recentEmojisIndices.includes(EmojiIndicesByAlias.get(defaultEmoji)))).
+        splice(0, 6);
+
     const list = emojis.map((emoji) => {
         return (
             <ReactionButton

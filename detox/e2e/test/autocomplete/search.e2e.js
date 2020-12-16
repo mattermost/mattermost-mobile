@@ -34,7 +34,7 @@ describe('Autocomplete', () => {
     });
 
     afterAll(async () => {
-        await device.reloadReactNative();
+        await SearchScreen.cancel();
         await ChannelScreen.logout();
     });
 

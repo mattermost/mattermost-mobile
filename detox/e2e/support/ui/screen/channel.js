@@ -8,6 +8,7 @@ import {
     InputQuickAction,
     MainSidebar,
     PostDraft,
+    PostList,
     PostOptions,
     SendButton,
     SettingsSidebar,
@@ -15,15 +16,18 @@ import {
 import {
     LoginScreen,
     LongPostScreen,
-    PostListScreen,
     SelectServerScreen,
 } from '@support/ui/screen';
+import {isAndroid} from '@support/utils';
 
 class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         mainSidebarDrawerButton: 'main_sidebar_drawer.button',
+        mainSidebarDrawerButtonBadge: 'main_sidebar_drawer.button.badge',
+        mainSidebarDrawerButtonBadgeUnreadCount: 'main_sidebar_drawer.button.badge.unread_count',
+        mainSidebarDrawerButtonBadgeUnreadIndicator: 'main_sidebar_drawer.button.badge.unread_indicator',
         channelIntro: 'channel_intro.beginning.text',
         channelNavBarTitle: 'channel.nav_bar.title',
         channelSearchButton: 'channel.search.button',
@@ -33,6 +37,9 @@ class ChannelScreen {
 
     channelScreen = element(by.id(this.testID.channelScreen));
     mainSidebarDrawerButton = element(by.id(this.testID.mainSidebarDrawerButton));
+    mainSidebarDrawerButtonBadge = element(by.id(this.testID.mainSidebarDrawerButtonBadge));
+    mainSidebarDrawerButtonBadgeUnreadCount = element(by.id(this.testID.mainSidebarDrawerButtonBadgeUnreadCount));
+    mainSidebarDrawerButtonBadgeUnreadIndicator = element(by.id(this.testID.mainSidebarDrawerButtonBadgeUnreadIndicator));
     channelIntro = element(by.id(this.testID.channelIntro));
     channelNavBarTitle = element(by.id(this.testID.channelNavBarTitle));
     channelSearchButton = element(by.id(this.testID.channelSearchButton));
@@ -57,12 +64,22 @@ class ChannelScreen {
     sendButton = SendButton.getSendButton(this.testID.channelScreenPrefix);
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.channelScreenPrefix);
 
-    getLongPostPostItem = (postId, text) => {
+    postList = new PostList(this.testID.channelScreenPrefix);
+
+    getLongPostItem = (postId, text) => {
         return LongPostScreen.getPost(postId, text);
     }
 
+    getLongPostMessage = () => {
+        return LongPostScreen.getPostMessage();
+    }
+
     getPostListPostItem = (postId, text) => {
-        return PostListScreen.getPost(this.testID.channelScreenPrefix, postId, text);
+        return this.postList.getPost(postId, text);
+    }
+
+    getPostMessageAtIndex = (index) => {
+        return this.postList.getPostMessageAtIndex(index);
     }
 
     toBeVisible = async () => {
@@ -81,13 +98,42 @@ class ChannelScreen {
 
     logout = async () => {
         await this.openSettingsSidebar();
-        await SettingsSidebar.logoutAction.tap();
+        await SettingsSidebar.tapLogoutAction();
         await SelectServerScreen.toBeVisible();
+    }
+
+    closeMainSidebar = async () => {
+        if (isAndroid()) {
+            // # Close main sidebar
+            await this.swipeLeft();
+            await this.toBeVisible();
+        } else {
+            // # iOS workaround for now
+            await device.reloadReactNative();
+        }
+    }
+
+    closeSettingsSidebar = async () => {
+        if (isAndroid()) {
+            // # Close settings sidebar
+            await this.swipeRight();
+            await this.toBeVisible();
+        } else {
+            // # iOS workaround for now
+            await device.reloadReactNative();
+        }
+    }
+
+    closeTeamSidebar = async () => {
+        // # Close team sidebar
+        await MainSidebar.closeTeamSidebar();
+        await this.closeMainSidebar();
     }
 
     openMainSidebar = async () => {
         // # Open main sidebar
         await this.mainSidebarDrawerButton.tap();
+        await expect(MainSidebar.channelsList).toBeVisible();
         await MainSidebar.toBeVisible();
     }
 
@@ -95,6 +141,12 @@ class ChannelScreen {
         // # Open settings sidebar
         await this.settingsSidebarDrawerButton.tap();
         await SettingsSidebar.toBeVisible();
+    }
+
+    openTeamSidebar = async () => {
+        // # Open team sidebar
+        await this.openMainSidebar();
+        await MainSidebar.openTeamSidebar();
     }
 
     openPostOptionsFor = async (postId, text) => {
@@ -113,11 +165,31 @@ class ChannelScreen {
         await this.tapSendButton();
     }
 
+    swipeLeft = async () => {
+        await this.channelScreen.swipe('left');
+    }
+
+    swipeRight = async () => {
+        await this.channelScreen.swipe('right');
+    }
+
     tapSendButton = async () => {
         // # Tap send button
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
         await expect(this.sendButtonDisabled).toBeVisible();
+    }
+
+    hasLongPostMessage = async (postMessage) => {
+        await expect(
+            this.getLongPostMessage(),
+        ).toHaveText(postMessage);
+    }
+
+    hasPostMessageAtIndex = async (index, postMessage) => {
+        await expect(
+            this.getPostMessageAtIndex(index),
+        ).toHaveText(postMessage);
     }
 }
 

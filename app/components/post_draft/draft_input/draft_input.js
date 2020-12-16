@@ -59,6 +59,7 @@ export default class DraftInput extends PureComponent {
         useGroupMentions: PropTypes.bool.isRequired,
         channelMemberCountsByGroup: PropTypes.object,
         groupsWithAllowReference: PropTypes.object,
+        addRecentUsedEmojisInMessage: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -162,7 +163,11 @@ export default class DraftInput extends PureComponent {
             message: value,
         };
 
-        createPost(post, postFiles);
+        createPost(post, postFiles).then(({data}) => {
+            if (data) {
+                this.props.addRecentUsedEmojisInMessage(message);
+            }
+        });
 
         if (postFiles.length) {
             handleClearFiles(channelId, rootId);
