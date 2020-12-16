@@ -57,7 +57,7 @@ describe('Search', () => {
 
         // # Open reply thread from search result post item
         const replyTestMessage = `reply-${testMessage}`;
-        searchResultPostItemHeaderReply.tap();
+        await searchResultPostItemHeaderReply.tap();
 
         // # Post a reply message
         await ThreadScreen.toBeVisible();
@@ -83,18 +83,17 @@ describe('Search', () => {
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
         const {searchResultPostItem} = await SearchScreen.getSearchResultPostItem(lastPost.post.id, testMessage);
         await expect(searchResultPostItem).toBeVisible();
-        searchResultPostItem.tap();
+        await searchResultPostItem.tap();
 
         // * Verify permalink post list has the message
-        PermalinkScreen.toBeVisible();
+        await PermalinkScreen.toBeVisible();
         const {postListPostItem: permalinkPostItem} = await PermalinkScreen.getPostListPostItem(lastPost.post.id, testMessage);
         await waitFor(permalinkPostItem).toBeVisible();
 
         // # Jump to recent messages
-        PermalinkScreen.jumpToRecentMessages();
+        await PermalinkScreen.jumpToRecentMessages();
 
         // * Verify user is on channel where message is posted
-        ChannelScreen.toBeVisible();
         await expect(ChannelScreen.channelNavBarTitle).toHaveText(testChannel.display_name);
         const {postListPostItem: channelPostItem} = await ChannelScreen.getPostListPostItem(lastPost.post.id, testMessage);
         await expect(channelPostItem).toBeVisible();
