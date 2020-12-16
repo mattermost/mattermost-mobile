@@ -423,12 +423,13 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
             case DeepLinkTypes.CHANNEL:
                 dispatch(handleSelectChannelByName(match.channelName, match.teamName, () => DraftUtils.errorBadChannel(intl)));
                 break;
-            case DeepLinkTypes.PERMALINK:
-                dispatch(loadChannelsByTeamName(match.teamName, () => permalinkBadTeam(intl)));
-                if (match.postId) {
+            case DeepLinkTypes.PERMALINK: {
+                const {error} = await dispatch(loadChannelsByTeamName(match.teamName, () => permalinkBadTeam(intl)));
+                if (!error && match.postId) {
                     dispatch(showPermalink(intl, match.teamName, match.postId));
                 }
                 break;
+            }
             case DeepLinkTypes.DMCHANNEL: {
                 if (!match.userName) {
                     DraftUtils.errorBadUser(intl);
