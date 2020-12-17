@@ -14,39 +14,39 @@ const {TEAM} = MM_TABLES.SERVER;
  */
 export default class SlashCommand extends Model {
     /** table (entity name) : SlashCommand */
-    static table = MM_TABLES.SERVER.SLASH_COMMAND
+    static table = MM_TABLES.SERVER.SLASH_COMMAND;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
         /** A TEAM can have multiple slash commands and share a 1:N relationship with SLASH_COMMAND */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
-    }
+    };
 
     /** auto_complete : Boolean flag for auto-completing slash commands */
-    @field('auto_complete') autoComplete!: boolean
+    @field('auto_complete') autoComplete: boolean | undefined;
 
     /** description : The description for the slash command */
-    @field('description') description!: string
+    @field('description') description: string | undefined;
 
     /** display_name : The name for the command */
-    @field('display_name') displayName!: string
+    @field('display_name') displayName: string | undefined;
 
     /** hint : A helpful text explaining the purpose of the command  */
-    @field('hint') hint!: string
+    @field('hint') hint: string | undefined;
 
     /** method : API methods like HTTP */
-    @field('method') method!: string
+    @field('method') method: string | undefined;
 
     /** team_id : The foreign key of the parent Team */
-    @field('team_id') teamId!: string
+    @field('team_id') teamId: string | undefined;
 
     /** token : A key identifying this slash command */
-    @field('token') token!: string
+    @field('token') token: string | undefined;
 
     /** trigger : A pattern/text used to recognize when a slash command needs to launch */
-    @field('trigger') trigger!: string
+    @field('trigger') trigger: string | undefined;
 
     /** team : The related parent TEAM record */
-    @immutableRelation(TEAM, 'team_id') team! : Team
+    @immutableRelation(TEAM, 'team_id') team: Team | undefined;
 }

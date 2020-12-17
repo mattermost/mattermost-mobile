@@ -14,14 +14,26 @@ import PostsInChannel from '@typings/database/posts_in_channel';
 import Team from '@typings/database/team';
 import User from '@typings/database/user';
 
-const {CHANNEL, CHANNEL_INFO, CHANNEL_MEMBERSHIP, DRAFT, GROUPS_IN_CHANNEL, MY_CHANNEL, MY_CHANNEL_SETTINGS, POSTS_IN_CHANNEL, POST, TEAM, USER} = MM_TABLES.SERVER;
+const {
+    CHANNEL,
+    CHANNEL_INFO,
+    CHANNEL_MEMBERSHIP,
+    DRAFT,
+    GROUPS_IN_CHANNEL,
+    MY_CHANNEL,
+    MY_CHANNEL_SETTINGS,
+    POSTS_IN_CHANNEL,
+    POST,
+    TEAM,
+    USER,
+} = MM_TABLES.SERVER;
 
 /**
  * The Channel model represents a channel in the Mattermost app.
  */
 export default class Channel extends Model {
     /** table (entity name) : Channel */
-    static table = CHANNEL
+    static table = CHANNEL;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -55,59 +67,59 @@ export default class Channel extends Model {
 
         /** A USER can create multiple CHANNEL ( relationship is 1:N) */
         [USER]: {type: 'belongs_to', key: 'creator_id'},
-    }
+    };
 
     /** create_at : The creation date for this channel */
-    @field('create_at') createAt!: number
+    @field('create_at') createAt: number | undefined;
 
     /** creator_id : The user who created this channel */
-    @field('creator_id') creatorId!: string
+    @field('creator_id') creatorId: string | undefined;
 
     /** delete_at : The deletion/archived date of this channel */
-    @field('delete_at') deleteAt!: number
+    @field('delete_at') deleteAt: number | undefined;
 
     /** display_name : The channel display name (e.g. Contributors ) */
-    @field('display_name') displayName!: string
+    @field('display_name') displayName: string | undefined;
 
     /** is_group_constrained : If group is restricted to certain users/teams only */
-    @field('is_group_constrained') isGroupConstrained!: boolean
+    @field('is_group_constrained') isGroupConstrained: boolean | undefined;
 
     /** name : The name of the channel (e.g core) */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** team_id : The team to which this channel belongs.  It can be null/empty for direct/group message. */
-    @field('team_id') teamId!: string
+    @field('team_id') teamId: string | undefined;
 
     /** type : The type of message in this channel ( e.g. G: grouped message, D: direct message, P: private message and O: public message) */
-    @field('type') type!: string
+    @field('type') type: string | undefined;
 
     /** settings: User specific settings/preferences for this channel */
-    @children(MY_CHANNEL_SETTINGS) settings!: MyChannelSettings
+    @children(MY_CHANNEL_SETTINGS) settings: MyChannelSettings | undefined;
 
     /** members : Users belonging to this channel */
-    @children(CHANNEL_MEMBERSHIP) members!: ChannelMembership
+    @children(CHANNEL_MEMBERSHIP) members: ChannelMembership | undefined;
 
     /** draft : All drafts for this channel */
-    @children(DRAFT) draft!: Draft
+    @children(DRAFT) draft: Draft | undefined;
 
     /** groupsInChannel : Every group contained in this channel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel
+    @children(GROUPS_IN_CHANNEL) groupsInChannel: GroupsInChannel | undefined;
 
     /** posts : all posts made in that channel */
-    @children(POST) posts!: Post
+    @children(POST) posts: Post | undefined;
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    @children(POSTS_IN_CHANNEL) postsInChannel!: PostsInChannel
+    @children(POSTS_IN_CHANNEL) postsInChannel: PostsInChannel | undefined;
 
     /** team : The 'Relation' property to the record from entity TEAM */
-    @immutableRelation(TEAM, 'team_id') team!: Team
+    @immutableRelation(TEAM, 'team_id') team: Team | undefined;
 
     /** creator : The 'Relation' property to the record from entity USER */
-    @immutableRelation(USER, 'creator_id') creator!: User
+    @immutableRelation(USER, 'creator_id') creator: User | undefined;
 
     /** info : Query returning extra information about this channel from entity CHANNEL_INFO */
-    @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id))
+    @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id));
 
     /** membership : Query returning all the channels that this user belongs to - from entity MY_CHANNEL */
-    @lazy membership = this.collections.get(MY_CHANNEL).query(Q.on(CHANNEL, 'id', this.id))
+    @lazy membership = this.collections.get(MY_CHANNEL).query(Q.on(CHANNEL, 'id', this.id));
 }

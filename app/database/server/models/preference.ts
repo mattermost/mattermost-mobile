@@ -15,27 +15,27 @@ const {PREFERENCE, USER} = MM_TABLES.SERVER;
  */
 export default class Preference extends Model {
     /** table (entity name) : Preference */
-    static table = PREFERENCE
+    static table = PREFERENCE;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
         /** A PREFERENCE can belong to only one USER  */
         [USER]: {type: 'belongs_to', key: 'user_id'},
-    }
+    };
 
     /** category : The preference category ( e.g. Themes, Account settings etc..) */
-    @field('category') category!: string
+    @field('category') category: string | undefined;
 
     /** name : The category name */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** user_id : The foreign key of the user's record in this model */
-    @field('user_id') userId!: string
+    @field('user_id') userId: string | undefined;
 
     /** value : The preference's value */
-    @field('value') value!: string
+    @field('value') value: string | undefined;
 
     /** user : The related record to the parent User model */
-    @immutableRelation(USER, 'user_id') user!: User
+    @immutableRelation(USER, 'user_id') user: User | undefined;
 }

@@ -17,7 +17,7 @@ const {CHANNEL, CHANNEL_MEMBERSHIP, USER} = MM_TABLES.SERVER;
  */
 export default class ChannelMembership extends Model {
     /** table (entity name) : ChannelMembership */
-    static table = CHANNEL_MEMBERSHIP
+    static table = CHANNEL_MEMBERSHIP;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -27,11 +27,11 @@ export default class ChannelMembership extends Model {
 
         /** A USER can belong to multiple channels */
         [USER]: {type: 'belongs_to', key: 'user_id'},
-    }
+    };
 
     /** memberChannel : The related channel this member belongs to */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel
+    @immutableRelation(CHANNEL, 'channel_id') channel: Channel | undefined;
 
     /** memberUser : The related member belong to the channel */
-    @immutableRelation(USER, 'user_id') user!: User
+    @immutableRelation(USER, 'user_id') user: User | undefined;
 }

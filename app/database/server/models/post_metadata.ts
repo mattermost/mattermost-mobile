@@ -14,24 +14,24 @@ const {POST, POST_METADATA} = MM_TABLES.SERVER;
  */
 export default class PostMetadata extends Model {
     /** table (entity name) : PostMetadata */
-    static table = POST_METADATA
+    static table = POST_METADATA;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
         /** A POST has a 1:N relationship with POST_METADATA*/
         [POST]: {type: 'belongs_to', key: 'post_id'},
-    }
+    };
 
     /** post_id : The foreign key of the parent POST model */
-    @field('post_id') postId!: string
+    @field('post_id') postId: string | undefined;
 
     /** type : The type will work in tandem with the value present in the field 'data'.  One 'type' for each kind of 'data' */
-    @field('type') type!: string
+    @field('type') type: string | undefined;
 
     /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
-    @json('data', (rawJson) => rawJson) data!: string[]
+    @json('data', (rawJson) => rawJson) data: string[] | undefined;
 
     /** post: The record representing the POST parent.  */
-    @immutableRelation(POST, 'post_id') post!: Post
+    @immutableRelation(POST, 'post_id') post: Post | undefined;
 }

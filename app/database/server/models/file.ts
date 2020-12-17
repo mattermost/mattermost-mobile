@@ -14,42 +14,42 @@ const {POST} = MM_TABLES.SERVER;
  */
 export default class File extends Model {
     /** table (entity name) : File */
-    static table = MM_TABLES.SERVER.FILE
+    static table = MM_TABLES.SERVER.FILE;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
         /** A POST has a 1:N relationship with FILE. */
         [POST]: {type: 'belongs_to', key: 'post_id'},
-    }
+    };
 
     /** extension : The file's extension */
-    @field('extension') extension!: string
+    @field('extension') extension: string | undefined;
 
     /** height : The height for the image */
-    @field('height') height!: number
+    @field('height') height: number | undefined;
 
     /** image_thumbnail : A base64 representation of an image */
-    @field('image_thumbnail') imageThumbnail!: string
+    @field('image_thumbnail') imageThumbnail: string | undefined;
 
     /** local_path : Local path of the file that has been uploaded to server */
-    @field('local_path') localPath!: string
+    @field('local_path') localPath: string | undefined;
 
     /** mime_type : The media type */
-    @field('mime_type') mimeType!: string
+    @field('mime_type') mimeType: string | undefined;
 
     /** name : The name for the file object */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId!: string
+    @field('post_id') postId: string | undefined;
 
     /** size : The numeric value of the size for the file */
-    @field('size') size!: number
+    @field('size') size: number | undefined;
 
     /** width : The width of the file object/image */
-    @field('width') width!: number
+    @field('width') width: number | undefined;
 
     /** post : The related Post record for this file */
-    @immutableRelation(POST, 'post_id') post!: Post
+    @immutableRelation(POST, 'post_id') post: Post | undefined;
 }

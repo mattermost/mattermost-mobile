@@ -16,7 +16,7 @@ const {GROUP, GROUPS_IN_CHANNEL, GROUPS_IN_TEAM, GROUP_MEMBERSHIP} = MM_TABLES.S
  */
 export default class Group extends Model {
     /** table (entity name) : Group */
-    static table = GROUP
+    static table = GROUP;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
@@ -29,20 +29,20 @@ export default class Group extends Model {
 
         /** A GROUP has a 1:N relationship with GROUP_MEMBERSHIP */
         [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
-    }
+    };
 
     /** display_name : The display name for the group */
-    @field('display_name') displayName!: string
+    @field('display_name') displayName: string | undefined;
 
     /** name : The name of the group */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** groupsInChannel : All the related children records from GroupsInChannel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel
+    @children(GROUPS_IN_CHANNEL) groupsInChannel: GroupsInChannel | undefined;
 
     /** groupsInChannel : All the related children records from GroupsInTeam */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam
+    @children(GROUPS_IN_TEAM) groupsInTeam: GroupsInTeam | undefined;
 
     /** groupsInChannel : All the related children records from GroupMembership */
-    @children(GROUP_MEMBERSHIP) groupMembership!: GroupMembership
+    @children(GROUP_MEMBERSHIP) groupMembership: GroupMembership | undefined;
 }

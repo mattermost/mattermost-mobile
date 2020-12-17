@@ -15,24 +15,24 @@ const {POST, POSTS_IN_THREAD} = MM_TABLES.SERVER;
  */
 export default class PostsInThread extends Model {
     /** table (entity name) : PostsInThread */
-    static table = POSTS_IN_THREAD
+    static table = POSTS_IN_THREAD;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
         /** A POST has a 1:N relationship with POSTS_IN_THREAD  */
         [POST]: {type: 'belongs_to', key: 'post_id'},
-    }
+    };
 
     /** latest : Upper bound of a timestamp range */
-    @field('earliest') earliest!: number
+    @field('earliest') earliest: number | undefined;
 
     /** latest : Upper bound of a timestamp range */
-    @field('latest') latest!: number
+    @field('latest') latest: number | undefined;
 
     /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId!: number
+    @field('post_id') postId: number | undefined;
 
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'post_id') post!: Post
+    @immutableRelation(POST, 'post_id') post: Post | undefined;
 }
