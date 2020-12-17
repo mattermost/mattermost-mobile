@@ -17,11 +17,11 @@ const {GLOBAL} = MM_TABLES.DEFAULT;
  */
 export default class Global extends Model {
     /** table (entity name) : global */
-    static table = GLOBAL
+    static table = GLOBAL;
 
     /** name : The label/key to use to retrieve the special 'value' */
-    @field('name') name!: string
+    @field('name') name: string | undefined;
 
     /** value : The value part of the key-value combination */
-    @json('value', (rawJson) => rawJson) value!: string[]
+    @json('value', (rawJson) => rawJson) value: string[] | undefined;
 }

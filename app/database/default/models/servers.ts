@@ -12,22 +12,22 @@ const {SERVERS} = MM_TABLES.DEFAULT;
  * The Server model will help us to identify the various servers a user will log in; in the context of
  * multi-server support system.  The dbPath field will hold the App-Groups file-path
  */
-export default class Server extends Model {
+export default class Servers extends Model {
     /** table (entity name) : servers */
-    static table = SERVERS
+    static table = SERVERS;
 
     /** db_path : The shared directory (e.g. App-Group) in which the database is stored */
-    @field('db_path') dbPath!: string
+    @field('db_path') dbPath: string | undefined;
 
     /** display_name : The server display name */
-    @field('display_name') displayName!: string
+    @field('display_name') displayName: string | undefined;
 
     /** mention_count : The number of mention on this server */
-    @field('mention_count') mentionCount!: number
+    @field('mention_count') mentionCount: number | undefined;
 
     /** unread_count : The number of unread messages on this server */
-    @field('unread_count') unreadCount!: number
+    @field('unread_count') unreadCount: number | undefined;
 
     /** url : The online address for the Mattermost server */
-    @field('url') url!: string
+    @field('url') url: string | undefined;
 }
