@@ -61,7 +61,12 @@ RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:
 RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName callback: (RCTResponseSenderBlock)callback){
   @try {
       NSDictionary * appGroupDir = [self appGroupSharedDirectory];
-      NSString * databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
+      NSString * databaseDir = appGroupDir[@"databasePath"];
+
+      if(databaseName){
+        databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
+      }
+    
 
       NSFileManager * fileManager = [NSFileManager defaultManager];
       NSError *error = nil;

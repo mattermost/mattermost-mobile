@@ -46,7 +46,7 @@ import {
     User,
 } from '../server/models';
 import {serverSchema} from '../server/schema';
-import {getIOSAppGroupDetails} from './utils';
+import {getIOSAppGroupDetails} from './native_module/mm_db_native_module';
 
 // TODO [x] : Initialize a db connection with default schema
 // TODO [x] : handle migration
@@ -59,6 +59,8 @@ import {getIOSAppGroupDetails} from './utils';
 // TODO [] : retrieve all dbs or a subset via the url and it then returns db instances
 // TODO [] : how do we track down if migration succeeded on all the instances of 'server db'
 
+// TODO : should we sanitize the display name of databases ?
+
 type Models = Class<Model>[]
 
 export enum DatabaseType {
@@ -67,7 +69,7 @@ export enum DatabaseType {
 }
 
 class DatabaseManager {
-    activeDatabase: Database | undefined
+    activeDatabase: Database | undefined;
 
     private defaultModels: Models = [App, Global, Servers];
 
@@ -119,14 +121,14 @@ class DatabaseManager {
      * @param {string} displayName
      * @param {string} serverUrl
      */
-    setActiveDatabase = ({displayName, serverUrl}:{displayName: string, serverUrl: string }) => {
+    setActiveDatabase = ({displayName, serverUrl}: { displayName: string, serverUrl: string }) => {
         this.activeDatabase = this.createDatabaseConnection({
             actionsEnabled: true,
             dbName: displayName,
             dbType: DatabaseType.SERVER,
             serverUrl,
         });
-    }
+    };
 
     /**
      * Returns the default database.
@@ -195,9 +197,29 @@ class DatabaseManager {
         return FileSystem.documentDirectory + `/databases/${dbName}.db`;
     };
 
+    deleteDatabase = async ({dbName, serverUrl}: { dbName: string, serverUrl?: string }) => {
+        if (serverUrl) {
+            // TODO :  if we have a server url then we retrieve the display name from the default database and then we delete it
+        }
+        try {
+            const filePath = this.getDBDirectory({dbName});
+            const info = await FileSystem.getInfoAsync(filePath);
+
+            console.log('File info ', info);
+
+            // deleting the .db file directly at the filePath
+            const isDBFileDeleted = await FileSystem.deleteAsync(filePath, {idempotent: true});
+
+            console.log(`Database deleted at ${filePath}`, isDBFileDeleted);
+        } catch (e) {
+            console.log('An error occured while attempting to delete the .db file', e);
+        }
+        return null;
+    };
+
     getAllServerDatabases = (serverUrls: string []) => {
         // sentence.includes(word)
-
+        // FIXME : complete this method
         // Retrieve all server records from the default db
         const defaultDatabase = this.getDefaultDatabase();
         const serverCollections = defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS);
@@ -207,7 +229,7 @@ class DatabaseManager {
         console.log('all servers ', servers);
 
         return null;
-    }
+    };
 }
 
 export default new DatabaseManager();

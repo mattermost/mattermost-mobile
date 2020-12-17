@@ -21,10 +21,20 @@ import {
 
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
+import DBManager from '../../database/managers/database_manager';
+import {getIOSAppGroupDetails, deleteIOSDatabase} from '../../database/managers/native_module/mm_db_native_module';
 
 declare const global: {HermesInternal: null | {}};
 
 const App = () => {
+    const appGroup = getIOSAppGroupDetails();
+
+    const defaultDB = DBManager.getDefaultDatabase();
+    console.log('>>>>>>>>>>>>', {defaultDB});
+
+    // deleteIOSDatabase('default');
+    // deleteIOSDatabase();
+
     return (
         <>
             <StatusBar barStyle='dark-content'/>
@@ -44,7 +54,7 @@ const App = () => {
                             <Text style={styles.sectionTitle}>{'Step One'}</Text>
                             <Text style={styles.sectionDescription}>
                                 {'Edit '}<Text style={styles.highlight}>{'screens/server/index.tsx'}</Text>{' to change this'}
-                                {'screen and then come back to see your edits.'}
+                                {'XXXXXscreen and then come back to see your edits.'}
                             </Text>
                         </View>
                         <View style={styles.sectionContainer}>
