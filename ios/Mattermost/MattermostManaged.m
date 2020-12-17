@@ -25,11 +25,11 @@ RCT_EXPORT_MODULE();
 
 
 -(NSDictionary * ) appGroupSharedDirectory {
-  
-  NSURL *sharedDirectory = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier: [self appGroupId]];
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+  NSURL *sharedDirectory = [fileManager containerURLForSecurityApplicationGroupIdentifier: [self appGroupId]];
   NSURL * databasePath = [sharedDirectory URLByAppendingPathComponent:@"databases"];
   
-  [[NSFileManager defaultManager] createDirectoryAtPath:[databasePath path]
+  [fileManager createDirectoryAtPath:[databasePath path]
                                   withIntermediateDirectories:true
                                   attributes:nil
                                   error:nil
@@ -40,6 +40,8 @@ RCT_EXPORT_MODULE();
    };
 }
 
+
+
 - (NSDictionary *)constantsToExport {
   return @{
            @"appGroupIdentifier": [self appGroupId],
@@ -47,8 +49,7 @@ RCT_EXPORT_MODULE();
            };
 }
 
-RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   BOOL isRunningInFullScreen = CGRectEqualToRect(
                                                  [UIApplication sharedApplication].delegate.window.frame,
                                                  [UIApplication sharedApplication].delegate.window.screen.bounds);
@@ -56,5 +57,24 @@ RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve
             @"isSplitView": @(!isRunningInFullScreen)
             });
 }
+
+RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName callback: (RCTResponseSenderBlock)callback){
+  @try {
+      NSDictionary * appGroupDir = [self appGroupSharedDirectory];
+      NSString * databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
+
+      NSFileManager * fileManager = [NSFileManager defaultManager];
+      NSError *error = nil;
+      
+      BOOL  successCode  = [fileManager removeItemAtPath:databaseDir error:&error];
+      NSNumber * success= [NSNumber numberWithBool:successCode];
+      
+      callback(@[error, success]);
+  }
+  @catch (NSException *exception) {
+      NSLog(@"%@", exception.reason);
+  }
+}
+
 
 @end
