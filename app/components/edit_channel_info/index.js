@@ -13,12 +13,13 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {General} from '@mm-redux/constants';
 
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
+import Autocomplete from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import DEVICE from '@constants/device';
 
 import {
     changeOpacity,
@@ -370,7 +371,7 @@ export default class EditChannelInfo extends PureComponent {
                 <View style={[style.autocompleteContainer, bottomStyle]}>
                     <Autocomplete
                         cursorPosition={header.length}
-                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.onHeaderChangeText}
                         value={header}
                         nestedScrollEnabled={true}

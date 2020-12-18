@@ -8,6 +8,7 @@ import {intlShape} from 'react-intl';
 
 import PasteableTextInput from '@components/pasteable_text_input';
 import {NavigationTypes} from '@constants';
+import DEVICE from '@constants/device';
 import {INSERT_TO_COMMENT, INSERT_TO_DRAFT} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {t} from '@utils/i18n';
@@ -270,7 +271,7 @@ export default class PostInput extends PureComponent {
         const {channelDisplayName, isLandscape, theme} = this.props;
         const style = getStyleSheet(theme);
         const placeholder = this.getPlaceHolder();
-        let maxHeight = 150;
+        let maxHeight = DEVICE.POST_INPUT_MAX_HEIGHT;
 
         if (isLandscape) {
             maxHeight = 88;
