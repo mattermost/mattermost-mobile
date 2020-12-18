@@ -42,7 +42,7 @@ export default class ChannelLoader extends PureComponent {
         style: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
         height: PropTypes.number,
-        retryLoad: PropTypes.func.isRequired,
+        retryLoad: PropTypes.func,
     };
 
     constructor(props) {
@@ -75,8 +75,10 @@ export default class ChannelLoader extends PureComponent {
     }
 
     componentDidMount() {
-        this.stillLoadingTimeout = setTimeout(this.showIndicator, 10000);
-        this.retryLoadInterval = setInterval(this.props.retryLoad, 10000);
+        if (this.props.retryLoad) {
+            this.stillLoadingTimeout = setTimeout(this.showIndicator, 10000);
+            this.retryLoadInterval = setInterval(this.props.retryLoad, 10000);
+        }
     }
 
     componentWillUnmount() {
