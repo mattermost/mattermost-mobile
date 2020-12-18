@@ -50,6 +50,19 @@ exports[`thread should match snapshot, has root post 1`] = `
       </ForwardRef(AnimatedComponentWrapper)>
     </React.Fragment>
   </Connect(SafeArea)>
+  <View
+    nativeID="threadAccessoriesContainer"
+  >
+    <Connect(Autocomplete)
+      channelId="channel_id"
+      cursorPositionEvent="onThreadTextBoxCursorChange"
+      maxHeight={200}
+      offsetY={0}
+      onChangeText={[Function]}
+      rootId="root_id"
+      valueEvent="onThreadTextBoxValueChange"
+    />
+  </View>
   <Connect(PostDraft)
     accessoriesContainerID="threadAccessoriesContainer"
     channelId="channel_id"
@@ -60,18 +73,6 @@ exports[`thread should match snapshot, has root post 1`] = `
     scrollViewNativeID="threadPostList"
     valueEvent="onThreadTextBoxValueChange"
   />
-  <View
-    nativeID="threadAccessoriesContainer"
-  >
-    <Connect(Autocomplete)
-      channelId="channel_id"
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      maxHeight={200}
-      onChangeText={[Function]}
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </View>
 </React.Fragment>
 `;
 
@@ -103,6 +104,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
       channelId="channel_id"
       cursorPositionEvent="onThreadTextBoxCursorChange"
       maxHeight={200}
+      offsetY={0}
       onChangeText={[Function]}
       rootId="root_id"
       valueEvent="onThreadTextBoxValueChange"
@@ -185,6 +187,7 @@ exports[`thread should match snapshot, render footer 3`] = `
       channelId="channel_id"
       cursorPositionEvent="onThreadTextBoxCursorChange"
       maxHeight={200}
+      offsetY={0}
       onChangeText={[Function]}
       rootId="root_id"
       valueEvent="onThreadTextBoxValueChange"
