@@ -198,6 +198,7 @@
   "mobile.channel_list.members": "MEMBERS",
   "mobile.channel_list.not_member": "NOT A MEMBER",
   "mobile.channel_list.unreads": "읽지 않음",
+  "mobile.channel_loader.still_loading": "콘텐츠를 불러오는 중...",
   "mobile.channel_members.add_members_alert": "채널에 추가하려는 구성원을 한 명 이상 선택해야 합니다.",
   "mobile.client_upgrade": "애플리케이션 업데이트",
   "mobile.client_upgrade.can_upgrade_subtitle": "새로운 버전을 다운로드할 수 있습니다.",
