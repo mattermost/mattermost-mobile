@@ -14,7 +14,6 @@ describe('ChannelLoader', () => {
     const baseProps = {
         channelIsLoading: true,
         theme: Preferences.THEMES.default,
-        retryLoad: jest.fn(),
     };
 
     test('should match snapshot', () => {
@@ -23,15 +22,26 @@ describe('ChannelLoader', () => {
     });
 
     test('should call setTimeout and setInterval for showIndicator and retryLoad on mount', () => {
-        const wrapper = shallow(<ChannelLoader {...baseProps}/>);
-        const instance = wrapper.instance();
+        shallow(<ChannelLoader {...baseProps}/>);
+        expect(setTimeout).not.toHaveBeenCalled();
+        expect(setInterval).not.toHaveBeenCalled();
 
+        const props = {
+            ...baseProps,
+            retryLoad: jest.fn(),
+        };
+        const wrapper = shallow(<ChannelLoader {...props}/>);
+        const instance = wrapper.instance();
         expect(setTimeout).toHaveBeenCalledWith(instance.showIndicator, 10000);
-        expect(setInterval).toHaveBeenCalledWith(baseProps.retryLoad, 10000);
+        expect(setInterval).toHaveBeenCalledWith(props.retryLoad, 10000);
     });
 
     test('should clear timer and interval on unmount', () => {
-        const wrapper = shallow(<ChannelLoader {...baseProps}/>);
+        const props = {
+            ...baseProps,
+            retryLoad: jest.fn(),
+        }
+        const wrapper = shallow(<ChannelLoader {...props}/>);
         const instance = wrapper.instance();
         instance.componentWillUnmount();
 
