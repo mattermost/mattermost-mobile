@@ -15,7 +15,7 @@ import Store from '@store/store';
 
 Navigation.setDefaultOptions({
     layout: {
-        orientation: [DeviceTypes.IS_TABLET ? undefined : 'portrait'],
+        orientation: [DeviceTypes.IS_TABLET ? 'all' : 'portrait'],
     },
 });
 
