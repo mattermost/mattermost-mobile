@@ -198,6 +198,7 @@
   "mobile.channel_list.members": "MEMBRI",
   "mobile.channel_list.not_member": "NU E UN MEMBRU",
   "mobile.channel_list.unreads": "NECITITE",
+  "mobile.channel_loader.still_loading": "Încă încerc să vă încărc conținutul...",
   "mobile.channel_members.add_members_alert": "Trebuie să selectați cel puțin un membru pentru a adăuga la canal.",
   "mobile.client_upgrade": "Actualizați aplicația",
   "mobile.client_upgrade.can_upgrade_subtitle": "O versiune nouă este disponibilă pentru descărcare.",
