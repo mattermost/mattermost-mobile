@@ -7,4 +7,4 @@ import {withReduxProvider} from '@screens';
 import DevMenu from 'react-native-dev-menu';
 DevMenu.addItem('StoryBook', () => goToScreen('StoryBook', 'StoryBook'));
 
-Navigation.registerComponent('StoryBook', () => withReduxProvider(require('../storybook').default), () => require('../storybook').default);
+Navigation.registerComponent('StoryBook', () => withReduxProvider(require('../storybook').default));
