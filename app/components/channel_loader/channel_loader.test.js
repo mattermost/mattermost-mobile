@@ -40,7 +40,7 @@ describe('ChannelLoader', () => {
         const props = {
             ...baseProps,
             retryLoad: jest.fn(),
-        }
+        };
         const wrapper = shallow(<ChannelLoader {...props}/>);
         const instance = wrapper.instance();
         instance.componentWillUnmount();
