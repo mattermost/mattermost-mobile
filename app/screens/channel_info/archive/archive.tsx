@@ -67,7 +67,7 @@ export default class Archive extends PureComponent<ArchiveProps> {
         const title = {id: t('mobile.channel_info.alertTitleDeleteChannel'), defaultMessage: 'Archive {term}'};
         const message = {
             id: t('mobile.channel_info.alertMessageDeleteChannel'),
-            defaultMessage: 'Are you sure you want to archive the {term} {name}?',
+            defaultMessage: 'This will make its contents inaccessible for all users. Are you sure you want to archive the {term} {name}?',
         };
         const onPressAction = async () => {
             const result = await deleteChannel(channelId);
