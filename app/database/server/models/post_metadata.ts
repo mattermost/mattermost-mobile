@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 
@@ -10,7 +11,7 @@ import Post from '@typings/database/post';
 const {POST, POST_METADATA} = MM_TABLES.SERVER;
 
 /**
- * PostMetadata allows us to have maximum information about the constituents of a POST
+ * PostMetadata provides additional information on a POST
  */
 export default class PostMetadata extends Model {
     /** table (entity name) : PostMetadata */
@@ -19,19 +20,27 @@ export default class PostMetadata extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A POST has a 1:N relationship with POST_METADATA*/
+        /** A POST can have multiple POST_METADATA.(relationship is 1:N)*/
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
+    constructor() {
+        super();
+        this.data = '';
+        this.post = {} as Relation<Post>;
+        this.postId = '';
+        this.type = '';
+    }
+
     /** post_id : The foreign key of the parent POST model */
-    @field('post_id') postId: string | undefined;
+    @field('post_id') postId: string;
 
     /** type : The type will work in tandem with the value present in the field 'data'.  One 'type' for each kind of 'data' */
-    @field('type') type: string | undefined;
+    @field('type') type: string;
 
     /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
-    @json('data', (rawJson) => rawJson) data: string[] | undefined;
+    @json('data', (rawJson) => rawJson) data: string;
 
     /** post: The record representing the POST parent.  */
-    @immutableRelation(POST, 'post_id') post: Post | undefined;
+    @immutableRelation(POST, 'post_id') post: Relation<Post>;
 }

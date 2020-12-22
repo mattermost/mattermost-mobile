@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -27,21 +28,32 @@ export default class GroupsInTeam extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
+    constructor() {
+        super();
+
+        this.group = {} as Relation<Group>;
+        this.groupId = '';
+        this.memberCount = 0;
+        this.team = {} as Relation<Team>;
+        this.teamId = '';
+        this.timezoneCount = 0;
+    }
+
     /** group_id : The foreign key to the related Group record */
-    @field('group_id') groupId: string | undefined;
+    @field('group_id') groupId: string;
 
     /** member_count : The number of users in that group */
-    @field('member_count') memberCount: number | undefined;
+    @field('member_count') memberCount: number;
 
     /** team_id : The foreign key to the related Team record */
-    @field('team_id') teamId: string | undefined;
+    @field('team_id') teamId: string;
 
     /** timezone_count : The number of timezones */
-    @field('timezone_count') timezoneCount: number | undefined;
+    @field('timezone_count') timezoneCount: number;
 
     /** team : The related record to the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team: Team | undefined;
+    @immutableRelation(TEAM, 'team_id') team: Relation<Team>;
 
     /** group : The related record to the parent Team model */
-    @immutableRelation(GROUP, 'group_id') group: Group | undefined;
+    @immutableRelation(GROUP, 'group_id') group: Relation<Group>;
 }

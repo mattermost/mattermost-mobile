@@ -9,7 +9,6 @@ import {MM_TABLES} from '@constants/database';
 const {GLOBAL} = MM_TABLES.DEFAULT;
 
 // TODO : add TS definitions to sanitizer function signature.
-// TODO : atm, the return type for 'value' is string[].  However, this return type can change to string/number/etc.  A broader definition will need to be applied and this return type updated accordingly.
 
 /**
  * The Global model will act as a dictionary of name-value pairs.  The value field can be a JSON object or any other
@@ -19,9 +18,15 @@ export default class Global extends Model {
     /** table (entity name) : global */
     static table = GLOBAL;
 
+    constructor() {
+        super();
+        this.name = '';
+        this.value = '';
+    }
+
     /** name : The label/key to use to retrieve the special 'value' */
-    @field('name') name: string | undefined;
+    @field('name') name: string;
 
     /** value : The value part of the key-value combination */
-    @json('value', (rawJson) => rawJson) value: string[] | undefined;
+    @json('value', (rawJson) => rawJson) value: string;
 }

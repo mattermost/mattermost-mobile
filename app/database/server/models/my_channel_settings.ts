@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
+import {field, json, relation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import User from '@typings/database/user';
+import Channel from '@typings/database/channel';
 
 const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 
 /**
  * The MyChannelSettings model represents the specific user's configuration to
- * the channel that user belongs to.
+ * the channel this user belongs to.
  */
 export default class MyChannelSettings extends Model {
     /** table (entity name) : MyChannelSettings */
@@ -20,16 +21,23 @@ export default class MyChannelSettings extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A CHANNEL model can have multiple MY_CHANNEL_SETTINGS ( relationship is 1:N) */
+        /** A CHANNEL is related to only one MY_CHANNEL_SETTINGS (relationship is 1:1) */
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
+    constructor() {
+        super();
+        this.channelId = '';
+        this.notifyProps = '';
+        this.channel = {} as Relation<Channel>;
+    }
+
     /** channelId : The foreign key to the related CHANNEL record */
-    @field('channel_id') channelId: string | undefined;
+    @field('channel_id') channelId: string;
 
     /** notifyProps : Configurations with regards to this channel */
-    @json('notify_props', (rawJson) => rawJson) notifyProps: string[] | undefined;
+    @json('notify_props', (rawJson) => rawJson) notifyProps: string;
 
-    /** channel : The parent Channel record */
-    @immutableRelation(CHANNEL, 'channel_id') channel: User | undefined;
+    /** channel : The relation pointing to entity CHANNEL */
+    @relation(CHANNEL, 'channel_id') channel: Relation<Channel>;
 }

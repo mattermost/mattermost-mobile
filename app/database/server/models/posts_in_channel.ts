@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -20,19 +21,27 @@ export default class PostsInChannel extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A CHANNEL has a 1:N relationship with  POSTS_IN_CHANNEL*/
+        /** A CHANNEL can have multiple POSTS_IN_CHANNEL. (relationship is 1:N)*/
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
+    constructor() {
+        super();
+        this.channel = {} as Relation<Channel>;
+        this.channelId = '';
+        this.earliest = 0;
+        this.latest = 0;
+    }
+
     /** channel_id : The foreign key of the related parent channel */
-    @field('channel_id') channelId: string | undefined;
+    @field('channel_id') channelId: string;
 
     /** earliest : The earliest timestamp of the post in that channel  */
-    @field('earliest') earliest: number | undefined;
+    @field('earliest') earliest: number;
 
     /** latest : The latest timestamp of the post in that channel  */
-    @field('latest') latest: number | undefined;
+    @field('latest') latest: number;
 
     /** channel : The parent record of the channel for those posts */
-    @immutableRelation(CHANNEL, 'channel_id') channel: Channel | undefined;
+    @immutableRelation(CHANNEL, 'channel_id') channel: Relation<Channel>;
 }

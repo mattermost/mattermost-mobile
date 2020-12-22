@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -12,7 +13,7 @@ const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 
 /**
  * The TeamMembership model represents the 'association table' where many teams have users and many users are in
- * teams ( relationship type N:N)
+ * teams (relationship type N:N)
  */
 export default class TeamMembership extends Model {
     /** table (entity name) : ChannelMembership */
@@ -20,13 +21,23 @@ export default class TeamMembership extends Model {
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
+
+        /** A USER can be part of multiple teams */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
+
+        /** A TEAM can regroup multiple users */
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
-    /** memberUser: The related user in the teams */
-    @immutableRelation(USER, 'user_id') memberUser: User | undefined;
+    constructor() {
+        super();
+        this.memberTeam = {} as Relation<Team>;
+        this.memberUser = {} as Relation<User>;
+    }
+
+    /** memberUser: The related user in the team */
+    @immutableRelation(USER, 'user_id') memberUser: Relation<User>;
 
     /** memberTeam : The related team of users */
-    @immutableRelation(TEAM, 'team_id') memberTeam: Team | undefined;
+    @immutableRelation(TEAM, 'team_id') memberTeam: Relation<Team>;
 }
