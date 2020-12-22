@@ -36,8 +36,8 @@ export default class TeamMembership extends Model {
     }
 
     /** memberUser: The related user in the team */
-    @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
+    @immutableRelation(USER, 'user_id') memberUser: Relation<User>;
 
     /** memberTeam : The related team of users */
-    @immutableRelation(TEAM, 'team_id') memberTeam!: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') memberTeam: Relation<Team>;
 }

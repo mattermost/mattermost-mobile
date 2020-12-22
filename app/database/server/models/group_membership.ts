@@ -36,8 +36,8 @@ export default class GroupMembership extends Model {
     }
 
     /** memberGroup : The related group this user belongs to */
-    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
+    @immutableRelation(GROUP, 'group_id') group: Relation<Group>;
 
     /** memberUser : The related user in the group */
-    @immutableRelation(USER, 'user_id') user!: Relation<User>;
+    @immutableRelation(USER, 'user_id') user: Relation<User>;
 }

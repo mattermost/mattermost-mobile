@@ -34,14 +34,14 @@ export default class Draft extends Model {
     }
 
     /** channel_id : The foreign key pointing to the channel in which the draft was made */
-    @field('channel_id') channelId!: string;
+    @field('channel_id') channelId: string;
 
     /** message : The draft message */
-    @field('message') message!: string;
+    @field('message') message: string;
 
     /** root_id : The root_id will be empty for Direct Message but have a value for draft replies of a thread */
-    @field('root_id') rootId!: string;
+    @field('root_id') rootId: string;
 
     /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE entity */
-    @json('files', (rawJson) => rawJson) files!: string;
+    @json('files', (rawJson) => rawJson) files: string;
 }

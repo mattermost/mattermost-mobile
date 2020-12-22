@@ -39,20 +39,20 @@ export default class Reaction extends Model {
     }
 
     /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
-    @field('create_at') createAt!: number;
+    @field('create_at') createAt: number;
 
     /** emoji_name : The emoticon used to express the reaction */
-    @field('emoji_name') emojiName!: string;
+    @field('emoji_name') emojiName: string;
 
     /** post_id : The related Post's foreign key on which this reaction was expressed */
-    @field('post_id') postId!: string;
+    @field('post_id') postId: string;
 
     /** user_id : The related User's foreign key by which this reaction was expressed */
-    @field('user_id') userId!: string;
+    @field('user_id') userId: string;
 
     /** reactionUser : The related record to the User model */
-    @immutableRelation(USER, 'user_id') user!: Relation<User>;
+    @immutableRelation(USER, 'user_id') user: Relation<User>;
 
     /** reactionPost : The related record to the Post model */
-    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post: Relation<Post>;
 }

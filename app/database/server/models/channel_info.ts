@@ -37,23 +37,23 @@ export default class ChannelInfo extends Model {
     };
 
     /** channel_id : The foreign key from CHANNEL */
-    @field('channel_id') channelId!: string;
+    @field('channel_id') channelId: string;
 
     /** guest_count : The number of guest in this channel */
-    @field('guest_count') guestCount!: number;
+    @field('guest_count') guestCount: number;
 
     /** header : The headers at the top of each channel */
-    @field('header') header!: string;
+    @field('header') header: string;
 
     /** member_count: The number of members in this channel */
-    @field('member_count') memberCount!: number;
+    @field('member_count') memberCount: number;
 
     /** pin_post_count : The number of post pinned in this channel */
-    @field('pin_post_count') pinPostCount!: number;
+    @field('pin_post_count') pinPostCount: number;
 
     /** purpose: The intention behind this channel */
-    @field('purpose') purpose!: string;
+    @field('purpose') purpose: string;
 
     /** channel : The lazy query property to the record from  entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>
+    @relation(CHANNEL, 'channel_id') channel: Relation<Channel>
 }

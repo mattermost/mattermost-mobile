@@ -39,5 +39,5 @@ export default class MyChannelSettings extends Model {
     @json('notify_props', (rawJson) => rawJson) notifyProps: string;
 
     /** channel : The relation pointing to entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @relation(CHANNEL, 'channel_id') channel: Relation<Channel>;
 }

@@ -37,8 +37,8 @@ export default class ChannelMembership extends Model {
     };
 
     /** memberChannel : The related channel this member belongs to */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel: Relation<Channel>;
 
     /** memberUser : The related member belonging to the channel */
-    @immutableRelation(USER, 'user_id') user!: Relation<User>;
+    @immutableRelation(USER, 'user_id') user: Relation<User>;
 }

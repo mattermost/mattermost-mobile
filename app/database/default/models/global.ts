@@ -25,8 +25,8 @@ export default class Global extends Model {
     }
 
     /** name : The label/key to use to retrieve the special 'value' */
-    @field('name') name!: string;
+    @field('name') name: string;
 
     /** value : The value part of the key-value combination */
-    @json('value', (rawJson) => rawJson) value!: string;
+    @json('value', (rawJson) => rawJson) value: string;
 }

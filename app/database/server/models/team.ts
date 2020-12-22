@@ -77,47 +77,47 @@ export default class Team extends Model {
     }
 
     /** allow_open_invite : Boolean flag indicating if this team is open to the public */
-    @field('allow_open_invite') allowOpenInvite!: boolean;
+    @field('allow_open_invite') allowOpenInvite: boolean;
 
     /** description : The description for the team */
-    @field('description') description!: string;
+    @field('description') description: string;
 
     /** display_name : The display name for the team */
-    @field('display_name') displayName!: string;
+    @field('display_name') displayName: string;
 
     /** is_group_constrained : Boolean flag indicating if members are managed groups */
-    @field('is_group_constrained') isGroupConstrained!: boolean;
+    @field('is_group_constrained') isGroupConstrained: boolean;
 
     /** last_team_icon_updated_at : Timestamp for when this team's icon has been updated last */
-    @field('last_team_icon_updated_at') lastTeamIconUpdatedAt!: number;
+    @field('last_team_icon_updated_at') lastTeamIconUpdatedAt: number;
 
     /** name : The name for the team */
-    @field('name') name!: string;
+    @field('name') name: string;
 
     /** type : The type of team ( e.g. open/private ) */
-    @field('type') type!: string;
+    @field('type') type: string;
 
     /** allowed_domains : List of domains that can join this team */
-    @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string;
+    @json('allowed_domains', (rawJson) => rawJson) allowedDomains: string;
 
     /** channels : All the channels associated with this team */
-    @children(CHANNEL) channels!: Channel[];
+    @children(CHANNEL) channels: Channel[];
 
     /** groupsInTeam : All the groups associated with this team */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam[];
+    @children(GROUPS_IN_TEAM) groupsInTeam: GroupsInTeam[];
 
     /** myTeam : Lazy query property returning only the team that this user is part of  */
     @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
-    @children(SLASH_COMMAND) slashCommands!: SlashCommand[];
+    @children(SLASH_COMMAND) slashCommands: SlashCommand[];
 
     /** teamChannelHistories : All the channel history with this team */
-    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories!: TeamChannelHistory[];
+    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories: TeamChannelHistory[];
 
     /** members : All the users associated with this team */
-    @children(TEAM_MEMBERSHIP) members!: TeamMembership[];
+    @children(TEAM_MEMBERSHIP) members: TeamMembership[];
 
     /** teamSearchHistories : All the searches performed on this team */
-    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistory[];
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistories: TeamSearchHistory[];
 }

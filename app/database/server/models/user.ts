@@ -86,58 +86,58 @@ export default class User extends Model {
     }
 
     /** auth_service : The type of authentication service registered to that user */
-    @field('auth_service') authService!: string;
+    @field('auth_service') authService: string;
 
     /** delete_at : The timestamp at which this user account has been archived/deleted */
-    @field('delete_at') deleteAt!: number;
+    @field('delete_at') deleteAt: number;
 
     /** email : The email address for that user  */
-    @field('email') email!: string;
+    @field('email') email: string;
 
     /** first_name : The user's first name */
-    @field('first_name') firstName!: string;
+    @field('first_name') firstName: string;
 
     /** is_bot : Boolean flag indicating if the user is a bot */
-    @field('is_bot') isBot!: boolean;
+    @field('is_bot') isBot: boolean;
 
     /** is_guest : Boolean flag indicating if the user is a guest */
-    @field('is_guest') isGuest!: boolean;
+    @field('is_guest') isGuest: boolean;
 
     /** last_name : The user's last name */
-    @field('last_name') lastName!: string;
+    @field('last_name') lastName: string;
 
     /** last_picture_update : The timestamp of the last time the profile picture has been updated */
-    @field('last_picture_update') lastPictureUpdate!: number;
+    @field('last_picture_update') lastPictureUpdate: number;
 
     /** locale : The user's locale */
-    @field('locale') locale!: string;
+    @field('locale') locale: string;
 
     /** nick_name : The user's nick name */
-    @field('nick_name') nickName!: string;
+    @field('nick_name') nickName: string;
 
     /** position : The user's position in the company */
-    @field('position') position!: string;
+    @field('position') position: string;
 
     /** roles : The associated permissions that this user benefits from */
-    @field('roles') roles!: string;
+    @field('roles') roles: string;
 
     /** status : The presence status for the user */
-    @field('status') status!: string;
+    @field('status') status: string;
 
     /** user_name : The user's username */
-    @field('user_name') userName!: string;
+    @field('user_name') userName: string;
 
     /** notify_props : Notification preferences/configurations */
-    @json('notify_props', (rawJson) => rawJson) notifyProps!: string;
+    @json('notify_props', (rawJson) => rawJson) notifyProps: string;
 
     /** props : Custom objects ( e.g. custom status) can be stored in there */
-    @json('props', (rawJson) => rawJson) props!: string;
+    @json('props', (rawJson) => rawJson) props: string;
 
     /** time_zone : The different timezones listed for this user */
-    @json('time_zone', (rawJson) => rawJson) timeZone!: string;
+    @json('time_zone', (rawJson) => rawJson) timeZone: string;
 
     /** channelsCreated : All the channels that this user created */
-    @children(CHANNEL) channelsCreated!: Channel[];
+    @children(CHANNEL) channelsCreated: Channel[];
 
     /** channels : All the channels that this user is part of  */
     @children(CHANNEL_MEMBERSHIP) channels: ChannelMembership[];

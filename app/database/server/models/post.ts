@@ -73,62 +73,62 @@ export default class Post extends Model {
     };
 
     /** channel_id : The foreign key for the Channel to which this post belongs to. */
-    @field('channel_id') channelId!: string;
+    @field('channel_id') channelId: string;
 
     /** create_at : The timestamp to when this post was first created */
-    @field('create_at') createAt!: number;
+    @field('create_at') createAt: number;
 
     /** delete_at : The timestamp to when this post was last archived/deleted */
-    @field('delete_at') deleteAt!: number;
+    @field('delete_at') deleteAt: number;
 
     /** edit_at : The timestamp to when this post was last edited */
-    @field('edit_at') editAt!: number;
+    @field('edit_at') editAt: number;
 
     /** is_pinned : A Boolean flag indicating if this Post is pinned */
-    @field('is_pinned') isPinned!: boolean;
+    @field('is_pinned') isPinned: boolean;
 
     /** message : Message in the post */
-    @field('message') message!: string;
+    @field('message') message: string;
 
     /** original_id : Any post will have this value empty unless it is updated */
-    @field('original_id') originalId!: string;
+    @field('original_id') originalId: string;
 
     /** pending_post_id : The id given to a post before it is published on the server */
-    @field('pending_post_id') pendingPostId!: string;
+    @field('pending_post_id') pendingPostId: string;
 
     /** previous_post_id : Id of the previous post.  If this value is empty, this implies that it is not in the db and we will request it from server */
-    @field('previous_post_id') previousPostId!: string;
+    @field('previous_post_id') previousPostId: string;
 
     /** root_id : Used in threads. All posts under a thread will have this id in common */
-    @field('root_id') rootId!: string;
+    @field('root_id') rootId: string;
 
     /** type : Type of props (e.g. system message) */
-    @field('type') type!: string;
+    @field('type') type: string;
 
     /** user_id : The foreign key of the User who authored this post. */
-    @field('user_id') userId!: string;
+    @field('user_id') userId: string;
 
     /** props : Additional attributes for this props */
-    @json('props', (rawJson) => rawJson) props!: string;
+    @json('props', (rawJson) => rawJson) props: string;
 
     /** drafts  : Every drafts associated with this Post */
-    @children(DRAFT) drafts!: Draft;
+    @children(DRAFT) drafts: Draft;
 
     /** files: All the files associated with this Post */
-    @children(FILE) files!: File[];
+    @children(FILE) files: File[];
 
     /** postsInThread: Every posts associated to a thread */
-    @children(POSTS_IN_THREAD) postsInThread!: PostInThread[];
+    @children(POSTS_IN_THREAD) postsInThread: PostInThread[];
 
     /** metadata: All the extra data associated with this Post */
-    @children(POST_METADATA) metadata!: PostMetadata[];
+    @children(POST_METADATA) metadata: PostMetadata[];
 
     /** reactions: All the reactions associated with this Post */
-    @children(REACTION) reactions!: Reaction[];
+    @children(REACTION) reactions: Reaction[];
 
     /** author: The author of this Post */
-    @immutableRelation(USER, 'user_id') author!: Relation<User>;
+    @immutableRelation(USER, 'user_id') author: Relation<User>;
 
     /** channel: The channel which is presenting this Post */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel: Relation<Channel>;
 }

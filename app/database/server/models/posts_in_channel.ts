@@ -34,14 +34,14 @@ export default class PostsInChannel extends Model {
     }
 
     /** channel_id : The foreign key of the related parent channel */
-    @field('channel_id') channelId!: string;
+    @field('channel_id') channelId: string;
 
     /** earliest : The earliest timestamp of the post in that channel  */
-    @field('earliest') earliest!: number;
+    @field('earliest') earliest: number;
 
     /** latest : The latest timestamp of the post in that channel  */
-    @field('latest') latest!: number;
+    @field('latest') latest: number;
 
     /** channel : The parent record of the channel for those posts */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel: Relation<Channel>;
 }

@@ -34,14 +34,14 @@ export default class PostsInThread extends Model {
     }
 
     /** latest : Upper bound of a timestamp range */
-    @field('earliest') earliest!: number;
+    @field('earliest') earliest: number;
 
     /** latest : Upper bound of a timestamp range */
-    @field('latest') latest!: number;
+    @field('latest') latest: number;
 
     /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId!: string;
+    @field('post_id') postId: string;
 
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post: Relation<Post>;
 }
