@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -30,13 +31,13 @@ export default class TeamMembership extends Model {
 
     constructor() {
         super();
-        this.memberTeam = {} as Team;
-        this.memberUser = {} as User;
+        this.memberTeam = {} as Relation<Team>;
+        this.memberUser = {} as Relation<User>;
     }
 
     /** memberUser: The related user in the team */
-    @immutableRelation(USER, 'user_id') memberUser!: User;
+    @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
 
     /** memberTeam : The related team of users */
-    @immutableRelation(TEAM, 'team_id') memberTeam!: Team;
+    @immutableRelation(TEAM, 'team_id') memberTeam!: Relation<Team>;
 }

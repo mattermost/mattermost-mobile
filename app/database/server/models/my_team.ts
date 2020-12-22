@@ -1,5 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, json, relation} from '@nozbe/watermelondb/decorators';
 
@@ -26,8 +28,8 @@ export default class MyTeam extends Model {
         this.isUnread = false;
         this.mentionsCount = 0;
         this.roles = '';
+        this.team = {} as Relation<Team>;
         this.teamId = '';
-        this.team = {} as Team;
     }
 
     /** is_unread : Boolean flag for unread messages on team level */
@@ -43,5 +45,5 @@ export default class MyTeam extends Model {
     @field('team_id') teamId!: string;
 
     /** teams : The relation to the entity TEAM, that this user belongs to  */
-    @relation(MY_TEAM, 'team_id') team!: Team
+    @relation(MY_TEAM, 'team_id') team!: Relation<Team>
 }

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 
@@ -25,10 +26,10 @@ export default class PostMetadata extends Model {
 
     constructor() {
         super();
+        this.data = '';
+        this.post = {} as Relation<Post>;
         this.postId = '';
         this.type = '';
-        this.data = '';
-        this.post = {} as Post;
     }
 
     /** post_id : The foreign key of the parent POST model */
@@ -41,5 +42,5 @@ export default class PostMetadata extends Model {
     @json('data', (rawJson) => rawJson) data!: string;
 
     /** post: The record representing the POST parent.  */
-    @immutableRelation(POST, 'post_id') post!: Post;
+    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }

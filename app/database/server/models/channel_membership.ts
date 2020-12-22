@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import {immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
@@ -21,8 +22,8 @@ export default class ChannelMembership extends Model {
 
     constructor() {
         super();
-        this.channel = {} as Channel;
-        this.user = {} as User;
+        this.channel = {} as Relation<Channel>;
+        this.user = {} as Relation<User>;
     }
 
     /** associations : Describes every relationship to this entity. */
@@ -36,8 +37,8 @@ export default class ChannelMembership extends Model {
     };
 
     /** memberChannel : The related channel this member belongs to */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 
     /** memberUser : The related member belonging to the channel */
-    @immutableRelation(USER, 'user_id') user!: User;
+    @immutableRelation(USER, 'user_id') user!: Relation<User>;
 }

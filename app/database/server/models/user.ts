@@ -76,13 +76,13 @@ export default class User extends Model {
         this.notifyProps = '';
         this.props = '';
         this.timeZone = '';
-        this.channelsCreated = {} as Channel;
-        this.channels = {} as ChannelMembership;
-        this.groups = {} as GroupMembership;
-        this.posts = {} as Post;
-        this.preferences = {} as Preference;
-        this.reactions = {} as Reaction;
-        this.teams = {} as TeamMembership;
+        this.channelsCreated = [];
+        this.channels = [];
+        this.groups = [];
+        this.posts = [];
+        this.preferences = [];
+        this.reactions = [];
+        this.teams = [];
     }
 
     /** auth_service : The type of authentication service registered to that user */
@@ -137,23 +137,23 @@ export default class User extends Model {
     @json('time_zone', (rawJson) => rawJson) timeZone!: string;
 
     /** channelsCreated : All the channels that this user created */
-    @children(CHANNEL) channelsCreated!: Channel;
+    @children(CHANNEL) channelsCreated!: Channel[];
 
     /** channels : All the channels that this user is part of  */
-    @children(CHANNEL_MEMBERSHIP) channels: ChannelMembership;
+    @children(CHANNEL_MEMBERSHIP) channels: ChannelMembership[];
 
     /** groups : All the groups that this user is part of  */
-    @children(GROUP_MEMBERSHIP) groups: GroupMembership;
+    @children(GROUP_MEMBERSHIP) groups: GroupMembership[];
 
     /** posts :  All the posts that this user has written*/
-    @children(POST) posts: Post;
+    @children(POST) posts: Post[];
 
     /** preferences : All user preferences */
-    @children(PREFERENCE) preferences: Preference;
+    @children(PREFERENCE) preferences: Preference[];
 
     /** reactions : All the reactions to posts that this user had */
-    @children(REACTION) reactions: Reaction;
+    @children(REACTION) reactions: Reaction[];
 
     /** teams : All the team that this user is part of  */
-    @children(TEAM_MEMBERSHIP) teams: TeamMembership;
+    @children(TEAM_MEMBERSHIP) teams: TeamMembership[];
 }

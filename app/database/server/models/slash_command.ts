@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -33,7 +34,7 @@ export default class SlashCommand extends Model {
         this.teamId = '';
         this.token = '';
         this.trigger = '';
-        this.team = {} as Team;
+        this.team = {} as Relation<Team>;
     }
 
     /** auto_complete : Boolean flag for auto-completing slash commands */
@@ -61,5 +62,5 @@ export default class SlashCommand extends Model {
     @field('trigger') trigger!: string;
 
     /** team : The related parent TEAM record */
-    @immutableRelation(TEAM, 'team_id') team!: Team;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 }

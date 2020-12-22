@@ -34,10 +34,10 @@ export default class Group extends Model {
     constructor() {
         super();
         this.displayName = '';
+        this.groupMembership = [];
+        this.groupsInChannel = [];
+        this.groupsInTeam = [];
         this.name = '';
-        this.groupsInChannel = {} as GroupsInChannel;
-        this.groupsInTeam = {} as GroupsInTeam;
-        this.groupMembership = {} as GroupMembership;
     }
 
     /** display_name : The display name for the group */
@@ -47,11 +47,11 @@ export default class Group extends Model {
     @field('name') name!: string;
 
     /** groupsInChannel : All the related children records from GroupsInChannel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel;
+    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel[];
 
     /** groupsInChannel : All the related children records from GroupsInTeam */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam;
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam[];
 
     /** groupsInChannel : All the related children records from GroupMembership */
-    @children(GROUP_MEMBERSHIP) groupMembership!: GroupMembership;
+    @children(GROUP_MEMBERSHIP) groupMembership!: GroupMembership[];
 }

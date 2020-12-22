@@ -60,20 +60,20 @@ export default class Team extends Model {
     constructor() {
         super();
         this.allowOpenInvite = false;
+        this.allowedDomains = '';
+        this.channels = [];
         this.description = '';
         this.displayName = '';
+        this.groupsInTeam = [];
         this.isGroupConstrained = false;
         this.lastTeamIconUpdatedAt = 0;
-        this.name = '';
-        this.type = '';
-        this.allowedDomains = '';
-        this.channels = {} as Channel;
-        this.groupsInTeam = {} as GroupsInTeam;
-        this.slashCommands = {} as SlashCommand;
-        this.teamChannelHistories = {} as TeamChannelHistory;
-        this.members = {} as TeamMembership;
-        this.teamSearchHistories = {} as TeamSearchHistory;
+        this.members = [];
         this.myTeam = {} as Query<MyTeam>;
+        this.name = '';
+        this.slashCommands = [];
+        this.teamChannelHistories = [];
+        this.teamSearchHistories = [];
+        this.type = '';
     }
 
     /** allow_open_invite : Boolean flag indicating if this team is open to the public */
@@ -101,23 +101,23 @@ export default class Team extends Model {
     @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string;
 
     /** channels : All the channels associated with this team */
-    @children(CHANNEL) channels!: Channel;
+    @children(CHANNEL) channels!: Channel[];
 
     /** groupsInTeam : All the groups associated with this team */
-    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam;
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam[];
 
     /** myTeam : Lazy query property returning only the team that this user is part of  */
     @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
-    @children(SLASH_COMMAND) slashCommands!: SlashCommand;
+    @children(SLASH_COMMAND) slashCommands!: SlashCommand[];
 
     /** teamChannelHistories : All the channel history with this team */
-    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories!: TeamChannelHistory;
+    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories!: TeamChannelHistory[];
 
     /** members : All the users associated with this team */
-    @children(TEAM_MEMBERSHIP) members!: TeamMembership;
+    @children(TEAM_MEMBERSHIP) members!: TeamMembership[];
 
     /** teamSearchHistories : All the searches performed on this team */
-    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistory;
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistory[];
 }

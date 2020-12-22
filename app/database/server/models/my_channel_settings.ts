@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, json, relation} from '@nozbe/watermelondb/decorators';
 
@@ -28,7 +29,7 @@ export default class MyChannelSettings extends Model {
         super();
         this.channelId = '';
         this.notifyProps = '';
-        this.channel = {} as Channel;
+        this.channel = {} as Relation<Channel>;
     }
 
     /** channelId : The foreign key to the related CHANNEL record */
@@ -38,5 +39,5 @@ export default class MyChannelSettings extends Model {
     @json('notify_props', (rawJson) => rawJson) notifyProps: string;
 
     /** channel : The relation pointing to entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel!: Channel
+    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

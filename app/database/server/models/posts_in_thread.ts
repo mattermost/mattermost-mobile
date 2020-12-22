@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -29,7 +30,7 @@ export default class PostsInThread extends Model {
         this.earliest = 0;
         this.latest = 0;
         this.postId = '';
-        this.post = {} as Post;
+        this.post = {} as Relation<Post>;
     }
 
     /** latest : Upper bound of a timestamp range */
@@ -42,5 +43,5 @@ export default class PostsInThread extends Model {
     @field('post_id') postId!: string;
 
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'post_id') post!: Post;
+    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }

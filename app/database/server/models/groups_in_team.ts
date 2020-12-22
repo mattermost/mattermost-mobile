@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -30,12 +31,12 @@ export default class GroupsInTeam extends Model {
     constructor() {
         super();
 
+        this.group = {} as Relation<Group>;
         this.groupId = '';
         this.memberCount = 0;
+        this.team = {} as Relation<Team>;
         this.teamId = '';
         this.timezoneCount = 0;
-        this.team = {} as Team;
-        this.group = {} as Group;
     }
 
     /** group_id : The foreign key to the related Group record */
@@ -51,8 +52,8 @@ export default class GroupsInTeam extends Model {
     @field('timezone_count') timezoneCount!: number;
 
     /** team : The related record to the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team!: Team;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 
     /** group : The related record to the parent Team model */
-    @immutableRelation(GROUP, 'group_id') group!: Group;
+    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
 }

@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, relation} from '@nozbe/watermelondb/decorators';
 
@@ -19,13 +20,13 @@ export default class ChannelInfo extends Model {
 
     constructor() {
         super();
+        this.channel = {} as Relation<Channel>;
         this.channelId = '';
         this.guestCount = 0;
         this.header = '';
         this.memberCount = 0;
         this.pinPostCount = 0;
         this.purpose = '';
-        this.channel = {} as Channel;
     }
 
     /** associations : Describes every relationship to this entity. */
@@ -54,5 +55,5 @@ export default class ChannelInfo extends Model {
     @field('purpose') purpose!: string;
 
     /** channel : The lazy query property to the record from  entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel!: Channel
+    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>
 }

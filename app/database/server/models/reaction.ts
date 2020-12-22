@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -31,10 +32,10 @@ export default class Reaction extends Model {
         super();
         this.createAt = 0;
         this.emojiName = '';
+        this.post = {} as Relation<Post>;
         this.postId = '';
+        this.user = {} as Relation<User>;
         this.userId = '';
-        this.user = {} as User;
-        this.post = {} as Post;
     }
 
     /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
@@ -50,8 +51,8 @@ export default class Reaction extends Model {
     @field('user_id') userId!: string;
 
     /** reactionUser : The related record to the User model */
-    @immutableRelation(USER, 'user_id') user!: User;
+    @immutableRelation(USER, 'user_id') user!: Relation<User>;
 
     /** reactionPost : The related record to the Post model */
-    @immutableRelation(POST, 'post_id') post!: Post;
+    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }

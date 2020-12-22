@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, relation} from '@nozbe/watermelondb/decorators';
 
@@ -25,13 +26,13 @@ export default class MyChannel extends Model {
 
     constructor() {
         super();
+        this.channel = {} as Relation<Channel>;
         this.channelId = '';
         this.lastPostAt = 0;
         this.lastViewedAt = 0;
         this.mentionsCount = 0;
         this.messageCount = 0;
         this.roles = '';
-        this.channel = {} as Channel;
     }
 
     /** channel_id : The foreign key to the related Channel record  */
@@ -53,5 +54,5 @@ export default class MyChannel extends Model {
     @field('roles') roles!: string;
 
     /** channel : The relation pointing to entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel! : Channel
+    @relation(CHANNEL, 'channel_id') channel! : Relation<Channel>
 }

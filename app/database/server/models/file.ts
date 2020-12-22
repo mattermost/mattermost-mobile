@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -31,10 +32,10 @@ export default class File extends Model {
         this.localPath = '';
         this.mimeType = '';
         this.name = '';
+        this.post = {} as Relation<Post>;
         this.postId = '';
         this.size = 0;
         this.width = 0;
-        this.post = {} as Post;
     }
 
     /** extension : The file's extension */
@@ -65,5 +66,5 @@ export default class File extends Model {
     @field('width') width!: number;
 
     /** post : The related Post record for this file */
-    @immutableRelation(POST, 'post_id') post!: Post;
+    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }

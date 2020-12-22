@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -29,12 +30,12 @@ export default class GroupsInChannel extends Model {
 
     constructor() {
         super();
+        this.channel = {} as Relation<Channel>;
         this.channelId = '';
+        this.group = {} as Relation<Group>;
         this.groupId = '';
         this.memberCount = 0;
         this.timeZoneCount = 0;
-        this.channel = {} as Channel;
-        this.group = {} as Group;
     }
 
     /** channel_id : The foreign key of the related CHANNEL model */
@@ -50,8 +51,8 @@ export default class GroupsInChannel extends Model {
     @field('timezone_count') timeZoneCount!: number;
 
     /** channel : The related record to the parent Channel model */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 
     /** group : The related record to the parent Group model */
-    @immutableRelation(GROUP, 'group_id') group!: Group;
+    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
 }

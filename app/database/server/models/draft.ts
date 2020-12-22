@@ -28,9 +28,9 @@ export default class Draft extends Model {
     constructor() {
         super();
         this.channelId = '';
+        this.files = '';
         this.message = '';
         this.rootId = '';
-        this.files = '';
     }
 
     /** channel_id : The foreign key pointing to the channel in which the draft was made */

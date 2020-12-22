@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 
@@ -24,26 +25,26 @@ export default class Post extends Model {
 
     constructor() {
         super();
+        this.author = {} as Relation<User>;
+        this.channel = {} as Relation<Channel>;
         this.channelId = '';
         this.createAt = 0;
         this.deleteAt = 0;
+        this.drafts = {} as Draft;
         this.editAt = 0;
+        this.files = [];
         this.isPinned = false;
         this.message = '';
+        this.metadata = [];
         this.originalId = '';
         this.pendingPostId = '';
+        this.postsInThread = [];
         this.previousPostId = '';
+        this.props = '';
+        this.reactions = [];
         this.rootId = '';
         this.type = '';
         this.userId = '';
-        this.props = '';
-        this.drafts = {} as Draft;
-        this.files = {} as File;
-        this.postsInThread = {} as PostInThread;
-        this.metadata = {} as PostMetadata;
-        this.reactions = {} as Reaction;
-        this.author = {} as User;
-        this.channel = {} as Channel;
     }
 
     /** associations : Describes every relationship to this entity. */
@@ -114,20 +115,20 @@ export default class Post extends Model {
     @children(DRAFT) drafts!: Draft;
 
     /** files: All the files associated with this Post */
-    @children(FILE) files!: File;
+    @children(FILE) files!: File[];
 
     /** postsInThread: Every posts associated to a thread */
-    @children(POSTS_IN_THREAD) postsInThread!: PostInThread;
+    @children(POSTS_IN_THREAD) postsInThread!: PostInThread[];
 
     /** metadata: All the extra data associated with this Post */
-    @children(POST_METADATA) metadata!: PostMetadata;
+    @children(POST_METADATA) metadata!: PostMetadata[];
 
     /** reactions: All the reactions associated with this Post */
-    @children(REACTION) reactions!: Reaction;
+    @children(REACTION) reactions!: Reaction[];
 
     /** author: The author of this Post */
-    @immutableRelation(USER, 'user_id') author!: User;
+    @immutableRelation(USER, 'user_id') author!: Relation<User>;
 
     /** channel: The channel which is presenting this Post */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

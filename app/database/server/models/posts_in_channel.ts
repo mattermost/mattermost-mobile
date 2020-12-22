@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -26,10 +27,10 @@ export default class PostsInChannel extends Model {
 
     constructor() {
         super();
+        this.channel = {} as Relation<Channel>;
         this.channelId = '';
         this.earliest = 0;
         this.latest = 0;
-        this.channel = {} as Channel;
     }
 
     /** channel_id : The foreign key of the related parent channel */
@@ -42,5 +43,5 @@ export default class PostsInChannel extends Model {
     @field('latest') latest!: number;
 
     /** channel : The parent record of the channel for those posts */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Channel;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

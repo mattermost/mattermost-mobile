@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation, json, text} from '@nozbe/watermelondb/decorators';
 
@@ -30,7 +31,7 @@ export default class TeamSearchHistory extends Model {
         this.teamId = '';
         this.displayTerm = '';
         this.term = '';
-        this.team = {} as Team;
+        this.team = {} as Relation<Team>;
     }
 
     /** createdAt : The timestamp at which this search was performed */
@@ -46,5 +47,5 @@ export default class TeamSearchHistory extends Model {
     @text('term') term!: string;
 
     /** team : The related record to the parent team model */
-    @immutableRelation(TEAM, 'team_id') team!: Team;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 }

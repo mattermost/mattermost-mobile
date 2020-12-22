@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {immutableRelation} from '@nozbe/watermelondb/decorators';
 
@@ -30,13 +31,13 @@ export default class GroupMembership extends Model {
 
     constructor() {
         super();
-        this.group = {} as Group;
-        this.user = {} as User;
+        this.group = {} as Relation<Group>;
+        this.user = {} as Relation<User>;
     }
 
     /** memberGroup : The related group this user belongs to */
-    @immutableRelation(GROUP, 'group_id') group!: Group;
+    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
 
     /** memberUser : The related user in the group */
-    @immutableRelation(USER, 'user_id') user!: User;
+    @immutableRelation(USER, 'user_id') user!: Relation<User>;
 }

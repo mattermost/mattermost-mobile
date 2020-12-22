@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Q, Query} from '@nozbe/watermelondb';
+import {Q, Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
+import ChannelInfo from '@typings/database/channel_info';
 
 import ChannelMembership from '@typings/database/channel_membership';
 import Draft from '@typings/database/draft';
 import GroupsInChannel from '@typings/database/groups_in_channel';
 import {MM_TABLES} from '@constants/database';
+import MyChannel from '@typings/database/my_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import Post from '@typings/database/post';
 import PostsInChannel from '@typings/database/posts_in_channel';
@@ -35,21 +37,23 @@ export default class Channel extends Model {
     constructor() {
         super();
         this.createAt = 0;
+        this.creator = {} as Relation<User>;
         this.creatorId = '';
         this.deleteAt = 0;
         this.displayName = '';
+        this.draft = [];
+        this.groupsInChannel = [];
+        this.info = {} as Query<ChannelInfo>;
         this.isGroupConstrained = false;
+        this.members = [];
+        this.membership = {} as Query<MyChannel>;
         this.name = '';
+        this.posts = [];
+        this.postsInChannel = [];
+        this.settings = {} as Query<MyChannelSettings>;
+        this.team = {} as Relation<Team>;
         this.teamId = '';
         this.type = '';
-        this.settings = {} as Query<MyChannelSettings>;
-        this.members = {} as ChannelMembership;
-        this.draft = {} as Draft;
-        this.groupsInChannel = {} as GroupsInChannel;
-        this.posts = {} as Post;
-        this.postsInChannel = {} as PostsInChannel;
-        this.team = {} as Team;
-        this.creator = {} as User;
     }
 
     /** table (entity name) : Channel */
@@ -114,32 +118,32 @@ export default class Channel extends Model {
     @field('type') type!: string;
 
     /** members : Users belonging to this channel */
-    @children(CHANNEL_MEMBERSHIP) members!: ChannelMembership;
+    @children(CHANNEL_MEMBERSHIP) members!: ChannelMembership[];
 
     /** draft : All drafts for this channel */
-    @children(DRAFT) draft!: Draft;
+    @children(DRAFT) draft!: Draft[];
 
     /** groupsInChannel : Every group contained in this channel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel;
+    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel[];
 
     /** posts : all posts made in that channel */
-    @children(POST) posts!: Post;
+    @children(POST) posts!: Post[];
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    @children(POSTS_IN_CHANNEL) postsInChannel!: PostsInChannel;
+    @children(POSTS_IN_CHANNEL) postsInChannel!: PostsInChannel[];
 
     /** team : The TEAM to which this CHANNEL belongs */
-    @immutableRelation(TEAM, 'team_id') team!: Team;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 
     /** creator : The USER who created this CHANNEL*/
-    @immutableRelation(USER, 'creator_id') creator!: User;
+    @immutableRelation(USER, 'creator_id') creator!: Relation<User>;
 
     /** info : Query returning extra information about this channel from entity CHANNEL_INFO */
-    @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id));
+    @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id)) as Query<ChannelInfo>;
 
     /** membership : Query returning the membership data for the current user if it belongs to this channel */
-    @lazy membership = this.collections.get(MY_CHANNEL).query(Q.on(CHANNEL, 'id', this.id));
+    @lazy membership = this.collections.get(MY_CHANNEL).query(Q.on(CHANNEL, 'id', this.id)) as Query<MyChannel>;
 
     /** settings: User specific settings/preferences for this channel */
-    @lazy settings = this.collections.get(MY_CHANNEL_SETTINGS).query(Q.on(CHANNEL, 'id', this.id));
+    @lazy settings = this.collections.get(MY_CHANNEL_SETTINGS).query(Q.on(CHANNEL, 'id', this.id)) as Query<MyChannelSettings>;
 }
