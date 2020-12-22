@@ -31,18 +31,27 @@ export default class Group extends Model {
         [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
     };
 
+    constructor() {
+        super();
+        this.displayName = '';
+        this.name = '';
+        this.groupsInChannel = {} as GroupsInChannel;
+        this.groupsInTeam = {} as GroupsInTeam;
+        this.groupMembership = {} as GroupMembership;
+    }
+
     /** display_name : The display name for the group */
-    @field('display_name') displayName: string | undefined;
+    @field('display_name') displayName!: string;
 
     /** name : The name of the group */
-    @field('name') name: string | undefined;
+    @field('name') name!: string;
 
     /** groupsInChannel : All the related children records from GroupsInChannel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel: GroupsInChannel | undefined;
+    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel;
 
     /** groupsInChannel : All the related children records from GroupsInTeam */
-    @children(GROUPS_IN_TEAM) groupsInTeam: GroupsInTeam | undefined;
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam;
 
     /** groupsInChannel : All the related children records from GroupMembership */
-    @children(GROUP_MEMBERSHIP) groupMembership: GroupMembership | undefined;
+    @children(GROUP_MEMBERSHIP) groupMembership!: GroupMembership;
 }

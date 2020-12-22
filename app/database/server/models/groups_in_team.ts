@@ -27,21 +27,32 @@ export default class GroupsInTeam extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
+    constructor() {
+        super();
+
+        this.groupId = '';
+        this.memberCount = 0;
+        this.teamId = '';
+        this.timezoneCount = 0;
+        this.team = {} as Team;
+        this.group = {} as Group;
+    }
+
     /** group_id : The foreign key to the related Group record */
-    @field('group_id') groupId: string | undefined;
+    @field('group_id') groupId!: string;
 
     /** member_count : The number of users in that group */
-    @field('member_count') memberCount: number | undefined;
+    @field('member_count') memberCount!: number;
 
     /** team_id : The foreign key to the related Team record */
-    @field('team_id') teamId: string | undefined;
+    @field('team_id') teamId!: string;
 
     /** timezone_count : The number of timezones */
-    @field('timezone_count') timezoneCount: number | undefined;
+    @field('timezone_count') timezoneCount!: number;
 
     /** team : The related record to the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team: Team | undefined;
+    @immutableRelation(TEAM, 'team_id') team!: Team;
 
     /** group : The related record to the parent Team model */
-    @immutableRelation(GROUP, 'group_id') group: Group | undefined;
+    @immutableRelation(GROUP, 'group_id') group!: Group;
 }

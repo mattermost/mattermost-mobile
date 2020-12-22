@@ -17,9 +17,15 @@ export default class System extends Model {
     /** table (entity name) : System */
     static table = SYSTEM;
 
+    constructor() {
+        super();
+        this.name = '';
+        this.value = '';
+    }
+
     /** name : The name or key value for the config */
-    @field('name') name: string | undefined;
+    @field('name') name!: string;
 
     /** value : The value for that config/information */
-    @json('value', (rawJson) => rawJson) value: string[] | undefined;
+    @json('value', (rawJson) => rawJson) value!: string;
 }

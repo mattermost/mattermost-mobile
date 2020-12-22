@@ -20,19 +20,27 @@ export default class PostsInThread extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A POST has a 1:N relationship with POSTS_IN_THREAD  */
+        /** A POST can have multiple POSTS_IN_THREAD.(relationship is 1:N)*/
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
-    /** latest : Upper bound of a timestamp range */
-    @field('earliest') earliest: number | undefined;
+    constructor() {
+        super();
+        this.earliest = 0;
+        this.latest = 0;
+        this.postId = '';
+        this.post = {} as Post;
+    }
 
     /** latest : Upper bound of a timestamp range */
-    @field('latest') latest: number | undefined;
+    @field('earliest') earliest!: number;
+
+    /** latest : Upper bound of a timestamp range */
+    @field('latest') latest!: number;
 
     /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId: number | undefined;
+    @field('post_id') postId!: string;
 
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'post_id') post: Post | undefined;
+    @immutableRelation(POST, 'post_id') post!: Post;
 }

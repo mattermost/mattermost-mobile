@@ -20,22 +20,31 @@ export default class Preference extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A PREFERENCE can belong to only one USER  */
+        /** A USER can have multiple PREFERENCE.(relationship is 1:N)*/
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
+    constructor() {
+        super();
+        this.category = '';
+        this.name = '';
+        this.userId = '';
+        this.value = '';
+        this.user = {} as User;
+    }
+
     /** category : The preference category ( e.g. Themes, Account settings etc..) */
-    @field('category') category: string | undefined;
+    @field('category') category!: string;
 
     /** name : The category name */
-    @field('name') name: string | undefined;
+    @field('name') name!: string;
 
     /** user_id : The foreign key of the user's record in this model */
-    @field('user_id') userId: string | undefined;
+    @field('user_id') userId!: string;
 
     /** value : The preference's value */
-    @field('value') value: string | undefined;
+    @field('value') value!: string;
 
     /** user : The related record to the parent User model */
-    @immutableRelation(USER, 'user_id') user: User | undefined;
+    @immutableRelation(USER, 'user_id') user!: User;
 }

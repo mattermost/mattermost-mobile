@@ -12,7 +12,7 @@ const {GROUP, GROUP_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 
 /**
  * The GroupMembership model represents the 'association table' where many groups have users and many users are in
- * groups ( relationship type N:N)
+ * groups (relationship type N:N)
  */
 export default class GroupMembership extends Model {
     /** table (entity name) : GroupMembership */
@@ -28,9 +28,15 @@ export default class GroupMembership extends Model {
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
+    constructor() {
+        super();
+        this.group = {} as Group;
+        this.user = {} as User;
+    }
+
     /** memberGroup : The related group this user belongs to */
-    @immutableRelation(GROUP, 'group_id') group: Group | undefined;
+    @immutableRelation(GROUP, 'group_id') group!: Group;
 
     /** memberUser : The related user in the group */
-    @immutableRelation(USER, 'user_id') user: User | undefined;
+    @immutableRelation(USER, 'user_id') user!: User;
 }

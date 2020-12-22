@@ -16,18 +16,27 @@ export default class Servers extends Model {
     /** table (entity name) : servers */
     static table = SERVERS;
 
-    /** db_path : The shared directory (e.g. App-Group) in which the database is stored */
-    @field('db_path') dbPath: string | undefined;
+    constructor() {
+        super();
+        this.dbPath = '';
+        this.displayName = '';
+        this.mentionCount = 0;
+        this.unreadCount = 0;
+        this.url = '';
+    }
+
+    /** db_path : The file path where the database is stored */
+    @field('db_path') dbPath!: string;
 
     /** display_name : The server display name */
-    @field('display_name') displayName: string | undefined;
+    @field('display_name') displayName!: string;
 
     /** mention_count : The number of mention on this server */
-    @field('mention_count') mentionCount: number | undefined;
+    @field('mention_count') mentionCount!: number;
 
     /** unread_count : The number of unread messages on this server */
-    @field('unread_count') unreadCount: number | undefined;
+    @field('unread_count') unreadCount!: number;
 
     /** url : The online address for the Mattermost server */
-    @field('url') url: string | undefined;
+    @field('url') url!: string;
 }

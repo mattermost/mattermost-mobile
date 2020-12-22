@@ -13,10 +13,16 @@ export default class Role extends Model {
     /** table (entity name) : Role */
     static table = ROLE;
 
+    constructor() {
+        super();
+        this.name = '';
+        this.permissions = '';
+    }
+
     /** name  : The role's name */
-    @field('name') name: string | undefined;
+    @field('name') name!: string;
 
     /** permissions : The different permissions associated to that role */
-    @json('permissions', (rawJson) => rawJson) permissions: string[] | undefined;
+    @json('permissions', (rawJson) => rawJson) permissions!: string;
 }
 

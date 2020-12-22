@@ -23,33 +23,47 @@ export default class File extends Model {
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
+    constructor() {
+        super();
+        this.extension = '';
+        this.height = 0;
+        this.imageThumbnail = '';
+        this.localPath = '';
+        this.mimeType = '';
+        this.name = '';
+        this.postId = '';
+        this.size = 0;
+        this.width = 0;
+        this.post = {} as Post;
+    }
+
     /** extension : The file's extension */
-    @field('extension') extension: string | undefined;
+    @field('extension') extension!: string;
 
     /** height : The height for the image */
-    @field('height') height: number | undefined;
+    @field('height') height!: number;
 
     /** image_thumbnail : A base64 representation of an image */
-    @field('image_thumbnail') imageThumbnail: string | undefined;
+    @field('image_thumbnail') imageThumbnail!: string;
 
     /** local_path : Local path of the file that has been uploaded to server */
-    @field('local_path') localPath: string | undefined;
+    @field('local_path') localPath!: string;
 
     /** mime_type : The media type */
-    @field('mime_type') mimeType: string | undefined;
+    @field('mime_type') mimeType!: string;
 
     /** name : The name for the file object */
-    @field('name') name: string | undefined;
+    @field('name') name!: string;
 
     /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId: string | undefined;
+    @field('post_id') postId!: string;
 
     /** size : The numeric value of the size for the file */
-    @field('size') size: number | undefined;
+    @field('size') size!: number;
 
     /** width : The width of the file object/image */
-    @field('width') width: number | undefined;
+    @field('width') width!: number;
 
     /** post : The related Post record for this file */
-    @immutableRelation(POST, 'post_id') post: Post | undefined;
+    @immutableRelation(POST, 'post_id') post!: Post;
 }

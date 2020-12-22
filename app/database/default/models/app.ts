@@ -16,12 +16,19 @@ export default class App extends Model {
     /** table (entity name) : app */
     static table = APP;
 
+    constructor() {
+        super();
+        this.buildNumber = '';
+        this.createdAt = 0;
+        this.versionNumber = '';
+    }
+
     /** build_number : Build number for the app */
-    @field('build_number') buildNumber: string | undefined;
+    @field('build_number') buildNumber!: string;
 
     /** created_at : Date of creation for this version */
-    @field('created_at') createdAt: number | undefined;
+    @field('created_at') createdAt!: number;
 
     /** version_number : Version number for the app */
-    @field('version_number') versionNumber: string | undefined;
+    @field('version_number') versionNumber!: string;
 }

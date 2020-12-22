@@ -15,6 +15,11 @@ export default class TermsOfService extends Model {
     /** table (entity name) : TermsOfService */
     static table = TERMS_OF_SERVICE;
 
+    constructor() {
+        super();
+        this.acceptedAt = 0;
+    }
+
     /** accepted_at : the date the term has been accepted */
-    @field('accepted_at') acceptedAt: number | undefined;
+    @field('accepted_at') acceptedAt: number;
 }

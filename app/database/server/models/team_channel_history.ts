@@ -24,12 +24,19 @@ export default class TeamChannelHistory extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
+    constructor() {
+        super();
+        this.teamId = '';
+        this.channelIds = [];
+        this.team = {} as Team;
+    }
+
     /** team_id : The foreign key to the related Team record */
-    @field('team_id') teamId: string | undefined;
+    @field('team_id') teamId!: string;
 
     /** channelIds : An array containing all the channels visited within this team */
-    @json('channel_ids', (rawJson) => rawJson) channelIds: string[] | undefined;
+    @json('channel_ids', (rawJson) => rawJson) channelIds!: string[];
 
     /** team : The related record from the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team: Team | undefined;
+    @immutableRelation(TEAM, 'team_id') team!: Team;
 }

@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {Q, Query} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field, json, lazy} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
-
-// import MyTeam from '@typings/database/my_team';
+import MyTeam from '@typings/database/my_team';
 import SlashCommand from '@typings/database/slash_command';
 import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
@@ -58,48 +57,67 @@ export default class Team extends Model {
         [TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
     };
 
+    constructor() {
+        super();
+        this.allowOpenInvite = false;
+        this.description = '';
+        this.displayName = '';
+        this.isGroupConstrained = false;
+        this.lastTeamIconUpdatedAt = 0;
+        this.name = '';
+        this.type = '';
+        this.allowedDomains = '';
+        this.channels = {} as Channel;
+        this.groupsInTeam = {} as GroupsInTeam;
+        this.slashCommands = {} as SlashCommand;
+        this.teamChannelHistories = {} as TeamChannelHistory;
+        this.members = {} as TeamMembership;
+        this.teamSearchHistories = {} as TeamSearchHistory;
+        this.myTeam = {} as Query<MyTeam>;
+    }
+
     /** allow_open_invite : Boolean flag indicating if this team is open to the public */
-    @field('allow_open_invite') allowOpenInvite: boolean | undefined;
+    @field('allow_open_invite') allowOpenInvite!: boolean;
 
     /** description : The description for the team */
-    @field('description') description: string | undefined;
+    @field('description') description!: string;
 
     /** display_name : The display name for the team */
-    @field('display_name') displayName: string | undefined;
+    @field('display_name') displayName!: string;
 
     /** is_group_constrained : Boolean flag indicating if members are managed groups */
-    @field('is_group_constrained') isGroupConstrained: boolean | undefined;
+    @field('is_group_constrained') isGroupConstrained!: boolean;
 
     /** last_team_icon_updated_at : Timestamp for when this team's icon has been updated last */
-    @field('last_team_icon_updated_at') lastTeamIconUpdatedAt: number | undefined;
+    @field('last_team_icon_updated_at') lastTeamIconUpdatedAt!: number;
 
     /** name : The name for the team */
-    @field('name') name: string | undefined;
+    @field('name') name!: string;
 
     /** type : The type of team ( e.g. open/private ) */
-    @field('type') type: string | undefined;
+    @field('type') type!: string;
 
     /** allowed_domains : List of domains that can join this team */
-    @json('allowed_domains', (rawJson) => rawJson) allowedDomains: string[] | undefined;
+    @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string;
 
     /** channels : All the channels associated with this team */
-    @children(CHANNEL) channels: Channel | undefined;
+    @children(CHANNEL) channels!: Channel;
 
     /** groupsInTeam : All the groups associated with this team */
-    @children(GROUPS_IN_TEAM) groupsInTeam: GroupsInTeam | undefined;
+    @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam;
 
-    /** myTeams : Lazy query property returning only the teams that this user is part of  */
-    @lazy myTeams = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id));
+    /** myTeam : Lazy query property returning only the team that this user is part of  */
+    @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
-    @children(SLASH_COMMAND) slashCommands: SlashCommand | undefined;
+    @children(SLASH_COMMAND) slashCommands!: SlashCommand;
 
     /** teamChannelHistories : All the channel history with this team */
-    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories: TeamChannelHistory | undefined;
+    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories!: TeamChannelHistory;
 
     /** members : All the users associated with this team */
-    @children(TEAM_MEMBERSHIP) members: TeamMembership | undefined;
+    @children(TEAM_MEMBERSHIP) members!: TeamMembership;
 
     /** teamSearchHistories : All the searches performed on this team */
-    @children(TEAM_SEARCH_HISTORY) teamSearchHistories: TeamSearchHistory | undefined;
+    @children(TEAM_SEARCH_HISTORY) teamSearchHistories!: TeamSearchHistory;
 }
