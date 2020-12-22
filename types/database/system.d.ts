@@ -15,5 +15,5 @@ export default class System extends Model {
     name: string;
 
     /** value : The value for that config/information */
-    value: string[];
+    value: string;
 }

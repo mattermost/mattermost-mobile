@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import Channel from '@typings/database/channel';
 
 /**
  * ChannelInfo is an extension of the information contained in the Channel entity.
@@ -14,7 +17,7 @@ export default class ChannelInfo extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** channel_id : The foreign key from entity Channel */
+    /** channel_id : The foreign key from CHANNEL */
     channelId: string;
 
     /** guest_count : The number of guest in this channel */
@@ -33,5 +36,5 @@ export default class ChannelInfo extends Model {
     purpose: string;
 
     /** channel : The lazy query property to the record from  entity CHANNEL */
-    channel: import('@nozbe/watermelondb').Query<Model>;
+    channel: Relation<Channel>;
 }

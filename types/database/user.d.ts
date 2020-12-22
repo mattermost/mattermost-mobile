@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
@@ -63,32 +64,32 @@ export default class User extends Model {
     userName: string;
 
     /** notify_props : Notification preferences/configurations */
-    notifyProps: string[];
+    notifyProps: string;
 
     /** props : Custom objects ( e.g. custom status) can be stored in there */
-    props: string[];
+    props: string;
 
     /** time_zone : The different timezones listed for this user */
-    timeZone: string[];
+    timeZone: string;
 
     /** channelsCreated : All the channels that this user created */
-    channelsCreated: Channel;
+    channelsCreated: Channel[];
 
     /** channels : All the channels that this user is part of  */
-    channels: ChannelMembership;
+    channels: ChannelMembership[];
 
-    /** groups : All the gorups that this user is part of  */
-    groups: GroupMembership;
+    /** groups : All the groups that this user is part of  */
+    groups: GroupMembership[];
 
     /** posts :  All the posts that this user has written*/
-    posts: Post;
+    posts: Post[];
 
     /** preferences : All user preferences */
-    preferences: Preference;
+    preferences: Preference[];
 
     /** reactions : All the reactions to posts that this user had */
-    reactions: Reaction;
+    reactions: Reaction[];
 
     /** teams : All the team that this user is part of  */
-    teams: TeamMembership;
+    teams: TeamMembership[];
 }

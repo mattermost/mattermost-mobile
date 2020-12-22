@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import Channel from '@typings/database/channel';
 import Group from '@typings/database/group';
 
 /**
@@ -26,8 +29,8 @@ export default class GroupsInChannel extends Model {
     timeZoneCount: number;
 
     /** channel : The related record to the parent Channel model */
-    channel: Group;
+    channel: Relation<Channel>;
 
     /** group : The related record to the parent Group model */
-    group: Group;
+    group: Relation<Group>;
 }

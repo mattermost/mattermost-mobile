@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import User from '@typings/database/user';
 import Post from '@typings/database/post';
 
@@ -27,8 +29,8 @@ export default class Reaction extends Model {
     userId: string;
 
     /** reactionUser : The related record to the User model */
-    reactionUser: User;
+    user: Relation<User>;
 
     /** reactionPost : The related record to the Post model */
-    reactionPost: Post;
+    post: Relation<Post>;
 }

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Team from '@typings/database/team';
 
 /**
@@ -38,5 +40,5 @@ export default class SlashCommand extends Model {
     trigger: string;
 
     /** team : The related parent TEAM record */
-    team: Team;
+    team: Relation<Team>;
 }

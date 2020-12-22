@@ -18,9 +18,9 @@ export default class Draft extends Model {
     /** message : The draft message */
     message: string;
 
-    /** root_id : The root_id will be null for Direct Message and have a value for draft replies of a thread */
+    /** root_id : The root_id will be empty for Direct Message but have a value for draft replies of a thread */
     rootId: string;
 
     /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE entity */
-    files: string[];
+    files: string;
 }

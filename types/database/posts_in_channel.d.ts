@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Channel from '@typings/database/channel';
 
 /**
@@ -24,5 +26,5 @@ export default class PostsInChannel extends Model {
     latest: number;
 
     /** channel : The parent record of the channel for those posts */
-    channel: Channel;
+    channel: Relation<Channel>;
 }

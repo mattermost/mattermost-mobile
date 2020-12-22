@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Post from '@typings/database/post';
 
 /**
- * PostMetadata allows us to have maximum information about the constituents of a POST
+ * PostMetadata provides additional information on a POST
  */
 export default class PostMetadata extends Model {
     /** table (entity name) : PostMetadata */
@@ -20,8 +22,8 @@ export default class PostMetadata extends Model {
     type: string;
 
     /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
-    data: string[];
+    data: string;
 
     /** post: The record representing the POST parent.  */
-    post: Post;
+    post: Relation<Post>;
 }

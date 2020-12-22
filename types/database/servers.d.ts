@@ -6,11 +6,11 @@ import {Model} from '@nozbe/watermelondb';
  * The Server model will help us to identify the various servers a user will log in; in the context of
  * multi-server support system.  The dbPath field will hold the App-Groups file-path
  */
-export default class Server extends Model {
+export default class Servers extends Model {
     /** table (entity name) : servers */
     static table: string;
 
-    /** db_path : The shared directory (e.g. App-Group) in which the database is stored */
+    /** db_path : The file path where the database is stored */
     dbPath: string;
 
     /** display_name : The server display name */

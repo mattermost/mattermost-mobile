@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Post from '@typings/database/post';
 
 /**
@@ -21,8 +23,8 @@ export default class PostsInThread extends Model {
     latest: number;
 
     /** post_id : The foreign key of the related Post model */
-    postId: number;
+    postId: string;
 
     /** post : The related record to the parent Post model */
-    post: Post;
+    post: Relation<Post>;
 }

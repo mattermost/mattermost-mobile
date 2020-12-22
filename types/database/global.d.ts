@@ -14,5 +14,5 @@ export default class Global extends Model {
     name: string;
 
     /** value : The value part of the key-value combination */
-    value: string[];
+    value: string;
 }

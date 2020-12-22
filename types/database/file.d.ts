@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Post from '@typings/database/post';
 
 /**
@@ -41,5 +43,5 @@ export default class File extends Model {
     width: number;
 
     /** post : The related Post record for this file */
-    post: Post;
+    post: Relation<Post>;
 }
