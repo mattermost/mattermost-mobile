@@ -4,24 +4,23 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {ScrollView, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import FormattedText from 'app/components/formatted_text';
-import StatusBar from 'app/components/status_bar';
-import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
+import {popTopScreen} from '@actions/navigation';
+import FormattedText from '@components/formatted_text';
+import StatusBar from '@components/status_bar';
+import TextInputWithLocalizedPlaceholder from '@components/text_input_with_localized_placeholder';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {popTopScreen} from 'app/actions/navigation';
+} from '@utils/theme';
 
 export default class NotificationSettingsMentionsKeywords extends PureComponent {
     static propTypes = {
         keywords: PropTypes.string,
         onBack: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -59,12 +58,15 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
     };
 
     render() {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const {keywords} = this.state;
 
         const style = getStyleSheet(theme);
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <ScrollView
                     contentContainerStyle={style.wrapper}
@@ -79,7 +81,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             onSubmitEditing={this.handleSubmit}
                             multiline={true}
                             numberOfLines={1}
-                            style={[style.input, padding(isLandscape)]}
+                            style={style.input}
                             autoCapitalize='none'
                             autoCorrect={false}
                             placeholder={{id: 'mobile.notification_settings_mentions.keywordsDescription', defaultMessage: 'Other words that trigger a mention'}}
@@ -88,7 +90,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         />
                     </View>
-                    <View style={[style.helpContainer, padding(isLandscape)]}>
+                    <View style={style.helpContainer}>
                         <FormattedText
                             id='mobile.notification_settings_mentions.keywordsHelp'
                             defaultMessage='Keywords are non-case sensitive and should be separated by a comma.'
@@ -96,7 +98,7 @@ export default class NotificationSettingsMentionsKeywords extends PureComponent 
                         />
                     </View>
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

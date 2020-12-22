@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TeamIcon should match snapshot 1`] = `
+<View
+  style={
+    Array [
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 2,
+        "height": 30,
+        "justifyContent": "center",
+        "width": 30,
+      },
+      Object {},
+    ]
+  }
+  testID="team_icon"
+>
+  <FastImage
+    onError={[Function]}
+    source={
+      Object {
+        "uri": "/api/v4/teams/team-id/image?_=1",
+      }
+    }
+    style={
+      Array [
+        Object {
+          "borderRadius": 2,
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        Object {},
+      ]
+    }
+    testID="team_icon.content"
+  />
+</View>
+`;

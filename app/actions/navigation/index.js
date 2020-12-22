@@ -9,9 +9,15 @@ import {Preferences} from '@mm-redux/constants';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import EventEmmiter from '@mm-redux/utils/event_emitter';
 
+import {DeviceTypes, NavigationTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import Store from '@store/store';
-import {NavigationTypes} from '@constants';
+
+Navigation.setDefaultOptions({
+    layout: {
+        orientation: [DeviceTypes.IS_TABLET ? 'all' : 'portrait'],
+    },
+});
 
 function getThemeFromState() {
     const state = Store.redux?.getState() || {};

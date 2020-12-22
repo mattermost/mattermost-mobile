@@ -9,10 +9,10 @@ import {
     ActivityIndicator,
     Alert,
     DeviceEventEmitter,
+    Image,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
@@ -21,6 +21,7 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import RNFetchBlob from 'rn-fetch-blob';
 import merge from 'deepmerge';
 import urlParse from 'url-parse';
@@ -28,7 +29,6 @@ import urlParse from 'url-parse';
 import {resetToChannel, goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import AppVersion from '@components/app_version';
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
@@ -514,13 +514,12 @@ export default class SelectServer extends PureComponent {
                         accessible={false}
                     >
                         <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                            <CompassIcon
-                                name='mattermost'
-                                size={76}
-                                style={GlobalStyles.logo}
+                            <Image
+                                source={require('@assets/images/logo.png')}
+                                style={{height: 72, resizeMode: 'contain'}}
                             />
 
-                            <View testID='header.text'>
+                            <View testID='select_server.header.text'>
                                 <FormattedText
                                     style={[GlobalStyles.header, GlobalStyles.label]}
                                     id='mobile.components.select_server_view.enterServerUrl'
@@ -528,7 +527,7 @@ export default class SelectServer extends PureComponent {
                                 />
                             </View>
                             <TextInput
-                                testID='server_url.input'
+                                testID='select_server.server_url.input'
                                 ref={this.inputRef}
                                 value={url}
                                 editable={!inputDisabled}
@@ -548,7 +547,7 @@ export default class SelectServer extends PureComponent {
                                 disableFullscreenUI={true}
                             />
                             <Button
-                                testID='connect.button'
+                                testID='select_server.connect.button'
                                 onPress={this.handleConnect}
                                 containerStyle={[GlobalStyles.signupButton, style.connectButton]}
                             >
@@ -558,7 +557,10 @@ export default class SelectServer extends PureComponent {
                                 </Text>
                             </Button>
                             <View>
-                                <ErrorText error={error}/>
+                                <ErrorText
+                                    testID='select_server.error.text'
+                                    error={error}
+                                />
                             </View>
                         </View>
                     </TouchableWithoutFeedback>

@@ -13,12 +13,11 @@ interface FavoriteProps {
     channelId: string;
     favoriteChannel: (channelId: string) => void;
     isFavorite: boolean;
-    isLandscape: boolean;
     unfavoriteChannel: (channelId: string) => void;
     theme: Theme;
 }
 
-const Favorite = ({testID, channelId, favoriteChannel, isLandscape, isFavorite, unfavoriteChannel, theme}: FavoriteProps) => {
+const Favorite = ({channelId, favoriteChannel, isFavorite, unfavoriteChannel, testID, theme}: FavoriteProps) => {
     const [favorite, setFavorite] = useState(isFavorite);
 
     const handleFavorite = preventDoubleTap(() => {
@@ -37,7 +36,6 @@ const Favorite = ({testID, channelId, favoriteChannel, isLandscape, isFavorite, 
             textId={t('mobile.routes.channelInfo.favorite')}
             togglable={true}
             theme={theme}
-            isLandscape={isLandscape}
         />
     );
 };

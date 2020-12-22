@@ -11,6 +11,7 @@ import {ViewTypes} from '@constants';
 import {ChannelTypes} from '@mm-redux/action_types';
 import postReducer from '@mm-redux/reducers/entities/posts';
 import initialState from '@store/initial_state';
+import {General} from '@mm-redux/constants';
 
 const {
     handleSelectChannel,
@@ -67,6 +68,10 @@ describe('Actions.Views.Channel', () => {
         type: MOCK_SELECT_CHANNEL_TYPE,
         data: 'selected-channel-id',
     });
+    actions.joinChannel = jest.fn((userId, teamId, channelId) => ({
+        type: 'MOCK_JOIN_CHANNEL',
+        data: {channel: {id: channelId}},
+    }));
     const postActions = require('./post');
     postActions.getPostsSince = jest.fn(() => {
         return {
@@ -203,6 +208,28 @@ describe('Actions.Views.Channel', () => {
         const storeActions = store.getActions();
         const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
         expect(receivedChannel).toBe(false);
+    });
+
+    test('handleSelectChannelByName select channel that user is not a member of', async () => {
+        actions.getChannelByNameAndTeamName = jest.fn(() => {
+            return {
+                type: MOCK_RECEIVE_CHANNEL_TYPE,
+                data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL},
+            };
+        });
+
+        store = mockStore(storeObj);
+
+        await store.dispatch(handleSelectChannelByName('channel-id-3', currentTeamName));
+
+        const storeActions = store.getActions();
+        const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
+        expect(receivedChannel).toBe(true);
+
+        expect(actions.joinChannel).toBeCalled();
+
+        const joinedChannel = storeActions.some((action) => action.type === 'MOCK_JOIN_CHANNEL' && action.data.channel.id === 'channel-id-3');
+        expect(joinedChannel).toBe(true);
     });
 
     test('loadPostsIfNecessaryWithRetry for the first time', async () => {

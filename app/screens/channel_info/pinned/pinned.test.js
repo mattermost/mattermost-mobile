@@ -20,7 +20,6 @@ describe('ChannelInfo -> Pinned', () => {
     const baseProps = {
         channelId: '123',
         pinnedCount: 0,
-        isLandscape: false,
         theme: Preferences.THEMES.default,
         userId: 'user-123',
     };

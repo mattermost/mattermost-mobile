@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import * as reselect from 'reselect';
-import {Permissions} from '../../constants';
+import {Permissions, Preferences} from '@mm-redux/constants';
 import {getConfig, getCurrentUrl, isCompatibleWithJoinViewTeamPermissions} from '@mm-redux/selectors/entities/general';
+import {get as getPreference} from '@mm-redux/selectors/entities/preferences';
 import {haveISystemPermission} from '@mm-redux/selectors/entities/roles_helpers';
 import {createIdsSelector} from '@mm-redux/utils/helpers';
 import {isTeamAdmin} from '@mm-redux/utils/user_utils';
-import {sortTeamsWithLocale} from '@mm-redux/utils/team_utils';
+import {sortTeamsByUserPreference, sortTeamsWithLocale} from '@mm-redux/utils/team_utils';
 import {Team, TeamMembership} from '@mm-redux/types/teams';
 import {IDMappedObjects} from '@mm-redux/types/utilities';
 import {GlobalState} from '@mm-redux/types/store';
@@ -224,9 +225,10 @@ export const getSortedJoinableTeams = reselect.createSelector(
 
 export const getMySortedTeamIds = createIdsSelector(
     getMyTeams,
+    (state: GlobalState) => getPreference(state, Preferences.TEAMS_ORDER, '', ''),
     (state: GlobalState, locale: string) => locale,
-    (teams, locale) => {
-        return teams.sort(sortTeamsWithLocale(locale)).map((t) => t.id);
+    (teams, userTeamOrderPreference, locale) => {
+        return sortTeamsByUserPreference(teams, locale, userTeamOrderPreference).map((t) => t.id);
     },
 );
 

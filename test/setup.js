@@ -142,6 +142,7 @@ jest.mock('react-native-device-info', () => {
         getVersion: () => '0.0.0',
         getBuildNumber: () => '0',
         getModel: () => 'iPhone X',
+        hasNotch: () => true,
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
     };
@@ -186,6 +187,7 @@ jest.mock('react-native-cookies', () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     openURL: jest.fn(),
+    canOpenURL: jest.fn(),
     getInitialURL: jest.fn(),
     clearAll: jest.fn(),
     get: () => Promise.resolve(({
@@ -204,6 +206,7 @@ jest.mock('react-native-image-picker', () => ({
 jest.mock('react-native-navigation', () => {
     const RNN = jest.requireActual('react-native-navigation');
     RNN.Navigation.setLazyComponentRegistrator = jest.fn();
+    RNN.Navigation.setDefaultOptions = jest.fn();
     return {
         ...RNN,
         Navigation: {

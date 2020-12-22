@@ -10,13 +10,13 @@ import {
     DeviceEventEmitter,
     Keyboard,
     Platform,
-    SafeAreaView,
     SectionList,
     Text,
     View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {goToScreen, dismissModal} from '@actions/navigation';
 import {showingPermalink} from '@actions/views/permalink';
@@ -30,7 +30,6 @@ import PostListRetry from '@components/post_list_retry';
 import PostSeparator from '@components/post_separator';
 import SearchBar from '@components/search_bar';
 import StatusBar from '@components/status_bar';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {ListTypes} from '@constants';
 import {debounce} from '@mm-redux/actions/helpers';
 import {isDateLine, getDateForDateLine} from '@mm-redux/utils/post_list';
@@ -71,7 +70,6 @@ export default class Search extends PureComponent {
         }).isRequired,
         currentTeamId: PropTypes.string.isRequired,
         initialValue: PropTypes.string,
-        isLandscape: PropTypes.bool.isRequired,
         postIds: PropTypes.array,
         archivedPostIds: PropTypes.arrayOf(PropTypes.string),
         recent: PropTypes.array.isRequired,
@@ -131,10 +129,6 @@ export default class Search extends PureComponent {
         const shouldScroll = prevStatus !== status &&
             (isLoaded || didFail) &&
             !this.props.isSearchGettingMore && !prevProps.isSearchGettingMore && prevState.recent.length === recent.length;
-
-        if (this.props.isLandscape !== prevProps.isLandscape) {
-            this.searchBarRef.blur();
-        }
 
         if (shouldScroll) {
             setTimeout(() => {
@@ -380,20 +374,19 @@ export default class Search extends PureComponent {
     };
 
     renderModifiers = ({item}) => {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
 
         return (
             <Modifier
                 item={item}
                 setModifierValue={this.setModifierValue}
                 theme={theme}
-                isLandscape={isLandscape}
             />
         );
     };
 
     renderPost = ({item, index}) => {
-        const {postIds, theme, isLandscape} = this.props;
+        const {postIds, theme} = this.props;
         const style = getStyleFromTheme(theme);
 
         if (item.id) {
@@ -420,7 +413,7 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <View style={[style.postResult, padding(isLandscape)]}>
+            <View style={style.postResult}>
                 <ChannelDisplayName postId={item}/>
                 {this.archivedIndicator(postIds[index], style)}
                 <SearchResultPost
@@ -449,7 +442,7 @@ export default class Search extends PureComponent {
     };
 
     renderSectionHeader = ({section}) => {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const {title} = section;
         const style = getStyleFromTheme(theme);
 
@@ -457,7 +450,7 @@ export default class Search extends PureComponent {
             return (
                 <View style={style.sectionWrapper}>
                     <View style={style.sectionContainer}>
-                        <Text style={[style.sectionLabel, padding(isLandscape, -16)]}>
+                        <Text style={style.sectionLabel}>
                             {title}
                         </Text>
                     </View>
@@ -469,7 +462,7 @@ export default class Search extends PureComponent {
     };
 
     renderRecentItem = ({item}) => {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
 
         return (
             <RecentItem
@@ -477,7 +470,6 @@ export default class Search extends PureComponent {
                 removeSearchTerms={this.removeSearchTerms}
                 setRecentValue={this.setRecentValue}
                 theme={theme}
-                isLandscape={isLandscape}
             />
         );
     };
@@ -565,7 +557,6 @@ export default class Search extends PureComponent {
 
     render() {
         const {
-            isLandscape,
             postIds,
             theme,
             isSearchGettingMore,
@@ -584,7 +575,7 @@ export default class Search extends PureComponent {
 
         const sectionsData = [{
             value: 'from:',
-            testID: 'search_from.section',
+            testID: 'search.from_section',
             modifier: `${intl.formatMessage({id: 'mobile.search.from_modifier_title', defaultMessage: 'username'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.from_modifier_description',
@@ -592,7 +583,7 @@ export default class Search extends PureComponent {
             }),
         }, {
             value: 'in:',
-            testID: 'search_in.section',
+            testID: 'search.in_section',
             modifier: `:${intl.formatMessage({id: 'mobile.search.in_modifier_title', defaultMessage: 'channel-name'})}`,
             description: intl.formatMessage({
                 id: 'mobile.search.in_modifier_description',
@@ -604,7 +595,7 @@ export default class Search extends PureComponent {
         if (this.props.enableDateSuggestion) {
             sectionsData.push({
                 value: 'on:',
-                testID: 'search_on.section',
+                testID: 'search.on_section',
                 modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.on_modifier_description',
@@ -613,7 +604,7 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'after:',
-                testID: 'search_after.section',
+                testID: 'search.after_section',
                 modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.after_modifier_description',
@@ -622,7 +613,7 @@ export default class Search extends PureComponent {
             });
             sectionsData.push({
                 value: 'before:',
-                testID: 'search_before.section',
+                testID: 'search.before_section',
                 modifier: 'YYYY-MM-DD',
                 description: intl.formatMessage({
                     id: 'mobile.search.before_modifier_description',
@@ -714,26 +705,16 @@ export default class Search extends PureComponent {
             fontSize: 15,
         };
 
-        const paddingRes = padding(isLandscape);
-        if (paddingRes) {
-            // Without this the default paddingLeft in style.header
-            // overrides the paddingHorizontal value gotten from padding(isLandscape)
-            paddingRes.paddingLeft = null;
-
-            if (isLandscape) {
-                paddingRes.paddingTop = 14;
-            }
-        }
-
         return (
-            <SafeAreaView style={style.flex}>
-                <KeyboardLayout>
-                    <StatusBar/>
-                    <View
-                        testID='search.screen'
-                        style={[style.header, paddingRes]}
-                    >
+            <KeyboardLayout>
+                <StatusBar/>
+                <View
+                    testID='search.screen'
+                    style={style.header}
+                >
+                    <SafeAreaView edges={['left', 'right']}>
                         <SearchBar
+                            testID='search.search_bar'
                             ref={this.setSearchBarRef}
                             placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -757,7 +738,12 @@ export default class Search extends PureComponent {
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                             containerHeight={33}
                         />
-                    </View>
+                    </SafeAreaView>
+                </View>
+                <SafeAreaView
+                    style={style.flex}
+                    edges={['bottom', 'left', 'right']}
+                >
                     <SectionList
                         ref={this.setListRef}
                         style={style.sectionList}
@@ -772,15 +758,15 @@ export default class Search extends PureComponent {
                         ListFooterComponent={this.renderFooter}
                         onViewableItemsChanged={this.onViewableItemsChanged}
                     />
-                    <Autocomplete
-                        cursorPosition={cursorPosition}
-                        onChangeText={this.handleTextChanged}
-                        isSearch={true}
-                        value={value}
-                        enableDateSuggestion={this.props.enableDateSuggestion}
-                    />
-                </KeyboardLayout>
-            </SafeAreaView>
+                </SafeAreaView>
+                <Autocomplete
+                    cursorPosition={cursorPosition}
+                    onChangeText={this.handleTextChanged}
+                    isSearch={true}
+                    value={value}
+                    enableDateSuggestion={this.props.enableDateSuggestion}
+                />
+            </KeyboardLayout>
         );
     }
 }

@@ -4,16 +4,12 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Keyboard, Platform, View, Text} from 'react-native';
+import {Keyboard, View, Text} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-
-import {debounce} from '@mm-redux/actions/helpers';
-import {General} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {goToScreen, dismissModal, setButtons} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import CustomList from '@components/custom_list';
 import ChannelListRow from '@components/custom_list/channel_list_row';
 import FormattedText from '@components/formatted_text';
@@ -22,6 +18,9 @@ import Loading from '@components/loading';
 import SearchBar from '@components/search_bar';
 import StatusBar from '@components/status_bar';
 import {NavigationTypes} from '@constants';
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {alertErrorWithFallback, emptyFunction} from '@utils/general';
 import BottomSheet from '@utils/bottom_sheet';
 import {
@@ -48,7 +47,6 @@ export default class MoreChannels extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         currentTeamId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         canShowArchivedChannels: PropTypes.bool.isRequired,
     };
 
@@ -104,22 +102,26 @@ export default class MoreChannels extends PureComponent {
         this.mounted = false;
     }
 
-    componentWillReceiveProps(nextProps) {
+    setChannelsOrArchivedChannels(state) {
+        this.setState(state);
+    }
+
+    componentDidUpdate(prevProps) {
         const {term} = this.state;
         let channels;
         let archivedChannels;
 
-        if (nextProps.channels !== this.props.channels) {
-            channels = nextProps.channels;
+        if (this.props.channels !== prevProps.channels) {
+            channels = this.props.channels;
             if (term) {
-                channels = this.filterChannels(nextProps.channels, term);
+                channels = this.filterChannels(this.props.channels, term);
             }
         }
 
-        if (nextProps.archivedChannels !== this.props.archivedChannels) {
-            archivedChannels = nextProps.archivedChannels;
+        if (this.props.archivedChannels !== prevProps.archivedChannels) {
+            archivedChannels = this.props.archivedChannels;
             if (term) {
-                archivedChannels = this.filterChannels(nextProps.archivedChannels, term);
+                archivedChannels = this.filterChannels(this.props.archivedChannels, term);
             }
         }
 
@@ -133,7 +135,7 @@ export default class MoreChannels extends PureComponent {
         }
 
         if (nextState.archivedChannels || nextState.channels) {
-            this.setState(nextState);
+            this.setChannelsOrArchivedChannels(nextState);
         }
     }
 
@@ -409,7 +411,7 @@ export default class MoreChannels extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {theme, isLandscape, canShowArchivedChannels} = this.props;
+        const {theme, canShowArchivedChannels} = this.props;
         const {adding, channels, archivedChannels, loading, term, typeOfChannels} = this.state;
         const more = term ? emptyFunction : this.getChannels;
         const style = getStyleFromTheme(theme);
@@ -436,7 +438,7 @@ export default class MoreChannels extends PureComponent {
             let channelDropdown;
             if (canShowArchivedChannels) {
                 channelDropdown = (
-                    <View style={[style.titleContainer, padding(isLandscape)]}>
+                    <View style={style.titleContainer}>
                         <Text
                             accessibilityRole={'button'}
                             style={style.channelDropdown}
@@ -453,31 +455,30 @@ export default class MoreChannels extends PureComponent {
             }
 
             content = (
-                <React.Fragment>
+                <>
                     <View
                         testID='more_channels.screen'
                         style={style.searchBar}
                     >
-                        <View style={padding(isLandscape)}>
-                            <SearchBar
-                                ref={this.setSearchBarRef}
-                                placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                                cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                                backgroundColor='transparent'
-                                inputHeight={33}
-                                inputStyle={searchBarInput}
-                                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                                tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                                tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                                titleCancelColor={theme.centerChannelColor}
-                                onChangeText={this.searchChannels}
-                                onSearchButtonPress={this.searchChannels}
-                                onCancelButtonPress={this.cancelSearch}
-                                autoCapitalize='none'
-                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                                value={term}
-                            />
-                        </View>
+                        <SearchBar
+                            testID='more_channels.search_bar'
+                            ref={this.setSearchBarRef}
+                            placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                            cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                            backgroundColor='transparent'
+                            inputHeight={33}
+                            inputStyle={searchBarInput}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                            tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                            titleCancelColor={theme.centerChannelColor}
+                            onChangeText={this.searchChannels}
+                            onSearchButtonPress={this.searchChannels}
+                            onCancelButtonPress={this.cancelSearch}
+                            autoCapitalize='none'
+                            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                            value={term}
+                        />
                     </View>
                     {channelDropdown}
                     <CustomList
@@ -493,29 +494,29 @@ export default class MoreChannels extends PureComponent {
                         renderItem={this.renderItem}
                         theme={theme}
                     />
-                </React.Fragment>
+                </>
             );
         }
 
         return (
-            <KeyboardLayout>
-                <StatusBar/>
-                {content}
-            </KeyboardLayout>
+            <SafeAreaView style={style.container}>
+                <KeyboardLayout>
+                    <StatusBar/>
+                    {content}
+                </KeyboardLayout>
+            </SafeAreaView>
         );
     }
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        container: {
+            flex: 1,
+        },
         searchBar: {
             marginVertical: 5,
             height: 38,
-            ...Platform.select({
-                ios: {
-                    paddingLeft: 8,
-                },
-            }),
         },
         loadingContainer: {
             alignItems: 'center',

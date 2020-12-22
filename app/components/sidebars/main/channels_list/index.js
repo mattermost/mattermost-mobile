@@ -4,13 +4,11 @@
 import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from 'app/selectors/device';
 import ChannelsList from './channels_list';
 
 function mapStateToProps(state) {
     return {
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

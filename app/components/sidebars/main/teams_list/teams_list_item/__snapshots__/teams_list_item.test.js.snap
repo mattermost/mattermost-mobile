@@ -1,0 +1,115 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TeamsListItem should match snapshot 1`] = `
+<View
+  style={
+    Object {
+      "marginTop": 10,
+    }
+  }
+  testID="main.sidebar.teams_list.flat_list.teams_list_item"
+>
+  <ForwardRef
+    onPress={[Function]}
+    underlayColor="rgba(69,120,191,0.5)"
+  >
+    <View
+      style={
+        Object {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "marginHorizontal": 16,
+          "paddingVertical": 10,
+        }
+      }
+      testID="main.sidebar.teams_list.flat_list.teams_list_item.team-id"
+    >
+      <View>
+        <Connect(TeamIcon)
+          styleContainer={
+            Object {
+              "backgroundColor": "#ffffff",
+              "height": 40,
+              "width": 40,
+            }
+          }
+          styleText={
+            Object {
+              "fontSize": 18,
+            }
+          }
+          teamId="team-id"
+          testID="main.sidebar.teams_list.flat_list.teams_list_item.team_icon"
+        />
+        <Badge
+          containerStyle={
+            Object {
+              "borderColor": "#145dbf",
+              "borderRadius": 14,
+              "borderWidth": 2,
+              "position": "absolute",
+              "right": -12,
+              "top": -10,
+            }
+          }
+          count={1}
+          countStyle={
+            Object {
+              "color": "#145dbf",
+              "fontSize": 10,
+              "fontWeight": "bold",
+            }
+          }
+          extraPaddingHorizontal={10}
+          minHeight={20}
+          minWidth={20}
+          style={
+            Object {
+              "backgroundColor": "#ffffff",
+              "height": 20,
+              "padding": 3,
+            }
+          }
+          testID="main.sidebar.teams_list.flat_list.teams_list_item.badge"
+        />
+      </View>
+      <View
+        style={
+          Object {
+            "flex": 1,
+            "flexDirection": "column",
+            "marginLeft": 10,
+          }
+        }
+      >
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "#ffffff",
+              "fontSize": 18,
+            }
+          }
+          testID="main.sidebar.teams_list.flat_list.teams_list_item.display_name"
+        >
+          display-name
+        </Text>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
+          style={
+            Object {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 12,
+            }
+          }
+        >
+          current-url/name
+        </Text>
+      </View>
+    </View>
+  </ForwardRef>
+</View>
+`;

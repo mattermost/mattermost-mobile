@@ -20,7 +20,6 @@ describe('ChannelInfo -> Mute', () => {
     const baseProps = {
         channelId: '123',
         isChannelMuted: false,
-        isLandscape: false,
         theme: Preferences.THEMES.default,
         updateChannelNotifyProps: jest.fn(),
         userId: 'user-123',

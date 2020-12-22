@@ -15,6 +15,7 @@ jest.mock('react-intl');
 describe('FileQuickAction', () => {
     const formatMessage = jest.fn();
     const baseProps = {
+        testID: 'post_draft.quick_actions.file_action',
         fileCount: 0,
         maxFileCount: 5,
         onShowFileMaxWarning: jest.fn(),

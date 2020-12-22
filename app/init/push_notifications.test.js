@@ -58,12 +58,12 @@ describe('PushNotification', () => {
         });
     });
 
-    it('should clear all notifications', () => {
+    it('should clear all notifications', async () => {
         const setApplicationIconBadgeNumber = jest.spyOn(PushNotification, 'setApplicationIconBadgeNumber');
         const cancelAllLocalNotifications = jest.spyOn(PushNotification, 'cancelAllLocalNotifications');
 
         PushNotification.clearNotifications();
-        expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(0);
+        await expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(0, true);
         expect(Notifications.ios.setBadgeCount).toHaveBeenCalledWith(0);
         expect(cancelAllLocalNotifications).toHaveBeenCalled();
         expect(Notifications.cancelAllLocalNotifications).toHaveBeenCalled();
@@ -92,5 +92,19 @@ describe('PushNotification', () => {
 
         await PushNotification.clearChannelNotifications();
         expect(setApplicationIconBadgeNumber).toHaveBeenCalledWith(stateBadgeCount);
+    });
+
+    test('setApplicationIconBadgeNumber should only set badge to 0 if there are no delivered notifications', async () => {
+        const setBadgeCount = jest.spyOn(Notifications.ios, 'setBadgeCount');
+
+        let deliveredNotifications = [{identifier: 1}];
+        Notifications.setDeliveredNotifications(deliveredNotifications);
+        await PushNotification.setApplicationIconBadgeNumber(0);
+        expect(setBadgeCount).not.toHaveBeenCalled();
+
+        deliveredNotifications = [];
+        Notifications.setDeliveredNotifications(deliveredNotifications);
+        await PushNotification.setApplicationIconBadgeNumber(0);
+        expect(setBadgeCount).toHaveBeenCalledWith(0);
     });
 });

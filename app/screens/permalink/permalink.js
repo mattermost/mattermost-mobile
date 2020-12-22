@@ -26,7 +26,6 @@ import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import PostListRetry from '@components/post_list_retry';
 import SafeAreaView from '@components/safe_area_view';
-import {marginHorizontal as margin} from '@components/safe_area_view/iphone_x_spacing';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
@@ -73,7 +72,6 @@ export default class Permalink extends PureComponent {
         onClose: PropTypes.func,
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         error: PropTypes.string,
     };
 
@@ -287,7 +285,7 @@ export default class Permalink extends PureComponent {
     };
 
     render() {
-        const {channelName, currentUserId, focusedPostId, isLandscape, postIds, theme} = this.props;
+        const {channelName, currentUserId, focusedPostId, postIds, theme} = this.props;
         const {error, loading, retry, title} = this.state;
         const style = getStyleSheet(theme);
 
@@ -312,6 +310,7 @@ export default class Permalink extends PureComponent {
         } else {
             postList = (
                 <PostList
+                    testID='permalink.post_list'
                     highlightPostId={focusedPostId}
                     indicateNewMessages={false}
                     isSearchResult={false}
@@ -335,7 +334,8 @@ export default class Permalink extends PureComponent {
                 footerColor='transparent'
             >
                 <View
-                    style={[style.container, margin(isLandscape)]}
+                    testID='permalink.screen'
+                    style={style.container}
                 >
                     <Animatable.View
                         ref={this.setViewRef}
@@ -381,6 +381,7 @@ export default class Permalink extends PureComponent {
                             onPress={this.handlePress}
                         >
                             <FormattedText
+                                testID='permalink.search.jump'
                                 id='mobile.search.jump'
                                 defautMessage='Jump to recent messages'
                                 style={style.jump}

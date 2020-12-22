@@ -5,6 +5,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Preferences from '@mm-redux/constants/preferences';
 
@@ -125,14 +126,18 @@ export default class Theme extends React.PureComponent {
                     <View style={style.tilesContainer}>
                         {this.renderAllowedThemeTiles()}
                     </View>
-
                     {customTheme &&
-                        <Section
-                            disableHeader={true}
-                            theme={theme}
+                        <SafeAreaView
+                            edges={['left', 'right']}
+                            style={style.container}
                         >
-                            {this.renderCustomThemeRow({item: customTheme})}
-                        </Section>
+                            <Section
+                                disableHeader={true}
+                                theme={theme}
+                            >
+                                {this.renderCustomThemeRow({item: customTheme})}
+                            </Section>
+                        </SafeAreaView>
                     }
                 </View>
             </View>

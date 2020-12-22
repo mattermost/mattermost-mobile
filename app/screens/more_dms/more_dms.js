@@ -4,33 +4,32 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {Keyboard, Platform, View} from 'react-native';
+import {Keyboard, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {dismissModal, setButtons} from '@actions/navigation';
+import CustomList, {FLATLIST, SECTIONLIST} from '@components/custom_list';
+import UserListRow from '@components/custom_list/user_list_row';
+import FormattedText from '@components/formatted_text';
+import KeyboardLayout from '@components/layout/keyboard_layout';
+import Loading from '@components/loading';
+import SearchBar from '@components/search_bar';
+import StatusBar from '@components/status_bar';
+import {NavigationTypes} from '@constants';
 import {debounce} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getGroupDisplayNameFromUserIds} from '@mm-redux/utils/channel_utils';
 import {displayUsername, filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
-
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
-import UserListRow from 'app/components/custom_list/user_list_row';
-import FormattedText from 'app/components/formatted_text';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import Loading from 'app/components/loading';
-import SearchBar from 'app/components/search_bar';
-import StatusBar from 'app/components/status_bar';
-import {NavigationTypes} from 'app/constants';
-import {alertErrorWithFallback} from 'app/utils/general';
-import {createProfilesSections, loadingText} from 'app/utils/member_list';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
+import {createProfilesSections, loadingText} from '@utils/member_list';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {t} from 'app/utils/i18n';
-import {dismissModal, setButtons} from 'app/actions/navigation';
+} from '@utils/theme';
 
 import SelectedUsers from './selected_users';
 
@@ -56,7 +55,6 @@ export default class MoreDirectMessages extends PureComponent {
         restrictDirectMessage: PropTypes.bool.isRequired,
         teammateNameDisplay: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -414,7 +412,7 @@ export default class MoreDirectMessages extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {isGuest, currentUserId, theme, isLandscape} = this.props;
+        const {isGuest, currentUserId, theme} = this.props;
         const {
             loading,
             profiles,
@@ -477,11 +475,12 @@ export default class MoreDirectMessages extends PureComponent {
         }
 
         return (
-            <KeyboardLayout testID='more_direct_messages.screen'>
-                <StatusBar/>
-                <View style={style.searchBar}>
-                    <View style={padding(isLandscape)}>
+            <SafeAreaView style={style.container}>
+                <KeyboardLayout testID='more_direct_messages.screen'>
+                    <StatusBar/>
+                    <View style={style.searchBar}>
                         <SearchBar
+                            testID='more_direct_messages.search_bar'
                             ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -500,29 +499,28 @@ export default class MoreDirectMessages extends PureComponent {
                             value={term}
                         />
                     </View>
-                </View>
-                <SelectedUsers
-                    selectedIds={this.state.selectedIds}
-                    warnCount={5}
-                    maxCount={7}
-                    onRemove={this.handleRemoveProfile}
-                />
-                <CustomList
-                    data={data}
-                    extraData={selectedIds}
-                    isLandscape={isLandscape}
-                    key='custom_list'
-                    listType={listType}
-                    loading={loading}
-                    loadingComponent={this.renderLoading()}
-                    noResults={this.renderNoResults()}
-                    onLoadMore={this.getProfiles}
-                    onRowPress={this.handleSelectProfile}
-                    renderItem={this.renderItem}
-                    testID='more_direct_messages.list'
-                    theme={theme}
-                />
-            </KeyboardLayout>
+                    <SelectedUsers
+                        selectedIds={this.state.selectedIds}
+                        warnCount={5}
+                        maxCount={7}
+                        onRemove={this.handleRemoveProfile}
+                    />
+                    <CustomList
+                        data={data}
+                        extraData={selectedIds}
+                        key='custom_list'
+                        listType={listType}
+                        loading={loading}
+                        loadingComponent={this.renderLoading()}
+                        noResults={this.renderNoResults()}
+                        onLoadMore={this.getProfiles}
+                        onRowPress={this.handleSelectProfile}
+                        renderItem={this.renderItem}
+                        testID='more_direct_messages.list'
+                        theme={theme}
+                    />
+                </KeyboardLayout>
+            </SafeAreaView>
         );
     }
 }
@@ -535,11 +533,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         searchBar: {
             marginVertical: 5,
             height: 38,
-            ...Platform.select({
-                ios: {
-                    paddingLeft: 8,
-                },
-            }),
         },
         loadingContainer: {
             alignItems: 'center',

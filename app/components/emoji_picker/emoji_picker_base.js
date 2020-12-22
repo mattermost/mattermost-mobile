@@ -19,7 +19,6 @@ import sectionListGetItemLayout from 'react-native-section-list-get-item-layout'
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {DeviceTypes} from '@constants';
 import {emptyFunction} from '@utils/general';
 import {
@@ -42,6 +41,7 @@ export function filterEmojiSearchInput(searchText) {
 
 export default class EmojiPicker extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         customEmojisEnabled: PropTypes.bool.isRequired,
         customEmojiPage: PropTypes.number.isRequired,
         deviceWidth: PropTypes.number.isRequired,
@@ -101,8 +101,9 @@ export default class EmojiPicker extends PureComponent {
 
         if (this.props.emojis !== prevProps.emojis) {
             this.rebuildEmojis = true;
-            this.setRebuiltEmojis();
         }
+
+        this.setRebuiltEmojis();
     }
 
     setSearchBarRef = (ref) => {
@@ -231,15 +232,17 @@ export default class EmojiPicker extends PureComponent {
         return Math.floor(Number(((deviceWidth - (SECTION_MARGIN * shorten)) / ((EMOJI_SIZE + 7) + (EMOJI_GUTTER * shorten)))));
     };
 
-    renderItem = ({item}) => {
+    renderItem = ({item, section}) => {
         return (
-            <EmojiPickerRow
-                key={item.key}
-                emojiGutter={EMOJI_GUTTER}
-                emojiSize={EMOJI_SIZE}
-                items={item.items}
-                onEmojiPress={this.props.onEmojiPress}
-            />
+            <View testID={section.defaultMessage}>
+                <EmojiPickerRow
+                    key={item.key}
+                    emojiGutter={EMOJI_GUTTER}
+                    emojiSize={EMOJI_SIZE}
+                    items={item.items}
+                    onEmojiPress={this.props.onEmojiPress}
+                />
+            </View>
         );
     };
 
@@ -305,7 +308,7 @@ export default class EmojiPicker extends PureComponent {
                 onPress={() => this.props.onEmojiPress(item)}
                 style={style.flatListRow}
             >
-                <View style={[style.flatListEmoji, padding(this.props.isLandscape)]}>
+                <View style={style.flatListEmoji}>
                     <Emoji
                         emojiName={item}
                         textStyle={style.emojiText}

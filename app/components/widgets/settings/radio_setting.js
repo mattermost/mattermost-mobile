@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export default class RadioSetting extends PureComponent {
@@ -17,13 +16,8 @@ export default class RadioSetting extends PureComponent {
         default: PropTypes.string,
         onChange: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         helpText: PropTypes.node,
         errorText: PropTypes.node,
-    };
-
-    static defaultProps = {
-        isLandscape: false,
     };
 
     constructor(props) {
@@ -66,7 +60,6 @@ export default class RadioSetting extends PureComponent {
             label,
             helpText,
             errorText,
-            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -90,7 +83,7 @@ export default class RadioSetting extends PureComponent {
         let additionalTextContent;
         if (errorText || helpText) {
             additionalTextContent = (
-                <View style={padding(isLandscape)}>
+                <View >
                     {helpTextContent}
                     {errorTextContent}
                 </View>
@@ -104,7 +97,7 @@ export default class RadioSetting extends PureComponent {
                     onPress={() => this.handleChange(value)}
                     key={value}
                 >
-                    <View style={[style.container, padding(isLandscape)]}>
+                    <View style={style.container}>
                         <View style={style.rowContainer}>
                             <Text>{text}</Text>
                         </View>
@@ -121,7 +114,7 @@ export default class RadioSetting extends PureComponent {
                     <Text style={style.asterisk}>{' *'}</Text>
                 </View>
 
-                <View style={[style.items, padding(isLandscape)]}>
+                <View style={style.items}>
                     {options}
                 </View>
                 {additionalTextContent}

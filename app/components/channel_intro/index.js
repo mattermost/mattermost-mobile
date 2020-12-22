@@ -9,7 +9,6 @@ import {makeGetChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserId, getUser, makeGetProfilesInChannel} from '@mm-redux/selectors/entities/users';
 
 import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from 'app/selectors/device';
 import {getChannelMembersForDm} from 'app/selectors/channel';
 
 import ChannelIntro from './channel_intro';
@@ -48,7 +47,6 @@ function makeMapStateToProps() {
             currentChannel,
             currentChannelMembers,
             theme: getTheme(state),
-            isLandscape: isLandscape(state),
             teammateNameDisplay: getTeammateNameDisplaySetting(state),
         };
     };

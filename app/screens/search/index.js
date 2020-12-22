@@ -17,7 +17,6 @@ import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
-import {isLandscape} from '@selectors/device';
 import {makePreparePostIdsForSearchPosts} from '@selectors/post_list';
 import {getDeviceUtcOffset, getUtcOffsetForTimeZone} from '@utils/timezone';
 
@@ -57,7 +56,6 @@ function makeMapStateToProps() {
         return {
             currentTeamId,
             currentChannelId,
-            isLandscape: isLandscape(state),
             postIds,
             archivedPostIds,
             recent: recent[currentTeamId],

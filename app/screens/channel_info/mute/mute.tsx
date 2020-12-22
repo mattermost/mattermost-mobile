@@ -12,13 +12,12 @@ interface MuteProps {
     testID?: string;
     channelId: string;
     isChannelMuted: boolean;
-    isLandscape: boolean;
     theme: Theme;
     updateChannelNotifyProps: (userId: string, channelId: string, opts: {mark_unread: string}) => void;
     userId: string;
 }
 
-const Mute = ({testID, channelId, isChannelMuted, isLandscape, updateChannelNotifyProps, userId, theme}: MuteProps) => {
+const Mute = ({channelId, isChannelMuted, updateChannelNotifyProps, userId, testID, theme}: MuteProps) => {
     const [muted, setMuted] = useState(isChannelMuted);
 
     const handleMuteChannel = preventDoubleTap(() => {
@@ -40,7 +39,6 @@ const Mute = ({testID, channelId, isChannelMuted, isLandscape, updateChannelNoti
             textId={t('channel_notifications.muteChannel.settings')}
             togglable={true}
             theme={theme}
-            isLandscape={isLandscape}
         />
     );
 };

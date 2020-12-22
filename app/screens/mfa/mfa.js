@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
     ActivityIndicator,
+    Image,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -13,8 +14,8 @@ import {
     View,
 } from 'react-native';
 import Button from 'react-native-button';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
@@ -132,46 +133,53 @@ export default class Mfa extends PureComponent {
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior='padding'
+            <SafeAreaView
+                testID='mfa.screen'
                 style={style.flex}
-                keyboardVerticalOffset={5}
-                enabled={Platform.OS === 'ios'}
             >
-                <StatusBar/>
-                <TouchableWithoutFeedback onPress={this.blur}>
-                    <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
-                        <CompassIcon
-                            name='mattermost'
-                            size={76}
-                            style={GlobalStyles.logo}
-                        />
-                        <View>
-                            <FormattedText
-                                style={[GlobalStyles.header, GlobalStyles.label]}
-                                id='login_mfa.enterToken'
-                                defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
+                <KeyboardAvoidingView
+                    behavior='padding'
+                    style={style.flex}
+                    keyboardVerticalOffset={5}
+                    enabled={Platform.OS === 'ios'}
+                >
+                    <StatusBar/>
+                    <TouchableWithoutFeedback onPress={this.blur}>
+                        <View style={[GlobalStyles.container, GlobalStyles.signupContainer]}>
+                            <Image
+                                source={require('@assets/images/logo.png')}
+                                style={{height: 72, resizeMode: 'contain'}}
                             />
+                            <View>
+                                <FormattedText
+                                    style={[GlobalStyles.header, GlobalStyles.label]}
+                                    id='login_mfa.enterToken'
+                                    defaultMessage="To complete the sign in process, please enter a token from your smartphone's authenticator"
+                                />
+                            </View>
+                            <ErrorText
+                                testID='mfa.error.text'
+                                error={this.state.error}
+                            />
+                            <TextInputWithLocalizedPlaceholder
+                                ref={this.inputRef}
+                                value={this.state.token}
+                                onChangeText={this.handleInput}
+                                onSubmitEditing={this.submit}
+                                style={GlobalStyles.inputBox}
+                                autoCapitalize='none'
+                                autoCorrect={false}
+                                keyboardType='numeric'
+                                placeholder={{id: t('login_mfa.token'), defaultMessage: 'MFA Token'}}
+                                returnKeyType='go'
+                                underlineColorAndroid='transparent'
+                                disableFullscreenUI={true}
+                            />
+                            {proceed}
                         </View>
-                        <ErrorText error={this.state.error}/>
-                        <TextInputWithLocalizedPlaceholder
-                            ref={this.inputRef}
-                            value={this.state.token}
-                            onChangeText={this.handleInput}
-                            onSubmitEditing={this.submit}
-                            style={GlobalStyles.inputBox}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            keyboardType='numeric'
-                            placeholder={{id: t('login_mfa.token'), defaultMessage: 'MFA Token'}}
-                            returnKeyType='go'
-                            underlineColorAndroid='transparent'
-                            disableFullscreenUI={true}
-                        />
-                        {proceed}
-                    </View>
-                </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
+                    </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         );
     }
 }

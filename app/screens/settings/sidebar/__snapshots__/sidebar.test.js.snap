@@ -3,7 +3,13 @@
 exports[`SidebarSettings should match, full snapshot 1`] = `null`;
 
 exports[`SidebarSettings should match, full snapshot 2`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    Array [
+      "left",
+      "right",
+    ]
+  }
   style={
     Object {
       "backgroundColor": "#ffffff",
@@ -23,7 +29,6 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
   >
     <section
       disableHeader={true}
-      isLandscape={false}
       theme={
         Object {
           "awayIndicator": "#ffbc42",
@@ -71,7 +76,6 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
             id="mobile.sidebar_settings.permanent_description"
           />
         }
-        isLandscape={false}
         label={
           <FormattedText
             defaultMessage="Permanent Sidebar"
@@ -119,5 +123,5 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
       />
     </section>
   </View>
-</View>
+</RNCSafeAreaView>
 `;

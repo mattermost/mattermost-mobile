@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 import CookieManager from 'react-native-cookies';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
 import {Client4} from '@mm-redux/client';
 
 import {ViewTypes} from 'app/constants';
 import Loading from 'app/components/loading';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import StatusBar from 'app/components/status_bar';
 import {resetToChannel} from 'app/actions/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -66,7 +66,6 @@ class SSO extends PureComponent {
             ssoLogin: PropTypes.func.isRequired,
         }).isRequired,
         intl: intlShape.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         serverUrl: PropTypes.string.isRequired,
         ssoType: PropTypes.string.isRequired,
         theme: PropTypes.object,
@@ -237,7 +236,7 @@ class SSO extends PureComponent {
     };
 
     render() {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const {error, messagingEnabled, renderWebView, jsCode} = this.state;
         const style = getStyleSheet(theme);
 
@@ -270,10 +269,10 @@ class SSO extends PureComponent {
         }
 
         return (
-            <View style={[style.container, padding(isLandscape)]}>
+            <SafeAreaView style={style.container}>
                 <StatusBar/>
                 {content}
-            </View>
+            </SafeAreaView>
         );
     }
 }
