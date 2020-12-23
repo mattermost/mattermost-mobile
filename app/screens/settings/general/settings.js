@@ -5,6 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape, injectIntl} from 'react-intl';
 import {
+    Alert,
     Linking,
     Platform,
     ScrollView,
@@ -135,27 +136,42 @@ class Settings extends PureComponent {
     });
 
     openErrorEmail = preventDoubleTap(() => {
-        const {config} = this.props;
+        const {config, intl} = this.props;
         const recipient = config.SupportEmail;
         const subject = `Problem with ${config.SiteName} React Native app`;
         const mailTo = `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`;
 
-        Linking.canOpenURL(mailTo).then((supported) => {
-            if (supported) {
-                Linking.openURL(mailTo);
-                this.props.actions.clearErrors();
-            }
+        Linking.openURL(mailTo).then(() => {
+            this.props.actions.clearErrors();
+        }).catch(() => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.mailTo.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.mailTo.error.text',
+                    defaultMessage: 'Unable to open an email client.',
+                }),
+            );
         });
     });
 
     openHelp = preventDoubleTap(() => {
-        const {config} = this.props;
+        const {config, intl} = this.props;
         const link = config.HelpLink ? config.HelpLink.toLowerCase() : '';
 
-        Linking.canOpenURL(link).then((supported) => {
-            if (supported) {
-                Linking.openURL(link);
-            }
+        Linking.openURL(link).catch(() => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
         });
     });
 
