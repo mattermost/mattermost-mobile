@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import {Database, Model} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {Class} from '@nozbe/watermelondb/utils/common';
+import {Platform, DeviceEventEmitter, DeviceEventEmitterStatic} from 'react-native';
+import {FileSystem} from 'react-native-unimodules';
+
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import Server from '@typings/database/servers';
+import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-import EventEmitter from '@utils/event_emitter';
-import {Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
 import DefaultMigration from '../default/migration';
 import {App, Global, Servers} from '../default/models';
 import {defaultSchema} from '../default/schema';
@@ -46,7 +47,6 @@ import {
     User,
 } from '../server/models';
 import {serverSchema} from '../server/schema';
-import {getIOSAppGroupDetails} from './native_module/mm_db_native_module';
 
 // TODO [x] : Initialize a db connection with default schema
 // TODO [x] : handle migration
@@ -69,14 +69,22 @@ export enum DatabaseType {
 }
 
 class DatabaseManager {
-    activeDatabase: Database | undefined;
+    private activeDatabase: Database | undefined;
 
-    private defaultModels: Models = [App, Global, Servers];
+    private readonly defaultModels: Models;
 
-    private serverModels: Models = [Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File, Group, GroupMembership,
-        GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam, Post, PostMetadata, PostsInChannel,
-        PostsInThread, Preference, Reaction, Role, SlashCommand, System, Team, TeamChannelHistory, TeamMembership,
-        TeamSearchHistory, TermsOfService, User];
+    private readonly serverModels: Models;
+    private emitter: DeviceEventEmitterStatic;
+
+    constructor() {
+        // Creates an event emitter
+        this.emitter = new DeviceEventEmitter();
+        this.defaultModels = [App, Global, Servers];
+        this.serverModels = [Channel, ChannelInfo, ChannelMembership, CustomEmoji, Draft, File, Group, GroupMembership,
+            GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam, Post, PostMetadata, PostsInChannel,
+            PostsInThread, Preference, Reaction, Role, SlashCommand, System, Team, TeamChannelHistory, TeamMembership,
+            TeamSearchHistory, TermsOfService, User];
+    }
 
     /**
      * Creates database connection and registers the new connection into the default database
@@ -131,6 +139,15 @@ class DatabaseManager {
     };
 
     /**
+     * The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
+     * Use this getter method to retrieve the active database if it has been set in your code.
+     * @returns { Database | undefined}
+     */
+     getActiveDatabase = () : Database | undefined => {
+         return this.activeDatabase;
+     }
+
+    /**
      * Returns the default database.
      * @returns {Database} default database
      */
@@ -168,13 +185,13 @@ class DatabaseManager {
     private buildMigrationCallbacks = ({dbName}: { dbName: string }) => {
         const migrationEvents: MigrationEvents = {
             onSuccess: () => {
-                return EventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {dbName});
+                return this.emitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {dbName});
             },
             onStarted: () => {
-                return EventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {dbName});
+                return this.emitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {dbName});
             },
             onFailure: (error) => {
-                return EventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {dbName, error});
+                return this.emitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {dbName, error});
             },
         };
 

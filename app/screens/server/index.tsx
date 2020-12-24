@@ -22,7 +22,7 @@ import {
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import DBManager from '../../database/managers/database_manager';
-import {getIOSAppGroupDetails, deleteIOSDatabase} from '../../database/managers/native_module/mm_db_native_module';
+import {getIOSAppGroupDetails, deleteIOSDatabase} from '@utils/mattermost_managed';
 
 declare const global: {HermesInternal: null | {}};
 
