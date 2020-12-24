@@ -2,31 +2,39 @@
 // See LICENSE.txt for license information.
 
 import {NativeModules} from 'react-native';
+
 const {MattermostManaged} = NativeModules;
 
 /**
  * Retrieves information relative to the iOS AppGroup identifier and folders
  * @returns {{appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string}}
  */
-export const getIOSAppGroupDetails = (): {appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string} => {
-    const {appGroupIdentifier, appGroupSharedDirectory: {sharedDirectory, databasePath}} = MattermostManaged.getConstants();
+export const getIOSAppGroupDetails = (): { appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string } => {
+    const {
+        appGroupIdentifier,
+        appGroupSharedDirectory: {sharedDirectory, databasePath},
+    } = MattermostManaged.getConstants();
 
     const appGroup = {
         appGroupIdentifier,
         appGroupSharedDirectory: sharedDirectory,
         appGroupDatabase: databasePath,
     };
-    console.log('appGroup => ', appGroup);
+    console.log('appGroup => ', appGroup.appGroupDatabase);
     return appGroup;
 };
 
 /**
- * BEWARE: Deletes a specific database file (e.g. default.db) if there is a value in databaseName, else it will delete the whole
- * databases directory under the App-Group shared folder
+ * BEWARE: deleteIOSDatabase is used to either delete a single .db file by its name or can also be used to delete the whole 'database' directory under the shared AppGroup directory.
+ * USE WITH CAUTION.
  * @param {string} databaseName
+ * @param {boolean} shouldRemoveDirectory
  */
-export const deleteIOSDatabase = (databaseName?: string) => {
-    MattermostManaged.deleteDatabaseDirectory(databaseName, (error: any, success: any) => {
+export const deleteIOSDatabase = ({
+    databaseName = undefined,
+    shouldRemoveDirectory = false,
+}: { databaseName?: string, shouldRemoveDirectory?: boolean }) => {
+    MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, (error: any, success: any) => {
         console.log(error, success);
     });
 };

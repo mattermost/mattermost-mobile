@@ -21,19 +21,27 @@ import {
 
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
-import DBManager from '../../database/managers/database_manager';
+import DBManager, {DatabaseType} from '../../database/managers/database_manager';
 import {getIOSAppGroupDetails, deleteIOSDatabase} from '@utils/mattermost_managed';
 
 declare const global: {HermesInternal: null | {}};
 
 const App = () => {
-    const appGroup = getIOSAppGroupDetails();
+    // const appGroup = getIOSAppGroupDetails();
+    // const defaultDB = DBManager.getDefaultDatabase();
 
-    const defaultDB = DBManager.getDefaultDatabase();
-    console.log('>>>>>>>>>>>>', {defaultDB});
+    // Deleting db and database direction on iOS
+    // deleteIOSDatabase({databaseName: 'default'});
+    // deleteIOSDatabase({databaseName: 'defaultxx'});
+    // deleteIOSDatabase({shouldRemoveDirectory: true});
 
-    // deleteIOSDatabase('default');
-    // deleteIOSDatabase();
+    // Creates a new server connection
+    // DBManager.createDatabaseConnection({
+    //     actionsEnabled: true,
+    //     dbName: 'test test',
+    //     dbType: DatabaseType.SERVER,
+    //     serverUrl: 'xxxtest@mattermost.com',
+    // });
 
     return (
         <>

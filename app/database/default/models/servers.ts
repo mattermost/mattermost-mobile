@@ -16,15 +16,6 @@ export default class Servers extends Model {
     /** table (entity name) : servers */
     static table = SERVERS;
 
-    constructor() {
-        super();
-        this.dbPath = '';
-        this.displayName = '';
-        this.mentionCount = 0;
-        this.unreadCount = 0;
-        this.url = '';
-    }
-
     /** db_path : The file path where the database is stored */
     @field('db_path') dbPath: string;
 

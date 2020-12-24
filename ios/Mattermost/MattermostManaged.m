@@ -28,7 +28,7 @@ RCT_EXPORT_MODULE();
   NSFileManager *fileManager = [NSFileManager defaultManager];
   NSURL *sharedDirectory = [fileManager containerURLForSecurityApplicationGroupIdentifier: [self appGroupId]];
   NSURL * databasePath = [sharedDirectory URLByAppendingPathComponent:@"databases"];
-  
+
   [fileManager createDirectoryAtPath:[databasePath path]
                                   withIntermediateDirectories:true
                                   attributes:nil
@@ -58,22 +58,26 @@ RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:
             });
 }
 
-RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName callback: (RCTResponseSenderBlock)callback){
+RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemoveDirectory: (BOOL) shouldRemoveDirectory callback: (RCTResponseSenderBlock)callback){
   @try {
       NSDictionary * appGroupDir = [self appGroupSharedDirectory];
-      NSString * databaseDir = appGroupDir[@"databasePath"];
+      NSString * databaseDir;
 
       if(databaseName){
         databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
       }
     
+      if(shouldRemoveDirectory){
+        databaseDir = appGroupDir[@"databasePath"];
+      }
+
 
       NSFileManager * fileManager = [NSFileManager defaultManager];
       NSError *error = nil;
-      
+
       BOOL  successCode  = [fileManager removeItemAtPath:databaseDir error:&error];
       NSNumber * success= [NSNumber numberWithBool:successCode];
-      
+
       callback(@[error, success]);
   }
   @catch (NSException *exception) {
