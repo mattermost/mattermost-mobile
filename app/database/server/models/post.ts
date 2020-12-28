@@ -23,30 +23,6 @@ export default class Post extends Model {
     /** table (entity name) : Post */
     static table = POST;
 
-    constructor() {
-        super();
-        this.author = {} as Relation<User>;
-        this.channel = {} as Relation<Channel>;
-        this.channelId = '';
-        this.createAt = 0;
-        this.deleteAt = 0;
-        this.drafts = {} as Draft;
-        this.editAt = 0;
-        this.files = [];
-        this.isPinned = false;
-        this.message = '';
-        this.metadata = [];
-        this.originalId = '';
-        this.pendingPostId = '';
-        this.postsInThread = [];
-        this.previousPostId = '';
-        this.props = '';
-        this.reactions = [];
-        this.rootId = '';
-        this.type = '';
-        this.userId = '';
-    }
-
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 

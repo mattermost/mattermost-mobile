@@ -23,14 +23,6 @@ export default class MyTeam extends Model {
         /** TEAM and MY_TEAM have a 1:1 relationship. */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
-    constructor() {
-        super();
-        this.isUnread = false;
-        this.mentionsCount = 0;
-        this.roles = '';
-        this.team = {} as Relation<Team>;
-        this.teamId = '';
-    }
 
     /** is_unread : Boolean flag for unread messages on team level */
     @field('is_unread') isUnread: boolean;

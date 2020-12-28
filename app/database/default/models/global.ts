@@ -18,12 +18,6 @@ export default class Global extends Model {
     /** table (entity name) : global */
     static table = GLOBAL;
 
-    constructor() {
-        super();
-        this.name = '';
-        this.value = '';
-    }
-
     /** name : The label/key to use to retrieve the special 'value' */
     @field('name') name: string;
 

@@ -25,15 +25,6 @@ export default class Preference extends Model {
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
-    constructor() {
-        super();
-        this.category = '';
-        this.name = '';
-        this.user = {} as Relation<User>;
-        this.userId = '';
-        this.value = '';
-    }
-
     /** category : The preference category ( e.g. Themes, Account settings etc..) */
     @field('category') category: string;
 

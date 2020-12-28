@@ -29,12 +29,6 @@ export default class GroupMembership extends Model {
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
-    constructor() {
-        super();
-        this.group = {} as Relation<Group>;
-        this.user = {} as Relation<User>;
-    }
-
     /** memberGroup : The related group this user belongs to */
     @immutableRelation(GROUP, 'group_id') group: Relation<Group>;
 

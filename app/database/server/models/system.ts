@@ -17,12 +17,6 @@ export default class System extends Model {
     /** table (entity name) : System */
     static table = SYSTEM;
 
-    constructor() {
-        super();
-        this.name = '';
-        this.value = '';
-    }
-
     /** name : The name or key value for the config */
     @field('name') name: string;
 

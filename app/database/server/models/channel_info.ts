@@ -18,17 +18,6 @@ export default class ChannelInfo extends Model {
     /** table (entity name) : ChannelInfo */
     static table = CHANNEL_INFO;
 
-    constructor() {
-        super();
-        this.channel = {} as Relation<Channel>;
-        this.channelId = '';
-        this.guestCount = 0;
-        this.header = '';
-        this.memberCount = 0;
-        this.pinPostCount = 0;
-        this.purpose = '';
-    }
-
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 

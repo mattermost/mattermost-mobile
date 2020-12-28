@@ -24,14 +24,6 @@ export default class PostMetadata extends Model {
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
-    constructor() {
-        super();
-        this.data = '';
-        this.post = {} as Relation<Post>;
-        this.postId = '';
-        this.type = '';
-    }
-
     /** post_id : The foreign key of the parent POST model */
     @field('post_id') postId: string;
 
