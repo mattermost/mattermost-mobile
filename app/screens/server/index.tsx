@@ -40,7 +40,7 @@ const App = () => {
     //     actionsEnabled: true,
     //     dbName: 'test test',
     //     dbType: DatabaseType.SERVER,
-    //     serverUrl: 'xxxtest@mattermost.com',
+    //     serverUrl: 'x28Dec2020test@mattermost.com',
     // });
 
     return (
