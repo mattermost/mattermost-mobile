@@ -24,11 +24,4 @@ export default class App extends Model {
 
     /** version_number : Version number for the app */
     @field('version_number') versionNumber: string;
-
-    constructor() {
-        super();
-        this.buildNumber = '';
-        this.createdAt = 0;
-        this.versionNumber = '';
-    }
 }

@@ -29,12 +29,6 @@ export default class TeamMembership extends Model {
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
-    constructor() {
-        super();
-        this.memberTeam = {} as Relation<Team>;
-        this.memberUser = {} as Relation<User>;
-    }
-
     /** memberUser: The related user in the team */
     @immutableRelation(USER, 'user_id') memberUser: Relation<User>;
 

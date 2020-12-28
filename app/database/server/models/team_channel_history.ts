@@ -25,13 +25,6 @@ export default class TeamChannelHistory extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
-    constructor() {
-        super();
-        this.teamId = '';
-        this.channelIds = [];
-        this.team = {} as Relation<Team>;
-    }
-
     /** team_id : The foreign key to the related Team record */
     @field('team_id') teamId: string;
 

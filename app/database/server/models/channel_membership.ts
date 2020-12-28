@@ -20,12 +20,6 @@ export default class ChannelMembership extends Model {
     /** table (entity name) : ChannelMembership */
     static table = CHANNEL_MEMBERSHIP;
 
-    constructor() {
-        super();
-        this.channel = {} as Relation<Channel>;
-        this.user = {} as Relation<User>;
-    }
-
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 

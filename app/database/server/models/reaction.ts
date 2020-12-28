@@ -28,16 +28,6 @@ export default class Reaction extends Model {
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
-    constructor() {
-        super();
-        this.createAt = 0;
-        this.emojiName = '';
-        this.post = {} as Relation<Post>;
-        this.postId = '';
-        this.user = {} as Relation<User>;
-        this.userId = '';
-    }
-
     /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
     @field('create_at') createAt: number;
 

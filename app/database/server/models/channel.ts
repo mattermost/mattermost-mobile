@@ -34,28 +34,6 @@ const {
  * The Channel model represents a channel in the Mattermost app.
  */
 export default class Channel extends Model {
-    constructor() {
-        super();
-        this.createAt = 0;
-        this.creator = {} as Relation<User>;
-        this.creatorId = '';
-        this.deleteAt = 0;
-        this.displayName = '';
-        this.draft = [];
-        this.groupsInChannel = [];
-        this.info = {} as Query<ChannelInfo>;
-        this.isGroupConstrained = false;
-        this.members = [];
-        this.membership = {} as Query<MyChannel>;
-        this.name = '';
-        this.posts = [];
-        this.postsInChannel = [];
-        this.settings = {} as Query<MyChannelSettings>;
-        this.team = {} as Relation<Team>;
-        this.teamId = '';
-        this.type = '';
-    }
-
     /** table (entity name) : Channel */
     static table = CHANNEL;
 

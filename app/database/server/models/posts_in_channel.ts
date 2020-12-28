@@ -25,14 +25,6 @@ export default class PostsInChannel extends Model {
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
-    constructor() {
-        super();
-        this.channel = {} as Relation<Channel>;
-        this.channelId = '';
-        this.earliest = 0;
-        this.latest = 0;
-    }
-
     /** channel_id : The foreign key of the related parent channel */
     @field('channel_id') channelId: string;
 

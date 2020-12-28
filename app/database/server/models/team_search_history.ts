@@ -25,15 +25,6 @@ export default class TeamSearchHistory extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
-    constructor() {
-        super();
-        this.createdAt = 0;
-        this.teamId = '';
-        this.displayTerm = '';
-        this.term = '';
-        this.team = {} as Relation<Team>;
-    }
-
     /** createdAt : The timestamp at which this search was performed */
     @field('created_at') createdAt: number;
 

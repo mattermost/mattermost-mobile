@@ -25,13 +25,6 @@ export default class MyChannelSettings extends Model {
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
-    constructor() {
-        super();
-        this.channelId = '';
-        this.notifyProps = '';
-        this.channel = {} as Relation<Channel>;
-    }
-
     /** channelId : The foreign key to the related CHANNEL record */
     @field('channel_id') channelId: string;
 

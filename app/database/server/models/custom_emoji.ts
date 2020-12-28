@@ -13,11 +13,6 @@ export default class CustomEmoji extends Model {
     /** table (entity name) : CustomEmoji */
     static table = CUSTOM_EMOJI;
 
-    constructor() {
-        super();
-        this.name = '';
-    }
-
     /** name :  The custom emoji's name*/
     @field('name') name: string;
 }

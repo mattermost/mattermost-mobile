@@ -24,17 +24,6 @@ export default class MyChannel extends Model {
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
-    constructor() {
-        super();
-        this.channel = {} as Relation<Channel>;
-        this.channelId = '';
-        this.lastPostAt = 0;
-        this.lastViewedAt = 0;
-        this.mentionsCount = 0;
-        this.messageCount = 0;
-        this.roles = '';
-    }
-
     /** channel_id : The foreign key to the related Channel record  */
     @field('channel_id') channelId: string;
 

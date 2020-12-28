@@ -24,19 +24,6 @@ export default class SlashCommand extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
-    constructor() {
-        super();
-        this.autoComplete = false;
-        this.description = '';
-        this.displayName = '';
-        this.hint = '';
-        this.method = '';
-        this.teamId = '';
-        this.token = '';
-        this.trigger = '';
-        this.team = {} as Relation<Team>;
-    }
-
     /** auto_complete : Boolean flag for auto-completing slash commands */
     @field('auto_complete') autoComplete: boolean;
 

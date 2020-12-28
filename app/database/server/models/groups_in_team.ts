@@ -28,17 +28,6 @@ export default class GroupsInTeam extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
-    constructor() {
-        super();
-
-        this.group = {} as Relation<Group>;
-        this.groupId = '';
-        this.memberCount = 0;
-        this.team = {} as Relation<Team>;
-        this.teamId = '';
-        this.timezoneCount = 0;
-    }
-
     /** group_id : The foreign key to the related Group record */
     @field('group_id') groupId: string;
 

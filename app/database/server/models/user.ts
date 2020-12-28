@@ -57,34 +57,6 @@ export default class User extends Model {
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'user_id'},
     };
 
-    constructor() {
-        super();
-        this.authService = '';
-        this.deleteAt = 0;
-        this.email = '';
-        this.firstName = '';
-        this.isBot = false;
-        this.isGuest = false;
-        this.lastName = '';
-        this.lastPictureUpdate = 0;
-        this.locale = '';
-        this.nickName = '';
-        this.position = '';
-        this.roles = '';
-        this.status = '';
-        this.userName = '';
-        this.notifyProps = '';
-        this.props = '';
-        this.timeZone = '';
-        this.channelsCreated = [];
-        this.channels = [];
-        this.groups = [];
-        this.posts = [];
-        this.preferences = [];
-        this.reactions = [];
-        this.teams = [];
-    }
-
     /** auth_service : The type of authentication service registered to that user */
     @field('auth_service') authService: string;
 

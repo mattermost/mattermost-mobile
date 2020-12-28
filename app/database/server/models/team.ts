@@ -57,25 +57,6 @@ export default class Team extends Model {
         [TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
     };
 
-    constructor() {
-        super();
-        this.allowOpenInvite = false;
-        this.allowedDomains = '';
-        this.channels = [];
-        this.description = '';
-        this.displayName = '';
-        this.groupsInTeam = [];
-        this.isGroupConstrained = false;
-        this.lastTeamIconUpdatedAt = 0;
-        this.members = [];
-        this.myTeam = {} as Query<MyTeam>;
-        this.name = '';
-        this.slashCommands = [];
-        this.teamChannelHistories = [];
-        this.teamSearchHistories = [];
-        this.type = '';
-    }
-
     /** allow_open_invite : Boolean flag indicating if this team is open to the public */
     @field('allow_open_invite') allowOpenInvite: boolean;
 

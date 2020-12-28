@@ -28,16 +28,6 @@ export default class GroupsInChannel extends Model {
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
-    constructor() {
-        super();
-        this.channel = {} as Relation<Channel>;
-        this.channelId = '';
-        this.group = {} as Relation<Group>;
-        this.groupId = '';
-        this.memberCount = 0;
-        this.timeZoneCount = 0;
-    }
-
     /** channel_id : The foreign key of the related CHANNEL model */
     @field('channel_id') channelId: string;
 

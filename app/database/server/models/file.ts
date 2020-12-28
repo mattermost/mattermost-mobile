@@ -24,20 +24,6 @@ export default class File extends Model {
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
-    constructor() {
-        super();
-        this.extension = '';
-        this.height = 0;
-        this.imageThumbnail = '';
-        this.localPath = '';
-        this.mimeType = '';
-        this.name = '';
-        this.post = {} as Relation<Post>;
-        this.postId = '';
-        this.size = 0;
-        this.width = 0;
-    }
-
     /** extension : The file's extension */
     @field('extension') extension: string;
 

@@ -31,15 +31,6 @@ export default class Group extends Model {
         [GROUP_MEMBERSHIP]: {type: 'has_many', foreignKey: 'group_id'},
     };
 
-    constructor() {
-        super();
-        this.displayName = '';
-        this.groupMembership = [];
-        this.groupsInChannel = [];
-        this.groupsInTeam = [];
-        this.name = '';
-    }
-
     /** display_name : The display name for the group */
     @field('display_name') displayName: string;
 

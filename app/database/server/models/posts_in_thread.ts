@@ -25,14 +25,6 @@ export default class PostsInThread extends Model {
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
-    constructor() {
-        super();
-        this.earliest = 0;
-        this.latest = 0;
-        this.postId = '';
-        this.post = {} as Relation<Post>;
-    }
-
     /** latest : Upper bound of a timestamp range */
     @field('earliest') earliest: number;
 
