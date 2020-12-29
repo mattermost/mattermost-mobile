@@ -25,32 +25,32 @@ export default class File extends Model {
     };
 
     /** extension : The file's extension */
-    @field('extension') extension: string;
+    @field('extension') extension!: string;
 
     /** height : The height for the image */
-    @field('height') height: number;
+    @field('height') height!: number;
 
     /** image_thumbnail : A base64 representation of an image */
-    @field('image_thumbnail') imageThumbnail: string;
+    @field('image_thumbnail') imageThumbnail!: string;
 
     /** local_path : Local path of the file that has been uploaded to server */
-    @field('local_path') localPath: string;
+    @field('local_path') localPath!: string;
 
     /** mime_type : The media type */
-    @field('mime_type') mimeType: string;
+    @field('mime_type') mimeType!: string;
 
     /** name : The name for the file object */
-    @field('name') name: string;
+    @field('name') name!: string;
 
     /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId: string;
+    @field('post_id') postId!: string;
 
     /** size : The numeric value of the size for the file */
-    @field('size') size: number;
+    @field('size') size!: number;
 
     /** width : The width of the file object/image */
-    @field('width') width: number;
+    @field('width') width!: number;
 
     /** post : The related Post record for this file */
-    @immutableRelation(POST, 'post_id') post: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }

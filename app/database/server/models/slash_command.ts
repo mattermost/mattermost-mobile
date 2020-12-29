@@ -25,29 +25,29 @@ export default class SlashCommand extends Model {
     };
 
     /** auto_complete : Boolean flag for auto-completing slash commands */
-    @field('auto_complete') autoComplete: boolean;
+    @field('auto_complete') autoComplete!: boolean;
 
     /** description : The description for the slash command */
-    @field('description') description: string;
+    @field('description') description!: string;
 
     /** display_name : The name for the command */
-    @field('display_name') displayName: string;
+    @field('display_name') displayName!: string;
 
     /** hint : A helpful text explaining the purpose of the command  */
-    @field('hint') hint: string;
+    @field('hint') hint!: string;
 
     /** method : API methods like HTTP */
-    @field('method') method: string;
+    @field('method') method!: string;
 
     /** team_id : The foreign key of the parent Team */
-    @field('team_id') teamId: string;
+    @field('team_id') teamId!: string;
 
     /** token : A key identifying this slash command */
-    @field('token') token: string;
+    @field('token') token!: string;
 
     /** trigger : A pattern/text used to recognize when a slash command needs to launch */
-    @field('trigger') trigger: string;
+    @field('trigger') trigger!: string;
 
     /** team : The related parent TEAM record */
-    @immutableRelation(TEAM, 'team_id') team: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 }

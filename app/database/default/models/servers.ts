@@ -17,17 +17,17 @@ export default class Servers extends Model {
     static table = SERVERS;
 
     /** db_path : The file path where the database is stored */
-    @field('db_path') dbPath: string;
+    @field('db_path') dbPath!: string;
 
     /** display_name : The server display name */
-    @field('display_name') displayName: string;
+    @field('display_name') displayName!: string;
 
     /** mention_count : The number of mention on this server */
-    @field('mention_count') mentionCount: number;
+    @field('mention_count') mentionCount!: number;
 
     /** unread_count : The number of unread messages on this server */
-    @field('unread_count') unreadCount: number;
+    @field('unread_count') unreadCount!: number;
 
     /** url : The online address for the Mattermost server */
-    @field('url') url: string;
+    @field('url') url!: string;
 }

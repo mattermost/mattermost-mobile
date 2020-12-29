@@ -14,5 +14,5 @@ export default class CustomEmoji extends Model {
     static table = CUSTOM_EMOJI;
 
     /** name :  The custom emoji's name*/
-    @field('name') name: string;
+    @field('name') name!: string;
 }

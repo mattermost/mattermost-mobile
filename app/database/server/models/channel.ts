@@ -72,49 +72,49 @@ export default class Channel extends Model {
     };
 
     /** create_at : The creation date for this channel */
-    @field('create_at') createAt: number;
+    @field('create_at') createAt!: number;
 
     /** creator_id : The user who created this channel */
-    @field('creator_id') creatorId: string;
+    @field('creator_id') creatorId!: string;
 
     /** delete_at : The deletion/archived date of this channel */
-    @field('delete_at') deleteAt: number;
+    @field('delete_at') deleteAt!: number;
 
     /** display_name : The channel display name (e.g. Town Square ) */
-    @field('display_name') displayName: string;
+    @field('display_name') displayName!: string;
 
     /** is_group_constrained : If group is restricted to certain users/teams only */
-    @field('is_group_constrained') isGroupConstrained: boolean;
+    @field('is_group_constrained') isGroupConstrained!: boolean;
 
     /** name : The name of the channel (e.g town-square) */
-    @field('name') name: string;
+    @field('name') name!: string;
 
     /** team_id : The team to which this channel belongs.  It can be empty for direct/group message. */
-    @field('team_id') teamId: string;
+    @field('team_id') teamId!: string;
 
     /** type : The type of the channel ( e.g. G: group messages, D: direct messages, P: private channel and O: public channel) */
-    @field('type') type: string;
+    @field('type') type!: string;
 
     /** members : Users belonging to this channel */
-    @children(CHANNEL_MEMBERSHIP) members: ChannelMembership[];
+    @children(CHANNEL_MEMBERSHIP) members!: ChannelMembership[];
 
     /** draft : All drafts for this channel */
-    @children(DRAFT) draft: Draft[];
+    @children(DRAFT) draft!: Draft[];
 
     /** groupsInChannel : Every group contained in this channel */
-    @children(GROUPS_IN_CHANNEL) groupsInChannel: GroupsInChannel[];
+    @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel[];
 
     /** posts : all posts made in that channel */
-    @children(POST) posts: Post[];
+    @children(POST) posts!: Post[];
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
-    @children(POSTS_IN_CHANNEL) postsInChannel: PostsInChannel[];
+    @children(POSTS_IN_CHANNEL) postsInChannel!: PostsInChannel[];
 
     /** team : The TEAM to which this CHANNEL belongs */
-    @immutableRelation(TEAM, 'team_id') team: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 
     /** creator : The USER who created this CHANNEL*/
-    @immutableRelation(USER, 'creator_id') creator: Relation<User>;
+    @immutableRelation(USER, 'creator_id') creator!: Relation<User>;
 
     /** info : Query returning extra information about this channel from entity CHANNEL_INFO */
     @lazy info = this.collections.get(CHANNEL_INFO).query(Q.on(CHANNEL, 'id', this.id)) as Query<ChannelInfo>;

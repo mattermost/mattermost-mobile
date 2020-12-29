@@ -25,23 +25,23 @@ export default class MyChannel extends Model {
     };
 
     /** channel_id : The foreign key to the related Channel record  */
-    @field('channel_id') channelId: string;
+    @field('channel_id') channelId!: string;
 
     /** last_post_at : The timestamp for any last post on this channel */
-    @field('last_post_at') lastPostAt: number;
+    @field('last_post_at') lastPostAt!: number;
 
     /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
-    @field('last_viewed_at') lastViewedAt: number;
+    @field('last_viewed_at') lastViewedAt!: number;
 
     /** mentionsCount : The number of mentions on this channel */
-    @field('mentions_count') mentionsCount: number;
+    @field('mentions_count') mentionsCount!: number;
 
     /** messageCount : The derived number of unread messages on this channel */
-    @field('message_count') messageCount: number;
+    @field('message_count') messageCount!: number;
 
     /** roles : The user's privileges on this channel */
-    @field('roles') roles: string;
+    @field('roles') roles!: string;
 
     /** channel : The relation pointing to entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel : Relation<Channel>
+    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>
 }

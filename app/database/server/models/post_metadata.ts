@@ -25,14 +25,14 @@ export default class PostMetadata extends Model {
     };
 
     /** post_id : The foreign key of the parent POST model */
-    @field('post_id') postId: string;
+    @field('post_id') postId!: string;
 
     /** type : The type will work in tandem with the value present in the field 'data'.  One 'type' for each kind of 'data' */
-    @field('type') type: string;
+    @field('type') type!: string;
 
     /** data : Different types of data ranging from arrays, emojis, files to images and reactions. */
-    @json('data', (rawJson) => rawJson) data: string;
+    @json('data', (rawJson) => rawJson) data!: string;
 
     /** post: The record representing the POST parent.  */
-    @immutableRelation(POST, 'post_id') post: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }

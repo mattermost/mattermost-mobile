@@ -22,7 +22,7 @@
         "noImplicitAny": true,
         "strictNullChecks": true,
         "strictFunctionTypes": false,
-        "strictPropertyInitialization": false,
+        "strictPropertyInitialization": true,
         "noImplicitThis": false,
         "alwaysStrict": true,
         "noUnusedLocals": false,
@@ -62,5 +62,5 @@
         "babel.config.js",
         "metro.config.js",
         "jest.config.js",
-    ]
+    ],
 }
