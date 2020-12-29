@@ -135,14 +135,13 @@ class DatabaseManager {
 
             await defaultDatabase.action(async () => {
                 const serversCollection = defaultDatabase.collections.get('servers');
-                const s = await serversCollection.create((server: Server) => {
+                await serversCollection.create((server: Server) => {
                     server.dbPath = dbFilePath;
                     server.displayName = displayName;
                     server.mentionCount = 0;
                     server.unreadCount = 0;
                     server.url = serverUrl;
                 });
-                console.log({s});
             });
         } catch (e) {
             console.log({catchError: e});

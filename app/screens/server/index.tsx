@@ -36,12 +36,12 @@ const App = () => {
     // deleteIOSDatabase({shouldRemoveDirectory: true});
 
     // Creates a new server connection
-    // DBManager.createDatabaseConnection({
-    //     actionsEnabled: true,
-    //     dbName: 'test test',
-    //     dbType: DatabaseType.SERVER,
-    //     serverUrl: 'x28Dec2020test@mattermost.com',
-    // });
+    DBManager.createDatabaseConnection({
+        actionsEnabled: true,
+        dbName: 'zx_t123',
+        dbType: DatabaseType.SERVER,
+        serverUrl: '33xd',
+    });
 
     return (
         <>

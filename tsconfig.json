@@ -32,6 +32,7 @@
         "noFallthroughCasesInSwitch": true,
         "resolveJsonModule": true,
         "baseUrl": ".",
+        "useDefineForClassFields": true,
         "paths": {
             "@assets/*": ["dist/assets/*"],
             "@components/*": ["app/components/*"],
@@ -62,5 +63,5 @@
         "babel.config.js",
         "metro.config.js",
         "jest.config.js",
-    ]
+    ],
 }
