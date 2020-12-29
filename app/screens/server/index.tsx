@@ -38,7 +38,7 @@ const App = () => {
     // Creates a new server connection
     DBManager.createDatabaseConnection({
         actionsEnabled: true,
-        dbName: 'zx_t123',
+        dbName: 'zx_t125',
         dbType: DatabaseType.SERVER,
         serverUrl: '33xd',
     });
