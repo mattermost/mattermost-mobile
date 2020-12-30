@@ -6,6 +6,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import Channel from '@typings/database/channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyTeam from '@typings/database/my_team';
 import SlashCommand from '@typings/database/slash_command';
 import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
@@ -52,7 +53,7 @@ export default class Team extends Model {
     groupsInTeam: GroupsInTeam[];
 
     /** myTeam : Lazy query property returning only the team that this user is part of  */
-    myTeam: Query<any>;
+    myTeam: Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
     slashCommands: SlashCommand[];
