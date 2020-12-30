@@ -3,14 +3,14 @@
 
 import {AppSchema, appSchema} from '@nozbe/watermelondb';
 
-import {custom_emoji, role, system, terms_of_service} from './table_schemas';
+import {CustomEmojiSchema, RoleSchema, SystemSchema, TermsOfServiceSchema} from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
     version: 1,
     tables: [
-        custom_emoji,
-        role,
-        system,
-        terms_of_service,
+        CustomEmojiSchema,
+        RoleSchema,
+        SystemSchema,
+        TermsOfServiceSchema,
     ],
 });
