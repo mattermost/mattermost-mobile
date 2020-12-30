@@ -2,6 +2,10 @@
 // See LICENSE.txt for license information.
 
 export {default as custom_emoji} from './custom_emoji';
+export {default as group_membership} from './group_membership';
+export {default as groups_in_channel} from './groups_in_channel';
+export {default as groups_in_team} from './groups_in_team';
+export {default as group} from './group';
 export {default as my_team} from './my_team';
 export {default as role} from './role';
 export {default as slash_command} from './slash_command';

@@ -5,20 +5,28 @@ import {AppSchema, appSchema} from '@nozbe/watermelondb';
 
 import {
     custom_emoji,
-    role,
-    system,
-    terms_of_service,
+    group,
+    group_membership,
+    groups_in_channel,
+    groups_in_team,
     my_team,
+    role,
+    slash_command, team,
+    system,
     team_channel_history,
     team_membership,
     team_search_history,
-    slash_command, team,
+    terms_of_service,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
     version: 1,
     tables: [
         custom_emoji,
+        group,
+        group_membership,
+        groups_in_channel,
+        groups_in_team,
         my_team,
         role,
         slash_command,
