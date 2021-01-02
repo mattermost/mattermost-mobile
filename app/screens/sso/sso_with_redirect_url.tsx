@@ -1,34 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React from 'react';
-import {Linking, Text, View} from 'react-native';
+import {intlShape} from 'react-intl';
+import {Linking, Text, TouchableOpacity, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
-import Loading from 'app/components/loading';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import {setDeepLinkURL} from '@actions/views/root';
+import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
 
 interface SSOWithRedirectURLProps {
-    error?: string | null;
+    intl: typeof intlShape;
+    loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
     onMMToken: (token: string) => void;
+    setLoginError: (value: string) => void;
     theme: Theme
 }
 
-function SSOWithRedirectURL({loginUrl, onCSRFToken, onMMToken, theme}: SSOWithRedirectURLProps) {
-    // @TODO
-    const [error/*, setError*/] = React.useState<string>('');
+function SSOWithRedirectURL({intl, loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) {
+    const [error, setError] = React.useState<string>('');
     const style = React.useMemo(() => getStyleSheet(theme), [theme]);
 
     // @TODO: REPLACE IT
     const redirectUrl = 'mattermost://callback';
 
-    const init = () => {
+    const init = (resetErrors?: boolean) => {
+        if (resetErrors !== false) {
+            setError('');
+            setLoginError('');
+        }
         const parsedUrl = urlParse(loginUrl, true);
         parsedUrl.set('query', {
             ...parsedUrl.query,
@@ -38,7 +45,12 @@ function SSOWithRedirectURL({loginUrl, onCSRFToken, onMMToken, theme}: SSOWithRe
         Linking.canOpenURL(url).then(() => {
             Linking.openURL(url);
         }).catch(() => {
-            // @TODO: SHOW ERROR
+            setError(
+                intl.formatMessage({
+                    id: 'mobile.oauth.failed_to_open_link',
+                    defaultMessage: 'Failed to open the link',
+                }),
+            );
         });
     };
 
@@ -50,14 +62,19 @@ function SSOWithRedirectURL({loginUrl, onCSRFToken, onMMToken, theme}: SSOWithRe
                 onCSRFToken(parsedUrl.query.MMCSRF);
                 onMMToken(parsedUrl.query.MMAUTHTOKEN);
             } else {
-                // @TODO: SHOW ERROR
+                setError(
+                    intl.formatMessage({
+                        id: 'mobile.oauth.failed_to_login',
+                        defaultMessage: 'Failed to login',
+                    }),
+                );
             }
         }
     };
 
     React.useEffect(() => {
         Linking.addEventListener('url', onURLChange);
-        init();
+        init(false);
         return () => {
             Linking.removeEventListener('url', onURLChange);
         };
@@ -65,21 +82,46 @@ function SSOWithRedirectURL({loginUrl, onCSRFToken, onMMToken, theme}: SSOWithRe
 
     return (
         <SafeAreaView style={style.container}>
-            {error ? (
+            {loginError || error ? (
                 <View style={style.errorContainer}>
-                    <Text style={style.errorText}>{'...'}</Text>
+                    <View style={style.errorTextContainer}>
+                        <Text style={style.errorText}>{loginError || error}{'.'}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => init()}>
+                        <FormattedText
+                            id='mobile.oauth.try_again'
+                            defaultMessage='Try again'
+                            style={style.button}
+                        />
+                    </TouchableOpacity>
                 </View>
             ) : (
                 <View style={style.infoContainer}>
+                    <FormattedText
+                        id='mobile.oauth.switch_to_browser'
+                        defaultMessage='Switch to browser and complete the login process'
+                        style={style.infoText}
+                    />
+                    <FormattedText
+                        id='mobile.oauth.or'
+                        defaultMessage='or'
+                        style={style.infoText}
+                    />
+                    <TouchableOpacity onPress={() => init()}>
+                        <FormattedText
+                            id='mobile.oauth.restart_login'
+                            defaultMessage='Restart login'
+                            style={style.button}
+                        />
+                    </TouchableOpacity>
                     <Loading/>
-                    <Text/>
                 </View>
             )}
         </SafeAreaView>
     );
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: any) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
@@ -89,17 +131,34 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: any) => {
             flex: 1,
             marginTop: 40,
         },
+        errorTextContainer: {
+            marginBottom: 12,
+        },
         errorText: {
-            color: changeOpacity(theme.centerChannelColor, 0.4),
+            color: changeOpacity(theme.centerChannelColor, 0.6),
             fontSize: 16,
             fontWeight: '400',
             lineHeight: 23,
-            paddingHorizontal: 30,
         },
         infoContainer: {
             alignItems: 'center',
             flex: 1,
             justifyContent: 'center',
+            marginTop: 40,
+        },
+        infoText: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 16,
+            fontWeight: '400',
+            lineHeight: 23,
+        },
+        button: {
+            backgroundColor: theme.buttonBg,
+            color: theme.buttonColor,
+            fontSize: 16,
+            paddingHorizontal: 9,
+            paddingVertical: 9,
+            marginTop: 3,
         },
     };
 });

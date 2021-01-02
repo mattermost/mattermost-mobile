@@ -54,7 +54,7 @@ const oneLoginFormScalingJS = `
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
-    error?: string | null;
+    loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
     onMMToken: (token: string) => void;
@@ -63,7 +63,16 @@ interface SSOWithWebViewProps {
     theme: Theme
 }
 
-function SSOWithWebView({completeUrlPath, error: propsError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
+type CookieResponseType = {
+    MMAUTHTOKEN: string | {
+        value: string
+    };
+    MMCSRF: string | {
+        value: string
+    };
+}
+
+function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
     const style = React.useMemo(() => getStyleSheet(theme), [theme]);
 
     const [error, setError] = React.useState(null);
@@ -81,7 +90,7 @@ function SSOWithWebView({completeUrlPath, error: propsError, loginUrl, onCSRFTok
         };
     });
 
-    const extractCookie = (parsedUrl: any) => {
+    const extractCookie = (parsedUrl: urlParse) => {
         const original = urlParse(serverUrl);
 
         // Check whether we need to set a sub-path
@@ -91,7 +100,7 @@ function SSOWithWebView({completeUrlPath, error: propsError, loginUrl, onCSRFTok
         const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
         Client4.setUrl(url);
 
-        CookieManager.get(url, true).then((res: any) => {
+        CookieManager.get(url, true).then((res: CookieResponseType) => {
             const mmtoken = res.MMAUTHTOKEN;
             const csrf = res.MMCSRF;
             const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
@@ -187,9 +196,9 @@ function SSOWithWebView({completeUrlPath, error: propsError, loginUrl, onCSRFTok
     return (
         <SafeAreaView style={style.container}>
             <StatusBar/>
-            {error || propsError ? (
+            {error || loginError ? (
                 <View style={style.errorContainer}>
-                    <Text style={style.errorText}>{error || propsError}</Text>
+                    <Text style={style.errorText}>{error || loginError}</Text>
                 </View>
             ) : renderWebView()}
         </SafeAreaView>

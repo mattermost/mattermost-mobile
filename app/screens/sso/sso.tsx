@@ -11,9 +11,11 @@ import {ViewTypes} from 'app/constants';
 import tracker from 'app/utils/time_tracker';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {ssoLogin} from '@actions/views/user';
+import {DispatchFunc} from '@mm-redux/types/actions';
 import {Client4} from '@mm-redux/client';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getConfig} from '@mm-redux/selectors/entities/general';
+import {ErrorApi} from '@mm-redux/types/client4';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
@@ -31,9 +33,10 @@ function SSO({intl, ssoType}: SSOProps) {
         getTheme(state),
     ]), shallowEqual);
 
-    const [error, setError] = React.useState(null);
+    const [loginError, setLoginError] = React.useState<string>('');
 
-    const dispatch: any = useDispatch();
+    const asyncDispatch: DispatchFunc = useDispatch();
+    const dispatch = useDispatch();
 
     let completeUrlPath = '';
     let loginUrl = '';
@@ -60,29 +63,25 @@ function SSO({intl, ssoType}: SSOProps) {
     }
     }
 
-    const onLoadEndError = (e: any) => {
+    const onLoadEndError = (e: ErrorApi) => {
         console.warn('Failed to set store from local data', e); // eslint-disable-line no-console
         let errorMessage = e.message;
-        if (e.details) {
-            errorMessage += `\n${e.details.message}`;
-        }
-
         if (e.url) {
             errorMessage += `\nURL: ${e.url}`;
         }
-        setError(errorMessage);
+        setLoginError(errorMessage);
     };
 
-    const onMMToken = (token: string) => {
+    const onMMToken = async (token: string) => {
         Client4.setToken(token);
-        dispatch(ssoLogin()).then((result: any) => {
-            if (result.error) {
+        asyncDispatch(ssoLogin()).then((result: any) => {
+            if (result && result.error) {
                 onLoadEndError(result.error);
                 return;
             }
             goToChannel();
         }).catch(() => {
-            // @TODO
+            setLoginError('');
         });
     };
 
@@ -96,19 +95,23 @@ function SSO({intl, ssoType}: SSOProps) {
         dispatch(scheduleExpiredNotification(intl));
     };
 
-    const isSSOWithRedirectURLAvailable = true || isMinimumServerVersion(config.Version, 5, 40, 0);
+    const isSSOWithRedirectURLAvailable = true || isMinimumServerVersion(config.Version, 5, 31, 0);
 
     const props = {
-        error,
+        loginError,
         loginUrl,
         onCSRFToken: Client4.setCSRF,
         onMMToken,
+        setLoginError,
         theme,
     };
 
     if (isSSOWithRedirectURLAvailable) {
         return (
-            <SSOWithRedirectURL {...props}/>
+            <SSOWithRedirectURL
+                intl={intl}
+                {...props}
+            />
         );
     }
     return (
