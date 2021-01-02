@@ -224,6 +224,7 @@ export default class PinnedPosts extends PureComponent {
 
         return (
             <SafeAreaView
+                testID='pinned_messages.screen'
                 edges={['bottom', 'left', 'right']}
                 style={style.container}
             >

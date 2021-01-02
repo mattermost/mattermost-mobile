@@ -14,6 +14,7 @@ import QuickActions from '@components/post_draft/quick_actions';
 import SendAction from '@components/post_draft/send_action';
 import Typing from '@components/post_draft/typing';
 import Uploads from '@components/post_draft/uploads';
+import DEVICE from '@constants/device';
 import {CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE, IS_REACTION_REGEX} from '@constants/post_draft';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import EventEmitter from '@mm-redux/utils/event_emitter';
@@ -23,7 +24,6 @@ import {confirmOutOfOfficeDisabled} from '@utils/status';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const AUTOCOMPLETE_MARGIN = 20;
-const AUTOCOMPLETE_MAX_HEIGHT = 200;
 const HW_SHIFT_ENTER_TEXT = Platform.OS === 'ios' ? '\n' : '';
 const HW_EVENT_IN_SCREEN = ['Channel', 'Thread'];
 
@@ -59,6 +59,7 @@ export default class DraftInput extends PureComponent {
         useGroupMentions: PropTypes.bool.isRequired,
         channelMemberCountsByGroup: PropTypes.object,
         groupsWithAllowReference: PropTypes.object,
+        addRecentUsedEmojisInMessage: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -162,7 +163,11 @@ export default class DraftInput extends PureComponent {
             message: value,
         };
 
-        createPost(post, postFiles);
+        createPost(post, postFiles).then(({data}) => {
+            if (data) {
+                this.props.addRecentUsedEmojisInMessage(message);
+            }
+        });
 
         if (postFiles.length) {
             handleClearFiles(channelId, rootId);
@@ -420,6 +425,17 @@ export default class DraftInput extends PureComponent {
                     theme={theme}
                     registerTypingAnimation={registerTypingAnimation}
                 />
+                {Platform.OS === 'android' &&
+                <Autocomplete
+                    cursorPositionEvent={cursorPositionEvent}
+                    maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, DEVICE.AUTOCOMPLETE_MAX_HEIGHT)}
+                    onChangeText={this.handleInputQuickAction}
+                    valueEvent={valueEvent}
+                    rootId={rootId}
+                    channelId={channelId}
+                    offsetY={0}
+                />
+                }
                 <SafeAreaView
                     edges={['left', 'right']}
                     onLayout={this.handleLayout}
@@ -475,16 +491,6 @@ export default class DraftInput extends PureComponent {
                         </View>
                     </ScrollView>
                 </SafeAreaView>
-                {Platform.OS === 'android' &&
-                <Autocomplete
-                    cursorPositionEvent={cursorPositionEvent}
-                    maxHeight={Math.min(this.state.top - AUTOCOMPLETE_MARGIN, AUTOCOMPLETE_MAX_HEIGHT)}
-                    onChangeText={this.handleInputQuickAction}
-                    valueEvent={valueEvent}
-                    rootId={rootId}
-                    channelId={channelId}
-                />
-                }
             </>
         );
     }

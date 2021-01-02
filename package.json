@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "1.38.0",
+  "version": "1.38.1",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -15,7 +15,7 @@
     "@react-native-community/netinfo": "5.9.7",
     "@react-navigation/native": "5.8.9",
     "@react-navigation/stack": "5.12.6",
-    "@rudderstack/rudder-sdk-react-native": "1.0.3",
+    "@rudderstack/rudder-sdk-react-native": "1.0.4",
     "@sentry/react-native": "2.0.0",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#f6ab98dede6ce4b4e7adea140ac77249bfb2d6ce",

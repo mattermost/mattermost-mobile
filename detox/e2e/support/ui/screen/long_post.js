@@ -5,15 +5,20 @@ import {Post} from '@support/ui/component';
 
 class LongPostScreen {
     testID = {
-        longPostScreenPrefix: 'long_post.',
+        longPostItem: 'long_post.post',
     }
 
-    getPost = (postId, text) => {
-        const {postItem, postItemHeaderReply} = Post.getPost(this.testID.longPostScreenPrefix, postId, text);
+    getPost = (postId, postMessage) => {
+        const {postItem, postItemHeaderReply, postItemMessage} = Post.getPost(this.testID.longPostItem, postId, postMessage);
         return {
             longPostItem: postItem,
             longPostItemHeaderReply: postItemHeaderReply,
+            longPostItemMessage: postItemMessage,
         };
+    }
+
+    getPostMessage = () => {
+        return Post.getPostMessage(this.testID.longPostItem);
     }
 }
 
