@@ -17,6 +17,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {goToScreen} from '@actions/navigation';
 import LocalConfig from '@assets/config';
 import gitlab from '@assets/images/gitlab.png';
+import google from '@assets/images/google.png';
 import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
@@ -176,6 +177,32 @@ export default class LoginOptions extends PureComponent {
         return null;
     };
 
+    renderGoogleOption = () => {
+        const {config} = this.props;
+
+        if (config.EnableSignUpWithGoogle === 'true') {
+            return (
+                <Button
+                    key='google'
+                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GOOGLE))}
+                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#c23321', borderColor: 'transparent', borderWidth: 0}]}
+                >
+                    <Image
+                        source={google}
+                        style={{height: 18, marginRight: 5, width: 18}}
+                    />
+                    <Text
+                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                    >
+                        {'Google Apps'}
+                    </Text>
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     renderO365Option = () => {
         const {config, license} = this.props;
         const forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
@@ -279,6 +306,7 @@ export default class LoginOptions extends PureComponent {
                     {this.renderEmailOption()}
                     {this.renderLdapOption()}
                     {this.renderGitlabOption()}
+                    {this.renderGoogleOption()}
                     {this.renderSamlOption()}
                     {this.renderO365Option()}
                 </ScrollView>

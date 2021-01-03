@@ -15,6 +15,7 @@ import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
 
 interface SSOWithRedirectURLProps {
+    customUrlScheme: string;
     intl: typeof intlShape;
     loginError: string;
     loginUrl: string;
@@ -24,12 +25,20 @@ interface SSOWithRedirectURLProps {
     theme: Theme
 }
 
-function SSOWithRedirectURL({intl, loginError, loginUrl, onCSRFToken, onMMToken, setLoginError, theme}: SSOWithRedirectURLProps) {
+function SSOWithRedirectURL({
+    customUrlScheme = 'mattermost://',
+    intl,
+    loginError,
+    loginUrl,
+    onCSRFToken,
+    onMMToken,
+    setLoginError,
+    theme,
+}: SSOWithRedirectURLProps) {
     const [error, setError] = React.useState<string>('');
     const style = React.useMemo(() => getStyleSheet(theme), [theme]);
 
-    // @TODO: REPLACE IT
-    const redirectUrl = 'mattermost://callback';
+    const redirectUrl = customUrlScheme + 'callback';
 
     const init = (resetErrors?: boolean) => {
         if (resetErrors !== false) {

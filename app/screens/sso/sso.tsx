@@ -109,6 +109,7 @@ function SSO({intl, ssoType}: SSOProps) {
     if (isSSOWithRedirectURLAvailable) {
         return (
             <SSOWithRedirectURL
+                customUrlScheme={config.AppCustomUrlScheme}
                 intl={intl}
                 {...props}
             />

@@ -9,6 +9,7 @@ export type Config = {
     AndroidAppDownloadLink: string;
     AndroidLatestVersion: string;
     AndroidMinVersion: string;
+    AppCustomURLScheme: string;
     AppDownloadLink: string;
     AsymmetricSigningPublicKey: string;
     AvailableLocales: string;
