@@ -79,6 +79,7 @@ const ViewTypes = keyMirror({
     GITLAB: null,
     GOOGLE: null,
     OFFICE365: null,
+    OPENID: null,
     SAML: null,
 
     SET_INITIAL_POST_VISIBILITY: null,

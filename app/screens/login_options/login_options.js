@@ -236,6 +236,36 @@ export default class LoginOptions extends PureComponent {
         return null;
     };
 
+    renderOpenIdOption = () => {
+        const {config, license} = this.props;
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
+
+        if (openIdEnabled) {
+            const backgroundColor = config.OpenIdButtonColor || '#145DBF';
+            const additionalStyle = {
+                backgroundColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
+            };
+
+            const textColor = 'white';
+
+            return (
+                <Button
+                    key='openId'
+                    onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.OPENID))}
+                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
+                >
+                    <Text style={[GlobalStyles.signupButtonText, {color: textColor}]}>
+                        {config.OpenIdButtonText || 'OpenId'}
+                    </Text>
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     renderSamlOption = () => {
         const {config, license} = this.props;
         const forceHideFromLocal = LocalConfig.HideSAMLLoginExperimental;
@@ -309,6 +339,7 @@ export default class LoginOptions extends PureComponent {
                     {this.renderGoogleOption()}
                     {this.renderSamlOption()}
                     {this.renderO365Option()}
+                    {this.renderOpenIdOption()}
                 </ScrollView>
             </SafeAreaView>
         );

@@ -255,11 +255,12 @@ export default class SelectServer extends PureComponent {
         const {config, license} = props;
         const samlEnabled = config.EnableSaml === 'true' && license.IsLicensed === 'true' && license.SAML === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-        const googleEnabled = license.IsLicensed === 'true' && config.EnableSignUpWithGoogle === 'true';
+        const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
 
         let options = 0;
-        if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled) {
+        if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {
             options += 1;
         }
 
