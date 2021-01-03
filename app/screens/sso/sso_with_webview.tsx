@@ -175,18 +175,19 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
         if (shouldRenderWebView) {
             return (
                 <WebView
-                    ref={webView}
-                    source={{uri: loginUrl, headers: HEADERS}}
-                    javaScriptEnabled={true}
                     automaticallyAdjustContentInsets={false}
-                    startInLoadingState={true}
-                    onNavigationStateChange={onNavigationStateChange}
-                    onShouldStartLoadWithRequest={() => true}
+                    cacheEnabled={false}
                     injectedJavaScript={jsCode}
+                    javaScriptEnabled={true}
                     onLoadEnd={onLoadEnd}
                     onMessage={messagingEnabled ? onMessage : undefined}
+                    onNavigationStateChange={onNavigationStateChange}
+                    onShouldStartLoadWithRequest={() => true}
+                    ref={webView}
+                    source={{uri: loginUrl, headers: HEADERS}}
+                    startInLoadingState={true}
+                    userAgent='Mozilla/5.0 (Linux; Android 10; Android SDK built for x86 Build/LMY48X) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/81.0.4044.117 Mobile Safari/608.2.11'
                     useSharedProcessPool={false}
-                    cacheEnabled={false}
                 />
             );
         }
