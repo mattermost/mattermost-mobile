@@ -1,0 +1,49 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React from 'react';
+
+import FormattedText from 'app/components/formatted_text';
+
+import {shallowWithIntl} from 'test/intl-test-helper';
+
+import LoginOptions from './login_options';
+
+describe('Login options', () => {
+    const baseProps = {
+        config: {},
+        license: {
+            IsLicensed: 'true',
+        },
+    };
+
+    test('should show google signin button only when enabled', () => {
+        const basicWrapper = shallowWithIntl(<LoginOptions {...baseProps}/>);
+        expect(basicWrapper.find(FormattedText).find({id: 'signup.google'}).exists()).toBe(false);
+
+        const props = {
+            ...baseProps,
+            config: {
+                ...baseProps.config,
+                EnableSignUpWithGoogle: 'true',
+            },
+        };
+        const configuredWrapper = shallowWithIntl(<LoginOptions {...props}/>);
+        expect(configuredWrapper.find(FormattedText).find({id: 'signup.google'}).exists()).toBe(true);
+    });
+
+    test('should show open id button only when enabled', () => {
+        const basicWrapper = shallowWithIntl(<LoginOptions {...baseProps}/>);
+        expect(basicWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(false);
+
+        const props = {
+            ...baseProps,
+            config: {
+                ...baseProps.config,
+                EnableSignUpWithOpenId: 'true',
+            },
+        };
+        const configuredWrapper = shallowWithIntl(<LoginOptions {...props}/>);
+        expect(configuredWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(true);
+    });
+});

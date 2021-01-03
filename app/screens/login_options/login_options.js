@@ -106,14 +106,14 @@ export default class LoginOptions extends PureComponent {
 
         if (!forceHideFromLocal && license.IsLicensed === 'true' && config.EnableLdap === 'true') {
             const backgroundColor = config.LDAPLoginButtonColor || '#2389d7';
-            const additionalStyle = {
+            const additionalButtonStyle = {
                 backgroundColor,
                 borderColor: 'transparent',
                 borderWidth: 0,
             };
 
             if (config.LDAPLoginButtonBorderColor) {
-                additionalStyle.borderColor = config.LDAPLoginButtonBorderColor;
+                additionalButtonStyle.borderColor = config.LDAPLoginButtonBorderColor;
             }
 
             const textColor = config.LDAPLoginButtonTextColor || 'white';
@@ -139,7 +139,7 @@ export default class LoginOptions extends PureComponent {
                 <Button
                     key='ldap'
                     onPress={this.goToLogin}
-                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
+                    containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     {buttonText}
                 </Button>
@@ -155,18 +155,31 @@ export default class LoginOptions extends PureComponent {
         const forceHideFromLocal = LocalConfig.HideGitLabLoginExperimental;
 
         if (!forceHideFromLocal && config.EnableSignUpWithGitLab === 'true') {
+            const additionalButtonStyle = {
+                backgroundColor: '#548',
+                borderColor: 'transparent',
+                borderWidth: 0,
+            };
+
+            const logoStyle = {
+                height: 18,
+                marginRight: 5,
+                width: 18,
+            };
+
+            const textColor = 'white';
             return (
                 <Button
                     key='gitlab'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GITLAB))}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#548', borderColor: 'transparent', borderWidth: 0}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     <Image
                         source={gitlab}
-                        style={{height: 18, marginRight: 5, width: 18}}
+                        style={logoStyle}
                     />
                     <Text
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     >
                         {'GitLab'}
                     </Text>
@@ -181,21 +194,34 @@ export default class LoginOptions extends PureComponent {
         const {config} = this.props;
 
         if (config.EnableSignUpWithGoogle === 'true') {
+            const additionalButtonStyle = {
+                backgroundColor: '#c23321',
+                borderColor: 'transparent',
+                borderWidth: 0,
+            };
+
+            const logoStyle = {
+                height: 18,
+                marginRight: 5,
+                width: 18,
+            };
+
+            const textColor = 'white';
             return (
                 <Button
                     key='google'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.GOOGLE))}
-                    containerStyle={[GlobalStyles.signupButton, {backgroundColor: '#c23321', borderColor: 'transparent', borderWidth: 0}]}
+                    containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     <Image
                         source={google}
-                        style={{height: 18, marginRight: 5, width: 18}}
+                        style={logoStyle}
                     />
-                    <Text
-                        style={[GlobalStyles.signupButtonText, {color: 'white'}]}
-                    >
-                        {'Google Apps'}
-                    </Text>
+                    <FormattedText
+                        id='signup.google'
+                        defaultMessage='Google Apps'
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
+                    />
                 </Button>
             );
         }
@@ -209,9 +235,8 @@ export default class LoginOptions extends PureComponent {
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
 
         if (!forceHideFromLocal && o365Enabled) {
-            const backgroundColor = '#2389d7';
-            const additionalStyle = {
-                backgroundColor,
+            const additionalButtonStyle = {
+                backgroundColor: '#2389d7',
                 borderColor: 'transparent',
                 borderWidth: 0,
             };
@@ -222,7 +247,7 @@ export default class LoginOptions extends PureComponent {
                 <Button
                     key='o365'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.OFFICE365))}
-                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
+                    containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
                     <FormattedText
                         id='signup.office365'
@@ -241,9 +266,8 @@ export default class LoginOptions extends PureComponent {
         const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
 
         if (openIdEnabled) {
-            const backgroundColor = config.OpenIdButtonColor || '#145DBF';
-            const additionalStyle = {
-                backgroundColor,
+            const additionalButtonStyle = {
+                backgroundColor: config.OpenIdButtonColor || '#145DBF',
                 borderColor: 'transparent',
                 borderWidth: 0,
             };
@@ -254,11 +278,13 @@ export default class LoginOptions extends PureComponent {
                 <Button
                     key='openId'
                     onPress={preventDoubleTap(() => this.goToSSO(ViewTypes.OPENID))}
-                    containerStyle={[GlobalStyles.signupButton, additionalStyle]}
+                    containerStyle={[GlobalStyles.signupButton, additionalButtonStyle]}
                 >
-                    <Text style={[GlobalStyles.signupButtonText, {color: textColor}]}>
-                        {config.OpenIdButtonText || 'OpenId'}
-                    </Text>
+                    <FormattedText
+                        id='signup.openid'
+                        defaultMessage={config.OpenIdButtonText || 'OpenId'}
+                        style={[GlobalStyles.signupButtonText, {color: textColor}]}
+                    />
                 </Button>
             );
         }

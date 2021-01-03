@@ -194,7 +194,10 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
     };
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            style={style.container}
+            testID='sso.webview'
+        >
             <StatusBar/>
             {error || loginError ? (
                 <View style={style.errorContainer}>

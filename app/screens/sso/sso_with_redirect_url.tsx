@@ -90,7 +90,10 @@ function SSOWithRedirectURL({
     }, []);
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            style={style.container}
+            testID='sso.redirect_url'
+        >
             {loginError || error ? (
                 <View style={style.errorContainer}>
                     <View style={style.errorTextContainer}>
