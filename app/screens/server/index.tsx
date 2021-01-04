@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MM_TABLES} from '@constants/database';
+import EnhancedListOfServers from '@screens/server/list_of_servers';
 import React from 'react';
 import {
     SafeAreaView,
@@ -46,6 +48,7 @@ const App = () => {
     return (
         <>
             <StatusBar barStyle='dark-content'/>
+            <EnhancedListOfServers/>
             <SafeAreaView>
                 <ScrollView
                     contentInsetAdjustmentBehavior='automatic'

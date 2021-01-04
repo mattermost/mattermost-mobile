@@ -8,7 +8,7 @@ import {Class} from '@nozbe/watermelondb/utils/common';
 import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import Server from '@typings/database/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {ActionSheetIOS, DeviceEventEmitter, Platform} from 'react-native';
+import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
 import DefaultMigration from '../default/migration';
@@ -69,6 +69,7 @@ export enum DatabaseType {
 
 class DatabaseManager {
     private activeDatabase: Database | undefined;
+    defaultDatabase: Database | undefined;
     private readonly defaultModels: Models;
     private readonly serverModels: Models;
 
@@ -176,8 +177,18 @@ class DatabaseManager {
      * getDefaultDatabase : Returns the default database.
      * @returns {Database} default database
      */
-    getDefaultDatabase = (): Database => {
-        return this.createDatabaseConnection({dbName: 'default'});
+    setDefaultDatabase = async (): Promise<Database> => {
+        const defaultDatabase = await this.createDatabaseConnection({dbName: 'default'});
+        this.defaultDatabase = defaultDatabase;
+        return this.defaultDatabase;
+    };
+
+    /**
+     * getDefaultDatabase : Returns the default database.
+     * @returns {Database} default database
+     */
+    getDefaultDatabase = async (): Promise<Database> => {
+        return this.defaultDatabase || this.setDefaultDatabase();
     };
 
     /**
