@@ -5,6 +5,7 @@ import {latinise} from './latinise.js';
 import {escapeRegex} from './markdown';
 
 import {Files} from '@mm-redux/constants';
+import {getCurrentServerUrl} from '@init/credentials';
 
 import {DeepLinkTypes} from 'app/constants';
 
@@ -128,6 +129,16 @@ export function matchDeepLink(url, serverURL, siteURL) {
         return {type: DeepLinkTypes.PERMALINK, teamName: match[1], postId: match[2]};
     }
 
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(urlToMatch);
+    if (match) {
+        return {type: DeepLinkTypes.DMCHANNEL, teamName: match[1], userName: match[2]};
+    }
+
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/messages\\/(\\S+)').exec(urlToMatch);
+    if (match) {
+        return {type: DeepLinkTypes.GROUPCHANNEL, teamName: match[1], id: match[2]};
+    }
+
     return null;
 }
 
@@ -151,4 +162,21 @@ export function getYouTubeVideoId(link) {
     }
 
     return '';
+}
+
+export async function getURLAndMatch(href, serverURL, siteURL) {
+    const url = normalizeProtocol(href);
+
+    if (!url) {
+        return {};
+    }
+
+    let serverUrl = serverURL;
+    if (!serverUrl) {
+        serverUrl = await getCurrentServerUrl();
+    }
+
+    const match = matchDeepLink(url, serverURL, siteURL);
+
+    return {url, match};
 }

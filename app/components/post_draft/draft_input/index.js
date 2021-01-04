@@ -8,6 +8,7 @@ import {addReactionToLatestPost, addRecentUsedEmojisInMessage} from '@actions/vi
 import {handleClearFiles, handleClearFailedFiles} from '@actions/views/file_upload';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {getChannelTimezones, getChannelMemberCountsByGroup} from '@mm-redux/actions/channels';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {createPost} from '@mm-redux/actions/posts';
 import {setStatus} from '@mm-redux/actions/users';
 import {General, Permissions} from '@mm-redux/constants';
@@ -99,6 +100,7 @@ const mapDispatchToProps = {
     getChannelTimezones,
     handleClearFiles,
     handleClearFailedFiles,
+    handleGotoLocation,
     setStatus,
     getChannelMemberCountsByGroup,
     addRecentUsedEmojisInMessage,
