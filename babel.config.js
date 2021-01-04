@@ -15,7 +15,7 @@ module.exports = {
         '@babel/plugin-transform-runtime',
         ['@babel/plugin-proposal-decorators', {legacy: true}],
         ['@babel/plugin-transform-flow-strip-types'],
-        ['@babel/plugin-proposal-class-properties'],
+        ['@babel/plugin-proposal-class-properties', {loose: true}],
         ['module-resolver', {
             root: ['.'],
             alias: {
