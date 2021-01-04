@@ -44,6 +44,7 @@ export default class DraftInput extends PureComponent {
         getChannelTimezones: PropTypes.func.isRequired,
         handleClearFiles: PropTypes.func.isRequired,
         handleClearFailedFiles: PropTypes.func.isRequired,
+        handleGotoLocation: PropTypes.func.isRequired,
         isLandscape: PropTypes.bool.isRequired,
         isTimezoneEnabled: PropTypes.bool,
         maxMessageLength: PropTypes.number.isRequired,
@@ -299,7 +300,7 @@ export default class DraftInput extends PureComponent {
             return;
         }
 
-        const {error} = await executeCommand(msg, channelId, rootId);
+        const {data, error} = await executeCommand(msg, channelId, rootId);
         this.setState({sendingMessage: false});
 
         if (error) {
@@ -310,6 +311,10 @@ export default class DraftInput extends PureComponent {
 
         this.setInputValue('');
         this.input.current.changeDraft('');
+
+        if (data.goto_location) {
+            this.props.handleGotoLocation(data.goto_location, this.context.intl);
+        }
     };
 
     sendMessage = (value = '') => {
