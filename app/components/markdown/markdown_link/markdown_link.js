@@ -13,8 +13,7 @@ import {DeepLinkTypes} from '@constants';
 import CustomPropTypes from '@constants/custom_prop_types';
 import {getCurrentServerUrl} from '@init/credentials';
 import BottomSheet from '@utils/bottom_sheet';
-import {alertErrorWithFallback} from '@utils/general';
-import {t} from '@utils/i18n';
+import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 import {matchDeepLink, normalizeProtocol} from '@utils/url';
 
@@ -59,7 +58,8 @@ export default class MarkdownLink extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.errorBadChannel);
+                const {intl} = this.context;
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel(intl));
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 onPermalinkPress(match.postId, match.teamName);
             }
@@ -83,16 +83,6 @@ export default class MarkdownLink extends PureComponent {
             });
         }
     });
-
-    errorBadChannel = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_channel.error'),
-            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
-        };
-
-        alertErrorWithFallback(intl, {}, message);
-    };
 
     parseLinkLiteral = (literal) => {
         let nextLiteral = literal;

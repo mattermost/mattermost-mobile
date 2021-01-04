@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert} from 'react-native';
+import {Alert, Linking} from 'react-native';
 
 import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from '@constants/autocomplete';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
 import {General} from '@mm-redux/constants';
+import {alertErrorWithFallback} from '@utils/general';
+import {t} from '@utils/i18n';
 
 export function alertAttachmentFail(formatMessage, accept, cancel) {
     Alert.alert(
@@ -77,6 +79,44 @@ export function alertSendToGroups(formatMessage, notifyAllMessage, accept, cance
             },
         ],
     );
+}
+
+export function tryOpenURL(url) {
+    Linking.canOpenURL(url).then((supported) => {
+        if (supported) {
+            Linking.openURL(url);
+        } else {
+            const {formatMessage} = this.context.intl;
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.server_link.error.title',
+                    defaultMessage: 'Link Error',
+                }),
+                formatMessage({
+                    id: 'mobile.server_link.error.text',
+                    defaultMessage: 'The link could not be found on this server.',
+                }),
+            );
+        }
+    });
+}
+
+export function errorBadChannel(intl) {
+    const message = {
+        id: t('mobile.server_link.unreachable_channel.error'),
+        defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
+    };
+
+    alertErrorWithFallback(intl, {}, message);
+}
+
+export function errorBadUser(intl) {
+    const message = {
+        id: t('mobile.server_link.unreachable_user.error'),
+        defaultMessage: 'This link belongs to a deleted user.',
+    };
+
+    alertErrorWithFallback(intl, {}, message);
 }
 
 export function alertSlashCommandFailed(formatMessage, error) {
