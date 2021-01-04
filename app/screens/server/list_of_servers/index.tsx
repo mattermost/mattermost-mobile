@@ -19,10 +19,13 @@ const ListOfServers = ({servers} : { servers : Servers[]}) => {
                     renderItem={({item, index}) => {
                         const {displayName, id, mentionCount} = item as Servers;
                         return (
-                            <View>
-                                <Text key={index}>{id}</Text>
-                                <Text key={index}>{displayName}</Text>
-                                <Text key={index}>{mentionCount}</Text>
+                            <View
+                                key={index}
+                                style={{flexDirection: 'row'}}
+                            >
+                                <Text>{id}</Text>
+                                <Text>{displayName}</Text>
+                                <Text>{mentionCount}</Text>
                             </View>
                         );
                     }}

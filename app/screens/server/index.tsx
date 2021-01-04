@@ -38,23 +38,22 @@ const App = () => {
     // deleteIOSDatabase({shouldRemoveDirectory: true});
 
     // Creates a new server connection
-    DBManager.createDatabaseConnection({
-        actionsEnabled: true,
-        dbName: 'zx_t125',
-        dbType: DatabaseType.SERVER,
-        serverUrl: '33xd',
-    });
+    // DBManager.createDatabaseConnection({
+    //     actionsEnabled: true,
+    //     dbName: 'zx_t125',
+    //     dbType: DatabaseType.SERVER,
+    //     serverUrl: '33xd',
+    // });
 
     return (
         <>
             <StatusBar barStyle='dark-content'/>
-            <EnhancedListOfServers/>
             <SafeAreaView>
                 <ScrollView
                     contentInsetAdjustmentBehavior='automatic'
                     style={styles.scrollView}
                 >
-                    <Header/>
+                    <EnhancedListOfServers/>
                     {global.HermesInternal == null ? null : (
                         <View style={styles.engine}>
                             <Text style={styles.footer}>{'Engine: Hermes'}</Text>
