@@ -3,12 +3,27 @@
 
 import {AppSchema, appSchema} from '@nozbe/watermelondb';
 
-import {CustomEmojiSchema, RoleSchema, SystemSchema, TermsOfServiceSchema} from './table_schemas';
+import {
+    ChannelInfoSchema,
+    ChannelSchema,
+    CustomEmojiSchema,
+    MyChannelSchema,
+    MyChannelSettings,
+    PostsInChannel,
+    RoleSchema,
+    SystemSchema,
+    TermsOfServiceSchema,
+} from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
     version: 1,
     tables: [
+        ChannelInfoSchema,
+        ChannelSchema,
         CustomEmojiSchema,
+        MyChannelSchema,
+        MyChannelSettings,
+        PostsInChannel,
         RoleSchema,
         SystemSchema,
         TermsOfServiceSchema,
