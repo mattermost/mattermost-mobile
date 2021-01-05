@@ -4,7 +4,6 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Linking,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -19,6 +18,7 @@ import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import AboutLinks from '@constants/about_links';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
@@ -30,27 +30,27 @@ export default class About extends PureComponent {
     };
 
     handleAboutTeam = () => {
-        Linking.openURL(Config.AboutTeamURL);
+        tryOpenURL(Config.AboutTeamURL);
     };
 
     handleAboutEnterprise = () => {
-        Linking.openURL(Config.AboutEnterpriseURL);
+        tryOpenURL(Config.AboutEnterpriseURL);
     };
 
     handlePlatformNotice = () => {
-        Linking.openURL(Config.PlatformNoticeURL);
+        tryOpenURL(Config.PlatformNoticeURL);
     };
 
     handleMobileNotice = () => {
-        Linking.openURL(Config.MobileNoticeURL);
+        tryOpenURL(Config.MobileNoticeURL);
     };
 
     handleTermsOfService = () => {
-        Linking.openURL(AboutLinks.TERMS_OF_SERVICE);
+        tryOpenURL(AboutLinks.TERMS_OF_SERVICE);
     };
 
     handlePrivacyPolicy = () => {
-        Linking.openURL(AboutLinks.PRIVACY_POLICY);
+        tryOpenURL(AboutLinks.PRIVACY_POLICY);
     }
 
     render() {

@@ -30,6 +30,7 @@ jest.doMock('react-native', () => {
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
+        Linking: RNLinking,
     } = ReactNative;
 
     const Alert = {
@@ -96,6 +97,11 @@ jest.doMock('react-native', () => {
         },
     };
 
+    const Linking = {
+        ...RNLinking,
+        openURL: jest.fn(),
+    };
+
     return Object.setPrototypeOf({
         Platform: {
             ...Platform,
@@ -110,6 +116,7 @@ jest.doMock('react-native', () => {
         Alert,
         InteractionManager,
         NativeModules,
+        Linking,
     }, ReactNative);
 });
 

@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {intlShape, injectIntl} from 'react-intl';
 import {
     Alert,
-    Linking,
     Platform,
     ScrollView,
     View,
@@ -22,7 +21,7 @@ import SettingsItem from '@screens/settings/settings_item';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {isValidUrl} from '@utils/url';
+import {isValidUrl, tryOpenURL} from '@utils/url';
 
 class Settings extends PureComponent {
     static propTypes = {
@@ -141,9 +140,10 @@ class Settings extends PureComponent {
         const subject = `Problem with ${config.SiteName} React Native app`;
         const mailTo = `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`;
 
-        Linking.openURL(mailTo).then(() => {
+        const onSuccess = () => {
             this.props.actions.clearErrors();
-        }).catch(() => {
+        };
+        const onError = () => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.mailTo.error.title',
@@ -154,14 +154,16 @@ class Settings extends PureComponent {
                     defaultMessage: 'Unable to open an email client.',
                 }),
             );
-        });
+        };
+
+        tryOpenURL(mailTo, onError, onSuccess);
     });
 
     openHelp = preventDoubleTap(() => {
         const {config, intl} = this.props;
         const link = config.HelpLink ? config.HelpLink.toLowerCase() : '';
 
-        Linking.openURL(link).catch(() => {
+        const onError = () => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.link.error.title',
@@ -172,7 +174,9 @@ class Settings extends PureComponent {
                     defaultMessage: 'Unable to open the link.',
                 }),
             );
-        });
+        };
+
+        tryOpenURL(link, onError);
     });
 
     render() {

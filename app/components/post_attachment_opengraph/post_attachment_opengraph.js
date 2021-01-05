@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Linking, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import parseUrl from 'url-parse';
 
@@ -14,6 +14,7 @@ import {generateId} from '@utils/file';
 import {openGalleryAtIndex, calculateDimensions} from '@utils/images';
 import {getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
 const VIEWPORT_IMAGE_OFFSET = 93;
@@ -153,7 +154,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     };
 
     goToLink = () => {
-        Linking.openURL(this.props.link);
+        tryOpenURL(this.props.link);
     };
 
     handlePreviewImage = () => {

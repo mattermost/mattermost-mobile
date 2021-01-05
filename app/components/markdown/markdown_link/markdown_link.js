@@ -3,7 +3,7 @@
 
 import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Linking, Text} from 'react-native';
+import {Alert, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
 import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
@@ -15,7 +15,7 @@ import {getCurrentServerUrl} from '@init/credentials';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
-import {matchDeepLink, normalizeProtocol} from '@utils/url';
+import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -64,7 +64,7 @@ export default class MarkdownLink extends PureComponent {
                 onPermalinkPress(match.postId, match.teamName);
             }
         } else {
-            Linking.openURL(url).catch(() => {
+            const onError = () => {
                 const {formatMessage} = this.context.intl;
                 Alert.alert(
                     formatMessage({
@@ -76,7 +76,9 @@ export default class MarkdownLink extends PureComponent {
                         defaultMessage: 'The link could not be found on this server.',
                     }),
                 );
-            });
+            };
+
+            tryOpenURL(url, onError);
         }
     });
 

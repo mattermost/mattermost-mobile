@@ -7,7 +7,6 @@ import {
     ScrollView,
     Text,
     View,
-    Linking,
 } from 'react-native';
 import {intlShape} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
@@ -30,6 +29,7 @@ import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
 import {alertErrorWithFallback} from '@utils/general';
 import {t} from '@utils/i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 import {isGuest} from '@utils/users';
 
 import UserProfileRow from './user_profile_row';
@@ -233,7 +233,7 @@ export default class UserProfile extends PureComponent {
         return () => {
             let hydrated = link.replace(/{email}/, email);
             hydrated = hydrated.replace(/{username}/, username);
-            Linking.openURL(hydrated);
+            tryOpenURL(hydrated);
         };
     };
 
