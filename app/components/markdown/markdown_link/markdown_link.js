@@ -5,8 +5,8 @@ import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {Alert, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
-import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
+import urlParse from 'url-parse';
 
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';

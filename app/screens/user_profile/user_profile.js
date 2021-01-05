@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     ScrollView,
     Text,
     View,
@@ -229,11 +230,25 @@ export default class UserProfile extends PureComponent {
     handleLinkPress = (link) => {
         const username = this.props.user.username;
         const email = this.props.user.email;
+        const {intl} = this.context;
 
         return () => {
             let hydrated = link.replace(/{email}/, email);
             hydrated = hydrated.replace(/{username}/, username);
-            tryOpenURL(hydrated);
+
+            const onError = () => {
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.link.error.title',
+                        defaultMessage: 'Error',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.link.error.text',
+                        defaultMessage: 'Unable to open the link.',
+                    }),
+                );
+            };
+            tryOpenURL(hydrated, onError);
         };
     };
 

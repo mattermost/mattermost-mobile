@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {intlShape} from 'react-intl';
 
 import Config from '@assets/config';
 import CompassIcon from '@components/compass_icon';
@@ -29,28 +31,50 @@ export default class About extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
+    openURL = (url) => {
+        const {intl} = this.context;
+        const onError = () => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
+        };
+
+        tryOpenURL(url, onError);
+    };
+
     handleAboutTeam = () => {
-        tryOpenURL(Config.AboutTeamURL);
+        this.openURL(Config.AboutTeamURL);
     };
 
     handleAboutEnterprise = () => {
-        tryOpenURL(Config.AboutEnterpriseURL);
+        this.openURL(Config.AboutEnterpriseURL);
     };
 
     handlePlatformNotice = () => {
-        tryOpenURL(Config.PlatformNoticeURL);
+        this.openURL(Config.PlatformNoticeURL);
     };
 
     handleMobileNotice = () => {
-        tryOpenURL(Config.MobileNoticeURL);
+        this.openURL(Config.MobileNoticeURL);
     };
 
     handleTermsOfService = () => {
-        tryOpenURL(AboutLinks.TERMS_OF_SERVICE);
+        this.openURL(AboutLinks.TERMS_OF_SERVICE);
     };
 
     handlePrivacyPolicy = () => {
-        tryOpenURL(AboutLinks.PRIVACY_POLICY);
+        this.openURL(AboutLinks.PRIVACY_POLICY);
     }
 
     render() {

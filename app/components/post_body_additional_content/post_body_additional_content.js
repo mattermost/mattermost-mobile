@@ -271,7 +271,21 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                     startTime,
                 }).catch(this.playYouTubeVideoError);
             } else {
-                tryOpenURL(videoLink);
+                const {intl} = this.context;
+                const onError = () => {
+                    Alert.alert(
+                        intl.formatMessage({
+                            id: 'mobile.link.error.title',
+                            defaultMessage: 'Error',
+                        }),
+                        intl.formatMessage({
+                            id: 'mobile.link.error.text',
+                            defaultMessage: 'Unable to open the link.',
+                        }),
+                    );
+                };
+
+                tryOpenURL(videoLink, onError);
             }
         }
     };

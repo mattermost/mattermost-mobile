@@ -3,8 +3,8 @@
 
 import React, {PureComponent} from 'react';
 import {Alert, Text, View} from 'react-native';
-import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
+import PropTypes from 'prop-types';
 
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';

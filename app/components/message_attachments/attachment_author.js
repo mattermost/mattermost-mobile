@@ -4,8 +4,8 @@
 import React, {PureComponent} from 'react';
 import {Alert, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
+import PropTypes from 'prop-types';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';

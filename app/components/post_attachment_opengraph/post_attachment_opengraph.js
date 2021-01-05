@@ -3,8 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Text, View} from 'react-native';
+import {Alert, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {intlShape} from 'react-intl';
 import parseUrl from 'url-parse';
 
 import {TABLET_WIDTH} from '@components/sidebars/drawer_layout';
@@ -30,6 +31,10 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         openGraphData: PropTypes.object,
         postId: PropTypes.string,
         theme: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
@@ -154,7 +159,21 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     };
 
     goToLink = () => {
-        tryOpenURL(this.props.link);
+        const {intl} = this.context;
+        const onError = () => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
+        };
+
+        tryOpenURL(this.props.link, onError);
     };
 
     handlePreviewImage = () => {
