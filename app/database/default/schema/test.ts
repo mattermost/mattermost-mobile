@@ -7,7 +7,7 @@ import {defaultSchema} from './index';
 
 const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 
-describe('*** Test schema for DEFAULT server ***', () => {
+describe('*** Test schema for DEFAULT database ***', () => {
     it('=> The DEFAULT SCHEMA should strictly match', () => {
         expect(defaultSchema).toEqual({
             version: 1,

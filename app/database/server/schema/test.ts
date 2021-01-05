@@ -6,7 +6,7 @@ import {MM_TABLES} from '@constants/database';
 import {serverSchema} from './index';
 const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
-describe('*** Test schema for SERVER server ***', () => {
+describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
             version: 1,
