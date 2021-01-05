@@ -26,7 +26,7 @@ interface SSOWithRedirectURLProps {
 }
 
 function SSOWithRedirectURL({
-    customUrlScheme = 'mattermost://',
+    customUrlScheme,
     intl,
     loginError,
     loginUrl,
@@ -36,7 +36,7 @@ function SSOWithRedirectURL({
     theme,
 }: SSOWithRedirectURLProps) {
     const [error, setError] = React.useState<string>('');
-    const style = React.useMemo(() => getStyleSheet(theme), [theme]);
+    const style = getStyleSheet(theme);
 
     const redirectUrl = customUrlScheme + 'callback';
 
@@ -51,9 +51,7 @@ function SSOWithRedirectURL({
             redirect_to: redirectUrl,
         });
         const url = parsedUrl.toString();
-        Linking.canOpenURL(url).then(() => {
-            Linking.openURL(url);
-        }).catch(() => {
+        Linking.openURL(url).catch(() => {
             setError(
                 intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link',
@@ -175,4 +173,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default React.memo(SSOWithRedirectURL);
+export default SSOWithRedirectURL;

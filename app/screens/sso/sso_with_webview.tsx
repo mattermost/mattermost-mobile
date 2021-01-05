@@ -73,7 +73,7 @@ type CookieResponseType = {
 }
 
 function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
-    const style = React.useMemo(() => getStyleSheet(theme), [theme]);
+    const style = getStyleSheet(theme);
 
     const [error, setError] = React.useState(null);
     const [jsCode, setJSCode] = React.useState('');
@@ -229,4 +229,4 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default React.memo(SSOWithWebView);
+export default SSOWithWebView;

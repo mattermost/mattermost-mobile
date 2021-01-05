@@ -6,7 +6,7 @@ import React from 'react';
 import {renderWithReduxIntl} from 'test/testing_library';
 import configureStore from 'test/test_store';
 
-import SSOComponent from './sso';
+import SSOComponent from './index';
 
 describe('SSO', () => {
     const baseProps = {

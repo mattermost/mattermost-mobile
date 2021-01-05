@@ -183,7 +183,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         screen = require('@screens/settings/sidebar').default;
         break;
     case 'SSO':
-        screen = require('@screens/sso/index.ts').default;
+        screen = require('@screens/sso').default;
         break;
     case 'Table':
         screen = require('@screens/table').default;
