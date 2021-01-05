@@ -258,7 +258,7 @@ export default class SelectServer extends PureComponent {
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
         const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 31, 0);
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 32, 0);
 
         let options = 0;
         if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {

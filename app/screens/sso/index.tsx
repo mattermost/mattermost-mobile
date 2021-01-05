@@ -100,7 +100,7 @@ function SSO({intl, ssoType}: SSOProps) {
         dispatch(scheduleExpiredNotification(intl));
     };
 
-    const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version, 5, 31, 0);
+    const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version, 5, 32, 0);
 
     const props = {
         loginError,

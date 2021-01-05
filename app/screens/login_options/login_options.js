@@ -264,7 +264,7 @@ export default class LoginOptions extends PureComponent {
 
     renderOpenIdOption = () => {
         const {config, license} = this.props;
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 31, 0);
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 32, 0);
 
         if (openIdEnabled) {
             const additionalButtonStyle = {
