@@ -16,7 +16,7 @@ describe('SSO', () => {
         },
     };
 
-    test('implement with webview when version is less than 5.31 version', async () => {
+    test('implement with webview when version is less than 5.32 version', async () => {
         const store = await configureStore({
             entities: {
                 general: {
@@ -31,12 +31,12 @@ describe('SSO', () => {
         expect(basicWrapper.queryByTestId('sso.redirect_url')).toBeFalsy();
     });
 
-    test('implement with OS browser & redirect url from version 5.31', async () => {
+    test('implement with OS browser & redirect url from version 5.32', async () => {
         const store = await configureStore({
             entities: {
                 general: {
                     config: {
-                        Version: '5.31.0',
+                        Version: '5.32.0',
                     },
                 },
             },
