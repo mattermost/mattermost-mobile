@@ -114,11 +114,6 @@ function SSOWithRedirectURL({
                         defaultMessage='Switch to browser and complete the login process'
                         style={style.infoText}
                     />
-                    <FormattedText
-                        id='mobile.oauth.or'
-                        defaultMessage='or'
-                        style={style.infoText}
-                    />
                     <TouchableOpacity onPress={() => init()}>
                         <FormattedText
                             id='mobile.oauth.restart_login'
@@ -163,6 +158,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 16,
             fontWeight: '400',
             lineHeight: 23,
+            marginBottom: 6,
         },
         button: {
             backgroundColor: theme.buttonBg,
