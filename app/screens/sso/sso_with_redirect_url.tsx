@@ -51,14 +51,16 @@ function SSOWithRedirectURL({
             redirect_to: redirectUrl,
         });
         const url = parsedUrl.toString();
-        Linking.openURL(url).catch(() => {
+        try {
+            Linking.openURL(url);
+        } catch (e) {
             setError(
                 intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link',
                     defaultMessage: 'Failed to open the link',
                 }),
             );
-        });
+        }
     };
 
     const onURLChange = ({url}: { url: string }) => {
