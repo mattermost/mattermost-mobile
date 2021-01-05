@@ -34,6 +34,7 @@ import FormattedText from '@components/formatted_text';
 import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
 import {Client4} from '@mm-redux/client';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -257,7 +258,7 @@ export default class SelectServer extends PureComponent {
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
         const googleEnabled = config.EnableSignUpWithGoogle === 'true' && license.IsLicensed === 'true';
         const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 31, 0);
 
         let options = 0;
         if (samlEnabled || gitlabEnabled || googleEnabled || o365Enabled || openIdEnabled) {

@@ -22,6 +22,7 @@ import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
 import globalEventHandler from '@init/global_event_handler';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 
 import {GlobalStyles} from 'app/styles';
@@ -263,7 +264,7 @@ export default class LoginOptions extends PureComponent {
 
     renderOpenIdOption = () => {
         const {config, license} = this.props;
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true' && isMinimumServerVersion(config.Version, 5, 31, 0);
 
         if (openIdEnabled) {
             const additionalButtonStyle = {

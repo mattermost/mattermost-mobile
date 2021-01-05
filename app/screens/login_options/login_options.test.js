@@ -11,7 +11,9 @@ import LoginOptions from './login_options';
 
 describe('Login options', () => {
     const baseProps = {
-        config: {},
+        config: {
+            Version: '5.31.0',
+        },
         license: {
             IsLicensed: 'true',
         },
@@ -32,18 +34,30 @@ describe('Login options', () => {
         expect(configuredWrapper.find(FormattedText).find({id: 'signup.google'}).exists()).toBe(true);
     });
 
-    test('should show open id button only when enabled', () => {
+    test('should show open id button only when enabled and from version 5.31', () => {
         const basicWrapper = shallowWithIntl(<LoginOptions {...baseProps}/>);
         expect(basicWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(false);
 
-        const props = {
+        const newVersionProps = {
             ...baseProps,
             config: {
                 ...baseProps.config,
                 EnableSignUpWithOpenId: 'true',
+                Version: '5.31.0',
             },
         };
-        const configuredWrapper = shallowWithIntl(<LoginOptions {...props}/>);
-        expect(configuredWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(true);
+        const newVersionWrapper = shallowWithIntl(<LoginOptions {...newVersionProps}/>);
+        expect(newVersionWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(true);
+
+        const oldVersionProps = {
+            ...baseProps,
+            config: {
+                ...baseProps.config,
+                EnableSignUpWithOpenId: 'true',
+                Version: '5.30.0',
+            },
+        };
+        const oldVersionWrapper = shallowWithIntl(<LoginOptions {...oldVersionProps}/>);
+        expect(oldVersionWrapper.find(FormattedText).find({id: 'signup.openid'}).exists()).toBe(false);
     });
 });
