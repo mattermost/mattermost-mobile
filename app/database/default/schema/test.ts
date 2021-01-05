@@ -5,13 +5,15 @@ import {MM_TABLES} from '@constants/database';
 
 import {defaultSchema} from './index';
 
+const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
+
 describe('*** Test schema for DEFAULT server ***', () => {
-    it('=> should strictly prepare the DEFAULT SCHEMA', () => {
+    it('=> The DEFAULT SCHEMA should strictly match', () => {
         expect(defaultSchema).toEqual({
             version: 1,
             tables: {
-                [MM_TABLES.DEFAULT.APP]: {
-                    name: MM_TABLES.DEFAULT.APP,
+                [APP]: {
+                    name: APP,
                     columns: {
                         build_number: {name: 'build_number', type: 'string'},
                         created_at: {name: 'created_at', type: 'number'},
@@ -23,8 +25,8 @@ describe('*** Test schema for DEFAULT server ***', () => {
                         {name: 'version_number', type: 'string'},
                     ],
                 },
-                [MM_TABLES.DEFAULT.GLOBAL]: {
-                    name: MM_TABLES.DEFAULT.GLOBAL,
+                [GLOBAL]: {
+                    name: GLOBAL,
                     columns: {
                         name: {name: 'name', type: 'string', isIndexed: true},
                         value: {name: 'value', type: 'string'},
@@ -34,8 +36,8 @@ describe('*** Test schema for DEFAULT server ***', () => {
                         {name: 'value', type: 'string'},
                     ],
                 },
-                [MM_TABLES.DEFAULT.SERVERS]: {
-                    name: MM_TABLES.DEFAULT.SERVERS,
+                [SERVERS]: {
+                    name: SERVERS,
                     columns: {
                         db_path: {name: 'db_path', type: 'string'},
                         display_name: {name: 'display_name', type: 'string'},
