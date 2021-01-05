@@ -198,6 +198,7 @@
   "mobile.channel_list.members": "メンバー",
   "mobile.channel_list.not_member": "非メンバー",
   "mobile.channel_list.unreads": "未読",
+  "mobile.channel_loader.still_loading": "コンテンツを読み込んでいます...",
   "mobile.channel_members.add_members_alert": "チャンネルに追加するメンバーを少なくとも一人選択してください。",
   "mobile.client_upgrade": "アプリを更新する",
   "mobile.client_upgrade.can_upgrade_subtitle": "新しいバージョンが利用できます。",
