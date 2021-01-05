@@ -68,12 +68,12 @@ export default class MarkdownLink extends PureComponent {
                 const {formatMessage} = this.context.intl;
                 Alert.alert(
                     formatMessage({
-                        id: 'mobile.server_link.error.title',
-                        defaultMessage: 'Link Error',
+                        id: 'mobile.link.error.title',
+                        defaultMessage: 'Error',
                     }),
                     formatMessage({
-                        id: 'mobile.server_link.error.text',
-                        defaultMessage: 'The link could not be found on this server.',
+                        id: 'mobile.link.error.text',
+                        defaultMessage: 'Unable to open the link.',
                     }),
                 );
             };
