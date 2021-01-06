@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {Linking, Text, View} from 'react-native';
+import {Alert, Text, View} from 'react-native';
+import {intlShape} from 'react-intl';
 import PropTypes from 'prop-types';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-import Markdown from 'app/components/markdown';
+import Markdown from '@components/markdown';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 export default class AttachmentTitle extends PureComponent {
     static propTypes = {
@@ -15,10 +17,29 @@ export default class AttachmentTitle extends PureComponent {
         value: PropTypes.string,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
     openLink = () => {
         const {link} = this.props;
-        if (link && Linking.canOpenURL(link)) {
-            Linking.openURL(link);
+        const {intl} = this.context;
+
+        if (link) {
+            const onError = () => {
+                Alert.alert(
+                    intl.formatMessage({
+                        id: 'mobile.link.error.title',
+                        defaultMessage: 'Error',
+                    }),
+                    intl.formatMessage({
+                        id: 'mobile.link.error.text',
+                        defaultMessage: 'Unable to open the link.',
+                    }),
+                );
+            };
+
+            tryOpenURL(link, onError);
         }
     };
 

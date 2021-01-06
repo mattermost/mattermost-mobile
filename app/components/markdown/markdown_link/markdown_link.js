@@ -3,10 +3,10 @@
 
 import React, {Children, PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Alert, Linking, Text} from 'react-native';
+import {Alert, Text} from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
-import urlParse from 'url-parse';
 import {intlShape} from 'react-intl';
+import urlParse from 'url-parse';
 
 import Config from '@assets/config';
 import {DeepLinkTypes} from '@constants';
@@ -15,7 +15,7 @@ import {getCurrentServerUrl} from '@init/credentials';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
-import {matchDeepLink, normalizeProtocol} from '@utils/url';
+import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -64,23 +64,21 @@ export default class MarkdownLink extends PureComponent {
                 onPermalinkPress(match.postId, match.teamName);
             }
         } else {
-            Linking.canOpenURL(url).then((supported) => {
-                if (supported) {
-                    Linking.openURL(url);
-                } else {
-                    const {formatMessage} = this.context.intl;
-                    Alert.alert(
-                        formatMessage({
-                            id: 'mobile.server_link.error.title',
-                            defaultMessage: 'Link Error',
-                        }),
-                        formatMessage({
-                            id: 'mobile.server_link.error.text',
-                            defaultMessage: 'The link could not be found on this server.',
-                        }),
-                    );
-                }
-            });
+            const onError = () => {
+                const {formatMessage} = this.context.intl;
+                Alert.alert(
+                    formatMessage({
+                        id: 'mobile.link.error.title',
+                        defaultMessage: 'Error',
+                    }),
+                    formatMessage({
+                        id: 'mobile.link.error.text',
+                        defaultMessage: 'Unable to open the link.',
+                    }),
+                );
+            };
+
+            tryOpenURL(url, onError);
         }
     });
 

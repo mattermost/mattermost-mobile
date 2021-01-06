@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {
-    Linking,
+    Alert,
     Platform,
     StyleSheet,
     Text,
@@ -24,7 +24,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
-import {normalizeProtocol} from '@utils/url';
+import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -123,12 +123,22 @@ export default class MarkdownImage extends ImageViewPort {
 
     handleLinkPress = () => {
         const url = normalizeProtocol(this.props.linkDestination);
+        const {intl} = this.context;
 
-        Linking.canOpenURL(url).then((supported) => {
-            if (supported) {
-                Linking.openURL(url);
-            }
-        });
+        const onError = () => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
+        };
+
+        tryOpenURL(url, onError);
     };
 
     handleLinkLongPress = async () => {

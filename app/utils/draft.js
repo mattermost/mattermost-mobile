@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, Linking} from 'react-native';
+import {Alert} from 'react-native';
 
 import {AT_MENTION_REGEX_GLOBAL, CODE_REGEX} from '@constants/autocomplete';
 import {NOTIFY_ALL_MEMBERS} from '@constants/view';
@@ -79,26 +79,6 @@ export function alertSendToGroups(formatMessage, notifyAllMessage, accept, cance
             },
         ],
     );
-}
-
-export function tryOpenURL(url) {
-    Linking.canOpenURL(url).then((supported) => {
-        if (supported) {
-            Linking.openURL(url);
-        } else {
-            const {formatMessage} = this.context.intl;
-            Alert.alert(
-                formatMessage({
-                    id: 'mobile.server_link.error.title',
-                    defaultMessage: 'Link Error',
-                }),
-                formatMessage({
-                    id: 'mobile.server_link.error.text',
-                    defaultMessage: 'The link could not be found on this server.',
-                }),
-            );
-        }
-    });
 }
 
 export function errorBadChannel(intl) {
