@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Animated,
-    Linking,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -17,6 +16,7 @@ import FormattedText from '@components/formatted_text';
 import {DeviceTypes} from '@constants';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 import {showModal, dismissModal} from '@actions/navigation';
 
 const {View: AnimatedView} = Animated;
@@ -121,11 +121,7 @@ export default class ClientUpgradeListener extends PureComponent {
         const {downloadLink} = this.props;
         const {intl} = this.context;
 
-        Linking.canOpenURL(downloadLink).then((supported) => {
-            if (supported) {
-                return Linking.openURL(downloadLink);
-            }
-
+        const onError = () => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
@@ -136,9 +132,8 @@ export default class ClientUpgradeListener extends PureComponent {
                     defaultMessage: 'An error occurred while trying to open the download link.',
                 }),
             );
-
-            return false;
-        });
+        };
+        tryOpenURL(downloadLink, onError);
 
         this.toggleUpgradeMessage(false);
     };
