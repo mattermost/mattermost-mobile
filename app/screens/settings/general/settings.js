@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape, injectIntl} from 'react-intl';
 import {
-    Linking,
+    Alert,
     Platform,
     ScrollView,
     View,
@@ -21,7 +21,7 @@ import SettingsItem from '@screens/settings/settings_item';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {isValidUrl} from '@utils/url';
+import {isValidUrl, tryOpenURL} from '@utils/url';
 
 class Settings extends PureComponent {
     static propTypes = {
@@ -135,28 +135,48 @@ class Settings extends PureComponent {
     });
 
     openErrorEmail = preventDoubleTap(() => {
-        const {config} = this.props;
+        const {config, intl} = this.props;
         const recipient = config.SupportEmail;
         const subject = `Problem with ${config.SiteName} React Native app`;
         const mailTo = `mailto:${recipient}?subject=${subject}&body=${this.errorEmailBody()}`;
 
-        Linking.canOpenURL(mailTo).then((supported) => {
-            if (supported) {
-                Linking.openURL(mailTo);
-                this.props.actions.clearErrors();
-            }
-        });
+        const onSuccess = () => {
+            this.props.actions.clearErrors();
+        };
+        const onError = () => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.mailTo.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.mailTo.error.text',
+                    defaultMessage: 'Unable to open an email client.',
+                }),
+            );
+        };
+
+        tryOpenURL(mailTo, onError, onSuccess);
     });
 
     openHelp = preventDoubleTap(() => {
-        const {config} = this.props;
+        const {config, intl} = this.props;
         const link = config.HelpLink ? config.HelpLink.toLowerCase() : '';
 
-        Linking.canOpenURL(link).then((supported) => {
-            if (supported) {
-                Linking.openURL(link);
-            }
-        });
+        const onError = () => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
+        };
+
+        tryOpenURL(link, onError);
     });
 
     render() {

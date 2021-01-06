@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Linking} from 'react-native';
+
 import {latinise} from './latinise.js';
 import {escapeRegex} from './markdown';
 
 import {Files} from '@mm-redux/constants';
 import {getCurrentServerUrl} from '@init/credentials';
 
-import {DeepLinkTypes} from 'app/constants';
+import {DeepLinkTypes} from '@constants';
+import {emptyFunction} from '@utils/general';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 
@@ -179,4 +182,10 @@ export async function getURLAndMatch(href, serverURL, siteURL) {
     const match = matchDeepLink(url, serverURL, siteURL);
 
     return {url, match};
+}
+
+export function tryOpenURL(url, onError = emptyFunction, onSuccess = emptyFunction) {
+    Linking.openURL(url).
+        then(onSuccess).
+        catch(onError);
 }

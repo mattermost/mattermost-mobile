@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Alert} from 'react-native';
+
 import {IntegrationTypes} from '@mm-redux/action_types';
 import {General} from '../constants';
 import {Client4} from '@mm-redux/client';
@@ -23,7 +26,7 @@ import {getUserByUsername} from '@mm-redux/actions/users';
 import {getConfig, getCurrentUrl} from '@mm-redux/selectors/entities/general';
 import * as DraftUtils from '@utils/draft';
 import {permalinkBadTeam} from '@utils/general';
-import {getURLAndMatch} from '@utils/url';
+import {getURLAndMatch, tryOpenURL} from '@utils/url';
 
 export function createIncomingHook(hook: IncomingWebhook): ActionFunc {
     return bindClientFunc({
@@ -454,7 +457,19 @@ export function handleGotoLocation(href: string, intl: any): ActionFunc {
                 break;
             }
         } else {
-            DraftUtils.tryOpenURL(url);
+            const {formatMessage} = this.context.intl;
+            const onError = () => Alert.alert(
+                formatMessage({
+                    id: 'mobile.server_link.error.title',
+                    defaultMessage: 'Link Error',
+                }),
+                formatMessage({
+                    id: 'mobile.server_link.error.text',
+                    defaultMessage: 'The link could not be found on this server.',
+                }),
+            );
+
+            tryOpenURL(url, onError);
         }
         return {data: true};
     };
