@@ -14,7 +14,6 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
-import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
     intl: typeof intlShape;
@@ -57,14 +56,16 @@ function SSOWithRedirectURL({
         });
         const url = parsedUrl.toString();
 
-        tryOpenURL(url, () => {
+        try {
+            Linking.openURL(url);
+        } catch (e) {
             setError(
                 intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link',
                     defaultMessage: 'The link failed to open. Please try again.',
                 }),
             );
-        });
+        }
     };
 
     const onURLChange = ({url}: { url: string }) => {
