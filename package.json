@@ -171,7 +171,7 @@
     "prestorybook": "rnstl",
     "start": "react-native start",
     "storybook": "start-storybook -p 7007",
-    "test": "echo PLEASE ADD TESTS and then modify package.json to run 'jest --forceExit --runInBand --detectOpenHandles'",
+    "test": "jest --forceExit --runInBand --detectOpenHandles",
     "test:coverage": "jest --coverage",
     "test:watch": "npm test -- --watch",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
