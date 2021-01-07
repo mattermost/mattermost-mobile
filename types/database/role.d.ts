@@ -12,5 +12,5 @@ export default class Role extends Model {
     name: string;
 
     /** permissions : The different permissions associated to that role */
-    permissions: string;
+    permissions: string[];
 }
