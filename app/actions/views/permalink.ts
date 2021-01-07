@@ -40,6 +40,7 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
                 showModalOverCurrentContext(screen, passProps, options);
             }
         }
+        return {};
     };
 }
 
