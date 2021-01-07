@@ -11,7 +11,7 @@ module.exports = {
     },
     clearMocks: true,
     setupFilesAfterEnv: [
-        '<rootDir>/test/setup.js',
+        '<rootDir>/test/setup.ts',
         '<rootDir>/node_modules/jest-enzyme/lib/index.js',
     ],
     collectCoverageFrom: [
