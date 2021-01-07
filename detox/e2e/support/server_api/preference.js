@@ -41,7 +41,7 @@ export const apiSaveUserPreferences = async (userId, preferences = []) => {
  * @param {Array} orderedTeamIds - ordered array of team IDs
  * @return {string} returns {status} on success or {error, status} on error
  */
-export const apiSaveTeamsOrderPreference = async (userId, orderedTeamIds = []) => {
+export const apiSaveTeamsOrderPreference = (userId, orderedTeamIds = []) => {
     const preference = {
         user_id: userId,
         category: 'teams_order',
