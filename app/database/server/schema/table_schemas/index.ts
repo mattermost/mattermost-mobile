@@ -9,4 +9,3 @@ export {default as RoleSchema} from './role';
 export {default as SystemSchema} from './system';
 export {default as TermsofServiceSchema} from './terms_of_service';
 export {default as UserSchema} from './user';
-
