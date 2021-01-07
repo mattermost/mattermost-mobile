@@ -12,7 +12,7 @@ import LoginOptions from './login_options';
 describe('Login options', () => {
     const baseProps = {
         config: {
-            Version: '5.31.0',
+            Version: '5.32.0',
         },
         license: {
             IsLicensed: 'true',

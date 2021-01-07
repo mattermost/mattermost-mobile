@@ -3,6 +3,7 @@
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {Linking, Text, TouchableOpacity, View} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
@@ -13,9 +14,9 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Theme} from '@mm-redux/types/preferences';
 import Store from '@store/store';
+import {tryOpenURL} from '@utils/url';
 
 interface SSOWithRedirectURLProps {
-    customUrlScheme: string;
     intl: typeof intlShape;
     loginError: string;
     loginUrl: string;
@@ -26,7 +27,6 @@ interface SSOWithRedirectURLProps {
 }
 
 function SSOWithRedirectURL({
-    customUrlScheme,
     intl,
     loginError,
     loginUrl,
@@ -37,6 +37,11 @@ function SSOWithRedirectURL({
 }: SSOWithRedirectURLProps) {
     const [error, setError] = React.useState<string>('');
     const style = getStyleSheet(theme);
+
+    let customUrlScheme = 'mmauth://';
+    if (DeviceInfo.getBundleId().includes('rnbeta')) {
+        customUrlScheme = 'mmauthbeta://';
+    }
 
     const redirectUrl = customUrlScheme + 'callback';
 
@@ -51,16 +56,15 @@ function SSOWithRedirectURL({
             redirect_to: redirectUrl,
         });
         const url = parsedUrl.toString();
-        try {
-            Linking.openURL(url);
-        } catch (e) {
+
+        tryOpenURL(url, () => {
             setError(
                 intl.formatMessage({
                     id: 'mobile.oauth.failed_to_open_link',
-                    defaultMessage: 'Failed to open the link',
+                    defaultMessage: 'The link failed to open. Please try again.',
                 }),
             );
-        }
+        });
     };
 
     const onURLChange = ({url}: { url: string }) => {
@@ -74,7 +78,7 @@ function SSOWithRedirectURL({
                 setError(
                     intl.formatMessage({
                         id: 'mobile.oauth.failed_to_login',
-                        defaultMessage: 'Failed to login',
+                        defaultMessage: 'Your login attempt failed. Please try again.',
                     }),
                 );
             }
@@ -98,8 +102,8 @@ function SSOWithRedirectURL({
                 <View style={style.errorContainer}>
                     <View style={style.errorTextContainer}>
                         <Text style={style.errorText}>
-                             {`${loginError || error}.`}
-                         </Text>
+                            {`${loginError || error}.`}
+                        </Text>
                     </View>
                     <TouchableOpacity onPress={() => init()}>
                         <FormattedText
@@ -113,7 +117,7 @@ function SSOWithRedirectURL({
                 <View style={style.infoContainer}>
                     <FormattedText
                         id='mobile.oauth.switch_to_browser'
-                        defaultMessage='Switch to browser and complete the login process'
+                        defaultMessage='Please use your browser to complete the login'
                         style={style.infoText}
                     />
                     <TouchableOpacity onPress={() => init()}>

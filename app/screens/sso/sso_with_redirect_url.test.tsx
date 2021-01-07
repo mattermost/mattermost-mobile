@@ -11,7 +11,7 @@ import SSOWithRedirectURL from './sso_with_redirect_url';
 
 describe('SSO with redirect url', () => {
     const baseProps = {
-        customUrlScheme: 'mattermost://',
+        customUrlScheme: 'mmauth://',
         intl: {},
         loginError: '',
         loginUrl: '',

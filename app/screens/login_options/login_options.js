@@ -283,7 +283,7 @@ export default class LoginOptions extends PureComponent {
                 >
                     <FormattedText
                         id='signup.openid'
-                        defaultMessage={config.OpenIdButtonText || 'OpenId'}
+                        defaultMessage={config.OpenIdButtonText || 'OpenID'}
                         style={[GlobalStyles.signupButtonText, {color: textColor}]}
                     />
                 </Button>
