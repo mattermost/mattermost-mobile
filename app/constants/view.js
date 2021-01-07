@@ -138,4 +138,5 @@ export default {
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
     INDICATOR_BAR_HEIGHT,
+    AVATAR_LIST_PICTURE_SIZE: 24,
 };

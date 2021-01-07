@@ -1,64 +1,84 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React, {PureComponent} from 'react';
-import {Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import ProfilePicture from '@components/profile_picture';
+import {ViewTypes} from '@constants';
 
 import type {Theme} from '@mm-redux/types/preferences';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const getStyleSheet = (appTheme: Theme, size: number) => {
-    const imgOverlap = -Math.floor(size * 0.4);
-    return makeStyleSheetFromTheme((theme: Theme) => {
-        return {
-            container: {
-                flexDirection: 'row',
-            },
-            notFirstAvatars: {
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderWidth: size * 0.01,
-                borderColor: theme.centerChannelBg,
-                backgroundColor: theme.centerChannelBg,
-                borderRadius: (size) / 2,
-                marginLeft: imgOverlap,
-            },
-            overflowContainer: {
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: size * 1.1,
-                height: size * 1.1,
-                borderRadius: (size * 1.1) / 2,
-                borderWidth: (size * 1.1) * (size > 16 ? 0.04 : 0.03),
-                borderColor: theme.centerChannelBg,
-                backgroundColor: theme.centerChannelBg,
-                marginLeft: imgOverlap,
-            },
-            overflowItem: {
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: size * 1.1,
-                height: size * 1.1,
-                borderRadius: (size * 1.1) / 2,
-                borderWidth: (size * 1.1) * (size > 16 ? 0.04 : 0.03),
-                borderColor: theme.centerChannelBg,
-                backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            },
-            overflowText: {
-                fontSize: size * 0.4,
-                color: changeOpacity(theme.centerChannelColor, 0.64),
-                textAlign: 'center',
-            },
-        };
-    })(appTheme);
-};
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    const size = ViewTypes.AVATAR_LIST_PICTURE_SIZE;
+
+    // compensate for the status buffer that is not rendered (but still padded)
+    // by the ProfilePicture Component
+    let STATUS_BUFFER = Platform.select({
+        ios: 3,
+        android: 2,
+    });
+    STATUS_BUFFER = STATUS_BUFFER || 0;
+    const overflowSize = size + STATUS_BUFFER;
+    const imgOverlap = -6;
+    return {
+        container: {
+            flexDirection: 'row',
+        },
+        firstAvatar: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: size,
+            height: size,
+            borderWidth: (size / 2) + 1,
+            borderColor: theme.centerChannelBg,
+            backgroundColor: theme.centerChannelBg,
+            borderRadius: size / 2,
+        },
+        notFirstAvatars: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: size,
+            height: size,
+            borderWidth: (size / 2) + 1,
+            borderColor: theme.centerChannelBg,
+            backgroundColor: theme.centerChannelBg,
+            borderRadius: size / 2,
+            marginLeft: imgOverlap,
+        },
+        overflowContainer: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: overflowSize,
+            height: overflowSize,
+            borderRadius: overflowSize / 2,
+            borderWidth: 1,
+            borderColor: theme.centerChannelBg,
+            backgroundColor: theme.centerChannelBg,
+            marginLeft: imgOverlap,
+        },
+        overflowItem: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: overflowSize,
+            height: overflowSize,
+            borderRadius: overflowSize / 2,
+            borderWidth: 1,
+            borderColor: theme.centerChannelBg,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+        overflowText: {
+            fontSize: 10,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            textAlign: 'center',
+        },
+    };
+});
 
 const OVERFLOW_DISPLAY_LIMIT = 99;
 
 interface AvatarsProps {
-    size: number;
     userIds: string[];
     breakAt?: number;
     theme: Theme;
@@ -70,11 +90,11 @@ export default class Avatars extends PureComponent<AvatarsProps> {
     };
 
     render() {
-        const {size, userIds, breakAt, theme} = this.props;
+        const {userIds, breakAt, theme} = this.props;
         const displayUserIds = userIds.slice(0, breakAt);
         const overflowUsersCount = Math.min(userIds.length - displayUserIds.length, OVERFLOW_DISPLAY_LIMIT);
 
-        const style = getStyleSheet(theme, size);
+        const style = getStyleSheet(theme);
 
         return (
             <TouchableWithFeedback>
@@ -82,11 +102,11 @@ export default class Avatars extends PureComponent<AvatarsProps> {
                     {displayUserIds.map((userId: string, i: number) => (
                         <View
                             key={'participants' + userId}
-                            style={i > 0 ? style.notFirstAvatars : null}
+                            style={i === 0 ? style.firstAvatar : style.notFirstAvatars}
                         >
                             <ProfilePicture
                                 userId={userId}
-                                size={size}
+                                size={ViewTypes.AVATAR_LIST_PICTURE_SIZE}
                                 showStatus={false}
                             />
                         </View>

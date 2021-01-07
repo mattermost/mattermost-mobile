@@ -19,7 +19,6 @@ storiesOf('Avatars', module).
     addDecorator(withKnobs).
     add('Avatars', () => (
         <Avatars
-            size={number('size', 24, {range: true, min: 16, max: 80, step: 8})}
             userIds={userIds.slice(0, number(`number of named participants (max ${userIds.length})`, userIds.length))}
             theme={select('theme', Preferences.THEMES, Preferences.THEMES.default)}
         />
