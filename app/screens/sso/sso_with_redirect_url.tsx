@@ -39,7 +39,7 @@ function SSOWithRedirectURL({
     const style = getStyleSheet(theme);
 
     let customUrlScheme = 'mmauth://';
-    if (DeviceInfo.getBundleId().includes('rnbeta')) {
+    if (DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta')) {
         customUrlScheme = 'mmauthbeta://';
     }
 
