@@ -4,18 +4,26 @@
 import {AppSchema, appSchema} from '@nozbe/watermelondb';
 
 import {
-    group,
-    group_membership,
-    groups_in_channel,
-    groups_in_team,
+    CustomEmojiSchema,
+    GroupMembershipSchema,
+    GroupSchema,
+    GroupsInChannelSchema,
+    GroupsInTeamSchema,
+    RoleSchema,
+    SystemSchema,
+    TermsOfServiceSchema,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
     version: 1,
     tables: [
-        group,
-        group_membership,
-        groups_in_channel,
-        groups_in_team,
+        CustomEmojiSchema,
+        GroupMembershipSchema,
+        GroupSchema,
+        GroupsInChannelSchema,
+        GroupsInTeamSchema,
+        RoleSchema,
+        SystemSchema,
+        TermsOfServiceSchema,
     ],
 });
