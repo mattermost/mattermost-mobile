@@ -363,7 +363,7 @@
   "mobile.oauth.failed_to_login": "Failed to login",
   "mobile.oauth.failed_to_open_link": "Failed to open the link",
   "mobile.oauth.restart_login": "Restart login",
-  "mobile.oauth.switch_to_browser": "Switch to browser and complete the login process",
+  "mobile.oauth.switch_to_browser": "Please use your browser to complete the login process.",
   "mobile.oauth.try_again": "Try again",
   "mobile.offlineIndicator.connected": "Connected",
   "mobile.offlineIndicator.connecting": "Connecting...",
