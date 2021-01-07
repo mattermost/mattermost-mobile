@@ -21,5 +21,5 @@ export default class System extends Model {
     @field('name') name!: string;
 
     /** value : The value for that config/information */
-    @json('value', (rawJson) => rawJson) value!: string;
+    @json('value', (rawJson) => rawJson) value!: any;
 }
