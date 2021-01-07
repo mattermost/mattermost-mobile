@@ -97,7 +97,9 @@ function SSOWithRedirectURL({
             {loginError || error ? (
                 <View style={style.errorContainer}>
                     <View style={style.errorTextContainer}>
-                        <Text style={style.errorText}>{loginError || error}{'.'}</Text>
+                        <Text style={style.errorText}>
+                             {`${loginError || error}.`}
+                         </Text>
                     </View>
                     <TouchableOpacity onPress={() => init()}>
                         <FormattedText
