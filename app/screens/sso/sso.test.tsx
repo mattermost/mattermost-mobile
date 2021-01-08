@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Linking} from 'react-native';
 
 import {renderWithReduxIntl} from 'test/testing_library';
 import configureStore from 'test/test_store';
@@ -32,6 +33,7 @@ describe('SSO', () => {
     });
 
     test('implement with OS browser & redirect url from version 5.32', async () => {
+        (Linking.openURL as jest.Mock).mockResolvedValueOnce('');
         const store = await configureStore({
             entities: {
                 general: {
