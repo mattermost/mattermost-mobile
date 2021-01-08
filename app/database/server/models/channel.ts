@@ -99,8 +99,8 @@ export default class Channel extends Model {
     /** members : Users belonging to this channel */
     @children(CHANNEL_MEMBERSHIP) members!: ChannelMembership[];
 
-    /** draft : All drafts for this channel */
-    @children(DRAFT) draft!: Draft[];
+    /** drafts : All drafts for this channel */
+    @children(DRAFT) drafts!: Draft[];
 
     /** groupsInChannel : Every group contained in this channel */
     @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel[];
