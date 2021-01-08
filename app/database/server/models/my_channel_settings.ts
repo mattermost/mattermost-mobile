@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json, relation} from '@nozbe/watermelondb/decorators';
+import {field, json, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
@@ -32,5 +32,5 @@ export default class MyChannelSettings extends Model {
     @json('notify_props', (rawJson) => rawJson) notifyProps!: string;
 
     /** channel : The relation pointing to entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
 }

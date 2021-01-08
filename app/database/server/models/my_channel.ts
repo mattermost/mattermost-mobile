@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
@@ -43,5 +43,5 @@ export default class MyChannel extends Model {
     @field('roles') roles!: string;
 
     /** channel : The relation pointing to entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>
 }

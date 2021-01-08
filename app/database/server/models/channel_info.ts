@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
@@ -45,5 +45,5 @@ export default class ChannelInfo extends Model {
     @field('purpose') purpose!: string;
 
     /** channel : The lazy query property to the record from  entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel!: Relation<Channel>
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>
 }
