@@ -25,7 +25,7 @@ export default class PostsInThread extends Model {
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
-    /** latest : Upper bound of a timestamp range */
+    /** earliest : Lower bound of a timestamp range */
     @field('earliest') earliest!: number;
 
     /** latest : Upper bound of a timestamp range */

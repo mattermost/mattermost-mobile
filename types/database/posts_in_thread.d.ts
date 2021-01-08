@@ -17,7 +17,7 @@ export default class PostsInThread extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** latest : Upper bound of a timestamp range */
+    /** earliest : Lower bound of a timestamp range */
     earliest: number;
 
     /** latest : Upper bound of a timestamp range */
