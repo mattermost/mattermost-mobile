@@ -31,7 +31,7 @@ export default class MyTeam extends Model {
     @field('mentions_count') mentionsCount!: number;
 
     /** roles : The different permissions that this user has in that team */
-    @json('roles', (rawJson) => rawJson) roles!: string;
+    @field('roles') roles!: string;
 
     /** team_id : The foreign key of the 'parent' Team entity */
     @field('team_id') teamId!: string;

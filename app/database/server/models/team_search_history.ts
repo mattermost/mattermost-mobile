@@ -32,7 +32,7 @@ export default class TeamSearchHistory extends Model {
     @field('team_id') teamId!: string;
 
     /** displayTerm : The term that we display to the user after being processed by the server */
-    @json('display_term', (rawJson) => rawJson) displayTerm!: string;
+    @field('display_term') displayTerm!: string;
 
     /** term : The keyword the user looked for */
     @text('term') term!: string;

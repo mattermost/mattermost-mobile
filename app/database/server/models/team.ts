@@ -53,7 +53,7 @@ export default class Team extends Model {
         /** A TEAM has a 1:N relationship with TEAM_MEMBERSHIP. A TEAM can regroup multiple users */
         [TEAM_MEMBERSHIP]: {type: 'has_many', foreignKey: 'team_id'},
 
-        /** A TEAM has a 1:N relationship with TEAM_SEARCH_HISTORY. A TEAM can possess multiple channels recently visited*/
+        /** A TEAM has a 1:N relationship with TEAM_SEARCH_HISTORY. A TEAM can possess multiple search histories*/
         [TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
     };
 
@@ -79,7 +79,7 @@ export default class Team extends Model {
     @field('type') type!: string;
 
     /** allowed_domains : List of domains that can join this team */
-    @json('allowed_domains', (rawJson) => rawJson) allowedDomains!: string;
+    @field('allowed_domains') allowedDomains!: string;
 
     /** channels : All the channels associated with this team */
     @children(CHANNEL) channels!: Channel[];
@@ -87,7 +87,7 @@ export default class Team extends Model {
     /** groupsInTeam : All the groups associated with this team */
     @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam[];
 
-    /** myTeam : Lazy query property returning only the team that this user is part of  */
+    /** myTeam : Lazy query property returning only the team member that this user is part of  */
     @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */

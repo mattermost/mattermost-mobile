@@ -11,7 +11,7 @@ import Team from '@typings/database/team';
 const {SLASH_COMMAND, TEAM} = MM_TABLES.SERVER;
 
 /**
- * The SlashCommand model describes the commands of the various plugins installed in each team.
+ * The SlashCommand model describes the commands of the various commands available in each team.
  */
 export default class SlashCommand extends Model {
     /** table (entity name) : SlashCommand */
