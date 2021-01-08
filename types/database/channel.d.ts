@@ -53,7 +53,7 @@ export default class Channel extends Model {
     members: ChannelMembership[];
 
     /** draft : All drafts for this channel */
-    draft: Draft[];
+    drafts: Draft[];
 
     /** groupsInChannel : Every group contained in this channel */
     groupsInChannel: GroupsInChannel[];

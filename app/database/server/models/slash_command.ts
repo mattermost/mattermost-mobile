@@ -8,14 +8,14 @@ import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
 
-const {TEAM} = MM_TABLES.SERVER;
+const {SLASH_COMMAND, TEAM} = MM_TABLES.SERVER;
 
 /**
  * The SlashCommand model describes the commands of the various plugins installed in each team.
  */
 export default class SlashCommand extends Model {
     /** table (entity name) : SlashCommand */
-    static table = MM_TABLES.SERVER.SLASH_COMMAND;
+    static table = SLASH_COMMAND;
 
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
