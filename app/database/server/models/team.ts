@@ -93,8 +93,8 @@ export default class Team extends Model {
     /** slashCommands : All the slash commands associated with this team */
     @children(SLASH_COMMAND) slashCommands!: SlashCommand[];
 
-    /** teamChannelHistories : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
-    @children(TEAM_CHANNEL_HISTORY) teamChannelHistories!: TeamChannelHistory[];
+    /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
+    @lazy teamChannelHistory = this.collections.get(TEAM_CHANNEL_HISTORY).query(Q.on(TEAM, 'id', this.id)) as Query<TeamChannelHistory>;
 
     /** members : All the users associated with this team */
     @children(TEAM_MEMBERSHIP) members!: TeamMembership[];
