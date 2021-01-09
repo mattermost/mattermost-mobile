@@ -61,7 +61,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 [SLASH_COMMAND]: {
                     name: SLASH_COMMAND,
                     columns: {
-                        auto_complete: {name: 'auto_complete', type: 'boolean'},
+                        is_auto_complete: {name: 'is_auto_complete', type: 'boolean'},
                         description: {name: 'description', type: 'string'},
                         display_name: {name: 'display_name', type: 'string'},
                         hint: {name: 'hint', type: 'string'},
@@ -71,7 +71,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         trigger: {name: 'trigger', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'auto_complete', type: 'boolean'},
+                        {name: 'is_auto_complete', type: 'boolean'},
                         {name: 'description', type: 'string'},
                         {name: 'display_name', type: 'string'},
                         {name: 'hint', type: 'string'},
@@ -95,7 +95,7 @@ describe('*** Test schema for SERVER database ***', () => {
                 [TEAM]: {
                     name: TEAM,
                     columns: {
-                        allow_open_invite: {name: 'allow_open_invite', type: 'boolean'},
+                        is_allow_open_invite: {name: 'is_allow_open_invite', type: 'boolean'},
                         allowed_domains: {name: 'allowed_domains', type: 'string'},
                         description: {name: 'description', type: 'string'},
                         display_name: {name: 'display_name', type: 'string'},
@@ -105,7 +105,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         type: {name: 'type', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'allow_open_invite', type: 'boolean'},
+                        {name: 'is_allow_open_invite', type: 'boolean'},
                         {name: 'allowed_domains', type: 'string'},
                         {name: 'description', type: 'string'},
                         {name: 'display_name', type: 'string'},
