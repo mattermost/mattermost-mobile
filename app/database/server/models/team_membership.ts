@@ -22,10 +22,10 @@ export default class TeamMembership extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A USER can be part of multiple teams */
+        /** TEAM and TEAM_MEMBERSHIP share a 1:N relationship;  USER can be part of multiple teams */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
 
-        /** A TEAM can regroup multiple users */
+        /** USER and TEAM_MEMBERSHIP share a 1:N relationship;  A TEAM can regroup multiple users */
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 

@@ -21,7 +21,7 @@ export default class TeamChannelHistory extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A TEAM can have multiple Channel history */
+        /** A TEAM and TEAM_CHANNEL_HISTORY share a 1:1 relationship */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
