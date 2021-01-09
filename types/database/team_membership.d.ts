@@ -12,7 +12,7 @@ import Team from '@typings/database/team';
  * teams (relationship type N:N)
  */
 export default class TeamMembership extends Model {
-    /** table (entity name) : ChannelMembership */
+    /** table (entity name) : TeamMembership */
     static table: string;
 
     /** associations : Describes every relationship to this entity. */
@@ -23,4 +23,16 @@ export default class TeamMembership extends Model {
 
     /** memberTeam : The related team of users */
     memberTeam: Relation<Team>;
+
+    /**
+     * getAllTeamsForUser - Retrieves all the teams that the user is part of
+     * @returns {Promise<Team[]>}
+     */
+    getAllTeamsForUser: () => Promise<Team[]>;
+
+    /**
+     * getAllUsersInTeam - Retrieves all the users who are part of this team
+     * @returns {Promise<User[]>}
+     */
+    getAllUsersInTeam: () => Promise<User[]>;
 }
