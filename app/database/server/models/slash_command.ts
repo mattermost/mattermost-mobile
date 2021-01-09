@@ -24,8 +24,8 @@ export default class SlashCommand extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
-    /** auto_complete : Boolean flag for auto-completing slash commands */
-    @field('auto_complete') autoComplete!: boolean;
+    /** is_auto_complete : Boolean flag for auto-completing slash commands */
+    @field('is_auto_complete') isAutoComplete!: boolean;
 
     /** description : The description for the slash command */
     @field('description') description!: string;

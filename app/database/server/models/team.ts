@@ -3,7 +3,7 @@
 
 import {Q, Query} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {children, field, json, lazy} from '@nozbe/watermelondb/decorators';
+import {children, field, lazy} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
@@ -57,8 +57,8 @@ export default class Team extends Model {
         [TEAM_SEARCH_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
     };
 
-    /** allow_open_invite : Boolean flag indicating if this team is open to the public */
-    @field('allow_open_invite') allowOpenInvite!: boolean;
+    /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */
+    @field('is_allow_open_invite') isAllowOpenInvite!: boolean;
 
     /** description : The description for the team */
     @field('description') description!: string;

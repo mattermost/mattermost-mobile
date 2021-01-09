@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
 import {Query} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-
 import Channel from '@typings/database/channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
 import SlashCommand from '@typings/database/slash_command';
@@ -21,8 +19,8 @@ export default class Team extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** allow_open_invite : Boolean flag indicating if this team is open to the public */
-    allowOpenInvite: boolean;
+    /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */
+    isAllowOpenInvite: boolean;
 
     /** description : The description for the team */
     description: string;
@@ -30,7 +28,7 @@ export default class Team extends Model {
     /** display_name : The display name for the team */
     displayName: string;
 
-    /** is_group_constrained : If a team is restricted to 1 or more group(s), this boolean will be true and only members of that group have access to this team. Hence indicating that the members of this team are managed by groups. */
+    /** is_group_constrained : Boolean flag indicating if members are managed groups */
     isGroupConstrained: boolean;
 
     /** last_team_icon_updated_at : Timestamp for when this team's icon has been updated last */
@@ -51,13 +49,13 @@ export default class Team extends Model {
     /** groupsInTeam : All the groups associated with this team */
     groupsInTeam: GroupsInTeam[];
 
-    /** myTeam : Lazy query property returning only the team that this user is part of  */
+    /** myTeam : Lazy query property returning only the team member that this user is part of  */
     myTeam: Query<any>;
 
     /** slashCommands : All the slash commands associated with this team */
     slashCommands: SlashCommand[];
 
-    /** teamChannelHistories : All the channel history with this team */
+    /** teamChannelHistories : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
     teamChannelHistories: TeamChannelHistory[];
 
     /** members : All the users associated with this team */
