@@ -30,7 +30,7 @@ export default class Team extends Model {
     /** display_name : The display name for the team */
     displayName: string;
 
-    /** is_group_constrained : Boolean flag indicating if members are managed groups */
+    /** is_group_constrained : If a team is restricted to 1 or more group(s), this boolean will be true and only members of that group have access to this team. Hence indicating that the members of this team are managed by groups. */
     isGroupConstrained: boolean;
 
     /** last_team_icon_updated_at : Timestamp for when this team's icon has been updated last */
