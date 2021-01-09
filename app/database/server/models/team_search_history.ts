@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, immutableRelation, json, text} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation, text} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
@@ -31,10 +31,10 @@ export default class TeamSearchHistory extends Model {
     /** teamId : The foreign key to the parent Team model */
     @field('team_id') teamId!: string;
 
-    /** displayTerm : The term that we display to the user after being processed by the server */
+    /** displayTerm : The term that we display to the user */
     @field('display_term') displayTerm!: string;
 
-    /** term : The keyword the user looked for */
+    /** term : The term that is sent to the server to perform the search */
     @text('term') term!: string;
 
     /** team : The related record to the parent team model */

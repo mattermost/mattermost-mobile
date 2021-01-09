@@ -23,10 +23,10 @@ export default class TeamSearchHistory extends Model {
     /** teamId : The foreign key to the parent Team model */
     teamId: string;
 
-    /** displayTerm : The term that we display to the user after being processed by the server */
+    /** displayTerm : The term that we display to the user */
     displayTerm: string;
 
-    /** term : The keyword the user looked for */
+    /** term : The term that is sent to the server to perform the search */
     term: string;
 
     /** team : The related record to the parent team model */

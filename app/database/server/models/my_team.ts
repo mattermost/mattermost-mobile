@@ -3,7 +3,7 @@
 
 import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json, relation} from '@nozbe/watermelondb/decorators';
+import {field, relation} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
@@ -14,7 +14,7 @@ const {TEAM, MY_TEAM} = MM_TABLES.SERVER;
  * MyTeam represents only the teams that the current user belongs to
  */
 export default class MyTeam extends Model {
-    /** table (entity name) : ChannelInfo */
+    /** table (entity name) : MyTeam */
     static table = MY_TEAM;
 
     /** associations : Describes every relationship to this entity. */
@@ -30,7 +30,7 @@ export default class MyTeam extends Model {
     /** mentions_count : Count of posts in which the user has been mentioned */
     @field('mentions_count') mentionsCount!: number;
 
-    /** roles : The different permissions that this user has in that team */
+    /** roles : The different permissions that this user has in the team */
     @field('roles') roles!: string;
 
     /** team_id : The foreign key of the 'parent' Team entity */

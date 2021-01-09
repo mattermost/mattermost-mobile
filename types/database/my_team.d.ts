@@ -10,7 +10,7 @@ import Team from '@typings/database/team';
  * MyTeam represents only the teams that the current user belongs to
  */
 export default class MyTeam extends Model {
-    /** table (entity name) : ChannelInfo */
+    /** table (entity name) : MyTeam */
     static table: string;
 
     /** associations : Describes every relationship to this entity. */
@@ -22,7 +22,7 @@ export default class MyTeam extends Model {
     /** mentions_count : Count of posts in which the user has been mentioned */
     mentionsCount: number;
 
-    /** roles : The different permissions that this user has in that team */
+    /** roles : The different permissions that this user has in the team */
     roles: string;
 
     /** team_id : The foreign key of the 'parent' Team entity */
