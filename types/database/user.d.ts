@@ -49,29 +49,29 @@ export default class User extends Model {
     /** locale : The user's locale */
     locale: string;
 
-    /** nick_name : The user's nick name */
-    nickName: string;
+    /** nickname : The user's nickname */
+    nickname: string;
 
     /** position : The user's position in the company */
     position: string;
 
-    /** roles : The associated permissions that this user benefits from */
+    /** roles : The associated roles that this user has */
     roles: string;
 
     /** status : The presence status for the user */
     status: string;
 
-    /** user_name : The user's username */
-    userName: string;
+    /** username : The user's username */
+    username: string;
 
     /** notify_props : Notification preferences/configurations */
-    notifyProps: string;
+    notifyProps: any;
 
     /** props : Custom objects ( e.g. custom status) can be stored in there */
-    props: string;
+    props: any;
 
-    /** time_zone : The different timezones listed for this user */
-    timeZone: string;
+    /** timezone : The timezone for this user */
+    timezone: any;
 
     /** channelsCreated : All the channels that this user created */
     channelsCreated: Channel[];

@@ -20,7 +20,7 @@ export default class GroupsInTeam extends Model {
     /** group_id : The foreign key to the related Group record */
     groupId: string;
 
-    /** member_count : The number of users in that group */
+    /** member_count : The number of users in the group */
     memberCount: number;
 
     /** team_id : The foreign key to the related Team record */

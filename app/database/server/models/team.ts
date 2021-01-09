@@ -47,7 +47,7 @@ export default class Team extends Model {
         /** A TEAM has a 1:N relationship with SLASH_COMMAND. A TEAM can possess multiple slash commands */
         [SLASH_COMMAND]: {type: 'has_many', foreignKey: 'team_id'},
 
-        /** A TEAM has a 1:N relationship with TEAM_CHANNEL_HISTORY. A TEAM can possess multiple channels histories*/
+        /** A TEAM has a 1:N relationship with TEAM_CHANNEL_HISTORY. A TEAM can possess multiple channels recently visited*/
         [TEAM_CHANNEL_HISTORY]: {type: 'has_many', foreignKey: 'team_id'},
 
         /** A TEAM has a 1:N relationship with TEAM_MEMBERSHIP. A TEAM can regroup multiple users */
@@ -93,7 +93,7 @@ export default class Team extends Model {
     /** slashCommands : All the slash commands associated with this team */
     @children(SLASH_COMMAND) slashCommands!: SlashCommand[];
 
-    /** teamChannelHistories : All the channel history with this team */
+    /** teamChannelHistories : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
     @children(TEAM_CHANNEL_HISTORY) teamChannelHistories!: TeamChannelHistory[];
 
     /** members : All the users associated with this team */
