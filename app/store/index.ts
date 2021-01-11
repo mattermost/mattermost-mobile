@@ -188,6 +188,7 @@ export default function configureStore(storage: any, preloadedState: any = {}, o
         if (action.type === General.OFFLINE_STORE_PURGE) {
             // eslint-disable-next-line no-underscore-dangle
             if (action.data?._persist) {
+                // eslint-disable-next-line no-underscore-dangle
                 delete action?.data?._persist;
             }
             return baseReducer(action.data, action as any);
