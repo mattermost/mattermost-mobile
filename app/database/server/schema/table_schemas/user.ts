@@ -25,7 +25,7 @@ export default tableSchema({
         {name: 'props', type: 'string'},
         {name: 'roles', type: 'string'},
         {name: 'status', type: 'string'},
-        {name: 'time_zone', type: 'string'},
+        {name: 'timezone', type: 'string'},
         {name: 'user_id', type: 'string'},
         {name: 'username', type: 'string'},
     ],

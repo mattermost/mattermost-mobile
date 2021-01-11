@@ -50,13 +50,13 @@ describe('*** Test schema for SERVER database ***', () => {
                 [PREFERENCE]: {
                     name: PREFERENCE,
                     columns: {
-                        category: {name: 'category', type: 'string'},
+                        category: {name: 'category', type: 'string', isIndexed: true},
                         name: {name: 'name', type: 'string'},
                         user_id: {name: 'user_id', type: 'string', isIndexed: true},
                         value: {name: 'value', type: 'string'},
                     },
                     columnArray: [
-                        {name: 'category', type: 'string'},
+                        {name: 'category', type: 'string', isIndexed: true},
                         {name: 'name', type: 'string'},
                         {name: 'user_id', type: 'string', isIndexed: true},
                         {name: 'value', type: 'string'},
@@ -225,7 +225,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         props: {name: 'props', type: 'string'},
                         roles: {name: 'roles', type: 'string'},
                         status: {name: 'status', type: 'string'},
-                        time_zone: {name: 'time_zone', type: 'string'},
+                        timezone: {name: 'timezone', type: 'string'},
                         user_id: {name: 'user_id', type: 'string'},
                         username: {name: 'username', type: 'string'},
                     },
@@ -245,7 +245,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'props', type: 'string'},
                         {name: 'roles', type: 'string'},
                         {name: 'status', type: 'string'},
-                        {name: 'time_zone', type: 'string'},
+                        {name: 'timezone', type: 'string'},
                         {name: 'user_id', type: 'string'},
                         {name: 'username', type: 'string'},
                     ],

@@ -109,7 +109,7 @@ export default class User extends Model {
     @json('props', (rawJson) => rawJson) props!: UserProps;
 
     /** timezone : The timezone for this user */
-    @json('time_zone', (rawJson) => rawJson) timezone!: Timezone;
+    @json('timezone', (rawJson) => rawJson) timezone!: Timezone;
 
     /** channelsCreated : All the channels that this user created */
     @children(CHANNEL) channelsCreated!: Channel[];

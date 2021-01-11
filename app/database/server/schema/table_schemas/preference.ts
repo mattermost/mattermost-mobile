@@ -10,7 +10,7 @@ const {PREFERENCE} = MM_TABLES.SERVER;
 export default tableSchema({
     name: PREFERENCE,
     columns: [
-        {name: 'category', type: 'string'},
+        {name: 'category', type: 'string', isIndexed: true},
         {name: 'name', type: 'string'},
         {name: 'user_id', type: 'string', isIndexed: true},
         {name: 'value', type: 'string'},
