@@ -19,7 +19,7 @@ export default tableSchema({
         {name: 'last_name', type: 'string'},
         {name: 'last_picture_update', type: 'number'},
         {name: 'locale', type: 'string'},
-        {name: 'nick_name', type: 'string'},
+        {name: 'nickname', type: 'string'},
         {name: 'notify_props', type: 'string'},
         {name: 'position', type: 'string'},
         {name: 'props', type: 'string'},
@@ -27,6 +27,6 @@ export default tableSchema({
         {name: 'status', type: 'string'},
         {name: 'time_zone', type: 'string'},
         {name: 'user_id', type: 'string'},
-        {name: 'user_name', type: 'string'},
+        {name: 'username', type: 'string'},
     ],
 });
