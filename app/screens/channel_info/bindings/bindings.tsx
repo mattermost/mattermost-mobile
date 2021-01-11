@@ -6,10 +6,9 @@ import React from 'react';
 import Separator from '@screens/channel_info/separator';
 
 import ChannelInfoRow from '../channel_info_row';
-import {AppBinding} from '@mm-redux/types/apps';
+import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Channel} from '@mm-redux/types/channels';
-import {doAppCall} from '@actions/apps';
 import {AppsBindings} from '@mm-redux/constants/apps';
 import {UserProfile} from '@mm-redux/types/users';
 import {dismissModal} from '@actions/navigation';
@@ -19,6 +18,9 @@ type Props = {
     theme: Theme;
     currentChannel: Channel;
     currentUser: UserProfile;
+    actions: {
+        doAppCall: (call: AppCall) => any;
+    };
 }
 
 const Bindings = (props: Props) => {
@@ -49,6 +51,9 @@ type OptionProps = {
     theme: Theme;
     currentChannel: Channel;
     currentUser: UserProfile;
+    actions: {
+        doAppCall: (call: AppCall) => any;
+    };
 }
 
 const Option = (props: OptionProps) => {
@@ -56,7 +61,8 @@ const Option = (props: OptionProps) => {
         const channelId = props.currentChannel.id;
 
         // TODO Consider handling result here
-        doAppCall({
+        props.actions.doAppCall({
+            ...props.binding.call,
             context: {
                 app_id: props.binding.app_id,
                 channel_id: channelId,

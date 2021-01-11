@@ -2,14 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppsBindings} from '@mm-redux/constants/apps';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {GlobalState} from '@mm-redux/types/store';
+import {getCurrentUser} from '@mm-redux/selectors/entities/users';
+import {DispatchFunc} from '@mm-redux/types/actions';
+
+import {doAppCall} from '@actions/apps';
 
 import Bindings from './bindings';
-import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 function mapStateToProps(state: GlobalState) {
     const currentChannel = getCurrentChannel(state) || {};
@@ -23,4 +27,12 @@ function mapStateToProps(state: GlobalState) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(Bindings);
+function mapDispatchToProps(dispatch: DispatchFunc) {
+    return {
+        actions: bindActionCreators({
+            doAppCall,
+        }, dispatch),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(Bindings);

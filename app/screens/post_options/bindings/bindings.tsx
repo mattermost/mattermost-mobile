@@ -6,18 +6,20 @@ import React from 'react';
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import PostOption from '../post_option';
-import {AppBinding} from '@mm-redux/types/apps';
+import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
-import {doAppCall} from '@actions/apps';
 import {UserProfile} from '@mm-redux/types/users';
 
 type Props = {
-    bindings: AppBinding[],
-    theme: Theme,
-    post: Post,
-    currentUser: UserProfile,
-    closeWithAnimation: () => void,
+    bindings: AppBinding[];
+    theme: Theme;
+    post: Post;
+    currentUser: UserProfile;
+    closeWithAnimation: () => void;
+    actions: {
+        doAppCall: (call: AppCall) => any;
+    };
 }
 
 const Bindings = (props: Props) => {
@@ -54,6 +56,9 @@ type OptionProps = {
     post: Post,
     currentUser: UserProfile,
     closeWithAnimation: () => void;
+    actions: {
+        doAppCall: (call: AppCall) => any;
+    };
 }
 
 const Option = (props: OptionProps) => {
@@ -61,7 +66,8 @@ const Option = (props: OptionProps) => {
         const {closeWithAnimation, post} = props;
 
         // TODO consider handling result here
-        doAppCall({
+        props.actions.doAppCall({
+            ...props.binding.call,
             url: props.binding.call?.url || '',
             context: {
                 app_id: props.binding.app_id,

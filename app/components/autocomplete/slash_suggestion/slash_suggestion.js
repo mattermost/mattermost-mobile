@@ -14,6 +14,7 @@ import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import SlashSuggestionItem from './slash_suggestion_item';
+import AppCommandParser from './apps_command_parser';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
@@ -88,10 +89,13 @@ export default class SlashSuggestion extends PureComponent {
                 this.setLastCommandRequest(Date.now());
             }
 
-            const matches = this.filterSlashSuggestions(nextValue.substring(1), nextCommands);
+            let matches = this.getAppBaseCommandSuggestions(nextValue);
+            matches = matches.concat(this.filterSlashSuggestions(nextValue.substring(1), nextCommands));
             this.updateSuggestions(matches);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            if (nextSuggestions === prevProps.suggestions) {
+            if (this.isAppCommand(nextValue, prevProps.rootId, prevProps.channel_id)) {
+                this.fetchAppCommandSuggestions(nextValue, prevProps.rootId, prevProps.channel_id).then(this.updateSuggestions);
+            } else if (nextSuggestions === prevProps.suggestions) {
                 const args = {
                     channel_id: prevProps.channelId,
                     ...(prevProps.rootId && {root_id: prevProps.rootId, parent_id: prevProps.rootId}),
@@ -114,6 +118,21 @@ export default class SlashSuggestion extends PureComponent {
         } else {
             this.setActive(false);
         }
+    }
+
+    isAppCommand = (pretext, rootID, channelID) => {
+        const parser = new AppCommandParser(rootID, channelID);
+        return parser.isAppCommand(pretext);
+    }
+
+    fetchAppCommandSuggestions = async (pretext, rootID, channelID) => {
+        const parser = new AppCommandParser(rootID, channelID);
+        return parser.getSuggestionsForSubCommandsAndArguments(pretext);
+    }
+
+    getAppBaseCommandSuggestions = (pretext, rootID, channelID) => {
+        const parser = new AppCommandParser(rootID, channelID);
+        return parser.getSuggestionsForBaseCommands(pretext);
     }
 
     updateSuggestions = (matches) => {
@@ -145,7 +164,7 @@ export default class SlashSuggestion extends PureComponent {
     }
 
     contains = (matches, complete) => {
-        return matches.findIndex((match) => match.complete === complete) !== -1;
+        return matches.findIndex((match) => match.Complete === complete) !== -1;
     }
 
     completeSuggestion = (command) => {
