@@ -8,6 +8,7 @@ import {
     InputQuickAction,
     PostDraft,
     PostList,
+    PostOptions,
     SendButton,
 } from '@support/ui/component';
 import {LongPostScreen} from '@support/ui/screen';
@@ -69,6 +70,27 @@ class ThreadScreen {
     back = async () => {
         await this.backButton.tap();
         await expect(this.threadScreen).not.toBeVisible();
+    }
+
+    deletePost = async (postId, text, confirm = true, isParentPost = true) => {
+        await this.openPostOptionsFor(postId, text);
+
+        // # Delete post
+        await PostOptions.deletePost(confirm);
+        if (isParentPost) {
+            await expect(this.threadScreen).not.toBeVisible();
+        } else {
+            this.toBeVisible();
+        }
+    }
+
+    openPostOptionsFor = async (postId, text) => {
+        const {postListPostItem} = await this.getPostListPostItem(postId, text);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Open post options
+        await postListPostItem.longPress();
+        await PostOptions.toBeVisible();
     }
 
     postMessage = async (message) => {

@@ -26,32 +26,34 @@ describe('Messaging', () => {
     });
 
     it('MM-T3471 Tapping channel URL link joins public channel', async () => {
+        const {
+            channelNavBarTitle,
+            logout,
+            openMainSidebar,
+            postMessage,
+        } = ChannelScreen;
+        const {getChannelByDisplayName} = MainSidebar;
+
         // # Go to the Town Square channel
-        const {channelNavBarTitle} = ChannelScreen;
-        await ChannelScreen.openMainSidebar();
-        let channelItem = MainSidebar.getChannelByDisplayName('Town Square');
+        await openMainSidebar();
+        let channelItem = getChannelByDisplayName('Town Square');
         await channelItem.tap();
         await expect(channelNavBarTitle).toHaveText('Town Square');
 
-        // # There's no way to get a channel permalink on mobile so we make one
-        // manually
+        // # There's no way to get a channel permalink on mobile so we make one manually
         const channelPermalink = `${serverUrl}/${testTeam.name}/channels/${testChannel.name}`;
 
         // # Post the channel permalink to the test channel in Town Square
-        const {postInput} = ChannelScreen;
-        await expect(postInput).toBeVisible();
-        await postInput.tap();
-        await postInput.typeText(channelPermalink);
-        await ChannelScreen.tapSendButton();
+        await postMessage(channelPermalink);
         await expect(element(by.text(channelPermalink))).toBeVisible();
 
         // # Create another user in the same team, log in and go to town square
         const {user: otherUser} = await User.apiCreateUser({prefix: 'TestUser'});
         await Team.apiAddUserToTeam(otherUser.id, testTeam.id);
-        await ChannelScreen.logout();
+        await logout();
         await ChannelScreen.open(otherUser);
-        await ChannelScreen.openMainSidebar();
-        channelItem = MainSidebar.getChannelByDisplayName('Town Square');
+        await openMainSidebar();
+        channelItem = getChannelByDisplayName('Town Square');
         await channelItem.tap();
         await expect(channelNavBarTitle).toHaveText('Town Square');
 
