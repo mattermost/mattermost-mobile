@@ -65,13 +65,29 @@ export default class User extends Model {
     username: string;
 
     /** notify_props : Notification preferences/configurations */
-    notifyProps: any;
+    notifyProps: {
+        channel: true,
+        desktop: string,
+        desktop_sound: true,
+        email: true,
+        first_name: true
+        mention_keys: string,
+        push: string,
+    };
 
-    /** props : Custom objects ( e.g. custom status) can be stored in there */
-    props: any;
+    /** props : Custom objects ( e.g. custom status) can be stored in there. Its type definition is known as
+     *  'excess property check' in Typescript land.  We keep using it till we build up the final shape of this object.
+     */
+    props: {
+        [propName as string] : any
+    };
 
     /** timezone : The timezone for this user */
-    timezone: any;
+    timezone: {
+        automaticTimezone: string
+        manualTimezone: string,
+        useAutomaticTimezone: true,
+    };
 
     /** channelsCreated : All the channels that this user created */
     channelsCreated: Channel[];

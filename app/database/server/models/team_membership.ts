@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Relation} from '@nozbe/watermelondb';
+import {Q, Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {immutableRelation} from '@nozbe/watermelondb/decorators';
+import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import User from '@typings/database/user';
@@ -29,6 +29,12 @@ export default class TeamMembership extends Model {
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
+    /** team_id : The foreign key to the related Team record */
+    @field('team_id') teamId!: string;
+
+    /* user_id: The foreign key to the related User record*/
+    @field('user_id') userId!: string;
+
     /** memberUser: The related user in the team */
     @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
 
@@ -37,21 +43,11 @@ export default class TeamMembership extends Model {
 
     /**
      * getAllTeamsForUser - Retrieves all the teams that the user is part of
-     * @returns {Promise<Team[]>}
      */
-    getAllTeamsForUser = async () : Promise<Team[]> => {
-        const memberUser = await this.memberUser.fetch();
-        const teams = await this.collections.get(TEAM).query(Q.on(USER, 'id', memberUser!.id)).fetch() as Team[];
-        return teams;
-    }
+    @lazy getAllTeamsForUser = this.collections.get(TEAM).query(Q.on(USER, 'id', this.userId)) as Query<Team>
 
     /**
      * getAllUsersInTeam - Retrieves all the users who are part of this team
-     * @returns {Promise<User[]>}
      */
-    getAllUsersInTeam = async () : Promise<User[]> => {
-        const memberTeam = await this.memberTeam.fetch();
-        const users = await this.collections.get(USER).query(Q.on(TEAM, 'id', memberTeam!.id)).fetch() as User[];
-        return users;
-    }
+    @lazy getAllUsersInTeam = this.collections.get(USER).query(Q.on(TEAM, 'id', this.teamId)) as Query<User>
 }

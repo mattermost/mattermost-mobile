@@ -36,7 +36,7 @@ export default class SlashCommand extends Model {
     /** hint : A helpful text explaining the purpose of the command  */
     @field('hint') hint!: string;
 
-    /** method : API methods like HTTP */
+    /** method : HTTP API methods like get, put, post, patch, etc. */
     @field('method') method!: string;
 
     /** team_id : The foreign key of the parent Team */
