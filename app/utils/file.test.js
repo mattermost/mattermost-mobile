@@ -118,12 +118,23 @@ describe('getExtensionFromContentDisposition', () => {
     it('should return the path for the document file', () => {
         const file = {
             id: generateId(),
-            name: 'Some other doocument.txt',
+            name: 'Some other document.txt',
             extension: 'txt',
         };
 
         const localFile = getLocalPath(file);
         const [filename] = file.name.split('.');
         expect(localFile).toBe(`${DeviceTypes.DOCUMENTS_PATH}/${filename}-${hashCode(file.id)}.${file.extension}`);
+    });
+
+    it('should return the path for the document file including multiple dots in the filename', () => {
+        const file = {
+            id: generateId(),
+            name: 'Some.other.document.txt',
+            extension: 'txt',
+        };
+        const expectedFilename = 'Some.other.document';
+        const localFile = getLocalPath(file);
+        expect(localFile).toBe(`${DeviceTypes.DOCUMENTS_PATH}/${expectedFilename}-${hashCode(file.id)}.${file.extension}`);
     });
 });
