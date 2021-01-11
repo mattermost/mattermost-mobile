@@ -224,7 +224,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
-        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
+        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName, true));
         const {error, data: channel} = response;
         const currentChannelId = getCurrentChannelId(state);
 
