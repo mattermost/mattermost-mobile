@@ -49,29 +49,45 @@ export default class User extends Model {
     /** locale : The user's locale */
     locale: string;
 
-    /** nick_name : The user's nick name */
-    nickName: string;
+    /** nickname : The user's nickname */
+    nickname: string;
 
     /** position : The user's position in the company */
     position: string;
 
-    /** roles : The associated permissions that this user benefits from */
+    /** roles : The associated roles that this user has */
     roles: string;
 
     /** status : The presence status for the user */
     status: string;
 
-    /** user_name : The user's username */
-    userName: string;
+    /** username : The user's username */
+    username: string;
 
     /** notify_props : Notification preferences/configurations */
-    notifyProps: string;
+    notifyProps: {
+        channel: true,
+        desktop: string,
+        desktop_sound: true,
+        email: true,
+        first_name: true
+        mention_keys: string,
+        push: string,
+    };
 
-    /** props : Custom objects ( e.g. custom status) can be stored in there */
-    props: string;
+    /** props : Custom objects ( e.g. custom status) can be stored in there. Its type definition is known as
+     *  'excess property check' in Typescript land.  We keep using it till we build up the final shape of this object.
+     */
+    props: {
+        [propName as string] : any
+    };
 
-    /** time_zone : The different timezones listed for this user */
-    timeZone: string;
+    /** timezone : The timezone for this user */
+    timezone: {
+        automaticTimezone: string
+        manualTimezone: string,
+        useAutomaticTimezone: true,
+    };
 
     /** channelsCreated : All the channels that this user created */
     channelsCreated: Channel[];
