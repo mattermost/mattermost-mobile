@@ -6,20 +6,30 @@ import {v4 as uuidv4} from 'uuid';
 /**
  * Explicit `wait` should not normally used but made available for special cases.
  * @param {number} ms - duration in millisecond
+ * @return {Promise} promise with timeout
  */
 export const wait = async (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+/**
+ * Check if android.
+ * @return {boolean} true if android
+ */
 export const isAndroid = () => {
     return device.getPlatform() === 'android';
 };
 
+/**
+ * Check if ios.
+ * @return {boolean} true if ios
+ */
 export const isIos = () => {
     return device.getPlatform() === 'ios';
 };
 
 /**
+ * Get random id.
  * @param {number} length - length on random string to return, e.g. 6 (default)
  * @return {string} random string
  */
@@ -30,29 +40,12 @@ export const getRandomId = (length = 6) => {
 };
 
 /**
+ * Capitalize first character of text.
  * @param {string} text
  * @return {string} capitalized text
  */
 export const capitalize = (text) => {
     return text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-/**
- * @param {map} testIDMap - map of testIDs
- * @return {map} map of testID matchers
- */
-export const testIDMatcherMap = (testIDMap) => {
-    const testIDFilter = (k, v) => {
-        const key = k.toLowerCase();
-        if (key.endsWith('prefix') ||
-            key.endsWith('suffix') ||
-            v.startsWith('.') ||
-            v.endsWith('.')) {
-            return false;
-        }
-        return true;
-    };
-    return testIDMap.filter(([k, v]) => testIDFilter(k, v)).map(([k, v]) => [k, by.id(v)]);
 };
 
 const SECOND = 1000;
