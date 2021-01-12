@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export {default as ChannelMemberShipSchema} from './channel_membership';
+export {default as ChannelMembershipSchema} from './channel_membership';
 export {default as CustomEmojiSchema} from './custom_emoji';
 export {default as MyTeamSchema} from './my_team';
 export {default as PreferenceSchema} from './preference';
