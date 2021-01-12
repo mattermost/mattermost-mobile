@@ -86,7 +86,7 @@ export default class User extends Model {
     @field('locale') locale!: string;
 
     /** nickname : The user's nickname */
-    @field('nick_name') nickname!: string;
+    @field('nickname') nickname!: string;
 
     /** position : The user's position in the company */
     @field('position') position!: string;
