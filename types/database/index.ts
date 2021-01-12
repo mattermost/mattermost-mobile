@@ -18,5 +18,5 @@ export interface UserProps {
 export interface Timezone {
     automaticTimezone: string
     manualTimezone: string,
-        useAutomaticTimezone: true,
+    useAutomaticTimezone: true,
 }
