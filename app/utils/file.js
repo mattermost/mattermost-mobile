@@ -283,7 +283,24 @@ export const hashCode = (str) => {
 export function getLocalFilePathFromFile(dir, file) {
     if (dir) {
         if (file?.name) {
-            const [filename, extension] = file.name.split('.');
+            let extension = file.extension;
+            let filename = file.name;
+
+            if (!extension) {
+                extension = getExtensionFromMime(file.mime_type);
+            }
+
+            if (extension && filename.includes(`.${extension}`)) {
+                filename = filename.replace(`.${extension}`, '');
+            } else {
+                const fileParts = file.name.split('.');
+
+                if (fileParts.length > 1) {
+                    extension = fileParts.pop();
+                    filename = fileParts.join('.');
+                }
+            }
+
             return `${dir}/${filename}-${hashCode(file.id)}.${extension}`;
         } else if (file?.id && file?.extension) {
             return `${dir}/${file.id}.${file.extension}`;

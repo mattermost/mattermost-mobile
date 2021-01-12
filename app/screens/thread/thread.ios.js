@@ -4,12 +4,13 @@
 import React from 'react';
 import {Animated, View} from 'react-native';
 
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
+import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import PostDraft from '@components/post_draft';
 import SafeAreaView from '@components/safe_area_view';
 import StatusBar from '@components/status_bar';
+import DEVICE from '@constants/device';
 import {THREAD} from '@constants/screen';
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -95,17 +96,18 @@ export default class ThreadIOS extends ThreadBase {
                     <StatusBar/>
                     {content}
                 </SafeAreaView>
-                {postDraft}
                 <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
                     <Autocomplete
-                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.handleAutoComplete}
                         cursorPositionEvent={THREAD_POST_TEXTBOX_CURSOR_CHANGE}
                         valueEvent={THREAD_POST_TEXTBOX_VALUE_CHANGE}
                         rootId={rootId}
                         channelId={channelId}
+                        offsetY={0}
                     />
                 </View>
+                {postDraft}
             </React.Fragment>
         );
     }

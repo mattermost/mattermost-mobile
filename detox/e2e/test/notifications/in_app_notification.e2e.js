@@ -46,19 +46,18 @@ describe('in-app Notification', () => {
     });
 
     it('MM-T3440 should render an in-app notification', async () => {
+        const {
+            postMessage,
+            openPostOptionsFor,
+        } = ChannelScreen;
+
+        // # Post a message
         const testMessage = Date.now().toString();
-        const {postInput} = ChannelScreen;
-
-        // # Type a message
-        await postInput.tap();
-        await postInput.typeText(testMessage);
-
-        // # Tap send button
-        await ChannelScreen.tapSendButton();
+        await postMessage(testMessage);
 
         // # Open add reaction screen
         const {post} = await Post.apiGetLastPostInChannel(testChannel2.id);
-        await ChannelScreen.openPostOptionsFor(post.id, testMessage);
+        await openPostOptionsFor(post.id, testMessage);
         await AddReactionScreen.open();
 
         // # Close add reaction screen

@@ -4,7 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
-    Linking,
+    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {intlShape} from 'react-intl';
 
 import Config from '@assets/config';
 import CompassIcon from '@components/compass_icon';
@@ -19,6 +20,7 @@ import FormattedText from '@components/formatted_text';
 import StatusBar from '@components/status_bar';
 import AboutLinks from '@constants/about_links';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
@@ -29,28 +31,50 @@ export default class About extends PureComponent {
         theme: PropTypes.object.isRequired,
     };
 
+    static contextTypes = {
+        intl: intlShape.isRequired,
+    };
+
+    openURL = (url) => {
+        const {intl} = this.context;
+        const onError = () => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
+        };
+
+        tryOpenURL(url, onError);
+    };
+
     handleAboutTeam = () => {
-        Linking.openURL(Config.AboutTeamURL);
+        this.openURL(Config.AboutTeamURL);
     };
 
     handleAboutEnterprise = () => {
-        Linking.openURL(Config.AboutEnterpriseURL);
+        this.openURL(Config.AboutEnterpriseURL);
     };
 
     handlePlatformNotice = () => {
-        Linking.openURL(Config.PlatformNoticeURL);
+        this.openURL(Config.PlatformNoticeURL);
     };
 
     handleMobileNotice = () => {
-        Linking.openURL(Config.MobileNoticeURL);
+        this.openURL(Config.MobileNoticeURL);
     };
 
     handleTermsOfService = () => {
-        Linking.openURL(AboutLinks.TERMS_OF_SERVICE);
+        this.openURL(AboutLinks.TERMS_OF_SERVICE);
     };
 
     handlePrivacyPolicy = () => {
-        Linking.openURL(AboutLinks.PRIVACY_POLICY);
+        this.openURL(AboutLinks.PRIVACY_POLICY);
     }
 
     render() {

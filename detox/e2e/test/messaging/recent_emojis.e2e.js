@@ -24,16 +24,9 @@ describe('Messaging', () => {
     });
 
     it('MM-T3495 should include post message emojis in Recent Emojis section and Recently Used section', async () => {
-        // * Verify channel screen is visible
-        await ChannelScreen.toBeVisible();
-
-        const {
-            postMessage,
-        } = ChannelScreen;
-
-        // # Type message on post input
+        // # Post a message
         const message = 'The quick brown fox :fox_face: jumps over the lazy dog :dog:';
-        await postMessage(message);
+        await ChannelScreen.postMessage(message);
 
         // * Verify message is posted
         await expect(element(by.text('The quick brown fox 🦊 jumps over the lazy dog 🐶'))).toBeVisible();

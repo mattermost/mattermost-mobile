@@ -157,7 +157,8 @@ describe('Actions.Views.Channel', () => {
     channelSelectors.getCurrentChannelId = jest.fn(() => currentChannelId);
     channelSelectors.getMyChannelMember = jest.fn(() => ({data: {member: {}}}));
 
-    const appChannelSelectors = require('@selectors/channel');
+    const appChannelSelectors = require('app/selectors/channel');
+    const getChannelReachableOriginal = appChannelSelectors.getChannelReachable;
     appChannelSelectors.getChannelReachable = jest.fn(() => true);
 
     test('handleSelectChannelByName success', async () => {
@@ -239,6 +240,60 @@ describe('Actions.Views.Channel', () => {
 
         const joinedChannel = storeActions.some((action) => action.type === 'MOCK_JOIN_CHANNEL' && action.data.channel.id === 'channel-id-3');
         expect(joinedChannel).toBe(true);
+    });
+
+    test('handleSelectChannelByName select archived channel with ExperimentalViewArchivedChannels enabled', async () => {
+        const archivedChannelStoreObj = {...storeObj};
+        archivedChannelStoreObj.entities.general.config.ExperimentalViewArchivedChannels = 'true';
+        store = mockStore(archivedChannelStoreObj);
+
+        appChannelSelectors.getChannelReachable = getChannelReachableOriginal;
+        actions.getChannelByNameAndTeamName = jest.fn(() => {
+            return {
+                type: MOCK_RECEIVE_CHANNEL_TYPE,
+                data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL, delete_at: 100},
+            };
+        });
+        channelSelectors.getChannelByName = jest.fn(() => {
+            return {
+                data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL, delete_at: 100},
+            };
+        });
+        const errorHandler = jest.fn();
+
+        await store.dispatch(handleSelectChannelByName('channel-id-3', currentTeamName, errorHandler));
+
+        const storeActions = store.getActions();
+        const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
+        expect(receivedChannel).toBe(true);
+        expect(errorHandler).not.toBeCalled();
+    });
+
+    test('handleSelectChannelByName select archived channel with ExperimentalViewArchivedChannels disabled', async () => {
+        const noArchivedChannelStoreObj = {...storeObj};
+        noArchivedChannelStoreObj.entities.general.config.ExperimentalViewArchivedChannels = 'false';
+        store = mockStore(noArchivedChannelStoreObj);
+
+        appChannelSelectors.getChannelReachable = getChannelReachableOriginal;
+        actions.getChannelByNameAndTeamName = jest.fn(() => {
+            return {
+                type: MOCK_RECEIVE_CHANNEL_TYPE,
+                data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL, delete_at: 100},
+            };
+        });
+        channelSelectors.getChannelByName = jest.fn(() => {
+            return {
+                data: {id: 'channel-id-3', name: 'channel-id-3', display_name: 'Test Channel', type: General.OPEN_CHANNEL, delete_at: 100},
+            };
+        });
+        const errorHandler = jest.fn();
+
+        await store.dispatch(handleSelectChannelByName('channel-id-3', currentTeamName, errorHandler));
+
+        const storeActions = store.getActions();
+        const receivedChannel = storeActions.some((action) => action.type === MOCK_RECEIVE_CHANNEL_TYPE);
+        expect(receivedChannel).toBe(true);
+        expect(errorHandler).toBeCalled();
     });
 
     test('loadPostsIfNecessaryWithRetry for the first time', async () => {

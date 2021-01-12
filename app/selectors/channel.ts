@@ -5,9 +5,11 @@ import {createSelector} from 'reselect';
 
 import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 import {getChannelByName} from '@mm-redux/selectors/entities/channels';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTeamByName} from '@mm-redux/selectors/entities/teams';
 import {GlobalState} from '@mm-redux/types/store';
 import {Channel} from '@mm-redux/types/channels';
+import {isArchivedChannel} from '@mm-redux/utils/channel_utils';
 
 const getOtherUserIdForDm = createSelector(
     (state:GlobalState, channel: Channel) => channel,
@@ -48,5 +50,15 @@ const getChannel = (state: GlobalState, channelName: string) => getChannelByName
 export const getChannelReachable = createSelector(
     getTeam,
     getChannel,
-    (team, channel) => team && channel,
+    getConfig,
+    (team, channel, config) => {
+        if (!(team && channel)) {
+            return false;
+        }
+        const viewArchivedChannels = config.ExperimentalViewArchivedChannels === 'true';
+        if (isArchivedChannel(channel) && !viewArchivedChannels) {
+            return false;
+        }
+        return true;
+    },
 );

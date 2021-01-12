@@ -80,6 +80,7 @@ describe('DraftInput', () => {
         },
         membersCount: 10,
         addRecentUsedEmojisInMessage: jest.fn(),
+        handleGotoLocation: jest.fn(),
     };
     const ref = React.createRef();
 

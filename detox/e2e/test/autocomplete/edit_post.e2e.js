@@ -35,19 +35,18 @@ describe('Autocomplete', () => {
     });
 
     it('MM-T3391 should render autocomplete in post edit screen', async () => {
+        const {
+            openPostOptionsFor,
+            postMessage,
+        } = ChannelScreen;
+
+        // # Post a message
         const testMessage = Date.now().toString();
-        const {postInput} = ChannelScreen;
-
-        // # Type a message
-        await postInput.tap();
-        await postInput.typeText(testMessage);
-
-        // # Tap send button
-        await ChannelScreen.tapSendButton();
+        await postMessage(testMessage);
 
         // # Open edit post screen
         const {post} = await Post.apiGetLastPostInChannel(testChannel.id);
-        await ChannelScreen.openPostOptionsFor(post.id, testMessage);
+        await openPostOptionsFor(post.id, testMessage);
         await EditPostScreen.open();
 
         const {atMentionSuggestionList} = Autocomplete;

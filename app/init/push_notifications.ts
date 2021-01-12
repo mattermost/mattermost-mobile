@@ -202,7 +202,6 @@ class PushNotifications {
 
     onRemoteNotificationsRegistered = (event: Registered) => {
         if (!this.configured) {
-            this.configured = true;
             const {deviceToken} = event;
             let prefix;
 
@@ -217,11 +216,22 @@ class PushNotifications {
 
             EphemeralStore.deviceToken = `${prefix}:${deviceToken}`;
             if (Store.redux) {
+                this.configured = true;
                 const dispatch = Store.redux.dispatch as DispatchFunc;
                 waitForHydration(Store.redux, () => {
                     this.requestNotificationReplyPermissions();
                     dispatch(setDeviceToken(EphemeralStore.deviceToken));
                 });
+            } else {
+                // The redux store is not ready, so we retry it to set the
+                // token to prevent sessions being registered without a device id
+                // This code may be executed on fast devices cause the token registration
+                // is faster than the redux store configuration.
+                // Note: Should not be needed once WDB is implemented
+                const remoteTimeout = setTimeout(() => {
+                    clearTimeout(remoteTimeout);
+                    this.onRemoteNotificationsRegistered(event);
+                }, 200);
             }
         }
     };

@@ -225,7 +225,7 @@ export function handleSelectChannel(channelId: string) {
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
 
-        return {};
+        return {data: true};
     };
 }
 
@@ -235,7 +235,7 @@ export function handleSelectChannelByName(channelName: string, teamName: string,
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
-        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
+        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName, true));
         const {error, data: channel} = response;
         const currentChannelId = getCurrentChannelId(state);
 
@@ -275,7 +275,7 @@ export function handleSelectChannelByName(channelName: string, teamName: string,
             dispatch(handleSelectChannel(channel.id));
         }
 
-        return {};
+        return {data: true};
     };
 }
 

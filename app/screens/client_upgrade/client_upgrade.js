@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import {
     Alert,
     Image,
-    Linking,
     ScrollView,
     TouchableOpacity,
     View,
@@ -21,6 +20,7 @@ import StatusBar from '@components/status_bar';
 import {UpgradeTypes} from '@constants';
 import {checkUpgradeType, isUpgradeAvailable} from '@utils/client_upgrade';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 export default class ClientUpgrade extends PureComponent {
     static propTypes = {
@@ -104,11 +104,7 @@ export default class ClientUpgrade extends PureComponent {
         const {downloadLink} = this.props;
         const {intl} = this.context;
 
-        Linking.canOpenURL(downloadLink).then((supported) => {
-            if (supported) {
-                return Linking.openURL(downloadLink);
-            }
-
+        const onError = () => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.client_upgrade.download_error.title',
@@ -119,9 +115,9 @@ export default class ClientUpgrade extends PureComponent {
                     defaultMessage: 'An error occurred while trying to open the download link.',
                 }),
             );
+        };
 
-            return false;
-        });
+        tryOpenURL(downloadLink, onError);
     };
 
     renderMustUpgrade() {
