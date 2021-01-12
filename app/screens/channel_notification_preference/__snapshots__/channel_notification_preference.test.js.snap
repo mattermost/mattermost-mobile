@@ -1,49 +1,59 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ChannelNotificationPreference should match snapshot 1`] = `
-<Connect(SafeAreaIos)
-  excludeFooter={true}
-  excludeHeader={true}
->
-  <View
-    style={
-      Object {
-        "backgroundColor": "rgba(61,60,64,0.03)",
-        "flex": 1,
-      }
+<View
+  style={
+    Object {
+      "backgroundColor": "rgba(61,60,64,0.03)",
+      "flex": 1,
     }
-    testID="channel_notification_preference.screen"
+  }
+  testID="channel_notification_preference.screen"
+>
+  <Connect(StatusBar) />
+  <RNCSafeAreaView
+    edges={
+      Array [
+        "left",
+        "right",
+      ]
+    }
   >
-    <Connect(StatusBar) />
     <FormattedText
       defaultMessage="Send Notifications"
       id="channel_notifications.preference.header"
       style={
-        Array [
-          Object {
-            "color": "rgba(61,60,64,0.56)",
-            "fontSize": 13,
-            "marginTop": 10,
-            "padding": 16,
-            "textTransform": "uppercase",
-          },
-          null,
-        ]
+        Object {
+          "color": "rgba(61,60,64,0.56)",
+          "fontSize": 13,
+          "marginTop": 10,
+          "padding": 16,
+          "textTransform": "uppercase",
+        }
       }
     />
-    <ScrollView
-      alwaysBounceVertical={false}
-      contentContainerStyle={
+  </RNCSafeAreaView>
+  <ScrollView
+    alwaysBounceVertical={false}
+    contentContainerStyle={
+      Object {
+        "backgroundColor": "rgba(61,60,64,0.03)",
+      }
+    }
+  >
+    <View
+      style={
         Object {
-          "backgroundColor": "rgba(61,60,64,0.03)",
+          "backgroundColor": "rgba(255,255,255,1)",
         }
       }
     >
-      <View
-        style={
-          Object {
-            "backgroundColor": "rgba(255,255,255,1)",
-          }
+      <RNCSafeAreaView
+        edges={
+          Array [
+            "left",
+            "right",
+          ]
         }
       >
         <View>
@@ -61,7 +71,6 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             action={[Function]}
             actionType="select"
             actionValue="default"
-            isLandscape={false}
             label={
               <FormattedText
                 defaultMessage="Global default ({notifyLevel})"
@@ -120,7 +129,6 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             action={[Function]}
             actionType="select"
             actionValue="all"
-            isLandscape={false}
             label={
               <FormattedText
                 defaultMessage="For all activity"
@@ -174,7 +182,6 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             action={[Function]}
             actionType="select"
             actionValue="mention"
-            isLandscape={false}
             label={
               <FormattedText
                 defaultMessage="Only mentions and direct messages"
@@ -228,7 +235,6 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             action={[Function]}
             actionType="select"
             actionValue="none"
-            isLandscape={false}
             label={
               <FormattedText
                 defaultMessage="Never"
@@ -267,18 +273,18 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             }
           />
         </View>
-        <View
-          style={
-            Object {
-              "backgroundColor": "rgba(61,60,64,0.1)",
-              "height": 1,
-              "marginLeft": 16,
-              "width": "100%",
-            }
+      </RNCSafeAreaView>
+      <View
+        style={
+          Object {
+            "backgroundColor": "rgba(61,60,64,0.1)",
+            "height": 1,
+            "marginLeft": 16,
+            "width": "100%",
           }
-        />
-      </View>
-    </ScrollView>
-  </View>
-</Connect(SafeAreaIos)>
+        }
+      />
+    </View>
+  </ScrollView>
+</View>
 `;

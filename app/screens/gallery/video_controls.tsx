@@ -3,6 +3,7 @@
 
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {Animated, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import Slider from 'react-native-slider';
 
 import CompassIcon from '@components/compass_icon';
@@ -20,6 +21,7 @@ interface VideoControlsProps {
     paused: boolean;
     onPlayPause(): void;
     onSeek(value: number): void;
+    showHideHeaderFooter?(display: boolean): void;
 }
 
 export interface VideoControlsRef {
@@ -96,6 +98,8 @@ const humanizeVideoDuration = (seconds: number) => {
     return date.toISOString().substr(begin, end);
 };
 
+let animation: Animated.CompositeAnimation;
+
 const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: VideoControlsProps, ref) => {
     const opacity = useRef(new Animated.Value(0)).current;
     const [duration, setDuration] = useState(0);
@@ -104,12 +108,21 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
     const styles = getStyles(props.isLandscape);
 
     const fadeControls = (toValue: number, delay = 0, callback?: CallbackFunctionWithoutArguments) => {
-        Animated.timing(opacity, {
+        if (animation) {
+            animation.stop();
+        }
+        animation = Animated.timing(opacity, {
             toValue,
             duration: 250,
             delay,
             useNativeDriver: true,
-        }).start(callback);
+        });
+
+        animation.start((result: Animated.EndResult) => {
+            if (callback && result.finished) {
+                callback();
+            }
+        });
     };
 
     useEffect(() => {
@@ -122,12 +135,18 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
         videoProgress,
     }), []);
 
-    const showControls = (playing: boolean) => {
-        setVisible(true);
+    const display = (show: boolean) => {
+        setVisible(show);
+        if (props.showHideHeaderFooter) {
+            props.showHideHeaderFooter(show);
+        }
+    };
 
+    const showControls = (playing: boolean) => {
+        display(true);
         if (playing) {
             fadeControls(1, 0, () => {
-                fadeControls(0, 1000, () => setVisible(false));
+                fadeControls(0, 1000, () => display(false));
             });
         } else {
             fadeControls(1, 0);
@@ -136,9 +155,9 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
 
     const playPause = () => {
         if (props.paused) {
-            fadeControls(0, 250, () => setVisible(false));
+            fadeControls(0, 250, () => display(false));
         } else {
-            fadeControls(1, 250, () => setVisible(true));
+            fadeControls(1, 250, () => display(true));
         }
 
         props.onPlayPause();
@@ -148,7 +167,7 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
         props.onSeek(value);
         setProgress(value);
         if (!props.paused) {
-            fadeControls(0, 1000, () => setVisible(false));
+            fadeControls(0, 1000, () => display(false));
         }
     };
 
@@ -158,7 +177,7 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
 
     const seekStart = () => {
         opacity.stopAnimation();
-        setVisible(true);
+        display(true);
     };
 
     const videoDuration = (value: number) => {
@@ -191,27 +210,34 @@ const VideoControls = forwardRef<VideoControlsRef, VideoControlsProps>((props: V
                     />
                 </TouchableOpacity>
             </View>
-            <View style={[styles.controlsRow, styles.progressContainer]}>
-                <View style={styles.progressColumnContainer}>
-                    <View style={[styles.timerLabelsContainer]}>
-                        <Text style={styles.timerLabel}>
-                            {humanizeVideoDuration(progress)}
-                        </Text>
-                        <Text style={styles.timerLabel}>
-                            {humanizeVideoDuration(duration)}
-                        </Text>
+            <SafeAreaView
+                edges={['left', 'right']}
+                mode='margin'
+                pointerEvents='box-none'
+                style={styles.progressColumnContainer}
+            >
+                <View style={[styles.controlsRow, styles.progressContainer]}>
+                    <View style={styles.progressColumnContainer}>
+                        <View style={[styles.timerLabelsContainer]}>
+                            <Text style={styles.timerLabel}>
+                                {humanizeVideoDuration(progress)}
+                            </Text>
+                            <Text style={styles.timerLabel}>
+                                {humanizeVideoDuration(duration)}
+                            </Text>
+                        </View>
+                        <Slider
+                            onSlidingComplete={seekEnd}
+                            onValueChange={seeking}
+                            onSlidingStart={seekStart}
+                            maximumValue={Math.floor(duration)}
+                            value={Math.floor(progress)}
+                            thumbStyle={[styles.thumb]}
+                            minimumTrackTintColor={props.mainColor}
+                        />
                     </View>
-                    <Slider
-                        onSlidingComplete={seekEnd}
-                        onValueChange={seeking}
-                        onSlidingStart={seekStart}
-                        maximumValue={Math.floor(duration)}
-                        value={Math.floor(progress)}
-                        thumbStyle={[styles.thumb]}
-                        minimumTrackTintColor={props.mainColor}
-                    />
                 </View>
-            </View>
+            </SafeAreaView>
         </Animated.View>
     );
 });

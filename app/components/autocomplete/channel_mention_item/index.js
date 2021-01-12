@@ -7,10 +7,8 @@ import {General} from '@mm-redux/constants';
 import {getChannel} from '@mm-redux/selectors/entities/channels';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getUser} from '@mm-redux/selectors/entities/users';
-
-import {getChannelNameForSearchAutocomplete} from 'app/selectors/channel';
-import {isLandscape} from 'app/selectors/device';
-import {isGuest as isGuestUser} from 'app/utils/users';
+import {getChannelNameForSearchAutocomplete} from '@selectors/channel';
+import {isGuest as isGuestUser} from '@utils/users';
 
 import ChannelMentionItem from './channel_mention_item';
 
@@ -36,7 +34,6 @@ function mapStateToProps(state, ownProps) {
         isBot,
         isGuest,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

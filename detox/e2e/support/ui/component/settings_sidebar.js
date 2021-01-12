@@ -27,6 +27,11 @@ class SettingsSidebar {
 
         return this.settingsSidebar;
     }
+
+    tapLogoutAction = async () => {
+        await this.logoutAction.tap();
+        await expect(this.settingsSidebar).not.toBeVisible();
+    }
 }
 
 const settingsSidebar = new SettingsSidebar();

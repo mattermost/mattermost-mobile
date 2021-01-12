@@ -6,7 +6,6 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     Alert,
-    Linking,
     Platform,
     StyleSheet,
     Text,
@@ -25,7 +24,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
-import {normalizeProtocol} from '@utils/url';
+import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -126,7 +125,7 @@ export default class MarkdownImage extends ImageViewPort {
         const url = normalizeProtocol(this.props.linkDestination);
         const {intl} = this.context;
 
-        Linking.openURL(url).catch(() => {
+        const onError = () => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.link.error.title',
@@ -137,7 +136,9 @@ export default class MarkdownImage extends ImageViewPort {
                     defaultMessage: 'Unable to open the link.',
                 }),
             );
-        });
+        };
+
+        tryOpenURL(url, onError);
     };
 
     handleLinkLongPress = async () => {

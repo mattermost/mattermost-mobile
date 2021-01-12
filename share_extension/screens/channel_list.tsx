@@ -73,6 +73,7 @@ const ChannelList = ({intl}: ChannnelListProps) => {
     );
     const renderItem = ({item}: SectionListRenderItemInfo<Channel>) => (
         <ChannelItem
+            testID='share_extension.channel_list.channel_item'
             channel={item}
             onSelect={onSelectChannel}
             selected={item.id === currentChannelId}
@@ -146,9 +147,13 @@ const ChannelList = ({intl}: ChannnelListProps) => {
     }
 
     return (
-        <View style={styles.flex}>
+        <View
+            testID='share_extension.channel_list.screen'
+            style={styles.flex}
+        >
             <View style={styles.searchContainer}>
                 <SearchBar
+                    testID='share_extension.channel_list.search_bar'
                     placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     backgroundColor='transparent'

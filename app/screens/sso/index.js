@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {ssoLogin} from '@actions/views/user';
 import {scheduleExpiredNotification} from '@actions/views/session';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {isLandscape} from '@selectors/device';
 
 import SSO from './sso';
 
@@ -15,7 +14,6 @@ function mapStateToProps(state) {
     return {
         ...state.views.selectServer,
         theme: getTheme(state),
-        isLandscape: isLandscape(state),
     };
 }
 

@@ -27,9 +27,9 @@ export default class SettingsDrawerAndroid extends SettingsSidebarBase {
         this.goToEditProfileScreen(intl);
     });
 
-    goToFlagged = preventDoubleTap(() => {
+    goToSaved = preventDoubleTap(() => {
         const {intl} = this.providerRef.getChildContext();
-        this.goToFlaggedScreen(intl);
+        this.goToSavedPostsScreen(intl);
     });
 
     goToMentions = preventDoubleTap(() => {

@@ -14,6 +14,7 @@ jest.useFakeTimers();
 jest.mock('react-intl');
 
 describe('PostList', () => {
+    const formatMessage = jest.fn();
     const serverURL = 'https://server-url.fake';
     const deeplinkRoot = 'mattermost://server-url.fake';
 
@@ -61,6 +62,7 @@ describe('PostList', () => {
     test('setting channel deep link', () => {
         const wrapper = shallow(
             <PostList {...baseProps}/>,
+            {context: {intl: {formatMessage}}},
         );
 
         wrapper.setProps({deepLinkURL: deepLinks.channel});

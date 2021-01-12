@@ -1,15 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    View,
-    TouchableWithoutFeedback,
-} from 'react-native';
+import {View, TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {
     REACTION_PICKER_HEIGHT,
     DEFAULT_EMOJIS,
@@ -22,89 +18,79 @@ import {
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ReactionButton from './reaction_button';
+import {EmojiIndicesByAlias} from '@utils/emojis';
 
-export default class ReactionPicker extends PureComponent {
-    static propTypes = {
-        addReaction: PropTypes.func.isRequired,
-        openReactionScreen: PropTypes.func.isRequired,
-        theme: PropTypes.object.isRequired,
-        recentEmojis: PropTypes.array,
-        deviceWidth: PropTypes.number,
-        isLandscape: PropTypes.bool.isRequired,
+const ReactionPicker = (props) => {
+    const {theme} = props;
+    const style = getStyleSheet(theme);
+    const {width} = useWindowDimensions();
+    const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
+
+    const handlePress = (emoji) => {
+        props.addReaction(emoji);
+    };
+
+    let containerSize = LARGE_CONTAINER_SIZE;
+    let iconSize = LARGE_ICON_SIZE;
+
+    if (isSmallDevice) {
+        containerSize = SMALL_CONTAINER_SIZE;
+        iconSize = SMALL_ICON_SIZE;
     }
 
-    handlePress = (emoji) => {
-        this.props.addReaction(emoji);
-    }
+    const recentEmojisIndices = props.recentEmojis.map((recentEmoji) => EmojiIndicesByAlias.get(recentEmoji));
+    const emojis = props.recentEmojis.
+        concat(DEFAULT_EMOJIS.filter((defaultEmoji) => !recentEmojisIndices.includes(EmojiIndicesByAlias.get(defaultEmoji)))).
+        splice(0, 6);
 
-    render() {
-        const {
-            theme,
-            deviceWidth,
-            isLandscape,
-        } = this.props;
-        const style = getStyleSheet(theme);
-        const isSmallDevice = deviceWidth < SMALL_ICON_BREAKPOINT;
-
-        let containerSize = LARGE_CONTAINER_SIZE;
-        let iconSize = LARGE_ICON_SIZE;
-
-        if (isSmallDevice) {
-            containerSize = SMALL_CONTAINER_SIZE;
-            iconSize = SMALL_ICON_SIZE;
-        }
-
-        // Mixing recent emojis with default list and removing duplicates
-        const emojis = Array.from(new Set(this.props.recentEmojis.concat(DEFAULT_EMOJIS))).splice(0, 6);
-
-        const list = emojis.map((emoji) => {
-            return (
-                <ReactionButton
-                    key={emoji}
-                    theme={theme}
-                    addReaction={this.handlePress}
-                    emoji={emoji}
-                    iconSize={iconSize}
-                    containerSize={containerSize}
-                />
-            );
-        });
-
-        let paddingRes = padding(isLandscape, 12);
-        if (!paddingRes) {
-            paddingRes = {
-                paddingLeft: 12,
-                paddingRight: 12,
-            };
-        }
-
+    const list = emojis.map((emoji) => {
         return (
-            <View style={[style.reactionListContainer, paddingRes]}>
-                {list}
-                <TouchableWithoutFeedback
-                    onPress={this.props.openReactionScreen}
-                    testID='open.add_reaction.button'
-                >
-                    <View
-                        style={[
-                            style.reactionContainer,
-                            {
-                                width: containerSize,
-                                height: containerSize,
-                            },
-                        ]}
-                    >
-                        <CompassIcon
-                            name='emoticon-plus-outline'
-                            size={31.2}
-                            style={style.icon}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-            </View>
+            <ReactionButton
+                key={emoji}
+                theme={theme}
+                addReaction={handlePress}
+                emoji={emoji}
+                iconSize={iconSize}
+                containerSize={containerSize}
+            />
         );
-    }
-}
+    });
+
+    return (
+        <View style={style.reactionListContainer}>
+            {list}
+            <TouchableWithoutFeedback
+                onPress={props.openReactionScreen}
+                testID='open.add_reaction.button'
+            >
+                <View
+                    style={[
+                        style.reactionContainer,
+                        {
+                            width: containerSize,
+                            height: containerSize,
+                        },
+                    ]}
+                >
+                    <CompassIcon
+                        name='emoticon-plus-outline'
+                        size={31.2}
+                        style={style.icon}
+                    />
+                </View>
+            </TouchableWithoutFeedback>
+        </View>
+    );
+};
+
+ReactionPicker.propTypes = {
+    addReaction: PropTypes.func.isRequired,
+    openReactionScreen: PropTypes.func.isRequired,
+    theme: PropTypes.object.isRequired,
+    recentEmojis: PropTypes.array,
+};
+
+export default ReactionPicker;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -117,6 +103,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
+            paddingHorizontal: 12,
         },
         reactionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),

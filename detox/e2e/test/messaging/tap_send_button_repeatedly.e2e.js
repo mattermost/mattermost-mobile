@@ -28,19 +28,14 @@ describe('Messaging', () => {
     });
 
     it('MM-T109 User can\'t send the same message repeatedly', async () => {
-        const message = Date.now().toString();
-
         const {
-            postInput,
+            postMessage,
             sendButtonDisabled,
         } = ChannelScreen;
 
-        // # Type a message
-        await postInput.tap();
-        await postInput.typeText(message);
-
-        // # Tap send button
-        await ChannelScreen.tapSendButton();
+        // # Post a message
+        const message = Date.now().toString();
+        await postMessage(message);
 
         // # Then tap send button repeatedly
         await expect(sendButtonDisabled).toBeVisible();

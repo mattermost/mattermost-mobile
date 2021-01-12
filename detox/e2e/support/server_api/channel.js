@@ -77,6 +77,42 @@ export const apiAddUserToChannel = async (userId, channelId) => {
     }
 };
 
+/**
+ * Remove user from channel.
+ * See https://api.mattermost.com/#tag/channels/paths/~1channels~1{channel_id}~1members~1{user_id}/delete
+ * @param {string} channelId - The channel ID
+ * @param {string} userId - The user ID to be removed from channel
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiDeleteUserFromChannel = async (channelId, userId) => {
+    try {
+        const response = await client.delete(
+            `/api/v4/channels/${channelId}/members/${userId}`,
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get channels for user.
+ * See https://api.mattermost.com/#tag/channels/paths/~1users~1{user_id}~1teams~1{team_id}~1channels/get
+ * @param {string} userId - The user ID
+ * @param {string} teamId - The team ID the user belongs to
+ * @return {Object} returns {channels} on success or {error, status} on error
+ */
+export const apiGetChannelsForUser = async (userId, teamId) => {
+    try {
+        const response = await client.get(`/api/v4/users/${userId}/teams/${teamId}/channels`);
+
+        return {channels: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 function generateRandomChannel(teamId, type, prefix) {
     const randomId = getRandomId();
 
@@ -93,7 +129,9 @@ function generateRandomChannel(teamId, type, prefix) {
 export const Channel = {
     apiAddUserToChannel,
     apiCreateChannel,
+    apiDeleteUserFromChannel,
     apiGetChannelByName,
+    apiGetChannelsForUser,
 };
 
 export default Channel;

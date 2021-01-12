@@ -3,8 +3,9 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Dimensions, ScrollView, View} from 'react-native';
+import {ScrollView} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@mm-redux/utils/integration_utils';
 
@@ -55,7 +56,6 @@ export default class InteractiveDialog extends PureComponent {
             values,
             error: null,
             errors: {},
-            isLandscape: this.isLandscape(),
             submitting: false,
         };
 
@@ -64,20 +64,6 @@ export default class InteractiveDialog extends PureComponent {
 
     componentDidMount() {
         this.navigationEventListener = Navigation.events().bindComponent(this);
-        Dimensions.addEventListener('change', this.orientationDidChange);
-    }
-
-    componentWillUnmount() {
-        Dimensions.removeEventListener('change', this.orientationDidChange);
-    }
-
-    orientationDidChange = () => {
-        this.setState({isLandscape: this.isLandscape()});
-    }
-
-    isLandscape = () => {
-        const {height, width} = Dimensions.get('window');
-        return width > height;
     }
 
     navigationButtonPressed({buttonId}) {
@@ -188,11 +174,14 @@ export default class InteractiveDialog extends PureComponent {
 
     render() {
         const {introductionText, elements, theme} = this.props;
-        const {error, errors, isLandscape, values} = this.state;
+        const {error, errors, values} = this.state;
         const style = getStyleFromTheme(theme);
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                testID='interactive_dialog.screen'
+                style={style.container}
+            >
                 <ScrollView
                     ref={this.scrollView}
                     style={style.scrollView}
@@ -200,6 +189,7 @@ export default class InteractiveDialog extends PureComponent {
                     <StatusBar/>
                     {error && (
                         <ErrorText
+                            testID='interactive_dialog.error.text'
                             textStyle={style.errorContainer}
                             error={error}
                         />
@@ -208,7 +198,6 @@ export default class InteractiveDialog extends PureComponent {
                         <DialogIntroductionText
                             value={introductionText}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
                     }
                     {elements && elements.map((e) => {
@@ -230,12 +219,11 @@ export default class InteractiveDialog extends PureComponent {
                                 value={values[e.name]}
                                 onChange={this.onChange}
                                 theme={theme}
-                                isLandscape={isLandscape}
                             />
                         );
                     })}
                 </ScrollView>
-            </View>
+            </SafeAreaView>
         );
     }
 }

@@ -55,7 +55,7 @@ describe('Recent Mentions', () => {
 
         // * Verify most recent post has the message
         const lastPost = await Post.apiGetLastPostInChannel(testChannel.id);
-        const postListPostItem = await ChannelScreen.getPostListPostItem(lastPost.post.id, testMessage);
+        const {postListPostItem} = await ChannelScreen.getPostListPostItem(lastPost.post.id, testMessage);
         await expect(postListPostItem).toBeVisible();
 
         // # Open recent mentions screen
@@ -64,7 +64,7 @@ describe('Recent Mentions', () => {
 
         // * Verify most recent search result post has the at-mention message
         const lastSearchResultPost = await Post.apiGetLastPostInChannel(testChannel.id);
-        const searchResultPostItem = await RecentMentionsScreen.getSearchResultPostItem(lastSearchResultPost.post.id, testMessage);
+        const {searchResultPostItem} = await RecentMentionsScreen.getSearchResultPostItem(lastSearchResultPost.post.id, testMessage);
         await expect(searchResultPostItem).toBeVisible();
 
         // * Verify recent mentions post item does not have option to add a reaction

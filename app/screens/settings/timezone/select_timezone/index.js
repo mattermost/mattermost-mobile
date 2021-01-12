@@ -6,7 +6,6 @@ import {connect} from 'react-redux';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getSupportedTimezones} from '@mm-redux/selectors/entities/general';
 
-import {isLandscape} from 'app/selectors/device';
 import SelectTimezone from './select_timezone';
 
 function mapStateToProps(state, props) {
@@ -24,7 +23,6 @@ function mapStateToProps(state, props) {
         theme: getTheme(state),
         timezones: supportedTimezones,
         initialScrollIndex: index,
-        isLandscape: isLandscape(state),
     };
 }
 

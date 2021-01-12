@@ -9,7 +9,7 @@ import {getConfig} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {getDimensions, isLandscape} from '@selectors/device';
+import {getDimensions} from '@selectors/device';
 
 import EditPost from './edit_post';
 
@@ -18,7 +18,6 @@ function mapStateToProps(state, ownProps) {
 
     return {
         ...getDimensions(state),
-        isLandscape: isLandscape(state),
         maxMessageLength: (config && parseInt(config.MaxPostSize || 0, 10)) || MAX_MESSAGE_LENGTH_FALLBACK,
         post: ownProps.post,
         theme: getTheme(state),

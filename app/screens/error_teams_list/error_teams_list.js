@@ -4,12 +4,9 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    InteractionManager,
-    StyleSheet,
-    View,
-} from 'react-native';
+import {InteractionManager, StyleSheet} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FailedNetworkAction from 'app/components/failed_network_action';
 import Loading from 'app/components/loading';
@@ -86,7 +83,7 @@ export default class ErrorTeamsList extends PureComponent {
         });
 
         return (
-            <View style={style.container}>
+            <SafeAreaView style={style.container}>
                 <StatusBar/>
                 <FailedNetworkAction
                     errorMessage={message}
@@ -94,7 +91,7 @@ export default class ErrorTeamsList extends PureComponent {
                     onRetry={this.getUserInfo}
                     theme={theme}
                 />
-            </View>
+            </SafeAreaView>
         );
     }
 }

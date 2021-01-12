@@ -10,13 +10,14 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {KeyboardTrackingView} from 'react-native-keyboard-tracking-view';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from 'app/components/autocomplete';
+import Autocomplete from 'app/components/autocomplete';
 import ErrorText from 'app/components/error_text';
 import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import TextInputWithLocalizedPlaceholder from 'app/components/text_input_with_localized_placeholder';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+import DEVICE from '@constants/device';
 import {switchKeyboardForCodeBlocks} from 'app/utils/markdown';
 import {
     changeOpacity,
@@ -35,7 +36,6 @@ export default class EditPost extends PureComponent {
         closeButton: PropTypes.object,
         deviceHeight: PropTypes.number,
         deviceWidth: PropTypes.number,
-        isLandscape: PropTypes.bool.isRequired,
         maxMessageLength: PropTypes.number,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
@@ -201,7 +201,7 @@ export default class EditPost extends PureComponent {
     }
 
     render() {
-        const {deviceHeight, deviceWidth, theme, isLandscape} = this.props;
+        const {deviceHeight, deviceWidth, theme} = this.props;
         const {editing, message, error, errorExtra, autocompleteVisible} = this.state;
 
         const style = getStyleSheet(theme);
@@ -225,17 +225,24 @@ export default class EditPost extends PureComponent {
                 displayError = (
                     <View style={[style.errorContainerSplit, {width: deviceWidth}]}>
                         <ErrorText
+                            testID='edit_post.error.text'
                             error={error}
                             textStyle={style.errorWrap}
                         />
-                        <ErrorText error={errorExtra}/>
+                        <ErrorText
+                            testID='edit_post.error.text.extra'
+                            error={errorExtra}
+                        />
                     </View>
                 );
             } else {
                 displayError = (
                     <View style={[style.errorContainer, {width: deviceWidth}]}>
                         <View style={style.errorWrapper}>
-                            <ErrorText error={error}/>
+                            <ErrorText
+                                testID='edit_post.error.text'
+                                error={error}
+                            />
                         </View>
                     </View>
                 );
@@ -250,14 +257,14 @@ export default class EditPost extends PureComponent {
 
         return (
             <>
-                <View
+                <SafeAreaView
                     testID='edit_post.screen'
                     style={style.container}
                 >
                     <StatusBar/>
                     <View style={style.scrollView}>
                         {displayError}
-                        <View style={[inputContainerStyle, padding(isLandscape), {height}]}>
+                        <View style={[inputContainerStyle, {height}]}>
                             <TextInputWithLocalizedPlaceholder
                                 testID='edit_post.input'
                                 ref={this.messageRef}
@@ -277,11 +284,11 @@ export default class EditPost extends PureComponent {
                             />
                         </View>
                     </View>
-                </View>
+                </SafeAreaView>
                 <KeyboardTrackingView style={autocompleteStyles}>
                     <Autocomplete
                         cursorPosition={this.state.cursorPosition}
-                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
+                        maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
                         onChangeText={this.onPostChangeText}
                         value={message}
                         nestedScrollEnabled={true}

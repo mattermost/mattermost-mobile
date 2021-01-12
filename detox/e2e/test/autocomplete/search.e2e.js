@@ -8,7 +8,10 @@
 // *******************************************************************
 
 import {Autocomplete} from '@support/ui/component';
-import {ChannelScreen, SearchScreen} from '@support/ui/screen';
+import {
+    ChannelScreen,
+    SearchScreen,
+} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Autocomplete', () => {
@@ -27,11 +30,11 @@ describe('Autocomplete', () => {
     });
 
     beforeEach(async () => {
-        await SearchScreen.searchInput.atIndex(0).clearText();
+        await SearchScreen.searchInput.clearText();
     });
 
     afterAll(async () => {
-        await device.reloadReactNative();
+        await SearchScreen.cancel();
         await ChannelScreen.logout();
     });
 

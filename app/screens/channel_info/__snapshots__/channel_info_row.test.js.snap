@@ -6,15 +6,12 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
-          "alignItems": "center",
-          "backgroundColor": "#ffffff",
-          "flexDirection": "row",
-          "paddingHorizontal": 15,
-        },
-        null,
-      ]
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#ffffff",
+        "flexDirection": "row",
+        "paddingHorizontal": 15,
+      }
     }
     testID="test-id"
   >

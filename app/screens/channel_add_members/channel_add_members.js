@@ -4,33 +4,28 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {intlShape} from 'react-intl';
-import {
-    Alert,
-    Platform,
-    View,
-} from 'react-native';
+import {Alert, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {popTopScreen, setButtons} from '@actions/navigation';
+import Loading from '@components/loading';
+import CustomList, {FLATLIST, SECTIONLIST} from '@components/custom_list';
+import UserListRow from '@components/custom_list/user_list_row';
+import FormattedText from '@components/formatted_text';
+import KeyboardLayout from '@components/layout/keyboard_layout';
+import SearchBar from '@components/search_bar';
+import StatusBar from '@components/status_bar';
 import {debounce} from '@mm-redux/actions/helpers';
 import {General} from '@mm-redux/constants';
 import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
-
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
-import Loading from 'app/components/loading';
-import CustomList, {FLATLIST, SECTIONLIST} from 'app/components/custom_list';
-import UserListRow from 'app/components/custom_list/user_list_row';
-import FormattedText from 'app/components/formatted_text';
-import KeyboardLayout from 'app/components/layout/keyboard_layout';
-import SearchBar from 'app/components/search_bar';
-import StatusBar from 'app/components/status_bar';
-import {alertErrorIfInvalidPermissions} from 'app/utils/general';
-import {createProfilesSections, loadingText} from 'app/utils/member_list';
+import {alertErrorIfInvalidPermissions} from '@utils/general';
+import {createProfilesSections, loadingText} from '@utils/member_list';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {popTopScreen, setButtons} from 'app/actions/navigation';
+} from '@utils/theme';
 
 export default class ChannelAddMembers extends PureComponent {
     static propTypes = {
@@ -47,7 +42,6 @@ export default class ChannelAddMembers extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         profilesNotInChannel: PropTypes.array.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -287,7 +281,7 @@ export default class ChannelAddMembers extends PureComponent {
 
     render() {
         const {formatMessage} = this.context.intl;
-        const {currentUserId, profilesNotInChannel, theme, isLandscape} = this.props;
+        const {currentUserId, profilesNotInChannel, theme} = this.props;
         const {
             adding,
             loading,
@@ -337,10 +331,15 @@ export default class ChannelAddMembers extends PureComponent {
 
         return (
             <KeyboardLayout>
-                <StatusBar/>
-                <View style={style.searchBar}>
-                    <View style={padding(isLandscape)}>
+                <SafeAreaView
+                    testID='channel_add_members.screen'
+                    edges={['bottom', 'left', 'right']}
+                    style={style.container}
+                >
+                    <StatusBar/>
+                    <View style={style.searchBar}>
                         <SearchBar
+                            testID='channel_add_members.search_bar'
                             ref={this.setSearchBarRef}
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -359,21 +358,20 @@ export default class ChannelAddMembers extends PureComponent {
                             value={term}
                         />
                     </View>
-                </View>
-                <CustomList
-                    data={data}
-                    extraData={selectedIds}
-                    key='custom_list'
-                    listType={listType}
-                    loading={loading}
-                    loadingComponent={this.renderLoading()}
-                    noResults={this.renderNoResults()}
-                    onLoadMore={this.getProfiles}
-                    onRowPress={this.handleSelectProfile}
-                    renderItem={this.renderItem}
-                    theme={theme}
-                    isLandscape={isLandscape}
-                />
+                    <CustomList
+                        data={data}
+                        extraData={selectedIds}
+                        key='custom_list'
+                        listType={listType}
+                        loading={loading}
+                        loadingComponent={this.renderLoading()}
+                        noResults={this.renderNoResults()}
+                        onLoadMore={this.getProfiles}
+                        onRowPress={this.handleSelectProfile}
+                        renderItem={this.renderItem}
+                        theme={theme}
+                    />
+                </SafeAreaView>
             </KeyboardLayout>
         );
     }
@@ -387,11 +385,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         searchBar: {
             marginVertical: 5,
             height: 38,
-            ...Platform.select({
-                ios: {
-                    paddingLeft: 8,
-                },
-            }),
         },
         loadingContainer: {
             alignItems: 'center',

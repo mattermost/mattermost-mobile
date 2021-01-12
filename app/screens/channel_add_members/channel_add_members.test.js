@@ -24,7 +24,6 @@ describe('ChannelAddMembers', () => {
         profilesNotInChannel: [],
         theme: Preferences.THEMES.default,
         componentId: 'component-id',
-        isLandscape: false,
     };
 
     beforeEach(() => {
