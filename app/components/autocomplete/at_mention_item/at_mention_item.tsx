@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -12,7 +11,24 @@ import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+import type {Theme} from '@mm-redux/types/preferences';
+
+interface AtMentionItemProps {
+    firstName: string;
+    isBot: boolean;
+    isCurrentUser: boolean;
+    isGuest: boolean;
+    lastName: string;
+    nickname: string;
+    onPress: (username: string) => void;
+    showFullName: string;
+    testID?: string;
+    theme: Theme;
+    userId: string;
+    username: string;
+}
+
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         row: {
             height: 40,
@@ -43,7 +59,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const AtMentionItem = (props) => {
+const AtMentionItem = (props: AtMentionItemProps) => {
     const insets = useSafeAreaInsets();
     const {
         firstName,
@@ -73,7 +89,7 @@ const AtMentionItem = (props) => {
         }
 
         if (hasNickname) {
-            name += `(${nickname})`;
+            name += name.length > 0 ? `(${nickname})` : nickname;
         }
 
         return name.trim();
@@ -115,11 +131,6 @@ const AtMentionItem = (props) => {
                     numberOfLines={1}
                 >
                     {name}
-                    {isCurrentUser &&
-                    <FormattedText
-                        id='suggestion.mention.you'
-                        defaultMessage='(you)'
-                    />}
                 </Text>
                 }
                 <Text
@@ -127,30 +138,21 @@ const AtMentionItem = (props) => {
                     numberOfLines={1}
                 >
                     {` @${username}`}
+                    {isCurrentUser &&
+                    <FormattedText
+                        id='suggestion.mention.you'
+                        defaultMessage='(you)'
+                    />}
                 </Text>
             </View>
         </TouchableWithFeedback>
     );
 };
 
-AtMentionItem.propTypes = {
-    firstName: PropTypes.string,
-    lastName: PropTypes.string,
-    nickname: PropTypes.string,
-    onPress: PropTypes.func.isRequired,
-    userId: PropTypes.string.isRequired,
-    username: PropTypes.string,
-    isGuest: PropTypes.bool,
-    isBot: PropTypes.bool,
-    theme: PropTypes.object.isRequired,
-    isCurrentUser: PropTypes.bool.isRequired,
-    showFullName: PropTypes.string,
-    testID: PropTypes.string,
-};
-
 AtMentionItem.defaultProps = {
     firstName: '',
     lastName: '',
+    nickname: '',
 };
 
 export default AtMentionItem;
