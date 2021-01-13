@@ -4,7 +4,6 @@
 import {children, field, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import {NotifyProps, Timezone, UserProps} from '@typings/database';
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';

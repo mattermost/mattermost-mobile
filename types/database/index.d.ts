@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export interface NotifyProps {
+interface NotifyProps {
     channel: true;
     desktop: string;
     desktop_sound: true;
@@ -11,12 +11,13 @@ export interface NotifyProps {
     push: string;
 }
 
-export interface UserProps {
+ interface UserProps {
     [userPropsName : string] : any
 }
 
-export interface Timezone {
+ interface Timezone {
     automaticTimezone: string
     manualTimezone: string,
     useAutomaticTimezone: true,
 }
+
