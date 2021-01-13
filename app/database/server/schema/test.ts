@@ -151,7 +151,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'props', type: 'string'},
                         {name: 'root_id', type: 'string'},
                         {name: 'type', type: 'string'},
-                        {name: 'user_id', type: 'string', isIndexed: true}
+                        {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [GROUP]: {
