@@ -25,10 +25,10 @@ export default class MyChannel extends Model {
     /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
     lastViewedAt: number;
 
-    /** mentionsCount : The number of mentions on this channel */
+    /** mentions_count : The number of mentions on this channel */
     mentionsCount: number;
 
-    /** messageCount : The derived number of unread messages on this channel */
+    /** message_count : The derived number of unread messages on this channel */
     messageCount: number;
 
     /** roles : The user's privileges on this channel */

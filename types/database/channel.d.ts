@@ -52,13 +52,13 @@ export default class Channel extends Model {
     /** members : Users belonging to this channel */
     members: ChannelMembership[];
 
-    /** draft : All drafts for this channel */
+    /** drafts : All drafts for this channel */
     drafts: Draft[];
 
     /** groupsInChannel : Every group contained in this channel */
     groupsInChannel: GroupsInChannel[];
 
-    /** posts : all posts made in the channel */
+    /** posts : All posts made in the channel */
     posts: Post[];
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
