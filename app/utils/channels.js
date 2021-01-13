@@ -88,7 +88,7 @@ export function privateChannelJoinPrompt(channel, intl) {
                 id: 'permalink.show_dialog_warn.description',
                 defaultMessage: 'You must join "{channel}" to view this post.',
             }, {
-                channel: channel.name,
+                channel: channel.display_name,
             }),
             [
                 {
