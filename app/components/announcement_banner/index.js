@@ -4,7 +4,6 @@
 import {connect} from 'react-redux';
 
 import {getConfig, getLicense} from '@mm-redux/selectors/entities/general';
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {isLandscape} from 'app/selectors/device';
 
@@ -21,7 +20,6 @@ function mapStateToProps(state) {
         bannerEnabled: config.EnableBanner === 'true' && license.IsLicensed === 'true',
         bannerText: config.BannerText,
         bannerTextColor: config.BannerTextColor || '#000',
-        theme: getTheme(state),
         isLandscape: isLandscape(state),
     };
 }

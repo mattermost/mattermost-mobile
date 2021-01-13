@@ -32,9 +32,9 @@ PODS:
   - libwebp/mux (1.1.0):
     - libwebp/demux
   - libwebp/webp (1.1.0)
-  - MMKV (1.2.2):
-    - MMKVCore (~> 1.2.2)
-  - MMKVCore (1.2.2)
+  - MMKV (1.2.4):
+    - MMKVCore (~> 1.2.4)
+  - MMKVCore (1.2.4)
   - Permission-Camera (2.2.2):
     - RNPermissions
   - Permission-PhotoLibrary (2.2.2):
@@ -212,7 +212,7 @@ PODS:
     - React
   - react-native-cookies (3.2.0):
     - React
-  - react-native-document-picker (4.0.0):
+  - react-native-document-picker (4.1.0):
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
@@ -220,18 +220,18 @@ PODS:
     - React-Core
   - react-native-local-auth (1.6.0):
     - React
-  - react-native-mmkv-storage (0.3.7):
-    - MMKV (= 1.2.2)
+  - react-native-mmkv-storage (0.4.1):
+    - MMKV (= 1.2.4)
     - React
   - react-native-netinfo (5.9.7):
     - React-Core
-  - react-native-notifications (2.1.7):
-    - React
+  - react-native-notifications (3.4.0):
+    - React-Core
   - react-native-passcode-status (1.1.2):
     - React
   - react-native-safe-area (0.5.1):
     - React
-  - react-native-safe-area-context (3.1.8):
+  - react-native-safe-area-context (3.1.9):
     - React-Core
   - react-native-video (5.1.0-alpha8):
     - React
@@ -300,35 +300,35 @@ PODS:
     - React-Core (= 0.63.3)
     - React-cxxreact (= 0.63.3)
     - React-jsi (= 0.63.3)
-  - ReactNativeExceptionHandler (2.10.8):
-    - React
+  - ReactNativeExceptionHandler (2.10.9):
+    - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
-  - ReactNativeNavigation (6.12.2):
-    - React
+  - ReactNativeNavigation (7.3.0):
+    - React-Core
     - React-RCTImage
     - React-RCTText
-    - ReactNativeNavigation/Core (= 6.12.2)
-  - ReactNativeNavigation/Core (6.12.2):
-    - React
+    - ReactNativeNavigation/Core (= 7.3.0)
+  - ReactNativeNavigation/Core (7.3.0):
+    - React-Core
     - React-RCTImage
     - React-RCTText
   - rn-fetch-blob (0.12.0):
     - React-Core
   - RNCAsyncStorage (1.12.1):
     - React-Core
-  - RNCClipboard (1.5.0):
+  - RNCClipboard (1.5.1):
     - React-Core
   - RNCMaskedView (0.1.10):
     - React
-  - RNDeviceInfo (7.0.2):
+  - RNDeviceInfo (7.1.0):
     - React-Core
   - RNDevMenu (4.0.2):
     - React-Core
     - React-Core/DevSupport
     - React-RCTNetwork
-  - RNFastImage (8.3.2):
-    - React
+  - RNFastImage (8.3.4):
+    - React-Core
     - SDWebImage (~> 5.8)
     - SDWebImageWebPCoder (~> 0.6.1)
   - RNFileViewer (2.1.4):
@@ -337,36 +337,38 @@ PODS:
     - React
   - RNKeychain (4.0.5):
     - React
-  - RNLocalize (1.4.2):
+  - RNLocalize (2.0.0):
     - React-Core
   - RNPermissions (2.2.2):
     - React-Core
   - RNReactNativeHapticFeedback (1.11.0):
     - React-Core
-  - RNReanimated (1.13.1):
-    - React
+  - RNReanimated (1.13.2):
+    - React-Core
   - RNRudderSdk (1.0.0):
     - React
     - Rudder
-  - RNScreens (2.11.0):
-    - React
-  - RNSentry (1.9.0):
+  - RNScreens (2.15.0):
     - React-Core
-    - Sentry (~> 5.2.0)
+  - RNSentry (2.0.0):
+    - React-Core
+    - Sentry (~> 6.0.3)
+  - RNShare (4.1.0):
+    - React-Core
   - RNSVG (12.1.0):
     - React
   - RNVectorIcons (7.1.0):
     - React
-  - Rudder (1.0.4)
-  - SDWebImage (5.8.4):
-    - SDWebImage/Core (= 5.8.4)
-  - SDWebImage/Core (5.8.4)
+  - Rudder (1.0.10)
+  - SDWebImage (5.9.4):
+    - SDWebImage/Core (= 5.9.4)
+  - SDWebImage/Core (5.9.4)
   - SDWebImageWebPCoder (0.6.1):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.7)
-  - Sentry (5.2.1):
-    - Sentry/Core (= 5.2.1)
-  - Sentry/Core (5.2.1)
+  - Sentry (6.0.7):
+    - Sentry/Core (= 6.0.7)
+  - Sentry/Core (6.0.7)
   - Swime (3.0.6)
   - XCDYouTubeKit (2.8.2)
   - Yoga (1.14.0)
@@ -439,6 +441,7 @@ DEPENDENCIES:
   - "RNRudderSdk (from `../node_modules/@rudderstack/rudder-sdk-react-native/ios`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
+  - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Swime (= 3.0.6)
@@ -446,7 +449,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
     - boost-for-react-native
     - libwebp
     - MMKV
@@ -588,6 +591,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
+  RNShare:
+    :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
@@ -605,8 +610,8 @@ SPEC CHECKSUMS:
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
   jail-monkey: 80c9e34da2cd54023e5ad08bf7051ec75bd43d5b
   libwebp: 946cb3063cea9236285f7e9a8505d806d30e07f3
-  MMKV: b14909757d8b70e2aa89ff1c6d56a7b239e10a29
-  MMKVCore: 6225324fe5006026bc86ef8641d567e00c6582f3
+  MMKV: f15696ad598023bf6cbb17eadee13efc185c5028
+  MMKVCore: 9a9c10e4faf3b3068367fb2efe5419722f3d2e8a
   Permission-Camera: 375576c57ea625c88137d2cc52ba6dfeb21db036
   Permission-PhotoLibrary: bb20a7ac8aec0f7459558e5fbe2bd0a6f2744be3
   RCTRequired: 48884c74035a0b5b76dbb7a998bd93bcfc5f2047
@@ -622,16 +627,16 @@ SPEC CHECKSUMS:
   React-jsinspector: 8e68ffbfe23880d3ee9bafa8be2777f60b25cbe2
   react-native-cameraroll: 9d2b7c1707204d2040d2812f960c6cebdbd9f670
   react-native-cookies: 854d59c4135c70b92a02ca4930e68e4e2eb58150
-  react-native-document-picker: b3e78a8f7fef98b5cb069f20fc35797d55e68e28
+  react-native-document-picker: 37b870da56cf33b8432212842e3f374b9fe98889
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 32d1ad2c0024ca36161ae0d5c2117e2d6c441f11
   react-native-local-auth: 359af242caa1e5c501ac9dfe33b1e238ad8f08c6
-  react-native-mmkv-storage: a452e035494ecb7f641ec192b2dccdb50021a826
+  react-native-mmkv-storage: ceaec36b6967c680e60f3be5e91ba3f66d488697
   react-native-netinfo: e36c1bb6df27ab84aa933679b3f5bbf9d180b18f
-  react-native-notifications: 24706907104a0f00c35c4bde7e0ca76a50f730e1
+  react-native-notifications: 1e4912c8f11741799c823f263beaf9f7f829955b
   react-native-passcode-status: 88c4f6e074328bc278bd127646b6c694ad5a530a
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
-  react-native-safe-area-context: 01158a92c300895d79dee447e980672dc3fb85a6
+  react-native-safe-area-context: 86612d2c9a9e94e288319262d10b5f93f0b395f5
   react-native-video: 8d97379f3c2322a569f1e27542ad1a646cad9444
   react-native-webview: 0d1c2b4e7ffb0543a74fa0512f2f8dc5fb0e49e2
   React-RCTActionSheet: 53ea72699698b0b47a6421cb1c8b4ab215a774aa
@@ -644,37 +649,38 @@ SPEC CHECKSUMS:
   React-RCTText: 65a6de06a7389098ce24340d1d3556015c38f746
   React-RCTVibration: 8e9fb25724a0805107fc1acc9075e26f814df454
   ReactCommon: 4167844018c9ed375cc01a843e9ee564399e53c3
-  ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
+  ReactNativeExceptionHandler: f1638ffd507ef1b1794af25884fa0eb30dd5c551
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
-  ReactNativeNavigation: aefc8debafb4a374575adafb44a3352b9d5b618a
+  ReactNativeNavigation: c2dcda2b86e32090c443182206c915107d03106f
   rn-fetch-blob: 17961aec08caae68bb8fc0e5b40f93b3acfa6932
   RNCAsyncStorage: cb9a623793918c6699586281f0b51cbc38f046f9
-  RNCClipboard: 8f9f12fabf3c06e976f19f87a62c89e28dfedfca
+  RNCClipboard: 5e299c6df8e0c98f3d7416b86ae563d3a9f768a3
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
-  RNDeviceInfo: a37a15a98822c31c3982cb28eba6d336ba4d0968
+  RNDeviceInfo: 2c198acf2cef2dc8e5bf2b502fdde0e7e5ef3520
   RNDevMenu: 9f80d65b80ba1fa84e5361d017b8c854a2f05005
-  RNFastImage: e19ba191922e7dab9d932a4d59d62d76660aa222
+  RNFastImage: d4870d58f5936111c56218dbd7fcfc18e65b58ff
   RNFileViewer: 83cc066ad795b1f986791d03b56fe0ee14b6a69f
   RNGestureHandler: 7a5833d0f788dbd107fbb913e09aa0c1ff333c39
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
-  RNLocalize: 4071198b59b461f3b74eebc5fee8c50f13e39e79
+  RNLocalize: dc432c370fe76ad48cb380386232ca68d534a52a
   RNPermissions: 067727df624665d4a6c8e2cffcc172ba608b96ed
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
-  RNReanimated: dd8c286ab5dd4ba36d3a7fef8bff7e08711b5476
+  RNReanimated: e03f7425cb7a38dcf1b644d680d1bfc91c3337ad
   RNRudderSdk: 5d99b1a5a582ab55d6213b38018d35e98818af63
-  RNScreens: 0e91da98ab26d5d04c7b59a9b6bd694124caf88c
-  RNSentry: 1adaa43b01c6a3ab5091d4d1add66b7c58558898
+  RNScreens: 2ad555d4d9fa10b91bb765ca07fe9b29d59573f0
+  RNSentry: cb4ef23400fb6690f6ac8f6acef0c023a8a4f37d
+  RNShare: 106a76243ac90f43ddb9028dcb78ade406b8adff
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNVectorIcons: bc69e6a278b14842063605de32bec61f0b251a59
-  Rudder: 57a48709b714c4746a96f4d4d00f33e78a62a5ee
-  SDWebImage: cf6922231e95550934da2ada0f20f2becf2ceba9
+  Rudder: 05e61fe2e59bcd65931f4a47d21011e15adf7159
+  SDWebImage: b69257f4ab14e9b6a2ef53e910fdf914d8f757c1
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
-  Sentry: 7d075cae43a9a518fdd51e258b6212f0527c51cd
+  Sentry: e2c691627ae1dc0029acebbd1b0b4af4df12af73
   Swime: d7b2c277503b6cea317774aedc2dce05613f8b0b
   XCDYouTubeKit: 79baadb0560673a67c771eba45f83e353fd12c1f
   Yoga: 7d13633d129fd179e01b8953d38d47be90db185a
   YoutubePlayer-in-WKWebView: af2f5929fc78882d94bfdfeea999b661b78d9717
 
-PODFILE CHECKSUM: 1aabd16b6a9ed2037b4d7443027d222817790468
+PODFILE CHECKSUM: 876d4bb13b09f8d0961bb18b2338fc5936aa5e63
 
 COCOAPODS: 1.10.0.rc.1

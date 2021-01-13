@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dimensions, Keyboard} from 'react-native';
+import {Dimensions, Keyboard, Platform} from 'react-native';
 
-import {showModalOverCurrentContext} from '@actions/navigation';
+import {goToScreen} from '@actions/navigation';
 import {DeviceTypes} from '@constants';
 import {
     IMAGE_MAX_HEIGHT,
@@ -12,8 +12,7 @@ import {
     VIEWPORT_IMAGE_OFFSET,
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
-
-let previewComponents;
+import {isImage} from './file';
 
 export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
@@ -77,39 +76,81 @@ export function getViewPortWidth(isReplyPost, permanentSidebar = false) {
     return portraitPostWidth;
 }
 
-export function previewImageAtIndex(components, index, files) {
-    previewComponents = components;
-    const component = components[index];
-    if (component) {
-        component.measure((rx, ry, width, height, x, y) => {
-            Keyboard.dismiss();
-            requestAnimationFrame(() => {
-                const screen = 'ImagePreview';
-                const passProps = {
-                    index,
-                    origin: {x, y, width, height},
-                    target: {x: 0, y: 0, opacity: 1},
-                    files,
-                    getItemMeasures,
-                };
-                showModalOverCurrentContext(screen, passProps);
+export function openGalleryAtIndex(index, files) {
+    Keyboard.dismiss();
+    requestAnimationFrame(() => {
+        const screen = 'Gallery';
+        const passProps = {
+            index,
+            files,
+        };
+        const windowHeight = Dimensions.get('window').height;
+        const sharedElementTransitions = [];
+        const contentPush = {};
+        const contentPop = {};
+        const file = files[index];
+
+        if (isImage(file)) {
+            sharedElementTransitions.push({
+                fromId: `image-${file.id}`,
+                toId: `gallery-${file.id}`,
+                interpolation: {mode: 'overshoot'},
             });
-        });
-    }
-}
+        } else {
+            contentPush.y = {
+                from: windowHeight,
+                to: 0,
+                duration: 300,
+                interpolation: {mode: 'decelerate'},
+            };
 
-function getItemMeasures(index, cb) {
-    const activeComponent = previewComponents[index];
+            if (Platform.OS === 'ios') {
+                contentPop.translationY = {
+                    from: 0,
+                    to: windowHeight,
+                    duration: 300,
+                };
+            } else {
+                contentPop.y = {
+                    from: 0,
+                    to: windowHeight,
+                    duration: 300,
+                };
+                contentPop.alpha = {
+                    from: 1,
+                    to: 0,
+                    duration: 100,
+                };
+            }
+        }
 
-    if (!activeComponent) {
-        cb(null);
-        return;
-    }
+        const options = {
+            layout: {
+                backgroundColor: '#000',
+                componentBackgroundColor: '#000',
+                orientation: ['portrait', 'landscape'],
+            },
+            topBar: {
+                background: {
+                    color: '#000',
+                },
+                visible: Platform.OS === 'android',
+            },
+            animations: {
+                push: {
+                    waitForRender: true,
+                    sharedElementTransitions,
+                    ...Platform.select({ios: {
+                        content: contentPush,
+                    }}),
+                },
+                pop: {
+                    content: contentPop,
+                },
+            },
+        };
 
-    activeComponent.measure((rx, ry, width, height, x, y) => {
-        cb({
-            origin: {x, y, width, height},
-        });
+        goToScreen(screen, '', passProps, options);
     });
 }
 

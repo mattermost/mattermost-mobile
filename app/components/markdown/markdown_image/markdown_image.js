@@ -6,13 +6,13 @@ import React from 'react';
 import {intlShape} from 'react-intl';
 import {
     Alert,
-    Linking,
     Platform,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
+import parseUrl from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
 import ImageViewPort from '@components/image_viewport';
@@ -22,8 +22,9 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {CustomPropTypes} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
 import BottomSheet from '@utils/bottom_sheet';
-import {calculateDimensions, getViewPortWidth, isGifTooLarge, previewImageAtIndex} from '@utils/images';
-import {normalizeProtocol} from '@utils/url';
+import {generateId} from '@utils/file';
+import {calculateDimensions, getViewPortWidth, isGifTooLarge, openGalleryAtIndex} from '@utils/images';
+import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -33,11 +34,13 @@ const ANDROID_MAX_WIDTH = 4096;
 export default class MarkdownImage extends ImageViewPort {
     static propTypes = {
         children: PropTypes.node,
-        imagesMetadata: PropTypes.object,
-        linkDestination: PropTypes.string,
-        isReplyPost: PropTypes.bool,
-        source: PropTypes.string.isRequired,
+        disable: PropTypes.bool,
         errorTextStyle: CustomPropTypes.Style,
+        imagesMetadata: PropTypes.object,
+        isReplyPost: PropTypes.bool,
+        linkDestination: PropTypes.string,
+        postId: PropTypes.string,
+        source: PropTypes.string.isRequired,
     };
 
     static contextTypes = {
@@ -47,22 +50,39 @@ export default class MarkdownImage extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        const dimensions = props.imagesMetadata?.[props.source];
+        const metadata = props.imagesMetadata?.[props.source];
+        this.fileId = generateId();
         this.state = {
-            originalHeight: dimensions?.height || 0,
-            originalWidth: dimensions?.width || 0,
-            failed: false,
+            originalHeight: metadata?.height || 0,
+            originalWidth: metadata?.width || 0,
+            failed: isGifTooLarge(metadata),
             uri: null,
         };
     }
 
-    setImageRef = (ref) => {
-        this.imageRef = ref;
-    }
+    getFileInfo = () => {
+        const {originalHeight, originalWidth} = this.state;
+        const link = decodeURIComponent(this.getSource());
+        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
+        let extension = filename.split('.').pop();
 
-    setItemRef = (ref) => {
-        this.itemRef = ref;
-    }
+        if (extension === filename) {
+            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
+            filename = `${filename}${ext}`;
+            extension = ext;
+        }
+
+        return {
+            id: this.fileId,
+            name: filename,
+            extension,
+            has_preview_image: true,
+            post_id: this.props.postId,
+            uri: link,
+            width: originalWidth,
+            height: originalHeight,
+        };
+    };
 
     getSource = () => {
         let uri = this.props.source;
@@ -105,7 +125,7 @@ export default class MarkdownImage extends ImageViewPort {
         const url = normalizeProtocol(this.props.linkDestination);
         const {intl} = this.context;
 
-        Linking.openURL(url).catch(() => {
+        const onError = () => {
             Alert.alert(
                 intl.formatMessage({
                     id: 'mobile.link.error.title',
@@ -116,7 +136,9 @@ export default class MarkdownImage extends ImageViewPort {
                     defaultMessage: 'Unable to open the link.',
                 }),
             );
-        });
+        };
+
+        tryOpenURL(url, onError);
     };
 
     handleLinkLongPress = async () => {
@@ -143,45 +165,27 @@ export default class MarkdownImage extends ImageViewPort {
     };
 
     handlePreviewImage = () => {
-        const {
-            originalHeight,
-            originalWidth,
-        } = this.state;
-        const link = this.getSource();
-        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
-        const extension = filename.split('.').pop();
-
-        if (extension === filename) {
-            const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
-            filename = `${filename}${ext}`;
+        if (this.props.disable) {
+            return;
         }
 
-        const files = [{
-            caption: filename,
-            dimensions: {
-                width: originalWidth,
-                height: originalHeight,
-            },
-            source: {link},
-            data: {
-                localPath: link,
-            },
-        }];
-
-        previewImageAtIndex([this.itemRef], 0, files);
+        const files = [this.getFileInfo()];
+        openGalleryAtIndex(0, files);
     };
 
     render() {
-        if (isGifTooLarge(this.props.imagesMetadata?.[this.props.source])) {
-            return null;
-        }
-
         let image = null;
-        const {originalHeight, originalWidth} = this.state;
-        const uri = this.getSource();
-        const {height, width} = calculateDimensions(originalHeight, originalWidth, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
+        const fileInfo = this.getFileInfo();
+        const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, getViewPortWidth(this.props.isReplyPost, this.hasPermanentSidebar()));
 
-        if (width && height) {
+        if (this.state.failed) {
+            image = (
+                <CompassIcon
+                    name='jumbo-attachment-image-broken'
+                    size={24}
+                />
+            );
+        } else if (width && height) {
             if (Platform.OS === 'android' && (width > ANDROID_MAX_WIDTH || height > ANDROID_MAX_HEIGHT)) {
                 // Android has a cap on the max image size that can be displayed
 
@@ -202,8 +206,8 @@ export default class MarkdownImage extends ImageViewPort {
             } else {
                 // React Native complains if we try to pass resizeMode as a style
                 let source = null;
-                if (uri) {
-                    source = {uri};
+                if (fileInfo.uri) {
+                    source = {uri: fileInfo.uri};
                 }
 
                 image = (
@@ -213,7 +217,7 @@ export default class MarkdownImage extends ImageViewPort {
                         style={{width, height}}
                     >
                         <ProgressiveImage
-                            ref={this.setImageRef}
+                            id={fileInfo.id}
                             defaultSource={source}
                             resizeMode='contain'
                             style={{width, height}}
@@ -221,13 +225,6 @@ export default class MarkdownImage extends ImageViewPort {
                     </TouchableWithFeedback>
                 );
             }
-        } else if (this.state.failed) {
-            image = (
-                <CompassIcon
-                    name='jumbo-attachment-image-broken'
-                    size={24}
-                />
-            );
         }
 
         if (image && this.props.linkDestination) {
@@ -242,10 +239,7 @@ export default class MarkdownImage extends ImageViewPort {
         }
 
         return (
-            <View
-                ref={this.setItemRef}
-                style={style.container}
-            >
+            <View style={style.container}>
                 {image}
             </View>
         );

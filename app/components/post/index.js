@@ -14,7 +14,6 @@ import {isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import {isPostFlagged, isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import {insertToDraft, setPostTooltipVisible} from 'app/actions/views/channel';
-import {isLandscape} from 'app/selectors/device';
 
 import Post from './post';
 
@@ -86,7 +85,6 @@ function makeMapStateToProps() {
             theme: getTheme(state),
             isFlagged: isPostFlagged(post.id, myPreferences),
             isCommentMention,
-            isLandscape: isLandscape(state),
             previousPostExists: Boolean(previousPost),
             beforePrevPostUserId: (beforePrevPost ? beforePrevPost.user_id : null),
         };

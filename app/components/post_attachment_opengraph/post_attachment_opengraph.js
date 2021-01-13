@@ -3,15 +3,19 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Linking, Text, View} from 'react-native';
+import {Alert, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {intlShape} from 'react-intl';
+import parseUrl from 'url-parse';
 
 import {TABLET_WIDTH} from '@components/sidebars/drawer_layout';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {DeviceTypes} from '@constants';
-import {previewImageAtIndex, calculateDimensions} from '@utils/images';
+import {generateId} from '@utils/file';
+import {openGalleryAtIndex, calculateDimensions} from '@utils/images';
 import {getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {tryOpenURL} from '@utils/url';
 
 const MAX_IMAGE_HEIGHT = 150;
 const VIEWPORT_IMAGE_OFFSET = 93;
@@ -25,12 +29,18 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         isReplyPost: PropTypes.bool,
         link: PropTypes.string.isRequired,
         openGraphData: PropTypes.object,
+        postId: PropTypes.string,
         theme: PropTypes.object.isRequired,
+    };
+
+    static contextTypes = {
+        intl: intlShape.isRequired,
     };
 
     constructor(props) {
         super(props);
 
+        this.fileId = generateId();
         this.state = this.getBestImageUrlAndDimensions(props.openGraphData);
     }
 
@@ -45,10 +55,6 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     componentWillUnmount() {
         this.mounted = false;
     }
-
-    setItemRef = (ref) => {
-        this.itemRef = ref;
-    };
 
     getBestImageUrlAndDimensions = (data) => {
         if (!data || !data.images) {
@@ -93,8 +99,9 @@ export default class PostAttachmentOpenGraph extends PureComponent {
         };
     };
 
-    getFilename = (link) => {
-        let filename = link.substring(link.lastIndexOf('/') + 1, link.indexOf('?') === -1 ? link.length : link.indexOf('?'));
+    getFilename = (uri) => {
+        const link = decodeURIComponent(uri);
+        let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
         const extension = filename.split('.').pop();
 
         if (extension === filename) {
@@ -152,7 +159,21 @@ export default class PostAttachmentOpenGraph extends PureComponent {
     };
 
     goToLink = () => {
-        Linking.openURL(this.props.link);
+        const {intl} = this.context;
+        const onError = () => {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                intl.formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
+        };
+
+        tryOpenURL(this.props.link, onError);
     };
 
     handlePreviewImage = () => {
@@ -163,20 +184,20 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             originalHeight,
         } = this.state;
         const filename = this.getFilename(link);
+        const extension = filename.split('.').pop();
 
         const files = [{
-            caption: filename,
-            dimensions: {
-                width: originalWidth,
-                height: originalHeight,
-            },
-            source: {uri},
-            data: {
-                localPath: uri,
-            },
+            id: this.fileId,
+            name: filename,
+            extension,
+            has_preview_image: true,
+            post_id: this.props.postId,
+            uri,
+            width: originalWidth,
+            height: originalHeight,
         }];
 
-        previewImageAtIndex([this.itemRef], 0, files);
+        openGalleryAtIndex(0, files);
     };
 
     renderDescription = () => {
@@ -205,22 +226,19 @@ export default class PostAttachmentOpenGraph extends PureComponent {
             return null;
         }
 
-        const {height, imageUrl, width} = this.state;
+        const {height, openGraphImageUrl, width} = this.state;
 
         let source;
-        if (imageUrl) {
+        if (openGraphImageUrl) {
             source = {
-                uri: imageUrl,
+                uri: openGraphImageUrl,
             };
         }
 
         const style = getStyleSheet(this.props.theme);
 
         return (
-            <View
-                ref={this.setItemRef}
-                style={[style.imageContainer, {width, height}]}
-            >
+            <View style={[style.imageContainer, {width, height}]}>
                 <TouchableWithFeedback
                     onPress={this.handlePreviewImage}
                     type={'none'}
@@ -229,6 +247,7 @@ export default class PostAttachmentOpenGraph extends PureComponent {
                         style={[style.image, {width, height}]}
                         source={source}
                         resizeMode='contain'
+                        nativeID={`image-${this.fileId}`}
                     />
                 </TouchableWithFeedback>
             </View>

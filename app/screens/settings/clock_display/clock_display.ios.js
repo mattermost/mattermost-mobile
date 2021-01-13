@@ -4,6 +4,7 @@ import React from 'react';
 import {
     View,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import StatusBar from 'app/components/status_bar';
 import Section from 'app/screens/settings/section';
@@ -17,12 +18,15 @@ import ClockDisplayBase from './clock_display_base';
 
 export default class ClockDisplay extends ClockDisplayBase {
     render() {
-        const {theme, isLandscape} = this.props;
+        const {theme} = this.props;
         const {newMilitaryTime} = this.state;
         const style = getStyleSheet(theme);
 
         return (
-            <View style={style.container}>
+            <SafeAreaView
+                edges={['left', 'right']}
+                style={style.container}
+            >
                 <StatusBar/>
                 <View style={style.wrapper}>
                     <Section
@@ -30,7 +34,6 @@ export default class ClockDisplay extends ClockDisplayBase {
                         footerId={t('user.settings.display.preferTime')}
                         footerDefaultMessage='Select how you prefer time displayed.'
                         theme={theme}
-                        isLandscape={isLandscape}
                     >
                         <SectionItem
                             label={(
@@ -44,7 +47,6 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionValue='false'
                             selected={newMilitaryTime === 'false'}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
                         <View style={style.divider}/>
                         <SectionItem
@@ -59,11 +61,10 @@ export default class ClockDisplay extends ClockDisplayBase {
                             actionValue='true'
                             selected={newMilitaryTime === 'true'}
                             theme={theme}
-                            isLandscape={isLandscape}
                         />
                     </Section>
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 }

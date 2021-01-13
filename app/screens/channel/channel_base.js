@@ -19,7 +19,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {setNavigatorStyles} from '@utils/theme';
 import tracker from '@utils/time_tracker';
 
-import PushNotifications from 'app/push_notifications';
+import PushNotifications from '@init/push_notifications';
 import telemetry from 'app/telemetry';
 
 export let ClientUpgradeListener;
@@ -184,7 +184,7 @@ export default class ChannelBase extends PureComponent {
                     leftButtons: [{
                         id: 'close-info',
                         icon: source,
-                        testID: 'screen.channel_info.close',
+                        testID: 'close.channel_info.button',
                     }],
                 },
             };
@@ -233,6 +233,15 @@ export default class ChannelBase extends PureComponent {
         }
     };
 
+    retryLoad = () => {
+        const {currentTeamId, actions} = this.props;
+        if (currentTeamId) {
+            this.loadChannels(currentTeamId);
+        } else {
+            actions.selectDefaultTeam();
+        }
+    }
+
     retryLoadChannels = () => {
         this.loadChannels(this.props.currentTeamId);
     };
@@ -270,6 +279,7 @@ export default class ChannelBase extends PureComponent {
                 <Loading
                     channelIsLoading={true}
                     color={theme.centerChannelColor}
+                    retryLoad={this.retryLoad}
                 />
             );
         }

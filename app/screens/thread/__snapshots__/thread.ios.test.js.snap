@@ -2,7 +2,7 @@
 
 exports[`thread should match snapshot, has root post 1`] = `
 <React.Fragment>
-  <Connect(SafeAreaIos)
+  <Connect(SafeArea)
     excludeHeader={true}
     forceInsets={true}
   >
@@ -23,6 +23,7 @@ exports[`thread should match snapshot, has root post 1`] = `
             "paddingBottom": 0,
           }
         }
+        testID="thread.screen"
       >
         <Connect(PostList)
           currentUserId="member_user_id"
@@ -46,10 +47,24 @@ exports[`thread should match snapshot, has root post 1`] = `
             />
           }
           scrollViewNativeID="threadPostList"
+          testID="thread.post_list"
         />
       </ForwardRef(AnimatedComponentWrapper)>
     </React.Fragment>
-  </Connect(SafeAreaIos)>
+  </Connect(SafeArea)>
+  <View
+    nativeID="threadAccessoriesContainer"
+  >
+    <Connect(Autocomplete)
+      channelId="channel_id"
+      cursorPositionEvent="onThreadTextBoxCursorChange"
+      maxHeight={200}
+      offsetY={0}
+      onChangeText={[Function]}
+      rootId="root_id"
+      valueEvent="onThreadTextBoxValueChange"
+    />
+  </View>
   <Connect(PostDraft)
     accessoriesContainerID="threadAccessoriesContainer"
     channelId="channel_id"
@@ -58,26 +73,15 @@ exports[`thread should match snapshot, has root post 1`] = `
     registerTypingAnimation={[Function]}
     rootId="root_id"
     scrollViewNativeID="threadPostList"
+    testID="thread.post_draft"
     valueEvent="onThreadTextBoxValueChange"
   />
-  <View
-    nativeID="threadAccessoriesContainer"
-  >
-    <Connect(Autocomplete)
-      channelId="channel_id"
-      cursorPositionEvent="onThreadTextBoxCursorChange"
-      maxHeight={200}
-      onChangeText={[Function]}
-      rootId="root_id"
-      valueEvent="onThreadTextBoxValueChange"
-    />
-  </View>
 </React.Fragment>
 `;
 
 exports[`thread should match snapshot, no root post, loading 1`] = `
 <React.Fragment>
-  <Connect(SafeAreaIos)
+  <Connect(SafeArea)
     excludeHeader={true}
     forceInsets={true}
   >
@@ -95,7 +99,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
       size="large"
       style={Object {}}
     />
-  </Connect(SafeAreaIos)>
+  </Connect(SafeArea)>
   <View
     nativeID="threadAccessoriesContainer"
   >
@@ -103,6 +107,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
       channelId="channel_id"
       cursorPositionEvent="onThreadTextBoxCursorChange"
       maxHeight={200}
+      offsetY={0}
       onChangeText={[Function]}
       rootId="root_id"
       valueEvent="onThreadTextBoxValueChange"
@@ -134,6 +139,7 @@ exports[`thread should match snapshot, render footer 1`] = `
     />
   }
   scrollViewNativeID="threadPostList"
+  testID="thread.post_list"
 />
 `;
 
@@ -154,12 +160,13 @@ exports[`thread should match snapshot, render footer 2`] = `
   }
   renderFooter={null}
   scrollViewNativeID="threadPostList"
+  testID="thread.post_list"
 />
 `;
 
 exports[`thread should match snapshot, render footer 3`] = `
 <React.Fragment>
-  <Connect(SafeAreaIos)
+  <Connect(SafeArea)
     excludeHeader={true}
     forceInsets={true}
   >
@@ -177,7 +184,7 @@ exports[`thread should match snapshot, render footer 3`] = `
       size="large"
       style={Object {}}
     />
-  </Connect(SafeAreaIos)>
+  </Connect(SafeArea)>
   <View
     nativeID="threadAccessoriesContainer"
   >
@@ -185,6 +192,7 @@ exports[`thread should match snapshot, render footer 3`] = `
       channelId="channel_id"
       cursorPositionEvent="onThreadTextBoxCursorChange"
       maxHeight={200}
+      offsetY={0}
       onChangeText={[Function]}
       rootId="root_id"
       valueEvent="onThreadTextBoxValueChange"

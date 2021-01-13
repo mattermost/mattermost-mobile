@@ -10,13 +10,12 @@ import {
     Platform,
 } from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
     getKeyboardAppearanceFromTheme,
-} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+} from '@utils/theme';
 
 export default class TextSetting extends PureComponent {
     static propTypes = {
@@ -39,7 +38,6 @@ export default class TextSetting extends PureComponent {
         onChange: PropTypes.func.isRequired,
         value: PropTypes.string.isRequired,
         multiline: PropTypes.bool,
-        isLandscape: PropTypes.bool.isRequired,
         keyboardType: PropTypes.oneOf([
             'default',
             'number-pad',
@@ -57,7 +55,6 @@ export default class TextSetting extends PureComponent {
         disabled: false,
         multiline: false,
         keyboardType: 'default',
-        isLandscape: false,
         secureTextEntry: false,
     };
 
@@ -78,7 +75,6 @@ export default class TextSetting extends PureComponent {
             errorText,
             value,
             multiline,
-            isLandscape,
             secureTextEntry,
         } = this.props;
         const style = getStyleSheet(theme);
@@ -151,12 +147,12 @@ export default class TextSetting extends PureComponent {
 
         return (
             <View>
-                <View style={[style.titleContainer, padding(isLandscape)]}>
+                <View style={style.titleContainer}>
                     {labelContent}
                     {asterisk}
                     {optionalContent}
                 </View>
-                <View style={[style.inputContainer, padding(isLandscape), noediting]}>
+                <View style={[style.inputContainer, noediting]}>
                     <View>
                         <TextInput
                             value={value}
@@ -177,7 +173,7 @@ export default class TextSetting extends PureComponent {
                         />
                     </View>
                 </View>
-                <View style={padding(isLandscape)}>
+                <View>
                     {disabledTextContent}
                     {helpTextContent}
                     {errorTextContent}

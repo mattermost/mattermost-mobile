@@ -21,7 +21,6 @@ describe('ChannelMembers', () => {
             searchProfiles: jest.fn(),
         },
         componentId: 'component-id',
-        isLandscape: false,
     };
 
     beforeAll(() => {

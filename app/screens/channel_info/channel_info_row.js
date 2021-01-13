@@ -13,7 +13,6 @@ import {
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 function createTouchableComponent(children, action) {
@@ -25,7 +24,7 @@ function createTouchableComponent(children, action) {
 }
 
 function channelInfoRow(props) {
-    const {action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender, isLandscape} = props;
+    const {testID, action, defaultMessage, detail, icon, iconColor, image, imageTintColor, rightArrow, textColor, textId, togglable, theme, shouldRender} = props;
 
     if (!shouldRender) {
         return null;
@@ -70,7 +69,10 @@ function channelInfoRow(props) {
     }
 
     const RowComponent = (
-        <View style={[style.container, padding(isLandscape)]}>
+        <View
+            testID={testID}
+            style={style.container}
+        >
             {iconElement}
             <FormattedText
                 style={[style.label, {color: textColor || theme.centerChannelColor}]}
@@ -90,6 +92,7 @@ function channelInfoRow(props) {
 }
 
 channelInfoRow.propTypes = {
+    testID: PropTypes.string,
     action: PropTypes.func.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     detail: PropTypes.oneOfType([

@@ -12,13 +12,14 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class ErrorText extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         error: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
         textStyle: CustomPropTypes.Style,
         theme: PropTypes.object.isRequired,
     };
 
     render() {
-        const {error, textStyle, theme} = this.props;
+        const {testID, error, textStyle, theme} = this.props;
         if (!error) {
             return null;
         }
@@ -29,7 +30,7 @@ export default class ErrorText extends PureComponent {
         if (intl) {
             return (
                 <FormattedText
-                    testID='error_text'
+                    testID={testID}
                     id={intl.id}
                     defaultMessage={intl.defaultMessage}
                     values={intl.values}
@@ -40,7 +41,7 @@ export default class ErrorText extends PureComponent {
 
         return (
             <Text
-                testID='error_text'
+                testID={testID}
                 style={[GlobalStyles.errorLabel, style.errorLabel, textStyle]}
             >
                 {error.message || error}

@@ -6,20 +6,30 @@ import {v4 as uuidv4} from 'uuid';
 /**
  * Explicit `wait` should not normally used but made available for special cases.
  * @param {number} ms - duration in millisecond
+ * @return {Promise} promise with timeout
  */
 export const wait = async (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+/**
+ * Check if android.
+ * @return {boolean} true if android
+ */
 export const isAndroid = () => {
     return device.getPlatform() === 'android';
 };
 
+/**
+ * Check if ios.
+ * @return {boolean} true if ios
+ */
 export const isIos = () => {
     return device.getPlatform() === 'ios';
 };
 
 /**
+ * Get random id.
  * @param {number} length - length on random string to return, e.g. 6 (default)
  * @return {string} random string
  */
@@ -30,6 +40,7 @@ export const getRandomId = (length = 6) => {
 };
 
 /**
+ * Capitalize first character of text.
  * @param {string} text
  * @return {string} capitalized text
  */

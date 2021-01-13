@@ -9,12 +9,11 @@ import {
     Switch,
 } from 'react-native';
 
-import FormattedText from 'app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-} from 'app/utils/theme';
-import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
+} from '@utils/theme';
 
 export default class BoolSetting extends PureComponent {
     static propTypes = {
@@ -33,11 +32,6 @@ export default class BoolSetting extends PureComponent {
         optional: PropTypes.bool,
         theme: PropTypes.object.isRequired,
         onChange: PropTypes.func.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
-    };
-
-    static defaultProps = {
-        isLandscape: false,
     };
 
     handleChange = (value) => {
@@ -53,7 +47,6 @@ export default class BoolSetting extends PureComponent {
             errorText,
             optional,
             theme,
-            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -104,27 +97,27 @@ export default class BoolSetting extends PureComponent {
         }
 
         return (
-            <React.Fragment>
-                <View style={padding(isLandscape)}>
+            <>
+                <View>
                     {labelContent}
                 </View>
                 <View style={style.separator}/>
                 <View style={style.inputContainer}>
-                    <Text style={[style.placeholderText, padding(isLandscape)]}>
+                    <Text style={style.placeholderText}>
                         {placeholder}
                     </Text>
                     <Switch
                         onValueChange={this.handleChange}
                         value={value}
-                        style={[style.inputSwitch, padding(isLandscape)]}
+                        style={style.inputSwitch}
                     />
                 </View>
                 <View style={style.separator}/>
-                <View style={padding(isLandscape)}>
+                <View>
                     {helpTextContent}
                     {errorTextContent}
                 </View>
-            </React.Fragment>
+            </>
         );
     }
 }

@@ -20,7 +20,6 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
         }).isRequired,
         allowDismissal: PropTypes.bool.isRequired,
         bannerText: PropTypes.string.isRequired,
-        isLandscape: PropTypes.bool,
         theme: PropTypes.object.isRequired,
     }
 
@@ -39,7 +38,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
     };
 
     render() {
-        const {allowDismissal, isLandscape, theme} = this.props;
+        const {allowDismissal, theme} = this.props;
         const style = getStyleSheet(theme);
 
         let dismissButton = null;
@@ -61,10 +60,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
         }
 
         return (
-            <SafeAreaView
-                excludeHeader={true}
-                useLandscapeMargin={isLandscape}
-            >
+            <SafeAreaView excludeHeader={true}>
                 <View style={style.container}>
                     <ScrollView
                         style={style.scrollContainer}
@@ -73,6 +69,7 @@ export default class ExpandedAnnouncementBanner extends React.PureComponent {
                         <Markdown
                             baseTextStyle={style.baseTextStyle}
                             blockStyles={getMarkdownBlockStyles(theme)}
+                            disableGallery={true}
                             onChannelLinkPress={this.handleChannelLinkPress}
                             textStyles={getMarkdownTextStyles(theme)}
                             value={this.props.bannerText}

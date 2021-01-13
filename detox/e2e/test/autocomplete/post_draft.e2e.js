@@ -7,60 +7,70 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {logoutUser, toChannelScreen} from '@support/ui/screen';
+import {Autocomplete} from '@support/ui/component';
+import {ChannelScreen} from '@support/ui/screen';
 import {Setup} from '@support/server_api';
 
 describe('Autocomplete', () => {
+    const {postInput} = ChannelScreen;
+    const {
+        atMentionSuggestionList,
+        channelMentionSuggestionList,
+        emojiSuggestionList,
+        slashSuggestionList,
+    } = Autocomplete;
+
     beforeAll(async () => {
         const {user} = await Setup.apiInit();
-        await toChannelScreen(user);
+
+        // # Open channel screen
+        await ChannelScreen.open(user);
     });
 
     beforeEach(async () => {
-        // # Select post draft
-        await expect(element(by.id('channel_screen'))).toBeVisible();
-        await element(by.id('post_input')).clearText();
-        await element(by.id('post_input')).tap();
+        // # Clear text on input
+        await postInput.clearText();
+        await postInput.tap();
     });
 
     afterAll(async () => {
-        await element(by.id('post_input')).clearText();
-        await logoutUser();
+        await postInput.clearText();
+        await ChannelScreen.logout();
     });
 
     it('MM-T3392_1 should render emoji_suggestion component', async () => {
         // # Type ":" to activate emoji suggestions
-        await expect(element(by.id('autocomplete.emoji_suggestion.list'))).not.toExist();
-        await element(by.id('post_input')).typeText(':');
+        await expect(emojiSuggestionList).not.toExist();
+        await postInput.typeText(':');
 
         // * Expect emoji suggestions to render
-        await expect(element(by.id('autocomplete.emoji_suggestion.list'))).toExist();
+        await expect(emojiSuggestionList).toExist();
     });
 
     it('MM-T3392_2 should render at_mention component', async () => {
         // # Type "@" to activate at mention autocomplete
-        await expect(element(by.id('autocomplete.at_mention.list'))).not.toExist();
-        await element(by.id('post_input')).typeText('@');
+        await expect(atMentionSuggestionList).not.toExist();
+        await postInput.typeText('@');
 
         // * Expect at mention autocomplete to render
-        await expect(element(by.id('autocomplete.at_mention.list'))).toExist();
+        await expect(atMentionSuggestionList).toExist();
     });
 
     it('MM-T3392_3 should render channel_mention component', async () => {
         // # Type "~" to activate channel mention autocomplete
-        await expect(element(by.id('autocomplete.channel_mention.list'))).not.toExist();
-        await element(by.id('post_input')).typeText('~');
+        await expect(channelMentionSuggestionList).not.toExist();
+        await postInput.typeText('~');
 
         // * Expect channel mention to render
-        await expect(element(by.id('autocomplete.channel_mention.list'))).toExist();
+        await expect(channelMentionSuggestionList).toExist();
     });
 
     it('MM-T3392_4 should render slash_suggestion component', async () => {
         // # Type "/" to activate slash command suggestions
-        await expect(element(by.id('autocomplete.slash_suggestion'))).not.toExist();
-        await element(by.id('post_input')).typeText('/');
+        await expect(slashSuggestionList).not.toExist();
+        await postInput.typeText('/');
 
         // * Expect slash suggestions to render
-        await expect(element(by.id('autocomplete.slash_suggestion'))).toExist();
+        await expect(slashSuggestionList).toExist();
     });
 });

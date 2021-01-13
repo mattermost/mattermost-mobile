@@ -54,10 +54,10 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
   NSString *completionKey = response.notification.request.identifier;
   NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
   NSString *message = [parsedResponse valueForKeyPath:@"action.text"];
-  NSString *channelId = [parsedResponse valueForKeyPath:@"payload.channel_id"];
-  NSString *rootId = [parsedResponse valueForKeyPath:@"payload.root_id"];
+  NSString *channelId = [parsedResponse valueForKeyPath:@"notification.channel_id"];
+  NSString *rootId = [parsedResponse valueForKeyPath:@"notification.root_id"];
   if (rootId == nil) {
-    rootId = [parsedResponse valueForKeyPath:@"payload.post_id"];
+    rootId = [parsedResponse valueForKeyPath:@"notification.post_id"];
   }
 
   NSDictionary *post = @{
@@ -102,7 +102,9 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
     [[UIApplication sharedApplication] setApplicationIconBadgeNumber:[notifications count]];
   }];
 
-  completionHandler();
+  dispatch_async(dispatch_get_main_queue(), ^{
+    completionHandler();
+  });
 }
 
 - (void) handleReplyFailure:(NSString *)channelId completionHandler:(void (^)(void))completionHandler {
@@ -112,19 +114,21 @@ NSString *const ReplyActionID = @"REPLY_ACTION";
     [self setNotificationCenter:notificationCenter];
   }
 
-  NSString *id = [[NSUUID UUID] UUIDString];;
+  NSNumber *id = [NSNumber numberWithInteger:[NSDate timeIntervalSinceReferenceDate] * 10000];
   NSDictionary *notification = @{
     @"body": @"Message failed to send.",
     @"alertAction": @"",
     @"userInfo": @{
-        @"localNotification": @YES,
-        @"localTest": @YES,
+        @"local": @YES,
+        @"test": @NO,
         @"channel_id": channelId
     }
   };
-  [notificationCenter sendLocalNotification:notification withId:id];
+  [notificationCenter postLocalNotification:notification withId:id];
 
-  completionHandler();
+  dispatch_async(dispatch_get_main_queue(), ^{
+    completionHandler();
+  });
 }
 
 #pragma mark - Method Swizzling

@@ -12,6 +12,7 @@ import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 export default class TeamIcon extends React.PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         displayName: PropTypes.string,
         lastIconUpdate: PropTypes.number,
         teamId: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
@@ -51,6 +52,7 @@ export default class TeamIcon extends React.PureComponent {
 
     render() {
         const {
+            testID,
             displayName,
             lastIconUpdate,
             teamId,
@@ -59,19 +61,23 @@ export default class TeamIcon extends React.PureComponent {
             styleText,
             styleImage,
         } = this.props;
-
+        const contentTestID = `${testID}.content`;
         const styles = getStyleSheet(theme);
 
         let teamIconContent;
         if (this.state.imageError || !lastIconUpdate) {
             teamIconContent = (
-                <Text style={[styles.text, styleText]}>
+                <Text
+                    testID={contentTestID}
+                    style={[styles.text, styleText]}
+                >
                     {displayName?.substr(0, 2).toUpperCase()}
                 </Text>
             );
         } else {
             teamIconContent = (
                 <FastImage
+                    testID={contentTestID}
                     style={[styles.image, styleImage]}
                     source={{uri: Client4.getTeamIconUrl(teamId, lastIconUpdate)}}
                     onError={this.handleImageError}
@@ -80,7 +86,10 @@ export default class TeamIcon extends React.PureComponent {
         }
 
         return (
-            <View style={[styles.container, styleContainer]}>
+            <View
+                testID={testID}
+                style={[styles.container, styleContainer]}
+            >
                 {teamIconContent}
             </View>
         );

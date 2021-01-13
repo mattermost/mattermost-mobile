@@ -65,7 +65,6 @@ LongPost {
       "textComponent": "span",
       "timeZone": null,
     },
-    "isLandscape": false,
     "postId": "post-id",
     "theme": Object {
       "awayIndicator": "#ffbc42",
@@ -180,7 +179,6 @@ LongPost {
             "timeZone": null,
           }
         }
-        isLandscape={false}
         postId="post-id"
         theme={
           Object {
@@ -219,20 +217,17 @@ LongPost {
       "_newState": null,
       "_numberOfReRenders": 0,
       "_renderPhaseUpdates": null,
-      "_rendered": <Connect(SafeAreaIos)
+      "_rendered": <Connect(SafeArea)
         backgroundColor="transparent"
         excludeHeader={true}
         footerColor="transparent"
       >
         <View
           style={
-            Array [
-              Object {
-                "flex": 1,
-                "marginTop": 20,
-              },
-              null,
-            ]
+            Object {
+              "flex": 1,
+              "marginTop": 20,
+            }
           }
         >
           <withAnimatable(View)
@@ -332,6 +327,7 @@ LongPost {
                 shouldRenderReplyButton={false}
                 showAddReaction={false}
                 showLongPost={true}
+                testID="long_post.post"
               />
             </ScrollView>
             <View
@@ -352,7 +348,7 @@ LongPost {
             />
           </withAnimatable(View)>
         </View>
-      </Connect(SafeAreaIos)>,
+      </Connect(SafeArea)>,
       "_rendering": false,
       "_updater": [Circular],
       "_workInProgressHook": null,

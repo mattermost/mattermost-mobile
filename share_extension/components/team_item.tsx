@@ -44,6 +44,7 @@ const TeamItem = ({onSelect, selected, team}: TeamItemProps) => {
             <View style={styles.container}>
                 <View style={styles.item}>
                     <TeamIcon
+                        testID='share_extension.team_item.team_icon'
                         teamId={team.id}
                         styleContainer={styles.teamIconContainer}
                         styleText={styles.teamIconText}

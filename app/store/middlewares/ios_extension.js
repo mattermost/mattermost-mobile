@@ -8,6 +8,7 @@ const SAVE_STATE_ACTIONS = [
     'CONNECTION_CHANGED',
     'DATA_CLEANUP',
     'LOGIN',
+    'BATCH_LOAD_ME',
     'Offline/STATUS_CHANGED',
     'persist/REHYDRATE',
     'RECEIVED_APP_STATE',

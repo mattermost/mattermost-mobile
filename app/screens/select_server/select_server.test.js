@@ -32,7 +32,7 @@ describe('SelectServer', () => {
         const button = getByText('Connect');
         fireEvent.press(button);
 
-        await waitFor(() => expect(getByTestId('error_text')).toBeTruthy());
+        await waitFor(() => expect(getByTestId('select_server.error.text')).toBeTruthy());
         expect(getByText('Please enter a valid server URL')).toBeTruthy();
     });
 
@@ -41,13 +41,13 @@ describe('SelectServer', () => {
             <SelectServer {...baseProps}/>,
         );
 
-        const urlInput = getByTestId('server_url_input');
+        const urlInput = getByTestId('select_server.server_url.input');
         fireEvent.changeText(urlInput, '  ');
 
         const button = getByText('Connect');
         fireEvent.press(button);
 
-        await waitFor(() => expect(getByTestId('error_text')).toBeTruthy());
+        await waitFor(() => expect(getByTestId('select_server.error.text')).toBeTruthy());
         expect(getByText('Please enter a valid server URL')).toBeTruthy();
     });
 
@@ -56,13 +56,13 @@ describe('SelectServer', () => {
             <SelectServer {...baseProps}/>,
         );
 
-        const urlInput = getByTestId('server_url_input');
+        const urlInput = getByTestId('select_server.server_url.input');
         fireEvent.changeText(urlInput, 'ht://invalid:8065');
 
         const button = getByText('Connect');
         fireEvent.press(button);
 
-        await waitFor(() => expect(getByTestId('error_text')).toBeTruthy());
+        await waitFor(() => expect(getByTestId('select_server.error.text')).toBeTruthy());
         expect(getByText('URL must start with http:// or https://')).toBeTruthy();
     });
 
@@ -71,13 +71,13 @@ describe('SelectServer', () => {
             <SelectServer {...baseProps}/>,
         );
 
-        const urlInput = getByTestId('server_url_input');
+        const urlInput = getByTestId('select_server.server_url.input');
         fireEvent.changeText(urlInput, 'http://localhost:8065');
 
         const button = getByText('Connect');
         fireEvent.press(button);
 
-        expect(queryByTestId('error_text')).toBeNull();
+        expect(queryByTestId('select_server.error.text')).toBeNull();
         await waitFor(() => expect(getByText('Connecting...')).toBeTruthy());
     });
 });

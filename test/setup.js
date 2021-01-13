@@ -7,6 +7,7 @@ import * as ReactNative from 'react-native';
 import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
+import 'react-native-gesture-handler/jestSetup';
 
 require('isomorphic-fetch');
 
@@ -29,6 +30,7 @@ jest.doMock('react-native', () => {
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
+        Linking: RNLinking,
     } = ReactNative;
 
     const Alert = {
@@ -95,6 +97,11 @@ jest.doMock('react-native', () => {
         },
     };
 
+    const Linking = {
+        ...RNLinking,
+        openURL: jest.fn(),
+    };
+
     return Object.setPrototypeOf({
         Platform: {
             ...Platform,
@@ -109,14 +116,10 @@ jest.doMock('react-native', () => {
         Alert,
         InteractionManager,
         NativeModules,
+        Linking,
     }, ReactNative);
 });
 
-jest.mock('react-native-vector-icons/MaterialIcons', () => ({
-    getImageSource: jest.fn().mockResolvedValue({}),
-}));
-jest.mock('react-native-vector-icons/MaterialCommunityIcons');
-jest.mock('react-native-vector-icons/FontAwesome5');
 jest.mock('react-native-vector-icons', () => {
     const React = jest.requireActual('react');
     const PropTypes = jest.requireActual('prop-types');
@@ -146,6 +149,7 @@ jest.mock('react-native-device-info', () => {
         getVersion: () => '0.0.0',
         getBuildNumber: () => '0',
         getModel: () => 'iPhone X',
+        hasNotch: () => true,
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
     };
@@ -207,6 +211,8 @@ jest.mock('react-native-image-picker', () => ({
 
 jest.mock('react-native-navigation', () => {
     const RNN = jest.requireActual('react-native-navigation');
+    RNN.Navigation.setLazyComponentRegistrator = jest.fn();
+    RNN.Navigation.setDefaultOptions = jest.fn();
     return {
         ...RNN,
         Navigation: {
@@ -231,6 +237,41 @@ jest.mock('react-native-navigation', () => {
     };
 });
 
+jest.mock('react-native-notifications', () => {
+    let deliveredNotifications = [];
+
+    return {
+        Notifications: {
+            registerRemoteNotifications: jest.fn(),
+            addEventListener: jest.fn(),
+            setDeliveredNotifications: jest.fn((notifications) => {
+                deliveredNotifications = notifications;
+            }),
+            cancelAllLocalNotifications: jest.fn(),
+            NotificationAction: jest.fn(),
+            NotificationCategory: jest.fn(),
+            events: () => ({
+                registerNotificationOpened: jest.fn(),
+                registerRemoteNotificationsRegistered: jest.fn(),
+                registerNotificationReceivedBackground: jest.fn(),
+                registerNotificationReceivedForeground: jest.fn(),
+            }),
+            ios: {
+                getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
+                removeDeliveredNotifications: jest.fn((ids) => {
+                    // eslint-disable-next-line max-nested-callbacks
+                    deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
+                }),
+                setBadgeCount: jest.fn(),
+            },
+        },
+    };
+});
+
+jest.mock('react-native-share', () => ({
+    default: jest.fn(),
+}));
+
 jest.mock('app/actions/navigation', () => ({
     resetToChannel: jest.fn(),
     resetToSelectServer: jest.fn(),
@@ -248,6 +289,15 @@ jest.mock('app/actions/navigation', () => ({
     dismissAllModals: jest.fn(() => Promise.resolve()),
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
+
+jest.mock('app/utils/file', () => {
+    const file = jest.requireActual('../app/utils/file');
+
+    return {
+        ...file,
+        generateId: jest.fn().mockReturnValue('123'),
+    };
+});
 
 let logs = [];
 let warns = [];

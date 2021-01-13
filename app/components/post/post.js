@@ -23,7 +23,6 @@ import PostHeader from '@components/post_header';
 import PostProfilePicture from '@components/post_profile_picture';
 import PostPreHeader from '@components/post_header/post_pre_header';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {paddingHorizontal as padding} from '@components/safe_area_view/iphone_x_spacing';
 
 import {NavigationTypes} from '@constants';
 
@@ -34,6 +33,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export default class Post extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         actions: PropTypes.shape({
             createPost: PropTypes.func.isRequired,
             insertToDraft: PropTypes.func.isRequired,
@@ -69,7 +69,6 @@ export default class Post extends PureComponent {
         isCommentMention: PropTypes.bool,
         location: PropTypes.string,
         isBot: PropTypes.bool,
-        isLandscape: PropTypes.bool.isRequired,
         previousPostExists: PropTypes.bool,
         beforePrevPostUserId: PropTypes.string,
     };
@@ -240,6 +239,7 @@ export default class Post extends PureComponent {
 
     render() {
         const {
+            testID,
             channelIsReadOnly,
             commentedOnPost,
             highlight,
@@ -264,7 +264,6 @@ export default class Post extends PureComponent {
             skipFlaggedHeader,
             skipPinnedHeader,
             location,
-            isLandscape,
             previousPostExists,
             beforePrevPostUserId,
         } = this.props;
@@ -321,10 +320,15 @@ export default class Post extends PureComponent {
         }
         const replyBarStyle = this.replyBarStyle();
         const rightColumnStyle = [style.rightColumn, (commentedOnPost && isLastReply && style.rightColumnPadding)];
+        const itemTestID = `${testID}.${post.id}`;
 
         return (
-            <View style={[style.postStyle, highlighted, padding(isLandscape)]}>
+            <View
+                testID={testID}
+                style={[style.postStyle, highlighted]}
+            >
                 <TouchableWithFeedback
+                    testID={itemTestID}
                     onPress={this.handlePress}
                     onLongPress={this.showPostOptions}
                     delayLongPress={200}

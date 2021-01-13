@@ -43,6 +43,7 @@ const store = mockStore(state);
 
 describe('PostDraft', () => {
     const baseProps = {
+        testID: 'post_draft',
         canPost: true,
         channelId: 'channel-id',
         channelIsArchived: false,
@@ -63,7 +64,7 @@ describe('PostDraft', () => {
         );
 
         expect(toJSON()).toMatchSnapshot();
-        expect(getByTestId('post_input')).toBeTruthy();
+        expect(getByTestId('post_draft.post.input')).toBeTruthy();
         expect(queryByText('Close Channel')).toBeNull();
     });
 
@@ -79,7 +80,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post_draft.post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('You are viewing an ')).toBeTruthy();
@@ -100,7 +101,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post_draft.post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('You are viewing an ')).toBeTruthy();
@@ -121,7 +122,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post_draft.post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('This channel is read-only.')).toBeTruthy();
@@ -140,7 +141,7 @@ describe('PostDraft', () => {
         expect(toJSON()).toMatchSnapshot();
 
         // Should not render text input
-        expect(queryByTestId('post_input')).toBeNull();
+        expect(queryByTestId('post_draft.post.input')).toBeNull();
 
         // Should match text description
         expect(getByText('This channel is read-only.')).toBeTruthy();

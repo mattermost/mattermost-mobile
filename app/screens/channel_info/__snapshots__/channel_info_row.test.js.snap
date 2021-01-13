@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ChannelInfoRow should match snapshot 1`] = `
+<ForwardRef
+  onPress={[MockFunction]}
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "backgroundColor": "#ffffff",
+        "flexDirection": "row",
+        "paddingHorizontal": 15,
+      }
+    }
+    testID="test-id"
+  >
+    <Image
+      source={1}
+      style={
+        Object {
+          "height": 15,
+          "tintColor": "#ffffff",
+          "width": 15,
+        }
+      }
+    />
+    <FormattedText
+      defaultMessage="default-message"
+      id="text-id"
+      style={
+        Array [
+          Object {
+            "flex": 1,
+            "fontSize": 15,
+            "marginLeft": 15,
+            "paddingVertical": 15,
+          },
+          Object {
+            "color": "#000000",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.5)",
+          "fontSize": 15,
+          "marginHorizontal": 7,
+        }
+      }
+    >
+      detail
+    </Text>
+    <CompassIcon
+      name="chevron-right"
+      size={24}
+      style={
+        Object {
+          "color": "rgba(61,60,64,0.32)",
+          "marginRight": -4,
+        }
+      }
+    />
+  </View>
+</ForwardRef>
+`;

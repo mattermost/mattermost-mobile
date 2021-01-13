@@ -8,12 +8,12 @@ import {
     Platform,
 } from 'react-native';
 
-import {makeStyleSheetFromTheme} from 'app/utils/theme';
-
-import SlashSuggestionItem from './slash_suggestion_item';
+import {analytics} from '@init/analytics.ts';
 import {Client4} from '@mm-redux/client';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-import {analytics} from '@init/analytics.ts';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import SlashSuggestionItem from './slash_suggestion_item';
 
 const TIME_BEFORE_NEXT_COMMAND_REQUEST = 1000 * 60 * 5;
 
@@ -31,7 +31,6 @@ export default class SlashSuggestion extends PureComponent {
         onChangeText: PropTypes.func.isRequired,
         onResultCountChange: PropTypes.func.isRequired,
         value: PropTypes.string,
-        isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
         suggestions: PropTypes.array,
         rootId: PropTypes.string,
@@ -49,51 +48,53 @@ export default class SlashSuggestion extends PureComponent {
         lastCommandRequest: 0,
     };
 
-    componentWillReceiveProps(nextProps) {
-        if ((nextProps.value === this.props.value && nextProps.suggestions === this.props.suggestions && nextProps.commands === this.props.commands) ||
-            nextProps.isSearch || nextProps.value.startsWith('//') || !nextProps.channelId) {
+    setActive(active) {
+        this.setState({active});
+    }
+
+    setLastCommandRequest(lastCommandRequest) {
+        this.setState({lastCommandRequest});
+    }
+
+    componentDidUpdate(prevProps) {
+        if ((this.props.value === prevProps.value && this.props.suggestions === prevProps.suggestions && this.props.commands === prevProps.commands) ||
+            this.props.isSearch || this.props.value.startsWith('//') || !this.props.channelId) {
             return;
         }
 
-        const {currentTeamId} = this.props;
+        const {currentTeamId} = prevProps;
         const {
             commands: nextCommands,
             currentTeamId: nextTeamId,
             value: nextValue,
             suggestions: nextSuggestions,
-        } = nextProps;
+        } = this.props;
 
         if (nextValue[0] !== '/') {
-            this.setState({
-                active: false,
-            });
+            this.setActive(false);
             this.props.onResultCountChange(0);
             return;
         }
 
         if (nextValue.indexOf(' ') === -1) { // return suggestions for a top level cached commands
             if (currentTeamId !== nextTeamId) {
-                this.setState({
-                    lastCommandRequest: 0,
-                });
+                this.setLastCommandRequest(0);
             }
 
             const dataIsStale = Date.now() - this.state.lastCommandRequest > TIME_BEFORE_NEXT_COMMAND_REQUEST;
 
             if ((!nextCommands.length || dataIsStale)) {
-                this.props.actions.getAutocompleteCommands(nextProps.currentTeamId);
-                this.setState({
-                    lastCommandRequest: Date.now(),
-                });
+                this.props.actions.getAutocompleteCommands(this.props.currentTeamId);
+                this.setLastCommandRequest(Date.now());
             }
 
             const matches = this.filterSlashSuggestions(nextValue.substring(1), nextCommands);
             this.updateSuggestions(matches);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            if (nextSuggestions === this.props.suggestions) {
+            if (nextSuggestions === prevProps.suggestions) {
                 const args = {
-                    channel_id: this.props.channelId,
-                    ...(this.props.rootId && {root_id: this.props.rootId, parent_id: this.props.rootId}),
+                    channel_id: prevProps.channelId,
+                    ...(prevProps.rootId && {root_id: prevProps.rootId, parent_id: prevProps.rootId}),
                 };
                 this.props.actions.getCommandAutocompleteSuggestions(nextValue, nextTeamId, args);
             } else {
@@ -111,9 +112,7 @@ export default class SlashSuggestion extends PureComponent {
                 this.updateSuggestions(matches);
             }
         } else {
-            this.setState({
-                active: false,
-            });
+            this.setActive(false);
         }
     }
 
@@ -187,7 +186,6 @@ export default class SlashSuggestion extends PureComponent {
             theme={this.props.theme}
             suggestion={item.Suggestion}
             complete={item.Complete}
-            isLandscape={this.props.isLandscape}
         />
     )
 
@@ -204,7 +202,7 @@ export default class SlashSuggestion extends PureComponent {
 
         return (
             <FlatList
-                testID='autocomplete.slash_suggestion'
+                testID='slash_suggestion.list'
                 keyboardShouldPersistTaps='always'
                 style={[style.listView, {maxHeight: maxListHeight}]}
                 extraData={this.state}

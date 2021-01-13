@@ -16,7 +16,6 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Post from '@components/post';
 import SafeAreaView from '@components/safe_area_view';
-import {marginHorizontal as margin} from '@components/safe_area_view/iphone_x_spacing';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {goToScreen, dismissModal} from '@actions/navigation';
@@ -51,7 +50,6 @@ export default class LongPost extends PureComponent {
         onPermalinkPress: PropTypes.func,
         postId: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -115,7 +113,6 @@ export default class LongPost extends PureComponent {
             onPermalinkPress,
             postId,
             theme,
-            isLandscape,
         } = this.props;
         const style = getStyleSheet(theme);
 
@@ -125,7 +122,7 @@ export default class LongPost extends PureComponent {
                 excludeHeader={true}
                 footerColor='transparent'
             >
-                <View style={[style.container, margin(isLandscape)]}>
+                <View style={style.container}>
                     <Animatable.View
                         ref={this.setViewRef}
                         animation='zoomIn'
@@ -158,6 +155,7 @@ export default class LongPost extends PureComponent {
                         </View>
                         <ScrollView style={style.postList}>
                             <Post
+                                testID='long_post.post'
                                 postId={postId}
                                 shouldRenderReplyButton={false}
                                 onPress={this.handlePress}

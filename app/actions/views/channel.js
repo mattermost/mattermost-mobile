@@ -213,6 +213,8 @@ export function handleSelectChannel(channelId) {
 
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
+
+        return {data: true};
     };
 }
 
@@ -222,7 +224,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
-        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
+        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName, true));
         const {error, data: channel} = response;
         const currentChannelId = getCurrentChannelId(state);
 
@@ -249,16 +251,16 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
                 if (!myMemberships[channel.id]) {
                     const currentUserId = getCurrentUserId(state);
                     console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
-                    const result = await dispatch(joinChannel(currentUserId, teamName, channel.id));
+                    const result = await dispatch(joinChannel(currentUserId, '', channel.id));
                     if (result.error || !result.data || !result.data.channel) {
-                        return {error};
+                        return result;
                     }
                 }
             }
             dispatch(handleSelectChannel(channel.id));
         }
 
-        return null;
+        return {data: true};
     };
 }
 
@@ -293,6 +295,8 @@ export function markChannelViewedAndRead(channelId, previousChannelId, markOnSer
         const actions = markAsViewedAndReadBatch(state, channelId, previousChannelId, markOnServer);
 
         dispatch(batchActions(actions, 'BATCH_MARK_CHANNEL_VIEWED_AND_READ'));
+
+        return {data: true};
     };
 }
 

@@ -141,24 +141,18 @@ exports[`OptionModalList should match snapshot for Android 1`] = `
 exports[`OptionModalList should match snapshot for iOS 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "alignItems": "center",
-        "flex": 1,
-        "justifyContent": "flex-end",
-      },
-      null,
-    ]
+    Object {
+      "alignItems": "center",
+      "flex": 1,
+      "justifyContent": "flex-end",
+    }
   }
 >
   <View
     style={
       Object {
-        "alignSelf": "stretch",
-        "backgroundColor": "white",
-        "borderRadius": 12,
-        "marginBottom": 20,
-        "marginHorizontal": 20,
+        "maxWidth": 450,
+        "width": "100%",
       }
     }
   >
@@ -166,161 +160,179 @@ exports[`OptionModalList should match snapshot for iOS 1`] = `
       style={
         Array [
           Object {
-            "alignItems": "center",
             "alignSelf": "stretch",
-            "flexDirection": "row",
-            "justifyContent": "space-between",
-            "padding": 15,
-          },
-          Object {
-            "borderBottomColor": "rgba(0, 0, 0, 0.1)",
-            "borderBottomWidth": 1,
+            "backgroundColor": "white",
+            "borderRadius": 12,
+            "marginBottom": 20,
+            "marginHorizontal": 20,
           },
         ]
       }
     >
-      <Text
+      <View
         style={
-          Object {
-            "color": "#7f8180",
-            "flex": 1,
-            "textAlign": "center",
-          }
+          Array [
+            Object {
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+              "padding": 15,
+              "width": "100%",
+            },
+            Object {
+              "borderBottomColor": "rgba(0, 0, 0, 0.1)",
+              "borderBottomWidth": 1,
+            },
+          ]
         }
       >
-        test
-      </Text>
-    </View>
-    <View
-      style={
-        Array [
-          Object {
-            "borderBottomColor": "rgba(0, 0, 0, 0.1)",
-            "borderBottomWidth": 1,
-          },
-        ]
-      }
-    >
-      <ForwardRef
-        onPress={[Function]}
-        style={
-          Object {
-            "alignItems": "center",
-            "alignSelf": "stretch",
-            "flexDirection": "row",
-            "justifyContent": "space-between",
-            "padding": 15,
-          }
-        }
-      >
-        <FormattedText
-          defaultMessage="Take Photo or Video"
-          id="mobile.file_upload.camera"
-          style={
-            Array [
-              Object {
-                "color": "#4E8ACC",
-                "flex": 1,
-                "fontSize": 20,
-              },
-              undefined,
-              false,
-            ]
-          }
-        />
-        <CompassIcon
-          name="camera"
-          size={24}
+        <Text
           style={
             Object {
-              "color": "#4E8ACC",
+              "color": "#7f8180",
+              "flex": 1,
+              "textAlign": "center",
             }
           }
-        />
-      </ForwardRef>
-    </View>
-    <View
-      style={
-        Array [
-          false,
-        ]
-      }
-    >
-      <ForwardRef
-        onPress={[Function]}
+        >
+          test
+        </Text>
+      </View>
+      <View
         style={
-          Object {
-            "alignItems": "center",
-            "alignSelf": "stretch",
-            "flexDirection": "row",
-            "justifyContent": "space-between",
-            "padding": 15,
-          }
+          Array [
+            Object {
+              "borderBottomColor": "rgba(0, 0, 0, 0.1)",
+              "borderBottomWidth": 1,
+            },
+          ]
         }
       >
-        <FormattedText
-          defaultMessage="Photo Library"
-          id="mobile.file_upload.library"
-          style={
-            Array [
-              Object {
-                "color": "#4E8ACC",
-                "flex": 1,
-                "fontSize": 20,
-              },
-              undefined,
-              false,
-            ]
-          }
-        />
-        <CompassIcon
-          name="photo"
-          size={24}
+        <ForwardRef
+          onPress={[Function]}
           style={
             Object {
-              "color": "#4E8ACC",
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+              "padding": 15,
+              "width": "100%",
             }
           }
-        />
-      </ForwardRef>
+        >
+          <FormattedText
+            defaultMessage="Take Photo or Video"
+            id="mobile.file_upload.camera"
+            style={
+              Array [
+                Object {
+                  "color": "#4E8ACC",
+                  "flex": 1,
+                  "fontSize": 20,
+                },
+                undefined,
+                false,
+              ]
+            }
+          />
+          <CompassIcon
+            name="camera"
+            size={24}
+            style={
+              Object {
+                "color": "#4E8ACC",
+              }
+            }
+          />
+        </ForwardRef>
+      </View>
+      <View
+        style={
+          Array [
+            false,
+          ]
+        }
+      >
+        <ForwardRef
+          onPress={[Function]}
+          style={
+            Object {
+              "alignItems": "center",
+              "alignSelf": "stretch",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+              "padding": 15,
+              "width": "100%",
+            }
+          }
+        >
+          <FormattedText
+            defaultMessage="Photo Library"
+            id="mobile.file_upload.library"
+            style={
+              Array [
+                Object {
+                  "color": "#4E8ACC",
+                  "flex": 1,
+                  "fontSize": 20,
+                },
+                undefined,
+                false,
+              ]
+            }
+          />
+          <CompassIcon
+            name="photo"
+            size={24}
+            style={
+              Object {
+                "color": "#4E8ACC",
+              }
+            }
+          />
+        </ForwardRef>
+      </View>
     </View>
-  </View>
-  <View
-    style={
-      Object {
-        "alignSelf": "stretch",
-        "backgroundColor": "white",
-        "borderRadius": 12,
-        "marginBottom": 20,
-        "marginHorizontal": 20,
-      }
-    }
-  >
-    <ForwardRef
-      onPress={[Function]}
+    <View
       style={
         Object {
-          "alignItems": "center",
           "alignSelf": "stretch",
-          "flexDirection": "row",
-          "justifyContent": "space-between",
-          "padding": 15,
+          "backgroundColor": "white",
+          "borderRadius": 12,
+          "marginBottom": 20,
+          "marginHorizontal": 20,
         }
       }
     >
-      <FormattedText
-        defaultMessage="Cancel"
-        id="channel_modal.cancel"
+      <ForwardRef
+        onPress={[Function]}
         style={
           Object {
-            "color": "#CC3239",
-            "flex": 1,
-            "fontSize": 20,
-            "textAlign": "center",
+            "alignItems": "center",
+            "alignSelf": "stretch",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
+            "padding": 15,
+            "width": "100%",
           }
         }
-      />
-    </ForwardRef>
+      >
+        <FormattedText
+          defaultMessage="Cancel"
+          id="channel_modal.cancel"
+          style={
+            Object {
+              "color": "#CC3239",
+              "flex": 1,
+              "fontSize": 20,
+              "textAlign": "center",
+            }
+          }
+        />
+      </ForwardRef>
+    </View>
   </View>
 </View>
 `;

@@ -5,12 +5,9 @@ exports[`DialogIntroductionText should not render the component with an empty va
 exports[`DialogIntroductionText should render the introduction text correctly 1`] = `
 <View
   style={
-    Array [
-      Object {
-        "marginHorizontal": 15,
-      },
-      null,
-    ]
+    Object {
+      "marginHorizontal": 15,
+    }
   }
 >
   <Connect(Markdown)
@@ -36,6 +33,7 @@ exports[`DialogIntroductionText should render the introduction text correctly 1`
     }
     disableAtMentions={true}
     disableChannelLink={true}
+    disableGallery={true}
     disableHashtags={true}
     textStyles={
       Object {

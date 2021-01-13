@@ -5,7 +5,6 @@ exports[`PasteableTextInput should render pasteable text input 1`] = `
   allowFontScaling={true}
   onPaste={[Function]}
   rejectResponderTermination={true}
-  testID="post_input"
   underlineColorAndroid="transparent"
 >
   My Text

@@ -36,7 +36,6 @@ export default class ChannelMention extends PureComponent {
         requestStatus: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         value: PropTypes.string,
-        isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
     };
 
@@ -62,15 +61,23 @@ export default class ChannelMention extends PureComponent {
         this.props.actions.autocompleteChannelsForSearch(currentTeamId, matchTerm);
     }, 200);
 
-    componentWillReceiveProps(nextProps) {
-        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers} = nextProps;
+    resetState() {
+        this.setState({
+            mentionComplete: false,
+            sections: [],
+        });
+    }
 
-        if ((matchTerm !== this.props.matchTerm && matchTerm === null) || this.state.mentionComplete) {
+    updateSections(sections) {
+        this.setState({sections});
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const {isSearch, matchTerm, myChannels, otherChannels, privateChannels, publicChannels, directAndGroupMessages, requestStatus, myMembers} = this.props;
+
+        if ((matchTerm !== prevProps.matchTerm && matchTerm === null) || (this.state.mentionComplete !== prevState.mentionComplete && this.state.mentionComplete)) {
             // if the term changes but is null or the mention has been completed we render this component as null
-            this.setState({
-                mentionComplete: false,
-                sections: [],
-            });
+            this.resetState();
 
             this.props.onResultCountChange(0);
 
@@ -80,15 +87,15 @@ export default class ChannelMention extends PureComponent {
             return;
         }
 
-        if (matchTerm !== this.props.matchTerm) {
+        if (matchTerm !== prevProps.matchTerm) {
             const {currentTeamId} = this.props;
             this.runSearch(currentTeamId, matchTerm);
         }
 
-        if (matchTerm === '' || (myChannels !== this.props.myChannels || otherChannels !== this.props.otherChannels ||
-        privateChannels !== this.props.privateChannels || publicChannels !== this.props.publicChannels ||
-        directAndGroupMessages !== this.props.directAndGroupMessages ||
-        myMembers !== this.props.myMembers)) {
+        if ((matchTerm !== prevProps.matchTerm && matchTerm === '') || (myChannels !== prevProps.myChannels || otherChannels !== prevProps.otherChannels ||
+        privateChannels !== prevProps.privateChannels || publicChannels !== prevProps.publicChannels ||
+        directAndGroupMessages !== prevProps.directAndGroupMessages ||
+        myMembers !== prevProps.myMembers)) {
             const sections = [];
             if (isSearch) {
                 if (publicChannels.length) {
@@ -140,9 +147,7 @@ export default class ChannelMention extends PureComponent {
                 }
             }
 
-            this.setState({
-                sections,
-            });
+            this.updateSections(sections);
             this.props.onResultCountChange(sections.reduce((total, section) => total + section.data.length, 0));
         }
     }
@@ -191,7 +196,6 @@ export default class ChannelMention extends PureComponent {
                 defaultMessage={section.defaultMessage}
                 loading={!section.hideLoadingIndicator && this.props.requestStatus === RequestStatus.STARTED}
                 theme={this.props.theme}
-                isLandscape={this.props.isLandscape}
                 isFirstSection={isFirstSection}
             />
         );
@@ -220,7 +224,7 @@ export default class ChannelMention extends PureComponent {
 
         return (
             <SectionList
-                testID='autocomplete.channel_mention.list'
+                testID='channel_mention_suggestion.list'
                 keyboardShouldPersistTaps='always'
                 keyExtractor={this.keyExtractor}
                 style={[style.listView, {maxHeight: maxListHeight}]}

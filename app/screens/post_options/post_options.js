@@ -49,7 +49,6 @@ export default class PostOptions extends PureComponent {
         isFlagged: PropTypes.bool,
         post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -74,15 +73,16 @@ export default class PostOptions extends PureComponent {
 
     getOption = (key, icon, message, onPress, destructive = false) => {
         const {formatMessage} = this.context.intl;
-        const {isLandscape, theme} = this.props;
+        const {theme} = this.props;
+        const testID = `post.options.${key}.action`;
 
         return (
             <PostOption
+                testID={testID}
                 key={key}
                 icon={icon}
                 text={formatMessage(message)}
                 onPress={onPress}
-                isLandscape={isLandscape}
                 destructive={destructive}
                 theme={theme}
             />
@@ -216,17 +216,17 @@ export default class PostOptions extends PureComponent {
     };
 
     getMarkAsUnreadOption = () => {
-        const {post, isLandscape, theme} = this.props;
+        const {post, theme} = this.props;
         const {formatMessage} = this.context.intl;
 
         if (!isSystemMessage(post) && this.props.canMarkAsUnread) {
             return (
                 <PostOption
+                    testID='post.options.markUnread.action'
                     key='markUnread'
                     icon='mark-as-unread'
                     text={formatMessage({id: 'mobile.post_info.mark_unread', defaultMessage: 'Mark as Unread'})}
                     onPress={this.handleMarkUnread}
-                    isLandscape={isLandscape}
                     theme={theme}
                 />
             );
@@ -403,6 +403,7 @@ export default class PostOptions extends PureComponent {
             reactionHeight = REACTION_PICKER_HEIGHT;
             reactionPicker = (
                 <ReactionPicker
+                    testID='post_options.reaction_picker.action'
                     addReaction={this.handleAddReaction}
                     openReactionScreen={this.handleAddReactionScreen}
                 />
@@ -413,7 +414,10 @@ export default class PostOptions extends PureComponent {
         const initialPosition = getInitialPosition(deviceHeight, marginFromTop);
 
         return (
-            <View style={style.container}>
+            <View
+                testID='post.options'
+                style={style.container}
+            >
                 <SlideUpPanel
                     allowStayMiddle={false}
                     ref={this.refSlideUpPanel}

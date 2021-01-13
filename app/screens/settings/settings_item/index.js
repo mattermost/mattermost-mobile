@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {paddingRight, paddingLeft} from '@components/safe_area_view/iphone_x_spacing';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity} from '@utils/theme';
 
@@ -14,6 +13,7 @@ import getStyleSheet from './style';
 
 export default class SettingsItem extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         defaultMessage: PropTypes.string.isRequired,
         messageValues: PropTypes.object,
         i18nId: PropTypes.string,
@@ -26,13 +26,11 @@ export default class SettingsItem extends PureComponent {
         separator: PropTypes.bool,
         showArrow: PropTypes.bool,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         isDestructor: false,
         separator: true,
-        isLandscape: false,
         isLink: false,
     };
 
@@ -78,13 +76,13 @@ export default class SettingsItem extends PureComponent {
 
     render() {
         const {
+            testID,
             iconName,
             onPress,
             rightComponent,
             separator,
             showArrow,
             theme,
-            isLandscape,
             isDestructor,
         } = this.props;
         const style = getStyleSheet(theme);
@@ -126,16 +124,17 @@ export default class SettingsItem extends PureComponent {
 
         return (
             <TouchableOpacity
+                testID={testID}
                 onPress={onPress}
             >
-                <View style={[style.container, paddingLeft(isLandscape)]}>
+                <View style={style.container}>
                     {icon &&
                     <View style={style.iconContainer}>
                         {icon}
                     </View>
                     }
                     <View style={style.wrapper}>
-                        <View style={[style.labelContainer, paddingRight(isLandscape)]}>
+                        <View style={style.labelContainer}>
                             {this.renderText()}
                             {Boolean(additionalComponent) &&
                             <View style={style.arrowContainer}>

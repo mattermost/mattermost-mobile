@@ -21,8 +21,6 @@ export default class CreateChannel extends PureComponent {
     static propTypes = {
         componentId: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
-        deviceHeight: PropTypes.number.isRequired,
         createChannelRequest: PropTypes.object.isRequired,
         channelType: PropTypes.string,
         closeButton: PropTypes.object,
@@ -44,10 +42,10 @@ export default class CreateChannel extends PureComponent {
     };
 
     rightButton = {
+        testID: 'create_channel.create.button',
         id: 'create-channel',
         enabled: false,
         showAsAction: 'always',
-        testID: 'edit_channel.create.button',
     };
 
     constructor(props, context) {
@@ -74,14 +72,20 @@ export default class CreateChannel extends PureComponent {
         this.emitCanCreateChannel(false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        const {createChannelRequest} = nextProps;
+    onRequestStart() {
+        this.setState({error: null, creating: true});
+    }
 
-        if (this.props.createChannelRequest !== createChannelRequest) {
-            switch (createChannelRequest.status) {
+    onRequestFailure(error) {
+        this.setState({error, creating: false});
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.createChannelRequest !== prevProps.createChannelRequest) {
+            switch (this.props.createChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitCreating(true);
-                this.setState({error: null, creating: true});
+                this.onRequestStart();
                 break;
             case RequestStatus.SUCCESS:
                 EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
@@ -93,7 +97,7 @@ export default class CreateChannel extends PureComponent {
                 break;
             case RequestStatus.FAILURE:
                 this.emitCreating(false);
-                this.setState({error: createChannelRequest.error, creating: false});
+                this.onRequestFailure(this.props.createChannelRequest.error);
                 break;
             }
         }
@@ -164,11 +168,7 @@ export default class CreateChannel extends PureComponent {
     };
 
     render() {
-        const {
-            theme,
-            deviceWidth,
-            deviceHeight,
-        } = this.props;
+        const {theme} = this.props;
         const {
             error,
             creating,
@@ -179,6 +179,7 @@ export default class CreateChannel extends PureComponent {
 
         return (
             <EditChannelInfo
+                testID='create_channel.screen'
                 theme={theme}
                 enableRightButton={this.emitCanCreateChannel}
                 error={error}
@@ -189,8 +190,6 @@ export default class CreateChannel extends PureComponent {
                 displayName={displayName}
                 purpose={purpose}
                 header={header}
-                deviceWidth={deviceWidth}
-                deviceHeight={deviceHeight}
             />
         );
     }

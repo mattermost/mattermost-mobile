@@ -10,6 +10,7 @@ exports[`ImageQuickAction should match snapshot 1`] = `
       "padding": 10,
     }
   }
+  testID="post_draft.quick_actions.image_action"
   type="opacity"
 >
   <CompassIcon

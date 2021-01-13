@@ -8,10 +8,10 @@ import {
     View,
 } from 'react-native';
 import {intlShape} from 'react-intl';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import SearchBar from '@components/search_bar';
-import {paddingLeft as padding} from '@components/safe_area_view/iphone_x_spacing';
 import {ViewTypes} from '@constants';
 import {
     changeOpacity,
@@ -27,12 +27,12 @@ let FilteredList = null;
 
 export default class ChannelsList extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         onJoinChannel: PropTypes.func.isRequired,
         onSearchEnds: PropTypes.func.isRequired,
         onSearchStart: PropTypes.func.isRequired,
         onSelectChannel: PropTypes.func.isRequired,
         theme: PropTypes.object.isRequired,
-        isLandscape: PropTypes.bool.isRequired,
         onShowTeams: PropTypes.func,
     };
 
@@ -93,19 +93,19 @@ export default class ChannelsList extends PureComponent {
 
     render() {
         const {intl} = this.context;
-        const {
-            onShowTeams,
-            theme,
-            isLandscape,
-        } = this.props;
-
+        const {testID, onShowTeams, theme} = this.props;
         const {searching, term} = this.state;
         const styles = getStyleSheet(theme);
+        const filteredListTestID = `${testID}.filtered_list`;
+        const listTestID = `${testID}.list`;
+        const searchBarTestID = `${testID}.search_bar`;
+        const switchTeamsButtonTestID = `${testID}.switch_teams.button`;
 
         let list;
         if (searching) {
             list = (
                 <FilteredList
+                    testID={filteredListTestID}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                     term={term}
@@ -114,6 +114,7 @@ export default class ChannelsList extends PureComponent {
         } else {
             list = (
                 <List
+                    testID={listTestID}
                     onSelectChannel={this.onSelectChannel}
                     styles={styles}
                 />
@@ -126,13 +127,22 @@ export default class ChannelsList extends PureComponent {
             fontSize: 15,
         };
 
-        const leftComponent = onShowTeams ? <SwitchTeamsButton onShowTeams={onShowTeams}/> : null;
+        let leftComponent;
+        if (onShowTeams) {
+            leftComponent = (
+                <SwitchTeamsButton
+                    testID={switchTeamsButtonTestID}
+                    onShowTeams={onShowTeams}
+                />
+            );
+        }
 
         const title = (
             <View
-                style={[styles.searchContainer, padding(isLandscape)]}
+                style={styles.searchContainer}
             >
                 <SearchBar
+                    testID={searchBarTestID}
                     ref={this.setSearchBarRef}
                     placeholder={intl.formatMessage({id: 'mobile.channel_drawer.search', defaultMessage: 'Jump to...'})}
                     cancelTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -158,15 +168,16 @@ export default class ChannelsList extends PureComponent {
         );
 
         return (
-            <View
+            <SafeAreaView
+                testID={testID}
+                edges={['left']}
                 style={styles.container}
-                testID='channels_list'
             >
                 <View style={styles.headerContainer}>
                     {title}
                 </View>
                 {list}
-            </View>
+            </SafeAreaView>
         );
     }
 }

@@ -1,42 +1,66 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PinnedPosts should match snapshot 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+      "left",
+      "right",
+    ]
+  }
   style={
     Object {
       "flex": 1,
     }
   }
+  testID="pinned_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`PinnedPosts should match snapshot when component waiting for response 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+      "left",
+      "right",
+    ]
+  }
   style={
     Object {
       "flex": 1,
     }
   }
+  testID="pinned_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</View>
+</RNCSafeAreaView>
 `;
 
 exports[`PinnedPosts should match snapshot when getPinnedPosts failed 1`] = `
-<View
+<RNCSafeAreaView
+  edges={
+    Array [
+      "bottom",
+      "left",
+      "right",
+    ]
+  }
   style={
     Object {
       "flex": 1,
     }
   }
+  testID="pinned_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(FailedNetworkAction)
@@ -71,5 +95,5 @@ exports[`PinnedPosts should match snapshot when getPinnedPosts failed 1`] = `
       }
     }
   />
-</View>
+</RNCSafeAreaView>
 `;

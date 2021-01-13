@@ -29,6 +29,7 @@ export default class RadioButtonGroup extends PureComponent {
         if (this.props.options.length) {
             options = this.props.options.map((option) => {
                 const {
+                    testID,
                     value,
                     label,
                     disabled,
@@ -39,6 +40,7 @@ export default class RadioButtonGroup extends PureComponent {
 
                 return (
                     <RadioButton
+                        testID={testID}
                         {...other}
                         name={name}
                         key={`${name}-${value}`}

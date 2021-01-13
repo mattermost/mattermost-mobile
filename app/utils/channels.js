@@ -76,9 +76,3 @@ export function getChannelSinceValue(state, channelId, postIds) {
 
     return since;
 }
-
-export function isChannelMember(state, channelId) {
-    return {
-        data: Boolean(state.entities.channels?.membersInChannel[channelId]?.channel_id),
-    };
-}

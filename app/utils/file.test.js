@@ -3,9 +3,13 @@
 
 import {
     generateId,
+    getLocalPath,
     getLocalFilePathFromFile,
     getExtensionFromContentDisposition,
+    hashCode,
 } from 'app/utils/file';
+
+import {DeviceTypes} from 'app/constants';
 
 describe('getExtensionFromContentDisposition', () => {
     it('should return the extracted the extension', () => {
@@ -50,32 +54,87 @@ describe('getExtensionFromContentDisposition', () => {
     });
 
     it('should return the path for the file', () => {
-        const data = {
+        const file = {
             id: generateId(),
             name: 'Some Video file.mp4',
             extension: 'mp4',
         };
 
-        const localFile = getLocalFilePathFromFile('Videos', {data});
-        expect(localFile).toBe(`Videos/${data.id}.${data.extension}`);
+        const localFile = getLocalFilePathFromFile('Videos', file);
+        const [filename] = file.name.split('.');
+        expect(localFile).toBe(`Videos/${filename}-${hashCode(file.id)}.${file.extension}`);
     });
 
-    it('should return the null as the path if it does not have an id set', () => {
-        const data = {
+    it('should return the undefined as the path if it does not have an id and name set', () => {
+        const file = {
+            extension: 'mp4',
+        };
+
+        const localFile = getLocalFilePathFromFile('Videos', file);
+        expect(localFile).toBeUndefined();
+    });
+
+    it('should return the undefined as the path if it does not have an extension set', () => {
+        const file = {
+            id: generateId(),
+        };
+        const localFile = getLocalFilePathFromFile('Videos', file);
+        expect(localFile).toBeUndefined();
+    });
+
+    it('should return the same path as the local file', () => {
+        const file = {
+            localPath: 'some/path/filename.mp4',
+        };
+
+        const localFile = getLocalPath(file);
+        expect(localFile).toEqual(file.localPath);
+    });
+
+    it('should return the path for the video file', () => {
+        const file = {
+            id: generateId(),
             name: 'Some Video file.mp4',
             extension: 'mp4',
         };
 
-        const localFile = getLocalFilePathFromFile('Videos', {data});
-        expect(localFile).toBeNull();
+        const localFile = getLocalPath(file);
+        const [filename] = file.name.split('.');
+        expect(localFile).toBe(`${DeviceTypes.VIDEOS_PATH}/${filename}-${hashCode(file.id)}.${file.extension}`);
     });
 
-    it('should return the null as the path if it does not have an extension set', () => {
-        const data = {
+    it('should return the path for the image file', () => {
+        const file = {
             id: generateId(),
-            name: 'Some Video file.mp4',
+            name: 'Some animated image.gif',
+            extension: 'gif',
         };
-        const localFile = getLocalFilePathFromFile('Videos', {data});
-        expect(localFile).toBeNull();
+
+        const localFile = getLocalPath(file);
+        const [filename] = file.name.split('.');
+        expect(localFile).toBe(`${DeviceTypes.IMAGES_PATH}/${filename}-${hashCode(file.id)}.${file.extension}`);
+    });
+
+    it('should return the path for the document file', () => {
+        const file = {
+            id: generateId(),
+            name: 'Some other document.txt',
+            extension: 'txt',
+        };
+
+        const localFile = getLocalPath(file);
+        const [filename] = file.name.split('.');
+        expect(localFile).toBe(`${DeviceTypes.DOCUMENTS_PATH}/${filename}-${hashCode(file.id)}.${file.extension}`);
+    });
+
+    it('should return the path for the document file including multiple dots in the filename', () => {
+        const file = {
+            id: generateId(),
+            name: 'Some.other.document.txt',
+            extension: 'txt',
+        };
+        const expectedFilename = 'Some.other.document';
+        const localFile = getLocalPath(file);
+        expect(localFile).toBe(`${DeviceTypes.DOCUMENTS_PATH}/${expectedFilename}-${hashCode(file.id)}.${file.extension}`);
     });
 });

@@ -20,12 +20,14 @@ import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from 
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import EphemeralStore from '@store/ephemeral_store';
+import {openGalleryAtIndex} from '@utils/images';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';
 
 const showFiles = {opacity: 1, height: 68};
 const hideFiles = {opacity: 0, height: 0};
+const showError = {height: 20};
 const hideError = {height: 0};
 
 export default class Uploads extends PureComponent {
@@ -52,12 +54,14 @@ export default class Uploads extends PureComponent {
     };
 
     state = {
+        errorVisible: false,
         fileSizeWarning: null,
         showFileMaxWarning: false,
     };
 
     errorContainerRef = React.createRef();
     containerRef = React.createRef();
+    hideErrorTimer = null;
 
     componentDidMount() {
         EventEmitter.on(MAX_FILE_COUNT_WARNING, this.handleFileMaxWarning);
@@ -84,8 +88,14 @@ export default class Uploads extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.containerRef.current && this.props.files.length !== prevProps.files.length) {
-            this.showOrHideContainer();
+        if (this.props.files.length !== prevProps.files.length) {
+            if (this.containerRef.current) {
+                this.showOrHideContainer();
+            }
+
+            if (prevProps.files.length === MAX_FILE_COUNT && this.state.showFileMaxWarning) {
+                this.hideError();
+            }
         }
     }
 
@@ -96,6 +106,7 @@ export default class Uploads extends PureComponent {
                     key={file.clientId}
                     channelId={this.props.channelId}
                     file={file}
+                    onPress={this.onPress}
                     rootId={this.props.rootId}
                     theme={this.props.theme}
                 />
@@ -103,13 +114,18 @@ export default class Uploads extends PureComponent {
         });
     };
 
-    clearErrorsFromState = (delay) => {
-        setTimeout(() => {
-            this.setState({
-                showFileMaxWarning: false,
-                fileSizeWarning: null,
-            });
-        }, delay || 0);
+    onPress = (file) => {
+        const {files} = this.props;
+        const index = files.indexOf(file);
+        openGalleryAtIndex(index, files.filter((f) => !f.failed && !f.loading));
+    }
+
+    clearErrorsFromState = () => {
+        this.setState({
+            errorVisible: false,
+            showFileMaxWarning: false,
+            fileSizeWarning: null,
+        });
     }
 
     handleAndroidBack = () => {
@@ -124,10 +140,7 @@ export default class Uploads extends PureComponent {
     handleFileMaxWarning = () => {
         this.setState({showFileMaxWarning: true});
         if (this.errorContainerRef.current) {
-            this.makeErrorVisible(true, 20);
-            setTimeout(() => {
-                this.makeErrorVisible(false, 20);
-            }, 5000);
+            this.showError();
         }
     };
 
@@ -142,10 +155,7 @@ export default class Uploads extends PureComponent {
             });
 
             this.setState({fileSizeWarning: message});
-            this.makeErrorVisible(true, 20);
-            setTimeout(() => {
-                this.makeErrorVisible(false, 20);
-            }, 5000);
+            this.showError();
         }
     };
 
@@ -192,10 +202,7 @@ export default class Uploads extends PureComponent {
             });
 
             this.setState({fileSizeWarning: message});
-            this.makeErrorVisible(true, 20);
-            setTimeout(() => {
-                this.makeErrorVisible(false, 20);
-            }, 5000);
+            this.showError();
         }
     };
 
@@ -230,15 +237,30 @@ export default class Uploads extends PureComponent {
             this.handleFileSizeWarning();
         } else {
             this.props.initUploadFiles(files, this.props.rootId);
+            this.hideError();
         }
     };
 
-    makeErrorVisible = (visible, height) => {
+    showError = () => {
+        if (this.hideErrorTimer) {
+            clearTimeout(this.hideErrorTimer);
+        }
+
+        this.makeErrorVisible(true);
+        this.hideErrorTimer = setTimeout(this.hideError, 5000);
+    }
+
+    hideError = () => this.makeErrorVisible(false);
+
+    makeErrorVisible = (visible) => {
         if (this.errorContainerRef.current) {
-            if (visible) {
-                this.errorContainerRef.current.transition(hideError, {height}, 200, 'ease-out');
-            } else {
-                this.errorContainerRef.current.transition({height}, hideError, 200, 'ease-in');
+            if (visible && !this.state.errorVisible) {
+                this.setState({errorVisible: true});
+                this.errorContainerRef.current.transition(hideError, showError, 200, 'ease-out');
+            } else if (!visible && this.state.errorVisible) {
+                this.setState({errorVisible: false});
+                this.errorContainerRef.current.transition(showError, hideError, 200, 'ease-in');
+                this.clearErrorsFromState();
             }
         }
     }

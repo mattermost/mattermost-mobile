@@ -1,0 +1,171 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Search should match snapshot 1`] = `
+<Connect(KeyboardLayout)>
+  <Connect(StatusBar) />
+  <View
+    style={
+      Object {
+        "backgroundColor": "#1153ab",
+        "height": 61,
+        "paddingLeft": 14,
+        "paddingRight": 5,
+        "paddingTop": 14,
+        "width": "100%",
+      }
+    }
+    testID="search.screen"
+  >
+    <RNCSafeAreaView
+      edges={
+        Array [
+          "left",
+          "right",
+        ]
+      }
+    >
+      <Search
+        autoCapitalize="none"
+        backArrowSize={28}
+        backgroundColor="transparent"
+        blurOnSubmit={false}
+        cancelTitle="Cancel"
+        containerHeight={33}
+        containerStyle={
+          Object {
+            "padding": 0,
+          }
+        }
+        deleteIconSize={20}
+        editable={true}
+        inputHeight={33}
+        inputStyle={
+          Object {
+            "backgroundColor": "rgba(255,255,255,0.2)",
+            "color": "#ffffff",
+            "fontSize": 15,
+          }
+        }
+        keyboardAppearance="light"
+        keyboardShouldPersist={false}
+        keyboardType="default"
+        onBlur={[Function]}
+        onCancelButtonPress={[Function]}
+        onChangeText={[Function]}
+        onSearchButtonPress={[Function]}
+        onSelectionChange={[Function]}
+        placeholder="Search"
+        placeholderTextColor="rgba(255,255,255,0.5)"
+        returnKeyType="search"
+        searchBarRightMargin={0}
+        searchIconSize={24}
+        selectionColor="rgba(255,255,255,0.5)"
+        showArrow={true}
+        showCancel={true}
+        testID="search.search_bar"
+        tintColorDelete="rgba(255,255,255,0.5)"
+        tintColorSearch="rgba(255,255,255,0.5)"
+        titleCancelColor="#ffffff"
+        value="initial value "
+      />
+    </RNCSafeAreaView>
+  </View>
+  <RNCSafeAreaView
+    edges={
+      Array [
+        "bottom",
+        "left",
+        "right",
+      ]
+    }
+    style={
+      Object {
+        "flex": 1,
+      }
+    }
+  >
+    <SectionList
+      ListFooterComponent={[Function]}
+      data={Array []}
+      disableVirtualization={false}
+      horizontal={false}
+      initialNumToRender={10}
+      keyExtractor={[Function]}
+      keyboardDismissMode="interactive"
+      keyboardShouldPersistTaps="always"
+      maxToRenderPerBatch={10}
+      onEndReachedThreshold={2}
+      onLayout={[Function]}
+      onScroll={[Function]}
+      onViewableItemsChanged={[Function]}
+      renderSectionHeader={[Function]}
+      scrollEventThrottle={60}
+      sections={
+        Array [
+          Object {
+            "ItemSeparatorComponent": [Function],
+            "data": Array [
+              Object {
+                "description": "to find posts from specific users",
+                "modifier": "username",
+                "testID": "search.from_section",
+                "value": "from:",
+              },
+              Object {
+                "description": "to find posts in specific channels",
+                "modifier": ":channel-name",
+                "testID": "search.in_section",
+                "value": "in:",
+              },
+              Object {
+                "description": "to find posts on a specific date",
+                "modifier": "YYYY-MM-DD",
+                "testID": "search.on_section",
+                "value": "on:",
+              },
+              Object {
+                "description": "to find posts after a specific date",
+                "modifier": "YYYY-MM-DD",
+                "testID": "search.after_section",
+                "value": "after:",
+              },
+              Object {
+                "description": "to find posts before a specific date",
+                "modifier": "YYYY-MM-DD",
+                "testID": "search.before_section",
+                "value": "before:",
+              },
+            ],
+            "key": "modifiers",
+            "keyExtractor": [Function],
+            "renderItem": [Function],
+            "title": "",
+          },
+          Object {
+            "data": Array [],
+            "key": "results",
+            "keyExtractor": [Function],
+            "renderItem": [Function],
+            "title": "Search Results",
+          },
+        ]
+      }
+      stickySectionHeadersEnabled={true}
+      style={
+        Object {
+          "flex": 1,
+        }
+      }
+      updateCellsBatchingPeriod={50}
+      windowSize={21}
+    />
+  </RNCSafeAreaView>
+  <Connect(Autocomplete)
+    cursorPosition={14}
+    enableDateSuggestion={true}
+    isSearch={true}
+    onChangeText={[Function]}
+    value="initial value "
+  />
+</Connect(KeyboardLayout)>
+`;

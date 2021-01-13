@@ -17,7 +17,6 @@ import emmProvider from '@init/emm_provider';
 import '@init/device';
 import '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
-import pushNotifications from '@init/push_notifications';
 import {registerScreens} from '@screens';
 import configureStore from '@store';
 import EphemeralStore from '@store/ephemeral_store';
@@ -37,7 +36,6 @@ const init = async () => {
     const MMKVStorage = await getStorage();
     const {store} = configureStore(MMKVStorage);
 
-    await pushNotifications.configure();
     globalEventHandler.configure({
         launchApp,
     });

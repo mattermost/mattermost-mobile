@@ -25,6 +25,7 @@ const LEFT_COMPONENT_INITIAL_POSITION = Platform.OS === 'ios' ? 7 : 0;
 
 export default class Search extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         onBlur: PropTypes.func,
         onFocus: PropTypes.func,
         onSearchButtonPress: PropTypes.func,
@@ -214,7 +215,10 @@ export default class Search extends PureComponent {
     }
 
     render() {
-        const {backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin, containerHeight} = this.props;
+        const {testID, backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin, containerHeight} = this.props;
+        const searchClearButtonTestID = `${testID}.search.clear.button`;
+        const searchCancelButtonTestID = `${testID}.search.cancel.button`;
+        const searchInputTestID = `${testID}.search.input`;
         const searchBarStyle = getSearchBarStyle(
             backgroundColor,
             cancelButtonStyle,
@@ -236,6 +240,7 @@ export default class Search extends PureComponent {
         if (Platform.OS === 'ios') {
             clearIcon = (
                 <CompassIcon
+                    testID={searchClearButtonTestID}
                     name='close-circle'
                     size={18}
                     style={{color: searchBarStyle.clearIconColorIos}}
@@ -258,6 +263,7 @@ export default class Search extends PureComponent {
                 (
                     <TouchableWithoutFeedback onPress={this.onCancel}>
                         <CompassIcon
+                            testID={searchCancelButtonTestID}
                             name='arrow-left'
                             size={this.props.backArrowSize}
                             color={searchBarStyle.clearIconColorAndroid}
@@ -275,6 +281,7 @@ export default class Search extends PureComponent {
             // Making sure the icon won't change depending on whether the input is in focus on Android devices
             cancelIcon = (
                 <CompassIcon
+                    testID={searchCancelButtonTestID}
                     name='arrow-left'
                     size={25}
                     color={searchBarStyle.clearIconColorAndroid}
@@ -284,6 +291,7 @@ export default class Search extends PureComponent {
 
             clearIcon = (
                 <CompassIcon
+                    testID={searchClearButtonTestID}
                     name='close'
                     size={this.props.deleteIconSize}
                     color={searchBarStyle.clearIconColorAndroid}
@@ -293,7 +301,10 @@ export default class Search extends PureComponent {
         }
 
         return (
-            <View style={[searchBarStyle.container, this.props.containerStyle]}>
+            <View
+                testID={testID}
+                style={[searchBarStyle.container, this.props.containerStyle]}
+            >
                 {((this.props.leftComponent) ?
                     <Animated.View
                         style={[styles.leftComponent, {
@@ -315,7 +326,7 @@ export default class Search extends PureComponent {
                     ]}
                 >
                     <SearchBar
-                        testID='search.bar'
+                        testID={searchInputTestID}
                         autoCapitalize={this.props.autoCapitalize}
                         autoCorrect={false}
                         autoFocus={this.props.autoFocus}

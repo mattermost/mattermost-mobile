@@ -19,7 +19,7 @@ import NotificationTitle from './notification_title';
 
 interface NotificationProps {
     componentId: string;
-    notification: PushNotificationData;
+    notification: NotificationWithData;
 }
 
 interface SlideAnimation extends Animatable.CustomAnimation {
@@ -78,7 +78,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
         EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
         dismiss();
 
-        if (!notification.userInfo?.localNotification) {
+        if (!notification.payload?.userInfo?.local) {
             dispatch(loadFromPushNotification(notification));
         }
     };
@@ -112,10 +112,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
         return () => EventEmitter.off(NavigationTypes.NAVIGATION_SHOW_OVERLAY, dismiss);
     }, []);
 
-    let message = notification.message;
-    if (typeof notification.message === 'object') {
-        message = notification.message.body;
-    }
+    const message = notification.payload?.body || notification.payload?.message;
 
     return (
         <PanGestureHandler
@@ -127,7 +124,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
                 style={styles.container}
                 useNativeDriver={true}
                 animation={animation}
-                testID='in_app_notification'
+                testID='in_app_notification.screen'
             >
                 <View style={styles.flex}>
                     <TouchableOpacity
@@ -136,13 +133,13 @@ const Notification = ({componentId, notification}: NotificationProps) => {
                         activeOpacity={1}
                     >
                         <NotificationIcon
-                            fromWebhook={notification.data?.from_webhook === 'true'}
-                            senderId={notification.data?.sender_id || ''}
-                            useUserIcon={notification.data?.use_user_icon === 'true'}
-                            overrideIconUrl={notification.data?.override_icon_url}
+                            fromWebhook={notification.payload?.from_webhook === 'true'}
+                            senderId={notification.payload?.sender_id || ''}
+                            useUserIcon={notification.payload?.use_user_icon === 'true'}
+                            overrideIconUrl={notification.payload?.override_icon_url}
                         />
                         <View style={styles.titleContainer}>
-                            <NotificationTitle channelName={notification.data?.channel_name || ''}/>
+                            <NotificationTitle channelName={notification.payload?.channel_name || ''}/>
                             <View style={styles.flex}>
                                 <Text
                                     numberOfLines={1}
