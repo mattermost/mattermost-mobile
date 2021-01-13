@@ -20,15 +20,13 @@ export default class ChannelMembership extends Model {
 
     /** channel_id : The foreign key to the related Channel record */
     channelId: string;
-
-    /* user_id: The foreign key to the related User record*/
     userId: string;
 
     /** memberChannel : The related channel this member belongs to */
-    channel: Relation<Channel>;
+    memberChannel: Relation<Channel>;
 
     /** memberUser : The related member belonging to the channel */
-    user: Relation<User>;
+    memberUser: Relation<User>;
 
     /**
      * getAllChannelsForUser - Retrieves all the channels that the user is part of

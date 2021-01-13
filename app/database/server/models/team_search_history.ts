@@ -25,13 +25,13 @@ export default class TeamSearchHistory extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
-    /** createdAt : The timestamp at which this search was performed */
+    /** created_at : The timestamp at which this search was performed */
     @field('created_at') createdAt!: number;
 
-    /** teamId : The foreign key to the parent Team model */
+    /** team_id : The foreign key to the parent Team model */
     @field('team_id') teamId!: string;
 
-    /** displayTerm : The term that we display to the user */
+    /** display_term : The term that we display to the user */
     @field('display_term') displayTerm!: string;
 
     /** term : The term that is sent to the server to perform the search */

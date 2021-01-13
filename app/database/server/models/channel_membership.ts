@@ -36,10 +36,10 @@ export default class ChannelMembership extends Model {
     @field('user_id') userId!: string;
 
     /** memberChannel : The related channel this member belongs to */
-    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
+    @immutableRelation(CHANNEL, 'channel_id') memberChannel!: Relation<Channel>;
 
     /** memberUser : The related member belonging to the channel */
-    @immutableRelation(USER, 'user_id') user!: Relation<User>;
+    @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
 
     /**
      * getAllChannelsForUser - Retrieves all the channels that the user is part of

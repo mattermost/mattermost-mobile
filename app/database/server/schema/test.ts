@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
-
 import {serverSchema} from './index';
 
 const {
@@ -10,6 +9,10 @@ const {
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
+    GROUP,
+    GROUPS_IN_CHANNEL,
+    GROUPS_IN_TEAM,
+    GROUP_MEMBERSHIP,
     MY_TEAM,
     POST,
     POSTS_IN_THREAD,
@@ -148,6 +151,58 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'props', type: 'string'},
                         {name: 'root_id', type: 'string'},
                         {name: 'type', type: 'string'},
+                        {name: 'user_id', type: 'string', isIndexed: true}
+                    ],
+                },
+                [GROUP]: {
+                    name: GROUP,
+                    columns: {
+                        display_name: {name: 'display_name', type: 'string'},
+                        name: {name: 'name', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'display_name', type: 'string'},
+                        {name: 'name', type: 'string'},
+                    ],
+                },
+                [GROUPS_IN_CHANNEL]: {
+                    name: GROUPS_IN_CHANNEL,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        member_count: {name: 'member_count', type: 'number'},
+                        timezone_count: {name: 'timezone_count', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'member_count', type: 'number'},
+                        {name: 'timezone_count', type: 'number'},
+                    ],
+                },
+                [GROUPS_IN_TEAM]: {
+                    name: GROUPS_IN_TEAM,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        member_count: {name: 'member_count', type: 'number'},
+                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                        timezone_count: {name: 'timezone_count', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'member_count', type: 'number'},
+                        {name: 'team_id', type: 'string', isIndexed: true},
+                        {name: 'timezone_count', type: 'number'},
+                    ],
+                },
+                [GROUP_MEMBERSHIP]: {
+                    name: GROUP_MEMBERSHIP,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },
