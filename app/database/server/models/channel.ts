@@ -105,7 +105,7 @@ export default class Channel extends Model {
     /** groupsInChannel : Every group contained in this channel */
     @children(GROUPS_IN_CHANNEL) groupsInChannel!: GroupsInChannel[];
 
-    /** posts : all posts made in that channel */
+    /** posts : All posts made in that channel */
     @children(POST) posts!: Post[];
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
