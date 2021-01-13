@@ -46,7 +46,7 @@ describe('MainSidebar', () => {
         const wrapper = loadShallow();
 
         wrapper.instance().handlePermanentSidebar();
-        expect(wrapper.state('permanentSidebar')).toBeUndefined();
+        expect(wrapper.state('permanentSidebar')).toBeFalsy();
     });
 
     test('should set the permanentSidebar state if Tablet', async () => {

@@ -14,7 +14,7 @@ import telemetry from 'app/telemetry';
 import {NavigationTypes} from '@constants';
 import {getAppCredentials} from '@init/credentials';
 import emmProvider from '@init/emm_provider';
-import '@init/device';
+import {setupPermanentSidebar} from '@init/device';
 import '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
 import {registerScreens} from '@screens';
@@ -35,6 +35,7 @@ const init = async () => {
 
     const MMKVStorage = await getStorage();
     const {store} = configureStore(MMKVStorage);
+    await setupPermanentSidebar();
 
     globalEventHandler.configure({
         launchApp,
