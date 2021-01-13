@@ -8,7 +8,9 @@ import GroupsInChannel from '@typings/database/groups_in_channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
 
 /**
- * The Group model unifies the shareholders that contribute a group message.
+ * The Group model unifies/assembles users, teams and channels based on a common ground.  For example, a group can be
+ * all users who are in the mobile team.  If one needs to send that group a message, then s/he can mention the group's
+ * name in the message. (e.g @mobile_team)
  */
 export default class Group extends Model {
     /** table (entity name) : Group */
