@@ -4,13 +4,13 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {loadChannelsForTeam, selectInitialChannel} from '@actions/views/channel';
+import {handleSelectChannel, loadChannelsForTeam, selectInitialChannel} from '@actions/views/channel';
 import {recordLoadTime} from '@actions/views/root';
 import {selectDefaultTeam} from '@actions/views/select_team';
 import {ViewTypes} from '@constants';
-import {getChannelStats} from '@mm-redux/actions/channels';
+import {getChannelStats, joinChannel} from '@mm-redux/actions/channels';
 import {Client4} from '@mm-redux/client';
-import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentChannel, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {getServerVersion} from '@mm-redux/selectors/entities/general';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentTeam} from '@mm-redux/selectors/entities/teams';
@@ -22,9 +22,14 @@ import Channel from './channel';
 
 function mapStateToProps(state) {
     const currentTeam = getCurrentTeam(state);
-    const roles = getCurrentUserId(state) ? getCurrentUserRoles(state) : '';
+    const currentUserId = getCurrentUserId(state);
+    const roles = currentUserId ? getCurrentUserRoles(state) : '';
     const isSystemAdmin = checkIsSystemAdmin(roles);
     const serverVersion = Client4.getServerVersion() || getServerVersion(state);
+
+    const currentChannel = getCurrentChannel(state);
+    const currentChannelId = currentChannel?.id;
+    const memberShips = getMyChannelMemberships(state) || {};
 
     let isSupportedServer = true;
     if (serverVersion) {
@@ -38,7 +43,10 @@ function mapStateToProps(state) {
 
     return {
         currentTeamId: currentTeam?.id,
-        currentChannelId: getCurrentChannelId(state),
+        currentChannel,
+        currentChannelId,
+        currentUserId,
+        isMember: Boolean(memberShips[currentChannelId]),
         isSupportedServer,
         isSystemAdmin,
         teamName: currentTeam?.display_name,
@@ -50,7 +58,9 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
+            joinChannel,
             getChannelStats,
+            handleSelectChannel,
             loadChannelsForTeam,
             selectDefaultTeam,
             selectInitialChannel,

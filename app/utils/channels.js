@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+import {Alert} from 'react-native';
 import {Preferences} from '@mm-redux/constants';
 import {getUserIdFromChannelName} from '@mm-redux/utils/channel_utils';
 import {getLastCreateAt} from '@mm-redux/utils/post_utils';
@@ -75,4 +75,45 @@ export function getChannelSinceValue(state, channelId, postIds) {
     }
 
     return since;
+}
+
+export function privateChannelJoinPrompt(channel, intl) {
+    return new Promise((resolve) => {
+        Alert.alert(
+            intl.formatMessage({
+                id: 'permalink.show_dialog_warn.title',
+                defaultMessage: 'Private Channel',
+            }),
+            intl.formatMessage({
+                id: 'permalink.show_dialog_warn.description',
+                defaultMessage: 'You must join "{channel}" to view this post.',
+            }, {
+                channel: channel.name,
+            }),
+            [
+                {
+                    text: intl.formatMessage({
+                        id: 'permalink.show_dialog_warn.cancel',
+                        defaultMessage: 'Cancel',
+                    }),
+                    onPress: async () => {
+                        resolve({
+                            join: false,
+                        });
+                    },
+                },
+                {
+                    text: intl.formatMessage({
+                        id: 'permalink.show_dialog_warn.join',
+                        defaultMessage: 'Join',
+                    }),
+                    onPress: async () => {
+                        resolve({
+                            join: true,
+                        });
+                    },
+                },
+            ],
+        );
+    });
 }

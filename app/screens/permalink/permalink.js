@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {
+    Alert,
     Platform,
     Text,
     TouchableOpacity,
@@ -29,6 +30,7 @@ import SafeAreaView from '@components/safe_area_view';
 import {General} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
+import {privateChannelJoinPrompt} from '@utils/channels';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -86,10 +88,15 @@ export default class Permalink extends PureComponent {
     constructor(props) {
         super(props);
 
-        const {error, postIds} = props;
+        const {channelId, error, myMembers, postIds} = props;
         let loading = true;
 
-        if (postIds && postIds.length >= 10) {
+        if (
+            postIds && postIds.length >= 10 &&
+
+            // To handle use case when sysadmin visits a private channel from "channel url" without joining
+            myMembers[channelId]
+        ) {
             loading = false;
         }
 
@@ -240,12 +247,24 @@ export default class Permalink extends PureComponent {
                 return;
             }
 
-            if (!channelId) {
+            if (!focusChannelId) {
                 const focusedPost = post.data && post.data.posts ? post.data.posts[focusedPostId] : null;
                 focusChannelId = focusedPost ? focusedPost.channel_id : '';
-                if (focusChannelId) {
+            }
+
+            if (focusChannelId) {
+                if (!this.props.myMembers[focusChannelId]) {
                     const {data: channel} = await actions.getChannel(focusChannelId);
-                    if (!this.props.myMembers[focusChannelId] && channel && channel.type === General.OPEN_CHANNEL) {
+                    if (channel) {
+                        if (channel.type === General.PRIVATE_CHANNEL) {
+                            const {join} = await privateChannelJoinPrompt(channel, this.context.intl);
+                            if (!join) {
+                                this.handleClose();
+                                return;
+                            }
+                        }
+
+                        // Join Open/Private channel
                         await actions.joinChannel(currentUserId, channel.team_id, channel.id);
                     }
                 }
