@@ -22,8 +22,8 @@ export default class Team extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** allow_open_invite : Boolean flag indicating if this team is open to the public */
-    allowOpenInvite: boolean;
+    /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */
+    isAllowOpenInvite: boolean;
 
     /** description : The description for the team */
     description: string;
@@ -52,14 +52,14 @@ export default class Team extends Model {
     /** groupsInTeam : All the groups associated with this team */
     groupsInTeam: GroupsInTeam[];
 
-    /** myTeam : Lazy query property returning only the team that this user is part of  */
+    /** myTeam : Lazy query property returning only the teams that this user is part of  */
     myTeam: Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
     slashCommands: SlashCommand[];
 
-    /** teamChannelHistories : All the channel history with this team */
-    teamChannelHistories: TeamChannelHistory[];
+    /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
+    teamChannelHistory: Query<TeamChannelHistory>;
 
     /** members : All the users associated with this team */
     members: TeamMembership[];

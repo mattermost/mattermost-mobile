@@ -25,10 +25,10 @@ export default class MyChannelSettings extends Model {
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
-    /** channelId : The foreign key to the related CHANNEL record */
+    /** channel_id : The foreign key to the related CHANNEL record */
     @field('channel_id') channelId!: string;
 
-    /** notifyProps : Configurations with regards to this channel */
+    /** notify_props : Configurations with regards to this channel */
     @json('notify_props', (rawJson) => rawJson) notifyProps!: string;
 
     /** channel : The relation pointing to entity CHANNEL */

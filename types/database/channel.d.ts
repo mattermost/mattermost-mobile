@@ -37,7 +37,7 @@ export default class Channel extends Model {
     /** display_name : The channel display name (e.g. Town Square ) */
     displayName: string;
 
-    /** is_group_constrained : If group is restricted to certain users/teams only */
+    /** is_group_constrained : If a channel is  restricted to certain groups, this boolean will be true and only members of that group have access to this team. Hence indicating that the members of this channel are managed by groups. */
     isGroupConstrained: boolean;
 
     /** name : The name of the channel (e.g town-square) */
@@ -52,13 +52,13 @@ export default class Channel extends Model {
     /** members : Users belonging to this channel */
     members: ChannelMembership[];
 
-    /** drafts : All drafts for this channel */
+    /** draft : All drafts for this channel */
     drafts: Draft[];
 
     /** groupsInChannel : Every group contained in this channel */
     groupsInChannel: GroupsInChannel[];
 
-    /** posts : all posts made in that channel */
+    /** posts : all posts made in the channel */
     posts: Post[];
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */

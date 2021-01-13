@@ -20,7 +20,7 @@ export default class MyChannelSettings extends Model {
     /** channelId : The foreign key to the related CHANNEL record */
     channelId: string;
 
-    /** notifyProps : Configurations with regards to this channel */
+    /** notify_props : Configurations with regards to this channel */
     notifyProps: string;
 
     /** channel : The relation pointing to entity CHANNEL */
