@@ -8,6 +8,10 @@ import {serverSchema} from './index';
 const {
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
+    GROUP,
+    GROUPS_IN_CHANNEL,
+    GROUPS_IN_TEAM,
+    GROUP_MEMBERSHIP,
     MY_TEAM,
     PREFERENCE,
     REACTION,
@@ -45,6 +49,58 @@ describe('*** Test schema for SERVER database ***', () => {
                     },
                     columnArray: [
                         {name: 'name', type: 'string'},
+                    ],
+                },
+                [GROUP]: {
+                    name: GROUP,
+                    columns: {
+                        display_name: {name: 'display_name', type: 'string'},
+                        name: {name: 'name', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'display_name', type: 'string'},
+                        {name: 'name', type: 'string'},
+                    ],
+                },
+                [GROUPS_IN_CHANNEL]: {
+                    name: GROUPS_IN_CHANNEL,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        member_count: {name: 'member_count', type: 'number'},
+                        timezone_count: {name: 'timezone_count', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'member_count', type: 'number'},
+                        {name: 'timezone_count', type: 'number'},
+                    ],
+                },
+                [GROUPS_IN_TEAM]: {
+                    name: GROUPS_IN_TEAM,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        member_count: {name: 'member_count', type: 'number'},
+                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                        timezone_count: {name: 'timezone_count', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'member_count', type: 'number'},
+                        {name: 'team_id', type: 'string', isIndexed: true},
+                        {name: 'timezone_count', type: 'number'},
+                    ],
+                },
+                [GROUP_MEMBERSHIP]: {
+                    name: GROUP_MEMBERSHIP,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string', isIndexed: true},
+                        {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [PREFERENCE]: {

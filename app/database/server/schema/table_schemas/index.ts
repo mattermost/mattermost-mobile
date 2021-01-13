@@ -3,6 +3,10 @@
 
 export {default as ChannelMembershipSchema} from './channel_membership';
 export {default as CustomEmojiSchema} from './custom_emoji';
+export {default as GroupMembershipSchema} from './group_membership';
+export {default as GroupSchema} from './group';
+export {default as GroupsInChannelSchema} from './groups_in_channel';
+export {default as GroupsInTeamSchema} from './groups_in_team';
 export {default as MyTeamSchema} from './my_team';
 export {default as PreferenceSchema} from './preference';
 export {default as ReactionSchema} from './reaction';

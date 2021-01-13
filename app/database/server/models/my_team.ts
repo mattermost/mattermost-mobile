@@ -36,6 +36,6 @@ export default class MyTeam extends Model {
     /** team_id : The foreign key of the 'parent' Team entity */
     @field('team_id') teamId!: string;
 
-    /** teams : The relation to the entity TEAM, that this user belongs to  */
+    /** team : The relation to the entity TEAM, that this user belongs to  */
     @relation(MY_TEAM, 'team_id') team!: Relation<Team>
 }
