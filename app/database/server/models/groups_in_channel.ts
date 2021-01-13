@@ -38,7 +38,7 @@ export default class GroupsInChannel extends Model {
     @field('member_count') memberCount!: number;
 
     /** timezone_count : The number of timezones in that group */
-    @field('timezone_count') timeZoneCount!: number;
+    @field('timezone_count') timezoneCount!: number;
 
     /** channel : The related record to the parent Channel model */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;
