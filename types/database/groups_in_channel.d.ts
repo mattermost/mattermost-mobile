@@ -27,7 +27,7 @@ export default class GroupsInChannel extends Model {
     memberCount: number;
 
     /** timezone_count : The number of timezones in that group */
-    timeZoneCount: number;
+    timezoneCount: number;
 
     /** channel : The related record to the parent Channel model */
     channel: Relation<Channel>;
