@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Model} from '@nozbe/watermelondb';
 import {field, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import {Model} from '@nozbe/watermelondb';
 
 const {SYSTEM} = MM_TABLES.SERVER;
 
