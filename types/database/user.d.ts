@@ -6,6 +6,7 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
+import {NotifyProps, Timezone, UserProps} from '@typings/database/index';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
@@ -65,29 +66,15 @@ export default class User extends Model {
     username: string;
 
     /** notify_props : Notification preferences/configurations */
-    notifyProps: {
-        channel: true,
-        desktop: string,
-        desktop_sound: true,
-        email: true,
-        first_name: true
-        mention_keys: string,
-        push: string,
-    };
+    notifyProps: NotifyProps;
 
     /** props : Custom objects ( e.g. custom status) can be stored in there. Its type definition is known as
      *  'excess property check' in Typescript land.  We keep using it till we build up the final shape of this object.
      */
-    props: {
-        [propName as string] : any
-    };
+    props: UserProps;
 
     /** timezone : The timezone for this user */
-    timezone: {
-        automaticTimezone: string
-        manualTimezone: string,
-        useAutomaticTimezone: true,
-    };
+    timezone: Timezone;
 
     /** channelsCreated : All the channels that this user created */
     channelsCreated: Channel[];

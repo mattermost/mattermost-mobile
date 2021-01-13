@@ -6,16 +6,20 @@ import {MM_TABLES} from '@constants/database';
 import {serverSchema} from './index';
 
 const {
+    CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     MY_TEAM,
+    PREFERENCE,
+    REACTION,
     ROLE,
     SLASH_COMMAND,
     SYSTEM,
-    TERMS_OF_SERVICE,
     TEAM,
     TEAM_CHANNEL_HISTORY,
     TEAM_MEMBERSHIP,
     TEAM_SEARCH_HISTORY,
+    TERMS_OF_SERVICE,
+    USER,
 } = MM_TABLES.SERVER;
 
 describe('*** Test schema for SERVER database ***', () => {
@@ -23,6 +27,17 @@ describe('*** Test schema for SERVER database ***', () => {
         expect(serverSchema).toEqual({
             version: 1,
             tables: {
+                [CHANNEL_MEMBERSHIP]: {
+                    name: CHANNEL_MEMBERSHIP,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'user_id', type: 'string', isIndexed: true},
+                    ],
+                },
                 [CUSTOM_EMOJI]: {
                     name: CUSTOM_EMOJI,
                     columns: {
@@ -30,6 +45,36 @@ describe('*** Test schema for SERVER database ***', () => {
                     },
                     columnArray: [
                         {name: 'name', type: 'string'},
+                    ],
+                },
+                [PREFERENCE]: {
+                    name: PREFERENCE,
+                    columns: {
+                        category: {name: 'category', type: 'string', isIndexed: true},
+                        name: {name: 'name', type: 'string'},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        value: {name: 'value', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'category', type: 'string', isIndexed: true},
+                        {name: 'name', type: 'string'},
+                        {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'value', type: 'string'},
+                    ],
+                },
+                [REACTION]: {
+                    name: REACTION,
+                    columns: {
+                        create_at: {name: 'create_at', type: 'number'},
+                        emoji_name: {name: 'emoji_name', type: 'string'},
+                        post_id: {name: 'post_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'create_at', type: 'number'},
+                        {name: 'emoji_name', type: 'string'},
+                        {name: 'post_id', type: 'string', isIndexed: true},
+                        {name: 'user_id', type: 'string', isIndexed: true},
                     ],
                 },
                 [MY_TEAM]: {
@@ -160,6 +205,49 @@ describe('*** Test schema for SERVER database ***', () => {
                     },
                     columnArray: [
                         {name: 'accepted_at', type: 'number'},
+                    ],
+                },
+                [USER]: {
+                    name: USER,
+                    columns: {
+                        auth_service: {name: 'auth_service', type: 'string'},
+                        delete_at: {name: 'delete_at', type: 'number'},
+                        email: {name: 'email', type: 'string'},
+                        first_name: {name: 'first_name', type: 'string'},
+                        is_bot: {name: 'is_bot', type: 'boolean'},
+                        is_guest: {name: 'is_guest', type: 'boolean'},
+                        last_name: {name: 'last_name', type: 'string'},
+                        last_picture_update: {name: 'last_picture_update', type: 'number'},
+                        locale: {name: 'locale', type: 'string'},
+                        nickname: {name: 'nickname', type: 'string'},
+                        notify_props: {name: 'notify_props', type: 'string'},
+                        position: {name: 'position', type: 'string'},
+                        props: {name: 'props', type: 'string'},
+                        roles: {name: 'roles', type: 'string'},
+                        status: {name: 'status', type: 'string'},
+                        timezone: {name: 'timezone', type: 'string'},
+                        user_id: {name: 'user_id', type: 'string'},
+                        username: {name: 'username', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'auth_service', type: 'string'},
+                        {name: 'delete_at', type: 'number'},
+                        {name: 'email', type: 'string'},
+                        {name: 'first_name', type: 'string'},
+                        {name: 'is_bot', type: 'boolean'},
+                        {name: 'is_guest', type: 'boolean'},
+                        {name: 'last_name', type: 'string'},
+                        {name: 'last_picture_update', type: 'number'},
+                        {name: 'locale', type: 'string'},
+                        {name: 'nickname', type: 'string'},
+                        {name: 'notify_props', type: 'string'},
+                        {name: 'position', type: 'string'},
+                        {name: 'props', type: 'string'},
+                        {name: 'roles', type: 'string'},
+                        {name: 'status', type: 'string'},
+                        {name: 'timezone', type: 'string'},
+                        {name: 'user_id', type: 'string'},
+                        {name: 'username', type: 'string'},
                     ],
                 },
             },
