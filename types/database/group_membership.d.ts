@@ -17,26 +17,22 @@ export default class GroupMembership extends Model {
 
     /** associations : Describes every relationship to this entity */
     static associations: Associations;
-
-    /** groupId : The foreign key to the related Group record */
     groupId: string;
-
-    /** userId : The foreign key to the related User record */
     userId: string;
 
     /** memberGroup : The related group this user belongs to */
-    group: Relation<Group>;
+    memberGroup: Relation<Group>;
 
     /** memberUser : The related user in the group */
-    user: Relation<User>;
+    memberUser: Relation<User>;
 
     /**
      * getAllGroupsForUser : Retrieves all the groups that the user is part of
      */
-    getAllGroupsForUser: Query<any>;
+    getAllGroupsForUser: Query<Group>;
 
     /**
      * getAllUsersInGroup : Retrieves all the users who are part of this group
      */
-    getAllUsersInGroup: Query<any>;
+    getAllUsersInGroup: Query<User>;
 }

@@ -28,6 +28,6 @@ export default class MyTeam extends Model {
     /** team_id : The foreign key of the 'parent' Team entity */
     teamId: string;
 
-    /** teams : The relation to the entity TEAM, that this user belongs to  */
+    /** team : The relation to the entity TEAM, that this user belongs to  */
     team: Relation<Team>;
 }

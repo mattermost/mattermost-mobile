@@ -36,10 +36,10 @@ export default class GroupMembership extends Model {
     @field('user_id') userId!: string;
 
     /** memberGroup : The related group this user belongs to */
-    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
+    @immutableRelation(GROUP, 'group_id') memberGroup!: Relation<Group>;
 
     /** memberUser : The related user in the group */
-    @immutableRelation(USER, 'user_id') user!: Relation<User>;
+    @immutableRelation(USER, 'user_id') memberUser!: Relation<User>;
 
     /**
      * getAllGroupsForUser : Retrieves all the groups that the user is part of

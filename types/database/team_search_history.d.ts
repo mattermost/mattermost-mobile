@@ -17,13 +17,13 @@ export default class TeamSearchHistory extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** createdAt : The timestamp at which this search was performed */
+    /** created_at : The timestamp at which this search was performed */
     createdAt: number;
 
-    /** teamId : The foreign key to the parent Team model */
+    /** team_id : The foreign key to the parent Team model */
     teamId: string;
 
-    /** displayTerm : The term that we display to the user */
+    /** display_term : The term that we display to the user */
     displayTerm: string;
 
     /** term : The term that is sent to the server to perform the search */

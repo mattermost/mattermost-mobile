@@ -28,9 +28,9 @@ export default class Group extends Model {
     /** groupsInChannel : All the related children records from GroupsInChannel */
     groupsInChannel: GroupsInChannel[];
 
-    /** groupsInChannel : All the related children records from GroupsInTeam */
+    /** groupsInTeam : All the related children records from GroupsInTeam */
     groupsInTeam: GroupsInTeam[];
 
-    /** groupsInChannel : All the related children records from GroupMembership */
-    groupMembership: GroupMembership[];
+    /** groupMemberships : All the related children records from GroupMembership */
+    groupMemberships: GroupMembership[];
 }

@@ -40,9 +40,9 @@ export default class Reaction extends Model {
     /** user_id : The related User's foreign key by which this reaction was expressed */
     @field('user_id') userId!: string;
 
-    /** reactionUser : The related record to the User model */
+    /** user : The related record to the User model */
     @immutableRelation(USER, 'user_id') user!: Relation<User>;
 
-    /** reactionPost : The related record to the Post model */
+    /** post : The related record to the Post model */
     @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }
