@@ -45,7 +45,7 @@ class WebSocketClient {
 
         return new Promise((resolve, reject) => {
             if (this.conn) {
-                resolve();
+                resolve(null);
                 return;
             }
 
@@ -108,7 +108,7 @@ class WebSocketClient {
                 }
 
                 this.connectFailCount = 0;
-                resolve();
+                resolve(null);
             };
 
             this.conn!.onclose = () => {

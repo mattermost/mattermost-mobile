@@ -112,6 +112,7 @@ export default class Autocomplete extends PureComponent {
     }
 
     componentDidUpdate() {
+        //eslint-disable-next-line no-underscore-dangle
         const visible = Boolean(this.containerRef.current?._children.length);
         this.props.onVisible(visible);
     }

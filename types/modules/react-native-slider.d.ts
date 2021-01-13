@@ -1,6 +1,6 @@
 /* eslint-disable header/header */
 declare module 'react-native-slider' {
-    import {ComponentClass, PureComponent} from 'react';
+    import {ComponentClass} from 'react';
 
     import {
         ImageSourcePropType,

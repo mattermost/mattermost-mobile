@@ -25,6 +25,7 @@ describe('EditChannelInfo', () => {
         channelURL: '/team_a/channels/channel_a',
         purpose: 'purpose',
         header: 'header',
+        isLandscape: false,
         onDisplayNameChange: jest.fn(),
         onChannelURLChange: jest.fn(),
         onPurposeChange: jest.fn(),
