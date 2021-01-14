@@ -2,15 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {AppSchema, appSchema} from '@nozbe/watermelondb';
-
 import {
     ChannelMembershipSchema,
     CustomEmojiSchema,
+    DraftSchema,
+    FileSchema,
     GroupMembershipSchema,
     GroupSchema,
     GroupsInChannelSchema,
     GroupsInTeamSchema,
     MyTeamSchema,
+    PostInThreadSchema,
+    PostMetadataSchema,
+    PostSchema,
     PreferenceSchema,
     ReactionSchema,
     RoleSchema,
@@ -29,11 +33,16 @@ export const serverSchema: AppSchema = appSchema({
     tables: [
         ChannelMembershipSchema,
         CustomEmojiSchema,
+        DraftSchema,
+        FileSchema,
         GroupMembershipSchema,
         GroupSchema,
         GroupsInChannelSchema,
         GroupsInTeamSchema,
         MyTeamSchema,
+        PostInThreadSchema,
+        PostMetadataSchema,
+        PostSchema,
         PreferenceSchema,
         ReactionSchema,
         RoleSchema,
