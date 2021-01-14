@@ -58,7 +58,7 @@ function SSO({intl, ssoType}: SSOProps) {
     }
     case ViewTypes.OFFICE365: {
         completeUrlPath = '/signup/office365/complete';
-        loginUrl = `${serverUrl}/oauth/office365/login`;
+        loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
         break;
     }
     case ViewTypes.OPENID: {
