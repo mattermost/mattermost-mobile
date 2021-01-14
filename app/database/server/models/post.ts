@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
+import {Q, Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
+import {children, field, immutableRelation, json, lazy} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
@@ -87,14 +87,14 @@ export default class Post extends Model {
     /** props : Additional attributes for this props */
     @json('props', (rawJson) => rawJson) props!: string;
 
-    /** drafts  : Every drafts associated with this Post */
-    @children(DRAFT) drafts!: Draft;
+    // A draft can be associated with this post for as long as this post is a parent post
+    @lazy draft = this.collections.get(DRAFT).query(Q.on(POST, 'id', this.id)) as Query<Draft>
+
+    /** postsInThread: The thread to which this post is associated */
+    @lazy postsInThread = this.collections.get(POSTS_IN_THREAD).query(Q.on(POST, 'id', this.id)) as Query<PostInThread>
 
     /** files: All the files associated with this Post */
     @children(FILE) files!: File[];
-
-    /** postsInThread: Every posts associated to a thread */
-    @children(POSTS_IN_THREAD) postsInThread!: PostInThread[];
 
     /** metadata: All the extra data associated with this Post */
     @children(POST_METADATA) metadata!: PostMetadata[];
