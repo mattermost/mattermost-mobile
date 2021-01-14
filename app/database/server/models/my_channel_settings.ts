@@ -29,7 +29,7 @@ export default class MyChannelSettings extends Model {
     @field('channel_id') channelId!: string;
 
     /** notify_props : Configurations with regards to this channel */
-    @json('notify_props', (rawJson) => rawJson) notifyProps!: string;
+    @json('notify_props', (rawJson) => rawJson) notifyProps!: NotifyProps;
 
     /** channel : The relation pointing to entity CHANNEL */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>;

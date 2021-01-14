@@ -30,8 +30,8 @@ export default class ChannelInfo extends Model {
     /** member_count: The number of members in this channel */
     memberCount: number;
 
-    /** pin_post_count : The number of post pinned in this channel */
-    pinPostCount: number;
+    /** pinned_post_count : The number of post pinned in this channel */
+    pinned_post_count: number;
 
     /** purpose: The intention behind this channel */
     purpose: string;

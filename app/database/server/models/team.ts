@@ -88,7 +88,7 @@ export default class Team extends Model {
     @children(GROUPS_IN_TEAM) groupsInTeam!: GroupsInTeam[];
 
     /** myTeam : Lazy query property returning only the teams that this user is part of  */
-    @lazy myTeam = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeam>;
+    @lazy myTeams = this.collections.get(MY_TEAM).query(Q.on(TEAM, 'id', this.id)) as Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
     @children(SLASH_COMMAND) slashCommands!: SlashCommand[];

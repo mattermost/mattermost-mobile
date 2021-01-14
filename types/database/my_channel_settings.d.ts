@@ -21,7 +21,7 @@ export default class MyChannelSettings extends Model {
     channelId: string;
 
     /** notify_props : Configurations with regards to this channel */
-    notifyProps: string;
+    notifyProps: NotifyProps;
 
     /** channel : The relation pointing to entity CHANNEL */
     channel: Relation<Channel>;
