@@ -35,5 +35,5 @@ export default class Draft extends Model {
     @field('root_id') rootId!: string;
 
     /** files : The files field will hold an array of file objects that have not yet been uploaded and persisted within the FILE entity */
-    @json('files', (rawJson) => rawJson) files!: string;
+    @json('files', (rawJson) => rawJson) files!: FileInfo[];
 }

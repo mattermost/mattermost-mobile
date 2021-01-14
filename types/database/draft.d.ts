@@ -23,5 +23,5 @@ export default class Draft extends Model {
     rootId: string;
 
     /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE entity */
-    files: string;
+    files: FileInfo[];
 }
