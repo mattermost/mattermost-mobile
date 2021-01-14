@@ -224,6 +224,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         defaultImageContainer: {
             alignItems: 'center',
             justifyContent: 'center',
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         defaultImageTint: {
             flex: 1,
