@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Team from '@typings/database/team';
 
 /**
@@ -17,9 +20,9 @@ export default class TeamChannelHistory extends Model {
     /** team_id : The foreign key to the related Team record */
     teamId: string;
 
-    /** channelIds : An array containing all the channels visited within this team */
+    /** channel_ids : An array containing the last 5 channels visited within this team order by recency */
     channelIds: string[];
 
     /** team : The related record from the parent Team model */
-    team: Team;
+    team: Relation<Team>;
 }

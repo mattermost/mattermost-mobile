@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import User from '@typings/database/user';
@@ -26,17 +26,17 @@ export default class Preference extends Model {
     };
 
     /** category : The preference category ( e.g. Themes, Account settings etc..) */
-    @field('category') category: string;
+    @field('category') category!: string;
 
     /** name : The category name */
-    @field('name') name: string;
+    @field('name') name!: string;
 
     /** user_id : The foreign key of the user's record in this model */
-    @field('user_id') userId: string;
+    @field('user_id') userId!: string;
 
     /** value : The preference's value */
-    @field('value') value: string;
+    @field('value') value!: string;
 
     /** user : The related record to the parent User model */
-    @immutableRelation(USER, 'user_id') user: Relation<User>;
+    @immutableRelation(USER, 'user_id') user!: Relation<User>;
 }

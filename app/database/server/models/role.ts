@@ -14,9 +14,9 @@ export default class Role extends Model {
     static table = ROLE;
 
     /** name  : The role's name */
-    @field('name') name: string;
+    @field('name') name!: string;
 
     /** permissions : The different permissions associated to that role */
-    @json('permissions', (rawJson) => rawJson) permissions: string;
+    @json('permissions', (rawJson) => rawJson) permissions!: string[];
 }
 

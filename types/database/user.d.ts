@@ -1,9 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {NotifyProps, Timezone, UserProps} from '@typings/database/index';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';
@@ -47,48 +50,50 @@ export default class User extends Model {
     /** locale : The user's locale */
     locale: string;
 
-    /** nick_name : The user's nick name */
-    nickName: string;
+    /** nickname : The user's nickname */
+    nickname: string;
 
     /** position : The user's position in the company */
     position: string;
 
-    /** roles : The associated permissions that this user benefits from */
+    /** roles : The associated roles that this user has */
     roles: string;
 
     /** status : The presence status for the user */
     status: string;
 
-    /** user_name : The user's username */
-    userName: string;
+    /** username : The user's username */
+    username: string;
 
     /** notify_props : Notification preferences/configurations */
-    notifyProps: string[];
+    notifyProps: NotifyProps;
 
-    /** props : Custom objects ( e.g. custom status) can be stored in there */
-    props: string[];
+    /** props : Custom objects ( e.g. custom status) can be stored in there. Its type definition is known as
+     *  'excess property check' in Typescript land.  We keep using it till we build up the final shape of this object.
+     */
+    props: UserProps;
 
-    /** time_zone : The different timezones listed for this user */
-    timeZone: string[];
+    /** timezone : The timezone for this user */
+    timezone: Timezone;
 
     /** channelsCreated : All the channels that this user created */
-    channelsCreated: Channel;
+    channelsCreated: Channel[];
 
     /** channels : All the channels that this user is part of  */
-    channels: ChannelMembership;
+    channels: ChannelMembership[];
 
-    /** groups : All the gorups that this user is part of  */
-    groups: GroupMembership;
+    /** groups : All the groups that this user is part of  */
+    groups: GroupMembership[];
 
     /** posts :  All the posts that this user has written*/
-    posts: Post;
+    posts: Post[];
 
     /** preferences : All user preferences */
-    preferences: Preference;
+    preferences: Preference[];
 
     /** reactions : All the reactions to posts that this user had */
-    reactions: Reaction;
+    reactions: Reaction[];
 
     /** teams : All the team that this user is part of  */
-    teams: TeamMembership;
+    teams: TeamMembership[];
 }

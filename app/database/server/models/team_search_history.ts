@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
+import {field, immutableRelation, text} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, immutableRelation, json, text} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
@@ -25,18 +25,18 @@ export default class TeamSearchHistory extends Model {
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
-    /** createdAt : The timestamp at which this search was performed */
-    @field('created_at') createdAt: number;
+    /** created_at : The timestamp at which this search was performed */
+    @field('created_at') createdAt!: number;
 
-    /** teamId : The foreign key to the parent Team model */
-    @field('team_id') teamId: string;
+    /** team_id : The foreign key to the parent Team model */
+    @field('team_id') teamId!: string;
 
-    /** displayTerm : The term that we display to the user after being processed by the server */
-    @json('display_term', (rawJson) => rawJson) displayTerm: string;
+    /** display_term : The term that we display to the user */
+    @field('display_term') displayTerm!: string;
 
-    /** term : The keyword the user looked for */
-    @text('term') term: string;
+    /** term : The term that is sent to the server to perform the search */
+    @text('term') term!: string;
 
     /** team : The related record to the parent team model */
-    @immutableRelation(TEAM, 'team_id') team: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 }

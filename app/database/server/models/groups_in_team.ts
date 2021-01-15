@@ -5,8 +5,8 @@ import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 
-import {MM_TABLES} from '@constants/database';
 import Group from '@typings/database/group';
+import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
 
 const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;
@@ -29,20 +29,20 @@ export default class GroupsInTeam extends Model {
     };
 
     /** group_id : The foreign key to the related Group record */
-    @field('group_id') groupId: string;
+    @field('group_id') groupId!: string;
 
     /** member_count : The number of users in that group */
-    @field('member_count') memberCount: number;
+    @field('member_count') memberCount!: number;
 
     /** team_id : The foreign key to the related Team record */
-    @field('team_id') teamId: string;
+    @field('team_id') teamId!: string;
 
     /** timezone_count : The number of timezones */
-    @field('timezone_count') timezoneCount: number;
+    @field('timezone_count') timezoneCount!: number;
 
     /** team : The related record to the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 
     /** group : The related record to the parent Team model */
-    @immutableRelation(GROUP, 'group_id') group: Relation<Group>;
+    @immutableRelation(GROUP, 'group_id') group!: Relation<Group>;
 }

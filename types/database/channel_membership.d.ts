@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Query, Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Channel from '@typings/database/channel';
 import User from '@typings/database/user';
 
@@ -15,9 +18,25 @@ export default class ChannelMembership extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** memberChannel : The related channel this member belongs to */
-    memberChannel: Channel;
+    /** channel_id : The foreign key to the related Channel record */
+    channelId: string;
 
-    /** memberUser : The related member belong to the channel */
-    memberUser: User;
+    /* user_id: The foreign key to the related User record*/
+    userId: string;
+
+    /** memberChannel : The related channel this member belongs to */
+    memberChannel: Relation<Channel>;
+
+    /** memberUser : The related member belonging to the channel */
+    memberUser: Relation<User>;
+
+    /**
+     * getAllChannelsForUser - Retrieves all the channels that the user is part of
+     */
+    getAllChannelsForUser: Query<Channel>;
+
+    /**
+     * getAllUsersInChannel - Retrieves all the users who are part of this channel
+     */
+    getAllUsersInChannel: Query<User>;
 }

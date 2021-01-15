@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Team from '@typings/database/team';
 
 /**
- * The SlashCommand model describes the commands of the various plugins installed in each team.
+ * The SlashCommand model describes the commands of the various commands available in each team.
  */
 export default class SlashCommand extends Model {
     /** table (entity name) : SlashCommand */
@@ -13,8 +16,8 @@ export default class SlashCommand extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** auto_complete : Boolean flag for auto-completing slash commands */
-    autoComplete: boolean;
+    /** is_auto_complete : Boolean flag for auto-completing slash commands */
+    isAutoComplete: boolean;
 
     /** description : The description for the slash command */
     description: string;
@@ -38,5 +41,5 @@ export default class SlashCommand extends Model {
     trigger: string;
 
     /** team : The related parent TEAM record */
-    team: Team;
+    team: Relation<Team>;
 }

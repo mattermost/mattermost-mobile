@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -18,9 +19,9 @@ export default class Draft extends Model {
     /** message : The draft message */
     message: string;
 
-    /** root_id : The root_id will be null for Direct Message and have a value for draft replies of a thread */
+    /** root_id : The root_id will be empty most of the time unless the draft relates to a draft reply of a thread */
     rootId: string;
 
     /** files : The files field will hold an array of files object that have not yet been uploaded and persisted within the FILE entity */
-    files: string[];
+    files: FileInfo[];
 }

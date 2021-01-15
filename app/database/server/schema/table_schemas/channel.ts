@@ -10,13 +10,12 @@ const {CHANNEL} = MM_TABLES.SERVER;
 export default tableSchema({
     name: CHANNEL,
     columns: [
-        {name: 'channel_id', type: 'string'},
         {name: 'create_at', type: 'number'},
         {name: 'creator_id', type: 'string', isIndexed: true},
         {name: 'delete_at', type: 'number'},
         {name: 'display_name', type: 'string'},
         {name: 'is_group_constrained', type: 'boolean'},
-        {name: 'name', type: 'string'},
+        {name: 'name', type: 'string', isIndexed: true},
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'type', type: 'string'},
     ],

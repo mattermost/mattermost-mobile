@@ -11,7 +11,6 @@ export default tableSchema({
     name: GROUP,
     columns: [
         {name: 'display_name', type: 'string'},
-        {name: 'group_id', type: 'string'},
         {name: 'name', type: 'string'},
     ],
 });

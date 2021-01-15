@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {Model} from '@nozbe/watermelondb';
 
 /**
@@ -10,7 +11,7 @@ export default class Servers extends Model {
     /** table (entity name) : servers */
     static table: string;
 
-    /** db_path : The shared directory (e.g. App-Group) in which the database is stored */
+    /** db_path : The file path where the database is stored */
     dbPath: string;
 
     /** display_name : The server display name */

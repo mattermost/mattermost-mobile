@@ -10,7 +10,6 @@ const {FILE} = MM_TABLES.SERVER;
 export default tableSchema({
     name: FILE,
     columns: [
-        {name: 'draft_id', type: 'string'},
         {name: 'extension', type: 'string'},
         {name: 'height', type: 'number'},
         {name: 'image_thumbnail', type: 'string'},

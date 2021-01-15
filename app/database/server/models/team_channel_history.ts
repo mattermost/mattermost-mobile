@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
@@ -21,16 +21,16 @@ export default class TeamChannelHistory extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations = {
 
-        /** A TEAM can have multiple Channel history */
+        /** A TEAM and TEAM_CHANNEL_HISTORY share a 1:1 relationship */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
     };
 
     /** team_id : The foreign key to the related Team record */
-    @field('team_id') teamId: string;
+    @field('team_id') teamId!: string;
 
-    /** channelIds : An array containing all the channels visited within this team */
-    @json('channel_ids', (rawJson) => rawJson) channelIds: string[];
+    /** channel_ids : An array containing the last 5 channels visited within this team order by recency */
+    @json('channel_ids', (rawJson) => rawJson) channelIds!: string[];
 
     /** team : The related record from the parent Team model */
-    @immutableRelation(TEAM, 'team_id') team: Relation<Team>;
+    @immutableRelation(TEAM, 'team_id') team!: Relation<Team>;
 }

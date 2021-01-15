@@ -1,9 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
-import {AppSchema, Model} from '@nozbe/watermelondb';
-import {DatabaseAdapter} from '@nozbe/watermelondb/adapters/type';
-import {Class} from '@nozbe/watermelondb/utils/common';
+import {AppSchema} from '@nozbe/watermelondb';
 
 export type MigrationEvents = {
     onSuccess: () => void,

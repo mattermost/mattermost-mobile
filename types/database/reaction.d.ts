@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import User from '@typings/database/user';
 import Post from '@typings/database/post';
 
@@ -14,7 +17,7 @@ export default class Reaction extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
+    /** create_at : Creation timestamp used for sorting reactions amongst users on a particular post */
     createAt: number;
 
     /** emoji_name : The emoticon used to express the reaction */
@@ -26,9 +29,9 @@ export default class Reaction extends Model {
     /** user_id : The related User's foreign key by which this reaction was expressed */
     userId: string;
 
-    /** reactionUser : The related record to the User model */
-    reactionUser: User;
+    /** user : The related record to the User model */
+    user: Relation<User>;
 
-    /** reactionPost : The related record to the Post model */
-    reactionPost: Post;
+    /** post : The related record to the Post model */
+    post: Relation<Post>;
 }

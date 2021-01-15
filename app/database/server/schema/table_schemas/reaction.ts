@@ -13,7 +13,6 @@ export default tableSchema({
         {name: 'create_at', type: 'number'},
         {name: 'emoji_name', type: 'string'},
         {name: 'post_id', type: 'string', isIndexed: true},
-        {name: 'reaction_id', type: 'string'},
         {name: 'user_id', type: 'string', isIndexed: true},
     ],
 });

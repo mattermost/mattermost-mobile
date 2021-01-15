@@ -18,8 +18,8 @@ export default class System extends Model {
     static table = SYSTEM;
 
     /** name : The name or key value for the config */
-    @field('name') name: string;
+    @field('name') name!: string;
 
     /** value : The value for that config/information */
-    @json('value', (rawJson) => rawJson) value: string;
+    @json('value', (rawJson) => rawJson) value!: any;
 }

@@ -18,7 +18,6 @@ export default tableSchema({
         {name: 'message', type: 'string'},
         {name: 'original_id', type: 'string'},
         {name: 'pending_post_id', type: 'string'},
-        {name: 'post_id', type: 'string'},
         {name: 'previous_post_id', type: 'string'},
         {name: 'props', type: 'string'},
         {name: 'root_id', type: 'string'},

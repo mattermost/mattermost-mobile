@@ -1,6 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import Channel from '@typings/database/channel';
 
 /**
  * MyChannel is an extension of the Channel model but it lists only the Channels the app's user belongs to
@@ -15,21 +19,21 @@ export default class MyChannel extends Model {
     /** channel_id : The foreign key to the related Channel record  */
     channelId: string;
 
-    /** last_post_at : the timestamp for any last post on this channel */
+    /** last_post_at : The timestamp for any last post on this channel */
     lastPostAt: number;
 
-    /** last_viewed_at : timestamp showing the user's last viewed post on this channel */
+    /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
     lastViewedAt: number;
 
-    /** mentionsCount : The number of mentions on this channel */
+    /** mentions_count : The number of mentions on this channel */
     mentionsCount: number;
 
-    /** messageCount : The derived number of unread messages on this channel */
+    /** message_count : The derived number of unread messages on this channel */
     messageCount: number;
 
     /** roles : The user's privileges on this channel */
     roles: string;
 
-    /** channel : The lazy query property to the record from entity CHANNEL */
-    channel: import('@nozbe/watermelondb').Query<Model>;
+    /** channel : The relation pointing to entity CHANNEL */
+    channel: Relation<Channel>;
 }

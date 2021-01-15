@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Team from '@typings/database/team';
 
 /**
@@ -14,18 +17,18 @@ export default class TeamSearchHistory extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** createdAt : The timestamp at which this search was performed */
+    /** created_at : The timestamp at which this search was performed */
     createdAt: number;
 
-    /** teamId : The foreign key to the parent Team model */
-    teamId: number;
+    /** team_id : The foreign key to the parent Team model */
+    teamId: string;
 
-    /** displayTerm : The term that we display to the user after being processed by the server */
-    displayTerm: string[];
+    /** display_term : The term that we display to the user */
+    displayTerm: string;
 
-    /** term : The keyword the user looked for */
-    term: number;
+    /** term : The term that is sent to the server to perform the search */
+    term: string;
 
     /** team : The related record to the parent team model */
-    team: Team;
+    team: Relation<Team>;
 }

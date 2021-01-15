@@ -10,12 +10,11 @@ const {SLASH_COMMAND} = MM_TABLES.SERVER;
 export default tableSchema({
     name: SLASH_COMMAND,
     columns: [
-        {name: 'auto_complete', type: 'boolean'},
+        {name: 'is_auto_complete', type: 'boolean'},
         {name: 'description', type: 'string'},
         {name: 'display_name', type: 'string'},
         {name: 'hint', type: 'string'},
         {name: 'method', type: 'string'},
-        {name: 'slash_id', type: 'string'},
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'token', type: 'string'},
         {name: 'trigger', type: 'string'},

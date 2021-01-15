@@ -12,6 +12,5 @@ export default tableSchema({
     columns: [
         {name: 'name', type: 'string'},
         {name: 'permissions', type: 'string'},
-        {name: 'role_id', type: 'string', isIndexed: true},
     ],
 });

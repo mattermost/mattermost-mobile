@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Group from '@typings/database/group';
 import Team from '@typings/database/team';
 
@@ -17,7 +20,7 @@ export default class GroupsInTeam extends Model {
     /** group_id : The foreign key to the related Group record */
     groupId: string;
 
-    /** member_count : The number of users in that group */
+    /** member_count : The number of users in the group */
     memberCount: number;
 
     /** team_id : The foreign key to the related Team record */
@@ -27,8 +30,8 @@ export default class GroupsInTeam extends Model {
     timezoneCount: number;
 
     /** team : The related record to the parent Team model */
-    team: Team;
+    team: Relation<Team>;
 
     /** group : The related record to the parent Team model */
-    group: Group;
+    group: Relation<Group>;
 }

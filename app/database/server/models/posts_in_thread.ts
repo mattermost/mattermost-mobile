@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import Post from '@typings/database/post';
@@ -25,15 +25,15 @@ export default class PostsInThread extends Model {
         [POST]: {type: 'belongs_to', key: 'post_id'},
     };
 
-    /** latest : Upper bound of a timestamp range */
-    @field('earliest') earliest: number;
+    /** earliest : Lower bound of a timestamp range */
+    @field('earliest') earliest!: number;
 
     /** latest : Upper bound of a timestamp range */
-    @field('latest') latest: number;
+    @field('latest') latest!: number;
 
     /** post_id : The foreign key of the related Post model */
-    @field('post_id') postId: string;
+    @field('post_id') postId!: string;
 
     /** post : The related record to the parent Post model */
-    @immutableRelation(POST, 'post_id') post: Relation<Post>;
+    @immutableRelation(POST, 'post_id') post!: Relation<Post>;
 }

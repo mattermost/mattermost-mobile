@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Relation} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import User from '@typings/database/user';
 
 /**
@@ -27,5 +30,5 @@ export default class Preference extends Model {
     value: string;
 
     /** user : The related record to the parent User model */
-    user: User;
+    user: Relation<User>;
 }

@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, relation} from '@nozbe/watermelondb/decorators';
 
-import {MM_TABLES} from '@constants/database';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+
 import Channel from '@typings/database/channel';
+import {MM_TABLES} from '@constants/database';
+import {Relation} from '@nozbe/watermelondb';
 
 const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
 
@@ -26,23 +27,23 @@ export default class ChannelInfo extends Model {
     };
 
     /** channel_id : The foreign key from CHANNEL */
-    @field('channel_id') channelId: string;
+    @field('channel_id') channelId!: string;
 
     /** guest_count : The number of guest in this channel */
-    @field('guest_count') guestCount: number;
+    @field('guest_count') guestCount!: number;
 
     /** header : The headers at the top of each channel */
-    @field('header') header: string;
+    @field('header') header!: string;
 
     /** member_count: The number of members in this channel */
-    @field('member_count') memberCount: number;
+    @field('member_count') memberCount!: number;
 
-    /** pin_post_count : The number of post pinned in this channel */
-    @field('pin_post_count') pinPostCount: number;
+    /** pinned_post_count : The number of post pinned in this channel */
+    @field('pinned_post_count') pinnedPostCount!: number;
 
     /** purpose: The intention behind this channel */
-    @field('purpose') purpose: string;
+    @field('purpose') purpose!: string;
 
     /** channel : The lazy query property to the record from  entity CHANNEL */
-    @relation(CHANNEL, 'channel_id') channel: Relation<Channel>
+    @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<Channel>
 }

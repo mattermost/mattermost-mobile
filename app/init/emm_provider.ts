@@ -203,7 +203,7 @@ class EMMProvider {
                 translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
                 message,
                 buttons,
-                {cancelable: false, onDismiss: resolve},
+                {cancelable: false, onDismiss: () => resolve},
             );
         });
     };

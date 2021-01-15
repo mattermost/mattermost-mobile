@@ -1,8 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {Query} from '@nozbe/watermelondb';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
+
 import Channel from '@typings/database/channel';
 import GroupsInTeam from '@typings/database/groups_in_team';
+import MyTeam from '@typings/database/my_team';
 import SlashCommand from '@typings/database/slash_command';
 import TeamChannelHistory from '@typings/database/team_channel_history';
 import TeamMembership from '@typings/database/team_membership';
@@ -18,8 +22,8 @@ export default class Team extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** allow_open_invite : Boolean flag indicating if this team is open to the public */
-    allowOpenInvite: boolean;
+    /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */
+    isAllowOpenInvite: boolean;
 
     /** description : The description for the team */
     description: string;
@@ -40,26 +44,26 @@ export default class Team extends Model {
     type: string;
 
     /** allowed_domains : List of domains that can join this team */
-    allowedDomains: string[];
+    allowedDomains: string;
 
     /** channels : All the channels associated with this team */
-    channels: Channel;
+    channels: Channel[];
 
     /** groupsInTeam : All the groups associated with this team */
-    groupsInTeam: GroupsInTeam;
+    groupsInTeam: GroupsInTeam[];
 
-    /** myTeams : Lazy query property returning only the teams that this user is part of  */
-    myTeams: import('@nozbe/watermelondb').Query<Model>;
+    /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
+    myTeam: Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
-    slashCommands: SlashCommand;
+    slashCommands: SlashCommand[];
 
-    /** teamChannelHistories : All the channel history with this team */
-    teamChannelHistories: TeamChannelHistory;
+    /** teamChannelHistory : A history of the channels in this team that has been visited,  ordered by the most recent and capped to the last 5 */
+    teamChannelHistory: Query<TeamChannelHistory>;
 
     /** members : All the users associated with this team */
-    members: TeamMembership;
+    members: TeamMembership[];
 
     /** teamSearchHistories : All the searches performed on this team */
-    teamSearchHistories: TeamSearchHistory;
+    teamSearchHistories: TeamSearchHistory[];
 }
