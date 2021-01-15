@@ -52,7 +52,7 @@ export default class Team extends Model {
     /** groupsInTeam : All the groups associated with this team */
     groupsInTeam: GroupsInTeam[];
 
-    /** myTeam : Lazy query property returning only the teams that this user is part of  */
+    /** myTeam : Retrieves additional information about the team that this user is part of */
     myTeam: Query<MyTeam>;
 
     /** slashCommands : All the slash commands associated with this team */
