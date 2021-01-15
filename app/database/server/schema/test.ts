@@ -5,6 +5,8 @@ import {MM_TABLES} from '@constants/database';
 import {serverSchema} from './index';
 
 const {
+    CHANNEL,
+    CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
     CUSTOM_EMOJI,
     DRAFT,
@@ -13,8 +15,11 @@ const {
     GROUPS_IN_CHANNEL,
     GROUPS_IN_TEAM,
     GROUP_MEMBERSHIP,
+    MY_CHANNEL,
+    MY_CHANNEL_SETTINGS,
     MY_TEAM,
     POST,
+    POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
     POST_METADATA,
     PREFERENCE,
@@ -35,6 +40,48 @@ describe('*** Test schema for SERVER database ***', () => {
         expect(serverSchema).toEqual({
             version: 1,
             tables: {
+                [CHANNEL_INFO]: {
+                    name: CHANNEL_INFO,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        guest_count: {name: 'guest_count', type: 'number'},
+                        header: {name: 'header', type: 'string'},
+                        member_count: {name: 'member_count', type: 'number'},
+                        pinned_post_count: {name: 'pinned_post_count', type: 'number'},
+                        purpose: {name: 'purpose', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'guest_count', type: 'number'},
+                        {name: 'header', type: 'string'},
+                        {name: 'member_count', type: 'number'},
+                        {name: 'pinned_post_count', type: 'number'},
+                        {name: 'purpose', type: 'string'},
+                    ],
+                },
+                [CHANNEL]: {
+                    name: CHANNEL,
+                    columns: {
+                        create_at: {name: 'create_at', type: 'number'},
+                        creator_id: {name: 'creator_id', type: 'string', isIndexed: true},
+                        delete_at: {name: 'delete_at', type: 'number'},
+                        display_name: {name: 'display_name', type: 'string'},
+                        is_group_constrained: {name: 'is_group_constrained', type: 'boolean'},
+                        name: {name: 'name', type: 'string', isIndexed: true},
+                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                        type: {name: 'type', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'create_at', type: 'number'},
+                        {name: 'creator_id', type: 'string', isIndexed: true},
+                        {name: 'delete_at', type: 'number'},
+                        {name: 'display_name', type: 'string'},
+                        {name: 'is_group_constrained', type: 'boolean'},
+                        {name: 'name', type: 'string', isIndexed: true},
+                        {name: 'team_id', type: 'string', isIndexed: true},
+                        {name: 'type', type: 'string'},
+                    ],
+                },
                 [CHANNEL_MEMBERSHIP]: {
                     name: CHANNEL_MEMBERSHIP,
                     columns: {
@@ -53,6 +100,50 @@ describe('*** Test schema for SERVER database ***', () => {
                     },
                     columnArray: [
                         {name: 'name', type: 'string'},
+                    ],
+                },
+                [MY_CHANNEL]: {
+                    name: MY_CHANNEL,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        last_post_at: {name: 'last_post_at', type: 'number'},
+                        last_viewed_at: {name: 'last_viewed_at', type: 'number'},
+                        mentions_count: {name: 'mentions_count', type: 'number'},
+                        message_count: {name: 'message_count', type: 'number'},
+                        roles: {name: 'roles', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'last_post_at', type: 'number'},
+                        {name: 'last_viewed_at', type: 'number'},
+                        {name: 'mentions_count', type: 'number'},
+                        {name: 'message_count', type: 'number'},
+                        {name: 'roles', type: 'string'},
+                    ],
+                },
+                [MY_CHANNEL_SETTINGS]: {
+                    name: MY_CHANNEL_SETTINGS,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        notify_props: {name: 'notify_props', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'notify_props', type: 'string'},
+                    ],
+                },
+                [POSTS_IN_CHANNEL]: {
+                    name: POSTS_IN_CHANNEL,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        earliest: {name: 'earliest', type: 'number'},
+                        latest: {name: 'latest', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'earliest', type: 'number'},
+                        {name: 'latest', type: 'number'},
+
                     ],
                 },
                 [DRAFT]: {

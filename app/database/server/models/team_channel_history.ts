@@ -28,7 +28,7 @@ export default class TeamChannelHistory extends Model {
     /** team_id : The foreign key to the related Team record */
     @field('team_id') teamId!: string;
 
-    /** channelIds : An array containing the last 5 channels visited within this team order by recency */
+    /** channel_ids : An array containing the last 5 channels visited within this team order by recency */
     @json('channel_ids', (rawJson) => rawJson) channelIds!: string[];
 
     /** team : The related record from the parent Team model */

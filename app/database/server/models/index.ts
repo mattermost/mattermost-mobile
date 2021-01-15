@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+export {default as ChannelInfo} from './channel_info';
 export {default as ChannelMembership} from './channel_membership';
+export {default as Channel} from './channel';
 export {default as CustomEmoji} from './custom_emoji';
 export {default as Draft} from './draft';
 export {default as File} from './file';
@@ -9,8 +11,11 @@ export {default as GroupMembership} from './group_membership';
 export {default as GroupsInChannel} from './groups_in_channel';
 export {default as GroupsInTeam} from './groups_in_team';
 export {default as Group} from './group';
+export {default as MyChannelSettings} from './my_channel_settings';
+export {default as MyChannel} from './my_channel';
 export {default as MyTeam} from './my_team';
 export {default as PostMetadata} from './post_metadata';
+export {default as PostsInChannel} from './posts_in_channel';
 export {default as PostsInThread} from './posts_in_thread';
 export {default as Post} from './post';
 export {default as Preference} from './preference';

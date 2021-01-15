@@ -20,6 +20,8 @@ export default class ChannelMembership extends Model {
 
     /** channel_id : The foreign key to the related Channel record */
     channelId: string;
+
+    /* user_id: The foreign key to the related User record*/
     userId: string;
 
     /** memberChannel : The related channel this member belongs to */

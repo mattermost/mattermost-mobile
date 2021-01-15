@@ -17,7 +17,7 @@ export default class Reaction extends Model {
     /** associations : Describes every relationship to this entity. */
     static associations: Associations;
 
-    /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
+    /** create_at : Creation timestamp used for sorting reactions amongst users on a particular post */
     createAt: number;
 
     /** emoji_name : The emoticon used to express the reaction */

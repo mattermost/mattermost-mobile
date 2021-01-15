@@ -28,7 +28,7 @@ export default class Reaction extends Model {
         [USER]: {type: 'belongs_to', key: 'user_id'},
     };
 
-    /** createAt : Creation timestamp used for sorting reactions amongst users on a particular post */
+    /** create_at : Creation timestamp used for sorting reactions amongst users on a particular post */
     @field('create_at') createAt!: number;
 
     /** emoji_name : The emoticon used to express the reaction */
