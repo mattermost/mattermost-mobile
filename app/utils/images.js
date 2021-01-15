@@ -94,13 +94,14 @@ export function openGalleryAtIndex(index, files) {
             sharedElementTransitions.push({
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
-                interpolation: {mode: 'overshoot'},
+                duration: 300,
+                interpolation: {type:'accelerateDecelerate', factor:9},
             });
         } else {
             contentPush.y = {
                 from: windowHeight,
                 to: 0,
-                duration: 300,
+                duration: 150,
                 interpolation: {mode: 'decelerate'},
             };
 
@@ -108,7 +109,7 @@ export function openGalleryAtIndex(index, files) {
                 contentPop.translationY = {
                     from: 0,
                     to: windowHeight,
-                    duration: 300,
+                    duration: 150,
                 };
             } else {
                 contentPop.y = {

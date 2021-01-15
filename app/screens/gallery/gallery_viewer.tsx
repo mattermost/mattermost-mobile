@@ -4,7 +4,7 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 import {PanGestureHandler, PinchGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent} from 'react-native-gesture-handler';
-import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode} from 'react-native-reanimated';
+import Animated, {abs, add, and, call, clockRunning, cond, divide, eq, floor, greaterOrEq, greaterThan, multiply, neq, not, onChange, set, sub, useCode, Easing} from 'react-native-reanimated';
 import {clamp, snapPoint, timing, useClock, usePanGestureHandler, usePinchGestureHandler, useTapGestureHandler, useValue, vec} from 'react-native-redash/lib/module/v1';
 import {isImage, isVideo} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
@@ -213,12 +213,12 @@ const GalleryViewer = (props: GalleryProps) => {
                 ]),
             ),
             cond(and(eq(pan.state, State.END), neq(translateY, 0)), [
-                cond(greaterOrEq(abs(translateY), 50), [
+                cond(greaterOrEq(abs(translateY), 10), [
                     cond(not(clockRunning(clock)), call([], props.onClose)),
                 ], set(translateY, timing({from: translateY, to: 0}))),
             ]),
             cond(and(eq(pan.state, State.END), neq(translationX, 0)), [
-                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 250})),
+                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 150, easing: Easing.out(Easing.quad) })),
                 set(offsetX, translateX),
                 cond(not(clockRunning(clock)), [
                     vec.set(translate, 0),
