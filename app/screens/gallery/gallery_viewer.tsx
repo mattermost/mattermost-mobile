@@ -218,7 +218,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 ], set(translateY, timing({from: translateY, to: 0}))),
             ]),
             cond(and(eq(pan.state, State.END), neq(translationX, 0)), [
-                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 150, easing: Easing.out(Easing.quad) })),
+                set(translateX, timing({clock, from: translateX, to: snapTo, duration: 150, easing: Easing.out(Easing.quad)})),
                 set(offsetX, translateX),
                 cond(not(clockRunning(clock)), [
                     vec.set(translate, 0),

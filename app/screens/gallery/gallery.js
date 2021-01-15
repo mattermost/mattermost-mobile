@@ -67,7 +67,7 @@ export default class Gallery extends PureComponent {
             sharedElementTransitions.push({
                 fromId: `gallery-${file.id}`,
                 toId: `image-${file.id}`,
-                interpolation: {type:'accelerateDecelerate', factor:8},
+                interpolation: {type: 'accelerateDecelerate', factor: 8},
             });
         }
 

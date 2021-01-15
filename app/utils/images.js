@@ -95,7 +95,7 @@ export function openGalleryAtIndex(index, files) {
                 fromId: `image-${file.id}`,
                 toId: `gallery-${file.id}`,
                 duration: 300,
-                interpolation: {type:'accelerateDecelerate', factor:9},
+                interpolation: {type: 'accelerateDecelerate', factor: 9},
             });
         } else {
             contentPush.y = {
