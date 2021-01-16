@@ -131,6 +131,7 @@ export const selectEmojisBySection = createSelector(
 );
 
 export const selectEmojisCountFromReactions = createSelector(
+    (reactions) => reactions,
     (reactions) => {
         if (reactions) {
             const names = Object.values(reactions).map((r) => r.emoji_name);
