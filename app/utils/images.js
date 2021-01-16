@@ -115,7 +115,7 @@ export function openGalleryAtIndex(index, files) {
                 contentPop.y = {
                     from: 0,
                     to: windowHeight,
-                    duration: 300,
+                    duration: 150,
                 };
                 contentPop.alpha = {
                     from: 1,
