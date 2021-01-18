@@ -15,7 +15,7 @@ import Store from '@store/store';
 
 Navigation.setDefaultOptions({
     layout: {
-        orientation: [DeviceTypes.IS_TABLET ? undefined : 'portrait'],
+        orientation: [DeviceTypes.IS_TABLET ? 'all' : 'portrait'],
     },
 });
 
@@ -52,6 +52,7 @@ export function resetToChannel(passProps = {}) {
                         backButton: {
                             visible: false,
                             color: theme.sidebarHeaderTextColor,
+                            enableMenu: false,
                         },
                     },
                 },
@@ -115,6 +116,7 @@ export function resetToSelectServer(allowOtherServers) {
                             topBar: {
                                 backButton: {
                                     color: theme.sidebarHeaderTextColor,
+                                    enableMenu: false,
                                     title: '',
                                 },
                                 background: {
@@ -148,6 +150,7 @@ export function resetToTeams(name, title, passProps = {}, options = {}) {
             },
             backButton: {
                 color: theme.sidebarHeaderTextColor,
+                enableMenu: false,
                 title: '',
             },
             background: {
@@ -191,6 +194,7 @@ export function goToScreen(name, title, passProps = {}, options = {}) {
             visible: true,
             backButton: {
                 color: theme.sidebarHeaderTextColor,
+                enableMenu: false,
                 title: '',
                 testID: 'screen.back.button',
             },
@@ -256,6 +260,7 @@ export function showModal(name, title, passProps = {}, options = {}) {
             visible: true,
             backButton: {
                 color: theme.sidebarHeaderTextColor,
+                enableMenu: false,
                 title: '',
             },
             background: {

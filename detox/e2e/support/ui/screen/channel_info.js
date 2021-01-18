@@ -13,7 +13,7 @@ class ChannelInfoScreen {
         mutePreferenceAction: 'channel_info.mute.action',
         ignoreMentionsPreferenceAction: 'channel_info.ignore_mentions.action',
         notificationPreferenceAction: 'channel_info.notification_preference.action',
-        pinnedAction: 'channel_info.pinned.action',
+        pinnedMessagesAction: 'channel_info.pinned_messages.action',
         manageMembersAction: 'channel_info.manage_members.action',
         addMembersAction: 'channel_info.add_members.action',
         convertPrivateAction: 'channel_info.convert_private.action',
@@ -27,7 +27,7 @@ class ChannelInfoScreen {
     mutePreferenceAction = element(by.id(this.testID.mutePreferenceAction));
     ignoreMentionsPreferenceAction = element(by.id(this.testID.ignoreMentionsPreferenceAction));
     notificationPreferenceAction = element(by.id(this.testID.notificationPreferenceAction));
-    pinnedAction = element(by.id(this.testID.pinnedAction));
+    pinnedMessagesAction = element(by.id(this.testID.pinnedMessagesAction));
     manageMembersAction = element(by.id(this.testID.manageMembersAction));
     addMembersAction = element(by.id(this.testID.addMembersAction));
     convertPrivateAction = element(by.id(this.testID.convertPrivateAction));

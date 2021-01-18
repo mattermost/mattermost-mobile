@@ -34,10 +34,6 @@ export default class FileAttachmentList extends ImageViewPort {
     constructor(props) {
         super(props);
 
-        this.state = {
-            inViewPort: false,
-        };
-
         this.filesForGallery = this.getFilesForGallery(props);
 
         this.buildGalleryFiles().then((results) => {
@@ -46,6 +42,7 @@ export default class FileAttachmentList extends ImageViewPort {
     }
 
     componentDidMount() {
+        super.componentDidMount();
         this.onScrollEnd = DeviceEventEmitter.addListener('scrolled', (viewableItems) => {
             if (this.props.postId in viewableItems) {
                 this.setState({
@@ -65,6 +62,7 @@ export default class FileAttachmentList extends ImageViewPort {
     }
 
     componentWillUnmount() {
+        super.componentWillUnmount();
         if (this.onScrollEnd && this.onScrollEnd.remove) {
             this.onScrollEnd.remove();
         }
@@ -180,7 +178,8 @@ export default class FileAttachmentList extends ImageViewPort {
 
         const {isReplyPost} = this.props;
         const visibleImages = images.slice(0, MAX_VISIBLE_ROW_IMAGES);
-        const portraitPostWidth = getViewPortWidth(isReplyPost, this.hasPermanentSidebar());
+        const hasFixedSidebar = this.hasPermanentSidebar();
+        const portraitPostWidth = getViewPortWidth(isReplyPost, hasFixedSidebar);
 
         let nonVisibleImagesCount;
         if (images.length > MAX_VISIBLE_ROW_IMAGES) {

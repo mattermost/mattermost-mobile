@@ -10,11 +10,15 @@ import DraftInput from './draft_input';
 
 jest.useFakeTimers();
 
+async function createPost() {
+    return {data: true, failed: false};
+}
+
 describe('DraftInput', () => {
     const baseProps = {
         registerTypingAnimation: jest.fn(),
         addReactionToLatestPost: jest.fn(),
-        createPost: jest.fn(),
+        createPost: jest.fn(createPost),
         executeCommand: jest.fn(),
         handleCommentDraftChanged: jest.fn(),
         handlePostDraftChanged: jest.fn(),
@@ -75,6 +79,8 @@ describe('DraftInput', () => {
             },
         },
         membersCount: 10,
+        addRecentUsedEmojisInMessage: jest.fn(),
+        handleGotoLocation: jest.fn(),
     };
     const ref = React.createRef();
 

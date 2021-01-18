@@ -18,8 +18,12 @@ import GalleryImage from './gallery_image';
 import GalleryVideo from './gallery_video';
 
 const itemTopStyle = (props: GalleryProps): number => {
-    if (Platform.OS === 'android' && props.footerVisible) {
-        return props.isLandscape ? -64 : -99;
+    if (Platform.OS === 'android') {
+        if (props.footerVisible) {
+            return props.isLandscape ? -64 : -99;
+        }
+
+        return props.isLandscape ? -6 : -41;
     }
 
     return 0;
@@ -161,7 +165,7 @@ const GalleryViewer = (props: GalleryProps) => {
                 >
                     <GalleryVideo
                         isActive={currentIndex === i}
-                        onDoubleTap={props.onTap}
+                        showHideHeaderFooter={props.onTap}
                         theme={props.theme}
                         {...itemProps}
                     />

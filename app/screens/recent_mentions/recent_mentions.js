@@ -224,8 +224,8 @@ export default class RecentMentions extends PureComponent {
 
         return (
             <SafeAreaView
-                style={style.container}
                 testID='recent_mentions.screen'
+                style={style.container}
             >
                 <StatusBar/>
                 {component}

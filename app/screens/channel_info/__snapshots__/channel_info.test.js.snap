@@ -342,7 +342,7 @@ exports[`channelInfo should match snapshot 1`] = `
         </React.Fragment>
         <Connect(Pinned)
           channelId="1234"
-          testID="channel_info.pinned.action"
+          testID="channel_info.pinned_messages.action"
           theme={
             Object {
               "awayIndicator": "#ffbc42",
@@ -872,7 +872,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   </React.Fragment>
   <Connect(Pinned)
     channelId="1234"
-    testID="channel_info.pinned.action"
+    testID="channel_info.pinned_messages.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",
@@ -1262,7 +1262,7 @@ exports[`channelInfo should not include NotificationPreference for direct messag
   />
   <Connect(Pinned)
     channelId="1234"
-    testID="channel_info.pinned.action"
+    testID="channel_info.pinned_messages.action"
     theme={
       Object {
         "awayIndicator": "#ffbc42",

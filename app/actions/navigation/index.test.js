@@ -64,6 +64,7 @@ describe('@actions/navigation', () => {
                                     height: 0,
                                     backButton: {
                                         visible: false,
+                                        enableMenu: false,
                                         color: theme.sidebarHeaderTextColor,
                                     },
                                     background: {
@@ -106,6 +107,7 @@ describe('@actions/navigation', () => {
                                 topBar: {
                                     backButton: {
                                         color: theme.sidebarHeaderTextColor,
+                                        enableMenu: false,
                                         title: '',
                                     },
                                     background: {
@@ -143,6 +145,7 @@ describe('@actions/navigation', () => {
                 },
                 backButton: {
                     color: theme.sidebarHeaderTextColor,
+                    enableMenu: false,
                     title: '',
                 },
                 background: {
@@ -187,6 +190,7 @@ describe('@actions/navigation', () => {
                 visible: true,
                 backButton: {
                     color: theme.sidebarHeaderTextColor,
+                    enableMenu: false,
                     title: '',
                     testID: 'screen.back.button',
                 },
@@ -247,6 +251,7 @@ describe('@actions/navigation', () => {
                 visible: true,
                 backButton: {
                     color: theme.sidebarHeaderTextColor,
+                    enableMenu: false,
                     title: '',
                 },
                 background: {
@@ -326,6 +331,7 @@ describe('@actions/navigation', () => {
                 visible: true,
                 backButton: {
                     color: theme.sidebarHeaderTextColor,
+                    enableMenu: false,
                     title: '',
                 },
                 background: {
@@ -384,6 +390,7 @@ describe('@actions/navigation', () => {
                 visible: true,
                 backButton: {
                     color: theme.sidebarHeaderTextColor,
+                    enableMenu: false,
                     title: '',
                 },
                 background: {

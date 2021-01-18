@@ -90,6 +90,7 @@ const ViewTypes = keyMirror({
     SET_LAST_UPGRADE_CHECK: null,
 
     ADD_RECENT_EMOJI: null,
+    ADD_RECENT_EMOJI_ARRAY: null,
     ANNOUNCEMENT_BANNER: null,
 
     INCREMENT_EMOJI_PICKER_PAGE: null,
@@ -138,4 +139,5 @@ export default {
     SidebarSectionTypes,
     IOS_HORIZONTAL_LANDSCAPE: 44,
     INDICATOR_BAR_HEIGHT,
+    AVATAR_LIST_PICTURE_SIZE: 24,
 };

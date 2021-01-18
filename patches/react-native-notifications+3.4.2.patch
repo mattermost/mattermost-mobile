@@ -388,18 +388,9 @@ index ad7fc1a..a04ec6b 100644
      get title() {
          return this.payload.title;
 diff --git a/node_modules/react-native-notifications/lib/dist/Notifications.d.ts b/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
-index 34e8170..10600d2 100644
+index 3a75bcf..10600d2 100644
 --- a/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
 +++ b/node_modules/react-native-notifications/lib/dist/Notifications.d.ts
-@@ -23,7 +23,7 @@ export declare class NotificationsRoot {
-     /**
-      * postLocalNotification
-      */
--    postLocalNotification(notification: Notification, id: number): number;
-+    postLocalNotification(notification: Notification, id?: number): number;
-     /**
-      * getInitialNotification
-      */
 @@ -36,6 +36,10 @@ export declare class NotificationsRoot {
       * cancelLocalNotification
      */
@@ -440,7 +431,7 @@ index 0e78cb5..ae90bd1 100644
 +    constructor(identifier: string, activationMode: 'background' | 'foreground' | 'authenticationRequired' | 'destructive', title: string, authenticationRequired: boolean, textInput?: NotificationTextInput);
  }
 diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
-index 1fbd2a5..ab44587 100644
+index 0a30b5a..a45a83d 100644
 --- a/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
 +++ b/node_modules/react-native-notifications/lib/ios/RNNotificationCenter.m
 @@ -58,7 +58,7 @@ - (void)getDeliveredNotifications:(RCTResponseSenderBlock)callback {
@@ -453,18 +444,9 @@ index 1fbd2a5..ab44587 100644
  }
  
 diff --git a/node_modules/react-native-notifications/lib/src/Notifications.ts b/node_modules/react-native-notifications/lib/src/Notifications.ts
-index 44956df..551fac2 100644
+index 8a4a51e..551fac2 100644
 --- a/node_modules/react-native-notifications/lib/src/Notifications.ts
 +++ b/node_modules/react-native-notifications/lib/src/Notifications.ts
-@@ -54,7 +54,7 @@ export class NotificationsRoot {
-   /**
-    * postLocalNotification
-    */
--  public postLocalNotification(notification: Notification, id: number) {
-+  public postLocalNotification(notification: Notification, id?: number) {
-     return this.commands.postLocalNotification(notification, id);
-   }
- 
 @@ -79,6 +79,13 @@ export class NotificationsRoot {
      return this.commands.cancelLocalNotification(notificationId);
    }

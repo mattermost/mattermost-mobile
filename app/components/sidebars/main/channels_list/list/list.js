@@ -81,21 +81,23 @@ export default class List extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    setSections(sections) {
+        this.setState({sections});
+    }
+
+    componentDidUpdate(prevProps, prevState) {
         const {
             canCreatePrivateChannels,
             orderedChannelIds,
             unreadChannelIds,
-        } = this.props;
+        } = prevProps;
 
-        if (nextProps.canCreatePrivateChannels !== canCreatePrivateChannels ||
-            nextProps.unreadChannelIds !== unreadChannelIds ||
-            nextProps.orderedChannelIds !== orderedChannelIds) {
-            this.setState({sections: this.buildSections(nextProps)});
+        if (this.props.canCreatePrivateChannels !== canCreatePrivateChannels ||
+            this.props.unreadChannelIds !== unreadChannelIds ||
+            this.props.orderedChannelIds !== orderedChannelIds) {
+            this.setSections(this.buildSections(this.props));
         }
-    }
 
-    componentDidUpdate(prevProps, prevState) {
         if (prevState.sections !== this.state.sections && this.listRef?._wrapperListRef?.getListRef()._viewabilityHelper) { //eslint-disable-line
             this.listRef.recordInteraction();
             this.updateUnreadIndicators({
@@ -347,8 +349,10 @@ export default class List extends PureComponent {
     };
 
     scrollToTop = () => {
+        //eslint-disable-next-line no-underscore-dangle
         if (this.listRef?._wrapperListRef) {
-            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+            //eslint-disable-next-line no-underscore-dangle
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({
                 x: 0,
                 y: 0,
                 animated: true,

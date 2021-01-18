@@ -7,13 +7,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import LocalConfig from '@assets/config';
 import AnnouncementBanner from 'app/components/announcement_banner';
-import Autocomplete, {AUTOCOMPLETE_MAX_HEIGHT} from '@components/autocomplete';
+import Autocomplete from '@components/autocomplete';
 import InteractiveDialogController from '@components/interactive_dialog_controller';
 import NetworkIndicator from '@components/network_indicator';
 import PostDraft from '@components/post_draft';
 import MainSidebar from '@components/sidebars/main';
 import SettingsSidebar from '@components/sidebars/settings';
 import StatusBar from '@components/status_bar';
+import DEVICE from '@constants/device';
 import {ACCESSORIES_CONTAINER_NATIVE_ID, CHANNEL_POST_TEXTBOX_CURSOR_CHANGE, CHANNEL_POST_TEXTBOX_VALUE_CHANGE} from '@constants/post_draft';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -98,6 +99,16 @@ export default class ChannelIOS extends ChannelBase {
                     {component}
                 </SafeAreaView>
                 {indicators}
+                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
+                    <Autocomplete
+                        maxHeight={DEVICE.AUTOCOMPLETE_MAX_HEIGHT}
+                        onChangeText={this.handleAutoComplete}
+                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
+                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
+                        channelId={currentChannelId}
+                        offsetY={0}
+                    />
+                </View>
                 {renderDraftArea &&
                     <PostDraft
                         testID='channel.post_draft'
@@ -110,15 +121,6 @@ export default class ChannelIOS extends ChannelBase {
                         valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
                     />
                 }
-                <View nativeID={ACCESSORIES_CONTAINER_NATIVE_ID}>
-                    <Autocomplete
-                        maxHeight={AUTOCOMPLETE_MAX_HEIGHT}
-                        onChangeText={this.handleAutoComplete}
-                        cursorPositionEvent={CHANNEL_POST_TEXTBOX_CURSOR_CHANGE}
-                        valueEvent={CHANNEL_POST_TEXTBOX_VALUE_CHANGE}
-                        channelId={currentChannelId}
-                    />
-                </View>
             </>
         );
 

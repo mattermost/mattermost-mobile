@@ -217,7 +217,7 @@ export default class Search extends PureComponent {
     render() {
         const {testID, backgroundColor, inputHeight, inputStyle, placeholderTextColor, tintColorSearch, cancelButtonStyle, tintColorDelete, titleCancelColor, searchBarRightMargin, containerHeight} = this.props;
         const searchClearButtonTestID = `${testID}.search.clear.button`;
-        const searchBackButtonTestID = `${testID}.search.back.button`;
+        const searchCancelButtonTestID = `${testID}.search.cancel.button`;
         const searchInputTestID = `${testID}.search.input`;
         const searchBarStyle = getSearchBarStyle(
             backgroundColor,
@@ -263,7 +263,7 @@ export default class Search extends PureComponent {
                 (
                     <TouchableWithoutFeedback onPress={this.onCancel}>
                         <CompassIcon
-                            testID={searchBackButtonTestID}
+                            testID={searchCancelButtonTestID}
                             name='arrow-left'
                             size={this.props.backArrowSize}
                             color={searchBarStyle.clearIconColorAndroid}
@@ -281,6 +281,7 @@ export default class Search extends PureComponent {
             // Making sure the icon won't change depending on whether the input is in focus on Android devices
             cancelIcon = (
                 <CompassIcon
+                    testID={searchCancelButtonTestID}
                     name='arrow-left'
                     size={25}
                     color={searchBarStyle.clearIconColorAndroid}

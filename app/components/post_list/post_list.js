@@ -9,6 +9,7 @@ import {intlShape} from 'react-intl';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import * as PostListUtils from '@mm-redux/utils/post_list';
+import {errorBadChannel} from '@utils/draft';
 
 import CombinedUserActivityPost from 'app/components/combined_user_activity_post';
 import Post from 'app/components/post';
@@ -17,8 +18,6 @@ import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
 import {matchDeepLink} from 'app/utils/url';
 import telemetry from 'app/telemetry';
-import {alertErrorWithFallback} from 'app/utils/general';
-import {t} from 'app/utils/i18n';
 
 import DateHeader from './date_header';
 import NewMessagesDivider from './new_messages_divider';
@@ -188,7 +187,8 @@ export default class PostList extends PureComponent {
 
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, this.permalinkBadChannel);
+                const {intl} = this.context;
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel(intl));
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 this.handlePermalinkPress(match.postId, match.teamName);
             }
@@ -275,16 +275,6 @@ export default class PostList extends PureComponent {
         this.fillContentTimer = setTimeout(() => {
             this.handleContentSizeChange(0, this.contentHeight, true);
         });
-    };
-
-    permalinkBadChannel = () => {
-        const {intl} = this.context;
-        const message = {
-            id: t('mobile.server_link.unreachable_channel.error'),
-            defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
-        };
-
-        alertErrorWithFallback(intl, {}, message);
     };
 
     renderItem = ({item, index}) => {
@@ -549,7 +539,7 @@ export default class PostList extends PureComponent {
 }
 
 function PostComponent({testID, postId, highlightPostId, lastPostIndex, index, ...postProps}) {
-    const postTestID = `${testID}.post.${postId}`;
+    const postTestID = `${testID}.post`;
 
     return (
         <Post

@@ -38,31 +38,37 @@ describe('Unread channels', () => {
     });
 
     it('MM-T3187 Unread channels sort at top', async () => {
+        const {openMainSidebar} = ChannelScreen;
+        const {
+            getChannelByDisplayName,
+            hasChannelDisplayNameAtIndex,
+        } = MainSidebar;
+
         // # Open main sidebar (with at least one unread channel)
-        await ChannelScreen.openMainSidebar();
+        await openMainSidebar();
 
         // * Verify unread channel(s) display at top of channel list (with mentions first, if any), in alphabetical order, with title "Unreads"
         await expect(element(by.text('UNREADS'))).toBeVisible();
-        await MainSidebar.hasChannelAtIndex(0, aChannel.display_name);
-        await MainSidebar.hasChannelAtIndex(1, newChannel.display_name);
-        await MainSidebar.hasChannelAtIndex(2, zChannel.display_name);
+        await hasChannelDisplayNameAtIndex(0, aChannel.display_name);
+        await hasChannelDisplayNameAtIndex(1, newChannel.display_name);
+        await hasChannelDisplayNameAtIndex(2, zChannel.display_name);
 
         // # Tap an unread channel to view it
-        await MainSidebar.getChannelByDisplayName(aChannel.display_name).tap();
-        await ChannelScreen.openMainSidebar();
-        await MainSidebar.getChannelByDisplayName(newChannel.display_name).tap();
-        await ChannelScreen.openMainSidebar();
-        await MainSidebar.getChannelByDisplayName(zChannel.display_name).tap();
+        await getChannelByDisplayName(aChannel.display_name).tap();
+        await openMainSidebar();
+        await getChannelByDisplayName(newChannel.display_name).tap();
+        await openMainSidebar();
+        await getChannelByDisplayName(zChannel.display_name).tap();
 
         // * Channel you just read is no longer listed in Unreads
-        await ChannelScreen.openMainSidebar();
+        await openMainSidebar();
         await expect(element(by.text('UNREADS'))).not.toBeVisible();
         await expect(element(by.text('PUBLIC CHANNELS'))).toBeVisible();
-        await MainSidebar.hasChannelAtIndex(0, aChannel.display_name);
-        await MainSidebar.hasChannelAtIndex(1, newChannel.display_name);
-        await MainSidebar.hasChannelAtIndex(2, 'Off-Topic');
-        await MainSidebar.hasChannelAtIndex(3, 'Town Square');
-        await MainSidebar.hasChannelAtIndex(4, zChannel.display_name);
-        await MainSidebar.getChannelByDisplayName(aChannel.display_name).tap();
+        await hasChannelDisplayNameAtIndex(0, aChannel.display_name);
+        await hasChannelDisplayNameAtIndex(1, newChannel.display_name);
+        await hasChannelDisplayNameAtIndex(2, 'Off-Topic');
+        await hasChannelDisplayNameAtIndex(3, 'Town Square');
+        await hasChannelDisplayNameAtIndex(4, zChannel.display_name);
+        await getChannelByDisplayName(aChannel.display_name).tap();
     });
 });

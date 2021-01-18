@@ -36,6 +36,7 @@ const VIEWABILITY_CONFIG = {
 
 export default class TeamsList extends PureComponent {
     static propTypes = {
+        testID: PropTypes.string,
         actions: PropTypes.shape({
             handleTeamChange: PropTypes.func.isRequired,
         }).isRequired,
@@ -124,8 +125,12 @@ export default class TeamsList extends PureComponent {
     };
 
     renderItem = ({item}) => {
+        const {testID} = this.props;
+        const teamsListItemTestID = `${testID}.flat_list.teams_list_item`;
+
         return (
             <TeamsListItem
+                testID={teamsListItemTestID}
                 currentUrl={this.state.serverUrl}
                 selectTeam={this.selectTeam}
                 teamId={item}
@@ -134,7 +139,8 @@ export default class TeamsList extends PureComponent {
     };
 
     render() {
-        const {hasOtherJoinableTeams, teamIds, theme} = this.props;
+        const {testID, hasOtherJoinableTeams, teamIds, theme} = this.props;
+        const flatListTestID = `${testID}.flat_list`;
         const styles = getStyleSheet(theme);
 
         let moreAction;
@@ -156,6 +162,7 @@ export default class TeamsList extends PureComponent {
 
         return (
             <SafeAreaView
+                testID={testID}
                 edges={['left']}
                 style={styles.container}
             >
@@ -168,6 +175,7 @@ export default class TeamsList extends PureComponent {
                     {moreAction}
                 </View>
                 <FlatList
+                    testID={flatListTestID}
                     extraData={this.state.serverUrl}
                     contentContainerStyle={this.listContentPadding()}
                     data={teamIds}

@@ -7,6 +7,7 @@ exports[`SavedPosts should match snapshot 1`] = `
       "flex": 1,
     }
   }
+  testID="saved_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
@@ -22,6 +23,7 @@ exports[`SavedPosts should match snapshot when component waiting for response 1`
       "flex": 1,
     }
   }
+  testID="saved_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(ChannelLoader)
@@ -37,6 +39,7 @@ exports[`SavedPosts should match snapshot when getFlaggedPosts failed 1`] = `
       "flex": 1,
     }
   }
+  testID="saved_messages.screen"
 >
   <Connect(StatusBar) />
   <Connect(FailedNetworkAction)

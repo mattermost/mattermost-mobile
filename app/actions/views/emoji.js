@@ -9,6 +9,8 @@ import {Client4} from '@mm-redux/client';
 import {getPostIdsInCurrentChannel, makeGetPostIdsForThread} from '@mm-redux/selectors/entities/posts';
 
 import {ViewTypes} from 'app/constants';
+import {EmojiIndicesByAlias, EmojiIndicesByUnicode, Emojis} from '@utils/emojis';
+import emojiRegex from 'emoji-regex';
 
 const getPostIdsForThread = makeGetPostIdsForThread();
 
@@ -97,4 +99,42 @@ async function getCustomEmojiByName(name) {
     }
 
     return null;
+}
+
+export function addRecentUsedEmojisInMessage(message) {
+    return (dispatch) => {
+        const RE_UNICODE_EMOJI = emojiRegex();
+        const RE_NAMED_EMOJI = /(:([a-zA-Z0-9_-]+):)/g;
+        const emojis = message.match(RE_UNICODE_EMOJI);
+        const namedEmojis = message.match(RE_NAMED_EMOJI);
+        function emojiUnicode(input) {
+            const emoji = [];
+            for (const i of input) {
+                emoji.push(i.codePointAt(0).toString(16));
+            }
+            return emoji.join('-');
+        }
+        const emojisAvailableWithMattermost = [];
+        if (emojis) {
+            for (const emoji of emojis) {
+                const unicode = emojiUnicode(emoji);
+                const index = EmojiIndicesByUnicode.get(unicode || '');
+                if (index) {
+                    emojisAvailableWithMattermost.push(Emojis[index].aliases[0]);
+                }
+            }
+        }
+        if (namedEmojis) {
+            for (const emoji of namedEmojis) {
+                const index = EmojiIndicesByAlias.get(emoji.slice(1, -1));
+                if (index) {
+                    emojisAvailableWithMattermost.push(Emojis[index].aliases[0]);
+                }
+            }
+        }
+        dispatch({
+            type: ViewTypes.ADD_RECENT_EMOJI_ARRAY,
+            emojis: emojisAvailableWithMattermost,
+        });
+    };
 }

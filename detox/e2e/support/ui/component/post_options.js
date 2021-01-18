@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Alert from './alert';
+import {isAndroid, timeouts, wait} from '@support/utils';
+
 class PostOptions {
     testID = {
         postOptions: 'post.options',
@@ -41,6 +44,28 @@ class PostOptions {
 
     close = async () => {
         await this.postOptions.tap();
+        await expect(this.postOptions).not.toBeVisible();
+    }
+
+    deletePost = async (confirm = true) => {
+        // # Swipe up panel on Android
+        if (isAndroid()) {
+            await this.slideUpPanel.swipe('up');
+        }
+
+        await this.deleteAction.tap();
+        const {
+            deletePostTitle,
+            cancelButton,
+            deleteButton,
+        } = Alert;
+        await expect(deletePostTitle).toBeVisible();
+        if (confirm) {
+            deleteButton.tap();
+        } else {
+            cancelButton.tap();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.postOptions).not.toBeVisible();
     }
 }
