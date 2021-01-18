@@ -11,7 +11,9 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import mattermostManaged from 'app/mattermost_managed';
 
 export default class ImageViewPort extends PureComponent {
-    state = {};
+    state = {
+        inViewPort: false,
+    };
 
     componentDidMount() {
         this.mounted = true;
@@ -46,7 +48,7 @@ export default class ImageViewPort extends PureComponent {
     };
 
     hasPermanentSidebar = () => {
-        return DeviceTypes.IS_TABLET && !this.state?.isSplitView && this.state?.permanentSidebar;
+        return DeviceTypes.IS_TABLET && !this.state.isSplitView && this.state.permanentSidebar;
     };
 
     render() {

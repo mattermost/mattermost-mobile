@@ -92,6 +92,7 @@ export default class Gallery extends PureComponent {
                     text: title,
                 },
                 backButton: {
+                    enableMenu: false,
                     visible: true,
                     icon: closeButton,
                 },

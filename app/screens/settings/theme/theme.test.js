@@ -22,11 +22,11 @@ describe('Theme', () => {
             savePreferences: jest.fn(),
         },
         allowedThemes,
+        isLandscape: false,
         isTablet: false,
         teamId: 'test-team',
         theme: Preferences.THEMES.default,
         userId: 'test-user',
-        isLandscape: false,
     };
 
     test('should match snapshot', () => {
