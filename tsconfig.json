@@ -33,7 +33,7 @@
         "baseUrl": ".",
         "paths": {
             "@actions/*": ["app/actions/*"],
-            "@assets/*": ["dist/assets/*"],
+            "@assets/*": ["assets/base/*"],
             "@components/*": ["app/components/*"],
             "@constants/*": ["app/constants/*"],
             "@constants": ["app/constants/index"],
