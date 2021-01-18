@@ -1,20 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import {Database, Model} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {Class} from '@nozbe/watermelondb/utils/common';
-import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
-import Server from '@typings/database/servers';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
-import DefaultMigration from '../default/migration';
-import {App, Global, Servers} from '../default/models';
-import {defaultSchema} from '../default/schema';
-import ServerMigration from '../server/migration';
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
+import Server from '@typings/database/servers';
+import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+
+import DefaultMigration from '../../default/migration';
+import {App, Global, Servers} from '../../default/models';
+import {defaultSchema} from '../../default/schema';
+import ServerMigration from '../../server/migration';
 import {
     Channel,
     ChannelInfo,
@@ -44,8 +45,8 @@ import {
     TeamSearchHistory,
     TermsOfService,
     User,
-} from '../server/models';
-import {serverSchema} from '../server/schema';
+} from '../../server/models';
+import {serverSchema} from '../../server/schema';
 
 // TODO [x] : Initialize a db connection with default schema
 // TODO [x] : handle migration
@@ -68,8 +69,8 @@ export enum DatabaseType {
 }
 
 class DatabaseManager {
-    private activeDatabase: Database | undefined;
     defaultDatabase: Database | undefined;
+    private activeDatabase: Database | undefined;
     private readonly defaultModels: Models;
     private readonly serverModels: Models;
 
@@ -120,42 +121,12 @@ class DatabaseManager {
     };
 
     /**
-     * registerNewServer: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
-     * @param {string} dbFilePath
-     * @param {string} displayName
-     * @param {string} serverUrl
-     * @returns {Promise<void>}
-     */
-    private registerNewServer = async ({
-        dbFilePath,
-        displayName,
-        serverUrl,
-    }: DefaultNewServer) => {
-        try {
-            const defaultDatabase = await this.getDefaultDatabase();
-
-            await defaultDatabase.action(async () => {
-                const serversCollection = defaultDatabase.collections.get('servers');
-                await serversCollection.create((server: Server) => {
-                    server.dbPath = dbFilePath;
-                    server.displayName = displayName;
-                    server.mentionCount = 0;
-                    server.unreadCount = 0;
-                    server.url = serverUrl;
-                });
-            });
-        } catch (e) {
-            console.log({catchError: e});
-        }
-    };
-
-    /**
-     * setActiveDatabase: From the displayName and serverUrl, we set the new active server database.  For example, on switching to another
-     * another server, in the component, we retrieve those values and call setActiveDatabase.
+     * setActiveServerDatabase: From the displayName and serverUrl, we set the new active server database.  For example, on switching to another
+     * another server, in the component, we retrieve those values and call setActiveServerDatabase.
      * @param {string} displayName
      * @param {string} serverUrl
      */
-    setActiveDatabase = ({displayName, serverUrl}: { displayName: string, serverUrl: string }) => {
+    setActiveServerDatabase = ({displayName, serverUrl}: { displayName: string, serverUrl: string }) => {
         this.activeDatabase = this.createDatabaseConnection({
             actionsEnabled: true,
             dbName: displayName,
@@ -165,11 +136,11 @@ class DatabaseManager {
     };
 
     /**
-     * getActiveDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
+     * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
      * Use this getter method to retrieve the active database if it has been set in your code.
      * @returns { Database | undefined}
      */
-    getActiveDatabase = (): Database | undefined => {
+    getActiveServerDatabase = (): Database | undefined => {
         return this.activeDatabase;
     };
 
@@ -258,6 +229,36 @@ class DatabaseManager {
     factoryResetOnIOS = ({shouldRemoveDirectory}: { shouldRemoveDirectory: boolean }) => {
         if (shouldRemoveDirectory) {
             deleteIOSDatabase({shouldRemoveDirectory: true});
+        }
+    };
+
+    /**
+     * registerNewServer: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
+     * @param {string} dbFilePath
+     * @param {string} displayName
+     * @param {string} serverUrl
+     * @returns {Promise<void>}
+     */
+    private registerNewServer = async ({
+        dbFilePath,
+        displayName,
+        serverUrl,
+    }: DefaultNewServer) => {
+        try {
+            const defaultDatabase = await this.getDefaultDatabase();
+
+            await defaultDatabase.action(async () => {
+                const serversCollection = defaultDatabase.collections.get('servers');
+                await serversCollection.create((server: Server) => {
+                    server.dbPath = dbFilePath;
+                    server.displayName = displayName;
+                    server.mentionCount = 0;
+                    server.unreadCount = 0;
+                    server.url = serverUrl;
+                });
+            });
+        } catch (e) {
+            console.log({catchError: e});
         }
     };
 
