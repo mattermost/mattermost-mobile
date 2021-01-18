@@ -17,7 +17,7 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {ViewTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
-import { popTopScreen } from '@actions/navigation';
+import {popTopScreen} from '@actions/navigation';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',
