@@ -103,6 +103,7 @@ function SSO({intl, ssoType}: SSOProps) {
     const isSSOWithRedirectURLAvailable = isMinimumServerVersion(config.Version, 5, 32, 0);
 
     const props = {
+        intl,
         loginError,
         loginUrl,
         onCSRFToken: Client4.setCSRF,
@@ -113,10 +114,7 @@ function SSO({intl, ssoType}: SSOProps) {
 
     if (isSSOWithRedirectURLAvailable) {
         return (
-            <SSOWithRedirectURL
-                intl={intl}
-                {...props}
-            />
+            <SSOWithRedirectURL {...props}/>
         );
     }
     return (

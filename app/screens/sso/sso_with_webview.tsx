@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React from 'react';
-import {Text, View} from 'react-native';
+import {intlShape} from 'react-intl';
+import {Alert, Text, View} from 'react-native';
 import CookieManager from 'react-native-cookies';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {WebView} from 'react-native-webview';
@@ -15,6 +17,7 @@ import Loading from 'app/components/loading';
 import StatusBar from 'app/components/status_bar';
 import {ViewTypes} from 'app/constants';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
+import { popTopScreen } from '@actions/navigation';
 
 const HEADERS = {
     'X-Mobile-App': 'mattermost',
@@ -54,6 +57,7 @@ const oneLoginFormScalingJS = `
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;
+    intl: typeof intlShape;
     loginError: string;
     loginUrl: string;
     onCSRFToken: (token: string) => void;
@@ -72,7 +76,7 @@ type CookieResponseType = {
     };
 }
 
-function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
+function SSOWithWebView({completeUrlPath, intl, loginError, loginUrl, onCSRFToken, onMMToken, serverUrl, ssoType, theme}: SSOWithWebViewProps) {
     const style = getStyleSheet(theme);
 
     const [error, setError] = React.useState(null);
@@ -88,38 +92,57 @@ function SSOWithWebView({completeUrlPath, loginError, loginUrl, onCSRFToken, onM
                 clearTimeout(cookiesTimeout.current);
             }
         };
-    });
+    }, []);
 
     const extractCookie = (parsedUrl: urlParse) => {
-        const original = urlParse(serverUrl);
+        try {
+            const original = urlParse(serverUrl);
 
-        // Check whether we need to set a sub-path
-        parsedUrl.set('pathname', original.pathname || '');
+            // Check whether we need to set a sub-path
+            parsedUrl.set('pathname', original.pathname || '');
 
-        // Rebuild the server url without query string and/or hash
-        const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
-        Client4.setUrl(url);
+            // Rebuild the server url without query string and/or hash
+            const url = `${parsedUrl.origin}${parsedUrl.pathname}`;
+            Client4.setUrl(url);
 
-        CookieManager.get(url, true).then((res: CookieResponseType) => {
-            const mmtoken = res.MMAUTHTOKEN;
-            const csrf = res.MMCSRF;
-            const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
-            const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
+            CookieManager.get(url, true).then((res: CookieResponseType) => {
+                const mmtoken = res.MMAUTHTOKEN;
+                const csrf = res.MMCSRF;
+                const token = typeof mmtoken === 'object' ? mmtoken.value : mmtoken;
+                const csrfToken = typeof csrf === 'object' ? csrf.value : csrf;
 
-            if (csrfToken) {
-                onCSRFToken(csrfToken);
-            }
-            if (token) {
-                onMMToken(token);
-                if (cookiesTimeout.current) {
-                    clearTimeout(cookiesTimeout.current);
+                if (csrfToken) {
+                    onCSRFToken(csrfToken);
                 }
-                setShouldRenderWebView(false);
-            } else if (webView.current && !error) {
-                webView.current.injectJavaScript(postMessageJS);
-                cookiesTimeout.current = setTimeout(extractCookie.bind(null, parsedUrl), 250);
-            }
-        });
+                if (token) {
+                    onMMToken(token);
+                    if (cookiesTimeout.current) {
+                        clearTimeout(cookiesTimeout.current);
+                    }
+                    setShouldRenderWebView(false);
+                } else if (webView.current && !error) {
+                    webView.current.injectJavaScript(postMessageJS);
+                    cookiesTimeout.current = setTimeout(extractCookie.bind(null, parsedUrl), 250);
+                }
+            });
+        } catch (e) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'mobile.oauth.something_wrong',
+                    defaultMessage: 'Something went wrong',
+                }),
+                '',
+                [{
+                    text: intl.formatMessage({
+                        id: 'mobile.oauth.something_wrong.okButon',
+                        defaultMessage: 'Ok',
+                    }),
+                    onPress: () => {
+                        popTopScreen();
+                    },
+                }],
+            );
+        }
     };
 
     const onMessage = (event: WebViewMessageEvent) => {
