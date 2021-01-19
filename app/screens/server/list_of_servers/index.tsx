@@ -7,7 +7,7 @@ import React from 'react';
 import {FlatList, Text, View} from 'react-native';
 import withObservables from '@nozbe/with-observables';
 
-import DBManager from '../../../database/management/admin/database_manager';
+import DBManager from '../../../database/admin/database_manager';
 
 const ListOfServers = ({servers} : { servers : Servers[]}) => {
     console.log('>>>  ***  ', servers);

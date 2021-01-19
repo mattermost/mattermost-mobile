@@ -84,42 +84,47 @@ class DatabaseManager {
     }
 
     /**
-     * createDatabaseConnection: Creates database connection and registers the new connection into the default database
+     * createDatabaseConnection: Adds/Creates database connection and registers the new connection into the default database
      * @param {MMDatabaseConnection} databaseConnection
      * @returns {Database}
      */
-    private createDatabaseConnection = async (databaseConnection: MMDatabaseConnection): Database => {
-        const {
-            actionsEnabled = true,
-            dbName = 'default',
-            dbType = DatabaseType.DEFAULT,
-            serverUrl = undefined,
-        } = databaseConnection;
+     createDatabaseConnection = async (databaseConnection: MMDatabaseConnection): Database => {
+         const {
+             actionsEnabled = true,
+             dbName = 'default',
+             dbType = DatabaseType.DEFAULT,
+             serverUrl = undefined,
+         } = databaseConnection;
+         try {
+             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
 
-        const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
+             const dbFilePath = await this.getDBDirectory({dbName: databaseName});
 
-        const dbFilePath = this.getDBDirectory({dbName: databaseName});
-        const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
-        const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
-        const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
+             const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
+             const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
+             const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
 
-        const adapter = new SQLiteAdapter({
-            dbName: dbFilePath,
-            migrationEvents: this.buildMigrationCallbacks({dbName: databaseName}),
-            migrations,
-            schema,
-        });
+             const adapter = new SQLiteAdapter({
+                 dbName: dbFilePath,
+                 migrationEvents: this.buildMigrationCallbacks({dbName: databaseName}),
+                 migrations,
+                 schema,
+             });
 
-        // Registers the new server connection into the DEFAULT database
-        if (serverUrl) {
-            await this.registerNewServer({dbFilePath, displayName: dbName, serverUrl});
-        }
+             // Registers the new server connection into the DEFAULT database
+             if (serverUrl) {
+                 await this.registerNewServer({dbFilePath, displayName: dbName, serverUrl});
+             }
 
-        const database = new Database({adapter, actionsEnabled, modelClasses});
-        console.log(`Created ${dbName} database `);
+             const database = new Database({adapter, actionsEnabled, modelClasses});
 
-        return database;
-    };
+             console.log(`Created ${dbName} database `);
+
+             return database;
+         } catch (e) {
+             console.log(e);
+         }
+     };
 
     /**
      * setActiveServerDatabase: From the displayName and serverUrl, we set the new active server database.  For example, on switching to another
@@ -294,11 +299,16 @@ class DatabaseManager {
      * @param {string} dbName
      * @returns {string}
      */
-    private getDBDirectory = ({dbName}: { dbName: string }): string => {
+    private getDBDirectory = async ({dbName}: { dbName: string }): Promise<string> => {
         if (Platform.OS === 'ios') {
             return `${getIOSAppGroupDetails().appGroupDatabase}/${dbName}.db`;
         }
-        return FileSystem.documentDirectory + `/databases/${dbName}.db`;
+
+        // On Android side - create directory first
+        const androidDBPath = FileSystem.documentDirectory + `databases/${dbName}.db`;
+        await FileSystem.makeDirectoryAsync(androidDBPath, {intermediates: true});
+
+        return `${androidDBPath}/${dbName}.db`;
     };
 }
 

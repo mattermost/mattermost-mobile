@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DBManager from './database_manager';
+import DBManager from './index';
 jest.mock('./database_manager');
 
 // const appGroup = getIOSAppGroupDetails();

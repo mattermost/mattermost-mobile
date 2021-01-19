@@ -47,6 +47,8 @@ import org.unimodules.adapters.react.ModuleRegistryAdapter;
 import org.unimodules.adapters.react.ReactModuleRegistryProvider;
 import org.unimodules.core.interfaces.SingletonModule;
 
+import com.nozbe.watermelondb.WatermelonDBPackage;
+
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
   public static MainApplication instance;
 
@@ -78,6 +80,7 @@ public class MainApplication extends NavigationApplication implements INotificat
         // Packages that cannot be autolinked yet can be added manually here, for example:
         // packages.add(new MyReactNativePackage());
         packages.add(new RNNotificationsPackage(MainApplication.this));
+        packages.add(new WatermelonDBPackage());
 
         // Add unimodules
         List<ReactPackage> unimodules = Arrays.<ReactPackage>asList(
