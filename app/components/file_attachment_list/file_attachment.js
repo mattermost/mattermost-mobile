@@ -15,7 +15,7 @@ import * as Utils from '@mm-redux/utils/file_utils';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
 import {isDocument, isImage} from 'app/utils/file';
-import {calculateDimensions} from 'app/utils/images';
+import {calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import FileAttachmentDocument from './file_attachment_document';

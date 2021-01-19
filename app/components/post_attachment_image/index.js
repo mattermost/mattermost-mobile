@@ -7,7 +7,7 @@ import {StyleSheet, View} from 'react-native';
 
 import ProgressiveImage from 'app/components/progressive_image';
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import {isGifTooLarge} from 'app/utils/images';
+import {isGifTooLarge} from '@utils/images';
 
 export default class PostAttachmentImage extends React.PureComponent {
     static propTypes = {

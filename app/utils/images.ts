@@ -13,8 +13,10 @@ import {
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
 import {isImage} from './file';
+import {PostImage} from '@mm-redux/types/posts';
+import {FileInfo} from '@mm-redux/types/files';
 
-export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHeight = 0) => {
+export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
     if (!height || !width) {
         return {
             height: null,
@@ -61,7 +63,7 @@ export const calculateDimensions = (height, width, viewPortWidth = 0, viewPortHe
     };
 };
 
-export function getViewPortWidth(isReplyPost, permanentSidebar = false) {
+export function getViewPortWidth(isReplyPost: boolean, permanentSidebar = false) {
     const {width, height} = Dimensions.get('window');
     let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
 
@@ -76,7 +78,7 @@ export function getViewPortWidth(isReplyPost, permanentSidebar = false) {
     return portraitPostWidth;
 }
 
-export function openGalleryAtIndex(index, files) {
+export function openGalleryAtIndex(index: number, files: FileInfo[]) {
     Keyboard.dismiss();
     requestAnimationFrame(() => {
         const screen = 'Gallery';
@@ -86,8 +88,10 @@ export function openGalleryAtIndex(index, files) {
         };
         const windowHeight = Dimensions.get('window').height;
         const sharedElementTransitions = [];
-        const contentPush = {};
-        const contentPop = {};
+
+        // TODO figure more concrete types
+        const contentPush = {} as any;
+        const contentPop = {} as any;
         const file = files[index];
 
         if (isImage(file)) {
@@ -156,7 +160,7 @@ export function openGalleryAtIndex(index, files) {
 
 // isGifTooLarge returns true if we think that the GIF may cause the device to run out of memory when rendered
 // based on the image's dimensions and frame count.
-export function isGifTooLarge(imageMetadata) {
+export function isGifTooLarge(imageMetadata?: PostImage) {
     if (imageMetadata?.format !== 'gif') {
         // Not a gif or from an older server that doesn't count frames
         return false;
@@ -165,5 +169,5 @@ export function isGifTooLarge(imageMetadata) {
     const {frame_count: frameCount, height, width} = imageMetadata;
 
     // Try to estimate the in-memory size of the gif to prevent the device out of memory
-    return width * height * frameCount > MAX_GIF_SIZE;
+    return width * height * (frameCount || 1) > MAX_GIF_SIZE;
 }

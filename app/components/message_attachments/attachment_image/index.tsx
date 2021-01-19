@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 import {View} from 'react-native';
 
 import ProgressiveImage from '@components/progressive_image';
@@ -10,21 +9,37 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {generateId} from '@utils/file';
 import {isGifTooLarge, openGalleryAtIndex, calculateDimensions} from '@utils/images';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {Theme} from '@mm-redux/types/preferences';
+import {PostImage} from '@mm-redux/types/posts';
+import {FileInfo} from '@mm-redux/types/files';
 
 const VIEWPORT_IMAGE_OFFSET = 100;
 const VIEWPORT_IMAGE_CONTAINER_OFFSET = 10;
 
-export default class AttachmentImage extends PureComponent {
-    static propTypes = {
-        deviceHeight: PropTypes.number.isRequired,
-        deviceWidth: PropTypes.number.isRequired,
-        imageMetadata: PropTypes.object,
-        imageUrl: PropTypes.string,
-        postId: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-    };
+export type Props = {
+    deviceHeight: number;
+    deviceWidth: number;
+    imageMetadata?: PostImage;
+    imageUrl?: string;
+    postId?: string;
+    theme: Theme;
+}
 
-    constructor(props) {
+export type State = {
+    hasImage: boolean;
+    imageUri: string | null;
+    originalHeight?: number;
+    originalWidth?: number;
+    height?: number | null;
+    width?: number | null;
+}
+
+export default class AttachmentImage extends PureComponent<Props, State> {
+    private fileId: string;
+    private mounted = false;
+    private maxImageWidth = 0;
+
+    constructor(props: Props) {
         super(props);
 
         this.fileId = generateId();
@@ -48,7 +63,7 @@ export default class AttachmentImage extends PureComponent {
         }
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps: Props) {
         if (this.props.imageUrl && (prevProps.imageUrl !== this.props.imageUrl)) {
             this.setImageUrl(this.props.imageUrl);
         }
@@ -62,6 +77,16 @@ export default class AttachmentImage extends PureComponent {
             originalWidth,
         } = this.state;
 
+        if (!imageUrl) {
+            return {
+                id: this.fileId,
+                post_id: postId,
+                uri,
+                width: originalWidth,
+                height: originalHeight,
+            } as FileInfo;
+        }
+
         let filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1, imageUrl.indexOf('?') === -1 ? imageUrl.length : imageUrl.indexOf('?'));
         const extension = filename.split('.').pop();
 
@@ -70,7 +95,7 @@ export default class AttachmentImage extends PureComponent {
             filename = `${filename}${ext}`;
         }
 
-        return {
+        const out = {
             id: this.fileId,
             name: filename,
             extension,
@@ -79,15 +104,19 @@ export default class AttachmentImage extends PureComponent {
             uri,
             width: originalWidth,
             height: originalHeight,
-        };
+        } as FileInfo;
+        return out;
     }
 
     handlePreviewImage = () => {
-        const files = [this.getFileInfo()];
-        openGalleryAtIndex(0, files);
+        const file = this.getFileInfo();
+        if (!file) {
+            return;
+        }
+        openGalleryAtIndex(0, [file]);
     };
 
-    setImageDimensions = (imageUri, dimensions, originalWidth, originalHeight) => {
+    setImageDimensions = (imageUri: string | null, dimensions: {width: number | null; height: number | null;}, originalWidth: number, originalHeight: number) => {
         if (this.mounted) {
             this.setState({
                 ...dimensions,
@@ -98,12 +127,12 @@ export default class AttachmentImage extends PureComponent {
         }
     };
 
-    setImageDimensionsFromMeta = (imageUri, imageMetadata) => {
+    setImageDimensionsFromMeta = (imageUri: string | null, imageMetadata: PostImage) => {
         const dimensions = calculateDimensions(imageMetadata.height, imageMetadata.width, this.maxImageWidth);
         this.setImageDimensions(imageUri, dimensions, imageMetadata.width, imageMetadata.height);
     };
 
-    setImageUrl = (imageURL) => {
+    setImageUrl = (imageURL: string) => {
         const {imageMetadata} = this.props;
 
         if (imageMetadata) {
@@ -139,7 +168,7 @@ export default class AttachmentImage extends PureComponent {
                 />
             );
         } else {
-            progressiveImage = (<View style={{width, height}}/>);
+            progressiveImage = (<View style={{width: width || 0, height: height || 0}}/>);
         }
 
         return (
@@ -158,7 +187,7 @@ export default class AttachmentImage extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             marginTop: 5,
