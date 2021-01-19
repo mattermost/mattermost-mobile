@@ -4,6 +4,7 @@
 import React, {PureComponent} from 'react';
 
 import AutocompleteSelector from 'app/components/autocomplete_selector';
+import {PostActionOption} from '@mm-redux/types/integration_actions';
 
 type Props = {
     actions: {
@@ -13,19 +14,14 @@ type Props = {
     name: string;
     dataSource?: string;
     defaultOption?: string;
-    options?: Option[];
+    options?: PostActionOption[];
     postId: string;
-    selected?: Option;
+    selected?: PostActionOption;
     disabled?: boolean;
 }
 
 type State = {
-    selected?: Option;
-}
-
-type Option = {
-    text: string;
-    value: string;
+    selected?: PostActionOption;
 }
 
 export default class ActionMenu extends PureComponent<Props, State> {
@@ -52,7 +48,7 @@ export default class ActionMenu extends PureComponent<Props, State> {
         return null;
     }
 
-    handleSelect = (selected?: Option) => {
+    handleSelect = (selected?: PostActionOption) => {
         if (!selected) {
             return;
         }

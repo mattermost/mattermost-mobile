@@ -4,19 +4,18 @@
 import React, {PureComponent} from 'react';
 import {Alert, Text, View} from 'react-native';
 import {intlShape} from 'react-intl';
-import PropTypes from 'prop-types';
 
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+import {Theme} from '@mm-redux/types/preferences';
 
-export default class AttachmentTitle extends PureComponent {
-    static propTypes = {
-        link: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-        value: PropTypes.string,
-    };
-
+type Props = {
+    link?: string;
+    theme: Theme;
+    value?: string;
+}
+export default class AttachmentTitle extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
@@ -93,7 +92,7 @@ export default class AttachmentTitle extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             marginTop: 3,

@@ -2,29 +2,35 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
-import PropTypes from 'prop-types';
+import {LayoutChangeEvent, ScrollView, StyleProp, StyleSheet, TextStyle, View, ViewStyle} from 'react-native';
 
 import Markdown from 'app/components/markdown';
 import ShowMoreButton from 'app/components/show_more_button';
-import CustomPropTypes from 'app/constants/custom_prop_types';
+import {PostMetadata} from '@mm-redux/types/posts';
+import {Theme} from '@mm-redux/types/preferences';
 
 const SHOW_MORE_HEIGHT = 60;
 
-export default class AttachmentText extends PureComponent {
-    static propTypes = {
-        baseTextStyle: CustomPropTypes.Style.isRequired,
-        blockStyles: PropTypes.object.isRequired,
-        deviceHeight: PropTypes.number.isRequired,
-        hasThumbnail: PropTypes.bool,
-        metadata: PropTypes.object,
-        onPermalinkPress: PropTypes.func,
-        textStyles: PropTypes.object.isRequired,
-        theme: PropTypes.object,
-        value: PropTypes.string,
-    };
+type Props = {
+    baseTextStyle: StyleProp<TextStyle>,
+    blockStyles?: StyleProp<ViewStyle>[],
+    deviceHeight: number,
+    hasThumbnail?: boolean,
+    metadata?: PostMetadata,
+    onPermalinkPress?: () => void,
+    textStyles?: StyleProp<TextStyle>[],
+    theme?: Theme,
+    value?: string,
+}
 
-    static getDerivedStateFromProps(nextProps, prevState) {
+type State = {
+    collapsed: boolean;
+    isLongText: boolean;
+    maxHeight?: number;
+}
+
+export default class AttachmentText extends PureComponent<Props, State> {
+    static getDerivedStateFromProps(nextProps: Props, prevState: State) {
         const {deviceHeight} = nextProps;
         const maxHeight = Math.round((deviceHeight * 0.4) + SHOW_MORE_HEIGHT);
 
@@ -37,7 +43,7 @@ export default class AttachmentText extends PureComponent {
         return null;
     }
 
-    constructor(props) {
+    constructor(props: Props) {
         super(props);
 
         this.state = {
@@ -46,11 +52,11 @@ export default class AttachmentText extends PureComponent {
         };
     }
 
-    handleLayout = (event) => {
+    handleLayout = (event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
         const {maxHeight} = this.state;
 
-        if (height >= maxHeight) {
+        if (height >= (maxHeight || 0)) {
             this.setState({
                 isLongText: true,
             });
@@ -82,7 +88,7 @@ export default class AttachmentText extends PureComponent {
         return (
             <View style={hasThumbnail && style.container}>
                 <ScrollView
-                    style={{maxHeight: (collapsed ? maxHeight : null), overflow: 'hidden'}}
+                    style={{maxHeight: (collapsed ? maxHeight : undefined), overflow: 'hidden'}}
                     scrollEnabled={false}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}

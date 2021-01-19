@@ -1,56 +1,54 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
+import React from 'react';
 import {Text, View, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import PropTypes from 'prop-types';
 import truncate from 'lodash/truncate';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {MAX_ATTACHMENT_FOOTER_LENGTH} from 'app/constants/attachment';
+import {Theme} from '@mm-redux/types/preferences';
 
-export default class AttachmentFooter extends PureComponent {
-    static propTypes = {
-        text: PropTypes.string,
-        icon: PropTypes.string,
-        theme: PropTypes.object.isRequired,
-    };
+type Props = {
+    text?: string;
+        icon?: string;
+        theme: Theme;
+}
 
-    render() {
-        const {
-            text,
-            icon,
-            theme,
-        } = this.props;
+export default function AttachmentFooter(props: Props) {
+    const {
+        text,
+        icon,
+        theme,
+    } = props;
 
-        if (!text) {
-            return null;
-        }
+    if (!text) {
+        return null;
+    }
 
-        const style = getStyleSheet(theme);
+    const style = getStyleSheet(theme);
 
-        return (
-            <View style={style.container}>
-                {Boolean(icon) &&
+    return (
+        <View style={style.container}>
+            {Boolean(icon) &&
                 <FastImage
                     source={{uri: icon}}
                     key='footer_icon'
                     style={style.icon}
                 />
-                }
-                <Text
-                    key='footer_text'
-                    style={style.text}
-                >
-                    {truncate(text, {length: MAX_ATTACHMENT_FOOTER_LENGTH, omission: '…'})}
-                </Text>
-            </View>
-        );
-    }
+            }
+            <Text
+                key='footer_text'
+                style={style.text}
+            >
+                {truncate(text, {length: MAX_ATTACHMENT_FOOTER_LENGTH, omission: '…'})}
+            </Text>
+        </View>
+    );
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
