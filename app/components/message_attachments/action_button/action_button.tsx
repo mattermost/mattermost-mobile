@@ -2,31 +2,31 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 import Button from 'react-native-button';
 
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
-import {getStatusColors} from 'app/utils/message_attachment_colors';
+import {getStatusColors} from '@utils/message_attachment_colors';
 import ActionButtonText from './action_button_text';
+import {Theme} from '@mm-redux/types/preferences';
+import {ActionResult} from '@mm-redux/types/actions';
 
-export default class ActionButton extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            doPostActionWithCookie: PropTypes.func.isRequired,
-        }).isRequired,
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        postId: PropTypes.string.isRequired,
-        theme: PropTypes.object.isRequired,
-        cookie: PropTypes.string,
-        disabled: PropTypes.bool,
-        buttonColor: PropTypes.string,
+type Props = {
+    actions: {
+        doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<ActionResult>;
     };
-
+    id: string;
+    name: string;
+    postId: string;
+    theme: Theme,
+    cookie?: string,
+    disabled?: boolean,
+    buttonColor?: string,
+}
+export default class ActionButton extends PureComponent<Props> {
     handleActionPress = preventDoubleTap(() => {
         const {actions, id, postId, cookie} = this.props;
-        actions.doPostActionWithCookie(postId, id, cookie);
+        actions.doPostActionWithCookie(postId, id, cookie || '');
     }, 4000);
 
     render() {
@@ -58,7 +58,7 @@ export default class ActionButton extends PureComponent {
     }
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const STATUS_COLORS = getStatusColors(theme);
     return {
         button: {

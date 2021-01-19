@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {View} from 'react-native';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
-import {getStatusColors} from 'app/utils/message_attachment_colors';
+import {getStatusColors} from '@utils/message_attachment_colors';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
 import AttachmentActions from './attachment_actions';

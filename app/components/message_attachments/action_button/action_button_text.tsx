@@ -3,7 +3,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Text, View, StyleSheet} from 'react-native';
+import {Text, View, StyleSheet, StyleProp, TextStyle} from 'react-native';
 import Emoji from 'app/components/emoji';
 import {getEmoticonName} from 'app/utils/emoji_utils';
 
@@ -17,8 +17,8 @@ const reEmoticon = /^(?:(:-?\))|(;-?\))|(:o)|(:-o)|(:-?])|(:-?d)|(x-d)|(:-?p)|(:
 // before the next emoji by looking for any character that could start an emoji (:, ;, x, or <)
 const reMain = /^[\s\S]+?(?=[:;x<]|$)/i;
 
-export default function ActionButtonText({message, style}) {
-    const components = [];
+export default function ActionButtonText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
+    const components = [] as JSX.Element[];
 
     let text = message;
     while (text) {
@@ -58,6 +58,9 @@ export default function ActionButtonText({message, style}) {
         // This is plain text, so capture as much text as possible until we hit the next possible emoji. Note that
         // reMain always captures at least one character, so text will always be getting shorter
         match = text.match(reMain);
+        if (!match) {
+            continue;
+        }
 
         components.push(
             <Text
