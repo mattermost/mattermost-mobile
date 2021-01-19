@@ -23,7 +23,7 @@ import {
 
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
-import DBManager, {DatabaseType} from '../../database/management/database_manager/database_manager';
+import DBManager, {DatabaseType} from '../../database/management/admin/database_manager';
 import {getIOSAppGroupDetails, deleteIOSDatabase} from '@utils/mattermost_managed';
 
 declare const global: {HermesInternal: null | {}};
@@ -31,6 +31,8 @@ declare const global: {HermesInternal: null | {}};
 const App = () => {
     // const appGroup = getIOSAppGroupDetails();
     // const defaultDB = DBManager.getDefaultDatabase();
+
+    DBManager.
 
     // Deleting db and database direction on iOS
     // deleteIOSDatabase({databaseName: 'default'});
@@ -45,55 +47,55 @@ const App = () => {
     //     serverUrl: '33xd',
     // });
 
-    return (
-        <>
-            <StatusBar barStyle='dark-content'/>
-            <SafeAreaView>
-                <ScrollView
-                    contentInsetAdjustmentBehavior='automatic'
-                    style={styles.scrollView}
-                >
-                    <EnhancedListOfServers/>
-                    {global.HermesInternal == null ? null : (
-                        <View style={styles.engine}>
-                            <Text style={styles.footer}>{'Engine: Hermes'}</Text>
+        return(
+            <>
+                <StatusBar barStyle='dark-content'/>
+                <SafeAreaView>
+                    <ScrollView
+                        contentInsetAdjustmentBehavior='automatic'
+                        style={styles.scrollView}
+                    >
+                        <EnhancedListOfServers/>
+                        {global.HermesInternal == null ? null : (
+                            <View style={styles.engine}>
+                                <Text style={styles.footer}>{'Engine: Hermes'}</Text>
+                            </View>
+                        )}
+                        <View style={styles.body}>
+                            <View style={styles.sectionContainer}>
+                                <Text style={styles.sectionTitle}>{'Step One'}</Text>
+                                <Text style={styles.sectionDescription}>
+                                    {'Edit '}<Text style={styles.highlight}>{'screens/server/index.tsx'}</Text>{' to change this'}
+                                    {'XXXXXscreen and then come back to see your edits.'}
+                                </Text>
+                            </View>
+                            <View style={styles.sectionContainer}>
+                                <Text
+                                    style={styles.sectionTitle}
+                                    onPress={() => goToScreen(Screens.CHANNEL, 'Channel')}
+                                >{'See Your Changes'}</Text>
+                                <Text style={styles.sectionDescription}>
+                                    <ReloadInstructions/>
+                                </Text>
+                            </View>
+                            <View style={styles.sectionContainer}>
+                                <Text style={styles.sectionTitle}>{'Debug'}</Text>
+                                <Text style={styles.sectionDescription}>
+                                    <DebugInstructions/>
+                                </Text>
+                            </View>
+                            <View style={styles.sectionContainer}>
+                                <Text style={styles.sectionTitle}>{'Learn More'}</Text>
+                                <Text style={styles.sectionDescription}>
+                                    {'Read the docs to discover what to do next:'}
+                                </Text>
+                            </View>
+                            <LearnMoreLinks/>
                         </View>
-                    )}
-                    <View style={styles.body}>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Step One'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                {'Edit '}<Text style={styles.highlight}>{'screens/server/index.tsx'}</Text>{' to change this'}
-                                {'XXXXXscreen and then come back to see your edits.'}
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text
-                                style={styles.sectionTitle}
-                                onPress={() => goToScreen(Screens.CHANNEL, 'Channel')}
-                            >{'See Your Changes'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                <ReloadInstructions/>
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Debug'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                <DebugInstructions/>
-                            </Text>
-                        </View>
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{'Learn More'}</Text>
-                            <Text style={styles.sectionDescription}>
-                                {'Read the docs to discover what to do next:'}
-                            </Text>
-                        </View>
-                        <LearnMoreLinks/>
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-        </>
-    );
+                    </ScrollView>
+                </SafeAreaView>
+            </>,
+        );
 };
 
 const styles = StyleSheet.create({

@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import {Database, Model} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {Class} from '@nozbe/watermelondb/utils/common';
-import {DeviceEventEmitter, Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
-
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import Server from '@typings/database/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {DeviceEventEmitter, Platform} from 'react-native';
+import {FileSystem} from 'react-native-unimodules';
 
 import DefaultMigration from '../../default/migration';
 import {App, Global, Servers} from '../../default/models';
@@ -61,6 +60,8 @@ import {serverSchema} from '../../server/schema';
 
 // TODO : should we sanitize the display name of databases ?
 
+// TODO :  review all private/public methods/fields
+
 type Models = Class<Model>[]
 
 export enum DatabaseType {
@@ -69,7 +70,7 @@ export enum DatabaseType {
 }
 
 class DatabaseManager {
-    defaultDatabase: Database | undefined;
+    private defaultDatabase: Database | undefined;
     private activeDatabase: Database | undefined;
     private readonly defaultModels: Models;
     private readonly serverModels: Models;
@@ -87,7 +88,7 @@ class DatabaseManager {
      * @param {MMDatabaseConnection} databaseConnection
      * @returns {Database}
      */
-    createDatabaseConnection = async (databaseConnection: MMDatabaseConnection): Database => {
+    private createDatabaseConnection = async (databaseConnection: MMDatabaseConnection): Database => {
         const {
             actionsEnabled = true,
             dbName = 'default',
@@ -122,7 +123,7 @@ class DatabaseManager {
 
     /**
      * setActiveServerDatabase: From the displayName and serverUrl, we set the new active server database.  For example, on switching to another
-     * another server, in the component, we retrieve those values and call setActiveServerDatabase.
+     * another server, on a screen/component/list, we retrieve those values and call setActiveServerDatabase.
      * @param {string} displayName
      * @param {string} serverUrl
      */
@@ -145,12 +146,11 @@ class DatabaseManager {
     };
 
     /**
-     * getDefaultDatabase : Returns the default database.
+     * setDefaultDatabase : Sets the default database.
      * @returns {Database} default database
      */
-    setDefaultDatabase = async (): Promise<Database> => {
-        const defaultDatabase = await this.createDatabaseConnection({dbName: 'default'});
-        this.defaultDatabase = defaultDatabase;
+    private setDefaultDatabase = async (): Promise<Database> => {
+        this.defaultDatabase = await this.createDatabaseConnection({dbName: 'default'});
         return this.defaultDatabase;
     };
 
@@ -208,10 +208,10 @@ class DatabaseManager {
     };
 
     /**
-     * deleteIOSDatabaseBy: Used solely on iOS platform to delete a database by its name
+     * deleteIOSServerDatabaseByName: Used solely on iOS platform to delete a database by its name
      * @param {string | undefined} databaseName
      */
-    deleteIOSDatabaseBy = ({databaseName, shouldRemoveDirectory}: { databaseName: string }) => {
+    deleteIOSServerDatabaseByName = ({databaseName}: { databaseName: string }) => {
         try {
             if (databaseName) {
                 deleteIOSDatabase({databaseName});
