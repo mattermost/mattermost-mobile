@@ -2,26 +2,34 @@
 // See LICENSE.txt for license information.
 
 import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
 
 import AutocompleteSelector from 'app/components/autocomplete_selector';
 
-export default class ActionMenu extends PureComponent {
-    static propTypes = {
-        actions: PropTypes.shape({
-            selectAttachmentMenuAction: PropTypes.func.isRequired,
-        }).isRequired,
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        dataSource: PropTypes.string,
-        defaultOption: PropTypes.string,
-        options: PropTypes.arrayOf(PropTypes.object),
-        postId: PropTypes.string.isRequired,
-        selected: PropTypes.object,
-        disabled: PropTypes.bool,
+type Props = {
+    actions: {
+        selectAttachmentMenuAction: (postId: string, actionId: string, text: string, value: string) => void;
     };
+    id: string;
+    name: string;
+    dataSource?: string;
+    defaultOption?: string;
+    options?: Option[];
+    postId: string;
+    selected?: Option;
+    disabled?: boolean;
+}
 
-    constructor(props) {
+type State = {
+    selected?: Option;
+}
+
+type Option = {
+    text: string;
+    value: string;
+}
+
+export default class ActionMenu extends PureComponent<Props, State> {
+    constructor(props: Props) {
         super(props);
 
         let selected;
@@ -34,7 +42,7 @@ export default class ActionMenu extends PureComponent {
         };
     }
 
-    static getDerivedStateFromProps(props, state) {
+    static getDerivedStateFromProps(props: Props, state: State) {
         if (props.selected && props.selected !== state.selected) {
             return {
                 selected: props.selected,
@@ -44,7 +52,7 @@ export default class ActionMenu extends PureComponent {
         return null;
     }
 
-    handleSelect = (selected) => {
+    handleSelect = (selected?: Option) => {
         if (!selected) {
             return;
         }
