@@ -32,13 +32,13 @@ describe('SSO', () => {
         expect(basicWrapper.queryByTestId('sso.redirect_url')).toBeFalsy();
     });
 
-    test('implement with OS browser & redirect url from version 5.32', async () => {
+    test('implement with OS browser & redirect url from version 5.33', async () => {
         (Linking.openURL as jest.Mock).mockResolvedValueOnce('');
         const store = await configureStore({
             entities: {
                 general: {
                     config: {
-                        Version: '5.32.0',
+                        Version: '5.33.0',
                     },
                 },
             },
