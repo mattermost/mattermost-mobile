@@ -12,7 +12,6 @@ import {ChannelScreen, CreateChannelScreen} from '@support/ui/screen';
 import {Channel, Post, Setup} from '@support/server_api';
 import {adminUsername, adminPassword, serverUrl} from '@support/test_config';
 import {getRandomId} from '@support/utils';
-import team from 'app/reducers/views/team';
 
 describe('Messaging', () => {
     let testTeam;
@@ -90,7 +89,6 @@ describe('Messaging', () => {
         // (isAndroid() ? element(by.text('Cancel')) : element(by.label('Cancel')).atIndex(0)).tap();
     });
 });
-
 
 async function createPrivateChannel(channelName) {
     // # Open Mainside bar and press on private channels more button
