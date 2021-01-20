@@ -25,7 +25,7 @@ import {canEditPost} from '@mm-redux/utils/post_utils';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
-import {THREAD} from 'app/constants/screen';
+import {THREAD, CHANNEL} from 'app/constants/screen';
 import {addReaction} from 'app/actions/views/emoji';
 import {getDimensions} from 'app/selectors/device';
 
@@ -56,6 +56,7 @@ export function makeMapStateToProps() {
         let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
+        let showAppOptions = true;
 
         let canPost = true;
         if (isMinimumServerVersion(serverVersion, 5, 22)) {
@@ -81,6 +82,10 @@ export function makeMapStateToProps() {
 
         if (ownProps.location === THREAD) {
             canReply = false;
+        }
+
+        if (ownProps.location !== CHANNEL) {
+            showAppOptions = false;
         }
 
         if (channelIsArchived || ownProps.channelIsReadOnly) {
@@ -143,6 +148,7 @@ export function makeMapStateToProps() {
             canMarkAsUnread,
             currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
+            showAppOptions,
             theme: getTheme(state),
         };
     };

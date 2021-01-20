@@ -10,6 +10,8 @@ import {GlobalState} from '@mm-redux/types/store';
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppsBindings} from '@mm-redux/constants/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
+import {doAppCall} from '@actions/apps';
+import {bindActionCreators, Dispatch} from 'redux';
 
 function mapStateToProps(state: GlobalState) {
     const bindings = getAppsBindings(state, AppsBindings.POST_MENU_ITEM);
@@ -22,4 +24,12 @@ function mapStateToProps(state: GlobalState) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(Pluggable);
+function mapDispatchToProps(dispatch: Dispatch) {
+    return {
+        actions: bindActionCreators({
+            doAppCall,
+        }, dispatch),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(Pluggable);
