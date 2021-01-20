@@ -14,7 +14,7 @@ module.exports = [
     'app/constants/websocket.ts',
     'app/init/analytics.ts',
     'app/init/credentials.js',
-    'app/init/device.js',
+    'app/init/device.ts',
     'app/init/emm_provider.js',
     'app/init/fetch.js',
     'app/init/global_event_handler.js',

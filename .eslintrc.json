@@ -43,6 +43,7 @@
       }
     ],
     "@typescript-eslint/no-explicit-any": "warn",
+    "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/explicit-function-return-type": 0,

@@ -349,8 +349,10 @@ export default class List extends PureComponent {
     };
 
     scrollToTop = () => {
+        //eslint-disable-next-line no-underscore-dangle
         if (this.listRef?._wrapperListRef) {
-            this.listRef._wrapperListRef.getListRef().scrollToOffset({ //eslint-disable-line no-underscore-dangle
+            //eslint-disable-next-line no-underscore-dangle
+            this.listRef._wrapperListRef.getListRef().scrollToOffset({
                 x: 0,
                 y: 0,
                 animated: true,
