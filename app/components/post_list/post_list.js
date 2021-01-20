@@ -188,7 +188,7 @@ export default class PostList extends PureComponent {
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
                 const {intl} = this.context;
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel(intl));
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel(intl), intl);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 this.handlePermalinkPress(match.postId, match.teamName);
             }

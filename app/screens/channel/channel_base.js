@@ -21,7 +21,6 @@ import tracker from '@utils/time_tracker';
 
 import PushNotifications from '@init/push_notifications';
 import telemetry from 'app/telemetry';
-import {privateChannelJoinPrompt} from '@utils/channels';
 
 export let ClientUpgradeListener;
 
@@ -29,24 +28,15 @@ export default class ChannelBase extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
             getChannelStats: PropTypes.func.isRequired,
-            handleSelectChannel: PropTypes.func.isRequired,
-            joinChannel: PropTypes.func.isRequired,
             loadChannelsForTeam: PropTypes.func.isRequired,
             selectDefaultTeam: PropTypes.func.isRequired,
             selectInitialChannel: PropTypes.func.isRequired,
             recordLoadTime: PropTypes.func.isRequired,
         }).isRequired,
         componentId: PropTypes.string.isRequired,
-        currentChannel: PropTypes.shape({
-            id: PropTypes.string,
-            display_name: PropTypes.string,
-            type: PropTypes.string,
-        }),
         currentChannelId: PropTypes.string,
         currentTeamId: PropTypes.string,
-        currentUserId: PropTypes.string,
         disableTermsModal: PropTypes.bool,
-        isMember: PropTypes.bool,
         isSupportedServer: PropTypes.bool,
         isSystemAdmin: PropTypes.bool,
         teamName: PropTypes.string,
@@ -70,8 +60,6 @@ export default class ChannelBase extends PureComponent {
 
         this.state = {
             channelsRequestFailed: false,
-            currentChannelId: props.currentChannelId,
-            showPosts: true,
         };
 
         if (LocalConfig.EnableMobileClientUpgrade && !ClientUpgradeListener) {
@@ -79,17 +67,6 @@ export default class ChannelBase extends PureComponent {
         }
 
         this.typingAnimations = [];
-    }
-
-    static getDerivedStateFromProps(props, state) {
-        const newState = {};
-        if (props.currentChannelId && props.currentChannelId !== state.currentChannelId) {
-            if (shouldInitPrivateChannelJoinPrompt(props)) {
-                newState.showPosts = false;
-            }
-        }
-        newState.currentChannelId = props.currentChannelId;
-        return newState;
     }
 
     componentDidMount() {
@@ -161,9 +138,6 @@ export default class ChannelBase extends PureComponent {
         }
 
         if (this.props.currentChannelId && this.props.currentChannelId !== prevProps.currentChannelId) {
-            if (shouldInitPrivateChannelJoinPrompt(this.props)) {
-                this.initPrivateChannelJoinPrompt(prevProps.currentChannelId);
-            }
             PushNotifications.clearChannelNotifications(this.props.currentChannelId);
 
             requestAnimationFrame(() => {
@@ -191,19 +165,6 @@ export default class ChannelBase extends PureComponent {
         };
 
         return removeAnimation;
-    }
-
-    initPrivateChannelJoinPrompt = async (prevChannelId) => {
-        const {actions, currentChannel, currentChannelId, currentTeamId, currentUserId} = this.props;
-        const {join} = await privateChannelJoinPrompt(currentChannel, this.context.intl);
-        if (join) {
-            await actions.joinChannel(currentUserId, currentTeamId, currentChannelId);
-        } else {
-            actions.handleSelectChannel(prevChannelId);
-        }
-        this.setState({
-            showPosts: true,
-        });
     }
 
     runTypingAnimations = (typingVisible) => {
@@ -312,15 +273,13 @@ export default class ChannelBase extends PureComponent {
                     />
                 );
             }
-        }
 
-        if (!currentChannelId || !this.state.showPosts) {
             const Loading = require('app/components/channel_loader').default;
             return (
                 <Loading
                     channelIsLoading={true}
                     color={theme.centerChannelColor}
-                    retryLoad={this.state.showPosts ? this.retryLoad : undefined}
+                    retryLoad={this.retryLoad}
                 />
             );
         }
@@ -366,13 +325,6 @@ export default class ChannelBase extends PureComponent {
         // but defined here for channel_base.test.js
         return; // eslint-disable-line no-useless-return
     }
-}
-
-function shouldInitPrivateChannelJoinPrompt(props) {
-    return Boolean(
-        !props.isMember &&
-        props.isSystemAdmin &&
-        props.currentChannel?.type === General.PRIVATE_CHANNEL);
 }
 
 export const style = StyleSheet.create({

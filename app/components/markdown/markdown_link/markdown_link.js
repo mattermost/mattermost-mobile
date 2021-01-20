@@ -59,7 +59,7 @@ export default class MarkdownLink extends PureComponent {
         if (match) {
             if (match.type === DeepLinkTypes.CHANNEL) {
                 const {intl} = this.context;
-                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel.bind(null, intl));
+                this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel.bind(null, intl), intl);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
                 onPermalinkPress(match.postId, match.teamName);
             }
