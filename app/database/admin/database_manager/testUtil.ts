@@ -3,7 +3,7 @@
 
 // import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 // import {Platform} from 'react-native';
-import DBManager, {DatabaseType} from './index';
+// import DBManager from './index';
 
 // jest.mock('./database_manager');
 
@@ -48,10 +48,11 @@ export const runDBManagerTest = async () => {
 
     // DBManager.removeServerFromDefaultDB({serverUrl: 'https://community.mattermost.com'});
 
-    const a = await DBManager.retrieveServerDBInstances([
-        'https://xunity2.mattermost.com',
-        'https://comm4.mattermost.com',
-        'https://comm2.mattermost.com',
-    ]);
-    console.log({a});
+    // const a = await DBManager.retrieveServerDBInstances([
+    //     'https://xunity2.mattermost.com',
+    //     'https://comm4.mattermost.com',
+    //     'https://comm2.mattermost.com',
+    // ]);
+
+    // console.log({a});
 };

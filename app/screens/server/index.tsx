@@ -7,12 +7,13 @@ import {Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions} from 'rea
 
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
-import {runDBManagerTest} from '../../database/admin/database_manager/testUtil';
+
+// import {runDBManagerTest} from '../../database/admin/database_manager/testUtil';
 
 declare const global: { HermesInternal: null | {} };
 
 const App = () => {
-    runDBManagerTest();
+    // runDBManagerTest();
     return (
         <>
             <StatusBar barStyle='dark-content'/>
@@ -31,7 +32,8 @@ const App = () => {
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>{'Step One'}</Text>
                             <Text style={styles.sectionDescription}>
-                                {'Edit '}<Text
+                                {'Edit '}
+                                <Text
                                     style={styles.highlight}
                                 >{'screens/server/index.tsx'}</Text>{' to change this'}
                                 {'XXXXXscreen and then come back to see your edits.'}

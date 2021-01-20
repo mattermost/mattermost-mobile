@@ -5,11 +5,14 @@ import {NativeModules} from 'react-native';
 
 const {MattermostManaged} = NativeModules;
 
+type IOSDeleteDatabase = { databaseName?: string, shouldRemoveDirectory?: boolean }
+type IOSAppGroupDetails = { appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string }
+
 /**
  * Retrieves information relative to the iOS AppGroup identifier and folders
  * @returns {{appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string}}
  */
-export const getIOSAppGroupDetails = (): { appGroupIdentifier: string, appGroupSharedDirectory: string, appGroupDatabase: string } => {
+export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
     const {
         appGroupIdentifier,
         appGroupSharedDirectory: {sharedDirectory, databasePath},
@@ -20,7 +23,8 @@ export const getIOSAppGroupDetails = (): { appGroupIdentifier: string, appGroupS
         appGroupSharedDirectory: sharedDirectory,
         appGroupDatabase: databasePath,
     };
-    console.log('appGroup => ', appGroup.appGroupDatabase);
+
+    // console.log('appGroup => ', appGroup.appGroupDatabase);
     return appGroup;
 };
 
@@ -29,12 +33,13 @@ export const getIOSAppGroupDetails = (): { appGroupIdentifier: string, appGroupS
  * USE WITH CAUTION.
  * @param {string} databaseName
  * @param {boolean} shouldRemoveDirectory
+ * e.g :
+ * MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, (error: any, success: any) => {    });
  */
 export const deleteIOSDatabase = ({
     databaseName = undefined,
     shouldRemoveDirectory = false,
-}: { databaseName?: string, shouldRemoveDirectory?: boolean }) => {
-    MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, (error: any, success: any) => {
-        console.log(error, success);
-    });
+}: IOSDeleteDatabase) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, () => null);
 };

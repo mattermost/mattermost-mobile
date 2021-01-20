@@ -141,10 +141,13 @@ class DatabaseManager {
      */
     setActiveServerDatabase = async ({displayName, serverUrl}: { displayName: string, serverUrl: string }) => {
         this.activeDatabase = await this.createDatabaseConnection({
-            actionsEnabled: true,
-            dbName: displayName,
-            dbType: DatabaseType.SERVER,
-            serverUrl,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: displayName,
+                dbType: DatabaseType.SERVER,
+                serverUrl,
+            },
+            shouldAddToDefaultDB: true,
         });
     };
 
@@ -161,7 +164,7 @@ class DatabaseManager {
      * getDefaultDatabase : Returns the default database.
      * @returns {Database} default database
      */
-    getDefaultDatabase = async (): Promise<Database> => {
+    getDefaultDatabase = async (): Promise<Database | undefined> => {
         return this.defaultDatabase || this.setDefaultDatabase();
     };
 
@@ -201,11 +204,11 @@ class DatabaseManager {
     retrieveServerDBInstances = async (serverUrls?: string[]) => {
         // Retrieve all server records from the default db
         const defaultDatabase = await this.getDefaultDatabase();
-        const allServers = await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch() as IServers[];
+        const allServers = defaultDatabase && await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch() as IServers[];
 
         if (serverUrls?.length) {
             // Filter only those servers that are present in the serverUrls array
-            const servers = allServers.filter((server: IServers) => {
+            const servers = allServers!.filter((server: IServers) => {
                 return serverUrls.includes(server.url);
             });
 
@@ -269,12 +272,14 @@ class DatabaseManager {
         try {
             // Query the servers table to fetch the record with the above displayName
             const defaultDB = await this.getDefaultDatabase();
-            const serversRecord = await defaultDB.collections.get('servers').query(Q.where('url', serverUrl)).fetch() as IServers[];
-            if (serversRecord.length) {
-                // Perform a delete operation on that record; since there is no sync with backend, we will delete the record permanently
-                await defaultDB.action(async () => {
-                    await serversRecord[0].destroyPermanently();
-                });
+            if (defaultDB) {
+                const serversRecord = await defaultDB.collections.get('servers').query(Q.where('url', serverUrl)).fetch() as IServers[];
+                if (serversRecord.length) {
+                    // Perform a delete operation on that record; since there is no sync with backend, we will delete the record permanently
+                    await defaultDB.action(async () => {
+                        await serversRecord[0].destroyPermanently();
+                    });
+                }
             }
         } catch (e) {
             // console.error('An error occured while deleting server record ', e);
@@ -285,7 +290,7 @@ class DatabaseManager {
      * setDefaultDatabase : Sets the default database.
      * @returns {Database} default database
      */
-    private setDefaultDatabase = async (): Promise<Database> => {
+    private setDefaultDatabase = async (): Promise<Database | undefined> => {
         this.defaultDatabase = await this.createDatabaseConnection({
             databaseConnection: {dbName: 'default'},
             shouldAddToDefaultDB: false,
@@ -308,16 +313,18 @@ class DatabaseManager {
         try {
             const defaultDatabase = await this.getDefaultDatabase();
 
-            await defaultDatabase.action(async () => {
-                const serversCollection = defaultDatabase.collections.get('servers');
-                await serversCollection.create((server: IServers) => {
-                    server.dbPath = dbFilePath;
-                    server.displayName = displayName;
-                    server.mentionCount = 0;
-                    server.unreadCount = 0;
-                    server.url = serverUrl;
+            if (defaultDatabase) {
+                await defaultDatabase.action(async () => {
+                    const serversCollection = defaultDatabase.collections.get('servers');
+                    await serversCollection.create((server: IServers) => {
+                        server.dbPath = dbFilePath;
+                        server.displayName = displayName;
+                        server.mentionCount = 0;
+                        server.unreadCount = 0;
+                        server.url = serverUrl;
+                    });
                 });
-            });
+            }
         } catch (e) {
             // console.log({catchError: e});
         }
