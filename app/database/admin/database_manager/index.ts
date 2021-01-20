@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import {Database, Model} from '@nozbe/watermelondb';
+import {Q, Database, Model} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {Class} from '@nozbe/watermelondb/utils/common';
-import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
-import Server from '@typings/database/servers';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {DeviceEventEmitter, Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
+
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
+import IServers from '@typings/database/servers';
+import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 import DefaultMigration from '../../default/migration';
 import {App, Global, Servers} from '../../default/models';
@@ -51,11 +51,12 @@ import {serverSchema} from '../../server/schema';
 // TODO [x] : handle migration
 // TODO [x] : create server db
 // TODO [x] : set active db
+// TODO [x] : delete server db and removes its record in default db
 
-// TODO [] : delete server db and removes its record in default db
 // TODO [] : factory reset - wipe every data on the phone
 
 // TODO [] : retrieve all dbs or a subset via the url and it then returns db instances
+
 // TODO [] : how do we track down if migration succeeded on all the instances of 'server db'
 
 // TODO : should we sanitize the display name of databases ?
@@ -88,43 +89,43 @@ class DatabaseManager {
      * @param {MMDatabaseConnection} databaseConnection
      * @returns {Database}
      */
-     createDatabaseConnection = async (databaseConnection: MMDatabaseConnection): Database => {
-         const {
-             actionsEnabled = true,
-             dbName = 'default',
-             dbType = DatabaseType.DEFAULT,
-             serverUrl = undefined,
-         } = databaseConnection;
-         try {
-             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
+    createDatabaseConnection = async (databaseConnection: MMDatabaseConnection): Database => {
+        const {
+            actionsEnabled = true,
+            dbName = 'default',
+            dbType = DatabaseType.DEFAULT,
+            serverUrl = undefined,
+        } = databaseConnection;
+        try {
+            const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
 
-             const dbFilePath = await this.getDBDirectory({dbName: databaseName});
+            const dbFilePath = await this.getDBDirectory({dbName: databaseName});
 
-             const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
-             const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
-             const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
+            const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
+            const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
+            const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
 
-             const adapter = new SQLiteAdapter({
-                 dbName: dbFilePath,
-                 migrationEvents: this.buildMigrationCallbacks({dbName: databaseName}),
-                 migrations,
-                 schema,
-             });
+            const adapter = new SQLiteAdapter({
+                dbName: dbFilePath,
+                migrationEvents: this.buildMigrationCallbacks({dbName: databaseName}),
+                migrations,
+                schema,
+            });
 
-             // Registers the new server connection into the DEFAULT database
-             if (serverUrl) {
-                 await this.registerNewServer({dbFilePath, displayName: dbName, serverUrl});
-             }
+            // Registers the new server connection into the DEFAULT database
+            if (serverUrl) {
+                await this.addServerToDefaultDB({dbFilePath, displayName: dbName, serverUrl});
+            }
 
-             const database = new Database({adapter, actionsEnabled, modelClasses});
+            const database = new Database({adapter, actionsEnabled, modelClasses});
 
-             console.log(`Created ${dbName} database `);
+            console.log(`Created ${dbName} database `);
 
-             return database;
-         } catch (e) {
-             console.log(e);
-         }
-     };
+            return database;
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     /**
      * setActiveServerDatabase: From the displayName and serverUrl, we set the new active server database.  For example, on switching to another
@@ -151,15 +152,6 @@ class DatabaseManager {
     };
 
     /**
-     * setDefaultDatabase : Sets the default database.
-     * @returns {Database} default database
-     */
-    private setDefaultDatabase = async (): Promise<Database> => {
-        this.defaultDatabase = await this.createDatabaseConnection({dbName: 'default'});
-        return this.defaultDatabase;
-    };
-
-    /**
      * getDefaultDatabase : Returns the default database.
      * @returns {Database} default database
      */
@@ -176,9 +168,6 @@ class DatabaseManager {
      * @returns {Promise<void>}
      */
     deleteDatabase = async ({dbName, serverUrl}: { dbName: string, serverUrl?: string }) => {
-
-        // TODO : iOS ( then Android ) , using the dbName or serverURL, retrieve the dbPath and modify the native modules so that it deletes everything at filePath
-
         // if (serverUrl) {
         //     // TODO :  if we have a server url then we retrieve the display name from the default database and then we delete it
         // }
@@ -238,13 +227,43 @@ class DatabaseManager {
     };
 
     /**
-     * registerNewServer: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
+     * removeServerFromDefaultDB : Removes a server record by its url value from the Default database
+     * @param {string} serverUrl
+     * @returns {Promise<void>}
+     */
+    removeServerFromDefaultDB = async ({serverUrl}: { serverUrl: string }) => {
+        try {
+            // Query the servers table to fetch the record with the above displayName
+            const defaultDB = await this.getDefaultDatabase();
+            const serversRecord = await defaultDB.collections.get('servers').query(Q.where('url', serverUrl)).fetch() as IServers[];
+            if (serversRecord.length) {
+                // Perform a delete operation on that record; since there is no sync with backend, we will delete the record permanently
+                await defaultDB.action(async () => {
+                    await serversRecord[0].destroyPermanently();
+                });
+            }
+        } catch (e) {
+            console.error('An error occured while deleting server record ', e);
+        }
+    };
+
+    /**
+     * setDefaultDatabase : Sets the default database.
+     * @returns {Database} default database
+     */
+    private setDefaultDatabase = async (): Promise<Database> => {
+        this.defaultDatabase = await this.createDatabaseConnection({dbName: 'default'});
+        return this.defaultDatabase;
+    };
+
+    /**
+     * addServerToDefaultDB: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
      * @param {string} dbFilePath
      * @param {string} displayName
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
-    private registerNewServer = async ({
+    private addServerToDefaultDB = async ({
         dbFilePath,
         displayName,
         serverUrl,
@@ -304,11 +323,10 @@ class DatabaseManager {
             return `${getIOSAppGroupDetails().appGroupDatabase}/${dbName}.db`;
         }
 
-        // On Android side - create directory first
-        const androidDBPath = FileSystem.documentDirectory + `databases/${dbName}.db`;
-        await FileSystem.makeDirectoryAsync(androidDBPath, {intermediates: true});
-
-        return `${androidDBPath}/${dbName}.db`;
+        // FIXME : On Android side, you should save the *.db in the Documents directory
+        // const androidDBPath = FileSystem.documentDirectory + `databases/${dbName}.db`;
+        // await FileSystem.makeDirectoryAsync(androidDBPath, {intermediates: true});
+        return `${dbName}`;
     };
 }
 

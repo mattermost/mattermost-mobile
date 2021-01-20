@@ -1,50 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
-import EnhancedListOfServers from '@screens/server/list_of_servers';
 import React from 'react';
-import {
-    SafeAreaView,
-    StyleSheet,
-    ScrollView,
-    View,
-    Text,
-    StatusBar,
-} from 'react-native';
-
-import {
-    Header,
-    LearnMoreLinks,
-    Colors,
-    DebugInstructions,
-    ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react-native';
+import {Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions} from 'react-native/Libraries/NewAppScreen';
 
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
-import DBManager, {DatabaseType} from '../../database/admin/database_manager';
-import {getIOSAppGroupDetails, deleteIOSDatabase} from '@utils/mattermost_managed';
+import {runDBManagerTest} from '../../database/admin/database_manager/testUtil';
 
-declare const global: {HermesInternal: null | {}};
+declare const global: { HermesInternal: null | {} };
 
 const App = () => {
-    // const appGroup = getIOSAppGroupDetails();
-    const defaultDB = DBManager.getDefaultDatabase();
-
-    // Deleting db and database direction on iOS
-    // deleteIOSDatabase({databaseName: 'default'});
-    // deleteIOSDatabase({databaseName: 'defaultxx'});
-    // deleteIOSDatabase({shouldRemoveDirectory: true});
-
-    // Creates a new server connection
-    // DBManager.createDatabaseConnection({
-    //     actionsEnabled: true,
-    //     dbName: 'zx_t125',
-    //     dbType: DatabaseType.SERVER,
-    //     serverUrl: '33xd',
-    // });
-
+    runDBManagerTest();
     return (
         <>
             <StatusBar barStyle='dark-content'/>
@@ -63,7 +31,9 @@ const App = () => {
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>{'Step One'}</Text>
                             <Text style={styles.sectionDescription}>
-                                {'Edit '}<Text style={styles.highlight}>{'screens/server/index.tsx'}</Text>{' to change this'}
+                                {'Edit '}<Text
+                                    style={styles.highlight}
+                                >{'screens/server/index.tsx'}</Text>{' to change this'}
                                 {'XXXXXscreen and then come back to see your edits.'}
                             </Text>
                         </View>
