@@ -87,15 +87,10 @@ export default class Permalink extends PureComponent {
     constructor(props) {
         super(props);
 
-        const {channelId, error, myMembers, postIds} = props;
+        const {error, postIds} = props;
         let loading = true;
 
-        if (
-            postIds && postIds.length >= 10 &&
-
-            // To handle use case when sysadmin visits a private channel from "channel url" without joining
-            myMembers[channelId]
-        ) {
+        if (postIds && postIds.length >= 10) {
             loading = false;
         }
 
