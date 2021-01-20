@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, Database, Model} from '@nozbe/watermelondb';
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import {Database, Model, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {Class} from '@nozbe/watermelondb/utils/common';
-import {DeviceEventEmitter, Platform} from 'react-native';
-
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import IServers from '@typings/database/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {DeviceEventEmitter, Platform} from 'react-native';
 
 import DefaultMigration from '../../default/migration';
 import {App, Global, Servers} from '../../default/models';
@@ -53,9 +52,9 @@ import {serverSchema} from '../../server/schema';
 // TODO [x] : set active db
 // TODO [x] : delete server db and removes its record in default db
 
-// TODO [] : factory reset - wipe every data on the phone
-
 // TODO [] : retrieve all dbs or a subset via the url and it then returns db instances
+
+// TODO [] : factory reset - wipe every data on the phone
 
 // TODO [] : how do we track down if migration succeeded on all the instances of 'server db'
 
@@ -71,9 +70,10 @@ export enum DatabaseType {
 }
 
 class DatabaseManager {
-    private defaultDatabase: Database | undefined;
     private activeDatabase: Database | undefined;
+    private defaultDatabase: Database | undefined;
     private readonly defaultModels: Models;
+    private readonly iOSAppGroupDatabase: string | undefined;
     private readonly serverModels: Models;
 
     constructor() {
@@ -82,20 +82,28 @@ class DatabaseManager {
             GroupsInChannel, GroupsInTeam, MyChannel, MyChannelSettings, MyTeam, Post, PostMetadata, PostsInChannel,
             PostsInThread, Preference, Reaction, Role, SlashCommand, System, Team, TeamChannelHistory, TeamMembership,
             TeamSearchHistory, TermsOfService, User];
+
+        this.iOSAppGroupDatabase = getIOSAppGroupDetails().appGroupDatabase;
     }
 
     /**
-     * createDatabaseConnection: Adds/Creates database connection and registers the new connection into the default database
+     * createDatabaseConnection: Adds/Creates database connection and registers the new connection into the default database.  However,
+     * if a database connection could not be created, it will return undefined.
      * @param {MMDatabaseConnection} databaseConnection
-     * @returns {Database}
+     * @param {boolean} shouldAddToDefaultDB
+     * @returns {Database | undefined} :
      */
-    createDatabaseConnection = async (databaseConnection: MMDatabaseConnection): Database => {
+    createDatabaseConnection = async ({
+        databaseConnection,
+        shouldAddToDefaultDB = true,
+    }: { databaseConnection: MMDatabaseConnection, shouldAddToDefaultDB: boolean }): Promise<Database | undefined> => {
         const {
             actionsEnabled = true,
             dbName = 'default',
             dbType = DatabaseType.DEFAULT,
             serverUrl = undefined,
         } = databaseConnection;
+
         try {
             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
 
@@ -113,18 +121,16 @@ class DatabaseManager {
             });
 
             // Registers the new server connection into the DEFAULT database
-            if (serverUrl) {
+            if (serverUrl && shouldAddToDefaultDB) {
                 await this.addServerToDefaultDB({dbFilePath, displayName: dbName, serverUrl});
             }
 
-            const database = new Database({adapter, actionsEnabled, modelClasses});
-
-            console.log(`Created ${dbName} database `);
-
-            return database;
+            return new Database({adapter, actionsEnabled, modelClasses});
         } catch (e) {
-            console.log(e);
+            // console.log(e);
         }
+
+        return undefined;
     };
 
     /**
@@ -133,8 +139,8 @@ class DatabaseManager {
      * @param {string} displayName
      * @param {string} serverUrl
      */
-    setActiveServerDatabase = ({displayName, serverUrl}: { displayName: string, serverUrl: string }) => {
-        this.activeDatabase = this.createDatabaseConnection({
+    setActiveServerDatabase = async ({displayName, serverUrl}: { displayName: string, serverUrl: string }) => {
+        this.activeDatabase = await this.createDatabaseConnection({
             actionsEnabled: true,
             dbName: displayName,
             dbType: DatabaseType.SERVER,
@@ -159,7 +165,7 @@ class DatabaseManager {
         return this.defaultDatabase || this.setDefaultDatabase();
     };
 
-    /**
+    /**  FIXME : Implement this method
      * deleteDatabase: Deletes a database. The dbName parameter is actually passed by the caller.  For example, on the desktop app/preferences/server management,
      * we have a list of all the servers. Each item in that list will have information about the server.  On pressing 'remove', we passed in the display name
      * field to the parameter dbName.
@@ -167,38 +173,67 @@ class DatabaseManager {
      * @param {string | undefined} serverUrl
      * @returns {Promise<void>}
      */
-    deleteDatabase = async ({dbName, serverUrl}: { dbName: string, serverUrl?: string }) => {
-        // if (serverUrl) {
-        //     // TODO :  if we have a server url then we retrieve the display name from the default database and then we delete it
-        // }
-        // try {
-        //     const filePath = this.getDBDirectory({dbName});
-        //     const info = await FileSystem.getInfoAsync(filePath);
-        //
-        //     console.log('File info ', info);
-        //
-        //     // deleting the .db file directly at the filePath
-        //     const isDBFileDeleted = await FileSystem.deleteAsync(filePath, {idempotent: true});
-        //
-        //     console.log(`Database deleted at ${filePath}`, isDBFileDeleted);
-        // } catch (e) {
-        //     console.log('An error occured while attempting to delete the .db file', e);
-        // }
-        // return null;
-    };
+    // deleteDatabase = async ({dbName, serverUrl}: { dbName: string, serverUrl?: string }) => {
+    // if (serverUrl) {
+    //     // TODO :  if we have a server url then we retrieve the display name from the default database and then we delete it
+    // }
+    // try {
+    //     const filePath = this.getDBDirectory({dbName});
+    //     const info = await FileSystem.getInfoAsync(filePath);
+    //
+    //     console.log('File info ', info);
+    //
+    //     // deleting the .db file directly at the filePath
+    //     const isDBFileDeleted = await FileSystem.deleteAsync(filePath, {idempotent: true});
+    //
+    //     console.log(`Database deleted at ${filePath}`, isDBFileDeleted);
+    // } catch (e) {
+    //     console.log('An error occured while attempting to delete the .db file', e);
+    // }
+    // return null;
+    // };
 
-    getAllServerDatabases = (serverUrls: string []) => {
-        // sentence.includes(word)
-        // FIXME : complete this method
+    /**
+     *
+     * @param {string[]} serverUrls
+     * @returns {Promise<any[] | Promise< | undefined>[]>}
+     */
+    retrieveServerDBInstances = async (serverUrls?: string[]) => {
         // Retrieve all server records from the default db
-        const defaultDatabase = this.getDefaultDatabase();
-        const serverCollections = defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS);
+        const defaultDatabase = await this.getDefaultDatabase();
+        const allServers = await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch() as IServers[];
 
-        const servers = serverCollections.query().fetch();
+        if (serverUrls?.length) {
+            // Filter only those servers that are present in the serverUrls array
+            const servers = allServers.filter((server: IServers) => {
+                return serverUrls.includes(server.url);
+            });
 
-        console.log('all servers ', servers);
+            // Creates server database instances
+            if (servers.length) {
+                return servers.map(async (server: IServers) => {
+                    const {displayName, url} = server;
+                    const databaseConnection = {
+                        actionsEnabled: true,
+                        dbName: displayName,
+                        dbType: DatabaseType.SERVER,
+                        serverUrl: url,
+                    };
 
-        return null;
+                    const dbInstance = await this.createDatabaseConnection({
+                        databaseConnection,
+                        shouldAddToDefaultDB: false,
+                    });
+
+                    // console.log({dbInstance});
+                    return dbInstance;
+                });
+            }
+
+            return [];
+        }
+
+        return [];
     };
 
     /**
@@ -211,8 +246,7 @@ class DatabaseManager {
                 deleteIOSDatabase({databaseName});
             }
         } catch (e) {
-            // TODO : should this be logged to Sentry ?
-            console.log('An error occured while trying to delete database with name ', databaseName);
+            // console.log('An error occured while trying to delete database with name ', databaseName);
         }
     };
 
@@ -243,7 +277,7 @@ class DatabaseManager {
                 });
             }
         } catch (e) {
-            console.error('An error occured while deleting server record ', e);
+            // console.error('An error occured while deleting server record ', e);
         }
     };
 
@@ -252,7 +286,10 @@ class DatabaseManager {
      * @returns {Database} default database
      */
     private setDefaultDatabase = async (): Promise<Database> => {
-        this.defaultDatabase = await this.createDatabaseConnection({dbName: 'default'});
+        this.defaultDatabase = await this.createDatabaseConnection({
+            databaseConnection: {dbName: 'default'},
+            shouldAddToDefaultDB: false,
+        });
         return this.defaultDatabase;
     };
 
@@ -273,7 +310,7 @@ class DatabaseManager {
 
             await defaultDatabase.action(async () => {
                 const serversCollection = defaultDatabase.collections.get('servers');
-                await serversCollection.create((server: Server) => {
+                await serversCollection.create((server: IServers) => {
                     server.dbPath = dbFilePath;
                     server.displayName = displayName;
                     server.mentionCount = 0;
@@ -282,7 +319,7 @@ class DatabaseManager {
                 });
             });
         } catch (e) {
-            console.log({catchError: e});
+            // console.log({catchError: e});
         }
     };
 
@@ -320,7 +357,7 @@ class DatabaseManager {
      */
     private getDBDirectory = async ({dbName}: { dbName: string }): Promise<string> => {
         if (Platform.OS === 'ios') {
-            return `${getIOSAppGroupDetails().appGroupDatabase}/${dbName}.db`;
+            return `${this.iOSAppGroupDatabase}/${dbName}.db`;
         }
 
         // FIXME : On Android side, you should save the *.db in the Documents directory

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {Platform} from 'react-native';
+// import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
+// import {Platform} from 'react-native';
 import DBManager, {DatabaseType} from './index';
 
 // jest.mock('./database_manager');
@@ -20,11 +20,12 @@ import DBManager, {DatabaseType} from './index';
 //     });
 // });
 
-export const runDBManagerTest = () => {
+export const runDBManagerTest = async () => {
     // if (Platform.OS === 'ios') {
     //     const appGroup = getIOSAppGroupDetails();
     //     console.log(appGroup);
     // }
+
     //
     // const defaultDB = DBManager.getDefaultDatabase();
 
@@ -33,13 +34,24 @@ export const runDBManagerTest = () => {
     // deleteIOSDatabase({databaseName: 'defaultxx'});
     // deleteIOSDatabase({shouldRemoveDirectory: true});
 
-    // Creates a new server connection
-    // DBManager.createDatabaseConnection({
+    // const databaseConnection = {
     //     actionsEnabled: true,
     //     dbName: 'community mattermost',
     //     dbType: DatabaseType.SERVER,
-    //     serverUrl: 'https://community.mattermost.com',
-    // });
+    //     serverUrl: 'https://comm4.mattermost.com',
+    // };
+
+    // Creates a new server connection
+    // DBManager.createDatabaseConnection({
+    //     databaseConnection, shouldAddToDefaultDB: true,
+    // }).then();
 
     // DBManager.removeServerFromDefaultDB({serverUrl: 'https://community.mattermost.com'});
+
+    const a = await DBManager.retrieveServerDBInstances([
+        'https://xunity2.mattermost.com',
+        'https://comm4.mattermost.com',
+        'https://comm2.mattermost.com',
+    ]);
+    console.log({a});
 };
