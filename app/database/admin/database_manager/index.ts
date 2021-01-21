@@ -58,20 +58,31 @@ import {serverSchema} from '../../server/schema';
 
 // TODO [] : how do we track down if migration succeeded on all the instances of 'server db'
 
-// TODO : should we sanitize the display name of databases ?
-
 // TODO :  review all private/public methods/fields
 
 type Models = Class<Model>[]
 
+// A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
+type DBInstance = Database | undefined
+
+// The elements needed to create a new connection
+type DatabaseConnection = { databaseConnection: MMDatabaseConnection, shouldAddToDefaultDB: boolean }
+
+// The elements required to switch to another active server database
+type ActiveServerDatabase = { displayName: string, serverUrl: string }
+
+// The elements required to delete a database on iOS
+type RemoveDatabaseIOS = { databaseName?: string, shouldRemoveDirectory?: boolean}
+
+// The only two types of databases in the app
 export enum DatabaseType {
     DEFAULT,
     SERVER
 }
 
 class DatabaseManager {
-    private activeDatabase: Database | undefined;
-    private defaultDatabase: Database | undefined;
+    private activeDatabase: DBInstance;
+    private defaultDatabase: DBInstance;
     private readonly defaultModels: Models;
     private readonly iOSAppGroupDatabase: string | undefined;
     private readonly serverModels: Models;
@@ -91,12 +102,9 @@ class DatabaseManager {
      * if a database connection could not be created, it will return undefined.
      * @param {MMDatabaseConnection} databaseConnection
      * @param {boolean} shouldAddToDefaultDB
-     * @returns {Database | undefined} :
+     * @returns {Promise<DBInstance>}
      */
-    createDatabaseConnection = async ({
-        databaseConnection,
-        shouldAddToDefaultDB = true,
-    }: { databaseConnection: MMDatabaseConnection, shouldAddToDefaultDB: boolean }): Promise<Database | undefined> => {
+    createDatabaseConnection = async ({databaseConnection, shouldAddToDefaultDB = true}: DatabaseConnection): Promise<DBInstance> => {
         const {
             actionsEnabled = true,
             dbName = 'default',
@@ -107,7 +115,7 @@ class DatabaseManager {
         try {
             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
 
-            const dbFilePath = await this.getDBDirectory({dbName: databaseName});
+            const dbFilePath = await this.getDBDirectory(databaseName);
 
             const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
             const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
@@ -115,7 +123,7 @@ class DatabaseManager {
 
             const adapter = new SQLiteAdapter({
                 dbName: dbFilePath,
-                migrationEvents: this.buildMigrationCallbacks({dbName: databaseName}),
+                migrationEvents: this.buildMigrationCallbacks(databaseName),
                 migrations,
                 schema,
             });
@@ -138,8 +146,9 @@ class DatabaseManager {
      * another server, on a screen/component/list, we retrieve those values and call setActiveServerDatabase.
      * @param {string} displayName
      * @param {string} serverUrl
+     * @returns {Promise<void>}
      */
-    setActiveServerDatabase = async ({displayName, serverUrl}: { displayName: string, serverUrl: string }) => {
+    setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
         this.activeDatabase = await this.createDatabaseConnection({
             databaseConnection: {
                 actionsEnabled: true,
@@ -154,9 +163,9 @@ class DatabaseManager {
     /**
      * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
      * Use this getter method to retrieve the active database if it has been set in your code.
-     * @returns { Database | undefined}
+     * @returns {DBInstance}
      */
-    getActiveServerDatabase = (): Database | undefined => {
+    getActiveServerDatabase = (): DBInstance => {
         return this.activeDatabase;
     };
 
@@ -164,42 +173,14 @@ class DatabaseManager {
      * getDefaultDatabase : Returns the default database.
      * @returns {Database} default database
      */
-    getDefaultDatabase = async (): Promise<Database | undefined> => {
+    getDefaultDatabase = async (): Promise<DBInstance> => {
         return this.defaultDatabase || this.setDefaultDatabase();
     };
 
-    /**  FIXME : Implement this method
-     * deleteDatabase: Deletes a database. The dbName parameter is actually passed by the caller.  For example, on the desktop app/preferences/server management,
-     * we have a list of all the servers. Each item in that list will have information about the server.  On pressing 'remove', we passed in the display name
-     * field to the parameter dbName.
-     * @param {string} dbName
-     * @param {string | undefined} serverUrl
-     * @returns {Promise<void>}
-     */
-    // deleteDatabase = async ({dbName, serverUrl}: { dbName: string, serverUrl?: string }) => {
-    // if (serverUrl) {
-    //     // TODO :  if we have a server url then we retrieve the display name from the default database and then we delete it
-    // }
-    // try {
-    //     const filePath = this.getDBDirectory({dbName});
-    //     const info = await FileSystem.getInfoAsync(filePath);
-    //
-    //     console.log('File info ', info);
-    //
-    //     // deleting the .db file directly at the filePath
-    //     const isDBFileDeleted = await FileSystem.deleteAsync(filePath, {idempotent: true});
-    //
-    //     console.log(`Database deleted at ${filePath}`, isDBFileDeleted);
-    // } catch (e) {
-    //     console.log('An error occured while attempting to delete the .db file', e);
-    // }
-    // return null;
-    // };
-
     /**
-     *
+     * retrieveServerDBInstances: Returns database instances which are created from the provided server urls.
      * @param {string[]} serverUrls
-     * @returns {Promise<any[] | Promise< | undefined>[]>}
+     * @returns {Promise<null | {dbInstance:  | undefined, url: string}[]>}
      */
     retrieveServerDBInstances = async (serverUrls?: string[]) => {
         // Retrieve all server records from the default db
@@ -214,7 +195,7 @@ class DatabaseManager {
 
             // Creates server database instances
             if (servers.length) {
-                return servers.map(async (server: IServers) => {
+                const databasePromises = servers.map(async (server: IServers) => {
                     const {displayName, url} = server;
                     const databaseConnection = {
                         actionsEnabled: true,
@@ -228,26 +209,24 @@ class DatabaseManager {
                         shouldAddToDefaultDB: false,
                     });
 
-                    // console.log({dbInstance});
-                    return dbInstance;
+                    return {url, dbInstance};
                 });
+
+                const databaseInstances = await Promise.all(databasePromises);
+                return databaseInstances;
             }
-
-            return [];
+            return null;
         }
-
-        return [];
+        return null;
     };
 
     /**
-     * deleteIOSServerDatabaseByName: Used solely on iOS platform to delete a database by its name
-     * @param {string | undefined} databaseName
+     * deleteDBFileOnIOS: Used only on iOS platform to delete a database by its name
+     * @param {string} databaseName
      */
-    deleteIOSServerDatabaseByName = ({databaseName}: { databaseName: string }) => {
+    deleteDBFileOnIOS = ({databaseName}: RemoveDatabaseIOS) => {
         try {
-            if (databaseName) {
-                deleteIOSDatabase({databaseName});
-            }
+            deleteIOSDatabase({databaseName});
         } catch (e) {
             // console.log('An error occured while trying to delete database with name ', databaseName);
         }
@@ -257,7 +236,7 @@ class DatabaseManager {
      * factoryResetOnIOS: Deletes the database directory on iOS
      * @param {boolean} shouldRemoveDirectory
      */
-    factoryResetOnIOS = ({shouldRemoveDirectory}: { shouldRemoveDirectory: boolean }) => {
+    factoryResetOnIOS = ({shouldRemoveDirectory}: RemoveDatabaseIOS) => {
         if (shouldRemoveDirectory) {
             deleteIOSDatabase({shouldRemoveDirectory: true});
         }
@@ -273,12 +252,21 @@ class DatabaseManager {
             // Query the servers table to fetch the record with the above displayName
             const defaultDB = await this.getDefaultDatabase();
             if (defaultDB) {
-                const serversRecord = await defaultDB.collections.get('servers').query(Q.where('url', serverUrl)).fetch() as IServers[];
-                if (serversRecord.length) {
+                const serversRecords = await defaultDB.collections.get('servers').query(Q.where('url', serverUrl)).fetch() as IServers[];
+                if (serversRecords.length) {
+                    const targetServer = serversRecords[0];
+
                     // Perform a delete operation on that record; since there is no sync with backend, we will delete the record permanently
                     await defaultDB.action(async () => {
-                        await serversRecord[0].destroyPermanently();
+                        await targetServer.destroyPermanently();
                     });
+
+                    if (Platform.OS === 'ios') {
+                        // Removes the *.db file from the App-Group directory
+                        this.deleteDBFileOnIOS({databaseName: targetServer.displayName});
+                    } else {
+                        // TODO : Perform a similar operation on Android
+                    }
                 }
             }
         } catch (e) {
@@ -288,9 +276,9 @@ class DatabaseManager {
 
     /**
      * setDefaultDatabase : Sets the default database.
-     * @returns {Database} default database
+     * @returns {Promise<DBInstance>}
      */
-    private setDefaultDatabase = async (): Promise<Database | undefined> => {
+    private setDefaultDatabase = async (): Promise<DBInstance> => {
         this.defaultDatabase = await this.createDatabaseConnection({
             databaseConnection: {dbName: 'default'},
             shouldAddToDefaultDB: false,
@@ -337,7 +325,7 @@ class DatabaseManager {
      * @param {string} dbName
      * @returns {MigrationEvents}
      */
-    private buildMigrationCallbacks = ({dbName}: { dbName: string }) => {
+    private buildMigrationCallbacks = (dbName: string) => {
         const migrationEvents: MigrationEvents = {
             onSuccess: () => {
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {dbName});
@@ -360,9 +348,9 @@ class DatabaseManager {
      * Android Device: file:///data/user/0/com.mattermost.rnbeta/files/
      *
      * @param {string} dbName
-     * @returns {string}
+     * @returns {Promise<string>}
      */
-    private getDBDirectory = async ({dbName}: { dbName: string }): Promise<string> => {
+    private getDBDirectory = async (dbName: string): Promise<string> => {
         if (Platform.OS === 'ios') {
             return `${this.iOSAppGroupDatabase}/${dbName}.db`;
         }
