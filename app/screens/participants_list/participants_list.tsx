@@ -12,11 +12,10 @@ import {dismissModal} from 'app/actions/navigation';
 
 interface ParticipantsListProps {
     userProfiles: UserProfile[];
-    teammateNameDisplay: string,
     theme: Theme;
 }
 
-const ParticipantsList = ({userProfiles, teammateNameDisplay, theme}: ParticipantsListProps) => {
+const ParticipantsList = ({userProfiles, theme}: ParticipantsListProps) => {
     const close = () => {
         dismissModal();
     };
@@ -40,7 +39,6 @@ const ParticipantsList = ({userProfiles, teammateNameDisplay, theme}: Participan
                 key={user.id}
                 theme={theme}
                 user={user}
-                teammateNameDisplay={teammateNameDisplay}
             />
         ));
     };

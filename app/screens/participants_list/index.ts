@@ -4,7 +4,7 @@
 import ParticipantsList from './participants_list';
 import type {GlobalState} from '@mm-redux/types/store';
 import {connect} from 'react-redux';
-import {getTeammateNameDisplaySetting, getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makeGetProfilesByIdsAndUsernames} from '@mm-redux/selectors/entities/users';
 
 interface ListProps {
@@ -17,7 +17,6 @@ function makeMapStateToProps() {
     return function mapStateToProps(state: GlobalState, ownProps:ListProps) {
         const allUserIds = ownProps.userIds;
         return {
-            teammateNameDisplay: getTeammateNameDisplaySetting(state),
             theme: getTheme(state),
             userProfiles: getProfilesByIdsAndUsernames(state, {allUserIds, allUsernames: []}) || [],
         };

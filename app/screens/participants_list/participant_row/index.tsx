@@ -13,15 +13,15 @@ import {UserProfile} from '@mm-redux/types/users';
 import {displayUsername} from '@mm-redux/utils/user_utils';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {Preferences} from '@mm-redux/constants';
 
 interface ParticipantRowProps {
-        teammateNameDisplay: string,
         theme: Theme,
         user: UserProfile,
         intl: typeof intlShape;
     }
 
-const ParticipantRow = ({teammateNameDisplay, theme, user, intl}: ParticipantRowProps) => {
+const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
     const goToUserProfile = async () => {
         const {formatMessage} = intl;
         const screen = 'UserProfile';
@@ -74,7 +74,7 @@ const ParticipantRow = ({teammateNameDisplay, theme, user, intl}: ParticipantRow
                     numberOfLines={1}
                 >
                     <Text style={style.displayName}>
-                        {displayUsername(user, teammateNameDisplay)}
+                        {displayUsername(user, Preferences.DISPLAY_PREFER_FULL_NAME)}
                     </Text>
                     <Text>{'  '}</Text>
                     <Text style={style.username}>
