@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {PureComponent} from 'react';
+import React from 'react';
 import {View} from 'react-native';
 import {UserProfile} from '@mm-redux/types/users';
 import type {Theme} from '@mm-redux/types/preferences';
@@ -16,13 +16,12 @@ interface ParticipantsListProps {
     theme: Theme;
 }
 
-export default class ParticipantsList extends PureComponent<ParticipantsListProps> {
-    close = () => {
+const ParticipantsList = ({userProfiles, teammateNameDisplay, theme}: ParticipantsListProps) => {
+    const close = () => {
         dismissModal();
     };
 
-    renderHeader = () => {
-        const {theme} = this.props;
+    const renderHeader = () => {
         const style = getStyleSheet(theme);
         return (
             <View style={style.header}>
@@ -33,10 +32,9 @@ export default class ParticipantsList extends PureComponent<ParticipantsListProp
                 />
             </View>
         );
-    }
+    };
 
-    renderParticipantRows = () => {
-        const {userProfiles, teammateNameDisplay, theme} = this.props;
+    const renderParticipantRows = () => {
         return userProfiles.map((user: UserProfile) => (
             <ParticipantRow
                 key={user.id}
@@ -45,24 +43,22 @@ export default class ParticipantsList extends PureComponent<ParticipantsListProp
                 teammateNameDisplay={teammateNameDisplay}
             />
         ));
-    }
+    };
 
-    render() {
-        return (
-            <View style={{flex: 1}}>
-                <SlideUpPanel
-                    onRequestClose={this.close}
-                    initialPosition={0.55}
-                    header={this.renderHeader}
-                    headerHeight={37.5}
-                    theme={this.props.theme}
-                >
-                    {this.renderParticipantRows()}
-                </SlideUpPanel>
-            </View>
-        );
-    }
-}
+    return (
+        <View style={{flex: 1}}>
+            <SlideUpPanel
+                onRequestClose={close}
+                initialPosition={0.55}
+                header={renderHeader}
+                headerHeight={37.5}
+                theme={theme}
+            >
+                {renderParticipantRows()}
+            </SlideUpPanel>
+        </View>
+    );
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -85,3 +81,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+export default ParticipantsList;

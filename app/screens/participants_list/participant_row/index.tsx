@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {intlShape} from 'react-intl';
+import {injectIntl, intlShape} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
-import {ImageSource} from 'react-native-vector-icons/Icon';
 
 import {showModal} from '@actions/navigation';
 import CompassIcon from '@components/compass_icon';
@@ -19,32 +18,25 @@ interface ParticipantRowProps {
         teammateNameDisplay: string,
         theme: Theme,
         user: UserProfile,
+        intl: typeof intlShape;
     }
 
-export default class ParticipantRow extends React.PureComponent<ParticipantRowProps> {
-    static contextTypes = {
-        intl: intlShape.isRequired,
-    };
-    closeButton: ImageSource
-
-    goToUserProfile = async () => {
-        const {user, theme} = this.props;
-        const {formatMessage} = this.context.intl;
+const ParticipantRow = ({teammateNameDisplay, theme, user, intl}: ParticipantRowProps) => {
+    const goToUserProfile = async () => {
+        const {formatMessage} = intl;
         const screen = 'UserProfile';
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const passProps = {
             userId: user.id,
         };
 
-        if (!this.closeButton) {
-            this.closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-        }
+        const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
 
         const options = {
             topBar: {
                 leftButtons: [{
                     id: 'close-settings',
-                    icon: this.closeButton,
+                    icon: closeButton,
                 }],
             },
         };
@@ -52,55 +44,47 @@ export default class ParticipantRow extends React.PureComponent<ParticipantRowPr
         showModal(screen, title, passProps, options);
     };
 
-    render() {
-        const {
-            teammateNameDisplay,
-            user,
-            theme,
-        } = this.props;
-
-        if (!user.id) {
-            return null;
-        }
-
-        const {id, username} = user;
-        const usernameDisplay = '@' + username;
-
-        const style = getStyleSheet(theme);
-
-        return (
-            <TouchableOpacity
-                key={user.id}
-                onPress={preventDoubleTap(this.goToUserProfile)}
-            >
-                <View style={style.container}>
-                    <View style={style.profileContainer}>
-                        <View style={style.profile}>
-                            <ProfilePicture
-                                userId={id}
-                                showStatus={false}
-                                size={24}
-                            />
-                        </View>
-                    </View>
-                    <Text
-                        style={style.textContainer}
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                    >
-                        <Text style={style.displayName}>
-                            {displayUsername(user, teammateNameDisplay)}
-                        </Text>
-                        <Text>{'  '}</Text>
-                        <Text style={style.username}>
-                            {usernameDisplay}
-                        </Text>
-                    </Text>
-                </View>
-            </TouchableOpacity>
-        );
+    if (!user.id) {
+        return null;
     }
-}
+
+    const {id, username} = user;
+    const usernameDisplay = '@' + username;
+
+    const style = getStyleSheet(theme);
+
+    return (
+        <TouchableOpacity
+            key={user.id}
+            onPress={preventDoubleTap(goToUserProfile)}
+        >
+            <View style={style.container}>
+                <View style={style.profileContainer}>
+                    <View style={style.profile}>
+                        <ProfilePicture
+                            userId={id}
+                            showStatus={false}
+                            size={24}
+                        />
+                    </View>
+                </View>
+                <Text
+                    style={style.textContainer}
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                >
+                    <Text style={style.displayName}>
+                        {displayUsername(user, teammateNameDisplay)}
+                    </Text>
+                    <Text>{'  '}</Text>
+                    <Text style={style.username}>
+                        {usernameDisplay}
+                    </Text>
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {
     return {
@@ -140,3 +124,5 @@ const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {
         },
     };
 });
+
+export default injectIntl(ParticipantRow);
