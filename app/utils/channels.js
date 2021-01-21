@@ -82,11 +82,11 @@ export function privateChannelJoinPrompt(channel, intl) {
         Alert.alert(
             intl?.formatMessage({
                 id: 'permalink.show_dialog_warn.title',
-                defaultMessage: 'Private Channel',
+                defaultMessage: 'Join private channel',
             }),
             intl?.formatMessage({
                 id: 'permalink.show_dialog_warn.description',
-                defaultMessage: 'You must join "{channel}" to view this post.',
+                defaultMessage: 'You are about to join {channel} without explicitly being added by the channel admin. Are you sure you wish to join this private channel?',
             }, {
                 channel: channel.display_name,
             }),
