@@ -8,16 +8,17 @@
 // *******************************************************************
 
 import {MainSidebar} from '@support/ui/component';
-import {ChannelScreen, CreateChannelScreen} from '@support/ui/screen';
+import {ChannelScreen, CreateChannelScreen, PermalinkScreen} from '@support/ui/screen';
 import {Channel, Post, Setup} from '@support/server_api';
 import {adminUsername, adminPassword, serverUrl} from '@support/test_config';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isAndroid} from '@support/utils';
+
 
 describe('Messaging', () => {
     let testTeam;
 
     beforeAll(async () => {
-        const {team, user} = await Setup.apiInit();
+        const {team, user} = await Setup.apiInit({});
         testTeam = team;
 
         await ChannelScreen.open(user);
@@ -27,15 +28,17 @@ describe('Messaging', () => {
         await ChannelScreen.logout();
     });
 
+    // - Create two private channels
+    // - Post first channel url link in the public channel
+    // - Post a message in second channel and post the permalink of it in the public channel
+    // - Confirm the prompt and join the channel
     it('MM-30237 System admins prompted before joining private channel via permalink', async () => {
         const {
-            channelNavBarTitle,
             logout,
-            openMainSidebar,
             openTeamSidebar,
             postMessage,
         } = ChannelScreen;
-        const {getChannelByDisplayName} = MainSidebar;
+        const {getTeamByDisplayName} = MainSidebar;
 
         // # Create Private Channel 1
         const privateChannel1Name = 'pc' + getRandomId();
@@ -53,18 +56,21 @@ describe('Messaging', () => {
         const {post} = await Post.apiGetLastPostInChannel(privateChannel2.id);
 
         // # Go to the Town Square channel
-        await openMainSidebar();
-        const channelItem = getChannelByDisplayName('Town Square');
-        await channelItem.tap();
-        await expect(channelNavBarTitle).toHaveText('Town Square');
+        await gotoChannel('Town Square');
 
         // # Post Private Channel 1 Permalink
         const message1 = `${serverUrl}/${testTeam.name}/channels/${privateChannel1Name}`;
         await postMessage(message1);
 
+        // * Check that message is successfully posted
+        await expect(element(by.text(message1))).toExist();
+
         // # Post Private Channel 2's POST Permalink
         const message2 = `${serverUrl}/${testTeam.name}/pl/${post.id}`;
         await postMessage(message2);
+
+        // * Check that message is successfully posted
+        await expect(element(by.text(message2))).toExist();
 
         // # Logout and login as sysadmin
         await logout();
@@ -73,20 +79,40 @@ describe('Messaging', () => {
             password: adminPassword,
         });
 
+        // * Verify channel screen is visible
+        await ChannelScreen.toBeVisible();
+
+        // # Go to the team
         await openTeamSidebar();
+        await getTeamByDisplayName(testTeam.display_name).tap();
 
-        await element(by.text(testTeam.name)).tap();
+        // # Press on message 1
+        await tapLink(message1);
 
-        const permalinkPost = element(by.text(message1));
-        await permalinkPost.tap({x: 5, y: 10});
+        // # Press on Join button
+        await joinChannel();
 
-        // await element(by.label('Join')).atIndex(0).tap();
+        // * Confirm joining the "private channel 1"
+        await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + privateChannel1Name);
 
-        // const joinButton = await element(by.label('Join')).atIndex(0);
-        // await joinButton.tap();
+        // # Go to Townsquare
+        await gotoChannel('Town Square');
 
-        // await expect(isAndroid() ? element(by.text('Join')) : element(by.label('Join')).atIndex(0)).toBeVisible();
-        // (isAndroid() ? element(by.text('Cancel')) : element(by.label('Cancel')).atIndex(0)).tap();
+        // # Press on message 2
+        await tapLink(message2);
+
+        // # Press on Join button
+        await joinChannel();
+
+        // * Verify permalink post list has the message
+        await PermalinkScreen.toBeVisible();
+        await expect(element(by.text(post.message))).toBeVisible();
+
+        // # Jump to recent messages
+        await PermalinkScreen.jumpToRecentMessages();
+
+        // * Verify user is on channel where message is posted
+        await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + privateChannel2Name);
     });
 });
 
@@ -105,4 +131,21 @@ async function createPrivateChannel(channelName) {
 
     // * Expect a redirection to the created channel
     await expect(ChannelScreen.channelIntro).toHaveText('Beginning of ' + channelName);
+}
+
+async function gotoChannel(name) {
+    await ChannelScreen.openMainSidebar();
+    const channelItem = MainSidebar.getChannelByDisplayName(name);
+    await channelItem.tap();
+    await expect(ChannelScreen.channelNavBarTitle).toHaveText(name);
+}
+
+async function joinChannel() {
+    const button = isAndroid() ? element(by.text('JOIN')) : element(by.label('Join')).atIndex(0);
+    await button.tap();
+}
+
+async function tapLink(message) {
+    const permalinkPost = element(by.text(message));
+    await permalinkPost.tap({x: 5, y: 10});
 }
