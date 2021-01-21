@@ -13,7 +13,6 @@ import {Channel, Post, Setup} from '@support/server_api';
 import {adminUsername, adminPassword, serverUrl} from '@support/test_config';
 import {getRandomId, isAndroid} from '@support/utils';
 
-
 describe('Messaging', () => {
     let testTeam;
 

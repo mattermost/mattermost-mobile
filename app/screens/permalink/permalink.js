@@ -97,6 +97,7 @@ export default class Permalink extends PureComponent {
         this.state = {
             title: '',
             loading,
+            joinChannelPromptVisible: false,
             error: error || '',
             retry: false,
         };
@@ -251,11 +252,13 @@ export default class Permalink extends PureComponent {
                     const {data: channel} = await actions.getChannel(focusChannelId);
                     if (channel) {
                         if (channel.type === General.PRIVATE_CHANNEL) {
+                            this.setState({joinChannelPromptVisible: true});
                             const {join} = await privateChannelJoinPrompt(channel, this.context.intl);
                             if (!join) {
                                 this.handleClose();
                                 return;
                             }
+                            this.setState({joinChannelPromptVisible: false});
                         }
 
                         // Join Open/Private channel
@@ -299,7 +302,7 @@ export default class Permalink extends PureComponent {
 
     render() {
         const {channelName, currentUserId, focusedPostId, postIds, theme} = this.props;
-        const {error, loading, retry, title} = this.state;
+        const {error, joinChannelPromptVisible, loading, retry, title} = this.state;
         const style = getStyleSheet(theme);
 
         let postList;
@@ -319,7 +322,7 @@ export default class Permalink extends PureComponent {
                 </View>
             );
         } else if (loading) {
-            postList = <Loading color={theme.centerChannelColor}/>;
+            postList = joinChannelPromptVisible ? null : <Loading color={theme.centerChannelColor}/>;
         } else {
             postList = (
                 <PostList
