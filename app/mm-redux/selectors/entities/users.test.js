@@ -425,12 +425,12 @@ describe('Selectors.Users', () => {
         const getProfilesByIds = Selectors.makeGetProfilesByIds();
 
         const testCases = [
-            {input: {allUserIds: []}, output: []},
-            {input: {allUserIds: ['nonexistentid']}, output: []},
-            {input: {allUserIds: [user1.id]}, output: [user1]},
-            {input: {allUserIds: [user1.id, 'nonexistentid']}, output: [user1]},
-            {input: {allUserIds: [user1.id, user2.id]}, output: [user1, user2]},
-            {input: {allUserIds: ['nonexistentid', user1.id, user2.id]}, output: [user1, user2]},
+            {input: [], output: []},
+            {input: ['nonexistentid'], output: []},
+            {input: [user1.id], output: [user1]},
+            {input: [user1.id, 'nonexistentid'], output: [user1]},
+            {input: [user1.id, user2.id], output: [user1, user2]},
+            {input: ['nonexistentid', user1.id, user2.id], output: [user1, user2]},
         ];
 
         testCases.forEach((testCase) => {
