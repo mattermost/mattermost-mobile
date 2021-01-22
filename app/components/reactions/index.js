@@ -4,6 +4,8 @@
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {addReaction} from '@actions/views/emoji';
+import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {removeReaction} from '@mm-redux/actions/posts';
 import {makeGetReactionsForPost, getPost} from '@mm-redux/selectors/entities/posts';
 import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
@@ -12,9 +14,7 @@ import Permissions from '@mm-redux/constants/permissions';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {getChannel, isChannelReadOnlyById} from '@mm-redux/selectors/entities/channels';
-
-import {addReaction} from 'app/actions/views/emoji';
-import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
+import {selectEmojisCountFromReactions} from '@selectors/emojis';
 
 import Reactions from './reactions';
 
@@ -46,10 +46,7 @@ function makeMapStateToProps() {
                 default: true,
             });
 
-            if (reactions) {
-                // On servers without metadata reactions at this point can be undefined
-                canAddMoreReactions = Object.values(reactions).length < MAX_ALLOWED_REACTIONS;
-            }
+            canAddMoreReactions = selectEmojisCountFromReactions(reactions) < MAX_ALLOWED_REACTIONS;
 
             canRemoveReaction = haveIChannelPermission(state, {
                 team: teamId,
