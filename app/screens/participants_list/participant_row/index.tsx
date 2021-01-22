@@ -76,9 +76,8 @@ const ParticipantRow = ({theme, user, intl}: ParticipantRowProps) => {
                     <Text style={style.displayName}>
                         {displayUsername(user, Preferences.DISPLAY_PREFER_FULL_NAME)}
                     </Text>
-                    <Text>{'  '}</Text>
                     <Text style={style.username}>
-                        {usernameDisplay}
+                        {`  ${usernameDisplay}`}
                     </Text>
                 </Text>
             </View>
@@ -121,6 +120,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme:Theme) => {
             fontSize: 15,
             fontWeight: '400',
             color: changeOpacity(theme.centerChannelColor, 0.56),
+
         },
     };
 });
