@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {intlShape, injectIntl} from 'react-intl';
 
 import Separator from '@screens/channel_info/separator';
 
@@ -49,9 +50,10 @@ type OptionProps = {
     theme: Theme;
     currentChannel: Channel;
     currentUser: UserProfile;
+    intl: typeof intlShape;
 }
 
-const Option = (props: OptionProps) => {
+const Option = injectIntl((props: OptionProps) => {
     const onPress = () => {
         const channelId = props.currentChannel.id;
 
@@ -64,7 +66,7 @@ const Option = (props: OptionProps) => {
                 user_id: props.currentUser.id,
             },
             url: props.binding.call?.url || '',
-        });
+        }, props.intl);
 
         dismissModal();
     };
@@ -82,4 +84,4 @@ const Option = (props: OptionProps) => {
             />
         </>
     );
-};
+});

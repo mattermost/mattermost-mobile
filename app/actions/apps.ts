@@ -6,8 +6,9 @@ import {ActionFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppCall} from '@mm-redux/types/apps';
 import {AppsBindings, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {sendEphemeralPost} from './views/post';
+import {handleGotoLocation} from '@mm-redux/actions/integrations';
 
-export function doAppCall<Res=unknown>(call: AppCall): ActionFunc {
+export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
     return async (dispatch) => {
         const ephemeral = (text: string) => dispatch(sendEphemeralPost(text, (call && call.context.channel_id) || '', (call && call.context.root_id) || ''));
         try {
@@ -40,6 +41,16 @@ export function doAppCall<Res=unknown>(call: AppCall): ActionFunc {
 
                 // TODO Open new interactive dialog
                 //dispatch(openAppsModal(res.form, call));
+                return {data: res};
+            case AppCallResponseTypes.NAVIGATE:
+                if (!res.url) {
+                    const errMsg = 'An error has occurred. Please contact the App developer. Details: Response type is `navigate`, but no url was included in response.';
+
+                    ephemeral(errMsg);
+                    return {data: res};
+                }
+                dispatch(handleGotoLocation(res.url, intl));
+
                 return {data: res};
             }
 

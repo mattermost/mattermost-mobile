@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {intlShape, injectIntl} from 'react-intl';
 
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
@@ -18,7 +19,7 @@ type Props = {
     currentUser: UserProfile,
     closeWithAnimation: () => void,
     actions: {
-        doAppCall: (call: AppCall) => void
+        doAppCall: (call: AppCall, intl: any) => void
     }
 }
 
@@ -55,13 +56,14 @@ type OptionProps = {
     theme: Theme,
     post: Post,
     currentUser: UserProfile,
-    closeWithAnimation: () => void;
+    closeWithAnimation: () => void,
+    intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCall) => void
-    }
+        doAppCall: (call: AppCall, intl: any) => void,
+    },
 }
 
-const Option = (props: OptionProps) => {
+const Option = injectIntl((props: OptionProps) => {
     const onPress = () => {
         const {closeWithAnimation, post} = props;
 
@@ -73,7 +75,7 @@ const Option = (props: OptionProps) => {
                 post_id: post.id,
                 user_id: props.currentUser.id,
             },
-        });
+        }, props.intl);
         closeWithAnimation();
     };
 
@@ -86,4 +88,4 @@ const Option = (props: OptionProps) => {
             theme={theme}
         />
     );
-};
+});
