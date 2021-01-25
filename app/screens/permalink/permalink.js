@@ -53,9 +53,11 @@ Animatable.initializeRegistryWithDefinitions({
 export default class Permalink extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
+            addUserToTeam: PropTypes.func.isRequired,
             getPostsAround: PropTypes.func.isRequired,
             getPostThread: PropTypes.func.isRequired,
             getChannel: PropTypes.func.isRequired,
+            getTeamByName: PropTypes.func.isRequired,
             handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
@@ -69,9 +71,12 @@ export default class Permalink extends PureComponent {
         currentUserId: PropTypes.string.isRequired,
         focusedPostId: PropTypes.string.isRequired,
         isPermalink: PropTypes.bool,
-        myMembers: PropTypes.object.isRequired,
+        myChannelMemberships: PropTypes.object.isRequired,
+        myTeamMemberships: PropTypes.object.isRequired,
         onClose: PropTypes.func,
         postIds: PropTypes.array,
+        team: PropTypes.object,
+        teamName: PropTypes.string.isRequired,
         theme: PropTypes.object.isRequired,
         error: PropTypes.string,
     };
@@ -248,9 +253,28 @@ export default class Permalink extends PureComponent {
             }
 
             if (focusChannelId) {
-                if (!this.props.myMembers[focusChannelId]) {
-                    const {data: channel} = await actions.getChannel(focusChannelId);
-                    if (channel) {
+                const {teamName} = this.props;
+                let {team} = this.props;
+                if (!team) {
+                    const teamResponse = await actions.getTeamByName(teamName);
+                    if (teamResponse.error) {
+                        this.setState({error: teamResponse.error.message, loading: false});
+                        return;
+                    }
+                    team = teamResponse.data;
+                }
+                if (!this.props.myTeamMemberships[team.id]) {
+                    const teamJoinResponse = await actions.addUserToTeam(team.id, currentUserId);
+                    if (teamJoinResponse.error) {
+                        this.setState({error: teamJoinResponse.error.message, loading: false});
+                        return;
+                    }
+                }
+                if (!this.props.myChannelMemberships[focusChannelId]) {
+                    const {error: channelError, data: channel} = await actions.getChannel(focusChannelId);
+                    if (channelError) {
+                        this.setState({error: channelError.message, loading: false});
+                    } else {
                         if (channel.type === General.PRIVATE_CHANNEL) {
                             this.setState({joinChannelPromptVisible: true});
                             const {join} = await privateChannelJoinPrompt(channel, this.context.intl);
@@ -262,7 +286,11 @@ export default class Permalink extends PureComponent {
                         }
 
                         // Join Open/Private channel
-                        await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                        const channelJoinResponse = await actions.joinChannel(currentUserId, channel.team_id, channel.id);
+                        if (channelJoinResponse.error) {
+                            this.setState({error: channelJoinResponse.error.message, loading: false});
+                            return;
+                        }
                     }
                 }
             }
