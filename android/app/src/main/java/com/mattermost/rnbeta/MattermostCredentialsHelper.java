@@ -37,7 +37,7 @@ public class MattermostCredentialsHelper {
         HashMap<String, String> asyncStorageResults = asyncStorage.multiGet(asyncStorageKeys);
         String serverUrl = asyncStorageResults.get(CURRENT_SERVER_URL);
         final WritableMap options = Arguments.createMap();
-        // KeyChain module fails authenticationPrompt is not set
+        // KeyChain module fails if `authenticationPrompt` is not set
         final WritableMap authPrompt = Arguments.createMap();
         authPrompt.putString("title", "Authenticate to retrieve secret");
         authPrompt.putString("cancel", "Cancel");
