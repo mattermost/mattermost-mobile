@@ -40,6 +40,7 @@ import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 import {fetchAppBindings} from '@mm-redux/actions/apps';
+import {shouldProcessApps} from '@utils/apps';
 
 const MAX_RETRIES = 3;
 
@@ -213,8 +214,10 @@ export function handleSelectChannel(channelId) {
 
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 
-            //TODO improve sync method
-            dispatch(fetchAppBindings(currentUserId, channelId));
+            if (shouldProcessApps(state)) {
+                //TODO improve sync method
+                dispatch(fetchAppBindings(currentUserId, channelId));
+            }
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
 

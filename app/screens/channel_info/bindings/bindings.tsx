@@ -20,9 +20,14 @@ type Props = {
     theme: Theme;
     currentChannel: Channel;
     currentUser: UserProfile;
+    shouldProcessApps: boolean;
 }
 
 const Bindings = (props: Props) => {
+    if (!props.shouldProcessApps) {
+        return null;
+    }
+
     const {bindings, ...optionProps} = props;
     if (bindings.length === 0) {
         return null;

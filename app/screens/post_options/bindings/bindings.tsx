@@ -18,12 +18,17 @@ type Props = {
     post: Post,
     currentUser: UserProfile,
     closeWithAnimation: () => void,
+    shouldProcessApps: boolean,
     actions: {
         doAppCall: (call: AppCall, intl: any) => void
     }
 }
 
 const Bindings = (props: Props) => {
+    if (!props.shouldProcessApps) {
+        return null;
+    }
+
     const {bindings, post, ...optionProps} = props;
     if (bindings.length === 0) {
         return null;

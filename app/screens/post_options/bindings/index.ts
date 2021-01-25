@@ -12,15 +12,18 @@ import {AppsBindings} from '@mm-redux/constants/apps';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {doAppCall} from '@actions/apps';
 import {bindActionCreators, Dispatch} from 'redux';
+import {shouldProcessApps} from '@utils/apps';
 
 function mapStateToProps(state: GlobalState) {
-    const bindings = getAppsBindings(state, AppsBindings.POST_MENU_ITEM);
+    const processApps = shouldProcessApps(state);
+    const bindings = processApps ? getAppsBindings(state, AppsBindings.POST_MENU_ITEM) : [];
     const currentUser = getCurrentUser(state);
 
     return {
         theme: getTheme(state),
         bindings,
         currentUser,
+        shouldProcessApps: processApps,
     };
 }
 
