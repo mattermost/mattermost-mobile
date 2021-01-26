@@ -52,8 +52,10 @@ describe('Favorite Channels', () => {
         await expect(favoriteSwitchFalse).toBeVisible();
         await expect(favoriteSwitchTrue).not.toBeVisible();
 
-        // * Toggle on favorite switch
+        // # Toggle on favorite switch
         await favoriteSwitchFalse.tap();
+
+        // * Verify favorite switch is toggled on
         await expect(favoriteSwitchTrue).toBeVisible();
         await expect(favoriteSwitchFalse).not.toBeVisible();
 
