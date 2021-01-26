@@ -9,6 +9,7 @@ import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typ
 import IServers from '@typings/database/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {DeviceEventEmitter, Platform} from 'react-native';
+import {FileSystem} from 'react-native-unimodules';
 
 import DefaultMigration from '../../default/migration';
 import {App, Global, Servers} from '../../default/models';
@@ -94,7 +95,9 @@ class DatabaseManager {
             PostsInThread, Preference, Reaction, Role, SlashCommand, System, Team, TeamChannelHistory, TeamMembership,
             TeamSearchHistory, TermsOfService, User];
 
-        this.iOSAppGroupDatabase = getIOSAppGroupDetails().appGroupDatabase;
+        if (Platform.OS === 'ios') {
+            this.iOSAppGroupDatabase = getIOSAppGroupDetails().appGroupDatabase;
+        }
     }
 
     /**
@@ -174,7 +177,10 @@ class DatabaseManager {
      * @returns {Database} default database
      */
     getDefaultDatabase = async (): Promise<DBInstance> => {
-        return this.defaultDatabase || this.setDefaultDatabase();
+        if (!this.defaultDatabase) {
+            await this.setDefaultDatabase();
+        }
+        return this.defaultDatabase;
     };
 
     /**
@@ -355,10 +361,7 @@ class DatabaseManager {
             return `${this.iOSAppGroupDatabase}/${dbName}.db`;
         }
 
-        // FIXME : On Android side, you should save the *.db in the Documents directory
-        // const androidDBPath = FileSystem.documentDirectory + `databases/${dbName}.db`;
-        // await FileSystem.makeDirectoryAsync(androidDBPath, {intermediates: true});
-        return `${dbName}`;
+        return `${FileSystem.documentDirectory}${dbName}.db`;
     };
 }
 
