@@ -61,6 +61,7 @@ export default class Permalink extends PureComponent {
             handleSelectChannel: PropTypes.func.isRequired,
             handleTeamChange: PropTypes.func.isRequired,
             joinChannel: PropTypes.func.isRequired,
+            removeUserFromTeam: PropTypes.func.isRequired,
             selectPost: PropTypes.func.isRequired,
         }).isRequired,
         channelId: PropTypes.string,
@@ -263,12 +264,14 @@ export default class Permalink extends PureComponent {
                     }
                     team = teamResponse.data;
                 }
+                let joinedNewTeam = false;
                 if (!this.props.myTeamMemberships[team.id]) {
                     const teamJoinResponse = await actions.addUserToTeam(team.id, currentUserId);
                     if (teamJoinResponse.error) {
                         this.setState({error: teamJoinResponse.error.message, loading: false});
                         return;
                     }
+                    joinedNewTeam = true;
                 }
                 if (!this.props.myChannelMemberships[focusChannelId]) {
                     const {error: channelError, data: channel} = await actions.getChannel(focusChannelId);
@@ -279,6 +282,9 @@ export default class Permalink extends PureComponent {
                             this.setState({joinChannelPromptVisible: true});
                             const {join} = await privateChannelJoinPrompt(channel, this.context.intl);
                             if (!join) {
+                                if (joinedNewTeam) {
+                                    await actions.removeUserFromTeam(team.id, currentUserId);
+                                }
                                 this.handleClose();
                                 return;
                             }

@@ -9,7 +9,7 @@ import {getPostsAround, getPostThread} from '@actions/views/post';
 import {handleTeamChange} from '@actions/views/select_team';
 import {getChannel as getChannelAction, joinChannel} from '@mm-redux/actions/channels';
 import {selectPost} from '@mm-redux/actions/posts';
-import {addUserToTeam, getTeamByName} from '@mm-redux/actions/teams';
+import {addUserToTeam, getTeamByName, removeUserFromTeam} from '@mm-redux/actions/teams';
 import {makeGetChannel, getMyChannelMemberships} from '@mm-redux/selectors/entities/channels';
 import {makeGetPostIdsAroundPost, getPost} from '@mm-redux/selectors/entities/posts';
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
@@ -65,6 +65,7 @@ function mapDispatchToProps(dispatch) {
             handleSelectChannel,
             handleTeamChange,
             joinChannel,
+            removeUserFromTeam,
             selectPost,
         }, dispatch),
     };

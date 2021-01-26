@@ -266,6 +266,9 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler, i
                 if (channel.type === General.PRIVATE_CHANNEL) {
                     const {join} = await privateChannelJoinPrompt(channel, intl);
                     if (!join) {
+                        if (joinedNewTeam) {
+                            await dispatch(removeUserFromTeam(team.id, currentUserId));
+                        }
                         return {data: true};
                     }
                 }
