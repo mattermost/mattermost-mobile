@@ -212,7 +212,9 @@ describe('Actions.Views.Channel', () => {
         actions.getChannelByName = jest.fn(() => {
             return {
                 type: 'MOCK_ERROR',
-                error: 'error',
+                error: {
+                    message: "Can't get to channel.",
+                },
             };
         });
 

@@ -14,7 +14,7 @@ import {
 } from '@mm-redux/actions/channels';
 import {savePreferences} from '@mm-redux/actions/preferences';
 import {getLicense} from '@mm-redux/selectors/entities/general';
-import {addUserToTeam, getTeamByName, selectTeam} from '@mm-redux/actions/teams';
+import {addUserToTeam, getTeamByName, removeUserFromTeam, selectTeam} from '@mm-redux/actions/teams';
 import {Client4} from '@mm-redux/client';
 import {General, Preferences} from '@mm-redux/constants';
 import {getPostIdsInChannel} from '@mm-redux/selectors/entities/posts';
@@ -228,14 +228,21 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler, i
         const currentChannelId = getCurrentChannelId(state);
 
         const {error: teamError, data: team} = await dispatch(getTeamByName(teamName || currentTeamName));
+
+        // Fallback to API response error, if any.
         if (teamError) {
+            if (errorHandler) {
+                errorHandler();
+            }
             return {error: teamError};
         }
 
         // Join team if not a member already
         const myTeamMemberships = getTeamMemberships(state);
+        let joinedNewTeam = false;
         if (!myTeamMemberships[team.id]) {
             await dispatch(addUserToTeam(team.id, currentUserId));
+            joinedNewTeam = true;
         }
 
         const {error: channelError, data: channel} = await dispatch(getChannelByName(team.id, channelName));
@@ -265,6 +272,9 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler, i
                 console.log('joining channel', channel?.display_name, channel.id); //eslint-disable-line
                 const result = await dispatch(joinChannel(currentUserId, '', channel.id));
                 if (result.error || !result.data || !result.data.channel) {
+                    if (joinedNewTeam) {
+                        await dispatch(removeUserFromTeam(team.id, currentUserId));
+                    }
                     return result;
                 }
             }
