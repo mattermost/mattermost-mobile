@@ -17,32 +17,29 @@ export function showPermalink(intl: typeof intlShape, teamName: string, postId: 
     return async (dispatch: DispatchFunc) => {
         const loadTeam = await dispatch(loadChannelsByTeamName(teamName, permalinkBadTeam.bind(null, intl)));
 
-        if (loadTeam.error) {
-            return {};
+        if (!loadTeam.error) {
+            Keyboard.dismiss();
+            dispatch(selectFocusedPostId(postId));
+
+            if (!showingPermalink) {
+                const screen = 'Permalink';
+                const passProps = {
+                    isPermalink: openAsPermalink,
+                    onClose: () => {
+                        dispatch(closePermalink());
+                    },
+                };
+
+                const options = {
+                    layout: {
+                        componentBackgroundColor: changeOpacity('#000', 0.2),
+                    },
+                };
+
+                showingPermalink = true;
+                showModalOverCurrentContext(screen, passProps, options);
+            }
         }
-
-        Keyboard.dismiss();
-        dispatch(selectFocusedPostId(postId));
-
-        if (!showingPermalink) {
-            const screen = 'Permalink';
-            const passProps = {
-                isPermalink: openAsPermalink,
-                onClose: () => {
-                    dispatch(closePermalink());
-                },
-            };
-
-            const options = {
-                layout: {
-                    componentBackgroundColor: changeOpacity('#000', 0.2),
-                },
-            };
-
-            showingPermalink = true;
-            showModalOverCurrentContext(screen, passProps, options);
-        }
-
         return {};
     };
 }
