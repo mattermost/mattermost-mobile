@@ -54,7 +54,7 @@ describe('Permalink', () => {
 
         // # Dismiss the permalink screen by jumping to recent messages
         await PermalinkScreen.jumpToRecentMessages();
-        
+
         // * Verify user is on channel where message is posted
         await expect(ChannelScreen.channelNavBarTitle).toHaveText(permalinkTargetChannel.display_name);
         const {postListPostItem: channelPostItem} = await ChannelScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
