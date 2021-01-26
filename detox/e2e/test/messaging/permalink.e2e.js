@@ -30,9 +30,10 @@ describe('Permalink', () => {
         await ChannelScreen.logout();
     });
 
-    const expectPermalinkTargetMessage = async (permalinkTargetPost) => {
+    const expectPermalinkTargetMessage = async (permalinkTargetPost, permalinkTargetChannel) => {
         // # Post a message in the test channel referencing the given permalink.
-        const permalinkMessage = `[permalink](/_redirect/pl/${permalinkTargetPost.id})`;
+        const permalinkLabel = `permalink-${Date.now().toString()}`;
+        const permalinkMessage = `[${permalinkLabel}](/_redirect/pl/${permalinkTargetPost.id})`;
         await Post.apiCreatePost({
             channelId: testChannel.id,
             message: permalinkMessage,
@@ -44,15 +45,20 @@ describe('Permalink', () => {
         await ChannelScreen.toBeVisible();
 
         // # Tap the channel permalink
-        element(by.text('permalink')).tap({x: 5, y: 10});
+        await element(by.text(permalinkLabel)).tap({x: 5, y: 10});
 
         // * Verify permalink post list has the expected target message
         await PermalinkScreen.toBeVisible();
         const {postListPostItem: permalinkPostItem} = await PermalinkScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
-        await waitFor(permalinkPostItem).toBeVisible();
+        await expect(permalinkPostItem).toBeVisible();
 
-        // * Dismiss the permalink screen by jumping to recent messages
+        // # Dismiss the permalink screen by jumping to recent messages
         await PermalinkScreen.jumpToRecentMessages();
+        
+        // * Verify user is on channel where message is posted
+        await expect(ChannelScreen.channelNavBarTitle).toHaveText(permalinkTargetChannel.display_name);
+        const {postListPostItem: channelPostItem} = await ChannelScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
+        await expect(channelPostItem).toBeVisible();
     };
 
     it('[tm4j_id]_[step] should support _redirect to public channel post', async () => {
@@ -63,7 +69,7 @@ describe('Permalink', () => {
             message: permalinkTargetMessage,
         });
 
-        expectPermalinkTargetMessage(permalinkTargetPost.post);
+        await expectPermalinkTargetMessage(permalinkTargetPost.post, townSquareChannel);
     });
 
     it('[tm4j_id]_[step] should support _redirect to DM post', async () => {
@@ -76,6 +82,6 @@ describe('Permalink', () => {
             message: permalinkTargetMessage,
         });
 
-        expectPermalinkTargetMessage(permalinkTargetPost.post);
+        await expectPermalinkTargetMessage(permalinkTargetPost.post, directMessageChannel);
     });
 });
