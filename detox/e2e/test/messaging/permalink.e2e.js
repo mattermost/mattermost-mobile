@@ -61,7 +61,7 @@ describe('Permalink', () => {
         await expect(channelPostItem).toBeVisible();
     };
 
-    it('[tm4j_id]_[step] should support _redirect to public channel post', async () => {
+    it('MM-T3805_1 should support _redirect to public channel post', async () => {
         // # Post a test message in a public channel
         const permalinkTargetMessage = 'post in Town Square';
         const permalinkTargetPost = await Post.apiCreatePost({
@@ -72,7 +72,7 @@ describe('Permalink', () => {
         await expectPermalinkTargetMessage(permalinkTargetPost.post, townSquareChannel);
     });
 
-    it('[tm4j_id]_[step] should support _redirect to DM post', async () => {
+    it('MM-T3805_2 should support _redirect to DM post', async () => {
         // # Post a test message in a DM
         const {user: dmOtherUser} = await User.apiCreateUser({prefix: 'testchannel-1'});
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel([testUser.id, dmOtherUser.id]);
