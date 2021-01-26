@@ -15,13 +15,10 @@ export let showingPermalink = false;
 
 export function showPermalink(intl: typeof intlShape, teamName: string, postId: string, openAsPermalink = true) {
     return async (dispatch: DispatchFunc) => {
-        // For the special, "_redirect" path, just use the currently selected team.
-        if (teamName !== '_redirect') {
-            const loadTeam = await dispatch(loadChannelsByTeamName(teamName, permalinkBadTeam.bind(null, intl)));
+        const loadTeam = await dispatch(loadChannelsByTeamName(teamName, permalinkBadTeam.bind(null, intl)));
 
-            if (loadTeam.error) {
-                return {};
-            }
+        if (loadTeam.error) {
+            return {};
         }
 
         Keyboard.dismiss();
