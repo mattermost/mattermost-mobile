@@ -16,7 +16,7 @@ import Post from 'app/components/post';
 import {DeepLinkTypes, ListTypes, NavigationTypes} from '@constants';
 import mattermostManaged from 'app/mattermost_managed';
 import {makeExtraData} from 'app/utils/list_view';
-import {matchDeepLink} from 'app/utils/url';
+import {matchDeepLink, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from 'app/utils/url';
 import telemetry from 'app/telemetry';
 
 import DateHeader from './date_header';
@@ -71,6 +71,7 @@ export default class PostList extends PureComponent {
         location: PropTypes.string,
         scrollViewNativeID: PropTypes.string,
         showMoreMessagesButton: PropTypes.bool,
+        currentTeamName: PropTypes.string,
     };
 
     static defaultProps = {
@@ -81,6 +82,7 @@ export default class PostList extends PureComponent {
         siteURL: '',
         postIds: [],
         showMoreMessagesButton: false,
+        currentTeamName: '',
     };
 
     static contextTypes = {
@@ -181,7 +183,7 @@ export default class PostList extends PureComponent {
     };
 
     handleDeepLink = (url) => {
-        const {serverURL, siteURL} = this.props;
+        const {serverURL, siteURL, currentTeamName} = this.props;
 
         const match = matchDeepLink(url, serverURL, siteURL);
 
@@ -190,7 +192,11 @@ export default class PostList extends PureComponent {
                 const {intl} = this.context;
                 this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel(intl));
             } else if (match.type === DeepLinkTypes.PERMALINK) {
-                this.handlePermalinkPress(match.postId, match.teamName);
+                if (match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
+                    this.handlePermalinkPress(match.postId, currentTeamName);
+                } else {
+                    this.handlePermalinkPress(match.postId, match.teamName);
+                }
             }
         } else {
             const {formatMessage} = this.context.intl;
