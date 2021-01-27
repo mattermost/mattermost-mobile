@@ -52,8 +52,7 @@ import {serverSchema} from '../../server/schema';
 // TODO [x] : create server db
 // TODO [x] : set active db
 // TODO [x] : delete server db and removes its record in default db
-
-// TODO [] : retrieve all dbs or a subset via the url and it then returns db instances
+// TODO [X] : retrieve all dbs or a subset via the url and it then returns db instances
 
 // TODO [] : factory reset - wipe every data on the phone
 
@@ -73,7 +72,7 @@ type DatabaseConnection = { databaseConnection: MMDatabaseConnection, shouldAddT
 type ActiveServerDatabase = { displayName: string, serverUrl: string }
 
 // The elements required to delete a database on iOS
-type RemoveDatabaseIOS = { databaseName?: string, shouldRemoveDirectory?: boolean}
+type RemoveDatabaseIOS = { databaseName?: string, shouldRemoveDirectory?: boolean }
 
 // The only two types of databases in the app
 export enum DatabaseType {
@@ -107,7 +106,10 @@ class DatabaseManager {
      * @param {boolean} shouldAddToDefaultDB
      * @returns {Promise<DBInstance>}
      */
-    createDatabaseConnection = async ({databaseConnection, shouldAddToDefaultDB = true}: DatabaseConnection): Promise<DBInstance> => {
+    createDatabaseConnection = async ({
+        databaseConnection,
+        shouldAddToDefaultDB = true,
+    }: DatabaseConnection): Promise<DBInstance> => {
         const {
             actionsEnabled = true,
             dbName = 'default',
@@ -234,7 +236,7 @@ class DatabaseManager {
         try {
             deleteIOSDatabase({databaseName});
         } catch (e) {
-            // console.log('An error occured while trying to delete database with name ', databaseName);
+            // console.log('An error             // console.log('An error occurred while trying to delete database with name ', databaseName); while trying to delete database with name ', databaseName);
         }
     };
 
@@ -245,6 +247,38 @@ class DatabaseManager {
     factoryResetOnIOS = ({shouldRemoveDirectory}: RemoveDatabaseIOS) => {
         if (shouldRemoveDirectory) {
             deleteIOSDatabase({shouldRemoveDirectory: true});
+        }
+    };
+
+    /**
+     * deleteDBFileOnAndroid: Used only on iOS platform to delete a database by its name
+     * @param {string} databaseName
+     */
+    deleteDBFileOnAndroid = async ({databaseName}: RemoveDatabaseIOS) => {
+        try {
+            const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
+            const databaseFile = `${androidFilesDir}${databaseName}.db`;
+            const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
+
+            await FileSystem.deleteAsync(databaseFile);
+            await FileSystem.deleteAsync(databaseJournal);
+        } catch (e) {
+            // console.log('An error occurred while trying to delete database with name ', databaseName);
+        }
+    };
+
+    /**
+     * factoryResetOnAndroid: Deletes the database directory on iOS
+     * @param {boolean} shouldRemoveDirectory
+     */
+    factoryResetOnAndroid = async ({shouldRemoveDirectory}: RemoveDatabaseIOS) => {
+        if (shouldRemoveDirectory) {
+            try {
+                const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
+                await FileSystem.deleteAsync(androidFilesDir);
+            } catch (e) {
+                // console.log('An error occurred while trying to delete the databases directory on Android);
+            }
         }
     };
 
@@ -276,7 +310,7 @@ class DatabaseManager {
                 }
             }
         } catch (e) {
-            // console.error('An error occured while deleting server record ', e);
+            // console.error('An error occurred while deleting server record ', e);
         }
     };
 

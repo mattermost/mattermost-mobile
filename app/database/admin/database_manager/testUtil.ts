@@ -26,13 +26,15 @@ export const runDBManagerTest = async () => {
     //     console.log(appGroup);
     // }
 
-    //
     // const defaultDB = DBManager.getDefaultDatabase();
 
-    // Deleting db and database direction on iOS
+    // Deleting db and database directory on iOS
     // deleteIOSDatabase({databaseName: 'default'});
-    // deleteIOSDatabase({databaseName: 'defaultxx'});
     // deleteIOSDatabase({shouldRemoveDirectory: true});
+
+    // Deleting db and database directory on Android
+    // await DBManager.deleteDBFileOnAndroid({databaseName: 'default'});
+    // await DBManager.factoryResetOnAndroid({shouldRemoveDirectory: true});
 
     // const databaseConnection = {
     //     actionsEnabled: true,
