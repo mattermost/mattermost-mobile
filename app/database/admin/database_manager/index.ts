@@ -191,10 +191,10 @@ class DatabaseManager {
      * @returns {Promise<{url: string, dbInstance: DBInstance}[] | null>}
      */
     retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{ url: string, dbInstance: DBInstance }[] | null> => {
-        // Retrieve all server records from the default db
-        const allServers = await this.getAllServers();
-
         if (serverUrls?.length) {
+            // Retrieve all server records from the default db
+            const allServers = await this.getAllServers();
+
             // Filter only those servers that are present in the serverUrls array
             const servers = allServers!.filter((server: IServers) => {
                 return serverUrls.includes(server.url);

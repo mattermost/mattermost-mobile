@@ -29,26 +29,20 @@ export const runDBManagerTest = async () => {
     //     displayName: 'lala',
     //     serverUrl: 'https://comm4.mattermost.com',
     // });
-    //
-    // //
-    // const activeServer = DBManager.getActiveServerDatabase();
-    //
-    // console.log(activeServer);
-
-    // Deleting db and database directory on iOS
-    // deleteIOSDatabase({databaseName: 'default'});
-    // deleteIOSDatabase({shouldRemoveDirectory: true});
-
-    // Deleting db and database directory on Android
-    // await DBManager.deleteDatabase('https://comm4.mattermost.com');
-
-    // await DBManager.factoryResetOnAndroid({shouldRemoveDirectory: true});
 
     // const a = await DBManager.retrieveDatabaseInstances([
     //     'https://xunity2.mattermost.com',
+    //     'https://comm5.mattermost.com',
     //     'https://comm4.mattermost.com',
-    //     'https://comm2.mattermost.com',
     // ]);
-
+    //
     // console.log({a});
+
+    // const activeServer = DBManager.getActiveServerDatabase();
+    // console.log(activeServer);
+
+    // Deleting *.db by server url
+    // await DBManager.deleteDatabase('https://comm4.mattermost.com');
+
+    // await DBManager.factoryReset(true);
 };
