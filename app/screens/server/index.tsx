@@ -8,12 +8,9 @@ import {Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions} from 'rea
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 
-// import {runDBManagerTest} from '../../database/admin/database_manager/testUtil';
-
 declare const global: { HermesInternal: null | {} };
 
 const App = () => {
-    // runDBManagerTest();
     return (
         <>
             <StatusBar barStyle='dark-content'/>
@@ -22,7 +19,6 @@ const App = () => {
                     contentInsetAdjustmentBehavior='automatic'
                     style={styles.scrollView}
                 >
-                    {/*<EnhancedListOfServers/>*/}
                     {global.HermesInternal == null ? null : (
                         <View style={styles.engine}>
                             <Text style={styles.footer}>{'Engine: Hermes'}</Text>

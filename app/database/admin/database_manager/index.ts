@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import {Database, Model, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {Class} from '@nozbe/watermelondb/utils/common';
+import {DeviceEventEmitter, Platform} from 'react-native';
+import {FileSystem} from 'react-native-unimodules';
+
+import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import IServers from '@typings/database/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {DeviceEventEmitter, Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
 
 import DefaultMigration from '../../default/migration';
 import {App, Global, Servers} from '../../default/models';
