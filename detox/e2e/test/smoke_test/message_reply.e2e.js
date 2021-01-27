@@ -57,6 +57,7 @@ describe('Message Reply', () => {
         ({post: replyPost} = await Post.apiGetLastPostInChannel(testChannel.id));
         ({postListPostItem: replyPostItem} = await ThreadScreen.getPostListPostItem(replyPost.id, replyMessage));
         await expect(replyPostItem).toBeVisible();
+        await replyPostItem.tap();
 
         // * Verify reply post is displayed in main channel
         await ThreadScreen.back();
