@@ -53,7 +53,10 @@ type Models = Class<Model>[]
 type DBInstance = Database | undefined
 
 // The elements needed to create a new connection
-type DatabaseConnection = { databaseConnection: MMDatabaseConnection, shouldAddToDefaultDB: boolean }
+type DatabaseConnection = {
+    databaseConnection: MMDatabaseConnection, shouldAddToDefaultDatabase
+        : boolean
+}
 
 // The elements required to switch to another active server database
 type ActiveServerDatabase = { displayName: string, serverUrl: string }
@@ -87,12 +90,14 @@ class DatabaseManager {
      * createDatabaseConnection: Creates database connection and registers the new connection into the default database.  However,
      * if a database connection could not be created, it will return undefined.
      * @param {MMDatabaseConnection} databaseConnection
-     * @param {boolean} shouldAddToDefaultDB
+     * @param {boolean} shouldAddToDefaultDatabase
+     *
      * @returns {Promise<DBInstance>}
      */
     createDatabaseConnection = async ({
         databaseConnection,
-        shouldAddToDefaultDB = true,
+        shouldAddToDefaultDatabase
+        = true,
     }: DatabaseConnection): Promise<DBInstance> => {
         const {
             actionsEnabled = true,
@@ -116,8 +121,9 @@ class DatabaseManager {
             });
 
             // Registers the new server connection into the DEFAULT database
-            if (serverUrl && shouldAddToDefaultDB) {
-                await this.addServerToDefaultDB({databaseFilePath, displayName: dbName, serverUrl});
+            if (serverUrl && shouldAddToDefaultDatabase
+            ) {
+                await this.addServerToDefaultDatabase({databaseFilePath, displayName: dbName, serverUrl});
             }
 
             return new Database({adapter, actionsEnabled, modelClasses});
@@ -129,13 +135,21 @@ class DatabaseManager {
     };
 
     /**
-     * setActiveServerDatabase: From the displayName and serverUrl, we set the new active server database.  For example, on switching to another
-     * another server, on a screen/component/list, we retrieve those values and call setActiveServerDatabase.
+     * setActiveServerDatabase: Set the new active server database.  The serverUrl is used to ensure that we do not duplicate entries in the default database.
+     * This method should be called when switching to another server.
      * @param {string} displayName
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
     setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
+        const allServers = await this.getAllServers();
+
+        const existingServer = allServers?.filter((server) => {
+            return server.url === serverUrl;
+        });
+
+        const shouldAddToDefaultDatabase = (existingServer && existingServer.length < 1) || existingServer === undefined;
+
         this.activeDatabase = await this.createDatabaseConnection({
             databaseConnection: {
                 actionsEnabled: true,
@@ -143,7 +157,7 @@ class DatabaseManager {
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
-            shouldAddToDefaultDB: true,
+            shouldAddToDefaultDatabase,
         });
     };
 
@@ -174,10 +188,9 @@ class DatabaseManager {
      * @param {string[]} serverUrls
      * @returns {Promise<{url: string, dbInstance: DBInstance}[] | null>}
      */
-    retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{url: string, dbInstance: DBInstance}[] | null> => {
+    retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{ url: string, dbInstance: DBInstance }[] | null> => {
         // Retrieve all server records from the default db
-        const defaultDatabase = await this.getDefaultDatabase();
-        const allServers = defaultDatabase && await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch() as IServers[];
+        const allServers = await this.getAllServers();
 
         if (serverUrls?.length) {
             // Filter only those servers that are present in the serverUrls array
@@ -196,9 +209,10 @@ class DatabaseManager {
                         serverUrl: url,
                     };
 
+                    // Since we are retrieving existing URL ( and so database connections ) from the 'DEFAULT' database, shouldAddToDefaultDatabase is set to false
                     const dbInstance = await this.createDatabaseConnection({
                         databaseConnection,
-                        shouldAddToDefaultDB: false,
+                        shouldAddToDefaultDatabase: false,
                     });
 
                     return {url, dbInstance};
@@ -294,25 +308,36 @@ class DatabaseManager {
     };
 
     /**
+     * getAllServers : Retrieves all the servers registered in the default database
+     * @returns {Promise<undefined | Servers[]>}
+     */
+    private getAllServers = async () => {
+        // Retrieve all server records from the default db
+        const defaultDatabase = await this.getDefaultDatabase();
+        const allServers = defaultDatabase && await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch() as IServers[];
+        return allServers;
+    };
+
+    /**
      * setDefaultDatabase : Sets the default database.
      * @returns {Promise<DBInstance>}
      */
     private setDefaultDatabase = async (): Promise<DBInstance> => {
         this.defaultDatabase = await this.createDatabaseConnection({
             databaseConnection: {dbName: 'default'},
-            shouldAddToDefaultDB: false,
+            shouldAddToDefaultDatabase: false,
         });
         return this.defaultDatabase;
     };
 
     /**
-     * addServerToDefaultDB: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
+     * addServerToDefaultDatabase: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
      * @param {string} databaseFilePath
      * @param {string} displayName
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
-    private addServerToDefaultDB = async ({
+    private addServerToDefaultDatabase = async ({
         databaseFilePath,
         displayName,
         serverUrl,

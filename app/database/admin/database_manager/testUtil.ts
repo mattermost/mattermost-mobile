@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 // import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
+
 // import {Platform} from 'react-native';
 // import DBManager from './index';
 
@@ -27,6 +28,11 @@ export const runDBManagerTest = async () => {
     // }
 
     // const defaultDB = DBManager.getDefaultDatabase();
+
+    // await DBManager.setActiveServerDatabase({
+    //     displayName: 'lala',
+    //     serverUrl: 'https://comm01.mattermost.com',
+    // });
 
     // Deleting db and database directory on iOS
     // deleteIOSDatabase({databaseName: 'default'});
