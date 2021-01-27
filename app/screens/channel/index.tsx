@@ -11,12 +11,12 @@ import {
     ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import {runDBManagerTest} from '../../database/admin/database_manager/testUtil';
+// import {runDBManagerTest} from '../../database/admin/database_manager/testUtil';
 
 declare const global: {HermesInternal: null | {}};
 
 const Channel = () => {
-    runDBManagerTest();
+    // runDBManagerTest();
 
     return (
         <>

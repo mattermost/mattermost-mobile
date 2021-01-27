@@ -47,6 +47,8 @@ import {
 } from '../../server/models';
 import {serverSchema} from '../../server/schema';
 
+const {SERVERS} = MM_TABLES.DEFAULT;
+
 type Models = Class<Model>[]
 
 // A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
@@ -227,26 +229,47 @@ class DatabaseManager {
     };
 
     /**
-     * deleteDatabase: Deletes a database by its name - on the respective platform
-     * @param {string} databaseName
+     * deleteDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
+     * Also, it removes its entry in the 'servers' table from the DEFAULT database
+     * @param  {string} serverUrl
      * @returns {Promise<boolean>}
      */
-    deleteDatabase = async (databaseName: string): Promise<boolean> => {
+    deleteDatabase = async (serverUrl: string): Promise<boolean> => {
         try {
-            if (Platform.OS === 'ios') {
-                deleteIOSDatabase({databaseName});
-                return true;
+            const defaultDB = await this.getDefaultDatabase();
+            let server: IServers;
+
+            if (defaultDB) {
+                const serversRecords = await defaultDB.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch() as IServers[];
+                server = serversRecords?.[0] ?? undefined;
+
+                if (server) {
+                    // Perform a delete operation for this server record on the 'servers' table in default database
+                    await defaultDB.action(async () => {
+                        await server.destroyPermanently();
+                    });
+
+                    const databaseName = server.displayName;
+
+                    if (Platform.OS === 'ios') {
+                        // On iOS, we'll delete the *.db file under the shared app-group/databases folder
+                        deleteIOSDatabase({databaseName});
+                        return true;
+                    }
+
+                    // On Android, we'll delete both the *.db file and the *.db-journal file
+                    const androidFilesDir = `${this.androidFilesDirectory}databases/`;
+                    const databaseFile = `${androidFilesDir}${databaseName}.db`;
+                    const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
+
+                    await FileSystem.deleteAsync(databaseFile);
+                    await FileSystem.deleteAsync(databaseJournal);
+
+                    return true;
+                }
+                return false;
             }
-
-            // On Android, we'll delete both the *.db file and the *.db-journal file
-            const androidFilesDir = `${this.androidFilesDirectory}databases/`;
-            const databaseFile = `${androidFilesDir}${databaseName}.db`;
-            const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
-
-            await FileSystem.deleteAsync(databaseFile);
-            await FileSystem.deleteAsync(databaseJournal);
-
-            return true;
+            return false;
         } catch (e) {
             // console.log('An error occurred while trying to delete database with name ', databaseName);
             return false;
@@ -272,37 +295,6 @@ class DatabaseManager {
             return true;
         } catch (e) {
             // console.log('An error occurred while trying to delete the databases directory);
-            return false;
-        }
-    };
-
-    /**
-     * removeServerFromDefaultDB : Removes a server record by its url from the Default database
-     * @param {string} serverUrl
-     * @returns {Promise<boolean>}
-     */
-    removeServerFromDefaultDB = async ({serverUrl}: { serverUrl: string }): Promise<boolean> => {
-        try {
-            // Query the servers table to fetch the record with the above displayName
-            const defaultDB = await this.getDefaultDatabase();
-            if (defaultDB) {
-                const serversRecords = await defaultDB.collections.get('servers').query(Q.where('url', serverUrl)).fetch() as IServers[];
-                if (serversRecords.length) {
-                    const targetServer = serversRecords[0];
-
-                    // Perform a delete operation on that record; since there is no sync with backend, we will delete the record permanently
-                    await defaultDB.action(async () => {
-                        await targetServer.destroyPermanently();
-                    });
-
-                    // Removes the *.db file from the App-Group directory for iOS or the files directory on Android
-                    await this.deleteDatabase(targetServer.displayName);
-                    return true;
-                }
-            }
-            return false;
-        } catch (e) {
-            // console.error('An error occurred while deleting server record ', e);
             return false;
         }
     };

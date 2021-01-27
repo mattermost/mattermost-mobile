@@ -4,22 +4,7 @@
 // import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 // import {Platform} from 'react-native';
-// import DBManager from './index';
-
-// jest.mock('./database_manager');
-
-// describe('*** Database Manager ***', () => {
-//     beforeAll(() => {
-//         // clear all mocks
-//         // DBManager.mockClear();
-//     });
-//
-//     test('=> Check if DBManager singleton is created', () => {
-//         const defaultDB = DBManager.getDefaultDatabase();
-//         const spy = jest.spyOn(DBManager, 'getDefaultDatabase');
-//         expect(spy).toHaveBeenCalled();
-//     });
-// });
+// import DBManager, {DatabaseType} from './index';
 
 export const runDBManagerTest = async () => {
     // if (Platform.OS === 'ios') {
@@ -29,32 +14,35 @@ export const runDBManagerTest = async () => {
 
     // const defaultDB = DBManager.getDefaultDatabase();
 
+    // Creates a new server connection
+    // DBManager.createDatabaseConnection({
+    //     shouldAddToDefaultDatabase: true,
+    //     databaseConnection: {
+    //         actionsEnabled: true,
+    //         dbName: 'community mattermost',
+    //         dbType: DatabaseType.SERVER,
+    //         serverUrl: 'https://comm4.mattermost.com',
+    //     },
+    // }).then();
+
     // await DBManager.setActiveServerDatabase({
     //     displayName: 'lala',
-    //     serverUrl: 'https://comm01.mattermost.com',
+    //     serverUrl: 'https://comm4.mattermost.com',
     // });
+    //
+    // //
+    // const activeServer = DBManager.getActiveServerDatabase();
+    //
+    // console.log(activeServer);
 
     // Deleting db and database directory on iOS
     // deleteIOSDatabase({databaseName: 'default'});
     // deleteIOSDatabase({shouldRemoveDirectory: true});
 
     // Deleting db and database directory on Android
-    // await DBManager.deleteDBFileOnAndroid({databaseName: 'default'});
+    // await DBManager.deleteDatabase('https://comm4.mattermost.com');
+
     // await DBManager.factoryResetOnAndroid({shouldRemoveDirectory: true});
-
-    // const databaseConnection = {
-    //     actionsEnabled: true,
-    //     dbName: 'community mattermost',
-    //     dbType: DatabaseType.SERVER,
-    //     serverUrl: 'https://comm4.mattermost.com',
-    // };
-
-    // Creates a new server connection
-    // DBManager.createDatabaseConnection({
-    //     databaseConnection, shouldAddToDefaultDB: true,
-    // }).then();
-
-    // DBManager.removeServerFromDefaultDB({serverUrl: 'https://community.mattermost.com'});
 
     // const a = await DBManager.retrieveDatabaseInstances([
     //     'https://xunity2.mattermost.com',

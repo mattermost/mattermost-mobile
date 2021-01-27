@@ -49,4 +49,5 @@ export const MIGRATION_EVENTS = keyMirror({
 
 export default {
     MM_TABLES,
+    MIGRATION_EVENTS,
 };
