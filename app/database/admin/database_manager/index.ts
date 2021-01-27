@@ -47,19 +47,6 @@ import {
 } from '../../server/models';
 import {serverSchema} from '../../server/schema';
 
-// TODO [x] : Initialize a db connection with default schema
-// TODO [x] : handle migration
-// TODO [x] : create server db
-// TODO [x] : set active db
-// TODO [x] : delete server db and removes its record in default db
-// TODO [X] : retrieve all dbs or a subset via the url and it then returns db instances
-
-// TODO [] : factory reset - wipe every data on the phone
-
-// TODO [] : how do we track down if migration succeeded on all the instances of 'server db'
-
-// TODO :  review all private/public methods/fields
-
 type Models = Class<Model>[]
 
 // A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
@@ -71,9 +58,6 @@ type DatabaseConnection = { databaseConnection: MMDatabaseConnection, shouldAddT
 // The elements required to switch to another active server database
 type ActiveServerDatabase = { displayName: string, serverUrl: string }
 
-// The elements required to delete a database on iOS
-type RemoveDatabaseIOS = { databaseName?: string, shouldRemoveDirectory?: boolean }
-
 // The only two types of databases in the app
 export enum DatabaseType {
     DEFAULT,
@@ -84,7 +68,8 @@ class DatabaseManager {
     private activeDatabase: DBInstance;
     private defaultDatabase: DBInstance;
     private readonly defaultModels: Models;
-    private readonly iOSAppGroupDatabase: string | undefined;
+    private readonly iOSAppGroupDatabase: string | null;
+    private readonly androidFilesDirectory: string | null;
     private readonly serverModels: Models;
 
     constructor() {
@@ -94,13 +79,12 @@ class DatabaseManager {
             PostsInThread, Preference, Reaction, Role, SlashCommand, System, Team, TeamChannelHistory, TeamMembership,
             TeamSearchHistory, TermsOfService, User];
 
-        if (Platform.OS === 'ios') {
-            this.iOSAppGroupDatabase = getIOSAppGroupDetails().appGroupDatabase;
-        }
+        this.iOSAppGroupDatabase = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : null;
+        this.androidFilesDirectory = Platform.OS === 'android' ? FileSystem.documentDirectory : null;
     }
 
     /**
-     * createDatabaseConnection: Adds/Creates database connection and registers the new connection into the default database.  However,
+     * createDatabaseConnection: Creates database connection and registers the new connection into the default database.  However,
      * if a database connection could not be created, it will return undefined.
      * @param {MMDatabaseConnection} databaseConnection
      * @param {boolean} shouldAddToDefaultDB
@@ -119,15 +103,13 @@ class DatabaseManager {
 
         try {
             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
-
-            const dbFilePath = await this.getDBDirectory(databaseName);
-
+            const databaseFilePath = this.getDatabaseDirectory(databaseName);
             const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
             const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
             const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
 
             const adapter = new SQLiteAdapter({
-                dbName: dbFilePath,
+                dbName: databaseFilePath,
                 migrationEvents: this.buildMigrationCallbacks(databaseName),
                 migrations,
                 schema,
@@ -135,7 +117,7 @@ class DatabaseManager {
 
             // Registers the new server connection into the DEFAULT database
             if (serverUrl && shouldAddToDefaultDB) {
-                await this.addServerToDefaultDB({dbFilePath, displayName: dbName, serverUrl});
+                await this.addServerToDefaultDB({databaseFilePath, displayName: dbName, serverUrl});
             }
 
             return new Database({adapter, actionsEnabled, modelClasses});
@@ -186,11 +168,13 @@ class DatabaseManager {
     };
 
     /**
-     * retrieveServerDBInstances: Returns database instances which are created from the provided server urls.
+     * retrieveDatabaseInstances: Using an array of server URLs, this method creates a database connection for each URL
+     * and return them to the caller.
+     *
      * @param {string[]} serverUrls
-     * @returns {Promise<null | {dbInstance:  | undefined, url: string}[]>}
+     * @returns {Promise<{url: string, dbInstance: DBInstance}[] | null>}
      */
-    retrieveServerDBInstances = async (serverUrls?: string[]) => {
+    retrieveDatabaseInstances = async (serverUrls?: string[]): Promise<{url: string, dbInstance: DBInstance}[] | null> => {
         // Retrieve all server records from the default db
         const defaultDatabase = await this.getDefaultDatabase();
         const allServers = defaultDatabase && await defaultDatabase.collections.get(MM_TABLES.DEFAULT.SERVERS).query().fetch() as IServers[];
@@ -229,65 +213,61 @@ class DatabaseManager {
     };
 
     /**
-     * deleteDBFileOnIOS: Used only on iOS platform to delete a database by its name
+     * deleteDatabase: Deletes a database by its name - on the respective platform
      * @param {string} databaseName
+     * @returns {Promise<boolean>}
      */
-    deleteDBFileOnIOS = ({databaseName}: RemoveDatabaseIOS) => {
+    deleteDatabase = async (databaseName: string): Promise<boolean> => {
         try {
-            deleteIOSDatabase({databaseName});
-        } catch (e) {
-            // console.log('An error             // console.log('An error occurred while trying to delete database with name ', databaseName); while trying to delete database with name ', databaseName);
-        }
-    };
+            if (Platform.OS === 'ios') {
+                deleteIOSDatabase({databaseName});
+                return true;
+            }
 
-    /**
-     * factoryResetOnIOS: Deletes the database directory on iOS
-     * @param {boolean} shouldRemoveDirectory
-     */
-    factoryResetOnIOS = ({shouldRemoveDirectory}: RemoveDatabaseIOS) => {
-        if (shouldRemoveDirectory) {
-            deleteIOSDatabase({shouldRemoveDirectory: true});
-        }
-    };
-
-    /**
-     * deleteDBFileOnAndroid: Used only on iOS platform to delete a database by its name
-     * @param {string} databaseName
-     */
-    deleteDBFileOnAndroid = async ({databaseName}: RemoveDatabaseIOS) => {
-        try {
-            const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
+            // On Android, we'll delete both the *.db file and the *.db-journal file
+            const androidFilesDir = `${this.androidFilesDirectory}databases/`;
             const databaseFile = `${androidFilesDir}${databaseName}.db`;
             const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
             await FileSystem.deleteAsync(databaseFile);
             await FileSystem.deleteAsync(databaseJournal);
+
+            return true;
         } catch (e) {
             // console.log('An error occurred while trying to delete database with name ', databaseName);
+            return false;
         }
     };
 
     /**
-     * factoryResetOnAndroid: Deletes the database directory on iOS
+     * factoryReset: Removes the databases directory and all its contents on the respective platform
      * @param {boolean} shouldRemoveDirectory
+     * @returns {Promise<boolean>}
      */
-    factoryResetOnAndroid = async ({shouldRemoveDirectory}: RemoveDatabaseIOS) => {
-        if (shouldRemoveDirectory) {
-            try {
-                const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
-                await FileSystem.deleteAsync(androidFilesDir);
-            } catch (e) {
-                // console.log('An error occurred while trying to delete the databases directory on Android);
+    factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
+        try {
+            //On iOS, we'll delete the databases folder under the shared AppGroup folder
+            if (Platform.OS === 'ios') {
+                deleteIOSDatabase({shouldRemoveDirectory});
+                return true;
             }
+
+            // On Android, we'll remove the databases folder under the Document Directory
+            const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
+            await FileSystem.deleteAsync(androidFilesDir);
+            return true;
+        } catch (e) {
+            // console.log('An error occurred while trying to delete the databases directory);
+            return false;
         }
     };
 
     /**
-     * removeServerFromDefaultDB : Removes a server record by its url value from the Default database
+     * removeServerFromDefaultDB : Removes a server record by its url from the Default database
      * @param {string} serverUrl
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>}
      */
-    removeServerFromDefaultDB = async ({serverUrl}: { serverUrl: string }) => {
+    removeServerFromDefaultDB = async ({serverUrl}: { serverUrl: string }): Promise<boolean> => {
         try {
             // Query the servers table to fetch the record with the above displayName
             const defaultDB = await this.getDefaultDatabase();
@@ -301,16 +281,15 @@ class DatabaseManager {
                         await targetServer.destroyPermanently();
                     });
 
-                    if (Platform.OS === 'ios') {
-                        // Removes the *.db file from the App-Group directory
-                        this.deleteDBFileOnIOS({databaseName: targetServer.displayName});
-                    } else {
-                        // TODO : Perform a similar operation on Android
-                    }
+                    // Removes the *.db file from the App-Group directory for iOS or the files directory on Android
+                    await this.deleteDatabase(targetServer.displayName);
+                    return true;
                 }
             }
+            return false;
         } catch (e) {
             // console.error('An error occurred while deleting server record ', e);
+            return false;
         }
     };
 
@@ -328,13 +307,13 @@ class DatabaseManager {
 
     /**
      * addServerToDefaultDB: Adds a record into the 'default' database - into the 'servers' table - for this new server connection
-     * @param {string} dbFilePath
+     * @param {string} databaseFilePath
      * @param {string} displayName
      * @param {string} serverUrl
      * @returns {Promise<void>}
      */
     private addServerToDefaultDB = async ({
-        dbFilePath,
+        databaseFilePath,
         displayName,
         serverUrl,
     }: DefaultNewServer) => {
@@ -345,7 +324,7 @@ class DatabaseManager {
                 await defaultDatabase.action(async () => {
                     const serversCollection = defaultDatabase.collections.get('servers');
                     await serversCollection.create((server: IServers) => {
-                        server.dbPath = dbFilePath;
+                        server.dbPath = databaseFilePath;
                         server.displayName = displayName;
                         server.mentionCount = 0;
                         server.unreadCount = 0;
@@ -382,20 +361,17 @@ class DatabaseManager {
     };
 
     /**
-     * Retrieves the AppGroup shared directory on iOS or the DocumentsDirectory for Android and then places the
-     * database file under the 'databases/{dbName}.db' directory. Examples of such directory are:
-     * iOS Simulator : appGroup => /Users/{username}/Library/Developer/CoreSimulator/Devices/DA6F1C73/data/Containers/Shared/AppGroup/ACA65327"}
-     * Android Device: file:///data/user/0/com.mattermost.rnbeta/files/
+     * getDatabaseDirectory: Using the database name, this method will return the database directory for each platform.
+     * On iOS, it will point towards the AppGroup shared directory while on Android, it will point towards the Files Directory.
+     * Please note that in each case, the *.db files will be created/grouped under a 'databases' sub-folder.
+     * iOS Simulator : appGroup => /Users/{username}/Library/Developer/CoreSimulator/Devices/DA6F1C73/data/Containers/Shared/AppGroup/ACA65327/databases"}
+     * Android Device: file:///data/user/0/com.mattermost.rnbeta/files/databases
      *
      * @param {string} dbName
-     * @returns {Promise<string>}
+     * @returns {string}
      */
-    private getDBDirectory = async (dbName: string): Promise<string> => {
-        if (Platform.OS === 'ios') {
-            return `${this.iOSAppGroupDatabase}/${dbName}.db`;
-        }
-
-        return `${FileSystem.documentDirectory}${dbName}.db`;
+    private getDatabaseDirectory = (dbName: string): string => {
+        return Platform.OS === 'ios' ? `${this.iOSAppGroupDatabase}/${dbName}.db` : `${FileSystem.documentDirectory}${dbName}.db`;
     };
 }
 

@@ -50,7 +50,7 @@ export const runDBManagerTest = async () => {
 
     // DBManager.removeServerFromDefaultDB({serverUrl: 'https://community.mattermost.com'});
 
-    // const a = await DBManager.retrieveServerDBInstances([
+    // const a = await DBManager.retrieveDatabaseInstances([
     //     'https://xunity2.mattermost.com',
     //     'https://comm4.mattermost.com',
     //     'https://comm2.mattermost.com',

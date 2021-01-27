@@ -24,7 +24,7 @@ export type MMDatabaseConnection = {
 }
 
 export type DefaultNewServer = {
-    dbFilePath: string,
+    databaseFilePath: string,
     displayName: string,
     serverUrl: string
 }
