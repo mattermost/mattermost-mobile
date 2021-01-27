@@ -30,14 +30,4 @@ module.exports = {
     transformIgnorePatterns: [
         'node_modules/(?!react-native|jail-monkey|@sentry/react-native|react-navigation|@react-native-community/cameraroll)',
     ],
-    roots: [
-        '<rootDir>/app',
-    ],
-    testMatch: [
-        '**/__tests__/**/*.+(ts|tsx|js)',
-        '**/?(*.)+(spec|test).+(ts|tsx|js)',
-    ],
-    transform: {
-        '^.+\\.(ts|tsx)$': 'ts-jest',
-    },
 };
