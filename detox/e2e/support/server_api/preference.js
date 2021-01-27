@@ -38,7 +38,7 @@ export const apiSaveUserPreferences = async (userId, preferences = []) => {
 /**
  * Save the user's favorite channel preference.
  * @param {string} userId - the user ID
- * @param {Array} channelId - the channel id to be favorited
+ * @param {string} channelId - the channel id to be favorited
  * @return {string} returns {status} on success or {error, status} on error
  */
 export const apiSaveFavoriteChannelPreference = (userId, channelId) => {
