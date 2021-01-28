@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Store as ReduxStore} from 'redux';
+
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
-
 import {AppsBindings, AppCallTypes, AppFieldTypes} from '@mm-redux/constants/apps';
-
-import {GlobalState} from '@mm-redux/types/store';
 
 import {
     AppCall,
@@ -24,7 +23,6 @@ import {
     AutocompleteSuggestionWithComplete,
 } from '@mm-redux/types/apps';
 
-import {DispatchFunc} from '@mm-redux/types/actions';
 import {getPost} from '@mm-redux/selectors/entities/posts';
 import {getChannel, getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {Channel} from '@mm-redux/types/channels';
@@ -33,42 +31,23 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 
 import Store from '@store/store';
 
-// import {Constants} from 'utils/constants';
-// import {GlobalState} from 'types/store';
-const sendEphemeralPost = alert;
-// import {sendEphemeralPost} from 'actions/global_actions';
 import {doAppCall} from '@actions/apps';
-import {alertAttachmentFail} from '@utils/draft';
-// import * as Utils from 'utils/utils.jsx';
-
-const EXECUTE_CURRENT_COMMAND_ITEM_ID = '_execute_current_command';
-// const EXECUTE_CURRENT_COMMAND_ITEM_ID = Constants.Integrations.EXECUTE_CURRENT_COMMAND_ITEM_ID;
-
-export type StoreType = {
-    dispatch: DispatchFunc;
-    getState: () => GlobalState;
-}
 
 export default class AppCommandParser {
-    private store: StoreType;
+    private store: ReduxStore;
     private rootPostID: string;
     private channelID: string;
 
     fetchedForms: {[fullPretext: string]: AppForm} = {};
 
-    constructor(rootPostID = '', channelID = '') {
-        // this.store = store;
+    constructor(channelID = '', rootPostID = '') {
         this.rootPostID = rootPostID;
         this.channelID = channelID;
-        this.store = Store.redux;
+        this.store = Store.redux as ReduxStore;
     }
 
     // decorateSuggestionComplete applies the necessary modifications for a suggestion to be processed
     decorateSuggestionComplete = (pretext: string, choice: AutocompleteSuggestion): AutocompleteSuggestionWithComplete => {
-        // if (choice.complete && choice.complete.endsWith(EXECUTE_CURRENT_COMMAND_ITEM_ID)) {
-        //     return choice as AutocompleteSuggestionWithComplete;
-        // }
-
         // AutocompleteSuggestion.complete is required to be all text leading up to the current suggestion
         const words = pretext.split(' ');
         words.pop();
@@ -171,6 +150,12 @@ export default class AppCommandParser {
         };
     }
 
+    // setChannelContext sets the parser's channel id and root post id
+    public setChannelContext = (channelID: string, rootID: string) => {
+        this.channelID = channelID;
+        this.rootPostID = rootID;
+    }
+
     // fetchAppForm retrieves the form for the given subcommand
     fetchAppForm = async (subCommand: AppBinding): Promise<AppForm | null> => {
         if (!subCommand.call) {
@@ -212,8 +197,7 @@ export default class AppCommandParser {
         if (err.message) {
             errStr = err.message;
         }
-        sendEphemeralPost(errStr, '');
-
+        // alert(errStr);
         // TODO display error under the command line
     }
 
@@ -371,22 +355,6 @@ export default class AppCommandParser {
         return {
             ...binding?.call?.values,
             ...values,
-        };
-    }
-
-    // getSuggestionForExecute returns the "Execute Current Command" suggestion
-    getSuggestionForExecute = (pretext: string): AutocompleteSuggestion => {
-        let key = 'Ctrl';
-        // if (Utils.isMac()) {
-        //     key = '⌘';
-        // }
-
-        return {
-            complete: pretext + EXECUTE_CURRENT_COMMAND_ITEM_ID,
-            suggestion: '/Execute Current Command',
-            hint: '',
-            description: 'Select this option or use ' + key + '+Enter to execute the current command.',
-            iconData: EXECUTE_CURRENT_COMMAND_ITEM_ID,
         };
     }
 

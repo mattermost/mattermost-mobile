@@ -49,6 +49,11 @@ export default class SlashSuggestion extends PureComponent {
         lastCommandRequest: 0,
     };
 
+    constructor(props) {
+        super(props);
+        this.appCommandParser = new AppCommandParser(props.channelId, props.rootId);
+    }
+
     setActive(active) {
         this.setState({active});
     }
@@ -89,12 +94,12 @@ export default class SlashSuggestion extends PureComponent {
                 this.setLastCommandRequest(Date.now());
             }
 
-            let matches = this.getAppBaseCommandSuggestions(nextValue);
+            let matches = this.getAppBaseCommandSuggestions(nextValue, prevProps.channel_id, prevProps.rootId);
             matches = matches.concat(this.filterSlashSuggestions(nextValue.substring(1), nextCommands));
             this.updateSuggestions(matches);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            if (this.isAppCommand(nextValue, prevProps.rootId, prevProps.channel_id)) {
-                this.fetchAppCommandSuggestions(nextValue, prevProps.rootId, prevProps.channel_id).then(this.updateSuggestions);
+            if (this.isAppCommand(nextValue, prevProps.channel_id, prevProps.rootId)) {
+                this.fetchAppCommandSuggestions(nextValue, prevProps.channel_id, prevProps.rootId).then(this.updateSuggestions);
             } else if (nextSuggestions === prevProps.suggestions) {
                 const args = {
                     channel_id: prevProps.channelId,
@@ -120,19 +125,19 @@ export default class SlashSuggestion extends PureComponent {
         }
     }
 
-    isAppCommand = (pretext, rootID, channelID) => {
-        const parser = new AppCommandParser(rootID, channelID);
-        return parser.isAppCommand(pretext);
+    isAppCommand = (pretext, channelID, rootID) => {
+        this.appCommandParser.setChannelContext(channelID, rootID)
+        return this.appCommandParser.isAppCommand(pretext);
     }
 
-    fetchAppCommandSuggestions = async (pretext, rootID, channelID) => {
-        const parser = new AppCommandParser(rootID, channelID);
-        return parser.getSuggestionsForSubCommandsAndArguments(pretext);
+    fetchAppCommandSuggestions = async (pretext, channelID, rootID) => {
+        this.appCommandParser.setChannelContext(channelID, rootID)
+        return this.appCommandParser.getSuggestionsForSubCommandsAndArguments(pretext);
     }
 
-    getAppBaseCommandSuggestions = (pretext, rootID, channelID) => {
-        const parser = new AppCommandParser(rootID, channelID);
-        return parser.getSuggestionsForBaseCommands(pretext);
+    getAppBaseCommandSuggestions = (pretext, channelID, rootID) => {
+        this.appCommandParser.setChannelContext(channelID, rootID)
+        return this.appCommandParser.getSuggestionsForBaseCommands(pretext);
     }
 
     updateSuggestions = (matches) => {
