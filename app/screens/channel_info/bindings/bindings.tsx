@@ -58,7 +58,7 @@ type OptionProps = {
     currentChannel: Channel;
     currentUser: UserProfile;
     actions: {
-        doAppCall: (call: AppCall) => any;
+        doAppCall: (call: AppCall, intl: typeof intlShape) => any;
     };
     intl: typeof intlShape;
 }

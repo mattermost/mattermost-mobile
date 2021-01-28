@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Store as ReduxStore} from 'redux';
-
 import {getAppsBindings} from '@mm-redux/selectors/entities/apps';
 import {AppsBindings, AppCallTypes, AppFieldTypes} from '@mm-redux/constants/apps';
 
@@ -20,7 +18,6 @@ import {
     AutocompleteStaticSelect,
     AutocompleteUserSelect,
     AutocompleteChannelSelect,
-    AutocompleteSuggestionWithComplete,
 } from '@mm-redux/types/apps';
 
 import {getPost} from '@mm-redux/selectors/entities/posts';
@@ -32,9 +29,25 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import Store from '@store/store';
 
 import {doAppCall} from '@actions/apps';
+import {sendEphemeralPost} from '@actions/views/post';
+import {GlobalState} from '@mm-redux/types/store';
+import {DispatchFunc} from '@mm-redux/types/actions';
+
+type StoreType = {
+    getState: () => GlobalState;
+    dispatch: DispatchFunc;
+}
+
+type AutocompleteSuggestionWithComplete = {
+    Complete: string;
+    Suggestion: string;
+    Hint: string;
+    Description: string;
+    IconData: string;
+};
 
 export default class AppCommandParser {
-    private store: ReduxStore;
+    private store: StoreType;
     private rootPostID: string;
     private channelID: string;
 
@@ -43,7 +56,7 @@ export default class AppCommandParser {
     constructor(channelID = '', rootPostID = '') {
         this.rootPostID = rootPostID;
         this.channelID = channelID;
-        this.store = Store.redux as ReduxStore;
+        this.store = Store.redux as StoreType;
     }
 
     // decorateSuggestionComplete applies the necessary modifications for a suggestion to be processed
@@ -67,9 +80,9 @@ export default class AppCommandParser {
         return {
             Complete: suggestion.complete,
             Suggestion: suggestion.suggestion,
-            Hint: suggestion.hint,
-            Description: suggestion.description,
-            IconData: suggestion.iconData,
+            Hint: suggestion.hint || '',
+            Description: suggestion.description || '',
+            IconData: suggestion.iconData || '',
         };
     }
 
@@ -173,7 +186,8 @@ export default class AppCommandParser {
 
         let callResponse: AppCallResponse | undefined;
         try {
-            const res = await this.store.dispatch(doAppCall(payload)) as {data?: AppCallResponse, error?: Error};
+            // TODO: use intl
+            const res = await this.store.dispatch(doAppCall(payload, null)) as {data?: AppCallResponse, error?: Error};
             if (res.error) {
                 this.displayError(res.error);
                 return null;
@@ -198,8 +212,7 @@ export default class AppCommandParser {
             errStr = err.message;
         }
 
-        // eslint-disable-next-line no-alert
-        alert(errStr);
+        this.store.dispatch(sendEphemeralPost(errStr));
 
         // TODO display error under the command line
     }
@@ -229,8 +242,9 @@ export default class AppCommandParser {
                 result.push({
                     Suggestion: command,
                     Complete: command,
-                    Description: binding.description,
+                    Description: binding.description || '',
                     Hint: binding.hint || '',
+                    IconData: binding.icon || '',
                 });
             }
         }
@@ -260,8 +274,8 @@ export default class AppCommandParser {
             const fullText = pretext;
             const missing = this.getMissingFields(fullText, binding);
             if (missing.length === 0) {
-                const execute = this.getSuggestionForExecute(pretext);
-                suggestions = [execute, ...suggestions];
+                // const execute = this.getSuggestionForExecute(pretext);
+                // suggestions = [execute, ...suggestions];
             }
         }
 
@@ -469,7 +483,8 @@ export default class AppCommandParser {
 
         let res: {data?: AppCallResponse<AppSelectOption[]>, error?: any};
         try {
-            res = await this.store.dispatch(doAppCall<AppSelectOption[]>(payload));
+            // TODO: use intl
+            res = await this.store.dispatch(doAppCall<AppSelectOption[]>(payload, null));
         } catch (e) {
             return [{suggestion: `Error: ${e.message}`}];
         }
