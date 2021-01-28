@@ -10,7 +10,6 @@ import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {GlobalState} from '@mm-redux/types/store';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {DispatchFunc} from '@mm-redux/types/actions';
-import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 
 import {shouldProcessApps} from '@utils/apps';
 import {doAppCall} from '@actions/apps';
