@@ -31,6 +31,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getLastPostIndex} from '@mm-redux/utils/post_list';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {PERMALINK} from '@constants/screen';
 
 Animatable.initializeRegistryWithDefinitions({
     growOut: {
@@ -323,6 +324,7 @@ export default class Permalink extends PureComponent {
                     currentUserId={currentUserId}
                     lastViewedAt={0}
                     highlightPinnedOrFlagged={false}
+                    location={PERMALINK}
                 />
             );
         }
@@ -334,6 +336,7 @@ export default class Permalink extends PureComponent {
                 footerColor='transparent'
             >
                 <View
+                    testID='permalink.screen'
                     style={style.container}
                 >
                     <Animatable.View
@@ -380,6 +383,7 @@ export default class Permalink extends PureComponent {
                             onPress={this.handlePress}
                         >
                             <FormattedText
+                                testID='permalink.search.jump'
                                 id='mobile.search.jump'
                                 defautMessage='Jump to recent messages'
                                 style={style.jump}

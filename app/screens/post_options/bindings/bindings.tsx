@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {intlShape, injectIntl} from 'react-intl';
 
 import {isSystemMessage} from '@mm-redux/utils/post_utils';
 
@@ -12,17 +13,22 @@ import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
 
 type Props = {
-    bindings: AppBinding[];
-    theme: Theme;
-    post: Post;
-    currentUser: UserProfile;
-    closeWithAnimation: () => void;
+    bindings: AppBinding[],
+    theme: Theme,
+    post: Post,
+    currentUser: UserProfile,
+    closeWithAnimation: () => void,
+    shouldProcessApps: boolean,
     actions: {
-        doAppCall: (call: AppCall) => any;
-    };
+        doAppCall: (call: AppCall, intl: any) => void
+    }
 }
 
 const Bindings = (props: Props) => {
+    if (!props.shouldProcessApps) {
+        return null;
+    }
+
     const {bindings, post, ...optionProps} = props;
     if (bindings.length === 0) {
         return null;
@@ -55,13 +61,14 @@ type OptionProps = {
     theme: Theme,
     post: Post,
     currentUser: UserProfile,
-    closeWithAnimation: () => void;
+    closeWithAnimation: () => void,
+    intl: typeof intlShape,
     actions: {
-        doAppCall: (call: AppCall) => any;
-    };
+        doAppCall: (call: AppCall, intl: any) => void,
+    },
 }
 
-const Option = (props: OptionProps) => {
+const Option = injectIntl((props: OptionProps) => {
     const onPress = () => {
         const {closeWithAnimation, post} = props;
 
@@ -75,7 +82,7 @@ const Option = (props: OptionProps) => {
                 post_id: post.id,
                 user_id: props.currentUser.id,
             },
-        });
+        }, props.intl);
         closeWithAnimation();
     };
 
@@ -88,4 +95,4 @@ const Option = (props: OptionProps) => {
             theme={theme}
         />
     );
-};
+});

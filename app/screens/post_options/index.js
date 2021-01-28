@@ -4,6 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
+import {addReaction} from '@actions/views/emoji';
+import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {THREAD, CHANNEL} from '@constants/screen';
 import {
     deletePost,
     flagPost,
@@ -23,11 +26,8 @@ import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId, getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
 import {canEditPost} from '@mm-redux/utils/post_utils';
 import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
-
-import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
-import {THREAD} from 'app/constants/screen';
-import {addReaction} from 'app/actions/views/emoji';
-import {getDimensions} from 'app/selectors/device';
+import {getDimensions} from '@selectors/device';
+import {selectEmojisCountFromReactions} from '@selectors/emojis';
 
 import PostOptions from './post_options';
 
@@ -56,6 +56,7 @@ export function makeMapStateToProps() {
         let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
+        let showAppOptions = true;
 
         let canPost = true;
         if (isMinimumServerVersion(serverVersion, 5, 22)) {
@@ -81,6 +82,10 @@ export function makeMapStateToProps() {
 
         if (ownProps.location === THREAD) {
             canReply = false;
+        }
+
+        if (ownProps.location !== CHANNEL) {
+            showAppOptions = false;
         }
 
         if (channelIsArchived || ownProps.channelIsReadOnly) {
@@ -121,17 +126,13 @@ export function makeMapStateToProps() {
             canCopyText = true;
         }
 
-        if (reactions && Object.values(reactions).length >= MAX_ALLOWED_REACTIONS) {
-            canAddReaction = false;
-        }
-
         if (!isMinimumServerVersion(serverVersion, 5, 18) || channelIsArchived) {
             canMarkAsUnread = false;
         }
 
         return {
             ...getDimensions(state),
-            canAddReaction,
+            canAddReaction: canAddReaction && selectEmojisCountFromReactions(reactions) < MAX_ALLOWED_REACTIONS,
             canReply,
             canCopyPermalink,
             canCopyText,
@@ -143,6 +144,7 @@ export function makeMapStateToProps() {
             canMarkAsUnread,
             currentTeamUrl: getCurrentTeamUrl(state),
             currentUserId,
+            showAppOptions,
             theme: getTheme(state),
         };
     };

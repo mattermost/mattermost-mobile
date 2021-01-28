@@ -49,6 +49,18 @@ class SelectTeamScreen {
     getTeamIconContentAtIndex = (index) => {
         return element(by.id(this.testID.teamItemIconContent)).atIndex(index);
     }
+
+    hasTeamDisplayNameAtIndex = async (index, teamDisplayName) => {
+        await expect(
+            this.getTeamDisplayNameAtIndex(index),
+        ).toHaveText(teamDisplayName);
+    }
+
+    hasTeamIconContentAtIndex = async (index, teamIconContent) => {
+        await expect(
+            this.getTeamIconContentAtIndex(index),
+        ).toHaveText(teamIconContent);
+    }
 }
 
 const selectTeamScreen = new SelectTeamScreen();

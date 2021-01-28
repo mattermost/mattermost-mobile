@@ -40,6 +40,7 @@ import telemetry from '@telemetry';
 import {isDirectChannelVisible, isGroupChannelVisible, getChannelSinceValue} from '@utils/channels';
 import {isPendingPost} from '@utils/general';
 import {fetchAppBindings} from '@mm-redux/actions/apps';
+import {shouldProcessApps} from '@utils/apps';
 
 const MAX_RETRIES = 3;
 
@@ -213,10 +214,14 @@ export function handleSelectChannel(channelId) {
 
             dispatch(batchActions(actions, 'BATCH_SWITCH_CHANNEL'));
 
-            //TODO improve sync method
-            dispatch(fetchAppBindings(currentUserId, channelId));
+            if (shouldProcessApps(state)) {
+                //TODO improve sync method
+                dispatch(fetchAppBindings(currentUserId, channelId));
+            }
             console.log('channel switch to', channel?.display_name, channelId, (Date.now() - dt), 'ms'); //eslint-disable-line
         }
+
+        return {data: true};
     };
 }
 
@@ -226,7 +231,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
         const {teams: currentTeams, currentTeamId} = state.entities.teams;
         const currentTeam = currentTeams[currentTeamId];
         const currentTeamName = currentTeam?.name;
-        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName));
+        const response = await dispatch(getChannelByNameAndTeamName(teamName || currentTeamName, channelName, true));
         const {error, data: channel} = response;
         const currentChannelId = getCurrentChannelId(state);
 
@@ -262,7 +267,7 @@ export function handleSelectChannelByName(channelName, teamName, errorHandler) {
             dispatch(handleSelectChannel(channel.id));
         }
 
-        return null;
+        return {data: true};
     };
 }
 

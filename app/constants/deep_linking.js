@@ -3,6 +3,8 @@
 
 export default {
     CHANNEL: 'channel',
+    DMCHANNEL: 'dmchannel',
+    GROUPCHANNEL: 'groupchannel',
     PERMALINK: 'permalink',
     OTHER: 'other',
 };

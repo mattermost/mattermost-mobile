@@ -41,6 +41,7 @@ describe('edit_profile', () => {
         },
         commandType: 'ShowModal',
         componentId: 'component-id',
+        isLandscape: false,
     };
 
     test('should match snapshot', async () => {

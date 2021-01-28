@@ -129,3 +129,16 @@ export const selectEmojisBySection = createSelector(
         return emoticons;
     },
 );
+
+export const selectEmojisCountFromReactions = createSelector(
+    (reactions) => reactions,
+    (reactions) => {
+        if (reactions) {
+            const names = Object.values(reactions).map((r) => r.emoji_name);
+            const diff = new Set(names);
+            return diff.size;
+        }
+
+        return 0;
+    },
+);

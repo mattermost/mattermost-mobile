@@ -92,6 +92,7 @@ export default class Gallery extends PureComponent {
                     text: title,
                 },
                 backButton: {
+                    enableMenu: false,
                     visible: true,
                     icon: closeButton,
                 },
@@ -128,8 +129,15 @@ export default class Gallery extends PureComponent {
         this.setState({index}, this.initHeader);
     };
 
-    handleTapped = () => {
-        const visible = this.footer.current?.getWrappedInstance()?.toggle();
+    handleTapped = (display) => {
+        let visible;
+        if (display === undefined) {
+            visible = this.footer.current?.getWrappedInstance()?.toggle();
+        } else {
+            visible = display;
+            this.footer.current?.getWrappedInstance()?.setVisible(display);
+        }
+
         const options = {
             topBar: {
                 background: {

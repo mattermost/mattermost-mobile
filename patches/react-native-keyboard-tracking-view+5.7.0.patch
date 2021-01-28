@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
-index 1333a10..8f59f3c 100644
+index 1333a10..6922a17 100644
 --- a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 +++ b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 @@ -23,7 +23,7 @@
@@ -197,7 +197,7 @@ index 1333a10..8f59f3c 100644
              }
          }
          else if(self.scrollBehavior == KeyboardTrackingScrollBehaviorFixedOffset && !self.isDraggingScrollView)
-@@ -422,16 +459,24 @@ - (void)_updateScrollViewInsets
+@@ -422,16 +459,21 @@ - (void)_updateScrollViewInsets
              self.scrollViewToManage.contentOffset = CGPointMake(originalOffset.x, originalOffset.y + insetsDiff);
          }
          
@@ -206,12 +206,8 @@ index 1333a10..8f59f3c 100644
 -        {
 -            insets.top = bottomInset;
 +        CGFloat kHeight = _observingInputAccessoryView.keyboardHeight;
-+        if ((_observingInputAccessoryView.keyboardState == KeyboardStateShown || _observingInputAccessoryView.keyboardState == KeyboardStateWillShow) && kHeight == 0) {
-+            if (@available(iOS 14.2, *)) {
-+             // Do nothing
-+            } else {
-+                kHeight= bottomSafeArea;
-+            }
++        if (kHeight != 0 && (_observingInputAccessoryView.keyboardState == KeyboardStateShown || _observingInputAccessoryView.keyboardState == KeyboardStateWillShow)) {
++                kHeight -= bottomSafeArea;
          }
 -        else
 -        {
@@ -223,14 +219,15 @@ index 1333a10..8f59f3c 100644
 +        self.scrollViewToManage.frame = frame;
 +
 +        if (self.accessoriesContainer) {
-+            self.accessoriesContainer.bounds =  CGRectMake(self.accessoriesContainer.bounds.origin.x, positionY,
++            CGFloat containerPositionY = self.normalList ? 0 : _observingInputAccessoryView.keyboardHeight;
++            self.accessoriesContainer.bounds =  CGRectMake(self.accessoriesContainer.bounds.origin.x, containerPositionY,
 +                                                           self.accessoriesContainer.bounds.size.width, self.accessoriesContainer.bounds.size.height);
          }
 -        self.scrollViewToManage.scrollIndicatorInsets = insets;
      }
  }
  
-@@ -448,7 +493,6 @@ -(void)addBottomViewIfNecessary
+@@ -448,7 +490,6 @@ -(void)addBottomViewIfNecessary
      if (self.addBottomView && _bottomView == nil)
      {
          _bottomView = [UIView new];
@@ -238,7 +235,7 @@ index 1333a10..8f59f3c 100644
          [self addSubview:_bottomView];
          [self updateBottomViewFrame];
      }
-@@ -467,6 +511,12 @@ -(void)updateBottomViewFrame
+@@ -467,6 +508,12 @@ -(void)updateBottomViewFrame
      }
  }
  
@@ -251,7 +248,7 @@ index 1333a10..8f59f3c 100644
  #pragma mark - safe area
  
  -(void)safeAreaInsetsDidChange
-@@ -510,7 +560,7 @@ -(void)updateTransformAndInsets
+@@ -510,7 +557,7 @@ -(void)updateTransformAndInsets
      CGFloat accessoryTranslation = MIN(-bottomSafeArea, -_observingInputAccessoryView.keyboardHeight);
      
      if (_observingInputAccessoryView.keyboardHeight <= bottomSafeArea) {
@@ -260,7 +257,7 @@ index 1333a10..8f59f3c 100644
      } else if (_observingInputAccessoryView.keyboardState != KeyboardStateWillHide) {
          _bottomViewHeight = 0;
      }
-@@ -582,6 +632,8 @@ - (void)scrollViewDidScroll:(UIScrollView *)scrollView
+@@ -582,6 +629,8 @@ - (void)scrollViewDidScroll:(UIScrollView *)scrollView
  - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
  {
      self.isDraggingScrollView = YES;
@@ -269,7 +266,7 @@ index 1333a10..8f59f3c 100644
  }
  
  - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
-@@ -592,6 +644,15 @@ - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoi
+@@ -592,6 +641,15 @@ - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoi
  - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
  {
      self.isDraggingScrollView = NO;
@@ -285,7 +282,7 @@ index 1333a10..8f59f3c 100644
  }
  
  - (CGFloat)getKeyboardHeight
-@@ -634,6 +695,12 @@ @implementation KeyboardTrackingViewManager
+@@ -634,6 +692,12 @@ @implementation KeyboardTrackingViewManager
  RCT_REMAP_VIEW_PROPERTY(addBottomView, addBottomView, BOOL)
  RCT_REMAP_VIEW_PROPERTY(scrollToFocusedInput, scrollToFocusedInput, BOOL)
  RCT_REMAP_VIEW_PROPERTY(allowHitsOutsideBounds, allowHitsOutsideBounds, BOOL)
@@ -298,7 +295,7 @@ index 1333a10..8f59f3c 100644
  
  + (BOOL)requiresMainQueueSetup
  {
-@@ -654,6 +721,20 @@ - (UIView *)view
+@@ -654,6 +718,20 @@ - (UIView *)view
      return [[KeyboardTrackingView alloc] init];
  }
  

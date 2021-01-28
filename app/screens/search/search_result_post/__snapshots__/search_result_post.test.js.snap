@@ -4,6 +4,7 @@ exports[`SearchResultPost should match snapshot 1`] = `
 <Connect(Post)
   highlightPinnedOrFlagged={false}
   isSearchResult={true}
+  location="search"
   managedConfig={Object {}}
   onHashtagPress={[MockFunction]}
   onPermalinkPress={[MockFunction]}
@@ -15,6 +16,6 @@ exports[`SearchResultPost should match snapshot 1`] = `
   showFullDate={false}
   skipFlaggedHeader={false}
   skipPinnedHeader={false}
-  testID="search_result_post.post.post-id"
+  testID="search_result_post.post"
 />
 `;

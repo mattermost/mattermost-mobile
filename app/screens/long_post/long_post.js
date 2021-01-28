@@ -115,7 +115,6 @@ export default class LongPost extends PureComponent {
             theme,
         } = this.props;
         const style = getStyleSheet(theme);
-        const testID = `long_post.post.${postId}`;
 
         return (
             <SafeAreaView
@@ -156,7 +155,7 @@ export default class LongPost extends PureComponent {
                         </View>
                         <ScrollView style={style.postList}>
                             <Post
-                                testID={testID}
+                                testID='long_post.post'
                                 postId={postId}
                                 shouldRenderReplyButton={false}
                                 onPress={this.handlePress}

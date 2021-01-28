@@ -25,8 +25,10 @@ export const AppCallTypes: { [name: string]: AppCallType } = {
 };
 
 export const AppExpandLevels: { [name: string]: AppExpandLevel } = {
-    EXPAND_ALL: 'All',
-    EXPAND_SUMMARY: 'Summary',
+    EXPAND_DEFAULT: '',
+    EXPAND_NONE: 'none',
+    EXPAND_ALL: 'all',
+    EXPAND_SUMMARY: 'summary',
 };
 
 export const AppFieldTypes: { [name: string]: AppFieldType } = {

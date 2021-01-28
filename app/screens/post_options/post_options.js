@@ -44,6 +44,7 @@ export default class PostOptions extends PureComponent {
         canEdit: PropTypes.bool,
         canMarkAsUnread: PropTypes.bool, //#backwards-compatibility:5.18v
         canEditUntil: PropTypes.number.isRequired,
+        showAppOptions: PropTypes.bool.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         currentUserId: PropTypes.string.isRequired,
         deviceHeight: PropTypes.number.isRequired,
@@ -236,6 +237,10 @@ export default class PostOptions extends PureComponent {
     };
 
     getAppsOptions = () => {
+        if (!this.props.showAppOptions) {
+            return null;
+        }
+
         const {post} = this.props;
         return (
             <Bindings

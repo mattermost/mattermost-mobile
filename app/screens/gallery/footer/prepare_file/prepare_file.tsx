@@ -75,8 +75,7 @@ const PrepareFile = forwardRef<PrepareFileRef, PrepareFileProps>(({intl, isLands
 
         let path;
         try {
-            const prefix = Platform.OS === 'android' ? 'file:/' : '';
-            const exist = await RNFetchBlob.fs.exists(`${prefix}${localPath}`);
+            const exist = await RNFetchBlob.fs.exists(localPath);
             if (exist) {
                 path = localPath;
             } else {

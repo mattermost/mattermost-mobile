@@ -140,9 +140,9 @@ export function saveTheme(teamId: string, theme: {}): ActionFunc {
 
 export function deleteTeamSpecificThemes(): ActionFunc {
     return async (dispatch: DispatchFunc, getState: GetStateFunc) => {
-        const state = getState();
-
         const getCategory: (state: any, preferenceId: string) => Array<PreferenceType> = makeGetCategory();
+
+        const state = getState();
         const themePreferences: Array<PreferenceType> = getCategory(state, Preferences.CATEGORY_THEME);
         const currentUserId = getCurrentUserId(state);
 
