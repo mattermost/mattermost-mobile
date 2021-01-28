@@ -193,10 +193,10 @@ export default class AppCommandParser {
 
     // displayError shows an error that was caught by the parser
     displayError = (err: any): void => {
-        let errStr = err as string;
-        if (err.message) {
-            errStr = err.message;
-        }
+        // let errStr = err as string;
+        // if (err.message) {
+        //     errStr = err.message;
+        // }
         // alert(errStr);
         // TODO display error under the command line
     }

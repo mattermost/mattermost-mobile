@@ -94,12 +94,12 @@ export default class SlashSuggestion extends PureComponent {
                 this.setLastCommandRequest(Date.now());
             }
 
-            let matches = this.getAppBaseCommandSuggestions(nextValue, prevProps.channel_id, prevProps.rootId);
+            let matches = this.getAppBaseCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId);
             matches = matches.concat(this.filterSlashSuggestions(nextValue.substring(1), nextCommands));
             this.updateSuggestions(matches);
         } else if (isMinimumServerVersion(Client4.getServerVersion(), 5, 24)) {
-            if (this.isAppCommand(nextValue, prevProps.channel_id, prevProps.rootId)) {
-                this.fetchAppCommandSuggestions(nextValue, prevProps.channel_id, prevProps.rootId).then(this.updateSuggestions);
+            if (this.isAppCommand(nextValue, prevProps.channelId, prevProps.rootId)) {
+                this.fetchAppCommandSuggestions(nextValue, prevProps.channelId, prevProps.rootId).then(this.updateSuggestions);
             } else if (nextSuggestions === prevProps.suggestions) {
                 const args = {
                     channel_id: prevProps.channelId,
@@ -126,17 +126,17 @@ export default class SlashSuggestion extends PureComponent {
     }
 
     isAppCommand = (pretext, channelID, rootID) => {
-        this.appCommandParser.setChannelContext(channelID, rootID)
+        this.appCommandParser.setChannelContext(channelID, rootID);
         return this.appCommandParser.isAppCommand(pretext);
     }
 
     fetchAppCommandSuggestions = async (pretext, channelID, rootID) => {
-        this.appCommandParser.setChannelContext(channelID, rootID)
+        this.appCommandParser.setChannelContext(channelID, rootID);
         return this.appCommandParser.getSuggestionsForSubCommandsAndArguments(pretext);
     }
 
     getAppBaseCommandSuggestions = (pretext, channelID, rootID) => {
-        this.appCommandParser.setChannelContext(channelID, rootID)
+        this.appCommandParser.setChannelContext(channelID, rootID);
         return this.appCommandParser.getSuggestionsForBaseCommands(pretext);
     }
 
