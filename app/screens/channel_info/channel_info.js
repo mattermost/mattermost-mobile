@@ -186,6 +186,7 @@ export default class ChannelInfo extends PureComponent {
                 <StatusBar/>
                 <ScrollView
                     style={style.scrollView}
+                    testID='channel_info.scroll_view'
                 >
                     {Boolean(currentChannel?.id) &&
                     <ChannelInfoHeader
@@ -212,10 +213,12 @@ export default class ChannelInfo extends PureComponent {
                     <View style={style.footer}>
                         <Leave
                             close={this.close}
+                            testID='channel_info.leave.action'
                             theme={theme}
                         />
                         <Archive
                             close={this.close}
+                            testID='channel_info.archive.action'
                             theme={theme}
                         />
                     </View>
