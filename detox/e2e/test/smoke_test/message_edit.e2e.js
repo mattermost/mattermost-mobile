@@ -7,7 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Autocomplete} from '@support/ui/component';
 import {
     ChannelScreen,
     EditPostScreen,
@@ -18,7 +17,7 @@ import {
     Setup,
 } from '@support/server_api';
 
-describe('Autocomplete', () => {
+describe('Message Edit', () => {
     let testChannel;
 
     beforeAll(async () => {
@@ -34,11 +33,16 @@ describe('Autocomplete', () => {
         await ChannelScreen.logout();
     });
 
-    it('MM-T3391 should render autocomplete in post edit screen', async () => {
+    it('MM-T3228 should be able to edit a message and save', async () => {
         const {
+            getPostListPostItem,
             openPostOptionsFor,
             postMessage,
         } = ChannelScreen;
+        const {
+            editPostInput,
+            editPostSaveButton,
+        } = EditPostScreen;
 
         // # Post a message
         const testMessage = Date.now().toString();
@@ -49,17 +53,14 @@ describe('Autocomplete', () => {
         await openPostOptionsFor(post.id, testMessage);
         await EditPostScreen.open();
 
-        const {atMentionSuggestionList} = Autocomplete;
-        const {editPostInput, closeEditPostButton} = EditPostScreen;
+        // # Edit post and save
+        const additionalText = ' additional text';
+        await editPostInput.typeText(additionalText);
+        await editPostSaveButton.tap();
 
-        // # Open autocomplete
-        await expect(atMentionSuggestionList).not.toExist();
-        await editPostInput.typeText(' @');
-
-        // * Expect at_mention autocomplete to render
-        await expect(atMentionSuggestionList).toExist();
-
-        // # Close edit post screen
-        await closeEditPostButton.tap();
+        // * Verify post is edited
+        await ChannelScreen.toBeVisible();
+        const {postListPostItem} = await getPostListPostItem(post.id, `${testMessage}${additionalText} (edited)`);
+        await expect(postListPostItem).toBeVisible();
     });
 });

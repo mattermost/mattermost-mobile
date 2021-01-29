@@ -47,12 +47,13 @@ export default class EditPost extends PureComponent {
 
     leftButton = {
         id: 'close-edit-post',
-        testID: 'edit_post.close',
+        testID: 'close.edit_post.button',
     };
 
     rightButton = {
         id: 'edit-post',
         showAsAction: 'always',
+        testID: 'edit_post.save.button',
     };
 
     constructor(props, context) {

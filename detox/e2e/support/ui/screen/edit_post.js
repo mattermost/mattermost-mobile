@@ -8,12 +8,14 @@ class EditPostScreen {
     testID = {
         editPostScreen: 'edit_post.screen',
         editPostInput: 'edit_post.input',
-        editPostClose: 'edit_post.close',
+        editPostSaveButton: 'edit_post.save.button',
+        closeEditPostButton: 'close.edit_post.button',
     }
 
     editPostScreen = element(by.id(this.testID.editPostScreen));
     editPostInput = element(by.id(this.testID.editPostInput));
-    editPostClose = element(by.id(this.testID.editPostClose));
+    editPostSaveButton = element(by.id(this.testID.editPostSaveButton));
+    closeEditPostButton = element(by.id(this.testID.closeEditPostButton));
 
     toBeVisible = async () => {
         if (isAndroid()) {
