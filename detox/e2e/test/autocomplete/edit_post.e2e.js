@@ -50,11 +50,14 @@ describe('Autocomplete', () => {
         await EditPostScreen.open();
 
         const {atMentionSuggestionList} = Autocomplete;
-        const {editPostInput, closeEditPostButton} = EditPostScreen;
+        const {
+            closeEditPostButton,
+            messageInput,
+        } = EditPostScreen;
 
         // # Open autocomplete
         await expect(atMentionSuggestionList).not.toExist();
-        await editPostInput.typeText(' @');
+        await messageInput.typeText(' @');
 
         // * Expect at_mention autocomplete to render
         await expect(atMentionSuggestionList).toExist();

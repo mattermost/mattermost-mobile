@@ -267,7 +267,7 @@ export default class EditPost extends PureComponent {
                         {displayError}
                         <View style={[inputContainerStyle, {height}]}>
                             <TextInputWithLocalizedPlaceholder
-                                testID='edit_post.input'
+                                testID='edit_post.message.input'
                                 ref={this.messageRef}
                                 value={message}
                                 blurOnSubmit={false}

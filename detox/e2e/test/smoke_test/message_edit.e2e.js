@@ -40,8 +40,8 @@ describe('Message Edit', () => {
             postMessage,
         } = ChannelScreen;
         const {
-            editPostInput,
-            editPostSaveButton,
+            messageInput,
+            saveButton,
         } = EditPostScreen;
 
         // # Post a message
@@ -55,8 +55,8 @@ describe('Message Edit', () => {
 
         // # Edit post and save
         const additionalText = ' additional text';
-        await editPostInput.typeText(additionalText);
-        await editPostSaveButton.tap();
+        await messageInput.typeText(additionalText);
+        await saveButton.tap();
 
         // * Verify post is edited
         await ChannelScreen.toBeVisible();
