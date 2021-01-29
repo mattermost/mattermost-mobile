@@ -19,7 +19,7 @@
     "@sentry/react-native": "2.1.0",
     "analytics-react-native": "1.2.0",
     "commonmark": "github:mattermost/commonmark.js#d716e1c89e0a6721051df7bc74ad7683e1ae438f",
-    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",
+    "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#81af294317ebe19b5cc195d7fbc4f4a58177854c",
     "core-js": "3.8.2",
     "deep-equal": "2.0.5",
     "deepmerge": "4.2.2",
