@@ -15,6 +15,7 @@ exports[`UserListRow should match snapshot 1`] = `
     enabled={true}
     id="21345"
     onPress={[Function]}
+    testID="custom_list.user_item"
   >
     <View
       style={
@@ -40,6 +41,7 @@ exports[`UserListRow should match snapshot 1`] = `
           "marginLeft": 10,
         }
       }
+      testID="custom_list.user_item.21345"
     >
       <View>
         <View
@@ -58,6 +60,7 @@ exports[`UserListRow should match snapshot 1`] = `
                 "fontSize": 15,
               }
             }
+            testID="custom_list.user_item.display_username"
           >
             @user
           </Text>
@@ -147,6 +150,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     enabled={true}
     id="21345"
     onPress={[Function]}
+    testID="custom_list.user_item"
   >
     <View
       style={
@@ -172,6 +176,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
           "marginLeft": 10,
         }
       }
+      testID="custom_list.user_item.21345"
     >
       <View>
         <View
@@ -190,6 +195,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
                 "fontSize": 15,
               }
             }
+            testID="custom_list.user_item.display_username"
           />
           <BotTag
             show={false}
@@ -277,6 +283,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     enabled={true}
     id="21345"
     onPress={[Function]}
+    testID="custom_list.user_item"
   >
     <View
       style={
@@ -302,6 +309,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
           "marginLeft": 10,
         }
       }
+      testID="custom_list.user_item.21345"
     >
       <View>
         <View
@@ -320,6 +328,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
                 "fontSize": 15,
               }
             }
+            testID="custom_list.user_item.display_username"
           >
             @user
           </Text>
@@ -420,6 +429,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
     enabled={true}
     id="21345"
     onPress={[Function]}
+    testID="custom_list.user_item"
   >
     <View
       style={
@@ -445,6 +455,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
           "marginLeft": 10,
         }
       }
+      testID="custom_list.user_item.21345"
     >
       <View>
         <View
@@ -463,6 +474,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
                 "fontSize": 15,
               }
             }
+            testID="custom_list.user_item.display_username"
           >
             @user
           </Text>

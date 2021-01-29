@@ -8,7 +8,8 @@ class ChannelInfoScreen {
     testID = {
         channelInfoScreen: 'channel_info.screen',
         closeChannelInfoButton: 'close.channel_info.button',
-        channelIconGMMemberCount: 'channel_icon.gm_member_count',
+        headerChannelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
+        headerDisplayName: 'channel_info.header.display_name',
         favoritePreferenceAction: 'channel_info.favorite.action',
         mutePreferenceAction: 'channel_info.mute.action',
         ignoreMentionsPreferenceAction: 'channel_info.ignore_mentions.action',
@@ -22,7 +23,8 @@ class ChannelInfoScreen {
 
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
     closeChannelInfoButton = element(by.id(this.testID.closeChannelInfoButton));
-    channelIconGMMemberCount = element(by.id(this.testID.channelIconGMMemberCount));
+    headerChannelIconGMMemberCount = element(by.id(this.testID.headerChannelIconGMMemberCount));
+    headerDisplayName = element(by.id(this.testID.headerDisplayName));
     favoritePreferenceAction = element(by.id(this.testID.favoritePreferenceAction));
     mutePreferenceAction = element(by.id(this.testID.mutePreferenceAction));
     ignoreMentionsPreferenceAction = element(by.id(this.testID.ignoreMentionsPreferenceAction));
