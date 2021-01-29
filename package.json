@@ -18,7 +18,7 @@
     "@rudderstack/rudder-sdk-react-native": "1.0.4",
     "@sentry/react-native": "2.1.0",
     "analytics-react-native": "1.2.0",
-    "commonmark": "github:mattermost/commonmark.js#f6ab98dede6ce4b4e7adea140ac77249bfb2d6ce",
+    "commonmark": "github:mattermost/commonmark.js#d716e1c89e0a6721051df7bc74ad7683e1ae438f",
     "commonmark-react-renderer": "github:mattermost/commonmark-react-renderer#3a2ac19cab725ad28b170fdc1d397dddedcf87eb",
     "core-js": "3.8.2",
     "deep-equal": "2.0.5",
