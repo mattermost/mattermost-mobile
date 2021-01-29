@@ -80,11 +80,11 @@ export function getChannelSinceValue(state, channelId, postIds) {
 export function privateChannelJoinPrompt(channel, intl) {
     return new Promise((resolve) => {
         Alert.alert(
-            intl?.formatMessage({
+            intl.formatMessage({
                 id: 'permalink.show_dialog_warn.title',
                 defaultMessage: 'Join private channel',
             }),
-            intl?.formatMessage({
+            intl.formatMessage({
                 id: 'permalink.show_dialog_warn.description',
                 defaultMessage: 'You are about to join {channel} without explicitly being added by the channel admin. Are you sure you wish to join this private channel?',
             }, {
@@ -92,7 +92,7 @@ export function privateChannelJoinPrompt(channel, intl) {
             }),
             [
                 {
-                    text: intl?.formatMessage({
+                    text: intl.formatMessage({
                         id: 'permalink.show_dialog_warn.cancel',
                         defaultMessage: 'Cancel',
                     }),
@@ -103,7 +103,7 @@ export function privateChannelJoinPrompt(channel, intl) {
                     },
                 },
                 {
-                    text: intl?.formatMessage({
+                    text: intl.formatMessage({
                         id: 'permalink.show_dialog_warn.join',
                         defaultMessage: 'Join',
                     }),
