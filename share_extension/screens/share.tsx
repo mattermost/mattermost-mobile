@@ -7,7 +7,8 @@ import {injectIntl, intlShape} from 'react-intl';
 import {Alert, BackHandler, NativeModules, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 
-import {MAX_FILE_COUNT, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
+import {maxFileCount} from '@utils/max_file';
+import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {Client4} from '@mm-redux/client';
 import {Preferences} from '@mm-redux/constants';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
@@ -63,7 +64,7 @@ const Share = ({intl}: ShareProps) => {
     const showPostButton = (error?: string, text?: string, extensionFiles?: Array<ShareFileInfo>, calculatedSize?: number) => {
         const files = extensionFiles || state.files;
         const totalSize = calculatedSize || state.totalSize;
-        const filesOK = files.length ? files.length <= MAX_FILE_COUNT : false;
+        const filesOK = files.length ? files.length <= maxFileCount() : false;
         const sizeOK = totalSize ? totalSize <= maxFileSize : false;
 
         if ((!error && ((filesOK && sizeOK) || text?.length)) && team?.id && channel?.id) {

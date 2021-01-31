@@ -16,7 +16,8 @@ import {intlShape} from 'react-intl';
 import RNFetchBlob from 'rn-fetch-blob';
 
 import FormattedText from '@components/formatted_text';
-import {MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
+import {maxFileCount} from '@utils/max_file';
+import {MAX_FILE_COUNT_WARNING, UPLOAD_FILES, PASTE_FILES} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 import EphemeralStore from '@store/ephemeral_store';
@@ -93,7 +94,7 @@ export default class Uploads extends PureComponent {
                 this.showOrHideContainer();
             }
 
-            if (prevProps.files.length === MAX_FILE_COUNT && this.state.showFileMaxWarning) {
+            if (prevProps.files.length === maxFileCount() && this.state.showFileMaxWarning) {
                 this.hideError();
             }
         }
@@ -170,7 +171,7 @@ export default class Uploads extends PureComponent {
         }
 
         const {canUploadFiles, maxFileSize} = this.props;
-        const availableCount = MAX_FILE_COUNT - this.props.files.length;
+        const availableCount = maxFileCount() - this.props.files.length;
 
         if (!canUploadFiles) {
             this.handleUploadDisabled();
@@ -337,7 +338,7 @@ export default class Uploads extends PureComponent {
                             <FormattedText
                                 style={style.warning}
                                 id='mobile.file_upload.max_warning'
-                                values={{maxFileCount: MAX_FILE_COUNT}}
+                                values={{maxFileCount: maxFileCount()}}
                                 defaultMessage='Uploads limited to {maxFileCount} files maximum.'
                             />
                         )}

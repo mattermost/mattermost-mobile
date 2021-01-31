@@ -12,7 +12,8 @@ import Permissions from 'react-native-permissions';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {NavigationTypes} from '@constants';
-import {ICON_SIZE, MAX_FILE_COUNT, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
+import {maxFileCount as maxFileCountHelper} from '@utils/max_file';
+import {ICON_SIZE, MAX_FILE_COUNT_WARNING} from '@constants/post_draft';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {changeOpacity} from '@utils/theme';
 
@@ -30,7 +31,7 @@ export default class FileQuickAction extends PureComponent {
 
     static defaultProps = {
         fileCount: 0,
-        maxFileCount: MAX_FILE_COUNT,
+        maxFileCount: maxFileCountHelper(),
     };
 
     static contextTypes = {
