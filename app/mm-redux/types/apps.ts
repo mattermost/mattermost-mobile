@@ -180,3 +180,10 @@ export type AutocompleteDynamicSelect = AutocompleteElement & {
 export type AutocompleteUserSelect = AutocompleteElement & {}
 
 export type AutocompleteChannelSelect = AutocompleteElement & {}
+
+export type PostEmbed = {
+    app_id: string;
+    title: string;
+    text: string;
+    bindings?: AppBinding[];
+}
