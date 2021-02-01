@@ -73,6 +73,7 @@ export default class PostBody extends PureComponent {
         theme: PropTypes.object,
         location: PropTypes.string,
         mentionKeys: PropTypes.array,
+        shouldProcessApps: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -271,13 +272,14 @@ export default class PostBody extends PureComponent {
             onPermalinkPress,
             post,
             postProps,
+            shouldProcessApps,
         } = this.props;
 
         if (isSystemMessage && !isPostEphemeral) {
             return null;
         }
 
-        if (!metadata?.embeds?.length) {
+        if (!metadata?.embeds?.length && !(shouldProcessApps && postProps.app_bindings)) {
             return null;
         }
 
@@ -291,7 +293,7 @@ export default class PostBody extends PureComponent {
                 blockStyles={blockStyles}
                 message={message}
                 metadata={metadata}
-                postId={post.id}
+                post={post}
                 postProps={postProps}
                 textStyles={textStyles}
                 isReplyPost={isReplyPost}

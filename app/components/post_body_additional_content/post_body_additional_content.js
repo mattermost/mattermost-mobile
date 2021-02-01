@@ -23,6 +23,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink, tryOpenURL} from '@utils/url';
+import AppEmbeds from '@components/app_embeds';
 
 const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
 const MAX_YOUTUBE_IMAGE_WIDTH = 360;
@@ -48,11 +49,12 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         openGraphData: PropTypes.object,
-        postId: PropTypes.string.isRequired,
+        post: PropTypes.object.isRequired,
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         textStyles: PropTypes.object,
+        shouldProcessApps: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -116,7 +118,8 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     getFileInfo = () => {
         let {link} = this.props;
         const {originalHeight, originalWidth, uri} = this.state;
-        const {expandedLink, postId} = this.props;
+        const {expandedLink, post} = this.props;
+        const postId = post.id;
         if (expandedLink) {
             link = expandedLink;
         }
@@ -338,7 +341,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
     renderMessageAttachment = () => {
         const {
-            postId,
+            post,
             postProps,
             baseTextStyle,
             blockStyles,
@@ -350,6 +353,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             textStyles,
             theme,
         } = this.props;
+        const postId = post.id;
         const {attachments} = postProps;
 
         if (attachments && attachments.length) {
@@ -377,8 +381,42 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         return null;
     };
 
+    renderAppEmbeds = () => {
+        const {
+            post,
+            postProps,
+            baseTextStyle,
+            blockStyles,
+            deviceHeight,
+            deviceWidth,
+            onPermalinkPress,
+            textStyles,
+            theme,
+        } = this.props;
+        const {app_bindings} = postProps;
+
+        if (app_bindings && app_bindings.length) {
+            return (
+                <AppEmbeds
+                    embed={app_bindings}
+                    baseTextStyle={baseTextStyle}
+                    blockStyles={blockStyles}
+                    deviceHeight={deviceHeight}
+                    deviceWidth={deviceWidth}
+                    post={post}
+                    onPermalinkPress={onPermalinkPress}
+                    theme={theme}
+                    textStyles={textStyles}
+                />
+            );
+        }
+
+        return null;
+    }
+
     renderOpenGraph = (isYouTube, isImage) => {
-        const {isReplyPost, link, metadata, openGraphData, postId, showLinkPreviews, theme} = this.props;
+        const {isReplyPost, link, metadata, openGraphData, post, showLinkPreviews, theme, shouldProcessApps} = this.props;
+        const postId = post.id;
 
         if (isYouTube || (isImage && !openGraphData)) {
             return null;
@@ -387,6 +425,13 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         const attachments = this.renderMessageAttachment();
         if (attachments) {
             return attachments;
+        }
+
+        if (shouldProcessApps) {
+            const appEmbeds = this.renderAppEmbeds();
+            if (appEmbeds) {
+                return appEmbeds;
+            }
         }
 
         if (!openGraphData || !showLinkPreviews) {
@@ -495,9 +540,10 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         if (expandedLink) {
             link = expandedLink;
         }
-        const {attachments} = postProps;
 
-        if (!link && !attachments) {
+        const {attachments, app_bindings, shouldProcessApps} = postProps;
+
+        if (!link && !attachments && !(shouldProcessApps && app_bindings)) {
             return null;
         }
 

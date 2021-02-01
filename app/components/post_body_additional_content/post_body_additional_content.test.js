@@ -19,10 +19,11 @@ describe('PostBodyAdditionalContent', () => {
         deviceHeight: 100,
         deviceWidth: 100,
         message: 'message',
-        postId: 'post-id',
+        post: {id: 'post-id'},
         postProps: {},
         showLinkPreviews: false,
         theme: Preferences.THEMES.default,
+        shouldProcessApps: false,
     };
 
     test('should call getRedirectLocation only if expandedLink has not been set', () => {
