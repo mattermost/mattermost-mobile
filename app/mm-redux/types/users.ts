@@ -60,7 +60,7 @@ export type UserTimezone = {
 };
 export type UserActivity = {
     [x in PostType]: {
-        [x in $ID<UserProfile>]: | {
+        [y in $ID<UserProfile>]: | {
             ids: Array<$ID<UserProfile>>;
             usernames: Array<UserProfile['username']>;
         } | Array<$ID<UserProfile>>;

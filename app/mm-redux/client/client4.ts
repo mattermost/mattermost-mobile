@@ -549,7 +549,11 @@ export default class Client4 {
 
         const {data} = await this.doFetchWithResponse(
             `${this.getUsersRoute()}/login`,
-            {method: 'post', body: JSON.stringify(body)},
+            {
+                method: 'post',
+                body: JSON.stringify(body),
+                headers: {'Cache-Control': 'no-store'},
+            },
         );
 
         return data;
