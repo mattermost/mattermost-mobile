@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-
-import Channel from '@typings/database/channel';
-import {MM_TABLES} from '@constants/database';
 import {Relation} from '@nozbe/watermelondb';
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import Channel from '@typings/database/channel';
 
 const {CHANNEL, CHANNEL_INFO} = MM_TABLES.SERVER;
 
