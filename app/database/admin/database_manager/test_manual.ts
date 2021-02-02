@@ -7,7 +7,7 @@ import DBManager, {DatabaseType} from './index';
 
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-export const runDBManagerTest = async () => {
+export default async () => {
     // Test: It should return the iOS App-Group shared directory
     const testAppGroupDirectory = () => {
         if (Platform.OS === 'ios') {
@@ -41,7 +41,7 @@ export const runDBManagerTest = async () => {
     // Test: It should set the current active server database to the provided server url.
     const testSetActiveServerConnection = async () => {
         await DBManager.setActiveServerDatabase({
-            displayName: 'lala',
+            displayName: 'comm4',
             serverUrl: 'https://comm4.mattermost.com',
         });
     };
