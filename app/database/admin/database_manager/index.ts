@@ -99,8 +99,7 @@ class DatabaseManager {
      */
     createDatabaseConnection = async ({
         databaseConnection,
-        shouldAddToDefaultDatabase
-        = true,
+        shouldAddToDefaultDatabase = true,
     }: DatabaseConnection): Promise<DBInstance> => {
         const {
             actionsEnabled = true,
