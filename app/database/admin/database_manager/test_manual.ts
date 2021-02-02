@@ -65,6 +65,8 @@ export default async () => {
         await DBManager.factoryReset(true);
     };
 
+    // NOTE : Comment and test the below functions one at a time.  It starts with creating a default database and ends with a factory reset.
+
     testAppGroupDirectory();
     testGetDefaultDatabase();
     await testNewServerConnection();
