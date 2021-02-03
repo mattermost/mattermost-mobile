@@ -43,6 +43,7 @@
   "channel_notifications.ignoreChannelMentions.settings": "Ignorer @channel, @here et @all",
   "channel_notifications.muteChannel.settings": "Mettre le canal en sourdine",
   "channel_notifications.preference.all_activity": "Pour toute activité",
+  "channel_notifications.preference.header": "Envoyer des notifications",
   "channel_notifications.preference.never": "Jamais",
   "combined_system_message.added_to_channel.many_expanded": "{users} et {lastUser} ont été **ajoutés au canal** par {actor}.",
   "combined_system_message.added_to_channel.one": "{firstUser} **ajouté au canal** par {actor}.",
