@@ -8,7 +8,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import {FileSystem} from 'react-native-unimodules';
 
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import type {DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
+import type {DBInstance, DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import IServers from '@typings/database/servers';
 import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
@@ -51,9 +51,6 @@ import {serverSchema} from '../../server/schema';
 const {SERVERS} = MM_TABLES.DEFAULT;
 
 type Models = Class<Model>[]
-
-// A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
-type DBInstance = Database | undefined
 
 // The elements needed to create a new connection
 type DatabaseConnection = {

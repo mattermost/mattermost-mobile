@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Migration} from '@nozbe/watermelondb/Schema/migrations';
-import {AppSchema} from '@nozbe/watermelondb';
+import {AppSchema, Database} from '@nozbe/watermelondb';
+import {DatabaseType} from '../../app/database/admin/database_manager';
 
 export type MigrationEvents = {
     onSuccess: () => void,
@@ -28,3 +29,6 @@ export type DefaultNewServer = {
     displayName: string,
     serverUrl: string
 }
+
+// A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
+export type DBInstance = Database | undefined
