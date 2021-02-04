@@ -14,11 +14,11 @@ class DataOperator {
     private defaultDatabase: DBInstance | undefined;
     private serverDatabase: DBInstance | undefined;
 
-    batchOperations = async ({db, models}: { db : Database, models: any}) => {
+    batchOperations = async ({db, models}: { db: Database, models: any }) => {
         await db.batch(...models);
-    }
+    };
 
-    handleAppEntity = async ({optType, values} : {optType: OperationType, values: any }) => {
+    handleAppEntity = async ({optType, values}: { optType: OperationType, values: any }) => {
         const tableName = MM_TABLES.DEFAULT.APP;
         const db = await this.getDatabase(tableName);
         if (!db) {
@@ -26,23 +26,38 @@ class DataOperator {
         }
 
         let results;
+        const config = {db, optType, tableName};
 
-        if (optType === OperationType.CREATE) {
+        switch (optType) {
+        case OperationType.DELETE:
+            break;
+        case OperationType.CREATE: {
             if (Array.isArray(values) && values.length) {
                 results = values.map(async (value) => {
-                    await factoryApp({db, optType, tableName, value});
+                    await factoryApp({...config, value});
                 });
+            } else {
+                results = await factoryApp({...config, value: values});
             }
 
-            results = Array(await factoryApp({db, optType, tableName, value: values}));
-
-            await this.batchOperations({db, models: results});
-        } else if (optType === OperationType.UPDATE) {
-            // Update occurs on one record only
-            const record = await factoryApp({db, optType, tableName, value: values});
-            await this.batchOperations({db, models: Array(record)});
+            if (results) {
+                const models = Array.isArray(results) ? results : Array(results);
+                await this.batchOperations({db, models});
+            }
+            break;
         }
-    }
+        case OperationType.UPDATE: {
+            // Update occurs on one record only
+            results = await factoryApp({...config, value: values});
+            if (results) {
+                await this.batchOperations({db, models: Array(results)});
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    };
 
     /**
      * getDatabase : Based on the table's name, it will return a database instance either from the 'DEFAULT' database or
@@ -56,7 +71,7 @@ class DataOperator {
         }
 
         return this.serverDatabase || this.getServerDatabase();
-    }
+    };
 
     /**
      * getDefaultDatabase: Returns the default database
