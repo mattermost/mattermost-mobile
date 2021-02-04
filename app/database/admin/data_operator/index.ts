@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Database} from '@nozbe/watermelondb';
-
 import {MM_TABLES} from '@constants/database';
+
+import {Database} from '@nozbe/watermelondb';
 import {DBInstance, OperationType} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
 import {factoryApp} from './entity_factory';
 
-// [x] TODO : how to get Model based on values[i] => type of values[i]
-// [] TODO: set custom id to each model => await postsCollection.create(post => { post._raw.id = serverId })
 class DataOperator {
     private defaultDatabase: DBInstance | undefined;
     private serverDatabase: DBInstance | undefined;
@@ -18,8 +16,12 @@ class DataOperator {
         await db.batch(...models);
     };
 
-    handleAppEntity = async ({optType, values}: { optType: OperationType, values: any }) => {
+    handleAppEntity = async ({optType, values} : { optType: OperationType, values: any}) => {
         const tableName = MM_TABLES.DEFAULT.APP;
+        await this.handleBaseEntity({optType, values, tableName});
+    }
+
+    handleBaseEntity = async ({optType, tableName, values}: { optType: OperationType, tableName: string, values: any }) => {
         const db = await this.getDatabase(tableName);
         if (!db) {
             return;
@@ -41,8 +43,10 @@ class DataOperator {
             }
 
             if (results) {
-                const models = Array.isArray(results) ? results : Array(results);
-                await this.batchOperations({db, models});
+                await this.batchOperations({
+                    db,
+                    models: Array.isArray(results) ? results : Array(results),
+                });
             }
             break;
         }
