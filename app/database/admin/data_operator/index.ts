@@ -12,16 +12,20 @@ class DataOperator {
     private defaultDatabase: DBInstance | undefined;
     private serverDatabase: DBInstance | undefined;
 
-    batchOperations = async ({db, models}: { db: Database, models: any }) => {
+    handleAppEntity = async ({optType, values}: { optType: OperationType, values: any }) => {
+        const tableName = MM_TABLES.DEFAULT.APP;
+        await this.handleBaseEntity({optType, values, tableName});
+    };
+
+    private batchOperations = async ({db, models}: { db: Database, models: any }) => {
         await db.batch(...models);
     };
 
-    handleAppEntity = async ({optType, values} : { optType: OperationType, values: any}) => {
-        const tableName = MM_TABLES.DEFAULT.APP;
-        await this.handleBaseEntity({optType, values, tableName});
-    }
-
-    handleBaseEntity = async ({optType, tableName, values}: { optType: OperationType, tableName: string, values: any }) => {
+    private handleBaseEntity = async ({
+        optType,
+        tableName,
+        values,
+    }: { optType: OperationType, tableName: string, values: any }) => {
         const db = await this.getDatabase(tableName);
         if (!db) {
             return;
