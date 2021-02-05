@@ -39,25 +39,8 @@ describe('*** Database Manager tests ***', () => {
         expect(spyOnAddServerToDefaultDatabase).toHaveBeenCalledTimes(1);
     });
 
-    it('=> should retrieve all database instances matching serverUrls parameter', async () => {
-        expect.assertions(2);
-
-        const spyOnCreateDatabaseConnection = jest.spyOn(DatabaseManager, 'createDatabaseConnection');
-
-        const dbInstances = await DatabaseManager.retrieveDatabaseInstances([
-            'https://xunity2.mattermost.com',
-            'https://comm5.mattermost.com',
-            'https://comm4.mattermost.com',
-        ]);
-
-        expect(dbInstances).toBeTruthy();
-        const numDbInstances = dbInstances && dbInstances.length ? dbInstances.length : 0;
-        expect(spyOnCreateDatabaseConnection).toHaveBeenCalledTimes(numDbInstances);
-    });
-
-    it('=> should return the current active server connection', async () => {
+    it('=> should switch between active server connections', async () => {
         expect.assertions(8);
-
         let activeServer: DBInstance;
         activeServer = await DatabaseManager.getActiveServerDatabase();
 
@@ -74,19 +57,36 @@ describe('*** Database Manager tests ***', () => {
 
         await setActiveServer({displayName: 'community mattermost', serverUrl: 'https://comm4.mattermost.com'});
 
-        // FIXME :  spyon lots of methods - addition of records to servers table
-
         // let's verify if we now have a value for activeServer
         activeServer = await DatabaseManager.getActiveServerDatabase();
         expect(activeServer).toBeDefined();
-        expect(activeServer!.adapter.underlyingAdapter._dbName).toStrictEqual('community mattermost');
+        const currentDBName = activeServer!.adapter.underlyingAdapter._dbName;
+        expect(currentDBName).toStrictEqual('community mattermost');
 
         // spice things up; we'll set a new server and verify if the value of activeServer changes
         await setActiveServer({displayName: 'appv2', serverUrl: 'https://appv2.mattermost.com'});
         activeServer = await DatabaseManager.getActiveServerDatabase();
         expect(activeServer).toBeDefined();
-        expect(activeServer!.adapter.underlyingAdapter._dbName).not.toStrictEqual('community mattermost');
-        expect(activeServer!.adapter.underlyingAdapter._dbName).toStrictEqual('appv2');
+        const newDBName = activeServer!.adapter.underlyingAdapter._dbName;
+        expect(newDBName).not.toStrictEqual('community mattermost');
+        expect(newDBName).toStrictEqual('appv2');
+    });
+
+    it('=> should retrieve all database instances matching serverUrls parameter', async () => {
+        expect.assertions(3);
+
+        const spyOnCreateDatabaseConnection = jest.spyOn(DatabaseManager, 'createDatabaseConnection');
+
+        const dbInstances = await DatabaseManager.retrieveDatabaseInstances([
+            'https://xunity2.mattermost.com',
+            'https://appv2.mattermost.com',
+            'https://comm4.mattermost.com',
+        ]);
+
+        expect(dbInstances).toBeTruthy();
+        const numDbInstances = dbInstances && dbInstances.length ? dbInstances.length : 0;
+        expect(spyOnCreateDatabaseConnection).toHaveBeenCalledTimes(numDbInstances);
+        expect(numDbInstances).toEqual(2);
     });
 });
 
