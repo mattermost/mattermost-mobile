@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q} from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import {Class} from '@nozbe/watermelondb/utils/common';
 import {DeviceEventEmitter, Platform} from 'react-native';
@@ -11,7 +10,7 @@ import {FileSystem} from 'react-native-unimodules';
 import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import type {DBInstance, DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
 import IServers from '@typings/database/servers';
-import {deleteIOSDatabase, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {deleteIOSDatabase} from '@utils/mattermost_managed';
 
 import DefaultMigration from '../../../default/migration';
 import {App, Global, Servers} from '../../../default/models';
@@ -107,15 +106,12 @@ class DatabaseManager {
         } = databaseConnection;
 
         try {
-            console.log('here 2');
-
             const databaseName = dbType === DatabaseType.DEFAULT ? 'default' : dbName;
 
             // const databaseFilePath = this.getDatabaseDirectory(databaseName);
             const migrations = dbType === DatabaseType.DEFAULT ? DefaultMigration : ServerMigration;
             const modelClasses = dbType === DatabaseType.DEFAULT ? this.defaultModels : this.serverModels;
             const schema = dbType === DatabaseType.DEFAULT ? defaultSchema : serverSchema;
-            console.log('here 3');
 
             const adapter = new LokiJSAdapter({
                 dbName: databaseName,
@@ -129,20 +125,12 @@ class DatabaseManager {
             //     migrations,
             //     schema,
             // });
-            console.log('here 4');
-
-            console.log({
-                databaseName, migrations, modelClasses, schema, adapter,
-            });
 
             // Registers the new server connection into the DEFAULT database
-            if (serverUrl && shouldAddToDefaultDatabase
-            ) {
-                await this.addServerToDefaultDatabase({databaseFilePath, displayName: dbName, serverUrl});
+            if (serverUrl && shouldAddToDefaultDatabase) {
+                await this.addServerToDefaultDatabase({databaseFilePath: databaseName, displayName: dbName, serverUrl});
             }
-            const db = new Database({adapter, actionsEnabled, modelClasses});
-            console.log({db});
-            return db;
+            return new Database({adapter, actionsEnabled, modelClasses});
         } catch (e) {
             // console.log(e);
         }
@@ -160,7 +148,7 @@ class DatabaseManager {
     setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
         const allServers = await this.getAllServers();
 
-        const existingServer = allServers?.filter((server) => {
+        const existingServer = allServers?.filter((server: IServers) => {
             return server.url === serverUrl;
         });
 
@@ -191,7 +179,6 @@ class DatabaseManager {
      * @returns {Database} default database
      */
     getDefaultDatabase = async (): Promise<DBInstance> => {
-        console.log('>>> here');
         if (!this.defaultDatabase) {
             await this.setDefaultDatabase();
         }
