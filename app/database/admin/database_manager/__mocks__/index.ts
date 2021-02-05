@@ -4,13 +4,10 @@
 import {Database, Model, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import {Class} from '@nozbe/watermelondb/utils/common';
-import {DeviceEventEmitter, Platform} from 'react-native';
-import {FileSystem} from 'react-native-unimodules';
 
-import {MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
-import type {DBInstance, DefaultNewServer, MigrationEvents, MMDatabaseConnection} from '@typings/database/database';
+import {MM_TABLES} from '@constants/database';
+import type {DBInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
 import IServers from '@typings/database/servers';
-import {deleteIOSDatabase} from '@utils/mattermost_managed';
 
 import DefaultMigration from '../../../default/migration';
 import {App, Global, Servers} from '../../../default/models';

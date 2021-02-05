@@ -11,6 +11,10 @@ jest.mock('./index');
 
 const {SERVERS} = MM_TABLES.DEFAULT;
 
+// NOTE :  On the mock Database Manager, we cannot test for :
+// 1. Android/iOS file path
+// 2. Deletion of the 'databases' folder on those two platforms
+
 describe('*** Database Manager tests ***', () => {
     it(' => should return a default database', async () => {
         expect.assertions(2);
