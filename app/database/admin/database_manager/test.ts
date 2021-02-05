@@ -10,7 +10,7 @@ jest.mock('./index');
 // TODO : clear db/reset ???
 
 describe('*** Database Manager tests ***', () => {
-    it(' => should return a default database', async (object: T, method: M) => {
+    it(' => should return a default database', async () => {
         expect.assertions(2);
 
         const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager, 'addServerToDefaultDatabase');
