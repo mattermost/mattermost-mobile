@@ -119,13 +119,6 @@ class DatabaseManager {
                 schema,
             });
 
-            // const adapter = new SQLiteAdapter({
-            //     dbName: databaseName,
-            //     migrationEvents: this.buildMigrationCallbacks(databaseName),
-            //     migrations,
-            //     schema,
-            // });
-
             // Registers the new server connection into the DEFAULT database
             if (serverUrl && shouldAddToDefaultDatabase) {
                 await this.addServerToDefaultDatabase({databaseFilePath: databaseName, displayName: dbName, serverUrl});
@@ -251,22 +244,6 @@ class DatabaseManager {
                         await server.destroyPermanently();
                     });
 
-                    const databaseName = server.displayName;
-
-                    if (Platform.OS === 'ios') {
-                        // On iOS, we'll delete the *.db file under the shared app-group/databases folder
-                        deleteIOSDatabase({databaseName});
-                        return true;
-                    }
-
-                    // On Android, we'll delete both the *.db file and the *.db-journal file
-                    const androidFilesDir = `${this.androidFilesDirectory}databases/`;
-                    const databaseFile = `${androidFilesDir}${databaseName}.db`;
-                    const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
-
-                    await FileSystem.deleteAsync(databaseFile);
-                    await FileSystem.deleteAsync(databaseJournal);
-
                     return true;
                 }
                 return false;
@@ -274,29 +251,6 @@ class DatabaseManager {
             return false;
         } catch (e) {
             // console.log('An error occurred while trying to delete database with name ', databaseName);
-            return false;
-        }
-    };
-
-    /**
-     * factoryReset: Removes the databases directory and all its contents on the respective platform
-     * @param {boolean} shouldRemoveDirectory
-     * @returns {Promise<boolean>}
-     */
-    factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
-        try {
-            //On iOS, we'll delete the databases folder under the shared AppGroup folder
-            if (Platform.OS === 'ios') {
-                deleteIOSDatabase({shouldRemoveDirectory});
-                return true;
-            }
-
-            // On Android, we'll remove the databases folder under the Document Directory
-            const androidFilesDir = `${FileSystem.documentDirectory}databases/`;
-            await FileSystem.deleteAsync(androidFilesDir);
-            return true;
-        } catch (e) {
-            // console.log('An error occurred while trying to delete the databases directory);
             return false;
         }
     };
@@ -354,43 +308,6 @@ class DatabaseManager {
         } catch (e) {
             // console.log({catchError: e});
         }
-    };
-
-    /**
-     * buildMigrationCallbacks: Creates a set of callbacks that can be used to monitor the migration process.
-     * For example, we can display a processing spinner while we have a migration going on. Moreover, we can also
-     * hook into those callbacks to assess how many of our servers successfully completed their migration.
-     * @param {string} dbName
-     * @returns {MigrationEvents}
-     */
-    private buildMigrationCallbacks = (dbName: string) => {
-        const migrationEvents: MigrationEvents = {
-            onSuccess: () => {
-                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_SUCCESS, {dbName});
-            },
-            onStarted: () => {
-                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_STARTED, {dbName});
-            },
-            onFailure: (error) => {
-                return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {dbName, error});
-            },
-        };
-
-        return migrationEvents;
-    };
-
-    /**
-     * getDatabaseDirectory: Using the database name, this method will return the database directory for each platform.
-     * On iOS, it will point towards the AppGroup shared directory while on Android, it will point towards the Files Directory.
-     * Please note that in each case, the *.db files will be created/grouped under a 'databases' sub-folder.
-     * iOS Simulator : appGroup => /Users/{username}/Library/Developer/CoreSimulator/Devices/DA6F1C73/data/Containers/Shared/AppGroup/ACA65327/databases"}
-     * Android Device: file:///data/user/0/com.mattermost.rnbeta/files/databases
-     *
-     * @param {string} dbName
-     * @returns {string}
-     */
-    private getDatabaseDirectory = (dbName: string): string => {
-        return dbName;
     };
 }
 

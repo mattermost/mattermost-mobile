@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {MM_TABLES} from '@constants/database';
 import {Database} from '@nozbe/watermelondb';
 import {DBInstance} from '@typings/database/database';
+import IServers from '@typings/database/servers';
 import DatabaseManager, {DatabaseType} from './index';
 
 jest.mock('./index');
 
-// TODO : clear db/reset ???
+const {SERVERS} = MM_TABLES.DEFAULT;
 
 describe('*** Database Manager tests ***', () => {
     it(' => should return a default database', async () => {
@@ -31,7 +33,7 @@ describe('*** Database Manager tests ***', () => {
                 actionsEnabled: true,
                 dbName: 'community mattermost',
                 dbType: DatabaseType.SERVER,
-                serverUrl: 'https://comm4.mattermost.com',
+                serverUrl: 'https://appv1.mattermost.com',
             },
         });
 
@@ -55,7 +57,7 @@ describe('*** Database Manager tests ***', () => {
             expect(server).toBeUndefined();
         };
 
-        await setActiveServer({displayName: 'community mattermost', serverUrl: 'https://comm4.mattermost.com'});
+        await setActiveServer({displayName: 'community mattermost', serverUrl: 'https://appv1.mattermost.com'});
 
         // let's verify if we now have a value for activeServer
         activeServer = await DatabaseManager.getActiveServerDatabase();
@@ -80,14 +82,43 @@ describe('*** Database Manager tests ***', () => {
         const dbInstances = await DatabaseManager.retrieveDatabaseInstances([
             'https://xunity2.mattermost.com',
             'https://appv2.mattermost.com',
-            'https://comm4.mattermost.com',
+            'https://appv1.mattermost.com',
         ]);
 
         expect(dbInstances).toBeTruthy();
         const numDbInstances = dbInstances && dbInstances.length ? dbInstances.length : 0;
+
+        // The Database Manager will call the 'createDatabaseConnection' method in consequence of the number of database connection present in dbInstances array
         expect(spyOnCreateDatabaseConnection).toHaveBeenCalledTimes(numDbInstances);
+
+        // We should have two active database connection
         expect(numDbInstances).toEqual(2);
     });
-});
 
-// FIXME :  see if records are being added to the servers table for each new connection
+    it('=> should have records of Servers set in the servers table of the default database', async () => {
+        expect.assertions(3);
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeDefined();
+
+        const serversRecords = await defaultDB!.collections.get(SERVERS).query().fetch() as IServers[];
+        expect(serversRecords).toBeDefined();
+
+        // We have call the 'DatabaseManager.setActiveServerDatabase' twice in the previous test case; that implies that we have 2 records in the 'servers' table
+        expect(serversRecords.length).toEqual(2);
+    });
+
+    it('should delete appv1 server from the servers table of Default database', async () => {
+        expect.assertions(3);
+
+        // Removing database for appv1 connection
+        const isAppV1Removed = await DatabaseManager.deleteDatabase('https://appv1.mattermost.com');
+        expect(isAppV1Removed).toBe(true);
+
+        // Verifying in the database to confirm if its record was deleted
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        const serversRecords = await defaultDB!.collections.get(SERVERS).query().fetch() as IServers[];
+        expect(serversRecords).toBeDefined();
+        expect(serversRecords.length).toEqual(1);
+    });
+});
