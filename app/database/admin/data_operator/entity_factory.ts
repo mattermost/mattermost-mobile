@@ -6,6 +6,8 @@ import {Database, Q} from '@nozbe/watermelondb';
 import App from '@typings/database/app';
 import {OperationType} from '@typings/database/database';
 
+type Factory = { db: Database, optType?: OperationType, tableName: string, value: any }
+
 /**
  * factoryApp :
  * @param {} db
@@ -14,7 +16,7 @@ import {OperationType} from '@typings/database/database';
  * @param {OperationType | undefined} opType
  * @returns {any}
  */
-export const factoryApp = async ({db, optType, tableName, value}:{ db: Database, optType?: OperationType, tableName: string, value: any}) => {
+export const factoryApp = async ({db, optType, tableName, value}: Factory) => {
     const generator = (app: App) => {
         app.buildNumber = value?.buildNumber ?? '';
         app.createdAt = value?.buildNumber ?? 0;

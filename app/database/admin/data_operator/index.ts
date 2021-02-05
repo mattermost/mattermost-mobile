@@ -12,20 +12,41 @@ class DataOperator {
     private defaultDatabase: DBInstance | undefined;
     private serverDatabase: DBInstance | undefined;
 
-    handleAppEntity = async ({optType, values}: { optType: OperationType, values: any }) => {
+    /**
+     * handleAppEntity : Operator that handles Create/Update/Delete operation on the app entity of the default database.
+     * @param {OperationType} optType
+     * @param {any} values
+     * @returns {Promise<void>}
+     */
+    handleAppEntity = async ({optType, values}: { optType: OperationType, values: unknown }): Promise<void> => {
         const tableName = MM_TABLES.DEFAULT.APP;
         await this.handleBaseEntity({optType, values, tableName});
     };
 
-    private batchOperations = async ({db, models}: { db: Database, models: any }) => {
-        await db.batch(...models);
+    /**
+     * batchOperations : Accepts an instance of Database ( either Default or Server) and an array of prepareCreate/prepareUpdate values.
+     * @param {Database} db
+     * @param {Array} models
+     * @returns {Promise<void>}
+     */
+    private batchOperations = async ({db, models}: { db: Database, models: unknown }) => {
+        await db.action(async () => {
+            await db.batch(...models);
+        });
     };
 
+    /**
+     * handleBaseEntity: Handles the Create/Update/Delete operations on an entity.
+     * @param {OperationType} optType
+     * @param {string} tableName
+     * @param {any} values
+     * @returns {Promise<void>}
+     */
     private handleBaseEntity = async ({
         optType,
         tableName,
         values,
-    }: { optType: OperationType, tableName: string, values: any }) => {
+    }: { optType: OperationType, tableName: string, values: unknown }) => {
         const db = await this.getDatabase(tableName);
         if (!db) {
             return;
@@ -36,6 +57,7 @@ class DataOperator {
 
         switch (optType) {
         case OperationType.DELETE:
+            // Delete operation should occur on component level
             break;
         case OperationType.CREATE: {
             if (Array.isArray(values) && values.length) {
