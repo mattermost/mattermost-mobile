@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
 import {Database} from '@nozbe/watermelondb';
+
+import {MM_TABLES} from '@constants/database';
+
 import {DBInstance} from '@typings/database/database';
 import IServers from '@typings/database/servers';
+
 import DatabaseManager, {DatabaseType} from './index';
 
 jest.mock('./index');
@@ -19,7 +22,7 @@ describe('*** Database Manager tests ***', () => {
     it(' => should return a default database', async () => {
         expect.assertions(2);
 
-        const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager, 'addServerToDefaultDatabase');
+        const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager as any, 'addServerToDefaultDatabase');
 
         const defaultDB = await DatabaseManager.getDefaultDatabase();
         expect(defaultDB).toBeInstanceOf(Database);
@@ -29,7 +32,7 @@ describe('*** Database Manager tests ***', () => {
     it('=> should create a new server connection', async () => {
         expect.assertions(2);
 
-        const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager, 'addServerToDefaultDatabase');
+        const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager as any, 'addServerToDefaultDatabase');
 
         const connection1 = await DatabaseManager.createDatabaseConnection({
             shouldAddToDefaultDatabase: true,
@@ -48,6 +51,8 @@ describe('*** Database Manager tests ***', () => {
     it('=> should switch between active server connections', async () => {
         expect.assertions(8);
         let activeServer: DBInstance;
+        let adapter;
+
         activeServer = await DatabaseManager.getActiveServerDatabase();
 
         // as we haven't set an active server yet, we should be getting undefined in the activeServer variable
@@ -66,14 +71,16 @@ describe('*** Database Manager tests ***', () => {
         // let's verify if we now have a value for activeServer
         activeServer = await DatabaseManager.getActiveServerDatabase();
         expect(activeServer).toBeDefined();
-        const currentDBName = activeServer!.adapter.underlyingAdapter._dbName;
+        adapter = activeServer!.adapter as any;
+        const currentDBName = adapter.underlyingAdapter._dbName;
         expect(currentDBName).toStrictEqual('community mattermost');
 
         // spice things up; we'll set a new server and verify if the value of activeServer changes
         await setActiveServer({displayName: 'appv2', serverUrl: 'https://appv2.mattermost.com'});
         activeServer = await DatabaseManager.getActiveServerDatabase();
         expect(activeServer).toBeDefined();
-        const newDBName = activeServer!.adapter.underlyingAdapter._dbName;
+        adapter = activeServer!.adapter as any;
+        const newDBName = adapter.underlyingAdapter._dbName;
         expect(newDBName).not.toStrictEqual('community mattermost');
         expect(newDBName).toStrictEqual('appv2');
     });
