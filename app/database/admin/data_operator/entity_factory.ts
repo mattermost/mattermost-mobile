@@ -39,7 +39,6 @@ export const factoryApp = async ({db, optType, tableName, value}: DataFactory) =
  */
 const factoryEntity = async ({db, optType, tableName, value, generator}: DataFactory) => {
     if (optType === OperationType.UPDATE) {
-        // single record
         const appRecord = await db.collections.get(tableName).query(Q.where('id', value.id)).fetch() as Model[];
         if (appRecord?.length) {
             const record = appRecord[0];
@@ -47,7 +46,7 @@ const factoryEntity = async ({db, optType, tableName, value, generator}: DataFac
         }
         return null;
     } else if (optType === OperationType.CREATE) {
-        // single record and batch records
+        // FIXME : checks if the id does not already exist in the db; else it fails silently for arrays
         return db.collections.get(tableName).prepareCreate(generator);
     }
 
