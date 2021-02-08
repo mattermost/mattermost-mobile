@@ -31,7 +31,7 @@ function makeMapStateToProps() {
             serverURL: getCurrentUrl(state),
             siteURL: getConfig(state).SiteURL,
             theme: getTheme(state),
-            getCurrentTeam(state)?.name,
+            currentTeamName: getCurrentTeam(state)?.name,
         };
     };
 }
