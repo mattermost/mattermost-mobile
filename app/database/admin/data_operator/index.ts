@@ -2,19 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {DataFactory, DBInstance, RawApp} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
 
-import {factoryApp} from './entity_factory';
+import {operateAppRecord} from './entity_factory';
 
 export enum OperationType {
     CREATE = 'CREATE',
     UPDATE = 'UPDATE',
     DELETE = 'DELETE'
+}
+
+type HandleBaseData = {
+    optType: OperationType,
+    tableName: string,
+    values: unknown,
+    recordOperator: (recordOperator: DataFactory) => void
 }
 
 // TODO : what if we are inserting duplicate ids?
@@ -34,7 +40,7 @@ class DataOperator {
         values,
     }: { optType: OperationType, values: RawApp | RawApp[] }): Promise<void> => {
         const tableName = MM_TABLES.DEFAULT.APP;
-        await this.handleBaseData({optType, values, tableName, recordFactory: factoryApp});
+        await this.handleBaseData({optType, values, tableName, recordOperator: operateAppRecord});
     };
 
     /**
@@ -54,15 +60,11 @@ class DataOperator {
      * @param {OperationType} optType
      * @param {string} tableName
      * @param {any} values
-     * @param recordFactory
+     * @param recordOperator
+     *
      * @returns {Promise<void>}
      */
-    private handleBaseData = async ({
-        optType,
-        tableName,
-        values,
-        recordFactory,
-    }: { optType: OperationType, tableName: string, values: unknown, recordFactory: (recordFactory : DataFactory) => void }) => {
+    private handleBaseData = async ({optType, tableName, values, recordOperator}: HandleBaseData) => {
         const db = await this.getDatabase(tableName);
         if (!db) {
             return;
@@ -71,40 +73,20 @@ class DataOperator {
         let results;
         const config = {db, optType, tableName};
 
-        switch (optType) {
-        case OperationType.DELETE:
-            // Delete operation should occur on component level
-            break;
-        case OperationType.CREATE: {
-            if (Array.isArray(values) && values.length) {
-                const recordPromises = await values.map(async (value) => {
-                    const record = await recordFactory({...config, value});
-                    return record;
-                });
+        if (Array.isArray(values) && values.length) {
+            const recordPromises = await values.map(async (value) => {
+                const record = await recordOperator({...config, value});
+                return record;
+            });
 
-                results = await Promise.all(recordPromises);
-            } else {
-                results = await recordFactory({...config, value: values});
-            }
+            results = await Promise.all(recordPromises);
+        } else {
+            results = await recordOperator({...config, value: values});
+        }
 
-            if (results) {
-                await this.batchOperations({
-                    db,
-                    models: Array.isArray(results) ? results : Array(results),
-                });
-            }
-            break;
-        }
-        case OperationType.UPDATE: {
-            // Update occurs on one record only
-            results = await recordFactory({...config, value: values}) as unknown as Model;
-            if (results) {
-                await this.batchOperations({db, models: Array(results)});
-            }
-            break;
-        }
-        default:
-            break;
+        // FIXME : do better check on the results constant
+        if (results) {
+            await this.batchOperations({db, models: Array.isArray(results) ? results : Array(results)});
         }
     };
 

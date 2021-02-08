@@ -3,7 +3,7 @@
 
 import DataOperator, {OperationType} from './index';
 
-export const runAppTests = async () => {
+export const runDataOperatorTests = async () => {
     const createRecord = async () => {
         await DataOperator.handleAppData({
             optType: OperationType.CREATE,
@@ -26,9 +26,30 @@ export const runAppTests = async () => {
         });
     };
 
+    const updateRecord = async () => {
+        await DataOperator.handleAppData({
+            optType: OperationType.UPDATE,
+            values: {buildNumber: 'build-13-13', createdAt: 1, id: 'id-13', versionNumber: 'version-13'},
+
+        });
+    };
+
+    const updateRecords = async () => {
+        await DataOperator.handleAppData({
+            optType: OperationType.UPDATE,
+            values: [
+                {buildNumber: 'build-8a', createdAt: 1, id: 'id-8a', versionNumber: 'version-8aa'},
+                {buildNumber: 'build-9x', createdAt: 1, id: 'id-9', versionNumber: 'version-9'},
+                {buildNumber: 'build-10yyy', createdAt: 1, id: 'id-10', versionNumber: 'version-10x'},
+            ],
+        });
+    };
+
     // await createRecord();
 
-    await createRecords();
+    // await createRecords();
 
-    // runAppUpdate();
+    // await updateRecord();
+
+    // await updateRecords();
 };
