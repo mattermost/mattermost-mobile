@@ -4,17 +4,26 @@
 import DataOperator, {OperationType} from './index';
 
 export const runAppTests = async () => {
-    const runAppCreateSimple = async () => {
-        await DataOperator.handleAppEntity({
+    const createRecord = async () => {
+        await DataOperator.handleAppData({
             optType: OperationType.CREATE,
             values: {buildNumber: 'build-7', createdAt: 1, id: 'id-7', versionNumber: 'version-7'},
         });
     };
 
-    // const runAppCreateArray = () => {};
-    // const runAppUpdate = () => {};
+    const createRecords = async () => {
+        await DataOperator.handleAppData({
+            optType: OperationType.CREATE,
+            values: [
+                {buildNumber: 'build-8', createdAt: 1, id: 'id-8', versionNumber: 'version-8'},
+                {buildNumber: 'build-9', createdAt: 1, id: 'id-9', versionNumber: 'version-9'},
+            ],
+        });
+    };
 
-    await runAppCreateSimple();
+    // await createRecord();
+
+    await createRecords();
 
     // runAppUpdate();
 };

@@ -17,22 +17,24 @@ export enum OperationType {
     DELETE = 'DELETE'
 }
 
+// TODO : what if we are inserting duplicate ids?
+
 class DataOperator {
     private defaultDatabase: DBInstance | undefined;
     private serverDatabase: DBInstance | undefined;
 
     /**
-     * handleAppEntity : Operator that handles Create/Update/Delete operation on the app entity of the default database.
+     * handleAppData : Operator that handles Create/Update/Delete operation on the app entity of the default database.
      * @param {OperationType} optType
      * @param {any} values
      * @returns {Promise<void>}
      */
-    handleAppEntity = async ({
+    handleAppData = async ({
         optType,
         values,
     }: { optType: OperationType, values: RawApp | RawApp[] }): Promise<void> => {
         const tableName = MM_TABLES.DEFAULT.APP;
-        await this.handleBaseEntity({optType, values, tableName, recordFactory: factoryApp});
+        await this.handleBaseData({optType, values, tableName, recordFactory: factoryApp});
     };
 
     /**
@@ -48,14 +50,14 @@ class DataOperator {
     };
 
     /**
-     * handleBaseEntity: Handles the Create/Update/Delete operations on an entity.
+     * handleBaseData: Handles the Create/Update/Delete operations on an entity.
      * @param {OperationType} optType
      * @param {string} tableName
      * @param {any} values
      * @param recordFactory
      * @returns {Promise<void>}
      */
-    private handleBaseEntity = async ({
+    private handleBaseData = async ({
         optType,
         tableName,
         values,
@@ -75,9 +77,12 @@ class DataOperator {
             break;
         case OperationType.CREATE: {
             if (Array.isArray(values) && values.length) {
-                results = values.map(async (value) => {
-                    await recordFactory({...config, value});
+                const recordPromises = await values.map(async (value) => {
+                    const record = await recordFactory({...config, value});
+                    return record;
                 });
+
+                results = await Promise.all(recordPromises);
             } else {
                 results = await recordFactory({...config, value: values});
             }
