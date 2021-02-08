@@ -15,7 +15,7 @@ export type MigrationEvents = {
 }
 
 export type MMAdaptorOptions = {
-    dbPath : string,
+    dbPath: string,
     schema: AppSchema,
     migrationSteps?: Migration [],
     migrationEvents?: MigrationEvents
@@ -44,11 +44,11 @@ type RawApp = {
     versionNumber: string,
 }
 
-type RecordValue = RawApp | any
+type RecordValue = RawApp | RawApp[] | any
 
 type DataFactory = {
     db: Database,
-    generator? : (model: Model) => void,
+    generator?: (model: Model) => void,
     optType?: OperationType,
     tableName: string,
     value: RecordValue,

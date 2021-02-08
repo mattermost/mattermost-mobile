@@ -4,7 +4,7 @@
 import {Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {DataFactory, DBInstance, RawApp} from '@typings/database/database';
+import {DataFactory, DBInstance, RecordValue} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
 
@@ -23,6 +23,9 @@ type HandleBaseData = {
     recordOperator: (recordOperator: DataFactory) => void
 }
 
+type BatchOperations = { db: Database, models: unknown }
+type HandleEntityData = { optType: OperationType, values: RecordValue }
+
 // TODO : what if we are inserting duplicate ids?
 
 class DataOperator {
@@ -35,10 +38,7 @@ class DataOperator {
      * @param {any} values
      * @returns {Promise<void>}
      */
-    handleAppData = async ({
-        optType,
-        values,
-    }: { optType: OperationType, values: RawApp | RawApp[] }): Promise<void> => {
+    handleAppData = async ({optType, values}: HandleEntityData): Promise<void> => {
         const tableName = MM_TABLES.DEFAULT.APP;
         await this.handleBaseData({optType, values, tableName, recordOperator: operateAppRecord});
     };
@@ -49,7 +49,7 @@ class DataOperator {
      * @param {Array} models
      * @returns {Promise<void>}
      */
-    private batchOperations = async ({db, models}: { db: Database, models: unknown }) => {
+    private batchOperations = async ({db, models}: BatchOperations) => {
         await db.action(async () => {
             await db.batch(...models);
         });
