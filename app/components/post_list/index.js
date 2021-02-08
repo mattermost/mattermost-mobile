@@ -24,8 +24,6 @@ function makeMapStateToProps() {
             initialIndex = postIds.indexOf(ownProps.highlightPostId);
         }
 
-        const team = getCurrentTeam(state);
-
         return {
             deepLinkURL: state.views.root.deepLinkURL,
             postIds,
@@ -33,7 +31,7 @@ function makeMapStateToProps() {
             serverURL: getCurrentUrl(state),
             siteURL: getConfig(state).SiteURL,
             theme: getTheme(state),
-            currentTeamName: team && team.name,
+            getCurrentTeam(state)?.name,
         };
     };
 }

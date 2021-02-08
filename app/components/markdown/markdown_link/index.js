@@ -11,12 +11,10 @@ import {handleSelectChannelByName} from 'app/actions/views/channel';
 import MarkdownLink from './markdown_link';
 
 function mapStateToProps(state) {
-    const team = getCurrentTeam(state);
-
     return {
         serverURL: getCurrentUrl(state),
         siteURL: getConfig(state).SiteURL,
-        currentTeamName: team && team.name,
+        currentTeamName: getCurrentTeam(state)?.name,
     };
 }
 
