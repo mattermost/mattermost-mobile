@@ -1,6 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
+import {OperationType} from '../../app/database/admin/data_operator';
+
 interface NotifyProps {
     channel: true;
     desktop: string;
@@ -95,3 +99,20 @@ type PostType = 'system_add_remove' |
     'system_leave_channel' |
     'system_purpose_change' |
     'system_remove_from_channel';
+
+type RawApp = {
+    buildNumber: string,
+    createdAt: number,
+    id: string,
+    versionNumber: string,
+}
+
+type RecordValue = RawApp | any
+
+type DataFactory = {
+    db: Database,
+    generator? : (model: Model) => void,
+    optType?: OperationType,
+    tableName: string,
+    value: RecordValue,
+}

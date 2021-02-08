@@ -3,10 +3,17 @@
 import {MM_TABLES} from '@constants/database';
 
 import {Database} from '@nozbe/watermelondb';
-import {DBInstance, OperationType} from '@typings/database/database';
+import {DataFactory, RawApp} from '@typings/database';
+import {DBInstance} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
 import {factoryApp} from './entity_factory';
+
+export enum OperationType {
+    CREATE = 'CREATE',
+    UPDATE = 'UPDATE',
+    DELETE = 'DELETE'
+}
 
 class DataOperator {
     private defaultDatabase: DBInstance | undefined;
@@ -18,9 +25,12 @@ class DataOperator {
      * @param {any} values
      * @returns {Promise<void>}
      */
-    handleAppEntity = async ({optType, values}: { optType: OperationType, values: unknown }): Promise<void> => {
+    handleAppEntity = async ({
+        optType,
+        values,
+    }: { optType: OperationType, values: RawApp | RawApp[] }): Promise<void> => {
         const tableName = MM_TABLES.DEFAULT.APP;
-        await this.handleBaseEntity({optType, values, tableName});
+        await this.handleBaseEntity({optType, values, tableName, recordFactory: factoryApp});
     };
 
     /**
@@ -40,13 +50,15 @@ class DataOperator {
      * @param {OperationType} optType
      * @param {string} tableName
      * @param {any} values
+     * @param recordFactory
      * @returns {Promise<void>}
      */
     private handleBaseEntity = async ({
         optType,
         tableName,
         values,
-    }: { optType: OperationType, tableName: string, values: unknown }) => {
+        recordFactory,
+    }: { optType: OperationType, tableName: string, values: unknown, recordFactory: (recordFactory : DataFactory) => void }) => {
         const db = await this.getDatabase(tableName);
         if (!db) {
             return;
@@ -62,10 +74,10 @@ class DataOperator {
         case OperationType.CREATE: {
             if (Array.isArray(values) && values.length) {
                 results = values.map(async (value) => {
-                    await factoryApp({...config, value});
+                    await recordFactory({...config, value});
                 });
             } else {
-                results = await factoryApp({...config, value: values});
+                results = await recordFactory({...config, value: values});
             }
 
             if (results) {
@@ -78,7 +90,7 @@ class DataOperator {
         }
         case OperationType.UPDATE: {
             // Update occurs on one record only
-            results = await factoryApp({...config, value: values});
+            results = await recordFactory({...config, value: values});
             if (results) {
                 await this.batchOperations({db, models: Array(results)});
             }
@@ -96,7 +108,11 @@ class DataOperator {
      * @returns {Promise<DBInstance>}
      */
     private getDatabase = async (tableName: string): Promise<DBInstance> => {
-        if (tableName in MM_TABLES.DEFAULT) {
+        const isInDefaultDB = Object.values(MM_TABLES.DEFAULT).some((tbName) => {
+            return tableName === tbName;
+        });
+
+        if (isInDefaultDB) {
             return this.defaultDatabase || this.getDefaultDatabase();
         }
 

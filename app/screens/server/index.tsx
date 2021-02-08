@@ -8,9 +8,12 @@ import {Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions} from 'rea
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 
+import {runAppTests} from '../../database/admin/data_operator/test_manual';
+
 declare const global: { HermesInternal: null | {} };
 
 const App = () => {
+    runAppTests();
     return (
         <>
             <StatusBar barStyle='dark-content'/>

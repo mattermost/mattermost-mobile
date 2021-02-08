@@ -33,8 +33,3 @@ export type DefaultNewServer = {
 // A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
 export type DBInstance = Database | undefined
 
-enum OperationType {
-    CREATE = 'CREATE',
-    UPDATE = 'UPDATE',
-    DELETE = 'DELETE'
-}
