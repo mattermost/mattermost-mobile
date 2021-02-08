@@ -3,9 +3,10 @@
 
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
-import {DataFactory} from '@typings/database';
 
+import {DataFactory} from '@typings/database/database';
 import App from '@typings/database/app';
+
 import {OperationType} from './index';
 
 /**

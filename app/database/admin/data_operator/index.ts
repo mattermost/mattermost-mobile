@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {MM_TABLES} from '@constants/database';
 
 import {Database} from '@nozbe/watermelondb';
-import {DataFactory, RawApp} from '@typings/database';
-import {DBInstance} from '@typings/database/database';
+import Model from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
+import {DataFactory, DBInstance, RawApp} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
+
 import {factoryApp} from './entity_factory';
 
 export enum OperationType {
@@ -90,7 +92,7 @@ class DataOperator {
         }
         case OperationType.UPDATE: {
             // Update occurs on one record only
-            results = await recordFactory({...config, value: values});
+            results = await recordFactory({...config, value: values}) as unknown as Model;
             if (results) {
                 await this.batchOperations({db, models: Array(results)});
             }
