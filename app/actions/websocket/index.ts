@@ -154,7 +154,7 @@ export function doReconnect(now: number) {
                 const currentTeamMembership = me.teamMembers.find((tm: TeamMembership) => tm.team_id === currentTeamId && tm.delete_at === 0);
 
                 if (currentTeamMembership) {
-                    const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true));
+                    const {data: myData}: any = await dispatch(loadChannelsForTeam(currentTeamId, true, true));
 
                     if (myData?.channels && myData?.channelMembers) {
                         actions.push({
