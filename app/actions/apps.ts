@@ -10,7 +10,7 @@ import {handleGotoLocation} from '@mm-redux/actions/integrations';
 
 export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
     return async (dispatch) => {
-        const ephemeral = (text: string) => dispatch(sendEphemeralPost(text, (call && call.context.channel_id) || '', (call && call.context.root_id) || ''));
+        const ephemeral = (text: string) => dispatch(sendEphemeralPost(text, call?.context.channel_id, call?.context.root_id));
         try {
             const res = await Client4.executeAppCall(call) as AppCallResponse<Res>;
             const responseType = res.type || AppCallResponseTypes.OK;
