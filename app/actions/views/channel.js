@@ -627,7 +627,7 @@ function loadGroupData(isReconnect = false) {
                             });
                         }
                     } else {
-                        const getGroupsSince = isReconnect ? (state.websocket?.lastConnectAt || 0) : undefined;
+                        const getGroupsSince = isReconnect ? state.websocket?.lastConnectAt : 0;
                         const [getAllGroupsAssociatedToChannelsInTeam, getGroups] = await Promise.all([ //eslint-disable-line no-await-in-loop
                             Client4.getAllGroupsAssociatedToChannelsInTeam(team.id, true),
                             Client4.getGroups(true, 0, 0, getGroupsSince),
