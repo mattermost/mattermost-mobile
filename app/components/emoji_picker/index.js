@@ -19,9 +19,7 @@ function mapStateToProps(state) {
     const emojis = selectEmojisByName(state);
     const options = {
         shouldSort: false,
-        threshold: 0.3,
-        location: 0,
-        distance: 10,
+        ignoreLocation: true,
         includeMatches: true,
         findAllMatches: true,
     };
