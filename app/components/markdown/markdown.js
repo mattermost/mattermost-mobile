@@ -444,7 +444,7 @@ export default class Markdown extends PureComponent {
     };
 
     render() {
-        let ast = this.parser.parse(this.props.value);
+        let ast = this.parser.parse(this.props.value.toString());
 
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
