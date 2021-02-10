@@ -30,6 +30,7 @@ import ManageMembers from './manage_members';
 import Mute from './mute';
 import Pinned from './pinned';
 import Separator from './separator';
+import Bindings from './bindings';
 
 export default class ChannelInfo extends PureComponent {
     static propTypes = {
@@ -156,6 +157,9 @@ export default class ChannelInfo extends PureComponent {
                 />
                 <EditChannel
                     testID='channel_info.edit_channel.action'
+                    theme={theme}
+                />
+                <Bindings
                     theme={theme}
                 />
             </>

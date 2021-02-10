@@ -11,8 +11,8 @@ exports[`PostOptions should match snapshot, no option for system message to user
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={322}
-    marginFromTop={278}
+    initialPosition={372}
+    marginFromTop={228}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -189,6 +189,18 @@ exports[`PostOptions should match snapshot, no option for system message to user
           "sidebarTextHoverBg": "#4578bf",
           "sidebarUnreadText": "#ffffff",
           "type": "Mattermost",
+        }
+      }
+    />
+    <Connect(Bindings)
+      closeWithAnimation={[Function]}
+      post={
+        Object {
+          "channel_id": "channel_id",
+          "id": "post_id",
+          "is_pinned": false,
+          "message": "message",
+          "root_id": "root_id",
         }
       }
     />
@@ -207,8 +219,8 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={372}
-    marginFromTop={228}
+    initialPosition={422}
+    marginFromTop={178}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -421,6 +433,18 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
           "sidebarTextHoverBg": "#4578bf",
           "sidebarUnreadText": "#ffffff",
           "type": "Mattermost",
+        }
+      }
+    />
+    <Connect(Bindings)
+      closeWithAnimation={[Function]}
+      post={
+        Object {
+          "channel_id": "channel_id",
+          "id": "post_id",
+          "is_pinned": false,
+          "message": "message",
+          "root_id": "root_id",
         }
       }
     />
@@ -439,8 +463,8 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
 >
   <Connect(SlideUpPanel)
     allowStayMiddle={false}
-    initialPosition={372}
-    marginFromTop={228}
+    initialPosition={422}
+    marginFromTop={178}
     onRequestClose={[Function]}
     theme={
       Object {
@@ -653,6 +677,18 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
           "sidebarTextHoverBg": "#4578bf",
           "sidebarUnreadText": "#ffffff",
           "type": "Mattermost",
+        }
+      }
+    />
+    <Connect(Bindings)
+      closeWithAnimation={[Function]}
+      post={
+        Object {
+          "channel_id": "channel_id",
+          "id": "post_id",
+          "is_pinned": false,
+          "message": "message",
+          "root_id": "root_id",
         }
       }
     />
