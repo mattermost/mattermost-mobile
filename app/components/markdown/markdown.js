@@ -73,6 +73,7 @@ export default class Markdown extends PureComponent {
         disableChannelLink: false,
         disableAtChannelMentionHighlight: false,
         disableGallery: false,
+        value: '',
     };
 
     constructor(props) {
