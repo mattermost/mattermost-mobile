@@ -3,6 +3,7 @@
 
 import {MM_TABLES} from '@constants/database';
 import {Database} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
 import {DataFactory, DBInstance, IsolatedTables, RecordValue} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
@@ -32,7 +33,7 @@ type HandleBaseData = {
     recordOperator: (recordOperator: DataFactory) => void
 }
 
-type BatchOperations = { db: Database, models: unknown }
+type BatchOperations = { db: Database, models: Model[] }
 
 type HandleIsolatedEntityData = { optType: OperationType, tableName: IsolatedTables, values: Records }
 
@@ -96,9 +97,11 @@ class DataOperator {
      * @returns {Promise<void>}
      */
     private batchOperations = async ({db, models}: BatchOperations) => {
-        await db.action(async () => {
-            await db.batch(...models);
-        });
+        if (models.length > 0) {
+            await db.action(async () => {
+                await db.batch(...models);
+            });
+        }
     };
 
     /**
@@ -129,7 +132,6 @@ class DataOperator {
             results = await recordOperator({...config, value: values as RecordValue});
         }
 
-        // FIXME : do better check on the results constant
         if (results) {
             await this.batchOperations({db, models: Array.isArray(results) ? results : Array(results)});
         }

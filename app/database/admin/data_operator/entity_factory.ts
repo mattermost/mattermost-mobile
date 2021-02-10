@@ -24,6 +24,8 @@ import TermsOfService from '@typings/database/terms_of_service';
 
 import {OperationType} from './index';
 
+// TODO :  complete jsdocs for all functions
+
 /**
  * operateAppRecord : Manufactures records ready for update/create of entity 'App' from the 'Default' database
  * @param {} db
@@ -132,7 +134,7 @@ export const operateTermsOfServiceRecord = async ({db, optType, tableName, value
  */
 const operateBaseRecord = async ({db, optType, tableName, value, generator}: DataFactory) => {
     if (optType === OperationType.UPDATE) {
-        //FIXME : If an id does not exist, do we create the record ?
+        // FIXME : If an id does not exist, create it
         const appRecord = await db.collections.get(tableName).query(Q.where('id', value.id)).fetch() as Model[];
         if (appRecord?.length) {
             const record = appRecord[0];
@@ -143,6 +145,8 @@ const operateBaseRecord = async ({db, optType, tableName, value, generator}: Dat
         // FIXME : checks if the id does not already exist in the db; if it does, then perform and update and return with a callback.
         return db.collections.get(tableName).prepareCreate(generator);
     }
+
+    // TODO : do delete case
 
     return null;
 };
