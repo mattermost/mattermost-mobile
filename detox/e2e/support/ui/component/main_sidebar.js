@@ -18,6 +18,10 @@ class MainSidebar {
     openMoreDirectMessagesButton = element(by.id(this.testID.openMoreDirectMessagesButton));
 
     // convenience props
+    searchBar = ChannelsList.searchBar;
+    searchInput = ChannelsList.searchInput;
+    cancelButton = ChannelsList.cancelButton;
+    clearButton = ChannelsList.clearButton;
     channelsList = ChannelsList.channelsList;
     filteredChannelsList = ChannelsList.filteredChannelsList;
     switchTeamsButton = ChannelsList.switchTeamsButton;
