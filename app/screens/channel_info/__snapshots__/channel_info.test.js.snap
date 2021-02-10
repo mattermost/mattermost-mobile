@@ -40,6 +40,7 @@ exports[`channelInfo should match snapshot 1`] = `
       onPermalinkPress={[Function]}
       purpose="Purpose"
       status="status"
+      testID="channel_info.header"
       theme={
         Object {
           "awayIndicator": "#ffbc42",

@@ -10,7 +10,8 @@ class ChannelInfoScreen {
         channelInfoScreen: 'channel_info.screen',
         channelInfoScrollView: 'channel_info.scroll_view',
         closeChannelInfoButton: 'close.channel_info.button',
-        channelIconGMMemberCount: 'channel_icon.gm_member_count',
+        headerChannelIconGMMemberCount: 'channel_info.header.channel_icon.gm_member_count',
+        headerDisplayName: 'channel_info.header.display_name',
         favoritePreferenceAction: 'channel_info.favorite.action',
         favoriteSwitchFalse: 'channel_info.favorite.action.switch.false',
         favoriteSwitchTrue: 'channel_info.favorite.action.switch.true',
@@ -33,7 +34,8 @@ class ChannelInfoScreen {
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
     channelInfoScrollView = element(by.id(this.testID.channelInfoScrollView));
     closeChannelInfoButton = element(by.id(this.testID.closeChannelInfoButton));
-    channelIconGMMemberCount = element(by.id(this.testID.channelIconGMMemberCount));
+    headerChannelIconGMMemberCount = element(by.id(this.testID.headerChannelIconGMMemberCount));
+    headerDisplayName = element(by.id(this.testID.headerDisplayName));
     favoritePreferenceAction = element(by.id(this.testID.favoritePreferenceAction));
     favoriteSwitchFalse = element(by.id(this.testID.favoriteSwitchFalse));
     favoriteSwitchTrue = element(by.id(this.testID.favoriteSwitchTrue));

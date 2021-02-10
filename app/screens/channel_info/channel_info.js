@@ -205,6 +205,7 @@ export default class ChannelInfo extends PureComponent {
                         isTeammateGuest={isTeammateGuest}
                         hasGuests={currentChannelGuestCount > 0}
                         isGroupConstrained={currentChannel.group_constrained}
+                        testID='channel_info.header'
                     />
                     }
                     <View style={style.rowsContainer}>
