@@ -14,7 +14,7 @@ import {ViewTypes} from 'app/constants';
 import {getDimensions} from 'app/selectors/device';
 
 import PostBodyAdditionalContent from './post_body_additional_content';
-import {shouldProcessApps} from '@utils/apps';
+import {appsEnabled} from '@utils/apps';
 
 function selectOpenGraphData(metadata, url) {
     if (!metadata || !metadata.embeds) {
@@ -55,7 +55,7 @@ function mapStateToProps(state, ownProps) {
         openGraphData,
         showLinkPreviews: previewsEnabled && config.EnableLinkPreviews === 'true' && !removeLinkPreview,
         theme: getTheme(state),
-        shouldProcessApps: shouldProcessApps(state),
+        appsEnabled: appsEnabled(state),
     };
 }
 

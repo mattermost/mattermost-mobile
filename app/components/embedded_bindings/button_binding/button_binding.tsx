@@ -8,7 +8,7 @@ import {intlShape} from 'react-intl';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from 'app/utils/theme';
 import {getStatusColors} from '@utils/message_attachment_colors';
-import BindingButtonText from './binding_button_text';
+import ButtonBindingText from './button_binding_text';
 import {Theme} from '@mm-redux/types/preferences';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppBinding, AppCall} from '@mm-redux/types/apps';
@@ -24,7 +24,7 @@ type Props = {
     theme: Theme;
     userId: string;
 }
-export default class BindingButton extends PureComponent<Props> {
+export default class ButtonBinding extends PureComponent<Props> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };
@@ -59,7 +59,7 @@ export default class BindingButton extends PureComponent<Props> {
                 disabledContainerStyle={style.buttonDisabled}
                 onPress={this.handleActionPress}
             >
-                <BindingButtonText
+                <ButtonBindingText
                     message={binding.label}
                     style={{...style.text}}
                 />

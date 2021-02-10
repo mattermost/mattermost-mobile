@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 
 import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
-import BindingButton from './binding_button';
+import ButtonBinding from './button_binding';
 import {GlobalState} from '@mm-redux/types/store';
 import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -32,4 +32,4 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(BindingButton);
+export default connect(mapStateToProps, mapDispatchToProps)(ButtonBinding);

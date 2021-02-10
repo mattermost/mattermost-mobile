@@ -73,7 +73,7 @@ export default class PostBody extends PureComponent {
         theme: PropTypes.object,
         location: PropTypes.string,
         mentionKeys: PropTypes.array,
-        shouldProcessApps: PropTypes.bool.isRequired,
+        appsEnabled: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -272,14 +272,14 @@ export default class PostBody extends PureComponent {
             onPermalinkPress,
             post,
             postProps,
-            shouldProcessApps,
+            appsEnabled,
         } = this.props;
 
         if (isSystemMessage && !isPostEphemeral) {
             return null;
         }
 
-        if (!metadata?.embeds?.length && !(shouldProcessApps && postProps.app_bindings)) {
+        if (!metadata?.embeds?.length && !(appsEnabled && postProps.app_bindings)) {
             return null;
         }
 

@@ -17,7 +17,7 @@ const reEmoticon = /^(?:(:-?\))|(;-?\))|(:o)|(:-o)|(:-?])|(:-?d)|(x-d)|(:-?p)|(:
 // before the next emoji by looking for any character that could start an emoji (:, ;, x, or <)
 const reMain = /^[\s\S]+?(?=[:;x<]|$)/i;
 
-export default function BindingButtonText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
+export default function ButtonBindingText({message, style}: {message: string; style: StyleProp<TextStyle>}) {
     const components = [] as JSX.Element[];
 
     let text = message;
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     },
 });
 
-BindingButtonText.propTypes = {
+ButtonBindingText.propTypes = {
     message: PropTypes.string.isRequired,
     style: PropTypes.object.isRequired,
 };

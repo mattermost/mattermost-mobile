@@ -4,7 +4,7 @@
 import {ActionCreatorsMapObject, bindActionCreators, Dispatch} from 'redux';
 import {connect} from 'react-redux';
 
-import EmbedMenu from './binding_menu';
+import MenuBinding from './menu_binding';
 import {GlobalState} from '@mm-redux/types/store';
 import {doAppCall} from '@actions/apps';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
@@ -29,4 +29,4 @@ function mapDispatchToProps(dispatch: Dispatch<GenericAction>) {
     };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(EmbedMenu);
+export default connect(mapStateToProps, mapDispatchToProps)(MenuBinding);

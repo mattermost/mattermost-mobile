@@ -24,7 +24,7 @@ type State = {
     selected?: PostActionOption;
 }
 
-export default class EmbedMenu extends PureComponent<Props, State> {
+export default class MenuBinding extends PureComponent<Props, State> {
     static contextTypes = {
         intl: intlShape.isRequired,
     };

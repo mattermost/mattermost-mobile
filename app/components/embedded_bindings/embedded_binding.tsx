@@ -6,16 +6,16 @@ import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 
-import EmbedBindings from './embed_bindings';
+import EmbedSubBindings from './embedded_sub_bindings';
 import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';
 import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
-import {AppBinding, PostEmbed} from '@mm-redux/types/apps';
+import {AppBinding} from '@mm-redux/types/apps';
 import {fillBindingsInformation} from '@utils/apps';
 
 type Props = {
-    embed: PostEmbed,
+    embed: AppBinding,
     baseTextStyle?: StyleProp<TextStyle>,
     blockStyles?: StyleProp<ViewStyle>[],
     deviceHeight: number,
@@ -25,7 +25,7 @@ type Props = {
     textStyles?: StyleProp<TextStyle>[],
 }
 
-export default function AppEmbed(props: Props) {
+export default function EmbeddedBinding(props: Props) {
     const {
         embed,
         baseTextStyle,
@@ -39,21 +39,20 @@ export default function AppEmbed(props: Props) {
 
     const style = getStyleSheet(theme);
 
-    let bindings;
-    if (embed.bindings) {
-        bindings = JSON.parse(JSON.stringify(embed.bindings)) as AppBinding[];
-        bindings.forEach((b) => {
-            b.app_id = embed.app_id;
-            fillBindingsInformation(b);
-        });
-    }
+    const fillBindings = (binding: AppBinding) => {
+        const copiedBindings = JSON.parse(JSON.stringify(binding)) as AppBinding;
+        fillBindingsInformation(copiedBindings);
+        return copiedBindings.bindings;
+    };
+
+    const bindings = fillBindings(embed);
 
     return (
         <React.Fragment>
             <View style={[style.container, style.border]}>
                 <EmbedTitle
                     theme={theme}
-                    value={embed.title}
+                    value={embed.label}
                 />
                 <EmbedText
                     baseTextStyle={baseTextStyle}
@@ -61,13 +60,12 @@ export default function AppEmbed(props: Props) {
                     deviceHeight={deviceHeight}
                     onPermalinkPress={onPermalinkPress}
                     textStyles={textStyles}
-                    value={embed.text}
+                    value={embed.description}
                     theme={theme}
                 />
-                <EmbedBindings
+                <EmbedSubBindings
                     bindings={bindings}
                     post={post}
-                    theme={theme}
                 />
             </View>
         </React.Fragment>

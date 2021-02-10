@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
-import BindingButtonText from './binding_button_text';
+import ButtonBindingText from './button_binding_text';
 
-describe('ActionButtonText emojis', () => {
+describe('ButtonBinding emojis', () => {
     const emojis = [
         {
             name: 'smile',
@@ -109,7 +109,7 @@ describe('ActionButtonText emojis', () => {
         test('only emoji ' + name, () => {
             const baseProps = {message: literal, style: {fontSize: 12}};
 
-            const wrapper = shallow(<BindingButtonText {...baseProps}/>);
+            const wrapper = shallow(<ButtonBindingText {...baseProps}/>);
 
             expect(wrapper.getElement().props.children.length).toBe(1);
 
@@ -124,7 +124,7 @@ describe('ActionButtonText emojis', () => {
         test('emoji ' + name + ' with additional text', () => {
             const baseProps = {message: 'emoji test with literal equals to ' + literal, style: {fontSize: 12}};
 
-            const wrapper = shallow(<BindingButtonText {...baseProps}/>);
+            const wrapper = shallow(<ButtonBindingText {...baseProps}/>);
 
             expect(wrapper.getElement().props.children.length).toBe(2);
 

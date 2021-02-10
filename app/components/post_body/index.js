@@ -27,7 +27,7 @@ import {getDimensions} from 'app/selectors/device';
 import {hasEmojisOnly} from 'app/utils/emoji_utils';
 
 import PostBody from './post_body';
-import {shouldProcessApps} from '@utils/apps';
+import {appsEnabled} from '@utils/apps';
 
 const POST_TIMEOUT = 20000;
 
@@ -113,7 +113,7 @@ export function makeMapStateToProps() {
             theme: getTheme(state),
             mentionKeys: getMentionKeysForPost(state, channel, postProps?.disable_group_highlight, postProps?.mentionHighlightDisabled),
             canDelete,
-            shouldProcessApps: shouldProcessApps(state),
+            appsEnabled: appsEnabled(state),
             ...getDimensions(state),
         };
     };

@@ -23,7 +23,7 @@ describe('PostBodyAdditionalContent', () => {
         postProps: {},
         showLinkPreviews: false,
         theme: Preferences.THEMES.default,
-        shouldProcessApps: false,
+        appsEnabled: false,
     };
 
     test('should call getRedirectLocation only if expandedLink has not been set', () => {

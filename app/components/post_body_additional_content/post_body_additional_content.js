@@ -23,7 +23,7 @@ import EventEmitter from '@mm-redux/utils/event_emitter';
 import {generateId} from '@utils/file';
 import {calculateDimensions, getViewPortWidth, openGalleryAtIndex} from '@utils/images';
 import {getYouTubeVideoId, isImageLink, isYoutubeLink, tryOpenURL} from '@utils/url';
-import AppEmbeds from '@components/app_embeds';
+import EmbeddedBindings from '@components/embedded_bindings';
 
 const MAX_YOUTUBE_IMAGE_HEIGHT = 202;
 const MAX_YOUTUBE_IMAGE_WIDTH = 360;
@@ -54,7 +54,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         showLinkPreviews: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
         textStyles: PropTypes.object,
-        shouldProcessApps: PropTypes.bool.isRequired,
+        appsEnabled: PropTypes.bool.isRequired,
     };
 
     static contextTypes = {
@@ -397,7 +397,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
         if (app_bindings && app_bindings.length) {
             return (
-                <AppEmbeds
+                <EmbeddedBindings
                     embed={app_bindings}
                     baseTextStyle={baseTextStyle}
                     blockStyles={blockStyles}
@@ -415,7 +415,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     }
 
     renderOpenGraph = (isYouTube, isImage) => {
-        const {isReplyPost, link, metadata, openGraphData, post, showLinkPreviews, theme, shouldProcessApps} = this.props;
+        const {isReplyPost, link, metadata, openGraphData, post, showLinkPreviews, theme, appsEnabled} = this.props;
         const postId = post.id;
 
         if (isYouTube || (isImage && !openGraphData)) {
@@ -427,7 +427,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             return attachments;
         }
 
-        if (shouldProcessApps) {
+        if (appsEnabled) {
             const appEmbeds = this.renderAppEmbeds();
             if (appEmbeds) {
                 return appEmbeds;
@@ -541,9 +541,9 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             link = expandedLink;
         }
 
-        const {attachments, app_bindings, shouldProcessApps} = postProps;
+        const {attachments, app_bindings, appsEnabled} = postProps;
 
-        if (!link && !attachments && !(shouldProcessApps && app_bindings)) {
+        if (!link && !attachments && !(appsEnabled && app_bindings)) {
             return null;
         }
 

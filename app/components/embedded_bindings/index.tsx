@@ -4,13 +4,13 @@
 import React from 'react';
 import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
-import AppEmbed from './app_embed';
+import EmbeddedBinding from './embedded_binding';
 import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
-import {PostEmbed} from '@mm-redux/types/apps';
+import {AppBinding} from '@mm-redux/types/apps';
 
 type Props = {
-    embeds: PostEmbed[],
+    embeds: AppBinding[],
     baseTextStyle?: StyleProp<TextStyle>,
     blockStyles?: StyleProp<ViewStyle>[],
     deviceHeight: number,
@@ -21,7 +21,7 @@ type Props = {
     textStyles?: StyleProp<TextStyle>[],
 }
 
-export default function AppEmbeds(props: Props) {
+export default function EmbeddedBindings(props: Props) {
     const {
         embeds,
         baseTextStyle,
@@ -36,7 +36,7 @@ export default function AppEmbeds(props: Props) {
 
     embeds.forEach((embed, i) => {
         content.push(
-            <AppEmbed
+            <EmbeddedBinding
                 embed={embed}
                 baseTextStyle={baseTextStyle}
                 blockStyles={blockStyles}
