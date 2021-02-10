@@ -1,14 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-
 import {MM_TABLES} from '@constants/database';
+import {Database} from '@nozbe/watermelondb';
 import {DataFactory, DBInstance, IsolatedTables, RecordValue} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
 
-import {operateAppRecord} from './entity_factory';
+import {
+    operateAppRecord,
+    operateCustomEmojiRecord,
+    operateGlobalRecord,
+    operateRoleRecord,
+    operateServersRecord,
+    operateSystemRecord,
+    operateTermsOfServiceRecord,
+} from './entity_factory';
 
 export enum OperationType {
     CREATE = 'CREATE',
@@ -53,28 +60,28 @@ class DataOperator {
             break;
         }
         case GLOBAL : {
-            recordOperator = operateAppRecord;
+            recordOperator = operateGlobalRecord;
             break;
         }
         case SERVERS : {
-            recordOperator = operateAppRecord;
+            recordOperator = operateServersRecord;
             break;
         }
         case CUSTOM_EMOJI : {
-            recordOperator = operateAppRecord;
+            recordOperator = operateCustomEmojiRecord;
             break;
         }
         case ROLE : {
-            recordOperator = operateAppRecord;
+            recordOperator = operateRoleRecord;
             break;
         }
         case SYSTEM : {
-            recordOperator = operateAppRecord;
+            recordOperator = operateSystemRecord;
             break;
         }
         default: {
             // TERMS_OF_SERVICE
-            recordOperator = operateAppRecord;
+            recordOperator = operateTermsOfServiceRecord;
             break;
         }
         }

@@ -62,7 +62,29 @@ export type RawServers = {
     url: string
 }
 
-export type RecordValue = RawApp | RawGlobal | RawServers
+export type RawCustomEmoji = {
+    id: string,
+    name: string
+}
+
+export type RawRole = {
+    id: string,
+    name: string,
+    permissions: []
+}
+
+export type RawSystem = {
+    id: string,
+    name: string,
+    value: string
+}
+
+export type RawTermsOfService = {
+    id: string,
+    acceptedAt: number
+}
+
+export type RecordValue = RawApp | RawGlobal | RawServers | RawRole | RawSystem | RawTermsOfService
 
 export type DataFactory = {
     db: Database,

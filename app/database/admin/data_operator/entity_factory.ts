@@ -3,9 +3,24 @@
 
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
-
-import {DataFactory, RawApp} from '@typings/database/database';
 import App from '@typings/database/app';
+import CustomEmoji from '@typings/database/custom_emoji';
+
+import {
+    DataFactory,
+    RawApp,
+    RawCustomEmoji,
+    RawGlobal,
+    RawRole,
+    RawServers,
+    RawSystem,
+    RawTermsOfService,
+} from '@typings/database/database';
+import Global from '@typings/database/global';
+import Role from '@typings/database/role';
+import Servers from '@typings/database/servers';
+import System from '@typings/database/system';
+import TermsOfService from '@typings/database/terms_of_service';
 
 import {OperationType} from './index';
 
@@ -25,6 +40,79 @@ export const operateAppRecord = async ({db, optType, tableName, value}: DataFact
         app.buildNumber = record?.buildNumber ?? '';
         app.createdAt = record?.createdAt ?? 0;
         app.versionNumber = record?.buildNumber ?? '';
+    };
+
+    return operateBaseRecord({db, optType, tableName, value, generator});
+};
+
+export const operateGlobalRecord = async ({db, optType, tableName, value}: DataFactory) => {
+    const record = value as RawGlobal;
+
+    const generator = (global: Global) => {
+        global._raw.id = record?.id ?? global.id;
+        global.name = record?.name ?? '';
+        global.value = record?.value ?? 0;
+    };
+
+    return operateBaseRecord({db, optType, tableName, value, generator});
+};
+
+export const operateServersRecord = async ({db, optType, tableName, value}: DataFactory) => {
+    const record = value as RawServers;
+
+    const generator = (servers: Servers) => {
+        servers._raw.id = record?.id ?? servers.id;
+        servers.dbPath = record?.dbPath ?? '';
+        servers.displayName = record?.displayName ?? 0;
+        servers.mentionCount = record?.mentionCount ?? 0;
+        servers.unreadCount = record?.unreadCount ?? 0;
+        servers.url = record?.url ?? 0;
+    };
+
+    return operateBaseRecord({db, optType, tableName, value, generator});
+};
+
+export const operateCustomEmojiRecord = async ({db, optType, tableName, value}: DataFactory) => {
+    const record = value as RawCustomEmoji;
+
+    const generator = (emoji: CustomEmoji) => {
+        emoji._raw.id = record?.id ?? emoji.id;
+        emoji.name = record?.name ?? '';
+    };
+
+    return operateBaseRecord({db, optType, tableName, value, generator});
+};
+
+export const operateRoleRecord = async ({db, optType, tableName, value}: DataFactory) => {
+    const record = value as RawRole;
+
+    const generator = (role: Role) => {
+        role._raw.id = record?.id ?? role.id;
+        role.name = record?.name ?? '';
+        role.permissions = record?.permissions ?? [];
+    };
+
+    return operateBaseRecord({db, optType, tableName, value, generator});
+};
+
+export const operateSystemRecord = async ({db, optType, tableName, value}: DataFactory) => {
+    const record = value as RawSystem;
+
+    const generator = (system: System) => {
+        system._raw.id = record?.id ?? system.id;
+        system.name = record?.name ?? '';
+        system.value = record?.value ?? '';
+    };
+
+    return operateBaseRecord({db, optType, tableName, value, generator});
+};
+
+export const operateTermsOfServiceRecord = async ({db, optType, tableName, value}: DataFactory) => {
+    const record = value as RawTermsOfService;
+
+    const generator = (tos: TermsOfService) => {
+        tos._raw.id = record?.id ?? tos.id;
+        tos.acceptedAt = record?.acceptedAt ?? 0;
     };
 
     return operateBaseRecord({db, optType, tableName, value, generator});
