@@ -44,12 +44,17 @@ export const runDataOperatorTests = async () => {
 
     const updateRecords = async () => {
         await DataOperator.handleIsolatedEntityData({
-            optType: OperationType.UPDATE,
+            optType: OperationType.CREATE,
             tableName: APP,
             values: [
-                {buildNumber: 'build-8a', createdAt: 1, id: 'id-8a', versionNumber: 'version-8aa'},
-                {buildNumber: 'build-9x', createdAt: 1, id: 'id-9', versionNumber: 'version-9'},
-                {buildNumber: 'build-10yyy', createdAt: 1, id: 'id-10', versionNumber: 'version-10x'},
+
+                // {buildNumber: 'build-8AA', createdAt: 1, id: 'id-8a', versionNumber: 'version-8bba'},
+
+                {buildNumber: 'b123', createdAt: 1, id: 'id-123', versionNumber: 'v123x'},
+                {buildNumber: 'b123', createdAt: 1, id: 'id-123x', versionNumber: 'v123xy'},
+
+                //
+                // {buildNumber: 'build-10ZZ', createdAt: 1, id: 'id-10', versionNumber: 'version-10x'},
             ],
         });
     };

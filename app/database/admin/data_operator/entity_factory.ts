@@ -41,7 +41,7 @@ export const operateAppRecord = async ({db, optType, tableName, value}: DataFact
         app._raw.id = record?.id ?? app.id;
         app.buildNumber = record?.buildNumber ?? '';
         app.createdAt = record?.createdAt ?? 0;
-        app.versionNumber = record?.buildNumber ?? '';
+        app.versionNumber = record?.versionNumber ?? '';
     };
 
     return operateBaseRecord({db, optType, tableName, value, generator});
@@ -133,16 +133,22 @@ export const operateTermsOfServiceRecord = async ({db, optType, tableName, value
  * @returns {Promise<any>}
  */
 const operateBaseRecord = async ({db, optType, tableName, value, generator}: DataFactory) => {
-    if (optType === OperationType.UPDATE) {
-        // FIXME : If an id does not exist, create it
-        const appRecord = await db.collections.get(tableName).query(Q.where('id', value.id)).fetch() as Model[];
-        if (appRecord?.length) {
-            const record = appRecord[0];
-            return record.prepareUpdate(() => generator!(record));
-        }
-        return null;
-    } else if (optType === OperationType.CREATE) {
-        // FIXME : checks if the id does not already exist in the db; if it does, then perform and update and return with a callback.
+    // We query first to see if we have a record on that entity with the current value.id
+    const appRecord = await db.collections.get(tableName).query(Q.where('id', value.id)).fetch() as Model[];
+    const isPresent = appRecord.length > 0;
+
+    if ((isPresent && optType === OperationType.CREATE) || (isPresent && optType === OperationType.UPDATE)) {
+        // Two possible scenarios:
+        // 1. We are dealing with either duplicates here and if so, we'll update instead of create
+        // 2. This is just a normal update operation
+        const record = appRecord[0];
+        return record.prepareUpdate(() => generator!(record));
+    }
+
+    if ((!isPresent && optType === OperationType.UPDATE) || (optType === OperationType.CREATE)) {
+        // Two possible scenarios
+        // 1. We don't have a record yet to update; so we create it
+        // 2. This is just a normal create operation
         return db.collections.get(tableName).prepareCreate(generator);
     }
 
