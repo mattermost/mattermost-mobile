@@ -4,7 +4,7 @@
 import {Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
-import {DataFactory, DBInstance, RecordValue} from '@typings/database/database';
+import {DataFactory, DBInstance, IsolatedTables, RecordValue} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';
 
@@ -16,31 +16,70 @@ export enum OperationType {
     DELETE = 'DELETE'
 }
 
+type Records = RecordValue | RecordValue[]
+
 type HandleBaseData = {
     optType: OperationType,
     tableName: string,
-    values: unknown,
+    values: Records,
     recordOperator: (recordOperator: DataFactory) => void
 }
 
 type BatchOperations = { db: Database, models: unknown }
-type HandleEntityData = { optType: OperationType, values: RecordValue }
 
-// TODO : what if we are inserting duplicate ids?
+type HandleIsolatedEntityData = { optType: OperationType, tableName: IsolatedTables, values: Records }
 
 class DataOperator {
     private defaultDatabase: DBInstance | undefined;
     private serverDatabase: DBInstance | undefined;
 
     /**
-     * handleAppData : Operator that handles Create/Update/Delete operation on the app entity of the default database.
+     * handleIsolatedEntityData :Operator that handles Create/Update/Delete Operation on the isolated entities as
+     * described by the IsolatedTables type
      * @param {OperationType} optType
-     * @param {any} values
+     * @param {APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE} tableName
+     * @param {RawApp | RawGlobal | RawServers} values
      * @returns {Promise<void>}
      */
-    handleAppData = async ({optType, values}: HandleEntityData): Promise<void> => {
-        const tableName = MM_TABLES.DEFAULT.APP;
-        await this.handleBaseData({optType, values, tableName, recordOperator: operateAppRecord});
+    handleIsolatedEntityData = async ({optType, tableName, values}: HandleIsolatedEntityData): Promise<void> => {
+        const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
+        const {CUSTOM_EMOJI, ROLE, SYSTEM} = MM_TABLES.SERVER;
+
+        let recordOperator: (recordOperator: DataFactory) => void;
+
+        switch (tableName) {
+        case APP : {
+            recordOperator = operateAppRecord;
+            break;
+        }
+        case GLOBAL : {
+            recordOperator = operateAppRecord;
+            break;
+        }
+        case SERVERS : {
+            recordOperator = operateAppRecord;
+            break;
+        }
+        case CUSTOM_EMOJI : {
+            recordOperator = operateAppRecord;
+            break;
+        }
+        case ROLE : {
+            recordOperator = operateAppRecord;
+            break;
+        }
+        case SYSTEM : {
+            recordOperator = operateAppRecord;
+            break;
+        }
+        default: {
+            // TERMS_OF_SERVICE
+            recordOperator = operateAppRecord;
+            break;
+        }
+        }
+
+        await this.handleBaseData({optType, values, tableName, recordOperator});
     };
 
     /**
@@ -59,9 +98,8 @@ class DataOperator {
      * handleBaseData: Handles the Create/Update/Delete operations on an entity.
      * @param {OperationType} optType
      * @param {string} tableName
-     * @param {any} values
-     * @param recordOperator
-     *
+     * @param {RawApp  | RawGlobal  | RawServers } values
+     * @param {(recordOperator: DataFactory) => void} recordOperator
      * @returns {Promise<void>}
      */
     private handleBaseData = async ({optType, tableName, values, recordOperator}: HandleBaseData) => {
@@ -81,7 +119,7 @@ class DataOperator {
 
             results = await Promise.all(recordPromises);
         } else {
-            results = await recordOperator({...config, value: values});
+            results = await recordOperator({...config, value: values as RecordValue});
         }
 
         // FIXME : do better check on the results constant

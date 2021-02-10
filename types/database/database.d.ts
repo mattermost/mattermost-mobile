@@ -1,5 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {MM_TABLES} from '@constants/database';
+
+// See LICENSE.txt for license information.
 import Model from '@nozbe/watermelondb/Model';
 
 // See LICENSE.txt for license information.
@@ -37,19 +40,39 @@ export type DefaultNewServer = {
 // A database connection is of type 'Database'; unless it fails to be initialize and in which case it becomes 'undefined'
 export type DBInstance = Database | undefined
 
-type RawApp = {
+export type RawApp = {
     buildNumber: string,
     createdAt: number,
     id: string,
     versionNumber: string,
 }
 
-type RecordValue = RawApp | RawApp[] | any
+export type RawGlobal = {
+    id: string,
+    name: string,
+    value: string,
+}
 
-type DataFactory = {
+export type RawServers = {
+    dbPath: string,
+    displayName: string,
+    id: string,
+    mentionCount: number,
+    unreadCount: number,
+    url: string
+}
+
+export type RecordValue = RawApp | RawGlobal | RawServers
+
+export type DataFactory = {
     db: Database,
     generator?: (model: Model) => void,
     optType?: OperationType,
     tableName: string,
     value: RecordValue,
 }
+
+const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
+const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
+
+export type IsolatedTables = APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE
