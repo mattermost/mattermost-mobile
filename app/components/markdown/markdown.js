@@ -73,6 +73,7 @@ export default class Markdown extends PureComponent {
         disableChannelLink: false,
         disableAtChannelMentionHighlight: false,
         disableGallery: false,
+        value: '',
     };
 
     constructor(props) {
@@ -444,7 +445,7 @@ export default class Markdown extends PureComponent {
     };
 
     render() {
-        let ast = this.parser.parse(this.props.value);
+        let ast = this.parser.parse(this.props.value.toString());
 
         ast = combineTextNodes(ast);
         ast = addListItemIndices(ast);
