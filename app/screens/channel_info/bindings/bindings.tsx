@@ -20,11 +20,11 @@ type Props = {
     theme: Theme;
     currentChannel: Channel;
     currentUser: UserProfile;
-    shouldProcessApps: boolean;
+    appsEnabled: boolean;
 }
 
 const Bindings = (props: Props) => {
-    if (!props.shouldProcessApps) {
+    if (!props.appsEnabled) {
         return null;
     }
 
