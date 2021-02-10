@@ -44,4 +44,15 @@ describe('Markdown', () => {
             <Markdown {...props}/>,
         );
     });
+
+    test('should not crash when given a non-string value', () => {
+        const props = {
+            ...baseProps,
+            value: 10,
+        };
+
+        shallow(
+            <Markdown {...props}/>,
+        );
+    });
 });
