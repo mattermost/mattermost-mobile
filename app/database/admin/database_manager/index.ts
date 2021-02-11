@@ -120,8 +120,7 @@ class DatabaseManager {
             });
 
             // Registers the new server connection into the DEFAULT database
-            if (serverUrl && shouldAddToDefaultDatabase
-            ) {
+            if (serverUrl && shouldAddToDefaultDatabase) {
                 await this.addServerToDefaultDatabase({databaseFilePath, displayName: dbName, serverUrl});
             }
 
@@ -141,13 +140,7 @@ class DatabaseManager {
      * @returns {Promise<void>}
      */
     setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
-        const allServers = await this.getAllServers();
-
-        const existingServer = allServers?.filter((server) => {
-            return server.url === serverUrl;
-        });
-
-        const shouldAddToDefaultDatabase = (existingServer && existingServer.length < 1) || existingServer === undefined;
+        const isServerPresent = await this.isServerPresent(serverUrl);
 
         this.activeDatabase = await this.createDatabaseConnection({
             databaseConnection: {
@@ -156,9 +149,24 @@ class DatabaseManager {
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
-            shouldAddToDefaultDatabase,
+            shouldAddToDefaultDatabase: Boolean(!isServerPresent),
         });
     };
+
+    /**
+     * isServerPresent : Confirms if the current serverUrl does not already exist in the database
+     * @param {String} serverUrl
+     * @returns {Promise<boolean>}
+     */
+    isServerPresent = async (serverUrl: String) => {
+        const allServers = await this.getAllServers();
+
+        const existingServer = allServers?.filter((server) => {
+            return server.url === serverUrl;
+        });
+
+        return existingServer && existingServer.length > 0;
+    }
 
     /**
      * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
@@ -333,8 +341,9 @@ class DatabaseManager {
     }: DefaultNewServer) => {
         try {
             const defaultDatabase = await this.getDefaultDatabase();
+            const isServerPresent = await this.isServerPresent(serverUrl);
 
-            if (defaultDatabase) {
+            if (defaultDatabase && !isServerPresent) {
                 await defaultDatabase.action(async () => {
                     const serversCollection = defaultDatabase.collections.get('servers');
                     await serversCollection.create((server: IServers) => {

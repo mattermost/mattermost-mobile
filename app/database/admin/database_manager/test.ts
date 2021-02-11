@@ -132,4 +132,42 @@ describe('*** Database Manager tests ***', () => {
         expect(serversRecords).toBeDefined();
         expect(serversRecords.length).toEqual(1);
     });
+
+    it('should enforce uniqueness of connections using serverUrl as key', async () => {
+        expect.assertions(2);
+
+        // We can't have more than one connection with the same server url
+        const serverUrl = 'https://appv3.mattermost.com';
+        await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl,
+            },
+        });
+
+        await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'duplicate server',
+                dbType: DatabaseType.SERVER,
+                serverUrl,
+            },
+        });
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+
+        const allServers = defaultDB && await defaultDB.collections.get(SERVERS).query().fetch() as IServers[];
+
+        // We should be having some servers returned here
+        expect(allServers?.length).toBeGreaterThan(0);
+
+        const occurrences = allServers?.map((server) => server.url).reduce((acc, cur) => (cur === serverUrl ? acc + 1 : acc), 0);
+
+        // We should only have one occurence of the 'https://appv3.mattermost.com' url
+        expect(occurrences).toEqual(1);
+    });
 });
