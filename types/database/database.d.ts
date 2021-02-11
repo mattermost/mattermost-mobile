@@ -98,3 +98,4 @@ const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
 export type IsolatedTables = APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE
+type DBInstance = Database | undefined
