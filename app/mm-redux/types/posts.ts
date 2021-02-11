@@ -4,7 +4,9 @@
 import {CustomEmoji} from './emojis';
 import {FileInfo} from './files';
 import {Reaction} from './reactions';
+import {UserProfile} from './users';
 import {
+    $ID,
     RelationOneToOne,
     RelationOneToMany,
     IDMappedObjects,
@@ -73,6 +75,8 @@ export type Post = {
     user_activity_posts?: Array<Post>;
     state?: 'DELETED';
     ownPost?: boolean;
+    last_reply_at?: number;
+    participants: Array<UserProfile | $ID<UserProfile>>;
 };
 
 export type PostWithFormatData = Post & {

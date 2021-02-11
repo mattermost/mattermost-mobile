@@ -282,6 +282,14 @@ export default class Client4 {
         return `${this.getBotsRoute()}/${botUserId}`;
     }
 
+    getUserThreadsRoute(userID: string, teamID: string): string {
+        return `${this.getUserRoute(userID)}/teams/${teamID}/threads`;
+    }
+
+    getUserThreadRoute(userId: string, teamId: string, threadId: string): string {
+        return `${this.getUserThreadsRoute(userId, teamId)}/${threadId}`;
+    }
+
     getCSRFFromCookie() {
         // NOT NEEDED IN THE MOBILE APP
         // if (typeof document !== 'undefined' && typeof document.cookie !== 'undefined') {
@@ -1668,49 +1676,94 @@ export default class Client4 {
         );
     };
 
-    getPostThread = async (postId: string) => {
+    getPostThread = async (postId: string, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getPostRoute(postId)}/thread`,
+            `${this.getPostRoute(postId)}/thread${buildQueryString({collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPosts = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getPosts = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({page, per_page: perPage})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({page, per_page: perPage, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPostsUnread = async (channelId: string, userId: string, limitAfter = DEFAULT_LIMIT_AFTER, limitBefore = DEFAULT_LIMIT_BEFORE) => {
+    getPostsUnread = async (channelId: string, userId: string, limitAfter = DEFAULT_LIMIT_AFTER, limitBefore = DEFAULT_LIMIT_BEFORE, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getUserRoute(userId)}/channels/${channelId}/posts/unread${buildQueryString({limit_after: limitAfter, limit_before: limitBefore})}`,
+            `${this.getUserRoute(userId)}/channels/${channelId}/posts/unread${buildQueryString({limit_after: limitAfter, limit_before: limitBefore, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPostsSince = async (channelId: string, since: number) => {
+    getPostsSince = async (channelId: string, since: number, collapsedThreads = false, collapsedThreadsExtended = false) => {
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({since})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({since, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
         analytics.trackAPI('api_posts_get_before', {channel_id: channelId});
 
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
         );
     };
 
-    getPostsAfter = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+    getPostsAfter = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
         analytics.trackAPI('api_posts_get_after', {channel_id: channelId});
 
         return this.doFetch(
-            `${this.getChannelRoute(channelId)}/posts${buildQueryString({after: postId, page, per_page: perPage})}`,
+            `${this.getChannelRoute(channelId)}/posts${buildQueryString({after: postId, page, per_page: perPage, collapsedThreads, collapsedThreadsExtended})}`,
             {method: 'get'},
+        );
+    };
+
+    getUserThreads = async (userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, extended = false, deleted = false, unread = false, since = 0) => {
+        return this.doFetch(
+            `${this.getUserThreadsRoute(userId, teamId)}${buildQueryString({before, after, pageSize, extended, deleted, unread, since})}`,
+            {method: 'get'},
+        );
+    };
+
+    getUserThread = async (userId: string, teamId: string, threadId: string, extended = false) => {
+        return this.doFetch(
+            `${this.getUserThreadRoute(userId, teamId, threadId)}${buildQueryString({extended})}`,
+            {method: 'get'},
+        );
+    };
+
+    getThreadMentionCountsByChannel = async (userId: string, teamId: string) => {
+        return this.doFetch(
+            `${this.getUserThreadsRoute(userId, teamId)}/mention_counts`,
+            {method: 'get'},
+        );
+    };
+
+    updateThreadsReadForUser = (userId: string, teamId: string) => {
+        const url = `${this.getUserThreadsRoute(userId, teamId)}/read`;
+        return this.doFetch(
+            url,
+            {method: 'put'},
+        );
+    };
+
+    updateThreadReadForUser = (userId: string, teamId: string, threadId: string, timestamp: number) => {
+        const url = `${this.getUserThreadRoute(userId, teamId, threadId)}/read/${timestamp}`;
+        return this.doFetch(
+            url,
+            {method: 'put'},
+        );
+    };
+
+    updateThreadFollowForUser = (userId: string, teamId: string, threadId: string, state: boolean) => {
+        const url = this.getUserThreadRoute(userId, teamId, threadId) + '/following';
+        return this.doFetch(
+            url,
+            {method: state ? 'put' : 'delete'},
         );
     };
 

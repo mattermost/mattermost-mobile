@@ -48,6 +48,11 @@ const state = {
             selectedPostId: '',
             currentFocusedPostId: '',
         },
+        threads: {
+            threads: {},
+            threadsInTeam: {},
+            counts: {},
+        },
         preferences: {
             myPreferences: {},
         },
