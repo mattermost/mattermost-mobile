@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+import {AppSchema, Database} from '@nozbe/watermelondb';
+import Model from '@nozbe/watermelondb/Model';
+import {Migration} from '@nozbe/watermelondb/Schema/migrations';
+
 import {MM_TABLES} from '@constants/database';
 
-// See LICENSE.txt for license information.
-import Model from '@nozbe/watermelondb/Model';
-
-// See LICENSE.txt for license information.
-import {Migration} from '@nozbe/watermelondb/Schema/migrations';
-import {AppSchema, Database} from '@nozbe/watermelondb';
 import {OperationType} from '../../app/database/admin/data_operator';
 import {DatabaseType} from '../../app/database/admin/database_manager';
 
@@ -98,4 +97,3 @@ const {APP, GLOBAL, SERVERS} = MM_TABLES.DEFAULT;
 const {CUSTOM_EMOJI, ROLE, SYSTEM, TERMS_OF_SERVICE} = MM_TABLES.SERVER;
 
 export type IsolatedTables = APP | GLOBAL | SERVERS | CUSTOM_EMOJI | ROLE | SYSTEM | TERMS_OF_SERVICE
-type DBInstance = Database | undefined

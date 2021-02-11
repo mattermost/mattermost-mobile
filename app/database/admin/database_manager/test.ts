@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-
-import {MM_TABLES} from '@constants/database';
+import DatabaseManager, {DatabaseType} from './index';
 
 import {DBInstance} from '@typings/database/database';
+import {Database} from '@nozbe/watermelondb';
 import IServers from '@typings/database/servers';
-
-import DatabaseManager, {DatabaseType} from './index';
+import {MM_TABLES} from '@constants/database';
 
 jest.mock('./index');
 
@@ -19,7 +17,7 @@ const {SERVERS} = MM_TABLES.DEFAULT;
 // 2. Deletion of the 'databases' folder on those two platforms
 
 describe('*** Database Manager tests ***', () => {
-    it(' => should return a default database', async () => {
+    it('=> should return a default database', async () => {
         expect.assertions(2);
 
         const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager as any, 'addServerToDefaultDatabase');
@@ -49,7 +47,7 @@ describe('*** Database Manager tests ***', () => {
     });
 
     it('=> should switch between active server connections', async () => {
-        expect.assertions(8);
+        expect.assertions(7);
         let activeServer: DBInstance;
         let adapter;
 
@@ -81,7 +79,6 @@ describe('*** Database Manager tests ***', () => {
         expect(activeServer).toBeDefined();
         adapter = activeServer!.adapter as any;
         const newDBName = adapter.underlyingAdapter._dbName;
-        expect(newDBName).not.toStrictEqual('community mattermost');
         expect(newDBName).toStrictEqual('appv2');
     });
 
@@ -119,7 +116,7 @@ describe('*** Database Manager tests ***', () => {
         expect(serversRecords.length).toEqual(2);
     });
 
-    it('should delete appv1 server from the servers table of Default database', async () => {
+    it('=> should delete appv1 server from the servers table of Default database', async () => {
         expect.assertions(3);
 
         // Removing database for appv1 connection
@@ -131,5 +128,43 @@ describe('*** Database Manager tests ***', () => {
         const serversRecords = await defaultDB!.collections.get(SERVERS).query().fetch() as IServers[];
         expect(serversRecords).toBeDefined();
         expect(serversRecords.length).toEqual(1);
+    });
+
+    it('=> should enforce uniqueness of connections using serverUrl as key', async () => {
+        expect.assertions(2);
+
+        // We can't have more than one connection with the same server url
+        const serverUrl = 'https://appv3.mattermost.com';
+        await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'community mattermost',
+                dbType: DatabaseType.SERVER,
+                serverUrl,
+            },
+        });
+
+        await DatabaseManager.createDatabaseConnection({
+            shouldAddToDefaultDatabase: true,
+            databaseConnection: {
+                actionsEnabled: true,
+                dbName: 'duplicate server',
+                dbType: DatabaseType.SERVER,
+                serverUrl,
+            },
+        });
+
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+
+        const allServers = defaultDB && await defaultDB.collections.get(SERVERS).query().fetch() as IServers[];
+
+        // We should be having some servers returned here
+        expect(allServers?.length).toBeGreaterThan(0);
+
+        const occurrences = allServers?.map((server) => server.url).reduce((acc, cur) => (cur === serverUrl ? acc + 1 : acc), 0);
+
+        // We should only have one occurence of the 'https://appv3.mattermost.com' url
+        expect(occurrences).toEqual(1);
     });
 });

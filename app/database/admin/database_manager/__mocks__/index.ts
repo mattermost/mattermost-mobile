@@ -1,18 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model, Q} from '@nozbe/watermelondb';
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
-import {Class} from '@nozbe/watermelondb/utils/common';
-
-import {MM_TABLES} from '@constants/database';
-import type {DBInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
-import IServers from '@typings/database/servers';
-
-import DefaultMigration from '../../../default/migration';
 import {App, Global, Servers} from '../../../default/models';
-import {defaultSchema} from '../../../default/schema';
-import ServerMigration from '../../../server/migration';
 import {
     Channel,
     ChannelInfo,
@@ -43,6 +32,16 @@ import {
     TermsOfService,
     User,
 } from '../../../server/models';
+import type {DBInstance, DefaultNewServer, MMDatabaseConnection} from '@typings/database/database';
+import {Database, Model, Q} from '@nozbe/watermelondb';
+
+import {Class} from '@nozbe/watermelondb/utils/common';
+import DefaultMigration from '../../../default/migration';
+import IServers from '@typings/database/servers';
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
+import {MM_TABLES} from '@constants/database';
+import ServerMigration from '../../../server/migration';
+import {defaultSchema} from '../../../default/schema';
 import {serverSchema} from '../../../server/schema';
 
 const {SERVERS} = MM_TABLES.DEFAULT;
@@ -136,13 +135,7 @@ class DatabaseManager {
      * @returns {Promise<void>}
      */
     setActiveServerDatabase = async ({displayName, serverUrl}: ActiveServerDatabase) => {
-        const allServers = await this.getAllServers();
-
-        const existingServer = allServers?.filter((server: IServers) => {
-            return server.url === serverUrl;
-        });
-
-        const shouldAddToDefaultDatabase = (existingServer && existingServer.length < 1) || existingServer === undefined;
+        const isServerPresent = await this.isServerPresent(serverUrl);
 
         this.activeDatabase = await this.createDatabaseConnection({
             databaseConnection: {
@@ -151,9 +144,22 @@ class DatabaseManager {
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
-            shouldAddToDefaultDatabase,
+            shouldAddToDefaultDatabase: Boolean(!isServerPresent),
         });
     };
+
+    /**
+     * isServerPresent : Confirms if the current serverUrl does not already exist in the database
+     * @param {String} serverUrl
+     * @returns {Promise<boolean>}
+     */
+    isServerPresent = async (serverUrl: String) => {
+        const allServers = await this.getAllServers();
+        const existingServer = allServers?.filter((server) => {
+            return server.url === serverUrl;
+        });
+        return existingServer && existingServer.length > 0;
+    }
 
     /**
      * getActiveServerDatabase: The DatabaseManager should be the only one setting the active database.  Hence, we have made the activeDatabase property private.
@@ -289,8 +295,9 @@ class DatabaseManager {
     }: DefaultNewServer) => {
         try {
             const defaultDatabase = await this.getDefaultDatabase();
+            const isServerPresent = await this.isServerPresent(serverUrl);
 
-            if (defaultDatabase) {
+            if (defaultDatabase && !isServerPresent) {
                 await defaultDatabase.action(async () => {
                     const serversCollection = defaultDatabase.collections.get('servers');
                     await serversCollection.create((server: IServers) => {
