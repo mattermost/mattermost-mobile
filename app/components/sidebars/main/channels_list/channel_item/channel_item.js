@@ -167,6 +167,7 @@ export default class ChannelItem extends PureComponent {
                 type={channel.type}
                 isArchived={isArchived}
                 isBot={isBot}
+                testID={`${testID}.channel_icon`}
             />
         );
 

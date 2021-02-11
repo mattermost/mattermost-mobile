@@ -22,6 +22,7 @@ describe('Theme', () => {
             savePreferences: jest.fn(),
         },
         allowedThemes,
+        isLandscape: false,
         isTablet: false,
         teamId: 'test-team',
         theme: Preferences.THEMES.default,

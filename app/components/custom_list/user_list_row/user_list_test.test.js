@@ -29,6 +29,7 @@ describe('UserListRow', () => {
         },
         theme: Preferences.THEMES.default,
         teammateNameDisplay: 'test',
+        testID: 'custom_list.user_item',
     };
 
     test('should match snapshot', () => {

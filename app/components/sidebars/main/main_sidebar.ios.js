@@ -28,6 +28,7 @@ export default class MainSidebarIOS extends MainSidebarBase {
             drawerOpened: false,
             searching: false,
             isSplitView: false,
+            permanentSidebar: DeviceTypes.IS_TABLET,
         };
     }
 

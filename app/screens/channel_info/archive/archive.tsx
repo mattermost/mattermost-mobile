@@ -27,6 +27,7 @@ interface ArchiveProps {
     unarchiveChannel: (channelId: string) => Promise<ActionResult>;
     selectPenultimateChannel: (channelId: string) => Promise<ActionResult>;
     teamId: string;
+    testID?: string;
     theme: Theme;
     viewArchivedChannels: boolean;
 }
@@ -129,7 +130,7 @@ export default class Archive extends PureComponent<ArchiveProps> {
     });
 
     render() {
-        const {canArchive, canUnarchive, theme} = this.props;
+        const {canArchive, canUnarchive, testID, theme} = this.props;
 
         if (!canArchive && !canUnarchive) {
             return null;
@@ -142,9 +143,10 @@ export default class Archive extends PureComponent<ArchiveProps> {
                     action={this.handleUnarchive}
                     defaultMessage='Unarchive Channel'
                     icon='archive-arrow-up-outline'
+                    rightArrow={false}
+                    testID={testID}
                     textId={t('mobile.routes.channelInfo.unarchive_channel')}
                     theme={theme}
-                    rightArrow={false}
                 />
             );
         } else {
@@ -154,10 +156,11 @@ export default class Archive extends PureComponent<ArchiveProps> {
                     defaultMessage='Archive Channel'
                     iconColor='#CA3B27'
                     icon='archive-outline'
+                    rightArrow={false}
+                    testID={testID}
                     textId={t('mobile.routes.channelInfo.delete_channel')}
                     textColor='#CA3B27'
                     theme={theme}
-                    rightArrow={false}
                 />
             );
         }
