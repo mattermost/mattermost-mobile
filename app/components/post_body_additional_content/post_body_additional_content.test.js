@@ -19,7 +19,7 @@ describe('PostBodyAdditionalContent', () => {
         deviceHeight: 100,
         deviceWidth: 100,
         message: 'message',
-        post: {id: 'post-id'},
+        postId: 'post-id',
         postProps: {},
         showLinkPreviews: false,
         theme: Preferences.THEMES.default,

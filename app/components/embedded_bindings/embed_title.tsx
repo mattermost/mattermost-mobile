@@ -27,8 +27,6 @@ export default class EmbedTitle extends PureComponent<Props> {
 
         const title = (
             <Markdown
-                isEdited={false}
-                isReplyPost={false}
                 disableHashtags={true}
                 disableAtMentions={true}
                 disableChannelLink={true}

@@ -5,7 +5,6 @@ import React from 'react';
 import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import EmbeddedBinding from './embedded_binding';
-import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
 import {AppBinding} from '@mm-redux/types/apps';
 
@@ -15,7 +14,7 @@ type Props = {
     blockStyles?: StyleProp<ViewStyle>[],
     deviceHeight: number,
     deviceWidth: number,
-    post: Post,
+    postId: string,
     onPermalinkPress?: () => void,
     theme: Theme,
     textStyles?: StyleProp<TextStyle>[],
@@ -28,7 +27,7 @@ export default function EmbeddedBindings(props: Props) {
         blockStyles,
         deviceHeight,
         onPermalinkPress,
-        post,
+        postId,
         theme,
         textStyles,
     } = props;
@@ -43,7 +42,7 @@ export default function EmbeddedBindings(props: Props) {
                 deviceHeight={deviceHeight}
                 key={'att_' + i}
                 onPermalinkPress={onPermalinkPress}
-                post={post}
+                postId={postId}
                 theme={theme}
                 textStyles={textStyles}
             />,

@@ -293,7 +293,7 @@ export default class PostBody extends PureComponent {
                 blockStyles={blockStyles}
                 message={message}
                 metadata={metadata}
-                post={post}
+                postId={post.id}
                 postProps={postProps}
                 textStyles={textStyles}
                 isReplyPost={isReplyPost}

@@ -51,17 +51,16 @@ export default class ButtonBinding extends PureComponent<Props> {
     render() {
         const {theme, binding} = this.props;
         const style = getStyleSheet(theme);
-        let customButtonStyle;
 
         return (
             <Button
-                containerStyle={[style.button, customButtonStyle]}
+                containerStyle={[style.button]}
                 disabledContainerStyle={style.buttonDisabled}
                 onPress={this.handleActionPress}
             >
                 <ButtonBindingText
                     message={binding.label}
-                    style={{...style.text}}
+                    style={style.text}
                 />
             </Button>
         );

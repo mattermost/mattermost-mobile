@@ -49,7 +49,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
         onHashtagPress: PropTypes.func,
         onPermalinkPress: PropTypes.func,
         openGraphData: PropTypes.object,
-        post: PropTypes.object.isRequired,
+        postId: PropTypes.string.isRequired,
         postProps: PropTypes.object.isRequired,
         showLinkPreviews: PropTypes.bool.isRequired,
         theme: PropTypes.object.isRequired,
@@ -118,8 +118,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     getFileInfo = () => {
         let {link} = this.props;
         const {originalHeight, originalWidth, uri} = this.state;
-        const {expandedLink, post} = this.props;
-        const postId = post.id;
+        const {expandedLink, postId} = this.props;
         if (expandedLink) {
             link = expandedLink;
         }
@@ -341,7 +340,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
     renderMessageAttachment = () => {
         const {
-            post,
+            postId,
             postProps,
             baseTextStyle,
             blockStyles,
@@ -353,7 +352,6 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
             textStyles,
             theme,
         } = this.props;
-        const postId = post.id;
         const {attachments} = postProps;
 
         if (attachments && attachments.length) {
@@ -383,7 +381,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
 
     renderAppEmbeds = () => {
         const {
-            post,
+            postId,
             postProps,
             baseTextStyle,
             blockStyles,
@@ -403,7 +401,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
                     blockStyles={blockStyles}
                     deviceHeight={deviceHeight}
                     deviceWidth={deviceWidth}
-                    post={post}
+                    postId={postId}
                     onPermalinkPress={onPermalinkPress}
                     theme={theme}
                     textStyles={textStyles}
@@ -415,8 +413,7 @@ export default class PostBodyAdditionalContent extends ImageViewPort {
     }
 
     renderOpenGraph = (isYouTube, isImage) => {
-        const {isReplyPost, link, metadata, openGraphData, post, showLinkPreviews, theme, appsEnabled} = this.props;
-        const postId = post.id;
+        const {isReplyPost, link, metadata, openGraphData, postId, showLinkPreviews, theme, appsEnabled} = this.props;
 
         if (isYouTube || (isImage && !openGraphData)) {
             return null;

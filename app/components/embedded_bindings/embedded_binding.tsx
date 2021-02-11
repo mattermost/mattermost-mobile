@@ -9,7 +9,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import EmbedSubBindings from './embedded_sub_bindings';
 import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';
-import {Post} from '@mm-redux/types/posts';
 import {Theme} from '@mm-redux/types/preferences';
 import {AppBinding} from '@mm-redux/types/apps';
 import {fillBindingsInformation} from '@utils/apps';
@@ -19,7 +18,7 @@ type Props = {
     baseTextStyle?: StyleProp<TextStyle>,
     blockStyles?: StyleProp<ViewStyle>[],
     deviceHeight: number,
-    post: Post,
+    postId: string,
     onPermalinkPress?: () => void,
     theme: Theme,
     textStyles?: StyleProp<TextStyle>[],
@@ -32,7 +31,7 @@ export default function EmbeddedBinding(props: Props) {
         blockStyles,
         deviceHeight,
         onPermalinkPress,
-        post,
+        postId,
         textStyles,
         theme,
     } = props;
@@ -48,7 +47,7 @@ export default function EmbeddedBinding(props: Props) {
     const bindings = fillBindings(embed);
 
     return (
-        <React.Fragment>
+        <>
             <View style={[style.container, style.border]}>
                 <EmbedTitle
                     theme={theme}
@@ -65,10 +64,10 @@ export default function EmbeddedBinding(props: Props) {
                 />
                 <EmbedSubBindings
                     bindings={bindings}
-                    post={post}
+                    postId={postId}
                 />
             </View>
-        </React.Fragment>
+        </>
     );
 }
 

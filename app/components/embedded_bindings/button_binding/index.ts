@@ -12,11 +12,17 @@ import {ActionFunc, ActionResult, GenericAction} from '@mm-redux/types/actions';
 import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
 import {AppCall} from '@mm-redux/types/apps';
 import {doAppCall} from '@actions/apps';
+import {getPost} from '@mm-redux/selectors/entities/posts';
 
-function mapStateToProps(state: GlobalState) {
+type OwnProps = {
+    postId: string;
+}
+
+function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
     return {
         userId: getCurrentUserId(state),
         theme: getTheme(state),
+        post: getPost(state, ownProps.postId),
     };
 }
 

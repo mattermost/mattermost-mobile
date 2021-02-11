@@ -5,17 +5,16 @@ import React from 'react';
 
 import BindingMenu from './menu_binding';
 import ButtonBinding from './button_binding';
-import {Post} from '@mm-redux/types/posts';
 import {AppBinding} from '@mm-redux/types/apps';
 
 type Props = {
     bindings?: AppBinding[];
-    post: Post;
+    postId: string;
 }
 export default function EmbeddedSubBindings(props: Props) {
     const {
         bindings,
-        post,
+        postId,
     } = props;
 
     if (!bindings?.length) {
@@ -34,7 +33,7 @@ export default function EmbeddedSubBindings(props: Props) {
                 <BindingMenu
                     key={binding.location}
                     binding={binding}
-                    post={post}
+                    postId={postId}
                 />,
             );
             return;
@@ -44,7 +43,7 @@ export default function EmbeddedSubBindings(props: Props) {
             <ButtonBinding
                 key={binding.location}
                 binding={binding}
-                post={post}
+                postId={postId}
             />,
         );
     });
