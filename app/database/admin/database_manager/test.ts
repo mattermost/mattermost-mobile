@@ -19,7 +19,7 @@ const {SERVERS} = MM_TABLES.DEFAULT;
 // 2. Deletion of the 'databases' folder on those two platforms
 
 describe('*** Database Manager tests ***', () => {
-    it(' => should return a default database', async () => {
+    it('=> should return a default database', async () => {
         expect.assertions(2);
 
         const spyOnAddServerToDefaultDatabase = jest.spyOn(DatabaseManager as any, 'addServerToDefaultDatabase');
@@ -49,7 +49,7 @@ describe('*** Database Manager tests ***', () => {
     });
 
     it('=> should switch between active server connections', async () => {
-        expect.assertions(8);
+        expect.assertions(7);
         let activeServer: DBInstance;
         let adapter;
 
@@ -81,7 +81,6 @@ describe('*** Database Manager tests ***', () => {
         expect(activeServer).toBeDefined();
         adapter = activeServer!.adapter as any;
         const newDBName = adapter.underlyingAdapter._dbName;
-        expect(newDBName).not.toStrictEqual('community mattermost');
         expect(newDBName).toStrictEqual('appv2');
     });
 
@@ -119,7 +118,7 @@ describe('*** Database Manager tests ***', () => {
         expect(serversRecords.length).toEqual(2);
     });
 
-    it('should delete appv1 server from the servers table of Default database', async () => {
+    it('=> should delete appv1 server from the servers table of Default database', async () => {
         expect.assertions(3);
 
         // Removing database for appv1 connection
@@ -133,7 +132,7 @@ describe('*** Database Manager tests ***', () => {
         expect(serversRecords.length).toEqual(1);
     });
 
-    it('should enforce uniqueness of connections using serverUrl as key', async () => {
+    it('=> should enforce uniqueness of connections using serverUrl as key', async () => {
         expect.assertions(2);
 
         // We can't have more than one connection with the same server url
