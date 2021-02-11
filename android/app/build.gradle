@@ -1,6 +1,6 @@
 apply plugin: "com.android.application"
 apply from: '../../node_modules/react-native-unimodules/gradle.groovy'
-
+apply plugin: 'kotlin-android'
 import com.android.build.OutputFile
 
 /**
@@ -269,6 +269,8 @@ dependencies {
     implementation  'com.facebook.fresco:webpsupport:2.0.0'
 
     androidTestImplementation('com.wix:detox:+')
+
+    implementation project(':watermelondb')
 }
 
 // Run this once to be able to run the application with BUCK

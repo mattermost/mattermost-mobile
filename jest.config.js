@@ -6,9 +6,10 @@ module.exports = {
     verbose: true,
     globals: {
         'ts-jest': {
-            tsConfigFile: 'tsconfig.jest.json',
+            tsConfigFile: 'tsconfig.test.json',
         },
     },
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     clearMocks: true,
     setupFilesAfterEnv: [
         '<rootDir>/test/setup.ts',
@@ -28,6 +29,6 @@ module.exports = {
         'assets/images/video_player/(.*).png': '<rootDir>/dist/assets/images/video_player/$1@2x.png',
     },
     transformIgnorePatterns: [
-        'node_modules/(?!react-native|jail-monkey|@sentry/react-native|react-navigation|@react-native-community/cameraroll)',
+        'node_modules/(?!react-native|jail-monkey|@sentry/react-native|react-navigation|@react-native-community/cameraroll|react-clone-referenced-element|@react-native-community|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|sentry-expo|native-base|unimodules-permissions-interface)',
     ],
 };

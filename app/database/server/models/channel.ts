@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Q, Query, Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
-import ChannelInfo from '@typings/database/channel_info';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
+import {MM_TABLES} from '@constants/database';
+import ChannelInfo from '@typings/database/channel_info';
 import ChannelMembership from '@typings/database/channel_membership';
 import Draft from '@typings/database/draft';
 import GroupsInChannel from '@typings/database/groups_in_channel';
-import {MM_TABLES} from '@constants/database';
 import MyChannel from '@typings/database/my_channel';
 import MyChannelSettings from '@typings/database/my_channel_settings';
 import Post from '@typings/database/post';

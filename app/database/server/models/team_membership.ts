@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Q, Query, Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import User from '@typings/database/user';
 import Team from '@typings/database/team';
+import User from '@typings/database/user';
 
 const {TEAM, TEAM_MEMBERSHIP, USER} = MM_TABLES.SERVER;
 

@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {children, field, json} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
 import ChannelMembership from '@typings/database/channel_membership';
 import GroupMembership from '@typings/database/group_membership';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import Post from '@typings/database/post';
 import Preference from '@typings/database/preference';
 import Reaction from '@typings/database/reaction';

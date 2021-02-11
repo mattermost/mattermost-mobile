@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Q, Query} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {children, field, lazy} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';

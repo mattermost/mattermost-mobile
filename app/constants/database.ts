@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import keyMirror from '@utils/key_mirror';
+
 export const MM_TABLES = {
     DEFAULT: {
         APP: 'app',
@@ -39,6 +41,13 @@ export const MM_TABLES = {
     },
 };
 
+export const MIGRATION_EVENTS = keyMirror({
+    MIGRATION_ERROR: null,
+    MIGRATION_STARTED: null,
+    MIGRATION_SUCCESS: null,
+});
+
 export default {
     MM_TABLES,
+    MIGRATION_EVENTS,
 };

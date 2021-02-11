@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
+import {field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
-import {field, json, immutableRelation} from '@nozbe/watermelondb/decorators';
 
-import {MM_TABLES} from '@constants/database';
 import Channel from '@typings/database/channel';
+import {MM_TABLES} from '@constants/database';
 
 const {CHANNEL, MY_CHANNEL_SETTINGS} = MM_TABLES.SERVER;
 

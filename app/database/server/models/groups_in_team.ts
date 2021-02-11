@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Relation} from '@nozbe/watermelondb';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import Model, {Associations} from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
 import Group from '@typings/database/group';
+import {MM_TABLES} from '@constants/database';
 import Team from '@typings/database/team';
 
 const {GROUP, GROUPS_IN_TEAM, TEAM} = MM_TABLES.SERVER;

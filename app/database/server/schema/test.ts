@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
+
 import {serverSchema} from './index';
 
 const {

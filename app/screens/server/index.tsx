@@ -2,27 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {
-    SafeAreaView,
-    StyleSheet,
-    ScrollView,
-    View,
-    Text,
-    StatusBar,
-} from 'react-native';
-
-import {
-    Header,
-    LearnMoreLinks,
-    Colors,
-    DebugInstructions,
-    ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from 'react-native';
+import {Colors, DebugInstructions, LearnMoreLinks, ReloadInstructions} from 'react-native/Libraries/NewAppScreen';
 
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 
-declare const global: {HermesInternal: null | {}};
+declare const global: { HermesInternal: null | {} };
 
 const App = () => {
     return (
@@ -33,7 +19,6 @@ const App = () => {
                     contentInsetAdjustmentBehavior='automatic'
                     style={styles.scrollView}
                 >
-                    <Header/>
                     {global.HermesInternal == null ? null : (
                         <View style={styles.engine}>
                             <Text style={styles.footer}>{'Engine: Hermes'}</Text>
@@ -43,8 +28,11 @@ const App = () => {
                         <View style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>{'Step One'}</Text>
                             <Text style={styles.sectionDescription}>
-                                {'Edit '}<Text style={styles.highlight}>{'screens/server/index.tsx'}</Text>{' to change this'}
-                                {'screen and then come back to see your edits.'}
+                                {'Edit '}
+                                <Text
+                                    style={styles.highlight}
+                                >{'screens/server/index.tsx'}</Text>{' to change this'}
+                                {'XXXXXscreen and then come back to see your edits.'}
                             </Text>
                         </View>
                         <View style={styles.sectionContainer}>
