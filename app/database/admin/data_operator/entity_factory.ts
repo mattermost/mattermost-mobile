@@ -121,10 +121,15 @@ export const operateTermsOfServiceRecord = async ({db, optType, tableName, value
 };
 
 /**
- * operateBaseRecord :  The 'id' of a record is key to this function. If WatermelonDB encounters an already existing
- * record during a CREATE operation, it silently fails the operation.  In our case, if we have an existing 'id', then
- * we'll update the record with the data.  For an UPDATE operation, we fetch the existing record using the passed 'id'
- * and then we do the update operation; if no record is found for that 'id', we'll create it.
+ * operateBaseRecord :  The 'id' of a record is key to this function. Please note that if WatermelonDB encounters
+ * an existing record during a CREATE operation, it silently fails the operation.
+ *
+ * In our case, if we have an existing 'id', then we'll update the record with the data.  For an UPDATE operation,
+ * we fetch the existing record using the passed 'id' and then we do the update operation; if no record is found for that
+ * 'id', we'll create it.
+ *
+ * For a delete operation, we'll use the id of the Model to fetch & delete its records from the database.
+ *
  * @param {} db
  * @param {OperationType | undefined} optType
  * @param {string} tableName
