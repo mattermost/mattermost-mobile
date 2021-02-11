@@ -42,7 +42,7 @@ export default class MenuBinding extends PureComponent<Props, State> {
         this.setState({selected});
         const binding = this.props.binding?.bindings?.find((b) => b.location === selected.value);
         if (!binding) {
-            // TODO Error?
+            console.debug('Trying to select element not present in binding.'); //eslint-disable-line no-console
             return;
         }
 

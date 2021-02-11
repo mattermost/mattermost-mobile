@@ -8,7 +8,11 @@ export function appsEnabled(state: GlobalState) { // eslint-disable-line @typesc
     return true;
 }
 
-export function fillBindingsInformation(binding: AppBinding) {
+export function fillBindingsInformation(binding?: AppBinding) {
+    if (!binding) {
+        return;
+    }
+
     binding.bindings?.forEach((b) => {
         // Propagate id down if not defined
         if (!b.app_id) {
