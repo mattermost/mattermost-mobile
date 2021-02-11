@@ -82,12 +82,13 @@ export default class MoreChannels extends PureComponent {
             id: 'create-pub-channel',
             text: context.intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
             showAsAction: 'always',
-            testID: 'public_channel.create.button',
+            testID: 'more_channels.create.button',
         };
 
         this.leftButton = {
             id: 'close-more-channels',
             icon: props.closeButton,
+            testID: 'close.more_channels.button',
         };
     }
 
@@ -348,6 +349,7 @@ export default class MoreChannels extends PureComponent {
             <ChannelListRow
                 {...props}
                 isArchived={this.state.typeOfChannels === 'archived'}
+                testID='more_channels.custom_list.channel_item'
             />
         );
     }
@@ -438,11 +440,15 @@ export default class MoreChannels extends PureComponent {
             let channelDropdown;
             if (canShowArchivedChannels) {
                 channelDropdown = (
-                    <View style={style.titleContainer}>
+                    <View
+                        style={style.titleContainer}
+                        testID='more_channels.channel.dropdown'
+                    >
                         <Text
                             accessibilityRole={'button'}
                             style={style.channelDropdown}
                             onPress={this.handleDropdownClick}
+                            testID={`more_channels.channel.dropdown.${typeOfChannels}`}
                         >
                             {typeOfChannels === 'public' ? publicChannelsText : archivedChannelsText}
                             {'  '}
@@ -492,6 +498,7 @@ export default class MoreChannels extends PureComponent {
                         onLoadMore={more}
                         onRowPress={this.onSelectChannel}
                         renderItem={this.renderItem}
+                        testID='more_channels.custom_list'
                         theme={theme}
                     />
                 </>

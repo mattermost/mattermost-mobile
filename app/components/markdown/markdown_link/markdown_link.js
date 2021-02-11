@@ -15,7 +15,7 @@ import {getCurrentServerUrl} from '@init/credentials';
 import BottomSheet from '@utils/bottom_sheet';
 import {errorBadChannel} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
-import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
+import {matchDeepLink, normalizeProtocol, tryOpenURL, PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 
 import mattermostManaged from 'app/mattermost_managed';
 
@@ -29,6 +29,7 @@ export default class MarkdownLink extends PureComponent {
         onPermalinkPress: PropTypes.func,
         serverURL: PropTypes.string,
         siteURL: PropTypes.string.isRequired,
+        currentTeamName: PropTypes.string,
     };
 
     static defaultProps = {
@@ -61,7 +62,11 @@ export default class MarkdownLink extends PureComponent {
                 const {intl} = this.context;
                 this.props.actions.handleSelectChannelByName(match.channelName, match.teamName, errorBadChannel.bind(null, intl), intl);
             } else if (match.type === DeepLinkTypes.PERMALINK) {
-                onPermalinkPress(match.postId, match.teamName);
+                if (match.teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
+                    onPermalinkPress(match.postId, this.props.currentTeamName);
+                } else {
+                    onPermalinkPress(match.postId, match.teamName);
+                }
             }
         } else {
             const onError = () => {

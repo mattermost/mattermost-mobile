@@ -102,6 +102,8 @@ export function getScheme(url) {
     return match && match[1];
 }
 
+export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
+
 export function matchDeepLink(url, serverURL, siteURL) {
     if (!url || (!serverURL && !siteURL)) {
         return null;
