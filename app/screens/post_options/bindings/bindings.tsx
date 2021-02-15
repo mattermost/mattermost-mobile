@@ -11,6 +11,7 @@ import {AppBinding, AppCall} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import {Post} from '@mm-redux/types/posts';
 import {UserProfile} from '@mm-redux/types/users';
+import {AppCallTypes, AppExpandLevels} from '@mm-redux/constants/apps';
 
 type Props = {
     bindings: AppBinding[],
@@ -73,7 +74,15 @@ const Option = injectIntl((props: OptionProps) => {
         const {closeWithAnimation, post} = props;
 
         props.actions.doAppCall({
+            type: AppCallTypes.SUBMIT,
             url: props.binding.call?.url || '',
+            values: {
+                ...props.binding.call?.values,
+            },
+            expand: {
+                post: AppExpandLevels.EXPAND_ALL,
+                ...props.binding.call?.expand,
+            },
             context: {
                 app_id: props.binding.app_id,
                 channel_id: post.channel_id,

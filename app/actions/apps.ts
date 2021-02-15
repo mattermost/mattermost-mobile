@@ -3,13 +3,17 @@
 
 import {Client4} from '@mm-redux/client';
 import {ActionFunc} from '@mm-redux/types/actions';
-import {AppCallResponse, AppCall} from '@mm-redux/types/apps';
+import {AppCallResponse, AppCall, AppForm} from '@mm-redux/types/apps';
 import {AppsBindings, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {sendEphemeralPost} from './views/post';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
+import {showModal} from './navigation';
+import {Theme} from '@mm-redux/types/preferences';
+import CompassIcon from '@components/compass_icon';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         const ephemeral = (text: string) => dispatch(sendEphemeralPost(text, call?.context.channel_id, call?.context.root_id));
         try {
             const res = await Client4.executeAppCall(call) as AppCallResponse<Res>;
@@ -39,8 +43,9 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
                     return {data: res};
                 }
 
-                // TODO Open new interactive dialog
-                //dispatch(openAppsModal(res.form, call));
+                if (call.type === AppCallTypes.SUBMIT) {
+                    showAppForm(res.form, call, getTheme(getState()));
+                }
                 return {data: res};
             case AppCallResponseTypes.NAVIGATE:
                 if (!res.url) {
@@ -65,3 +70,37 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
         }
     };
 }
+
+const showAppForm = async (form: AppForm, call: AppCall, theme: Theme) => {
+    const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+
+    let submitButtons = [{
+        id: 'submit-form',
+        showAsAction: 'always',
+        text: 'Submit',
+    }];
+    if (form.submit_buttons) {
+        const options = form.fields.find((f) => f.name === form.submit_buttons)?.options;
+        const newButtons = options?.map((o) => {
+            return {
+                id: 'submit-form_' + o.value,
+                showAsAction: 'always',
+                text: o.label,
+            };
+        });
+        if (newButtons) {
+            submitButtons = newButtons;
+        }
+    }
+    const options = {
+        topBar: {
+            leftButtons: [{
+                id: 'close-dialog',
+                icon: closeButton,
+            }],
+            rightButtons: submitButtons,
+        },
+    };
+
+    showModal('AppForm', form.title, {form, call}, options);
+};

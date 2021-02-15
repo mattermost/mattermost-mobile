@@ -46,6 +46,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     case 'AdvancedSettings':
         screen = require('@screens/settings/advanced_settings').default;
         break;
+    case 'AppForm':
+        screen = require('@screens/apps_form').default;
+        break;
     case 'ChannelAddMembers':
         screen = require('@screens/channel_add_members').default;
         break;

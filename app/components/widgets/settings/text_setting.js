@@ -18,6 +18,8 @@ import {
 } from '@utils/theme';
 
 export default class TextSetting extends PureComponent {
+    static validTypes = ['input', 'textarea', 'number', 'email', 'tel', 'url', 'password'];
+
     static propTypes = {
         id: PropTypes.string.isRequired,
         label: PropTypes.oneOfType([

@@ -11,6 +11,8 @@ import {GlobalState} from '@mm-redux/types/store';
 import Bindings from './bindings';
 import {getCurrentUser} from '@mm-redux/selectors/entities/users';
 import {appsEnabled} from '@utils/apps';
+import {doAppCall} from '@actions/apps';
+import {bindActionCreators, Dispatch} from 'redux';
 
 function mapStateToProps(state: GlobalState) {
     const apps = appsEnabled(state);
@@ -26,4 +28,12 @@ function mapStateToProps(state: GlobalState) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(Bindings);
+function mapDispatchToProps(dispatch: Dispatch) {
+    return {
+        actions: bindActionCreators({
+            doAppCall,
+        }, dispatch),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps, null, {forwardRef: true})(Bindings);
