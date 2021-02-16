@@ -5,45 +5,24 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppField, AppSelectOption} from '@mm-redux/types/apps';
 import React from 'react';
 
-// const AsyncSelect = require('react-select/lib/Async').default as React.ElementType<AsyncSelectProps<AppSelectOption>>; // eslint-disable-line global-require
-
 export type Props = {
     field: AppField;
     label: React.ReactNode;
     helpText: React.ReactNode;
     errorText?: React.ReactNode;
-    value: string | null;
+    value: AppSelectOption | null;
     onChange: (value: AppSelectOption) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
 };
 
-export type State = {
-    refreshNonce: string;
-    field: AppField;
+type Option = {
+    text: string;
+    value: string;
 }
 
-export default class AppsFormSelectField extends React.PureComponent<Props, State> {
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            field: props.field,
-            refreshNonce: Math.random().toString(),
-        };
-    }
-    static getDerivedStateFromProps(nextProps: Props, prevState: State) {
-        if (nextProps.field !== prevState.field) {
-            return {
-                field: nextProps.field,
-                refreshNonce: Math.random().toString(),
-            };
-        }
-
-        return null;
-    }
-
-    onChange = (selectedOption: AppSelectOption) => {
-        this.props.onChange(selectedOption);
+export default class AppsFormSelectField extends React.PureComponent<Props> {
+    onChange = (selectedOption: Option) => {
+        this.props.onChange({label: selectedOption.text, value: selectedOption.value});
     }
 
     loadDynamicOptions = async (userInput: string): Promise<AppSelectOption[]> => {
@@ -74,7 +53,7 @@ export default class AppsFormSelectField extends React.PureComponent<Props, Stat
     // }
 
     renderStaticSelect() {
-        const {field, label, helpText, errorText} = this.props;
+        const {field, label, helpText, errorText, onChange} = this.props;
 
         const placeholder = field.hint || '';
 
@@ -82,7 +61,7 @@ export default class AppsFormSelectField extends React.PureComponent<Props, Stat
             return {text: v.label, value: v.value};
         }) || [];
         const value = options.find((v) => {
-            return v.value === this.props.value;
+            return v.value === this.props.value?.value;
         }) || {};
 
         return (
@@ -91,7 +70,7 @@ export default class AppsFormSelectField extends React.PureComponent<Props, Stat
                 label={label}
                 options={options}
                 optional={!field.is_required}
-                onSelected={this.onChange}
+                onSelected={onChange}
                 helpText={helpText}
                 errorText={errorText}
                 placeholder={placeholder}
@@ -107,9 +86,8 @@ export default class AppsFormSelectField extends React.PureComponent<Props, Stat
 
         let selectComponent;
         if (field.type === 'dynamic_select') {
-            return null;
-
             //selectComponent = this.renderDynamicSelect();
+            return null;
         } else if (field.type === 'static_select') {
             selectComponent = this.renderStaticSelect();
         } else {

@@ -88,7 +88,7 @@ const showAppForm = async (form: AppForm, call: AppCall, theme: Theme) => {
                 text: o.label,
             };
         });
-        if (newButtons) {
+        if (newButtons && newButtons.length > 0) {
             submitButtons = newButtons;
         }
     }

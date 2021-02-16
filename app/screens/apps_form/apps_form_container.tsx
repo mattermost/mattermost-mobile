@@ -4,9 +4,9 @@
 import React, {PureComponent} from 'react';
 
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupCallValues, AppSelectOption} from '@mm-redux/types/apps';
+import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppLookupCallValues, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {AppCallResponseTypes, AppCallTypes} from '@mm-redux/constants/apps';
-import AppsForm from './apps_form';
+import AppsFormComponent from './apps_form_component';
 
 export type Props = {
     form?: AppForm;
@@ -22,7 +22,7 @@ export type State = {
     form?: AppForm;
 }
 
-const makeError = (errMessage: string) => {
+const makeError = (errMessage: string): {data: AppCallResponse<FormResponseData>} => {
     return {
         data: {
             type: 'error',
@@ -37,8 +37,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         this.state = {form: props.form};
     }
 
-    handleSubmit = async (submission: {values: AppFormValues}): Promise<{data: AppCallResponse<any>}> => {
-        //TODO use FormResponseData instead of Any
+    handleSubmit = async (submission: {values: AppFormValues}): Promise<{data: AppCallResponse<FormResponseData>}> => {
         const {form} = this.state;
         if (!form) {
             return makeError('submitForm state.form is not defined');
@@ -53,18 +52,21 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             const res = await this.props.actions.doAppCall({
                 ...call,
                 type: AppCallTypes.SUBMIT,
-                values: submission.values,
+                values: {
+                    ...call.values,
+                    ...submission.values,
+                },
             });
             return res;
         } catch (e) {
-            return {data: {type: 'error', error: e.message}};
+            return makeError(e.message);
         }
     }
 
     refreshOnSelect = async (field: AppField, values: AppFormValues, value: AppFormValue): Promise<{data: AppCallResponse<any>}> => {
         const {form} = this.state;
         if (!form) {
-            return makeError('refreshOnSelect props.form is not defined');
+            return makeError('refreshOnSelect state.form is not defined');
         }
 
         const call = this.getCall();
@@ -98,7 +100,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
 
             return res;
         } catch (e) {
-            return {data: {type: 'error', error: e.message}};
+            return makeError(e.message);
         }
     };
 
@@ -144,24 +146,27 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
             ...form?.call,
             context: {
                 ...call.context,
-                ...form?.call?.context,
+            },
+            values: {
+                ...call.values,
+                ...form?.call?.values,
             },
         };
     }
 
     render() {
-        const call = this.getCall();
-        if (!call) {
-            return null;
-        }
-
         const {form} = this.state;
         if (!form) {
             return null;
         }
 
+        const call = this.getCall();
+        if (!call) {
+            return null;
+        }
+
         return (
-            <AppsForm
+            <AppsFormComponent
                 form={form}
                 call={call}
                 actions={{

@@ -6,9 +6,7 @@ import BoolSetting from '@components/widgets/settings/bool_setting';
 import TextSetting from '@components/widgets/settings/text_setting';
 import {ViewTypes} from '@constants/index';
 import {AppField, AppSelectOption} from '@mm-redux/types/apps';
-import {Channel} from '@mm-redux/types/channels';
 import {Theme} from '@mm-redux/types/preferences';
-import {UserProfile} from '@mm-redux/types/users';
 import React from 'react';
 
 import AppsFormSelectField from './apps_form_select_field';
@@ -22,57 +20,26 @@ export type Props = {
     errorText?: React.ReactNode;
     theme: Theme;
 
-    value: string | boolean | null;
-    onChange: (name: string, value: string) => void;
+    value: AppSelectOption | string | boolean | null;
+    onChange: (name: string, value: string | AppSelectOption) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
-    actions: {
-        autocompleteChannels: (term: string, success: (channels: Channel[]) => void, error: () => void) => (dispatch: any, getState: any) => Promise<void>;
-        autocompleteUsers: (search: string) => Promise<UserProfile[]>;
-    };
 }
-
-type State = {
-    userInput?: string;
-    selected?: AppSelectOption | Option;
-};
 
 type Option = {
     text: string;
     value: string;
 }
 
-export default class AppsFormField extends React.PureComponent<Props, State> {
-    constructor(props: Props) {
-        super(props);
-
-        let defaultText = (Boolean(props.value) && String(props.value)) || '';
-        let defaultOption: AppSelectOption | undefined;
-        if (props.value && props.field.type === 'static_select' && props.field.options) {
-            defaultOption = props.field.options.find((option) => option.value === props.value);
-            defaultText = defaultOption ? defaultOption.label : '';
-        }
-
-        this.state = {
-            userInput: defaultText,
-            selected: defaultOption,
-        };
-    }
-
+export default class AppsFormField extends React.PureComponent<Props> {
     handleSelected = (selected: AppSelectOption | Option) => {
         const {name, field, onChange} = this.props;
 
-        if (field.type === 'user') {
+        if (field.type === 'user' || field.type === 'channel') {
             const option = selected as Option;
-            onChange(name, option.value);
-            this.setState({userInput: option.text, selected});
-        } else if (field.type === 'channel') {
-            const option = selected as Option;
-            onChange(name, option.value);
-            this.setState({userInput: option.text, selected});
+            onChange(name, {label: option.text, value: option.value});
         } else {
             const option = selected as AppSelectOption;
-            this.setState({userInput: option.label, selected: option});
-            onChange(name, option.value);
+            onChange(name, option);
         }
     }
 
@@ -168,12 +135,13 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={this.state.selected}
+                    selected={value}
                     roundedBorders={false}
                     disabled={field.readonly}
                 />
             );
         } else if (field.type === 'static_select' || field.type === 'dynamic_select') {
+            const selectedOption = value as (AppSelectOption | null);
             return (
                 <AppsFormSelectField
                     field={field}
@@ -182,7 +150,7 @@ export default class AppsFormField extends React.PureComponent<Props, State> {
                     onChange={this.handleSelected}
                     errorText={errorText}
                     performLookup={this.props.performLookup}
-                    value={this.props.value as (string | null)}
+                    value={selectedOption}
                 />
             );
         } else if (field.type === 'bool') {

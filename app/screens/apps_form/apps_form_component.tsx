@@ -17,7 +17,7 @@ import {dismissModal} from 'app/actions/navigation';
 
 import DialogIntroductionText from './dialog_introduction_text';
 import {Theme} from '@mm-redux/types/preferences';
-import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppSelectOption} from '@mm-redux/types/apps';
+import {AppCall, AppCallResponse, AppField, AppForm, AppFormValue, AppFormValues, AppSelectOption, FormResponseData} from '@mm-redux/types/apps';
 import {DialogElement} from '@mm-redux/types/integrations';
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import AppsFormField from './apps_form_field';
@@ -38,16 +38,10 @@ export type Props = {
     componentId: string;
 }
 
-type FormResponseData = {
-    errors: {
-        [field: string]: string;
-    };
-}
-
 type State = {
     values: {[name: string]: string};
-    error: string | null;
-    errors: {[name: string]: React.ReactNode};
+    formError: string | null;
+    fieldErrors: {[name: string]: React.ReactNode};
     submitting: boolean;
     form: AppForm;
 }
@@ -63,10 +57,9 @@ const initFormValues = (form: AppForm): {[name: string]: string} => {
     return values;
 };
 
-export default class AppsForm extends PureComponent<Props, State> {
+export default class AppsFormComponent extends PureComponent<Props, State> {
     private scrollView: React.RefObject<ScrollView>;
     private navigationEventListener?: EventSubscription;
-    private submitted = false;
 
     constructor(props: Props) {
         super(props);
@@ -76,8 +69,8 @@ export default class AppsForm extends PureComponent<Props, State> {
 
         this.state = {
             values,
-            error: null,
-            errors: {},
+            formError: null,
+            fieldErrors: {},
             submitting: false,
             form,
         };
@@ -118,35 +111,28 @@ export default class AppsForm extends PureComponent<Props, State> {
     handleSubmit = async (button?: string) => {
         const {fields} = this.props.form;
         const values = this.state.values;
-        const errors: {[name: string]: React.ReactNode} = {};
+        const fieldErrors: {[name: string]: React.ReactNode} = {};
 
-        if (fields) {
-            fields.forEach((field) => {
-                const element = {
-                    name: field.name,
-                    type: field.type,
-                    subtype: field.subtype,
-                    optional: !field.is_required,
-                } as DialogElement;
-                const error = checkDialogElementForError( // TODO: make sure all required values are present in `element`
-                    element,
-                    values[field.name],
+        const elements = fieldsAsElements(fields);
+        elements?.forEach((element) => {
+            const error = checkDialogElementForError( // TODO: make sure all required values are present in `element`
+                element,
+                values[element.name],
+            );
+            if (error) {
+                fieldErrors[element.name] = (
+                    <FormattedText
+                        id={error.id}
+                        defaultMessage={error.defaultMessage}
+                        values={error.values}
+                    />
                 );
-                if (error) {
-                    errors[field.name] = (
-                        <FormattedText
-                            id={error.id}
-                            defaultMessage={error.defaultMessage}
-                            values={error.values}
-                        />
-                    );
-                }
-            });
-        }
+            }
+        });
 
-        this.setState({errors});
+        this.setState({fieldErrors});
 
-        if (Object.keys(errors).length !== 0) {
+        if (Object.keys(fieldErrors).length !== 0) {
             return;
         }
 
@@ -160,39 +146,41 @@ export default class AppsForm extends PureComponent<Props, State> {
 
         const {data} = await this.props.actions.submit(submission);
 
-        this.submitted = true;
-        if (data?.type === 'form' && data.form) {
-            this.setState({values: initFormValues(data.form)});
+        if (data?.type === AppCallResponseTypes.FORM && data.form) {
             return;
         }
 
         let hasErrors = false;
 
         if (data && data.type === AppCallResponseTypes.ERROR) {
-            const newErrors = data.data?.errors;
-
-            const elements = fields.map((field) => ({name: field.name})) as DialogElement[];
-
-            if (newErrors &&
-                Object.keys(newErrors).length >= 0 &&
-                checkIfErrorsMatchElements(newErrors as any, elements)
-            ) {
-                hasErrors = true;
-                this.setState({errors: newErrors});
-            }
-
-            if (data.error) {
-                hasErrors = true;
-                this.setState({error: data.error});
-                if (this.scrollView?.current) {
-                    this.scrollView.current.scrollTo({x: 0, y: 0});
-                }
-            }
+            hasErrors = this.updateErrors(elements, data.data?.errors, data.error);
         }
 
         if (!hasErrors) {
             this.handleHide();
         }
+    }
+
+    updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
+        let hasErrors = false;
+
+        if (fieldErrors &&
+            Object.keys(fieldErrors).length >= 0 &&
+            checkIfErrorsMatchElements(fieldErrors as any, elements)
+        ) {
+            hasErrors = true;
+            this.setState({fieldErrors});
+        }
+
+        if (formError) {
+            hasErrors = true;
+            this.setState({formError});
+            if (this.scrollView?.current) {
+                this.scrollView.current.scrollTo({x: 0, y: 0});
+            }
+        }
+
+        return hasErrors;
     }
 
     performLookup = async (name: string, userInput: string): Promise<AppSelectOption[]> => {
@@ -217,7 +205,13 @@ export default class AppsForm extends PureComponent<Props, State> {
         const values = {...this.state.values, [name]: value};
 
         if (field.refresh) {
-            this.props.actions.refreshOnSelect(field, values, value);
+            this.props.actions.refreshOnSelect(field, values, value).then(({data}) => {
+                if (data.type !== AppCallResponseTypes.ERROR) {
+                    return;
+                }
+                const elements = fieldsAsElements(this.props.form.fields);
+                this.updateErrors(elements, data.data.errors, data.error);
+            });
         }
 
         this.setState({values});
@@ -226,7 +220,7 @@ export default class AppsForm extends PureComponent<Props, State> {
     render() {
         const {theme, form} = this.props;
         const {fields, header} = form;
-        const {error, errors, values} = this.state;
+        const {formError, fieldErrors, values} = this.state;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -239,11 +233,11 @@ export default class AppsForm extends PureComponent<Props, State> {
                     style={style.scrollView}
                 >
                     <StatusBar/>
-                    {error && (
+                    {formError && (
                         <ErrorText
                             testID='interactive_dialog.error.text'
                             textStyle={style.errorContainer}
-                            error={error}
+                            error={formError}
                         />
                     )}
                     {header &&
@@ -258,7 +252,7 @@ export default class AppsForm extends PureComponent<Props, State> {
                                 field={field}
                                 key={field.name}
                                 name={field.name}
-                                errorText={errors[field.name]}
+                                errorText={fieldErrors[field.name]}
                                 value={values[field.name]}
                                 performLookup={this.performLookup}
                                 onChange={this.onChange}
@@ -270,6 +264,15 @@ export default class AppsForm extends PureComponent<Props, State> {
             </SafeAreaView>
         );
     }
+}
+
+function fieldsAsElements(fields?: AppField[]): DialogElement[] {
+    return fields?.map((f) => ({
+        name: f.name,
+        type: f.type,
+        subtype: f.subtype,
+        optional: !f.is_required,
+    })) as DialogElement[];
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {

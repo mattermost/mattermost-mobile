@@ -199,3 +199,9 @@ export type AppLookupCallValues = {
     values: AppFormValues;
     name: string;
 }
+
+export type FormResponseData = {
+    errors?: {
+        [field: string]: string;
+    };
+}
