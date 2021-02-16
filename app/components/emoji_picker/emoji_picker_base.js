@@ -187,7 +187,6 @@ export default class EmojiPicker extends PureComponent {
         }
 
         clearTimeout(this.searchTermTimeout);
-        const timeout = searchTerm ? 100 : 0;
         if (prevSearchTerm === '') {
             const filteredEmojis = this.searchEmojis(searchTerm);
             this.setState({
@@ -199,7 +198,7 @@ export default class EmojiPicker extends PureComponent {
                 this.setState({
                     filteredEmojis,
                 });
-            }, timeout);
+            }, 100);
         }
     };
 
