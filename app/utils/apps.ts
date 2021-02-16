@@ -8,6 +8,16 @@ export function appsEnabled(state: GlobalState) { // eslint-disable-line @typesc
     return true;
 }
 
+export function copyAndFillBindings(binding?: AppBinding): AppBinding | undefined {
+    if (!binding) {
+        return undefined;
+    }
+
+    const copy = JSON.parse(JSON.stringify(binding));
+    fillBindingsInformation(copy);
+    return copy;
+}
+
 export function fillBindingsInformation(binding?: AppBinding) {
     if (!binding) {
         return;

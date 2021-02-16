@@ -11,7 +11,7 @@ import EmbedText from './embed_text';
 import EmbedTitle from './embed_title';
 import {Theme} from '@mm-redux/types/preferences';
 import {AppBinding} from '@mm-redux/types/apps';
-import {fillBindingsInformation} from '@utils/apps';
+import {copyAndFillBindings} from '@utils/apps';
 
 type Props = {
     embed: AppBinding,
@@ -38,13 +38,7 @@ export default function EmbeddedBinding(props: Props) {
 
     const style = getStyleSheet(theme);
 
-    const fillBindings = (binding: AppBinding) => {
-        const copiedBindings = JSON.parse(JSON.stringify(binding)) as AppBinding;
-        fillBindingsInformation(copiedBindings);
-        return copiedBindings.bindings;
-    };
-
-    const bindings = fillBindings(embed);
+    const bindings = copyAndFillBindings(embed)?.bindings;
 
     return (
         <>
