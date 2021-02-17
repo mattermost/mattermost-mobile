@@ -4,7 +4,7 @@
 import {Client4} from '@mm-redux/client';
 import {ActionFunc} from '@mm-redux/types/actions';
 import {AppCallResponse, AppCall, AppForm} from '@mm-redux/types/apps';
-import {AppsBindings, AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
+import {AppCallTypes, AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {sendEphemeralPost} from './views/post';
 import {handleGotoLocation} from '@mm-redux/actions/integrations';
 import {showModal} from './navigation';
@@ -39,13 +39,10 @@ export function doAppCall<Res=unknown>(call: AppCall, intl: any): ActionFunc {
                     return {data: res};
                 }
 
-                if (call.context.location === AppsBindings.COMMAND && call.type === AppCallTypes.FORM) {
-                    return {data: res};
-                }
-
                 if (call.type === AppCallTypes.SUBMIT) {
                     showAppForm(res.form, call, getTheme(getState()));
                 }
+
                 return {data: res};
             case AppCallResponseTypes.NAVIGATE:
                 if (!res.url) {

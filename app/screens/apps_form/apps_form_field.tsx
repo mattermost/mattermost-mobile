@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/widgets/settings/bool_setting';
 import TextSetting from '@components/widgets/settings/text_setting';
 import {ViewTypes} from '@constants/index';
@@ -9,7 +8,7 @@ import {AppField, AppSelectOption} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/preferences';
 import React from 'react';
 
-import AppsFormSelectField from './apps_form_select_field';
+import AppFormSelector from './app_form_selector/app_form_selector';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -119,15 +118,19 @@ export default class AppsFormField extends React.PureComponent<Props> {
                     disabled={field.readonly}
                 />
             );
-        } else if (field.type === 'channel' || field.type === 'user') {
+        } else if (field.type === 'channel' || field.type === 'user' || field.type === 'dynamic_select' || field.type === 'static_select') {
             let dataSource = ViewTypes.DATA_SOURCE_CHANNELS;
             if (field.type === 'user') {
                 dataSource = ViewTypes.DATA_SOURCE_USERS;
             }
+            if (field.type === 'dynamic_select') {
+                dataSource = 'app';
+            }
+            const option = value as AppSelectOption;
             return (
-                <AutocompleteSelector
-                    id={name}
+                <AppFormSelector
                     label={displayName}
+                    options={field.options}
                     dataSource={dataSource}
                     optional={!field.is_required}
                     onSelected={this.handleSelected}
@@ -135,22 +138,10 @@ export default class AppsFormField extends React.PureComponent<Props> {
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={value}
+                    selected={option}
                     roundedBorders={false}
                     disabled={field.readonly}
-                />
-            );
-        } else if (field.type === 'static_select' || field.type === 'dynamic_select') {
-            const selectedOption = value as (AppSelectOption | null);
-            return (
-                <AppsFormSelectField
-                    field={field}
-                    label={displayName}
-                    helpText={field.description}
-                    onChange={this.handleSelected}
-                    errorText={errorText}
-                    performLookup={this.props.performLookup}
-                    value={selectedOption}
+                    performLookupCall={(term) => this.props.performLookup(field.name, term)}
                 />
             );
         } else if (field.type === 'bool') {
