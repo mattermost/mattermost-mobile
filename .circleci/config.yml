@@ -550,14 +550,14 @@ workflows:
             - test
           filters:
             branches:
-              only: /^build-pr-.*/
+              only: /^(build|android)-pr-.*/
       - build-ios-pr:
           context: mattermost-mobile-ios-pr
           requires:
             - test
           filters:
             branches:
-              only: /^build-pr-.*/
+              only: /^(build|ios)-pr-.*/
 
       - build-android-unsigned:
           context: mattermost-mobile-unsigned
