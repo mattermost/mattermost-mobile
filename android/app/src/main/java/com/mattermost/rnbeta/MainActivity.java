@@ -64,7 +64,8 @@ public class MainActivity extends NavigationActivity {
         boolean seen = false;
         HashMap<String, Object> best = null;
         for (HashMap<String, Object> stringObjectHashMap : supported) {
-            if (!seen || (Float)stringObjectHashMap.getOrDefault("refreshRate", 0f) > (Float)best.getOrDefault("refreshRate", 0f)) {
+            Float refreshRate = (Float)stringObjectHashMap.getOrDefault("refreshRate", 0f);
+            if (!seen || Math.round(refreshRate) == 60) {
                 seen = true;
                 best = stringObjectHashMap;
             }

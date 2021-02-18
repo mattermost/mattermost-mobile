@@ -146,12 +146,15 @@ export function openGalleryAtIndex(index, files) {
         };
 
         if (Object.keys(contentPush).length) {
-            options.animations.push = Platform.select({
-                android: contentPush,
-                ios: {
-                    content: contentPush,
-                },
-            });
+            options.animations.push = {
+                ...options.animations.push,
+                ...Platform.select({
+                    android: contentPush,
+                    ios: {
+                        content: contentPush,
+                    },
+                }),
+            };
         }
 
         if (Object.keys(contentPop).length) {
