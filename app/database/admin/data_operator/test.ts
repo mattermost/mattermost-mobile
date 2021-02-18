@@ -1,7 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
+import App from '@typings/database/app';
+
 import DatabaseManager, {DatabaseType} from '../database_manager';
 import {
     operateAppRecord,
@@ -11,7 +14,7 @@ import {
     operateServersRecord,
     operateSystemRecord,
 } from './operators';
-import {OperationType} from './index';
+import DataOperator, {OperationType} from './index';
 
 jest.mock('../database_manager');
 
@@ -175,5 +178,21 @@ describe('*** Data Operator tests ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.modelClass.name).toMatch('TermsOfService');
+    });
+
+    it('=> should create a record in the App table in the default database', async () => {
+        // Creates a record in the App table
+        await DataOperator.handleIsolatedEntityData({
+            optType: OperationType.CREATE,
+            tableName: APP,
+            values: {buildNumber: 'build-1', createdAt: 1, id: 'id-1', versionNumber: 'version-1'},
+        });
+
+        // do a query and find out if the value as been registered in the App table of the default database
+        const defaultDB = await DatabaseManager.getDefaultDatabase();
+        expect(defaultDB).toBeTruthy();
+
+        const records = await defaultDB!.collections.get(APP).query(Q.where('id', 'id-7')).fetch() as App[];
+        expect(records).toBeTruthy();
     });
 });

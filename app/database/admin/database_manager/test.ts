@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DatabaseManager, {DatabaseType} from './index';
+import {Database} from '@nozbe/watermelondb';
+
+import {MM_TABLES} from '@constants/database';
 
 import {DBInstance} from '@typings/database/database';
-import {Database} from '@nozbe/watermelondb';
 import IServers from '@typings/database/servers';
-import {MM_TABLES} from '@constants/database';
+
+import DatabaseManager, {DatabaseType} from './index';
 
 jest.mock('./index');
 

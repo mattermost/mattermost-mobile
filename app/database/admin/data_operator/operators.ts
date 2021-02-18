@@ -3,9 +3,9 @@
 
 import {Q} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
+
 import App from '@typings/database/app';
 import CustomEmoji from '@typings/database/custom_emoji';
-
 import {
     DataFactory,
     RawApp,

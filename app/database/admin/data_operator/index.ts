@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
 import {Database} from '@nozbe/watermelondb';
 import Model from '@nozbe/watermelondb/Model';
+
+import {MM_TABLES} from '@constants/database';
 import {DataFactory, DBInstance, IsolatedTables, RecordValue} from '@typings/database/database';
 
 import DatabaseManager from '../database_manager';

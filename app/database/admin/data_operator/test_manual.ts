@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {MM_TABLES} from '@constants/database';
+
 import DataOperator, {OperationType} from './index';
 
 const {APP} = MM_TABLES.DEFAULT;
